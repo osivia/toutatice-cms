@@ -1,0 +1,215 @@
+package fr.toutatice.portail.cms.nuxeo.portlets.files;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+import javax.portlet.PortletException;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletRequestDispatcher;
+import javax.portlet.PortletSecurityException;
+import javax.portlet.RenderMode;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+import javax.portlet.WindowState;
+
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+
+import fr.toutatice.portail.api.windows.PortalWindow;
+import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
+
+/**
+ * Portlet d'affichage d'un document Nuxeo
+ */
+
+public class FileBrowserPortlet extends CMSPortlet {
+	
+	public static final String DISPLAY_MODE_NORMAL = "normal";
+	public static final String DISPLAY_MODE_DETAILED = "detailed";	
+	
+	public static boolean isFolder( Document doc)	{
+		
+		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType());
+
+	}
+
+	static final Comparator<Document> DEFAULT_ORDER = new Comparator<Document>() {
+		
+		public int compare(Document e1, Document e2) {
+			
+			if (isFolder(e1) && !isFolder(e2))
+				return -1;
+
+			if (!isFolder(e1) && isFolder(e2))
+				return +1;
+
+			return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+		}
+	};
+
+	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+
+		logger.debug("processAction ");
+
+		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+
+			PortalWindow window = WindowFactory.getWindow(req);
+			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+
+			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
+				window.setProperty("pia.cms.scope", req.getParameter("scope"));
+			else if (window.getProperty("pia.cms.scope") != null)
+				window.setProperty("pia.cms.scope", null);
+
+			res.setPortletMode(PortletMode.VIEW);
+			res.setWindowState(WindowState.NORMAL);
+		}
+
+		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
+
+			res.setPortletMode(PortletMode.VIEW);
+			res.setWindowState(WindowState.NORMAL);
+		}
+	}
+
+	@RenderMode(name = "admin")
+	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+
+		res.setContentType("text/html");
+		TransformationContext ctx = new TransformationContext(req, res, getPortletContext());
+
+		
+		PortletRequestDispatcher rd = null;
+
+		PortalWindow window = WindowFactory.getWindow(req);
+
+		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		if (nuxeoPath == null)
+			nuxeoPath = "";
+		req.setAttribute("nuxeoPath", nuxeoPath);
+
+	
+		String scope = window.getProperty("pia.cms.scope");
+		req.setAttribute("scope", scope);
+		
+		req.setAttribute("ctx", ctx);
+
+
+		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/admin.jsp");
+		rd.include(req, res);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
+			PortletSecurityException, IOException {
+
+		logger.debug("doView");
+
+		try {
+
+			response.setContentType("text/html");
+
+			PortalWindow window = WindowFactory.getWindow(request);
+
+
+
+			/* On détermine l'uid et le scope */
+
+			String nuxeoPath = null;
+
+			// portal window parameter (appels dynamiques depuis le portail)
+			nuxeoPath = window.getProperty("pia.cms.uri");
+
+			// logger.debug("doView "+ uid);
+			if (nuxeoPath == null) {
+				nuxeoPath = window.getProperty("pia.nuxeoPath");
+			}
+			
+			String displayMode = request.getParameter("displayMode");
+
+			String folderPath = nuxeoPath;
+
+			if (request.getParameter("folderPath") != null) {
+				folderPath = request.getParameter("folderPath");
+			}
+
+			if (nuxeoPath != null) {
+
+				TransformationContext ctx = new TransformationContext(request, response, getPortletContext());
+				ctx.setScope(window.getProperty("pia.cms.scope"));
+				
+				/* Folder courant */
+				Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+
+				/* Récupération des fils */
+				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetChildrenCommand(doc));
+				
+				// Tri pour affichage
+				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
+				Collections.sort(sortedDocs, DEFAULT_ORDER);
+				request.setAttribute("docs", sortedDocs);
+
+				/* Récupération des parents (pour le path) */
+
+				List<Document> breadcrumbs = new ArrayList<Document>();
+
+				Document curDoc = doc;
+				while (!nuxeoPath.equals(curDoc.getPath())) {
+					breadcrumbs.add(0, curDoc);
+					curDoc = (Document) ctx.executeNuxeoCommand(new FolderGetParentCommand(curDoc));
+				}
+				breadcrumbs.add(0, curDoc);
+
+				request.setAttribute("breadcrumbs", breadcrumbs);
+
+				request.setAttribute("basePath", nuxeoPath);
+				request.setAttribute("folderPath", folderPath);
+				
+				// Pas d'affichage détaillé en mode normal
+				if(DISPLAY_MODE_DETAILED.equals(displayMode) && !WindowState.MAXIMIZED.equals(request.getWindowState()))
+						displayMode = DISPLAY_MODE_NORMAL;
+				
+				request.setAttribute("displayMode", displayMode);
+
+
+				request.setAttribute("ctx", ctx);
+				
+				if(  DISPLAY_MODE_DETAILED.equals( displayMode) )	
+					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);
+				else
+					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-normal.jsp").include(request, response);
+					
+			} else {
+				response.setContentType("text/html");
+				response.getWriter().print("<h2>Document non défini</h2>");
+				response.getWriter().close();
+				return;
+			}
+
+		} catch( NuxeoException e){
+			PortletErrorHandler.handleGenericErrors(response, e);
+		}
+
+		catch (Exception e) {
+			if (!(e instanceof PortletException))
+				throw new PortletException(e);
+		}
+
+		logger.debug("doView end");
+
+	}
+
+}

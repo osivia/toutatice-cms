@@ -1,0 +1,149 @@
+<!DOCTYPE portlet-app PUBLIC
+   "-//JBoss Portal//DTD JBoss Portlet 2.6//EN"
+   "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
+   
+        <!-- 
+      test deploy
+   	-->
+   
+
+<portlet-app>
+   <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
+      
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   		</ajax>
+      
+     	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+               <header-content>
+		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+	  </header-content>
+         
+    </portlet>
+    
+ <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>
+      
+      <!-- 
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   		</ajax>
+   		-->
+      
+     	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+       <header-content>
+		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+	  </header-content>        
+ </portlet>    
+ 
+  <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-portalSiteNavigationPortlet</portlet-name>
+      
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   	</ajax>
+   	
+       <header-content>
+		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+	  </header-content>   	
+      
+   </portlet>  
+   
+ <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-name>
+      <!-- 
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   	</ajax>
+   	-->
+   	    <transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+        
+       <header-content>
+		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+	  </header-content>
+ 
+     
+	</portlet>     
+ 
+  <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-searchPortlet</portlet-name>
+
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   	</ajax>
+   	
+   	    	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+        
+       <header-content>
+		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+	  </header-content>
+ 
+</portlet>     
+
+  <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-keywordsSelectorPortlet</portlet-name>
+      
+      
+     	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+          
+    </portlet>
+    
+ <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-name>
+      
+      
+     	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+          
+    </portlet>
+     
+ 
+   <service>
+        <service-name>ServiceCache</service-name>
+        <service-class>fr.toutatice.portail.api.cache.services.ICacheService</service-class>
+        <service-ref>pia:service=CacheServices</service-ref>
+    </service>
+    
+      <service>
+        <service-name>ServiceStatut</service-name>
+        <service-class>fr.toutatice.portail.api.statut.IStatutService</service-class>
+        <service-ref>pia:service=StatutServices</service-ref>
+    </service>
+  
+  
+      <service>
+    	<service-name>PortalUrlFactory</service-name>
+    	<service-class>fr.toutatice.portail.api.urls.IPortalUrlFactory</service-class>
+    	<service-ref>pia:service=UrlFactory</service-ref>
+    </service>
+  
+     <service>
+        <service-name>ProfilManager</service-name>
+        <service-class>fr.toutatice.portail.core.profils.IProfilManager</service-class>
+        <service-ref>pia:service=ProfilManager</service-ref>
+    </service>
+ 
+ 
+     <service>
+        <service-name>ServiceNuxeo</service-name>
+        <service-class>fr.toutatice.portail.core.nuxeo.INuxeoService</service-class>
+        <service-ref>pia:service=NuxeoService</service-ref>
+    </service>
+ 
+
+  
+</portlet-app>
+
+	
