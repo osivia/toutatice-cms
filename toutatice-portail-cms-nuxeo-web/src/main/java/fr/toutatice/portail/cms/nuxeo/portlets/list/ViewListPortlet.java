@@ -66,7 +66,13 @@ public class ViewListPortlet extends CMSPortlet  {
 				window.setProperty("pia.requestInterpretor", "beanShell");
 			else if (window.getProperty("pia.requestInterpretor") != null)
 				window.setProperty("pia.requestInterpretor", null);	
+
 			
+			if ("1".equals(req.getParameter("displayNuxeoRequest")))
+				window.setProperty("pia.displayNuxeoRequest", "1");
+			else if (window.getProperty("pia.displayNuxeoRequest") != null)
+				window.setProperty("pia.displayNuxeoRequest", null);	
+
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
@@ -147,7 +153,10 @@ public class ViewListPortlet extends CMSPortlet  {
 		if( "beanShell".equals( interpretor))
 			beanShell = "1";
 		req.setAttribute("beanShell", beanShell);
-	
+
+		
+		req.setAttribute("displayNuxeoRequest", window.getProperty("pia.displayNuxeoRequest"));
+
 
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
@@ -285,6 +294,8 @@ public class ViewListPortlet extends CMSPortlet  {
 						
 						request.setAttribute("nbPages", nbPages );
 						
+						if( "1".equals(window.getProperty("pia.displayNuxeoRequest")))
+								request.setAttribute("nuxeoRequest", nuxeoRequest );
 						
 						
 						request.setAttribute("selectors", request.getParameter("selectors") );

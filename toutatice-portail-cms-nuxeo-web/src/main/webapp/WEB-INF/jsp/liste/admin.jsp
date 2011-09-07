@@ -11,21 +11,71 @@
 
 <portlet:defineObjects/>
 
+<script language="javascript"> 
+function toggleSample() {
+	var ele = document.getElementById("toggleText");
+	var text = document.getElementById("displayText");
+	if(ele.style.display == "block") {
+    		ele.style.display = "none";
+  	}
+	else {
+		ele.style.display = "block";
+	}
+} 
+</script>
+
+
+
 <%
 TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
 String beanShell = "";
 if( "1".equals( request.getAttribute("beanShell")))
 		beanShell = "checked";
-
+String displayNuxeoRequest = "";
+if( "1".equals( request.getAttribute("displayNuxeoRequest")))
+	displayNuxeoRequest = "checked";
 %>
 
 
 	<div>
 		<form method="post" action="<portlet:actionURL/>">
 		<label>Requête Nuxeo</label><br/>
-		<textarea rows="8" cols="80" name="nuxeoRequest" >${nuxeoRequest}</textarea><br/><br/>
-		<input type="checkbox" name="beanShell" value="1" <%= beanShell%>/>Interprétation BeanShell de la requête<br/>
+		<textarea rows="10" cols="75" name="nuxeoRequest" >${nuxeoRequest}</textarea><br/><br/>
+		<input type="checkbox" name="beanShell" value="1" <%= beanShell%>/>Interprétation BeanShell de la requête (
+		
+		<a id="displayText" href="javascript:toggleSample();">Exemple</a>)<br/>
+		
+		<div id="toggleText" style="display: none; border: 1px; border-style: solid"> <pre>
+String requete =  "ecm:path STARTSWITH '/default-domain/workspaces/toutatice'";
 
+if (params.get("title") != null) {
+requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
+}
+
+if (params.get("description") != null) {
+requete += " AND " + NXQLFormater.formatTextSearch("dc:description",params.get("description")) ;
+}
+
+if (params.get("nature") != null) {
+requete += " AND " +
+NXQLFormater.formatVocabularySearch("dc:nature",params.get("nature")) ;
+
+}
+
+if (params.get("subject") != null) {
+requete += " AND " +
+NXQLFormater.formatVocabularySearch("dc:subjects",params.get("subject")) ;
+
+}
+
+requete += " ORDER BY dc:modified DESC";
+
+return requete;
+</pre>
+</div>		
+<br/>
+		<input type="checkbox" name="displayNuxeoRequest" value="1" <%= displayNuxeoRequest%>/>Affichage de la requête (pour test) <br/>
+<br/>
 		<label>Limiter les résultats à <input type="text" name="maxItems" value="${maxItems}" size="2"> items <br/><br/>
 
 		<label>Pagination :</label> <input type="text" name="pageSize" value="${pageSize}" size="2"> items par page<br/><br/>

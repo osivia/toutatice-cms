@@ -62,7 +62,10 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
-			window.setProperty("pia.selectorId", req.getParameter("selectorId"));
+			if( req.getParameter("selectorId").length() > 0)
+				window.setProperty("pia.selectorId", req.getParameter("selectorId"));
+			else if (window.getProperty("pia.selectorId") != null)
+				window.setProperty("pia.selectorId", null);	
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);

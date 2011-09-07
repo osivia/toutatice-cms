@@ -19,8 +19,12 @@
 			<label>Identifiant sélecteur</label><br/>
 			<input type="text" name="selectorId" value="${selectorId}" size="40"><br/>
 
-			<label>Nom vocabulaire</label><br/>
+			<label>Nom vocabulaire niveau 1</label><br/>
 			<input type="text" name="vocabName1" value="${vocabName1}" size="40"><br/>
+
+
+			<label>Nom vocabulaire niveau 2 (facultatif)</label><br/>
+			<input type="text" name="vocabName2" value="${vocabName2}" size="40"><br/>
 
 
 			<input type="submit" name="modifierPrefs"  value="Valider">

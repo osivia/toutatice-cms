@@ -23,6 +23,7 @@ int currentPage = (Integer) request.getAttribute("currentPage");
 int nbPages = (Integer) renderRequest.getAttribute("nbPages")	;
 
 String permaLinkURL = (String) renderRequest.getAttribute("permaLinkURL")	;
+String nuxeoRequest = (String) renderRequest.getAttribute("nuxeoRequest")	;
 
 %>
 
@@ -37,6 +38,16 @@ if( permaLinkURL != null)	{
 }
 %>
 
+<% if( nuxeoRequest != null)	{ %>
+
+		<div class="displayRequest" style="border: 1px; border-style: solid"> 
+			<%= nuxeoRequest %>
+		</div>
+
+<%	} %>
+
+
+<div class="no-ajax-link">
 	<ul>
 <%
 int indice = 0;
@@ -93,7 +104,7 @@ while( it.hasNext())
 %>
 		<li class="item<%=parite%>">
 			<%=srcVignette%>
-			<a class="title" <%=target%> href="<%=url%>"><%=doc.getTitle()%> </a>
+			<a class="title" <%=target%> href="<%=url%>"><%=doc.getTitle()%></a>
 			<p class="description"><%= Formater.formatDescription(doc)%></p>
 			<div class="separateur"></div>
 		</li>
@@ -103,6 +114,8 @@ while( it.hasNext())
 }
 %>
 	</ul>
+	
+</div>	
 <% 
 if ( nbPages > 1 )	
 { %>	

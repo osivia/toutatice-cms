@@ -42,6 +42,8 @@ public class VocabularyLoaderCommand implements INuxeoCommand {
 				JSONObject vocabulary = (JSONObject) itr.next();
 				String key = vocabulary.getString("key");
 				String label = vocabulary.getString("value");
+				if( label.startsWith("label.directories"))
+					label = key;
 				String DecodedLabel = URLDecoder.decode(label, "UTF-8");
 				entry = new VocabularyEntry(key, DecodedLabel);
 				JSONArray children = null;

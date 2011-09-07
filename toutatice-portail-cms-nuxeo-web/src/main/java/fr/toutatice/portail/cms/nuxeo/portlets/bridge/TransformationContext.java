@@ -105,7 +105,7 @@ public class TransformationContext extends NuxeoController {
 	Map<String, String> params = new HashMap<String, String>();
 	
 	String url = getPortalUrlFactory().getStartProcUrl(new PortalControllerContext(portletCtx, request,
-		response), getPageId(), "toutatice-portail-cms-nuxeo-viewListePortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+		response), getPageId(), "toutatice-portail-cms-nuxeo-viewListPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
 
 	return url;
 	}
@@ -128,7 +128,7 @@ public class TransformationContext extends NuxeoController {
 		Map<String, String> params = new HashMap<String, String>();
 		
 		String url = getPortalUrlFactory().getStartProcUrl(new PortalControllerContext(portletCtx, request,
-			response), getPageId(), "toutatice-portail-cms-nuxeo-viewListePortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+			response), getPageId(), "toutatice-portail-cms-nuxeo-viewListPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
 
 		return url;
 		}

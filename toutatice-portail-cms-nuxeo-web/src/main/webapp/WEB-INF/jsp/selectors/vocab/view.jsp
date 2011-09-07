@@ -1,4 +1,6 @@
 
+<%@page import="java.util.Map"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.PageSelectors"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.KeywordsSelectorPortlet"%>
@@ -20,7 +22,9 @@
 
 <%
 String vocab1Id = (String) request.getAttribute("vocab1Id");
+String vocab2Id = (String) request.getAttribute("vocab2Id");
 VocabularyEntry vocab1  = ((VocabularyEntry) renderRequest.getAttribute("vocab1"));
+String vocabName2 = (String) request.getAttribute("vocabName2");
 %>
 
 <%
@@ -60,10 +64,23 @@ for (String vocabId : vocabsId){
 }
 %>
 
+
+<%
+
+// URL de rafrichissement de la liste
+PortletURL refreshURL = renderResponse.createRenderURL();
+refreshURL.setParameter("vocab1Id", "SELECTED_VALUE");
+
+String onChangeEvent = "";
+if( vocabName2 != null) {
+	onChangeEvent = "onchange=\"refreshOnVocabularyChange(this,'"+ refreshURL +"');\"";
+ }
+%>
+
 <div class="nuxeo-keywords-selector">
 		<form method="post" action="<portlet:actionURL/>">
 			
-						<select id="<portlet:namespace />Topic" name="vocab1Id" style="width: 80%;">
+						<select id="<portlet:namespace />Topic" name="vocab1Id" style="width: 80%" <%= onChangeEvent %> >
 							<option value="">Tous</option>
 			<%
 						for(VocabularyEntry possible : vocab1.getChildren().values()){
@@ -80,8 +97,44 @@ for (String vocabId : vocabsId){
 			%>
 			
 						</select> 
+						
+<%
+if( vocab1Id != null && vocabName2 != null)	{
+	VocabularyEntry vocab2  = vocab1.getChild(vocab1Id);
+	if( vocab2 != null)	{	
+		
+%>
+
+						<select id="<portlet:namespace />Topic" name="vocab2Id" style="width: 80%">
+							<option value="">Tous</option>
+			<%
+						
+						for(VocabularyEntry possible : vocab2.getChildren().values()){
+								if( possible.getId().equals(vocab2Id)){
+			%>
+							<option selected="selected" value="<%= possible.getId() %>"><%= possible.getLabel() %></option>
+			<%
+								}else{
+			%>
+							<option value="<%= possible.getId() %>"><%= possible.getLabel() %></option>
+			<%						
+								}
+						}
+			%>
+			
+						</select> 
+<%
+		}
+	}
+%>
+						
+        
 					
-			<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
+			<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" /> 
+			
+			
+			
+			
 		</form>			
 			
 
