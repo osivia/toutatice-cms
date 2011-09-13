@@ -25,6 +25,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
@@ -108,14 +109,9 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				String vocab2Id = req.getParameter("vocab2Id");
 				if( vocab2Id != null)
 					res.setRenderParameter("vocab2Id", vocab2Id);
-		
 
-				// SYnchronisation des parametres public en mode Ajax
-				// req.setAttribute("pia.ajaxSynchronisation", "true");
 
 				// Réinitialisation des fenetres en mode NORMAL
-				// Permet de s'assurer qu'une fenetre MAX ne masque pas les
-				// listes de résultats
 				req.setAttribute("pia.initPageState", "true");
 
 			}
@@ -137,11 +133,8 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				vocabIds.remove(occ);
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-				// SYnchronisation des parametres public en mode Ajax
-				//req.setAttribute("pia.ajaxSynchronisation", "true");
-
+				// Réinitialisation des fenetres en mode NORMAL
 				req.setAttribute("pia.initPageState", "true");
-
 			}
 		}
 
@@ -224,7 +217,6 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			// Get public parameter
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-
 			if (selectors.get(selectorId) != null)
 				request.setAttribute("vocabsId", selectors.get(selectorId));
 			else
@@ -237,10 +229,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			request.setAttribute("vocabName2", vocabName2);
 			
 
-			
 
-			// TODO : droits d'acces en admin
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+			
+			ctx.setScopeType(NuxeoCommandContext.SCOPE_TYPE_SUPERUSER);
 
 			// rafraichir en asynchrone
 			ctx.setAsynchronousUpdates(true);

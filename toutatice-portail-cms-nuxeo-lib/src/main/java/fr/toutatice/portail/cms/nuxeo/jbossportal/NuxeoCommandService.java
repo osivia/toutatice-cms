@@ -98,6 +98,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	private boolean checkScope(NuxeoCommandContext ctx) throws Exception {
 		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_USER)
 			return true;
+		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)
+			return true;
 		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS)
 			return true;
 		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
@@ -118,9 +120,15 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		// Cache invalidé -> Appel direct
 		if (ctx.getCacheTimeOut() == 0)
 			return nuxeoInvoker.invoke();
+		
+		String scopeCache = "anonymous";
+		if( ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
+			scopeCache =  ctx.getScopeProfil().getName();
+		if( ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)		
+			scopeCache = "superUser";
 
 		CacheInfo cacheInfos = new CacheInfo(command.getId(),
-				ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS ? "anonymous" : ctx.getScopeProfil().getName(),
+				scopeCache,
 				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
 
 		if (ctx.getCacheTimeOut() == -1) {

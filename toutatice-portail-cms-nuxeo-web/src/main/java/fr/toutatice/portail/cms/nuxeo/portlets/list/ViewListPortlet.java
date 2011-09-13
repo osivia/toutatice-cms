@@ -240,6 +240,15 @@ public class ViewListPortlet extends CMSPortlet  {
 				if( sCurrentPage != null)
 					currentPage = Integer.parseInt(sCurrentPage);
 			}
+			
+			/* Reinitialisation du numéro de page si changement de critères */
+			
+			String selectors = request.getParameter("selectors");
+			String lastSelectors = request.getParameter("lastSelectors");
+			
+			if( lastSelectors != null && !lastSelectors.equals(selectors))
+				currentPage = 0;
+			
 
 
 			if (nuxeoRequest != null) {
@@ -310,7 +319,6 @@ public class ViewListPortlet extends CMSPortlet  {
 						String permaLinkRef = window.getProperty("pia.permaLinkRef");
 						if( permaLinkRef != null)	{
 							Map<String, String> publicParams = new HashMap<String, String>();
-							String selectors = request.getParameter("selectors");
 							if( selectors != null)
 								publicParams.put("selectors", selectors);
 								String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,

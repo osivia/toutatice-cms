@@ -123,19 +123,24 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				}
 			}
 
-			if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL || ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS) {
+			else {
+				/* Gestion des sessions atypiques (ANONYMOUS, PROFIL SUPERUSER) */
+				
 
 				// Il a une session nuxeo par contexte de portlet et virtual user
 
 				PortletContext portletCtx = ctx.getPortletContext();
 
+				// Valeurs par défaut (mode anonyme)
 				String sessionKey = "pia.nuxeoSession_virtualuser";
 				String virtualUser = null;
 
 				if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL )	{
-					
 						sessionKey += "_" + ctx.getScopeProfil().getNuxeoVirtualUser();
 						virtualUser = ctx.getScopeProfil().getNuxeoVirtualUser();
+				} else if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER )	{
+					sessionKey += "_superUser";
+					virtualUser = System.getProperty("nuxeo.superUserId" );
 				}
 				
 				profilerUser = virtualUser;

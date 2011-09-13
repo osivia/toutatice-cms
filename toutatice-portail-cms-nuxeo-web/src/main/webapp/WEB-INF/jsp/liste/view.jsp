@@ -24,6 +24,7 @@ int nbPages = (Integer) renderRequest.getAttribute("nbPages")	;
 
 String permaLinkURL = (String) renderRequest.getAttribute("permaLinkURL")	;
 String nuxeoRequest = (String) renderRequest.getAttribute("nuxeoRequest")	;
+String selectors = (String) renderRequest.getAttribute("selectors")	;
 
 %>
 
@@ -130,18 +131,22 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 	PortletURL pageURL = renderResponse.createRenderURL();
 
 	pageURL.setParameter( "currentPage", Integer.toString(numPage));
+	if( selectors != null)
+		pageURL.setParameter( "lastSelectors", selectors);	
 	
 	if( currentPage == numPage)	{
 %>
 			<b><span><%= (numPage + 1) %></span></b>
 <%	} else { %>
-			<a href="<%= pageURL.toString()%>"><span><%= (numPage + 1) %></span></a>
+			<!-- JMETER_URL_LIST="<%= pageURL.toString()%>" --> <a href="<%= pageURL.toString()%>"><span><%= (numPage + 1) %></span></a>
 <%	}  
 }
 %>
 	</div>
 
 <% } %>
+
+
 
 
 

@@ -51,6 +51,22 @@ public class NuxeoController {
 	URI nuxeoBaseURI;
 	NuxeoConnection nuxeoConnection;
 	IProfilManager profilManager;
+	String scope;
+	public String getScope() {
+		return scope;
+	}
+
+	int scopeType = NuxeoCommandContext.SCOPE_TYPE_USER;	
+	private ProfilBean scopeProfil = null;
+
+
+	private ProfilBean getScopeProfil() {
+		return scopeProfil;
+	}
+
+	private void setScopeProfil(ProfilBean scopeProfil) {
+		this.scopeProfil = scopeProfil;
+	}
 
 	INuxeoCommandService nuxeoService;
 	private long cacheTimeOut = -1;
@@ -73,11 +89,38 @@ public class NuxeoController {
 		this.cacheTimeOut = cacheTimeOut;
 	}
 
-	String scope;
 
-	public void setScope(String scope) {
+
+	/**
+	 * Peuplement à partir de l'interface
+	 * 
+	 * @param scope
+	 * @throws Exception
+	 */
+	public void setScope(String scope) throws Exception {
+
+
+		// Par défaut
+		setScopeType(NuxeoCommandContext.SCOPE_TYPE_USER);
+		
+		if ("anonymous".equals(scope)) {
+			setScopeType( NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS);
+		} else if( scope != null) {
+			setScopeType( NuxeoCommandContext.SCOPE_TYPE_PROFIL);
+			setScopeProfil(getNuxeoService().getProfilManager().getProfil(scope));
+		}
+
 		this.scope = scope;
+		
 	}
+	
+	public int getScopeType() {
+		return scopeType;
+	}
+
+	public void setScopeType(int scopeType) {
+		this.scopeType = scopeType;
+	}	
 
 	public NuxeoConnection getNuxeoConnection() {
 		if (nuxeoConnection == null)
@@ -85,9 +128,6 @@ public class NuxeoController {
 		return nuxeoConnection;
 	}
 
-	public String getScope() {
-		return scope;
-	}
 
 	public PortletRequest getRequest() {
 		return request;
@@ -250,26 +290,17 @@ public class NuxeoController {
 
 	public Object executeNuxeoCommand(INuxeoCommand command) throws Exception {
 
-		int scopeType = NuxeoCommandContext.SCOPE_TYPE_USER;
-		ProfilBean profil = null;
-
-		if (scope != null) {
-			if ("anonymous".equals(scope)) {
-				scopeType = NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS;
-			} else {
-				scopeType = NuxeoCommandContext.SCOPE_TYPE_PROFIL;
-				profil = getNuxeoService().getProfilManager().getProfil(scope);
-			}
-		}
-
 		NuxeoCommandContext ctx = new NuxeoCommandContext(portletCtx, request);
-		ctx.setScopeType(scopeType);
-		ctx.setScopeProfil(profil);
+
+		ctx.setScopeType(getScopeType());
+		ctx.setScopeProfil(getScopeProfil());
 		ctx.setCacheTimeOut(cacheTimeOut);
 		ctx.setAsynchronousUpdates(asynchronousUpdates);
 
 		return getNuxeoService().executeCommand(ctx, command);
 	}
+	
+
 
 	public void startNuxeoService() throws Exception {
 		NuxeoCommandServiceFactory.startNuxeoCommandService(getPortletCtx());

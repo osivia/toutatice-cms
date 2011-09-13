@@ -98,11 +98,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
-				// SYnchronisation des parametres public en mode Ajax
-				req.setAttribute("pia.ajaxSynchronisation", "true");
-				
 				//Réinitialisation des fenetres en mode NORMAL
-				//Permet de s'assurer qu'une fenetre MAX ne masque pas les listes de résultats
 				req.setAttribute("pia.initPageState", "true");
 				
 			}
@@ -124,11 +120,8 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 				keywords.remove(occ);
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
-				// SYnchronisation des parametres public en mode Ajax
-				req.setAttribute("pia.ajaxSynchronisation", "true");
-				
+				//Réinitialisation des fenetres en mode NORMAL
 				req.setAttribute("pia.initPageState", "true");
-
 			}
 		}
 

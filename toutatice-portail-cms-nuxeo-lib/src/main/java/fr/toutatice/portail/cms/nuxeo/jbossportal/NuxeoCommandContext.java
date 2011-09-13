@@ -11,6 +11,7 @@ public class NuxeoCommandContext {
 	public static int SCOPE_TYPE_ANONYMOUS = 0;
 	public static int SCOPE_TYPE_USER = 1;
 	public static int SCOPE_TYPE_PROFIL = 2;
+	public static int SCOPE_TYPE_SUPERUSER = 3;
 	
 	public boolean asynchronousUpdates = false;
 

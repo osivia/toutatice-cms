@@ -82,6 +82,7 @@ if( vocabName2 != null) {
 			
 						<select id="<portlet:namespace />Topic" name="vocab1Id" style="width: 80%" <%= onChangeEvent %> >
 							<option value="">Tous</option>
+							
 			<%
 						for(VocabularyEntry possible : vocab1.getChildren().values()){
 								if( possible.getId().equals(vocab1Id)){
@@ -107,6 +108,7 @@ if( vocab1Id != null && vocabName2 != null)	{
 
 						<select id="<portlet:namespace />Topic" name="vocab2Id" style="width: 80%">
 							<option value="">Tous</option>
+					
 			<%
 						
 						for(VocabularyEntry possible : vocab2.getChildren().values()){
