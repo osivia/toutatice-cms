@@ -27,6 +27,10 @@
 			<input type="text" name="vocabName2" value="${vocabName2}" size="40"><br/>
 
 
+			<label>Nom vocabulaire niveau 3 (facultatif)</label><br/>
+			<input type="text" name="vocabName3" value="${vocabName3}" size="40"><br/>
+
+
 			<input type="submit" name="modifierPrefs"  value="Valider">
 			<input type="submit" name="annuler"  value="Annuler">
 		</form>

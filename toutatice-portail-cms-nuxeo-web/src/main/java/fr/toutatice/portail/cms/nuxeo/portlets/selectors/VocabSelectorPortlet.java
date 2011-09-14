@@ -40,6 +40,38 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 	public static String DELETE_PREFIX = "delete_";
 
+	/**
+	 * Permet d'exprimer le label d'un composant sur plusieurs niveaux : cle1/cle2/cle3
+	 * 
+	 * @param label
+	 * @param id
+	 * @param vocab
+	 * @return
+	 */
+	public static String getLabel(String label, String id, VocabularyEntry vocab)  {	
+		String[] tokens = id.split("/", 2);
+		
+		String res = "";
+
+		if( tokens.length > 0)	{
+			VocabularyEntry child = vocab.getChild(tokens[ 0]);
+			res += child.getLabel();
+		}
+		
+		if( tokens.length > 1)	{
+			VocabularyEntry childVocab = vocab.getChild(tokens[ 0]);
+			if( childVocab != null)
+				res += "/" + getLabel( res, tokens[ 1], childVocab);
+		}
+
+		
+		return res;
+	}
+	
+	
+	
+
+	
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
 		logger.debug("processAction ");
@@ -64,6 +96,12 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				window.setProperty("pia.vocabName2", null);				
 			
 
+			if( req.getParameter("vocabName3").length() > 0)
+				window.setProperty("pia.vocabName3", req.getParameter("vocabName3"));
+			else if (window.getProperty("pia.vocabName3") != null)
+				window.setProperty("pia.vocabName3", null);				
+
+			
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
@@ -90,6 +128,11 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 						selectedVocabId += "/" + req.getParameter("vocab2Id");
 					}
 					
+					if (req.getParameter("vocab3Id") != null && req.getParameter("vocab3Id").length() > 0) {
+						selectedVocabId += "/" + req.getParameter("vocab3Id");
+					}
+					
+					
 
 					List<String> vocabIds = selectors.get(selectorId);
 					if (vocabIds == null) {
@@ -106,10 +149,16 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				String vocab1Id = req.getParameter("vocab1Id");
 				if( vocab1Id != null)
 					res.setRenderParameter("vocab1Id", vocab1Id);
+				
 				String vocab2Id = req.getParameter("vocab2Id");
 				if( vocab2Id != null)
 					res.setRenderParameter("vocab2Id", vocab2Id);
 
+				String vocab3Id = req.getParameter("vocab3Id");
+				if( vocab3Id != null)
+					res.setRenderParameter("vocab3Id", vocab3Id);
+
+				
 
 				// Réinitialisation des fenetres en mode NORMAL
 				req.setAttribute("pia.initPageState", "true");
@@ -164,6 +213,12 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			vocabName2 = "";
 		req.setAttribute("vocabName2", vocabName2);
 		
+		String vocabName3 = window.getProperty("pia.vocabName3");
+		if (vocabName3 == null)
+			vocabName3 = "";
+		req.setAttribute("vocabName3", vocabName3);
+		
+		
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/admin.jsp");
 		rd.include(req, res);
@@ -207,11 +262,16 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				vocabsName += ";" + vocabName2;
 			}
 			
+			String vocabName3 = window.getProperty("pia.vocabName3");
+			if( vocabName3 != null){
+				vocabsName += ";" + vocabName3;
+			}
 			
 			
 
 			String vocab1Id = request.getParameter("vocab1Id");
 			String vocab2Id = request.getParameter("vocab2Id");
+			String vocab3Id = request.getParameter("vocab3Id");			
 		
 			
 
@@ -226,8 +286,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			request.setAttribute("vocab1Id", vocab1Id);
 			request.setAttribute("vocab2Id", vocab2Id);
-			request.setAttribute("vocabName2", vocabName2);
+			request.setAttribute("vocab3Id", vocab3Id);
 			
+			request.setAttribute("vocabName2", vocabName2);
+			request.setAttribute("vocabName3", vocabName3);			
 
 
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
