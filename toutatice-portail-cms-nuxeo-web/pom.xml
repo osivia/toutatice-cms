@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>toutatice-portail.cms</groupId>
+		<artifactId>cms-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>toutatice-portail.cms</groupId>
+	<artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<name>Nuxeo cms portlets</name>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>toutatice-portail.cms</groupId>
+			<artifactId>toutatice-portail-cms-nuxeo-lib</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+    			<groupId>org.beanshell</groupId>
+    			<artifactId>bsh</artifactId>
+    			<version>1.3.0</version>
+		</dependency>
+
+	</dependencies>
+
+<profiles>	 
+   <profile>
+     <id>deploy-toutatice-modules</id>
+     <build>
+		<plugins>
+     <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-antrun-plugin</artifactId>
+      <executions>
+      <execution>
+        <id>copy-jar</id>
+        <goals>
+            <goal>run</goal>
+          </goals>        
+        <configuration>
+          <tasks>
+                 <copy file="${basedir}/target/${project.build.finalName}.war" todir="${deploy.socle.dir}" />
+          </tasks>
+        </configuration>
+        <phase>package</phase>
+      </execution>
+      </executions>
+    </plugin>
+		</plugins>
+	</build>
+  </profile>
+ </profiles>	   
+
+</project>
