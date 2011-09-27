@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.cache.services.IServiceInvoker;
+import fr.toutatice.portail.core.error.Debug;
 
 /**
  * Execution asynchrone des commandes Nuxeo
@@ -59,10 +60,15 @@ public class AsyncCommandThread implements Runnable {
 						// Appel commande
 						IServiceInvoker cacheInvoker = new NuxeoCommandCacheInvoker(command.getCtx(),
 								command.getCommand());
+						
+						String scopeCache = "anonymous";
+						if(  command.getCtx().getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
+							scopeCache =   command.getCtx().getScopeProfil().getName();
+						if(  command.getCtx().getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)		
+							scopeCache = "superUser";
+						
 
-						CacheInfo cacheInfos = new CacheInfo(command.getCommand().getId(), command.getCtx()
-								.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS ? "anonymous" : command
-								.getCtx().getScopeProfil().getNuxeoVirtualUser(), cacheInvoker, null, command.getCtx()
+						CacheInfo cacheInfos = new CacheInfo(command.getCommand().getId(), scopeCache, cacheInvoker, null, command.getCtx()
 								.getPortletContext());
 
 						// Forçage de la mise à jour du cache
@@ -86,7 +92,7 @@ public class AsyncCommandThread implements Runnable {
 				}
 
 			} catch (Exception e) {
-				logger.error(e);
+				logger.error( 		Debug.throwableToString(e));
 			}
 
 		}
