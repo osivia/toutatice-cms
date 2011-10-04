@@ -20,12 +20,15 @@ import javax.portlet.WindowState;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 
+import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
+import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
@@ -88,8 +91,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
 		res.setContentType("text/html");
-		TransformationContext ctx = new TransformationContext(req, res, getPortletContext());
 
+		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 		
 		PortletRequestDispatcher rd = null;
 
@@ -147,8 +150,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 			}
 
 			if (nuxeoPath != null) {
+				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
-				TransformationContext ctx = new TransformationContext(request, response, getPortletContext());
 				ctx.setScope(window.getProperty("pia.cms.scope"));
 				
 				/* Folder courant */
@@ -163,15 +166,21 @@ public class FileBrowserPortlet extends CMSPortlet {
 				request.setAttribute("docs", sortedDocs);
 
 				/* Récupération des parents (pour le path) */
+				
+
+				NuxeoController ctxSession = new NuxeoController(request, response, getPortletContext());
+				ctxSession.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
+				ctxSession.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
 
 				List<Document> breadcrumbs = new ArrayList<Document>();
 
 				Document curDoc = doc;
 				while (!nuxeoPath.equals(curDoc.getPath())) {
 					breadcrumbs.add(0, curDoc);
-					curDoc = (Document) ctx.executeNuxeoCommand(new FolderGetParentCommand(curDoc));
+					curDoc = (Document) ctxSession.executeNuxeoCommand(new FolderGetParentCommand(curDoc));
 				}
 				breadcrumbs.add(0, curDoc);
+				
 
 				request.setAttribute("breadcrumbs", breadcrumbs);
 

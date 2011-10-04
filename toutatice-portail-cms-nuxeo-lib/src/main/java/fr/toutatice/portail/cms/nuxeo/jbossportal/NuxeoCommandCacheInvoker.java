@@ -69,7 +69,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 			try	{
 			
 
-			if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_USER) {
+			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 
 				ControllerContext controllerCtx = (ControllerContext) ctx.getRequest().getAttribute("pia.controller");
 
@@ -135,10 +135,10 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				String sessionKey = "pia.nuxeoSession_virtualuser";
 				String virtualUser = null;
 
-				if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL )	{
-						sessionKey += "_" + ctx.getScopeProfil().getNuxeoVirtualUser();
-						virtualUser = ctx.getScopeProfil().getNuxeoVirtualUser();
-				} else if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER )	{
+				if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL )	{
+						sessionKey += "_" + ctx.getAuthProfil().getNuxeoVirtualUser();
+						virtualUser = ctx.getAuthProfil().getNuxeoVirtualUser();
+				} else if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_SUPERUSER )	{
 					sessionKey += "_superUser";
 					virtualUser = System.getProperty("nuxeo.superUserId" );
 				}

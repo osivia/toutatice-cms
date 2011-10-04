@@ -1,4 +1,6 @@
 
+<%@page import="fr.toutatice.portail.api.urls.Link"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -16,10 +18,10 @@
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
 
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.ViewContentLink"%>
+
 
 
 
@@ -27,7 +29,7 @@
 
 <%
 PaginableDocuments docs = (PaginableDocuments) renderRequest.getAttribute("docs")	;
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String keywords = (String) request.getAttribute("keywords");
 int currentPage = (Integer) request.getAttribute("currentPage");
 
@@ -62,7 +64,7 @@ while( it.hasNext())	{
 	
 	Document doc = (Document) it.next();
 	
-	ViewContentLink link = ctx.createLink(doc);
+	Link link = ctx.getLink(doc);
 	
 
 	String	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+Formater.formatSpecificIcon(doc)+"\">";

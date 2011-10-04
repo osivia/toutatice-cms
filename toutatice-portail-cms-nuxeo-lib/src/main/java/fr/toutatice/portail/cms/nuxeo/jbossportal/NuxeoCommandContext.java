@@ -3,15 +3,17 @@ package fr.toutatice.portail.cms.nuxeo.jbossportal;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 
+import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoProperties;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
 public class NuxeoCommandContext {
 
-	public static int SCOPE_TYPE_ANONYMOUS = 0;
-	public static int SCOPE_TYPE_USER = 1;
-	public static int SCOPE_TYPE_PROFIL = 2;
-	public static int SCOPE_TYPE_SUPERUSER = 3;
+	public static int AUTH_TYPE_ANONYMOUS = 0; 
+	public static int AUTH_TYPE_USER = 1;	
+	public static int AUTH_TYPE_PROFIL = 2; 
+	public static int AUTH_TYPE_SUPERUSER = 3;
+
 	
 	public boolean asynchronousUpdates = false;
 
@@ -34,23 +36,33 @@ public class NuxeoCommandContext {
 	PortletContext ctx;
 	PortletRequest request;
 
-	int scopeType = SCOPE_TYPE_USER;
+	int authType = AUTH_TYPE_USER;
+	int cacheType = CacheInfo.CACHE_SCOPE_NONE;
+	
+	public int getCacheType() {
+		return cacheType;
+	}
+
+	public void setCacheType(int cacheType) {
+		this.cacheType = cacheType;
+	}
+
 	ProfilBean profil = null;
 	long cacheTimeOut = 50 * 1000;
 
-	public int getScopeType() {
-		return scopeType;
+	public int getAuthType() {
+		return authType;
 	}
 
-	public void setScopeType(int scopeType) {
-		this.scopeType = scopeType;
+	public void setAuthType(int authType) {
+		this.authType = authType;
 	}
 
-	public ProfilBean getScopeProfil() {
+	public ProfilBean getAuthProfil() {
 		return profil;
 	}
 
-	public void setScopeProfil(ProfilBean profil) {
+	public void setAuthProfil(ProfilBean profil) {
 		this.profil = profil;
 	}
 

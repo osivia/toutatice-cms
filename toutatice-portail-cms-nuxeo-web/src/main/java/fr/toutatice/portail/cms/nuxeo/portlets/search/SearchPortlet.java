@@ -34,12 +34,11 @@ import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet;
-import fr.toutatice.portail.core.profils.ProfilBean;
+
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -92,7 +91,7 @@ public class SearchPortlet extends CMSPortlet {
 	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
 		res.setContentType("text/html");
-		TransformationContext ctx = new TransformationContext(req, res, getPortletContext());
+		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 	
 		
 		PortletRequestDispatcher rd = null;
@@ -132,7 +131,8 @@ public class SearchPortlet extends CMSPortlet {
 			if (keywords != null) {
 				// Page de resultats
 
-				TransformationContext ctx = new TransformationContext(request, response, getPortletContext());
+
+				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 				ctx.setScope(scope);
 
 				

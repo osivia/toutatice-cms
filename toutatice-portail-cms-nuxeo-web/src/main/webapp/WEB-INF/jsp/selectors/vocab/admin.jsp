@@ -6,7 +6,7 @@
 <%@ page isELIgnored="false" %>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Map"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 
 <portlet:defineObjects/>
 

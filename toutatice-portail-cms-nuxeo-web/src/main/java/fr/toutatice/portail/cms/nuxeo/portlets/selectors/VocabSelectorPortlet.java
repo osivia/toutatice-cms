@@ -19,6 +19,7 @@ import javax.portlet.WindowState;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -282,7 +283,6 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			else
 				request.setAttribute("vocabsId", new ArrayList<String>());
 			
-			
 
 			request.setAttribute("vocab1Id", vocab1Id);
 			request.setAttribute("vocab2Id", vocab2Id);
@@ -294,9 +294,8 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 			
-			ctx.setScopeType(NuxeoCommandContext.SCOPE_TYPE_SUPERUSER);
-
-			// rafraichir en asynchrone
+			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+			ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 			ctx.setAsynchronousUpdates(true);
 
 			VocabularyIdentifier vocabIdentifier = new VocabularyIdentifier( vocabsName, vocabsName);

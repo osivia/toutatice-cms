@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -19,14 +20,14 @@
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList"%>
 
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.portalsite.PortalSiteBean"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.portalsite.ServiceDisplayItem"%><portlet:defineObjects />
 
 <%
 List<ServiceDisplayItem> servicesItems = (List<ServiceDisplayItem>)  renderRequest.getAttribute("serviceItems")	;
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 %>
 
 

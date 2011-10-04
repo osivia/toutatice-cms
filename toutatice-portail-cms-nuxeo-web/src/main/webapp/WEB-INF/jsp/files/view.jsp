@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
@@ -17,16 +18,16 @@
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
 
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.ViewContentLink"%><portlet:defineObjects />
+<portlet:defineObjects />
 
 <%
 Documents docs = (Documents) renderRequest.getAttribute("docs")	;
 List breadcrumbs = (List) renderRequest.getAttribute("breadcrumbs")	;
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
 %>

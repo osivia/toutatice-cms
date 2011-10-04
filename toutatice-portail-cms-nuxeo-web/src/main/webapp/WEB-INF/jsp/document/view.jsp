@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -23,7 +24,7 @@
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%><portlet:defineObjects />
 
 <%
@@ -32,7 +33,7 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 
 String onlyDescription = (String) request.getAttribute("onlyDescription");
 
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 String srcVignette = "";
 PropertyMap map = doc.getProperties().getMap("ttc:vignette");
@@ -48,23 +49,19 @@ if( map != null && map.getString("data") != null)
 
 			<%= srcVignette %><p class="nuxeo-docview-description"><%=Formater.formatDescription(doc)%></p>
 
-			<div class="nuxeo-docview-switch-mode"><a href="<%= ctx.createWindowLink(doc.getPath()) %>">suite...</a></div>
+			<div class="nuxeo-docview-switch-mode"><a href="<%= ctx.getLink(doc).getUrl() %>">suite...</a></div>
 	</div>			
 			
 <% } else	{	 %>
 
 <div class="nuxeo-docview-normal-view">
 
-<% 	if ("question".equals(doc.getType().toLowerCase()) || "note".equals(doc.getType().toLowerCase()) || "annonce".equals(doc.getType().toLowerCase()) )	{ 
+<% 	
 	String jspName = "view-"+ doc.getType().toLowerCase() + ".jsp";
 %>
 		<jsp:include page="<%= jspName %>"></jsp:include>
 
-<%	} else	{	%>
 
-Ce type de contenu n'est pas pris en charge
-
-<%	} 	%>
 			
 <% 
 	PropertyList files = doc.getProperties().getList("files:files");

@@ -1,4 +1,5 @@
 
+
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -20,16 +21,18 @@
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList"%>
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%><portlet:defineObjects />
 
 <%
 Document doc = (Document) renderRequest.getAttribute("doc");
 
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 
 String srcImage = "";

@@ -40,7 +40,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
+
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.core.profils.ProfilBean;
 

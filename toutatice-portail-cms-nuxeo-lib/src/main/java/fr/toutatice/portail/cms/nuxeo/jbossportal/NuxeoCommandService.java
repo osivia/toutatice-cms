@@ -18,6 +18,7 @@ import fr.toutatice.portail.api.cache.services.IServiceInvoker;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.statut.ServeurIndisponible;
+import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -53,6 +54,13 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 	
 
+	public IPortalUrlFactory getPortalUrlFactory() throws Exception {
+		// TODO Optimiser
+		// Comment gérer le redéploiement des services
+		IPortalUrlFactory portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, "pia:service=UrlFactory");
+		return portalUrlFactory;
+	}
+
 
 	public IProfilManager getProfilManager() throws Exception {
 		// TODO Optimiser
@@ -74,7 +82,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	protected synchronized void addAsyncronousCommand(NuxeoCommandContext ctx, INuxeoCommand command) {
 
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_USER) {
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 			// Pas de maj asychrone en mode USER
 			log.warn("asynchronous mode not supported for scope USER");
 			return;
@@ -96,14 +104,14 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 
 	private boolean checkScope(NuxeoCommandContext ctx) throws Exception {
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_USER)
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER)
 			return true;
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_SUPERUSER)
 			return true;
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS)
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS)
 			return true;
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
-			return getProfilManager().verifierProfilUtilisateur(ctx.getScopeProfil().getName());
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)
+			return getProfilManager().verifierProfilUtilisateur(ctx.getAuthProfil().getName());
 		return false;
 	}
 	
@@ -114,21 +122,25 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		IServiceInvoker nuxeoInvoker = new NuxeoCommandCacheInvoker(ctx, command);
 
 		// Cache user non géré -> Appel direct
-		if (ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_USER)
+		if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
 			return nuxeoInvoker.invoke();
 
 		// Cache invalidé -> Appel direct
 		if (ctx.getCacheTimeOut() == 0)
 			return nuxeoInvoker.invoke();
 		
-		String scopeCache = "anonymous";
-		if( ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
-			scopeCache =  ctx.getScopeProfil().getName();
-		if( ctx.getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)		
-			scopeCache = "superUser";
 
-		CacheInfo cacheInfos = new CacheInfo(command.getId(),
-				scopeCache,
+		String cacheId = command.getId();
+			
+			
+		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
+				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
+		}
+
+	
+
+		CacheInfo cacheInfos = new CacheInfo(cacheId,
+				ctx.getCacheType(),
 				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
 
 		if (ctx.getCacheTimeOut() == -1) {

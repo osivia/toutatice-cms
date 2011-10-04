@@ -1,4 +1,6 @@
 
+<%@page import="fr.toutatice.portail.api.urls.Link"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -16,15 +18,15 @@
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
 
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.ViewContentLink"%><portlet:defineObjects />
+<portlet:defineObjects />
 
 <%
 Documents docs = (Documents) renderRequest.getAttribute("docs")	;
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
 String displayMode = (String) request.getAttribute("displayMode");
@@ -70,7 +72,7 @@ while( it.hasNext())	{
 	Document doc = (Document) it.next();
 
 	String url = null;
-	ViewContentLink link = null;
+	Link link = null;
 	String icon = Formater.formatNuxeoIcon(doc);
 	String target = "";	
 	
@@ -80,10 +82,10 @@ while( it.hasNext())	{
 		if( displayMode != null)
 			folderURL.setParameter("displayMode", displayMode);
 		url = folderURL.toString();
-		link = new ViewContentLink(url, false);
+		link = new Link(url, false);
 
 	}	else {
-		link = ctx.createLink(doc);
+		link = ctx.getLink(doc);
 		url = link.getUrl();
 		target = Formater.formatTarget(link);
 

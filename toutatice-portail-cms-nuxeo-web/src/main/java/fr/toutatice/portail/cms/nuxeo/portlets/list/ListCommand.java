@@ -8,18 +8,20 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
-public class ListCommand implements INuxeoCommand{
+public class ListCommand implements INuxeoCommand {
 	
 	String nuxeoRequest;
 	int pageNumber;
 	int pageSize;
+	String schemas;
 
 	
-	public ListCommand( String nuxeoRequest, int pageNumber, int pageSize) {
+	public ListCommand( String nuxeoRequest, int pageNumber, int pageSize, String schemas) {
 		super();
 		this.nuxeoRequest = nuxeoRequest;
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;
+		this.schemas = schemas;
 
 	}
 	
@@ -34,7 +36,7 @@ public class ListCommand implements INuxeoCommand{
 		
 		request.set("query", "SELECT * FROM Document WHERE "  +nuxeoRequest);
 	
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");
+		request.setHeader(Constants.HEADER_NX_SCHEMAS, schemas);
 
 		
 		return request.execute();

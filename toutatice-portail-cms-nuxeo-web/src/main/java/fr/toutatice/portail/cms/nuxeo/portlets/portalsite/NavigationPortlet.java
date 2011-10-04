@@ -19,13 +19,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.ViewContentLink;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -65,8 +65,8 @@ public class NavigationPortlet extends CMSPortlet {
 
 		res.setContentType("text/html");
 		
-		TransformationContext ctx = new TransformationContext(req, res, getPortletContext());
 
+		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
@@ -114,7 +114,8 @@ public class NavigationPortlet extends CMSPortlet {
 
 			if (nuxeoPath != null) {
 
-				TransformationContext ctx = new TransformationContext(request, response, getPortletContext());
+
+				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 				ctx.setScope(window.getProperty("pia.cms.scope"));
 								
 					// rafraichir en asynchrone
@@ -129,7 +130,7 @@ public class NavigationPortlet extends CMSPortlet {
 				List<ServiceDisplayItem> listItems = new ArrayList<ServiceDisplayItem>();
 				for (Document child : portalSite.getChildren()) {
 
-					ViewContentLink link = ctx.createLink(child);
+					Link link = ctx.getLink(child);
 
 					if (link != null)
 						listItems.add(new ServiceDisplayItem(child.getTitle(), link.getUrl(), link.isExternal()));

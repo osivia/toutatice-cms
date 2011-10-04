@@ -14,6 +14,8 @@ import java.util.TimeZone;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
+import fr.toutatice.portail.api.urls.Link;
+
 public class Formater {
 
 	public static String formatDate(Document doc) throws ParseException {
@@ -101,17 +103,32 @@ public class Formater {
 
 	static {
 		nuxeoIcons = new HashMap<String, String>();
-		nuxeoIcons.put("/icons/note.gif", "note.gif");
-		nuxeoIcons.put("/icons/contextuallink.png", "link.png");
-		nuxeoIcons.put("/icons/word.png", "word.png");
-		nuxeoIcons.put("/icons/doc.png", "word.png");
-		nuxeoIcons.put("/icons/docx.png", "word.png");
-		nuxeoIcons.put("/icons/xls.png", "xls.png");
-		nuxeoIcons.put("/icons/xlsx.png", "xls.png");
-		nuxeoIcons.put("/icons/ppt.png", "ppt.png");
-		nuxeoIcons.put("/icons/pdf.png", "pdf.png");
-		nuxeoIcons.put("/icons/ordered_folder.png", "folder.gif");		
-		nuxeoIcons.put("/icons/folder.gif", "folder.gif");
+		nuxeoIcons.put("note.gif", "note.gif");
+		nuxeoIcons.put("contextuallink.png", "link.png");
+		nuxeoIcons.put("word.png", "word.png");
+		nuxeoIcons.put("doc.png", "word.png");
+		nuxeoIcons.put("docx.png", "word.png");
+		nuxeoIcons.put("xls.png", "xls.png");
+		nuxeoIcons.put("xlsx.png", "xls.png");
+		nuxeoIcons.put("ppt.png", "ppt.png");
+		nuxeoIcons.put("pdf.png", "pdf.png");
+		nuxeoIcons.put("ordered_folder.png", "folder.gif");		
+		nuxeoIcons.put("folder.gif", "folder.gif");
+		
+	}
+
+	private static String extractNuxeoIconName(Document doc)	{
+		String iconName = null;
+		String iconURI = doc.getProperties().getString("common:icon");
+		if( iconURI != null){
+			int namePos = iconURI.lastIndexOf('/');
+			if( namePos != -1)
+				iconName = iconURI.substring(namePos + 1);
+			else
+				iconName = iconURI;
+		}
+		return iconName;
+
 	}
 
 	/**
@@ -125,11 +142,11 @@ public class Formater {
 
 		String portalIcon = "note.gif";
 
-		String nuxeoURI = doc.getProperties().getString("common:icon");
+		String iconName = extractNuxeoIconName( doc);
 
-		if (nuxeoURI != null) {
-			if (nuxeoIcons.get(nuxeoURI) != null) {
-				portalIcon = nuxeoIcons.get(nuxeoURI);
+		if (iconName != null) {
+			if (nuxeoIcons.get(iconName) != null) {
+				portalIcon = nuxeoIcons.get(iconName);
 			} else {
 				
 				// Pas de correspondance : icone par défaut
@@ -154,10 +171,15 @@ public class Formater {
 
 	static {
 		nuxeoBigIcons = new HashMap<String, String>();
-		nuxeoBigIcons.put("/icons/note.gif", "note_100.png");
-		nuxeoBigIcons.put("/icons/contextuallink.png", "link_100.png");	
-		nuxeoBigIcons.put("/icons/folder.gif", "folder_100.png");
-		nuxeoBigIcons.put("/icons/ordered_folder.png", "folder_100.png");		
+		nuxeoBigIcons.put("note.gif", "note_100.png");
+		nuxeoBigIcons.put("contextuallink.png", "link_100.png");	
+		nuxeoBigIcons.put("folder.gif", "folder_100.png");
+		nuxeoBigIcons.put("ordered_folder.png", "folder_100.png");
+		nuxeoBigIcons.put("note.gif", "note_100.png");
+		nuxeoBigIcons.put("contextuallink.png", "link_100.png");	
+		nuxeoBigIcons.put("folder.gif", "folder_100.png");
+		nuxeoBigIcons.put("ordered_folder.png", "folder_100.png");		
+		
 	}
 
 	/**
@@ -171,11 +193,11 @@ public class Formater {
 
 		String portalIcon = "note_100.png";
 
-		String nuxeoURI = doc.getProperties().getString("common:icon");
+		String iconName = extractNuxeoIconName( doc);
 
-		if (nuxeoURI != null) {
-			if (nuxeoBigIcons.get(nuxeoURI) != null) {
-				portalIcon = nuxeoBigIcons.get(nuxeoURI);
+		if (iconName != null) {
+			if (nuxeoBigIcons.get(iconName) != null) {
+				portalIcon = nuxeoBigIcons.get(iconName);
 			} else {
 				// Pas de correspondance : icone par défaut
 				
@@ -249,7 +271,7 @@ public class Formater {
 	
 	}
 	
-	public static String formatTarget( ViewContentLink link)	{
+	public static String formatTarget( Link link)	{
 		if( link.isExternal())	
 			return "target=\"_blank\"";	
 		else

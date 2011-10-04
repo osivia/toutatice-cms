@@ -12,8 +12,8 @@ public class AsyncCommandBean {
 		
 		ctx = new NuxeoCommandContext(origCtx.getPortletContext(), null);
 		
-		ctx.setScopeType(origCtx.getScopeType());
-		ctx.setScopeProfil(origCtx.getScopeProfil());
+		ctx.setAuthType(origCtx.getAuthType());
+		ctx.setAuthProfil(origCtx.getAuthProfil());
 		command = cmd;
 	}
 	

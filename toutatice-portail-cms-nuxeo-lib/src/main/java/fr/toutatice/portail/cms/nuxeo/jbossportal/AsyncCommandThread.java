@@ -61,14 +61,29 @@ public class AsyncCommandThread implements Runnable {
 						IServiceInvoker cacheInvoker = new NuxeoCommandCacheInvoker(command.getCtx(),
 								command.getCommand());
 						
-						String scopeCache = "anonymous";
-						if(  command.getCtx().getScopeType() == NuxeoCommandContext.SCOPE_TYPE_PROFIL)
-							scopeCache =   command.getCtx().getScopeProfil().getName();
-						if(  command.getCtx().getScopeType() == NuxeoCommandContext.SCOPE_TYPE_SUPERUSER)		
-							scopeCache = "superUser";
+						int scopeCache = CacheInfo.CACHE_SCOPE_NONE;
+						String cacheId = command.getCommand().getId();
 						
+						
+						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_GLOBAL)	{
+							scopeCache = CacheInfo.CACHE_SCOPE_GLOBAL;
+						}
+						
+						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
+							scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_SESSION;
+						}
+						
+						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT)	{
+							scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT;
+						}
+						
+						if(  command.getCtx().getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
+								cacheId =  command.getCtx().getAuthProfil().getName() + "/"+ command.getCommand().getId();
+						}
+						
+							
 
-						CacheInfo cacheInfos = new CacheInfo(command.getCommand().getId(), scopeCache, cacheInvoker, null, command.getCtx()
+						CacheInfo cacheInfos = new CacheInfo(cacheId, scopeCache, cacheInvoker, null, command.getCtx()
 								.getPortletContext());
 
 						// Forçage de la mise à jour du cache

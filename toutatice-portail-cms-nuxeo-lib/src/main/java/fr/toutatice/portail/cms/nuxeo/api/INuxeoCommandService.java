@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
@@ -9,6 +10,7 @@ public interface INuxeoCommandService {
 	public  void destroy() throws Exception ;
 	
 	public IProfilManager getProfilManager() throws Exception;
+	public IPortalUrlFactory getPortalUrlFactory()  throws Exception;
 	
 
 }

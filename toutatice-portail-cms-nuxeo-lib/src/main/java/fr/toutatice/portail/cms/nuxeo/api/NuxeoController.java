@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,16 +27,21 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
+import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoConnection;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandService;
+
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
+import fr.toutatice.portail.core.nuxeo.ListTemplate;
+
 import fr.toutatice.portail.core.profils.IProfilManager;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
@@ -52,13 +58,26 @@ public class NuxeoController {
 	NuxeoConnection nuxeoConnection;
 	IProfilManager profilManager;
 	String scope;
+	
+	
 	public String getScope() {
 		return scope;
 	}
 
-	int scopeType = NuxeoCommandContext.SCOPE_TYPE_USER;	
+	int authType = NuxeoCommandContext.AUTH_TYPE_USER;	
 	private ProfilBean scopeProfil = null;
 
+
+	int cacheType = CacheInfo.CACHE_SCOPE_NONE;
+
+	
+	public int getCacheType() {
+		return cacheType;
+	}
+
+	public void setCacheType(int cacheType) {
+		this.cacheType = cacheType;
+	}
 
 	private ProfilBean getScopeProfil() {
 		return scopeProfil;
@@ -99,27 +118,28 @@ public class NuxeoController {
 	 */
 	public void setScope(String scope) throws Exception {
 
-
 		// Par défaut
-		setScopeType(NuxeoCommandContext.SCOPE_TYPE_USER);
+		setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
+		setCacheType( CacheInfo.CACHE_SCOPE_NONE);
 		
 		if ("anonymous".equals(scope)) {
-			setScopeType( NuxeoCommandContext.SCOPE_TYPE_ANONYMOUS);
+			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 		} else if( scope != null) {
-			setScopeType( NuxeoCommandContext.SCOPE_TYPE_PROFIL);
+			setAuthType( NuxeoCommandContext.AUTH_TYPE_PROFIL);
 			setScopeProfil(getNuxeoService().getProfilManager().getProfil(scope));
+			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
 		}
 
-		this.scope = scope;
-		
+	
 	}
 	
-	public int getScopeType() {
-		return scopeType;
+	public int getAuthType() {
+		return authType;
 	}
 
-	public void setScopeType(int scopeType) {
-		this.scopeType = scopeType;
+	public void setAuthType(int authType) {
+		this.authType = authType;
 	}	
 
 	public NuxeoConnection getNuxeoConnection() {
@@ -153,9 +173,10 @@ public class NuxeoController {
 		this.portletCtx = portletCtx;
 	}
 
-	public IPortalUrlFactory getPortalUrlFactory() {
+	public IPortalUrlFactory getPortalUrlFactory() throws Exception{
 		if (urlFactory == null)
-			urlFactory = (IPortalUrlFactory) portletCtx.getAttribute("PortalUrlFactory");
+			urlFactory = (IPortalUrlFactory) getNuxeoService().getPortalUrlFactory();
+		
 		return urlFactory;
 	}
 
@@ -216,7 +237,7 @@ public class NuxeoController {
 		select.append("<select name=\"scope\">");
 
 		if (!scopes.isEmpty()) {
-			if (scope == null || scope.length() == 0) {
+			if (selectedScope == null || selectedScope.length() == 0) {
 
 				select.append("<option selected=\"selected\" value=\"\">Pas de cache</option>");
 
@@ -292,9 +313,10 @@ public class NuxeoController {
 
 		NuxeoCommandContext ctx = new NuxeoCommandContext(portletCtx, request);
 
-		ctx.setScopeType(getScopeType());
-		ctx.setScopeProfil(getScopeProfil());
+		ctx.setAuthType(getAuthType());
+		ctx.setAuthProfil(getScopeProfil());
 		ctx.setCacheTimeOut(cacheTimeOut);
+		ctx.setCacheType(cacheType);
 		ctx.setAsynchronousUpdates(asynchronousUpdates);
 
 		return getNuxeoService().executeCommand(ctx, command);
@@ -309,5 +331,28 @@ public class NuxeoController {
 	public void stopNuxeoService() throws Exception {
 		NuxeoCommandServiceFactory.stopNuxeoCommandService(getPortletCtx());
 	}
+	
+	
+	
+	public Link getLink(Document doc) throws Exception 	{
+		//TODO : optimiser
+		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getPageId(), getNuxeoBaseUri(),  doc);
 
+		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+	}
+	
+	public Map<String, ListTemplate> getListTemplates()	throws Exception {
+		//TODO : optimiser
+		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");	
+		List<ListTemplate> templatesList = nuxeoService.getListTemplates();
+		Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
+		for( ListTemplate template : templatesList)
+			templatesMap.put(template.getKey(), template);
+		return templatesMap;
+
+		
+		
+	}
 }

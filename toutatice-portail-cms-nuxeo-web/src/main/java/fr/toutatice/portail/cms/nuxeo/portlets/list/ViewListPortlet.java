@@ -29,11 +29,16 @@ import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext;
+
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultListTemplatesHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplatesHandler;
+
+import fr.toutatice.portail.core.nuxeo.ListTemplate;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
 /**
@@ -44,13 +49,7 @@ public class ViewListPortlet extends CMSPortlet  {
 
 	private static Log logger = LogFactory.getLog(ViewListPortlet.class);
 	
-	public static final String STYLE_MINI = "mini";
-	public static final String STYLE_NORMAL = "normal";
-	public static final String STYLE_DETAILED = "detailed";
-	public static final String STYLE_NEWS = "news";
-	public static final String STYLE_EDITORIAL = "editorial";
 
-	
 	
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
@@ -138,7 +137,10 @@ public class ViewListPortlet extends CMSPortlet  {
 
 		res.setContentType("text/html");
 		
-		TransformationContext ctx = new TransformationContext(req, res, getPortletContext());
+		try	{
+	
+		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
+
 		
 		PortletRequestDispatcher rd = null;
 
@@ -163,18 +165,12 @@ public class ViewListPortlet extends CMSPortlet  {
 		
 		/* Styles d'affichage */
 		
-		Map<String, String> styles = new LinkedHashMap<String, String>();
-		styles.put(STYLE_MINI, "Minimal [titre]");
-		styles.put(STYLE_NORMAL, "Normal [titre, icône]");
-		styles.put(STYLE_DETAILED, "Détaillé [description, date, ...]");
-		styles.put(STYLE_NEWS, "Brève [date]");
-		styles.put(STYLE_EDITORIAL, "Editorial [vignette, description]");
-		
-		req.setAttribute("styles", styles);
+		Map<String, ListTemplate> templates = ctx.getListTemplates();
+		req.setAttribute("templates", templates);
 	
 		String style = window.getProperty("pia.cms.style");
 		if( style == null)
-			style = STYLE_NORMAL;
+			style = DefaultListTemplatesHandler.STYLE_NORMAL;
 		req.setAttribute("style", style);
 		
 		String pageSize = window.getProperty("pia.cms.pageSize");
@@ -193,6 +189,12 @@ public class ViewListPortlet extends CMSPortlet  {
 		
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
 		rd.include(req, res);
+		}
+		
+		catch (Exception e) {
+			if( ! (e instanceof PortletException))
+			throw new PortletException(e);
+		}
 
 	}
 
@@ -249,12 +251,18 @@ public class ViewListPortlet extends CMSPortlet  {
 			if( lastSelectors != null && !lastSelectors.equals(selectors))
 				currentPage = 0;
 			
+			
+			String style = window.getProperty("pia.cms.style");
+			if( style == null)
+				style = DefaultListTemplatesHandler.STYLE_NORMAL;
+
 
 
 			if (nuxeoRequest != null) {
 
-					// TODO : Gestion d'un cache global
-						TransformationContext ctx = new TransformationContext(request, response, getPortletContext());
+
+
+						NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 						ctx.setScope(window.getProperty("pia.cms.scope"));
 						
 						// Calcul de la taille de la page
@@ -268,9 +276,15 @@ public class ViewListPortlet extends CMSPortlet  {
 						if( maxItems != -1 && currentPage == 0)	{
 							requestPageSize = Math.min( requestPageSize, maxItems);
 						}
+						
+						ListTemplate template = ctx.getListTemplates().get(style);
+						if( template == null)
+							template = ctx.getListTemplates().get(DefaultListTemplatesHandler.STYLE_NORMAL);
+						
+						String schemas = ctx.getListTemplates().get(style).getSchemas();
 
 						
-						PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,currentPage, requestPageSize));
+						PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,currentPage, requestPageSize, schemas));
 
 	
 						
@@ -310,9 +324,6 @@ public class ViewListPortlet extends CMSPortlet  {
 						request.setAttribute("selectors", request.getParameter("selectors") );
 
 						
-						String style = window.getProperty("pia.cms.style");
-						if( style == null)
-							style = STYLE_NORMAL;
 						request.setAttribute("style", style);
 						
 						

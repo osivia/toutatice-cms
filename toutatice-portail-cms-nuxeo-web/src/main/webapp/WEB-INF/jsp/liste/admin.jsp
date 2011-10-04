@@ -1,3 +1,7 @@
+
+<%@page import="fr.toutatice.portail.core.nuxeo.ListTemplate"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
+<%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
@@ -7,7 +11,7 @@
 
 <%@page import="java.util.Map"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.TransformationContext"%>
+
 
 <portlet:defineObjects/>
 
@@ -27,7 +31,7 @@ function toggleSample() {
 
 
 <%
-TransformationContext ctx = (TransformationContext) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String beanShell = "";
 if( "1".equals( request.getAttribute("beanShell")))
 		beanShell = "checked";
@@ -82,17 +86,18 @@ return requete;
 		<label>Style d'affichage</label><br/>
 		<select name="style">
 <%
-			Map<String, String> styles  = (Map<String, String>) request.getAttribute("styles");
+			Map<String, ListTemplate> templates = (Map<String, ListTemplate>) request.getAttribute("templates");
 			String style = (String) request.getAttribute("style");
 
-			for(String possibleStyle : styles.keySet()){
+			for(Map.Entry<String,ListTemplate> template : templates.entrySet()){
+				String possibleStyle = template.getValue().getKey();
 					if( possibleStyle.equals(style)){
 %>
-										<option selected="selected" value="<%= possibleStyle %>"><%= styles.get(possibleStyle) %></option>
+										<option selected="selected" value="<%= possibleStyle %>"><%= template.getValue().getLabel() %></option>
 <%
 					}else{
 %>
-										<option value="<%= possibleStyle %>"><%= styles.get(possibleStyle) %></option>
+										<option value="<%= possibleStyle %>"><%= template.getValue().getLabel() %></option>
 <%						
 					}
 				}
