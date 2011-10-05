@@ -5,7 +5,9 @@ import java.util.List;
 import fr.toutatice.portail.core.nuxeo.ListTemplate;
 
 /**
- * Ce customizer peut être redéfini dans la webapp surchargée
+ * Ce customizer permet de définir de nouveaux templates.
+ * 
+ * Le template d'affichage est WEB-INF/jsp/liste/view-[nom-du-template].jsp
  * 
  * @author jeanseb
  *

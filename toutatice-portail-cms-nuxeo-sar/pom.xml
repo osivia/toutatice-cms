@@ -23,9 +23,14 @@
 			<version>5.4.2</version>
  		</dependency>
 
-		<!-- dépendance transitive demandée par Nuxeo 
-		     la version de EPP est insuffisante
+		<dependency>
+			<groupId>toutatice-portail.cms</groupId>
+			<artifactId>toutatice-portail-cms-nuxeo-shared-lib</artifactId>
+			<version>1.0-SNAPSHOT</version>
+ 		</dependency>
 
+
+		<!-- dépendance transitive demandée par Nuxeo 
 		-->
 		<dependency>
     			<groupId>commons-io</groupId>

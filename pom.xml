@@ -15,6 +15,7 @@
 
 		<deploy.dir>${toutatice-portail-runtime-dir}</deploy.dir>
 		<deploy.socle.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/deploy/socle</deploy.socle.dir>
+		<deploy.socle-libs.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/lib</deploy.socle-libs.dir>
  		
 
 		<portlet-api.version>2.0</portlet-api.version>
@@ -144,6 +145,7 @@
 	</dependencies>
 
 	<modules>
+	    <module>toutatice-portail-cms-nuxeo-shared-lib</module>
 	   <module>toutatice-portail-cms-nuxeo-lib</module>
 	   <module>toutatice-portail-cms-nuxeo-web</module>
 	   <module>toutatice-portail-cms-nuxeo-sar</module>
