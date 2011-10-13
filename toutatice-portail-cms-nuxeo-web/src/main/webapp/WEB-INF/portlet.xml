@@ -179,6 +179,35 @@
 	
 	<portlet>
 	
+	   	<description>TTC Portlet selecteur dates</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-name>
+        <display-name>Sélecteur dates Nuxeo</display-name>
+		
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet</portlet-class>
+        
+        <expiration-cache>180</expiration-cache>
+   		        
+        <supports>
+			<mime-type>text/html</mime-type>
+          	<portlet-mode>view</portlet-mode>
+			<portlet-mode>admin</portlet-mode>
+ 		</supports>
+
+        <supported-locale>en</supported-locale>
+    	<supported-locale>fr</supported-locale>        
+
+		<portlet-info>
+			<title>Nuxeo Cms Date Selector</title>
+			<short-title>Nuxeo Cms Portlet</short-title>
+			<keywords>Portlet,Nuxeo,CMS,Date</keywords>
+        </portlet-info>
+       
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+
+	</portlet>
+	
+	<portlet>
+	
 	   	<description>Portlet selecteur vocabulaire PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-name>
         <display-name>Sélecteur vocabulaire Nuxeo</display-name>

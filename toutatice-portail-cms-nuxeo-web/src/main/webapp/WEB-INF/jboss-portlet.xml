@@ -110,6 +110,20 @@
           
     </portlet>
     
+	<portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-name>
+
+     	<transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+        
+      <header-content>
+			<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+			 <script type="text/javascript" src="/js/utils.js"/>
+	  </header-content>
+          
+    </portlet>
+    
  <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-name>
       

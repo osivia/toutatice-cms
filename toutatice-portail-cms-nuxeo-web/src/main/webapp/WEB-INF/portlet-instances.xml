@@ -123,6 +123,25 @@
 	
 	<deployment>
 		<instance>
+			<display-name xml:lang="en">Toutatice - Nuxeo date selector</display-name>
+			<display-name xml:lang="fr">Toutatice - Nuxeo selecteur dates</display-name>
+			<instance-id>toutatice-portail-cms-nuxeo-dateSelectorPortletInstance</instance-id>
+			<portlet-ref>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-ref>
+      		<security-constraint>
+            	<policy-permission>
+               		<action-name>admin</action-name>
+               		<role-name>Administrators</role-name>
+           		 </policy-permission>
+            	<policy-permission>
+               <action-name>view</action-name>
+               		<unchecked/>
+            	</policy-permission>
+         	</security-constraint>			
+		</instance>		
+	</deployment>
+	
+	<deployment>
+		<instance>
 			<display-name xml:lang="en">Toutatice - Nuxeo vocabulary selector</display-name>
 			<display-name xml:lang="fr">Toutatice - Nuxeo selecteur vocabulaire</display-name>
 			<instance-id>toutatice-portail-cms-nuxeo-vocabSelectorPortletInstance</instance-id>
