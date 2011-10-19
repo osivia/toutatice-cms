@@ -79,11 +79,10 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		if ("view".equals(req.getPortletMode().toString()) && req.getParameter("add") != null) 
 		{
-			logger.info("date - add debut");
 			// Set public parameter
 			String selectorId = window.getProperty("pia.selectorId");
 			if (selectorId != null) 
-			{logger.info("date - selector not null");
+			{
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
 
 				if (req.getParameter("datefrom") != null && req.getParameter("datefrom").length() > 0) {
@@ -107,7 +106,6 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				req.setAttribute("pia.initPageState", "true");
 				
 			}
-			logger.info("date - add fin");
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
@@ -154,7 +152,6 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			PortletSecurityException, IOException {
 
 		logger.debug("doView");
-		logger.info("date - doView");
 
 		try {
 
@@ -167,7 +164,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			String dateTo = request.getParameter("dateto");
 
 			if (selectorId != null) 
-			{logger.info("date - selector not null");
+			{
 				// Get public parameter
 
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
@@ -199,7 +196,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				throw new PortletException(e);
 		}
 
-		logger.debug("doView end");logger.info("date - doView fin");
+		logger.debug("doView end");
 	}
 
 }
