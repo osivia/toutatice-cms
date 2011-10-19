@@ -79,32 +79,30 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		if ("view".equals(req.getPortletMode().toString()) && req.getParameter("add") != null) 
 		{
-			// Set public parameter
 			String selectorId = window.getProperty("pia.selectorId");
 			if (selectorId != null) 
 			{
-				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-
-				if (req.getParameter("datefrom") != null && req.getParameter("datefrom").length() > 0) {
-
-					List<String> dates = selectors.get(selectorId);
-					if (dates == null) {
-						dates = new ArrayList<String>();
-						selectors.put(selectorId, dates);
+				if(!req.getParameter("datefrom").isEmpty() && !req.getParameter("dateto").isEmpty())
+				{
+					Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+	
+					if (req.getParameter("datefrom") != null && req.getParameter("datefrom").length() > 0) {
+	
+						List<String> dates = selectors.get(selectorId);
+						if (dates == null) {
+							dates = new ArrayList<String>();
+							selectors.put(selectorId, dates);
+						}
+						dates.clear();
+						dates.add(req.getParameter("datefrom"));
+						dates.add(req.getParameter("dateto"));
 					}
-					//dates.add(req.getParameter("datefrom"));
-					//dates.add(req.getParameter("dateto"));
-					dates.clear();
-					dates.add(req.getParameter("datefrom"));
-					dates.add(req.getParameter("dateto"));
-
+	
+					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+					
+					//Réinitialisation des fenetres en mode NORMAL
+					req.setAttribute("pia.initPageState", "true");
 				}
-
-				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-				
-				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
-				
 			}
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
