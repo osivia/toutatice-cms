@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -33,6 +35,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultListTemplatesHandler;
@@ -73,6 +76,12 @@ public class ViewListPortlet extends CMSPortlet  {
 				window.setProperty("pia.displayNuxeoRequest", null);	
 
 
+			if ("1".equals(req.getParameter("displayLiveVersion")))
+				window.setProperty("pia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
+				window.setProperty("pia.cms.displayLiveVersion", null);	
+
+			
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
 			else if (window.getProperty("pia.cms.scope") != null)
@@ -145,10 +154,20 @@ public class ViewListPortlet extends CMSPortlet  {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
+		
+		
 		String nuxeoRequest = window.getProperty("pia.nuxeoRequest");
 		if (nuxeoRequest == null)
 			nuxeoRequest = "";
 		req.setAttribute("nuxeoRequest", nuxeoRequest);
+		
+		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		if (displayLiveVersion == null)
+			displayLiveVersion = "";
+		req.setAttribute("displayLiveVersion", displayLiveVersion);
+		
+		
+		
 
 		String beanShell = "";
 		String interpretor = window.getProperty("pia.requestInterpretor");
@@ -215,10 +234,9 @@ public class ViewListPortlet extends CMSPortlet  {
 			String nuxeoRequest = null;
 
 			PortalWindow window = WindowFactory.getWindow(request);
-			
-
 				
 			nuxeoRequest = window.getProperty("pia.nuxeoRequest");
+			
 			
 			if ("beanShell".equals(window.getProperty("pia.requestInterpretor")))	{
 				// Evaluation beanshell
@@ -229,6 +247,10 @@ public class ViewListPortlet extends CMSPortlet  {
 
 				nuxeoRequest = (String)  i.eval( nuxeoRequest);
 			}
+			
+			/* Filtre pour sélectionner uniquement les version publiées */
+
+			
 				
 			int maxItems = -1;
 			if (window.getProperty("pia.cms.maxItems") != null)
@@ -263,7 +285,7 @@ public class ViewListPortlet extends CMSPortlet  {
 
 
 						NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-						ctx.setScope(window.getProperty("pia.cms.scope"));
+
 						
 						// Calcul de la taille de la page
 						
@@ -284,7 +306,7 @@ public class ViewListPortlet extends CMSPortlet  {
 						String schemas = ctx.getListTemplates().get(style).getSchemas();
 
 						
-						PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,currentPage, requestPageSize, schemas));
+						PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas));
 
 	
 						

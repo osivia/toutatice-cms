@@ -48,6 +48,8 @@ public class NavigationPortlet extends CMSPortlet {
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
 			else if (window.getProperty("pia.cms.scope") != null)
 				window.setProperty("pia.cms.scope", null);
+			
+				
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -74,6 +76,7 @@ public class NavigationPortlet extends CMSPortlet {
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
+		
 
 	
 		String scope = window.getProperty("pia.cms.scope");
@@ -116,13 +119,13 @@ public class NavigationPortlet extends CMSPortlet {
 
 
 				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-				ctx.setScope(window.getProperty("pia.cms.scope"));
 								
 					// rafraichir en asynchrone
 				ctx.setAsynchronousUpdates(true);
+				
 
 				PortalSiteBean portalSite = (PortalSiteBean) ctx.executeNuxeoCommand(new PortalSiteFetchCommand(
-						nuxeoPath));
+						nuxeoPath ));
 
 				if (portalSite.getPortalDocument().getTitle() != null)
 					response.setTitle(portalSite.getPortalDocument().getTitle());

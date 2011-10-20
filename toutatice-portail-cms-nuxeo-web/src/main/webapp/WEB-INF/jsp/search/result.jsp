@@ -114,6 +114,6 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 
 <!--
 <p align="center">
-		scope	<%=  renderRequest.getAttribute("scope") %> <br/>
+		scope	<%=   ctx.getScope()  %> <br/>
 </p>
 -->

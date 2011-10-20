@@ -7,6 +7,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 
 public class ListCommand implements INuxeoCommand {
 	
@@ -14,11 +15,13 @@ public class ListCommand implements INuxeoCommand {
 	int pageNumber;
 	int pageSize;
 	String schemas;
+	boolean displayLiveVersion;
 
 	
-	public ListCommand( String nuxeoRequest, int pageNumber, int pageSize, String schemas) {
+	public ListCommand( String nuxeoRequest, boolean displayLiveVersion, int pageNumber, int pageSize, String schemas) {
 		super();
 		this.nuxeoRequest = nuxeoRequest;
+		this.displayLiveVersion = displayLiveVersion;
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;
 		this.schemas = schemas;
@@ -34,7 +37,11 @@ public class ListCommand implements INuxeoCommand {
 		request.set("pageSize", pageSize);
 		request.set("page", pageNumber);
 		
-		request.set("query", "SELECT * FROM Document WHERE "  +nuxeoRequest);
+		// Insertion du filtre sur les élements publiés
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion);
+
+		
+		request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
 	
 		request.setHeader(Constants.HEADER_NX_SCHEMAS, schemas);
 
@@ -43,7 +50,7 @@ public class ListCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "ListCommand/"+pageSize+"/"+pageNumber+"/"+nuxeoRequest;
+		return "ListCommand/"+displayLiveVersion+"/"+pageSize+"/"+pageNumber+"/"+nuxeoRequest;
 	};
 	
 

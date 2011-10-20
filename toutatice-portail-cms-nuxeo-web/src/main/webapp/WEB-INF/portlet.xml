@@ -143,6 +143,8 @@
 			<short-title>Nuxeo  Search </short-title>
 			<keywords>Portlet,Search</keywords>
         </portlet-info>
+        
+      <supported-public-render-parameter>pia.keywords</supported-public-render-parameter>        
        
 	</portlet>	
 	
@@ -242,7 +244,10 @@
         <name>selectors</name>
 	</public-render-parameter>
 	
-	
+	<public-render-parameter>
+        <identifier>pia.keywords</identifier>
+        <name>pia.keywords</name>
+	</public-render-parameter>	
 	
 	
 	

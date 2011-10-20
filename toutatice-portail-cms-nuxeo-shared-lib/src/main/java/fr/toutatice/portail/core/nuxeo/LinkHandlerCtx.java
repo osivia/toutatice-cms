@@ -14,6 +14,8 @@ public class LinkHandlerCtx {
 	PortletRequest request;
 	RenderResponse response;
 	String scope;
+	String displayLiveVersion;
+
 	String pageId;
 	URI nuxeoBaseURI;
 
@@ -44,6 +46,14 @@ public class LinkHandlerCtx {
 		this.scope = scope;
 	}
 
+	public String getDisplayLiveVersion() {
+		return displayLiveVersion;
+	}
+
+	public void setDisplayLiveVersion(String displayLiveVersion) {
+		this.displayLiveVersion = displayLiveVersion;
+	}
+
 	public String getPageId() {
 		return pageId;
 	}
@@ -68,12 +78,13 @@ public class LinkHandlerCtx {
 		return nuxeoBaseURI;
 	}
 
-	public LinkHandlerCtx(PortletContext portletCtx, PortletRequest request, RenderResponse response, String scope, String pageId, URI nuxeoBaseURI, Document doc) {
+	public LinkHandlerCtx(PortletContext portletCtx, PortletRequest request, RenderResponse response, String scope, String displayLiveVersion, String pageId, URI nuxeoBaseURI, Document doc) {
 		super();
 		this.portletCtx = portletCtx;
 		this.request = request;
 		this.response = response;
 		this.scope = scope;
+		this.displayLiveVersion = displayLiveVersion;
 		this.pageId = pageId;
 		this.nuxeoBaseURI = nuxeoBaseURI;
 		this.doc = doc;

@@ -17,8 +17,10 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.nuxeo.ecm.automation.client.jaxrs.Constants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.windows.PortalWindow;
@@ -26,12 +28,15 @@ import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -70,6 +75,13 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 			PortalWindow window = WindowFactory.getWindow(req);
 			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+			
+			if ("1".equals(req.getParameter("displayLiveVersion")))
+				window.setProperty("pia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
+				window.setProperty("pia.cms.displayLiveVersion", null);	
+
+			
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
@@ -102,6 +114,13 @@ public class FileBrowserPortlet extends CMSPortlet {
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
+		
+		
+		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		if (displayLiveVersion == null)
+			displayLiveVersion = "";
+		req.setAttribute("displayLiveVersion", displayLiveVersion);
+
 
 	
 		String scope = window.getProperty("pia.cms.scope");
@@ -152,13 +171,20 @@ public class FileBrowserPortlet extends CMSPortlet {
 			if (nuxeoPath != null) {
 				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
-				ctx.setScope(window.getProperty("pia.cms.scope"));
 				
 				/* Folder courant */
-				Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+				
+				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+
+
+				//Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
 
 				/* Récupération des fils */
-				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetChildrenCommand(doc));
+				
+				
+				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(doc, ctx.isDisplayingLiveVersion()));
+				
+				
 				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();

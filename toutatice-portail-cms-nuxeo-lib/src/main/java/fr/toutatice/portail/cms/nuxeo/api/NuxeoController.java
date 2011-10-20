@@ -31,6 +31,8 @@ import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
+import fr.toutatice.portail.api.windows.PortalWindow;
+import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoConnection;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
@@ -58,8 +60,27 @@ public class NuxeoController {
 	NuxeoConnection nuxeoConnection;
 	IProfilManager profilManager;
 	String scope;
+	String displayLiveVersion;
 	
+	public String getDisplayLiveVersion() {
+		return displayLiveVersion;
+	}
+
+	public void setDisplayLiveVersion(String displayLiveVersion) {
+		this.displayLiveVersion = displayLiveVersion;
+	}
 	
+	public boolean isDisplayingLiveVersion(){
+		boolean fDisplayLiveVersion = false;
+		if( "1".equals(displayLiveVersion)){
+		// Il faut récupérer les proxys
+		fDisplayLiveVersion = true;
+	} 
+	return fDisplayLiveVersion;
+	}
+
+	
+
 	public String getScope() {
 		return scope;
 	}
@@ -161,11 +182,24 @@ public class NuxeoController {
 		return portletCtx;
 	}
 
-	public NuxeoController(PortletRequest request, RenderResponse response, PortletContext portletCtx) {
+	public NuxeoController(PortletRequest request, RenderResponse response, PortletContext portletCtx) throws RuntimeException  {
 		super();
 		this.request = request;
 		this.response = response;
 		this.portletCtx = portletCtx;
+		
+		try	{
+		PortalWindow window = WindowFactory.getWindow(request);
+		
+		String scope = window.getProperty("pia.cms.scope");
+		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+
+		setScope(scope);
+		setDisplayLiveVersion(displayLiveVersion);
+		
+		} catch( Exception e)	{
+			throw new RuntimeException( e);
+		}
 	}
 
 	public NuxeoController(PortletContext portletCtx) {
@@ -338,7 +372,7 @@ public class NuxeoController {
 		//TODO : optimiser
 		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getPageId(), getNuxeoBaseUri(),  doc);
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoBaseUri(),  doc);
 
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
 	}

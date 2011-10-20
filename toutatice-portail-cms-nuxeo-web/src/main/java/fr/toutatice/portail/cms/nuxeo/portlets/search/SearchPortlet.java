@@ -75,6 +75,12 @@ public class SearchPortlet extends CMSPortlet {
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
 			else if (window.getProperty("pia.cms.scope") != null)
 				window.setProperty("pia.cms.scope", null);
+			
+			if ("1".equals(req.getParameter("displayLiveVersion")))
+				window.setProperty("pia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
+				window.setProperty("pia.cms.displayLiveVersion", null);	
+			
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -105,6 +111,12 @@ public class SearchPortlet extends CMSPortlet {
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
 		
+		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		if (displayLiveVersion == null)
+			displayLiveVersion = "";
+		req.setAttribute("displayLiveVersion", displayLiveVersion);
+		
+		
 		req.setAttribute("ctx", ctx);
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/search/admin.jsp");
@@ -120,20 +132,26 @@ public class SearchPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(request);
 
-		String scope = window.getProperty("pia.cms.scope");;
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
-		
+		String	nuxeoPath =  window.getProperty("pia.nuxeoPath");
+			
 		String keywords = request.getParameter("keywords");
+		
+		if( keywords == null)
+			// on prend les keywords public
+			keywords = request.getParameter("pia.keywords");
+
+			
+		
+		/* Filtre pour sélectionner uniquement les version publiées */
+
 
 		try {
 			response.setContentType("text/html");
+			
+			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
 			if (keywords != null) {
 				// Page de resultats
-
-
-				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-				ctx.setScope(scope);
 
 				
 				int currentPage = 0;
@@ -143,12 +161,13 @@ public class SearchPortlet extends CMSPortlet {
 
 				// Pas de cache sur les recherches
 				ctx.setCacheTimeOut(0);
-
-				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new SearchCommand(nuxeoPath, keywords, currentPage ));
+				
+	
+				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new SearchCommand(nuxeoPath, ctx.isDisplayingLiveVersion(), keywords, currentPage ));
 
 				request.setAttribute("docs", docs);
 				request.setAttribute("ctx", ctx);
-				request.setAttribute("scope", scope);
+
 				request.setAttribute("keywords", keywords);
 				
 				request.setAttribute("currentPage", currentPage);
@@ -167,9 +186,11 @@ public class SearchPortlet extends CMSPortlet {
 				// Url d'appel de la recherche
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
-				if (scope != null)
-					windowProperties.put("pia.cms.scope", scope);
+				if (ctx.getScope() != null)
+					windowProperties.put("pia.cms.scope", ctx.getScope());
 				windowProperties.put("pia.nuxeoPath", nuxeoPath);
+				windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+				
 				windowProperties.put("pia.title", "Résultats de la recherche");
 				windowProperties.put("pia.hideDecorators", "1");
 				

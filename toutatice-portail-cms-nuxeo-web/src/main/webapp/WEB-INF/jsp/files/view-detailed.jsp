@@ -130,6 +130,6 @@ while( it.hasNext())	{
 
 <!--
 <p align="center">
-		scope	<%=  renderRequest.getAttribute("scope") %> <br/>
+		scope	<%=  ctx.getScope() %> <br/>
 </p>
 -->

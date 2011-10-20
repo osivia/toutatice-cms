@@ -15,6 +15,7 @@
 <portlet:defineObjects/>
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+
 %>
 	<div>
 		<form method="post" action="<portlet:actionURL/>">
@@ -23,6 +24,8 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
 			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
+
+
 			
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

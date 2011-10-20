@@ -14,6 +14,10 @@
 
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+
+String displayLiveVersion = "";
+if( "1".equals( request.getAttribute("displayLiveVersion")))
+	displayLiveVersion = "checked";
 %>
 
 
@@ -33,7 +37,8 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 				checkOnlyDescription = "";
 %>			
 			
-			Afficher uniquement la description <input type="checkbox" name="onlyDescription" value="1" <%=checkOnlyDescription%>/><br/>
+		<input type="checkbox" name="onlyDescription" value="1" <%=checkOnlyDescription%>/>	Afficher uniquement la description <br/>
+		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">
 			<input type="submit" name="annuler"  value="Annuler">

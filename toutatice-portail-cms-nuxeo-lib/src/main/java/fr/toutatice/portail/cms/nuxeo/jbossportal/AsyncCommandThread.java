@@ -37,7 +37,7 @@ public class AsyncCommandThread implements Runnable {
 
 				Thread.sleep(1 * 12000);
 				
-				logger.debug("execution asynchrone thread " + Thread.currentThread().getId() + " nb taches:" + commandService.getAsyncronousCommand().size());
+				//logger.debug("execution asynchrone thread " + Thread.currentThread().getId() + " nb taches:" + commandService.getAsyncronousCommand().size());
 
 				// Nouvelle itération sur les commandes
 

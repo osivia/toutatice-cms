@@ -127,17 +127,13 @@ public class CMSPortlet extends GenericPortlet {
 			if (serveResourceByCache(resourceRequest, resourceResponse))
 				return;
 
-			Window window = (Window) resourceRequest.getAttribute("pia.window");
 
-			String scope = null;
-			if (window.getDeclaredProperty("pia.cms.scope") != null)
-				scope = window.getDeclaredProperty("pia.cms.scope");
 
 			// Redirection
 			if ("link".equals(resourceRequest.getParameter("type"))) {
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
-				ctx.setScope(scope);
+
 
 				String id = resourceRequest.getResourceID();
 
@@ -166,7 +162,7 @@ public class CMSPortlet extends GenericPortlet {
 				String fieldName = resourceRequest.getParameter("fieldName");
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
-				ctx.setScope(scope);
+
 
 
 				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, docPath, fieldName);
@@ -195,7 +191,6 @@ public class CMSPortlet extends GenericPortlet {
 				String fileIndex = resourceRequest.getParameter("fileIndex");
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
-				ctx.setScope(scope);				
 	
 
 				BinaryContent content = ResourceUtil.getBinaryContent(ctx, docPath, fileIndex);

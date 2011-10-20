@@ -41,6 +41,7 @@ import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.LinkHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplatesHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultLinkHandler;
@@ -97,6 +98,11 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				window.setProperty("pia.document.onlyDescription", "1");
 			else if (window.getProperty("pia.document.onlyDescription") != null)
 				window.setProperty("pia.document.onlyDescription", null);
+			
+			if ("1".equals(req.getParameter("displayLiveVersion")))
+				window.setProperty("pia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
+				window.setProperty("pia.cms.displayLiveVersion", null);	
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -131,10 +137,18 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
 		
+		
+		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		if (displayLiveVersion == null)
+			displayLiveVersion = "";
+		req.setAttribute("displayLiveVersion", displayLiveVersion);
+
+		
 		req.setAttribute("ctx", ctx);
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/admin.jsp");
 		rd.include(req, res);
+
 
 	}
 
@@ -153,13 +167,11 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			/* On détermine l'uid et le scope */
 
 			String nuxeoPath = null;
-			String scope = null;
-			if (window.getProperty("pia.cms.scope") != null)
-				scope = window.getProperty("pia.cms.scope");
 
 
 				// portal window parameter (appels dynamiques depuis le portail)
 				nuxeoPath = window.getProperty("pia.cms.uri");
+				
 
 				// logger.debug("doView "+ uid);
 
@@ -172,9 +184,15 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				if (nuxeoPath != null) {
 
 						NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-						ctx.setScope(window.getProperty("pia.cms.scope"));
-								
-						Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(nuxeoPath));
+							
+						
+						Document doc = null;
+						
+
+						if( "1".equals(window.getProperty("pia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
+							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(nuxeoPath));
+						else
+							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchPublishedCommand(nuxeoPath));
 		
 						if (doc.getTitle() != null)
 							response.setTitle(doc.getTitle());
@@ -214,7 +232,6 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 						request.setAttribute("onlyDescription", window.getProperty("pia.document.onlyDescription"));
 
-						request.setAttribute("scope", scope);
 
 						getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request,
 								response);

@@ -38,6 +38,9 @@ if( "1".equals( request.getAttribute("beanShell")))
 String displayNuxeoRequest = "";
 if( "1".equals( request.getAttribute("displayNuxeoRequest")))
 	displayNuxeoRequest = "checked";
+String displayLiveVersion = "";
+if( "1".equals( request.getAttribute("displayLiveVersion")))
+	displayLiveVersion = "checked";
 %>
 
 
@@ -76,7 +79,10 @@ requete += " ORDER BY dc:modified DESC";
 
 return requete;
 </pre>
-</div>		
+</div>	
+<br/>
+		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
+<br/>	
 <br/>
 		<input type="checkbox" name="displayNuxeoRequest" value="1" <%= displayNuxeoRequest%>/>Affichage de la requête (pour test) <br/>
 <br/>
