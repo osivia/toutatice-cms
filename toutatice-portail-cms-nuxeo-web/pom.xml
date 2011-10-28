@@ -21,13 +21,13 @@
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-lib</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${toutatice.cms.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-shared-lib</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${toutatice.cms.version}</version>
 			<scope>provided</scope>
  		</dependency>
 

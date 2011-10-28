@@ -28,6 +28,9 @@
 		<jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
 		<jboss.version>4.2.3.GA</jboss.version>
 
+		<toutatice.core.version>1.0-SNAPSHOT</toutatice.core.version>
+		<toutatice.cms.version>1.0-SNAPSHOT</toutatice.cms.version>
+
 	</properties>
 	
 
@@ -70,14 +73,14 @@
 	 	<dependency>
 			<groupId>toutatice-portail.core</groupId>
 	     		<artifactId>toutatice-portail-api</artifactId>
-	     		<version>1.0-SNAPSHOT</version>
+	     		<version>${toutatice.core.version}</version>
 	     		<scope>provided</scope>
 		</dependency>
 
   	 	<dependency>
 			<groupId>toutatice-portail.core</groupId>
 	     		<artifactId>toutatice-portail-custom-lib-utils</artifactId>
-	     		<version>1.0-SNAPSHOT</version>
+	     		<version>${toutatice.core.version}</version>
 	     		<scope>provided</scope>
 		</dependency>
 
