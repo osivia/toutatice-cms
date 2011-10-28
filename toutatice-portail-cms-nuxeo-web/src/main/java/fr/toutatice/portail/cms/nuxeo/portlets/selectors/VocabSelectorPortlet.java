@@ -112,8 +112,9 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
-
-		if ("view".equals(req.getPortletMode().toString()) && req.getParameter("add") != null) {
+		
+		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
+		if ("view".equals(req.getPortletMode().toString())  && (req.getParameter("add.x") != null || req.getParameter("add") != null)) {
 
 			// Set public parameter
 			String selectorId = window.getProperty("pia.selectorId");
