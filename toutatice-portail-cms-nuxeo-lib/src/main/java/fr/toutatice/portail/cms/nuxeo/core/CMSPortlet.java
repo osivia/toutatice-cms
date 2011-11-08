@@ -169,7 +169,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
-				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + content.getName() + "");
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
 
 				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);
