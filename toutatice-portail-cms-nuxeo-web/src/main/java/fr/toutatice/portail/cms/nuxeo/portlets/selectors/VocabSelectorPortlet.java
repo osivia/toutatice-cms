@@ -86,6 +86,12 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			else if (window.getProperty("pia.selectorId") != null)
 				window.setProperty("pia.selectorId", null);	
 			
+			if( req.getParameter("libelle").length() > 0)
+				window.setProperty("pia.libelle", req.getParameter("libelle"));
+			else if (window.getProperty("pia.libelle") != null)
+				window.setProperty("pia.libelle", null);	
+				
+			
 			if( req.getParameter("vocabName1").length() > 0)
 				window.setProperty("pia.vocabName1", req.getParameter("vocabName1"));
 			else if (window.getProperty("pia.vocabName1") != null)
@@ -198,6 +204,12 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
+		
+		String libelle = window.getProperty("pia.libelle");
+		if (libelle == null)
+			libelle = "";
+		req.setAttribute("libelle", libelle);
+
 
 		String selectorId = window.getProperty("pia.selectorId");
 		if (selectorId == null)
@@ -239,6 +251,9 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
+			String libelle = window.getProperty("pia.libelle");
+			request.setAttribute("libelle", libelle);
+			
 			String selectorId = window.getProperty("pia.selectorId");
 			if (selectorId == null) {
 				response.getWriter().print("<h2>Identifiant non défini</h2>");

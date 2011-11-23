@@ -22,6 +22,7 @@
 
 
 <%
+String libelle = (String) request.getAttribute("libelle");
 String vocab1Id = (String) request.getAttribute("vocab1Id");
 String vocab2Id = (String) request.getAttribute("vocab2Id");
 String vocab3Id = (String) request.getAttribute("vocab3Id");
@@ -67,6 +68,14 @@ for (String vocabId : vocabsId){
 }
 %>
 
+
+<%
+if( libelle != null)	{
+%>
+	<span class="selector-libelle"><%= libelle %></span> 
+<%	
+}
+%>
 
 <%
 
