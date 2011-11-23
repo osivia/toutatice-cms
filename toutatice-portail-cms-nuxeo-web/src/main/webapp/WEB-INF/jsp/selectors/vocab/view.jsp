@@ -32,6 +32,13 @@ String vocabName3 = (String) request.getAttribute("vocabName3");
 %>
 
 <%
+if( libelle != null)	{
+%><span class="selector-libelle"><%= libelle %></span> <%	
+}
+%>
+
+
+<%
 
 List<String> vocabsId = (List<String>) renderRequest.getAttribute("vocabsId");
 if( vocabsId.size() > 0) 	{
@@ -68,14 +75,6 @@ for (String vocabId : vocabsId){
 }
 %>
 
-
-<%
-if( libelle != null)	{
-%>
-	<span class="selector-libelle"><%= libelle %></span> 
-<%	
-}
-%>
 
 <%
 
