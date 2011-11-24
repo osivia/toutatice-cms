@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
@@ -68,14 +67,12 @@ public class Formater {
 		lSize = (lSize / 1000) + 1;
 
 		return Long.toString(lSize) + " Ko";
-
 	}
 	
 	public static String formatText(String text, boolean printLineFeeds) throws ParseException {
 
 		if (text == null)
 			return "";
-
 		
 		String output = text;
 
