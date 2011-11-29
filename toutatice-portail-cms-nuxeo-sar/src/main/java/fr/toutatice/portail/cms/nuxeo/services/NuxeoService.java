@@ -3,6 +3,10 @@ package fr.toutatice.portail.cms.nuxeo.services;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +48,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		logger.info("Gestionnaire nuxeo demarre");
 
 	}
+	
+	
 
 	public Session createUserSession(String userId) throws Exception {
 
@@ -81,6 +87,18 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public List<ListTemplate> getListTemplates() {
 
 		return templates;
+	}
+
+	
+	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
+		
+		Session session = (Session)sessionEvent.getSession().getAttribute("portal.session"+"pia.nuxeoSession");
+		
+		if( session != null)	{
+			session.getClient().shutdown();
+			logger.info("Shutdown user Session");
+		}
+		
 	}
 
 

@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 
-public interface INuxeoService {
+import fr.toutatice.portail.core.cms.spi.ICMSIntegration;
+
+public interface INuxeoService extends ICMSIntegration{
 	
 	public Session createUserSession(String userId) throws Exception ;
 	

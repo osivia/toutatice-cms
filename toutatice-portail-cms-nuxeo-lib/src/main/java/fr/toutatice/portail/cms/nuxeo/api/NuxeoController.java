@@ -39,6 +39,9 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
+import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
+import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
 
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
@@ -151,6 +154,8 @@ public class NuxeoController {
 			setScopeProfil(getNuxeoService().getProfilManager().getProfil(scope));
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
 		}
+		
+		this.scope = scope;
 
 	
 	}
@@ -385,8 +390,7 @@ public class NuxeoController {
 		for( ListTemplate template : templatesList)
 			templatesMap.put(template.getKey(), template);
 		return templatesMap;
-
-		
-		
 	}
+	
+
 }

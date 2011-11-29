@@ -116,6 +116,18 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 	
 	
+	private String getCacheId(NuxeoCommandContext ctx, INuxeoCommand command)	{
+		String cacheId = command.getId();
+		
+		
+		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
+				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
+		}
+	
+		return cacheId;
+		
+	}
+	
 
 	private Object invokeViaCache(NuxeoCommandContext ctx, INuxeoCommand command) throws Exception {
 
@@ -130,13 +142,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			return nuxeoInvoker.invoke();
 		
 
-		String cacheId = command.getId();
-			
-			
-		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
-				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
-		}
-
+		String cacheId = getCacheId(ctx, command);
 	
 
 		CacheInfo cacheInfos = new CacheInfo(cacheId,
@@ -153,6 +159,27 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				cacheInfos.setDelaiExpiration(0L);
 		} else
 			cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+
+		return getServiceCache().getCache(cacheInfos);
+	}
+	
+	
+	private Object getCachedValue(NuxeoCommandContext ctx, INuxeoCommand command) throws Exception {
+
+		IServiceInvoker nuxeoInvoker = new NuxeoCommandCacheInvoker(ctx, command);
+
+		// Cache user non géré -> Appel direct
+		if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
+			return null;
+
+		String cacheId = getCacheId(ctx, command);
+
+		CacheInfo cacheInfos = new CacheInfo(cacheId,
+				ctx.getCacheType(),
+				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
+		
+		// Pas de controle
+		cacheInfos.setForceNOTReload(true);
 
 		return getServiceCache().getCache(cacheInfos);
 	}
@@ -217,16 +244,27 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	public Object executeCommand(NuxeoCommandContext ctx, INuxeoCommand command) throws Exception {
 		try {
+			Object resp = null;
+			
 			if (!checkScope(ctx)) {
 				throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
 			}
 
 			if (!checkStatus(ctx)) {
-				throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+				// SI nuxeo est indisponible, on sert ce qu'il y a dans le cache
+				// Meme si le cache est expiré
+				
+				Object cachedValue = getCachedValue(ctx, command);
+
+				if( cachedValue != null)
+					resp = cachedValue;
+				else
+					throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
 			}
 
 			// Appel avec un décorateur cache
-			Object resp = invokeViaCache(ctx, command);
+			if( resp == null)
+				resp = invokeViaCache(ctx, command);
 
 			return resp;
 
