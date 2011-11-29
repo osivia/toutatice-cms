@@ -16,6 +16,12 @@
 	<name>Portal Nuxeo library</name>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.nuxeo.ecm.automation</groupId>
+			<artifactId>nuxeo-automation-client</artifactId>
+			<version>${nuxeo.automation.version}</version>
+			<scope>compile</scope>
+ 		</dependency>
 	</dependencies>
 
   

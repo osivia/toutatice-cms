@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.jbossportal;
 
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -222,7 +223,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			
 			Throwable cause = e.getCause();
 			
-			if( cause instanceof HttpHostConnectException)
+			if( cause instanceof HttpHostConnectException || cause instanceof SocketTimeoutException)
 				getServiceStatut().notifyError(ctx.getNuxeoProperties().getBaseUri().toString(),
 						new ServeurIndisponible(e.getMessage()));
 			

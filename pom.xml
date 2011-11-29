@@ -140,7 +140,7 @@
 		<dependency>
 			<groupId>org.nuxeo.ecm.automation</groupId>
 			<artifactId>nuxeo-automation-client</artifactId>
-			<version>5.4.2</version>
+			<version>${nuxeo.automation.version}</version>
       			<scope>provided</scope>			
  		</dependency>
 
@@ -152,6 +152,8 @@
 	   <module>toutatice-portail-cms-nuxeo-lib</module>
 	   <module>toutatice-portail-cms-nuxeo-web</module>
 	   <module>toutatice-portail-cms-nuxeo-sar</module>
+	   <module>toutatice-portail-cms-nuxeo-automation-client</module>
+
 	</modules>
 
 	<build>

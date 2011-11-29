@@ -18,9 +18,9 @@
 	<dependencies>
 		
 		<dependency>
-			<groupId>org.nuxeo.ecm.automation</groupId>
-			<artifactId>nuxeo-automation-client</artifactId>
-			<version>5.4.2</version>
+			<groupId>toutatice-portail.cms</groupId>
+			<artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
+			<version>${toutatice.cms.version}</version>
  		</dependency>
 
 		<dependency>
@@ -30,8 +30,55 @@
  		</dependency>
 
 
-		<!-- dépendance transitive demandée par Nuxeo 
+		<!-- dépendance transitive demandée par Nuxeo -->
+
+		<!-- elles ne sont plus automatiques car on ne deploie pas le client natif nuxeo-automation-client
+                     mais une version modidiée
 		-->
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<version>2.2.1</version>
+			<classifier>jdk15</classifier>
+ 		</dependency>
+
+		<dependency>
+			<groupId>net.sf.ezmorph</groupId>
+			<artifactId>ezmorph</artifactId>
+			<version>1.0.4</version>
+ 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.0.1</version>
+ 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.0.1</version>
+ 		</dependency>
+
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+ 		</dependency>
+
+		<dependency>
+			<groupId>org.nuxeo.common</groupId>
+			<artifactId>nuxeo-common</artifactId>
+			<version>${nuxeo.automation.version}</version>
+ 		</dependency>
+
+		<dependency>
+			<groupId>org.nuxeo.runtime</groupId>
+			<artifactId>nuxeo-runtime</artifactId>
+			<version>${nuxeo.automation.version}</version>
+ 		</dependency>
+
 		<dependency>
     			<groupId>commons-io</groupId>
     			<artifactId>commons-io</artifactId>
@@ -39,7 +86,6 @@
 		</dependency>
 		
 	</dependencies>
-
 
 <profiles>	 
    <profile>
