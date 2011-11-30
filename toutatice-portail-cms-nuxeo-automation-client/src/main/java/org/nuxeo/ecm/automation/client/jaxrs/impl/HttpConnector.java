@@ -52,6 +52,8 @@ public class HttpConnector implements Connector {
 
     protected String basicAuth;
     
+    public int webServiceTimeOut = -1;
+    
 
     public HttpConnector(HttpClient http) {
         this(http, new BasicHttpContext());
@@ -61,6 +63,9 @@ public class HttpConnector implements Connector {
         ctx.setAttribute(ClientContext.COOKIE_STORE, new BasicCookieStore());
         this.http = (AbstractHttpClient) http;
         this.ctx = ctx;
+        String wsTimeOut =  System.getProperty("toutatice.webServiceTimeOut");
+        if( wsTimeOut != null)
+        	this.webServiceTimeOut = Integer.parseInt(wsTimeOut) * 1000;
     }
 
     
@@ -68,9 +73,12 @@ public class HttpConnector implements Connector {
 
 			// Set the timeout in milliseconds until a connection is
 			// established.
-			http.getParams().setParameter("http.socket.timeout", new Integer(10000));
-			http.getParams().setParameter("http.connection-manager.timeout", new Integer(10000));
-			http.getParams().setParameter("http.connection.timeout", new Integer(10000));
+    	
+    		if( webServiceTimeOut != -1)	{
+    			http.getParams().setParameter("http.socket.timeout", webServiceTimeOut);
+    			http.getParams().setParameter("http.connection-manager.timeout", webServiceTimeOut);
+    			http.getParams().setParameter("http.connection.timeout", webServiceTimeOut);
+    		}
 	
 			return http.execute(httpReq, ctx);
 	}
