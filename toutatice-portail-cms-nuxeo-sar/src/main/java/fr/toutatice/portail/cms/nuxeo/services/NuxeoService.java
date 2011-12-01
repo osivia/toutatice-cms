@@ -96,7 +96,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		
 		if( session != null)	{
 			session.getClient().shutdown();
-			logger.info("Shutdown user Session");
+			//logger.info("Shutdown user Session");
 		}
 		
 	}

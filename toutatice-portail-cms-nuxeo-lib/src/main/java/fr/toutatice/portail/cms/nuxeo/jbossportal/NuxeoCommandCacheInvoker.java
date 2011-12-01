@@ -68,7 +68,6 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 		try {
 			
-			
 
 			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 
@@ -93,16 +92,29 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				String sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
 						"pia.nuxeoSessionUser");
+				
+				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
+				
+				if( sessionCreationSynchronizer == null) {
+					sessionCreationSynchronizer = "sessionCreationSynchronizer";
+					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer", sessionCreationSynchronizer);
+				}
+			
 
 				if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
 					// Création d'une nouvelle session
 
-					synchronized (ctx.getRequest().getPortletSession()) {
+					synchronized (sessionCreationSynchronizer) {
 
 						// On refait les controles pour la synchronisation
 
 						nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
 								"pia.nuxeoSession");
+						
+						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
+						"pia.nuxeoSessionUser");						
+						
+
 
 						if (nuxeoSession == null
 								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
@@ -112,6 +124,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
 									"pia:service=NuxeoService");
 
+							
 							nuxeoSession = nuxeoService.createUserSession(userName);
 
 							long fin = System.currentTimeMillis();
@@ -120,6 +133,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSession",
 									nuxeoSession);
+							
+							
 							if (user != null)
 								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSessionUser",
 										user.getUserName());
