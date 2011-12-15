@@ -28,13 +28,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoConnection;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
@@ -46,6 +46,7 @@ import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
 import fr.toutatice.portail.core.nuxeo.ListTemplate;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 import fr.toutatice.portail.core.profils.IProfilManager;
 import fr.toutatice.portail.core.profils.ProfilBean;
@@ -60,7 +61,7 @@ public class NuxeoController {
 	IPortalUrlFactory urlFactory;
 	String pageId;
 	URI nuxeoBaseURI;
-	NuxeoConnection nuxeoConnection;
+	NuxeoConnectionProperties nuxeoConnection;
 	IProfilManager profilManager;
 	String scope;
 	String displayLiveVersion;
@@ -151,7 +152,7 @@ public class NuxeoController {
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 		} else if( scope != null) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_PROFIL);
-			setScopeProfil(getNuxeoService().getProfilManager().getProfil(scope));
+			setScopeProfil(getProfilManager().getProfil(scope));
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
 		}
 		
@@ -168,9 +169,9 @@ public class NuxeoController {
 		this.authType = authType;
 	}	
 
-	public NuxeoConnection getNuxeoConnection() {
+	public NuxeoConnectionProperties getNuxeoConnectionProps() {
 		if (nuxeoConnection == null)
-			nuxeoConnection = new NuxeoConnection();
+			nuxeoConnection = new NuxeoConnectionProperties();
 		return nuxeoConnection;
 	}
 
@@ -212,9 +213,9 @@ public class NuxeoController {
 		this.portletCtx = portletCtx;
 	}
 
-	public IPortalUrlFactory getPortalUrlFactory() throws Exception{
+	public IPortalUrlFactory getPortalUrlFactory( ) throws Exception{
 		if (urlFactory == null)
-			urlFactory = (IPortalUrlFactory) getNuxeoService().getPortalUrlFactory();
+			urlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
 		
 		return urlFactory;
 	}
@@ -227,7 +228,9 @@ public class NuxeoController {
 
 	public IProfilManager getProfilManager() throws Exception {
 		if (profilManager == null)
-			profilManager = (IProfilManager) getNuxeoService().getProfilManager();
+			 profilManager = (IProfilManager) portletCtx.getAttribute("ProfilService");
+		
+
 		return profilManager;
 	}
 
@@ -336,9 +339,9 @@ public class NuxeoController {
 	}
 
 
-	public URI getNuxeoBaseUri() {
+	public URI getNuxeoPublicBaseUri() {
 		if (nuxeoBaseURI == null) {
-			nuxeoBaseURI = getNuxeoConnection().getBaseUri();
+			nuxeoBaseURI = NuxeoConnectionProperties.getPublicBaseUri();
 		}
 
 		return nuxeoBaseURI;
@@ -374,17 +377,17 @@ public class NuxeoController {
 	
 	
 	public Link getLink(Document doc) throws Exception 	{
-		//TODO : optimiser
-		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoBaseUri(),  doc);
-
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
 	}
 	
 	public Map<String, ListTemplate> getListTemplates()	throws Exception {
-		//TODO : optimiser
-		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");	
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		List<ListTemplate> templatesList = nuxeoService.getListTemplates();
 		Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
 		for( ListTemplate template : templatesList)

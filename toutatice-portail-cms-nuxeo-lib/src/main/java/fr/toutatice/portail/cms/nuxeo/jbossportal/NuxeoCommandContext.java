@@ -4,7 +4,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoProperties;
+
 import fr.toutatice.portail.core.profils.ProfilBean;
 
 public class NuxeoCommandContext {
@@ -70,11 +70,6 @@ public class NuxeoCommandContext {
 		return request;
 	}
 
-	NuxeoProperties nuxeoProperties = new NuxeoProperties();
-
-	public NuxeoProperties getNuxeoProperties() {
-		return nuxeoProperties;
-	}
 
 	public PortletContext getPortletContext() {
 		return ctx;

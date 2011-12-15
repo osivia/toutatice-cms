@@ -52,7 +52,7 @@ public class SearchPortlet extends CMSPortlet {
 
 		super.init(config);
 		
-		urlFactory = (IPortalUrlFactory) getPortletContext().getAttribute("PortalUrlFactory");
+		urlFactory = (IPortalUrlFactory) getPortletContext().getAttribute("UrlService");
 	}
 	
 	

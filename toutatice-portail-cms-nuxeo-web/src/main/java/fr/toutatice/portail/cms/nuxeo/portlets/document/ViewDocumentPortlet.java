@@ -64,13 +64,15 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 	
 		try	{
-			nuxeoService = (INuxeoService) getPortletContext().getAttribute("ServiceNuxeo");
+			// Enregistremennt des gestionnaires de liens et de template
+			
+			nuxeoService = (INuxeoService) getPortletContext().getAttribute("NuxeoService");
+			if (nuxeoService == null) 
+				throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
 			
 			nuxeoService.registerLinkHandler(new LinkHandler(getPortletContext()));
 			nuxeoService.registerListTemplates(new ListTemplatesHandler().getListTemplates());
-			if (nuxeoService == null) {
-				throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
-			}
+			
 
 		} catch( Exception e)	{
 			throw new PortletException( e);

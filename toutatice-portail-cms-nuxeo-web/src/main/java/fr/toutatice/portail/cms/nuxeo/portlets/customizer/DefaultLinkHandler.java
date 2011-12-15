@@ -26,7 +26,7 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 	public DefaultLinkHandler(PortletContext ctx) {
 		super();
 		this.portletCtx = ctx;
-		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("PortalUrlFactory");		
+		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");		
 	}
 	
 	public String createExternalLink(LinkHandlerCtx ctx) {

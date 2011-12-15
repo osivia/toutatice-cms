@@ -23,6 +23,8 @@ import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
 /**
@@ -55,29 +57,26 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 	
 
-	public IPortalUrlFactory getPortalUrlFactory() throws Exception {
-		// TODO Optimiser
-		// Comment gérer le redéploiement des services
-		IPortalUrlFactory portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, "pia:service=UrlFactory");
+	public IPortalUrlFactory getPortalUrlFactory(NuxeoCommandContext ctx ) throws Exception {
+		IPortalUrlFactory portalUrlFactory = (IPortalUrlFactory) ctx.getPortletContext().getAttribute("UrlService");
 		return portalUrlFactory;
 	}
 
 
-	public IProfilManager getProfilManager() throws Exception {
-		// TODO Optimiser
-		IProfilManager profilManager = Locator.findMBean(IProfilManager.class, "pia:service=ProfilManager");
+	public IProfilManager getProfilManager( NuxeoCommandContext ctx ) throws Exception {
+
+		IProfilManager profilManager = (IProfilManager) ctx.getPortletContext().getAttribute("ProfilService");
 		return profilManager;
 	}
 
-	public IStatutService getServiceStatut() throws Exception {
-		// TODO Optimiser
-		IStatutService serviceStatut = Locator.findMBean(IStatutService.class, "pia:service=StatutServices");
+	public IStatutService getServiceStatut(NuxeoCommandContext ctx ) throws Exception {
+		IStatutService serviceStatut = (IStatutService) ctx.getPortletContext().getAttribute("StatutService");
 		return serviceStatut;
 	}
 
-	public ICacheService getServiceCache() throws Exception {
-		// TODO Optimiser
-		ICacheService serviceCache = Locator.findMBean(ICacheService.class, "pia:service=CacheServices");
+	public ICacheService getServiceCache(NuxeoCommandContext ctx ) throws Exception {
+
+		ICacheService serviceCache = (ICacheService) ctx.getPortletContext().getAttribute("CacheService");
 		return serviceCache;
 	}
 
@@ -111,8 +110,12 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			return true;
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS)
 			return true;
-		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)
-			return getProfilManager().verifierProfilUtilisateur(ctx.getAuthProfil().getName());
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
+			if ("true".equals(ctx.getRequest().getAttribute("pia.isAdministrator")))
+				return true;
+			else
+				return getProfilManager( ctx).verifierProfilUtilisateur(ctx.getAuthProfil().getName());
+		}
 		return false;
 	}
 	
@@ -161,7 +164,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		} else
 			cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
 
-		return getServiceCache().getCache(cacheInfos);
+		return getServiceCache(ctx).getCache(cacheInfos);
 	}
 	
 	
@@ -182,12 +185,12 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		// Pas de controle
 		cacheInfos.setForceNOTReload(true);
 
-		return getServiceCache().getCache(cacheInfos);
+		return getServiceCache(ctx).getCache(cacheInfos);
 	}
 
 	protected boolean checkStatus(NuxeoCommandContext ctx) throws Exception {
 
-		if (getServiceStatut().isReady(ctx.getNuxeoProperties().getBaseUri().toString()))
+		if (getServiceStatut(ctx).isReady(NuxeoConnectionProperties.getPrivateBaseUri().toString()))
 			return true;
 		else
 			return false;
@@ -214,7 +217,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				// On ne notifie pas le statut sur les erreurs 500
 
 			} else {
-				getServiceStatut().notifyError(ctx.getNuxeoProperties().getBaseUri().toString(),
+				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
 						new ServeurIndisponible(e.getMessage()));
 				
 			}
@@ -224,7 +227,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			Throwable cause = e.getCause();
 			
 			if( cause instanceof HttpHostConnectException || cause instanceof SocketTimeoutException)
-				getServiceStatut().notifyError(ctx.getNuxeoProperties().getBaseUri().toString(),
+				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
 						new ServeurIndisponible(e.getMessage()));
 			
 		} 

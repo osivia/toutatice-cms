@@ -5,6 +5,9 @@
 	<mbean
 		code="fr.toutatice.portail.cms.nuxeo.services.NuxeoService"
 		name="pia:service=NuxeoService">
+		
+		 	 <depends optional-attribute-name="Profiler" proxy-type="attribute">pia:service=ProfilerService</depends>
+ 
 	</mbean>
 	
 	

@@ -39,8 +39,11 @@ import org.nuxeo.ecm.automation.client.jaxrs.spi.Request;
 
 
 /**
- * Modification du connecteur de Nuxeo pour ajouter un timeout au dela duquel la requete
- * s'interrompt
+ * TOUTATICE update
+ * 
+ * Set timeout on Nuxeo connection to avoid infinite or quite long waiting periods if :
+ *   - Nuxeo is broken / infinite loops
+ *   - LAN doesn't respond at all
  * 
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */

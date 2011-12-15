@@ -47,8 +47,6 @@ public class AsyncCommandThread implements Runnable {
 
 					AsyncCommandBean command = iCommands.next();
 
-
-
 					try {
 
 						// On attend que le service Nuxeo soit disponible
@@ -89,7 +87,7 @@ public class AsyncCommandThread implements Runnable {
 						// Forçage de la mise à jour du cache
 						cacheInfos.setForceReload(true);
 
-						commandService.getServiceCache().getCache(cacheInfos);
+						commandService.getServiceCache(command.getCtx()).getCache(cacheInfos);
 					}
 
 					catch (Exception e) {

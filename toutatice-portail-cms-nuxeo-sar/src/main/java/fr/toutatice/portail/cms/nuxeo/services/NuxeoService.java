@@ -3,26 +3,20 @@ package fr.toutatice.portail.cms.nuxeo.services;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.aspects.server.UserInterceptor;
-import org.jboss.portal.core.controller.ControllerCommand;
-import org.jboss.portal.core.controller.ControllerContext;
-import org.jboss.portal.identity.User;
 import org.jboss.system.ServiceMBeanSupport;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
+import fr.toutatice.portail.api.profiler.IProfilerService;
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
 import fr.toutatice.portail.core.nuxeo.ListTemplate;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
 
@@ -31,13 +25,22 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static String nuxeoCtx = "/nuxeo";
 
 	private static Log logger = LogFactory.getLog(NuxeoService.class);
-	
+
 	INuxeoLinkHandler linkHandler;
-	
+
 	List<ListTemplate> templates;
+
+	private transient IProfilerService profiler;
+
+	public IProfilerService getProfiler() {
+		return profiler;
+	}
+
+	public void setProfiler(IProfilerService profiler) {
+		this.profiler = profiler;
+	}
 
 	public void stopService() throws Exception {
 		logger.info("Gestionnaire nuxeo arrete");
@@ -48,22 +51,44 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		logger.info("Gestionnaire nuxeo demarre");
 
 	}
-	
-	
 
 	public Session createUserSession(String userId) throws Exception {
 
-		String nuxeoHost = System.getProperty("nuxeo.host");
-		String nuxeoPort = System.getProperty("nuxeo.port");
-		String secretKey = System.getProperty("nuxeo.secretKey");
+		long begin = System.currentTimeMillis();
+		boolean error = false;
+		
+		Session session = null;
 
-		URI uri = new URI("http://" + nuxeoHost + ":" + nuxeoPort + nuxeoCtx);
+		try {
 
-		HttpAutomationClient client = new HttpAutomationClient(uri.toString() + "/site/automation");
+			String secretKey = System.getProperty("nuxeo.secretKey");
 
-		if (userId != null)
-			client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
-		Session session = client.getSession();
+			URI uri = NuxeoConnectionProperties.getPrivateBaseUri();
+
+			HttpAutomationClient client = new HttpAutomationClient(uri.toString() + "/site/automation");
+
+			if (userId != null)
+				client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
+			session = client.getSession();
+
+		} catch (Exception e) {
+			error = true;
+			throw e;
+		} finally {
+
+			// log into profiler
+			long end = System.currentTimeMillis();
+			long elapsedTime = end - begin;
+			
+			String nuxeoUserId = userId;
+			if( nuxeoUserId == null)
+				nuxeoUserId = "anonymous";
+
+			String name = "createAutomationSession,user='" + nuxeoUserId + "'";
+
+			profiler.logEvent("NUXEO", name, elapsedTime, error);
+
+		}
 
 		return session;
 
@@ -71,17 +96,17 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	public void registerLinkHandler(INuxeoLinkHandler linkHandler) {
 		this.linkHandler = linkHandler;
-		
+
 	}
 
 	public INuxeoLinkHandler getLinkHandler() {
 		return linkHandler;
-		
+
 	}
 
 	public void registerListTemplates(List<ListTemplate> templates) {
 		this.templates = templates;
-		
+
 	}
 
 	public List<ListTemplate> getListTemplates() {
@@ -89,17 +114,32 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		return templates;
 	}
 
-	
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
-		
-		Session session = (Session)sessionEvent.getSession().getAttribute("portal.session"+"pia.nuxeoSession");
-		
-		if( session != null)	{
-			session.getClient().shutdown();
-			//logger.info("Shutdown user Session");
-		}
-		
-	}
 
+		Session session = (Session) sessionEvent.getSession().getAttribute("portal.session" + "pia.nuxeoSession");
+
+		if (session != null) {
+			
+			long begin = System.currentTimeMillis();
+			boolean error = false;
+			
+			try {
+			
+			session.getClient().shutdown();
+			} finally {
+
+				// log into profiler
+				long end = System.currentTimeMillis();
+				long elapsedTime = end - begin;
+
+				String name = "shutdown";
+
+				profiler.logEvent("NUXEO", name, elapsedTime, error);
+
+			}			
+
+		}
+
+	}
 
 }

@@ -90,14 +90,14 @@ public class XSLFunctions {
 	private String rewrite(String link, boolean checkScope) {
 		
 		//On traite uniquement les liens absolus ou commencant par /nuxeo
-		if( !link.startsWith("http") && !link.startsWith(ctx.getNuxeoConnection().getNuxeoContext()))
+		if( !link.startsWith("http") && !link.startsWith(ctx.getNuxeoConnectionProps().getNuxeoContext()))
 			return "";
 		
 		String trim = link.trim().replace(" ", "%20");
-		URI url = ctx.getNuxeoBaseUri().resolve(trim);
+		URI url = ctx.getNuxeoPublicBaseUri().resolve(trim);
 
 		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
-			if (url.getHost().equals(ctx.getNuxeoBaseUri().getHost())) {
+			if (url.getHost().equals(ctx.getNuxeoPublicBaseUri().getHost())) {
 
 				try {
 					//String testUrl = "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";

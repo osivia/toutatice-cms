@@ -54,20 +54,18 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 	public Object invoke() throws Exception {
 
-
 		Object res = null;
 
-		long begin = System.currentTimeMillis();
 		boolean error = false;
 
 		String profilerUser = null;
-		
+
 		List<Session> sessionsProfils = null;
-		
+
 		Session nuxeoSession = null;
 
+
 		try {
-			
 
 			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 
@@ -92,14 +90,15 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				String sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
 						"pia.nuxeoSessionUser");
-				
-				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
-				
-				if( sessionCreationSynchronizer == null) {
+
+				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(
+						ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
+
+				if (sessionCreationSynchronizer == null) {
 					sessionCreationSynchronizer = "sessionCreationSynchronizer";
-					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer", sessionCreationSynchronizer);
+					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer",
+							sessionCreationSynchronizer);
 				}
-			
 
 				if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
 					// Création d'une nouvelle session
@@ -110,31 +109,21 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 						nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
 								"pia.nuxeoSession");
-						
-						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-						"pia.nuxeoSessionUser");						
-						
 
+						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
+								"pia.nuxeoSessionUser");
 
 						if (nuxeoSession == null
 								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
 
-							long debut = System.currentTimeMillis();
-
 							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
 									"pia:service=NuxeoService");
 
-							
 							nuxeoSession = nuxeoService.createUserSession(userName);
-
-							long fin = System.currentTimeMillis();
-
-							logger.debug("Création de session : " + (fin - debut));
 
 							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSession",
 									nuxeoSession);
-							
-							
+
 							if (user != null)
 								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSessionUser",
 										user.getUserName());
@@ -169,9 +158,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				// Profils session list creation
 				synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey)) {
-					
+
 					sessionsProfils = (List<Session>) portletCtx.getAttribute(sessionKey);
-					
+
 					if (sessionsProfils == null) {
 						sessionsProfils = new ArrayList<Session>();
 						portletCtx.setAttribute(sessionKey, sessionsProfils);
@@ -182,10 +171,10 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 						sessionsProfils.remove(0);
 					}
 				}
-				
-				if( nuxeoSession == null)   {
+
+				if (nuxeoSession == null) {
 					logger.info("Creating nuxeo session for virtual user" + virtualUser);
-					
+
 					INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 					nuxeoSession = nuxeoService.createUserSession(virtualUser);
 				}
@@ -193,30 +182,37 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 			logger.debug("Execution commande " + command.getId());
 
-			synchronized (nuxeoSession) {
-				res = command.execute(nuxeoSession);
-			}			
+			long begin = System.currentTimeMillis();
 
-		} catch (Exception e) {
+			try {
+				synchronized (nuxeoSession) {
+					res = command.execute(nuxeoSession);
+				}
+			} catch (Exception e) {
 
-			error = true;
-			throw e;
+				error = true;
+				throw e;
+			} finally {
+				
+				long end = System.currentTimeMillis();
+				long elapsedTime = end - begin;
+				
+				// log into profiler
+
+				String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
+
+				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "pia:service=ProfilerService");
+
+				profiler.logEvent("NUXEO", name, elapsedTime, error);				
+			}
+
 		} finally {
-			
+
 			// recycle the session
-			if( sessionsProfils != null)
+			if (sessionsProfils != null)
 				sessionsProfils.add(nuxeoSession);
 
-			
-			// log into profiler
-			long end = System.currentTimeMillis();
-			long elapsedTime = end - begin;
 
-			String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
-
-			IProfilerService profiler = Locator.findMBean(IProfilerService.class, "pia:service=ProfilerService");
-
-			profiler.logEvent("NUXEO", name, elapsedTime, error);
 
 		}
 
