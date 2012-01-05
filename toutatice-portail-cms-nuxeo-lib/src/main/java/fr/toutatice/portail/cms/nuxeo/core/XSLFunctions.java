@@ -10,7 +10,9 @@ import javax.portlet.WindowStateException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 public class XSLFunctions {
@@ -25,6 +27,8 @@ public class XSLFunctions {
 	
 	// "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
+	
+	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
 
 	public XSLFunctions(NuxeoController ctx) {
 		this.ctx = ctx;
@@ -99,27 +103,41 @@ public class XSLFunctions {
 		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
 			if (url.getHost().equals(ctx.getNuxeoPublicBaseUri().getHost())) {
 
-				try {
 					//String testUrl = "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 //					private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
 						
-
-					Matcher m = ressourceExp.matcher(url.getRawPath());
+					try	{
+					Matcher mRes = ressourceExp.matcher(url.getRawPath());
 					
-					m.matches();
+					if( mRes.matches())	{
 
-					if (m.groupCount() > 0) {
+					if (mRes.groupCount() > 0) {
 
-						String uid = m.group(2);
-						String fileIndex = m.group(3);
+						String uid = mRes.group(2);
+						String fileIndex = mRes.group(3);
 						
 						return ctx.createAttachedFileLink(uid, fileIndex);
-					} else
-						return url.toString();
+						} 
+					}
+					
+						Matcher mDoc = documentExp.matcher(url.getRawPath());
+						
+						if( mDoc.matches())	{
 
+						if (mDoc.groupCount() > 0) {
+
+							String path = mDoc.group(2);
+								
+							return ctx.createRedirectDocumentLink(path);
+						}
+						else
+							return url.toString();
+						}
 				} catch (Exception e) {
-					return url.toString();
+					//incorrect parsing, continue with the native value
 				}
+				
+				return url.toString();
 
 			} else {
 				return url.toString();

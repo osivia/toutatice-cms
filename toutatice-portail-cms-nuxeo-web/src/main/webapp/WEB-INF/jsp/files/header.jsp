@@ -8,30 +8,13 @@
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet"%><div class="header">
 
-<div class="path">
 <%	
-List breadcrumbs = (List) renderRequest.getAttribute("breadcrumbs")	;
+
 String displayModeHeader = (String) request.getAttribute("displayMode");
 String folderPathHeader = (String) request.getAttribute("folderPath");
 
 
-Iterator itb = breadcrumbs.iterator();
-while( itb.hasNext())	{
-	Document doc = (Document) itb.next();
-
-	String url = null;
-	PortletURL folderURL = renderResponse.createRenderURL();
-	folderURL.setParameter("folderPath", doc.getPath());
-	if( displayModeHeader != null)
-		folderURL.setParameter("displayMode", displayModeHeader);
-	url = folderURL.toString();
 %>
-&gt; <a  href="<%=url%>"><%=doc.getTitle()%> </a>
-<%	
-	}
-	
-%>	
-</div>
 
 
 <script type="text/javascript">

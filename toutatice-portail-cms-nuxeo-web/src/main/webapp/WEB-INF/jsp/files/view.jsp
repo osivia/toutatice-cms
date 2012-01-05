@@ -26,33 +26,12 @@
 
 <%
 Documents docs = (Documents) renderRequest.getAttribute("docs")	;
-List breadcrumbs = (List) renderRequest.getAttribute("breadcrumbs")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
 %>
 
 
-<div class="nuxeo-file-browser-path">
-<%	
-Iterator itb = breadcrumbs.iterator();
-while( itb.hasNext())	{
-	Document doc = (Document) itb.next();
-
-	String url = null;
-	PortletURL folderURL = renderResponse.createRenderURL();
-	folderURL.setParameter("folderPath", doc.getPath());	
-	url = folderURL.toString();
-%>
-&gt; <a  href="<%=url%>"><%=doc.getTitle()%> </a>
-<%	
-	}
-	
-%>	
-</div>
-	
-	
-<div class="separateur"></div>	
 
 <table class="nuxeo-file-browser-table"  cellspacing="5" width="95%">
 

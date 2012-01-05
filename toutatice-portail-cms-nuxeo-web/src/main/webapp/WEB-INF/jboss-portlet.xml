@@ -61,11 +61,11 @@
    
  <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-name>
-      <!-- 
+
       <ajax>
       		<partial-refresh>false</partial-refresh>
-   	</ajax>
-   	-->
+   	  </ajax>
+
    	    <transaction>
             <trans-attribute>Required</trans-attribute>            
         </transaction>

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -23,6 +25,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.path.PortletPathItem;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -133,6 +136,22 @@ public class FileBrowserPortlet extends CMSPortlet {
 		rd.include(req, res);
 
 	}
+	
+	
+	
+	private void addPathItem(List<PortletPathItem> portletPath, Document curDoc, String displayMode)	{
+		Map<String, String> renderParams = new Hashtable<String, String>();
+		renderParams.put("folderPath", curDoc.getPath());
+		
+		if( displayMode != null)
+			renderParams.put("displayMode", displayMode);
+		
+		PortletPathItem pathItem = new PortletPathItem(renderParams, curDoc.getTitle());
+		
+		portletPath.add(0, pathItem);
+	}
+	
+	
 
 	@SuppressWarnings("unchecked")
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
@@ -145,8 +164,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 			response.setContentType("text/html");
 
 			PortalWindow window = WindowFactory.getWindow(request);
-
-
+			
 
 			/* On détermine l'uid et le scope */
 
@@ -184,32 +202,37 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(doc, ctx.isDisplayingLiveVersion()));
 				
-				
-				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
 				Collections.sort(sortedDocs, DEFAULT_ORDER);
 				request.setAttribute("docs", sortedDocs);
 
 				/* Récupération des parents (pour le path) */
-				
 
 				NuxeoController ctxSession = new NuxeoController(request, response, getPortletContext());
 				ctxSession.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
 				ctxSession.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
 
-				List<Document> breadcrumbs = new ArrayList<Document>();
+				List<PortletPathItem> portletPath = new ArrayList<PortletPathItem>();
 
 				Document curDoc = doc;
-				while (!nuxeoPath.equals(curDoc.getPath())) {
-					breadcrumbs.add(0, curDoc);
+				
+				while (! curDoc.getPath().equals(nuxeoPath) && curDoc.getPath().startsWith(nuxeoPath)) {
+					addPathItem(portletPath,curDoc,  displayMode);
+			
 					curDoc = (Document) ctxSession.executeNuxeoCommand(new FolderGetParentCommand(curDoc));
 				}
-				breadcrumbs.add(0, curDoc);
 				
-
-				request.setAttribute("breadcrumbs", breadcrumbs);
-
+				if( curDoc.getPath().equals(nuxeoPath))
+					addPathItem(portletPath,curDoc,  displayMode);
+				
+				
+				//Injection du path vers le portail
+				request.setAttribute("pia.portletPath", portletPath);
+				
+				/* attributs de la JSP */
+				
+				
 				request.setAttribute("basePath", nuxeoPath);
 				request.setAttribute("folderPath", folderPath);
 				

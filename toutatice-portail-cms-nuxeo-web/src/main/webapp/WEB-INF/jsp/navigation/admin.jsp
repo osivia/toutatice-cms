@@ -25,6 +25,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
 
+		<label>Nombre de niveaux :</label> <input type="text" name="nbLevels" value="${nbLevels}" size="1"> <br/>
 
 			
 		

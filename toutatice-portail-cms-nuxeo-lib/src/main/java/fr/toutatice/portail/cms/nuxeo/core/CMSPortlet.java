@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.core;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -14,6 +15,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
+import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -24,7 +26,9 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
 /**
@@ -127,7 +131,50 @@ public class CMSPortlet extends GenericPortlet {
 			if (serveResourceByCache(resourceRequest, resourceResponse))
 				return;
 
+			
 
+
+			// Redirection par path de document
+			
+			if ("documentLink".equals(resourceRequest.getParameter("type"))) {
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+
+
+				String id = resourceRequest.getResourceID();
+
+				
+				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+						.executeNuxeoCommand(new DocumentFetchCommand(id));
+
+				
+				String url = null;
+				
+				if ("ContextualLink".equals(doc.getType()))	{
+					url = doc.getString("clink:link");
+				} else	{
+					Link link = ctx.getLink(doc);
+					url = link.getUrl();
+				}
+				
+				
+				// To keep historic
+				if( resourceRequest.getParameter("pageMarker") != null)	{
+					url = url.replaceAll("/pagemarker/([0-9]*)/","/pagemarker/"+resourceRequest.getParameter("pageMarker")+"/");
+				}
+				
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", url);
+
+				resourceResponse.getPortletOutputStream().close();
+
+	
+				
+			}
+			
+			
+			
 
 			// Redirection
 			if ("link".equals(resourceRequest.getParameter("type"))) {
@@ -140,20 +187,12 @@ public class CMSPortlet extends GenericPortlet {
 				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
 						.executeNuxeoCommand(new DocumentFetchCommand(id));
 
-				String html = "";
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", doc.getString("clink:link"));
+				resourceResponse.getPortletOutputStream().close();	
+				
 
-				if (doc.getType().equals("ContextualLink")) {
-					html += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-					html += "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
-					html += "<head>";
-					html += "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />";
-					html += "<meta http-equiv=\"refresh\" content=\"0; url=" + doc.getString("clink:link") + "\" />";
-					html += "<title>Redirection</title>";
-					html += "<meta name=\"robots\" content=\"noindex,follow\" />";
-					html += "</head>";
-				}
-				ResourceUtil.copy(new ByteArrayInputStream(html.getBytes()), resourceResponse.getPortletOutputStream(),
-						4096);
 			}
 
 			if ("file".equals(resourceRequest.getParameter("type"))) {
@@ -206,10 +245,43 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Cache-Control", "max-age="
 						+ resourceResponse.getCacheControl().getExpirationTime());
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
-
 			}
+			
+			
+		} catch( NuxeoException e){
+			/* Pas possible de passer par la valve standard sur les ressources */
+			
+			
+			if( e.getErrorCode() == NuxeoException.ERROR_NOTFOUND)	{
 
-		} catch (Exception e) {
+				URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),  System.getProperty("error.default_page_uri"));
+				String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
+				
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", sUrl);
+				resourceResponse.getPortletOutputStream().close();				
+
+
+				}
+			else if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
+				
+
+				URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),  System.getProperty("error.default_page_uri"));
+				String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_FORBIDDEN;
+
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", sUrl);
+				resourceResponse.getPortletOutputStream().close();	
+				
+			}
+			else
+				throw e;
+				
+		}	
+
+	    catch (Exception e) {
 			throw new PortletException(e);
 
 		}

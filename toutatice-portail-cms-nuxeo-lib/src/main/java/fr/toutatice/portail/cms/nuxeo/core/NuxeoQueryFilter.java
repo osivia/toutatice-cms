@@ -18,8 +18,10 @@ public class NuxeoQueryFilter {
 			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "; 
 		} else	{
 			// sélection des folders et des documents publiés
-			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:currentLifeCycleState = 'approved' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0 ) OR (ecm:isProxy = 1)) "; 
-			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:currentLifeCycleState = 'approved' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0 AND ttc:isOnline = 1) OR (ecm:isProxy = 1)) ";
+
+			//TODO: REMETTRE LE ISONLINE
+			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0 AND ttc:isOnline = 1) OR (ecm:isProxy = 1)) ";
+			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0) OR (ecm:isProxy = 1)) ";
 			
 		}
 		

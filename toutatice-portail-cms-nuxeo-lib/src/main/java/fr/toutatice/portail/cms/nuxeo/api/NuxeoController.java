@@ -65,7 +65,12 @@ public class NuxeoController {
 	IProfilManager profilManager;
 	String scope;
 	String displayLiveVersion;
+	String pageMarker;
 	
+	public void setPageMarker(String pageMarker) {
+		this.pageMarker = pageMarker;
+	}
+
 	public String getDisplayLiveVersion() {
 		return displayLiveVersion;
 	}
@@ -203,6 +208,8 @@ public class NuxeoController {
 		setScope(scope);
 		setDisplayLiveVersion(displayLiveVersion);
 		
+		setPageMarker((String) request.getAttribute("pia.pageMarker"));
+		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
 		}
@@ -330,6 +337,26 @@ public class NuxeoController {
 		resourceURL.setParameter("type", "attachedFile");
 		resourceURL.setParameter("fileIndex", fileIndex);
 		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
+	public String createRedirectDocumentLink(String path) {
+
+		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte
+		// Il est préférable de faire une redirection
+		
+		ResourceURL resourceURL = response.createResourceURL();
+		resourceURL.setResourceID(path );
+
+		resourceURL.setParameter("type", "documentLink");
+		resourceURL.setParameter("docPath", path);
+		if( pageMarker != null)
+			resourceURL.setParameter("pageMarker", pageMarker);
 
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
