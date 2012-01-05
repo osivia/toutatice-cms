@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-shared-lib</artifactId>
-			<version>${toutatice.cms.version}</version>
+			<version>1.0-SNAPSHOT</version>
 			<scope>provided</scope>
  		</dependency>
 	</dependencies>
