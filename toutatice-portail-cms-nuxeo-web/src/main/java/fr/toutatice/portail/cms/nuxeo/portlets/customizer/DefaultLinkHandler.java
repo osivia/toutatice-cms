@@ -44,7 +44,9 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 	public String createCMSLink(LinkHandlerCtx ctx)throws Exception {
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
+		
 		windowProperties.put("pia.cms.scope", ctx.getScope());
+		
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.uri", ctx.getDoc().getPath());
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		

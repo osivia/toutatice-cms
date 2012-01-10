@@ -27,7 +27,7 @@
 		<jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
 		<jboss.version>4.2.3.GA</jboss.version>
 
-		<toutatice.core.version>1.0-RC1</toutatice.core.version>
+		<toutatice.core.version>1.0</toutatice.core.version>
 
 	</properties>
 	

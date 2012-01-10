@@ -31,12 +31,12 @@ import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
@@ -232,6 +232,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				/* attributs de la JSP */
 				
+				request.setAttribute("portletPath", portletPath);
 				
 				request.setAttribute("basePath", nuxeoPath);
 				request.setAttribute("folderPath", folderPath);

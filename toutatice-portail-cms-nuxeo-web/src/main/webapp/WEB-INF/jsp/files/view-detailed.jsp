@@ -65,7 +65,6 @@ while( it.hasNext())	{
 		folderURL.setParameter("folderPath", doc.getPath());
 		if( displayMode != null)
 			folderURL.setParameter("displayMode", displayMode);
-		folderURL.setWindowState(WindowState.MAXIMIZED);
 		url = folderURL.toString();
 		link = new Link(url, false);
 	}	else {

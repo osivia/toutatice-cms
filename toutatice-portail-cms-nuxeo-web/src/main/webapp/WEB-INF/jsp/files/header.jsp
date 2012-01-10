@@ -1,4 +1,7 @@
 
+<%@page import="java.util.Map"%>
+<%@page import="java.util.Set"%>
+<%@page import="fr.toutatice.portail.api.path.PortletPathItem"%>
 <%@page import="javax.portlet.PortletURL"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Iterator"%>
@@ -8,12 +11,39 @@
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet"%><div class="header">
 
-<%	
+<% if( WindowState.NORMAL.equals(renderRequest.getWindowState()))	{	%>
 
+<div class="path">
+<%	
+List<PortletPathItem> portletPath = (List) renderRequest.getAttribute("portletPath")	;
+
+
+Iterator itb = portletPath.iterator();
+while( itb.hasNext())	{
+	PortletPathItem pathItem = (PortletPathItem) itb.next();
+	PortletURL folderURL = renderResponse.createRenderURL();
+	
+	Set<Map.Entry<String,String>> rps = pathItem.getRenderParams().entrySet();
+	
+	for(Map.Entry<String,String> rp:rps)	{
+		folderURL.setParameter(rp.getKey(), rp.getValue());
+	}
+	String url = folderURL.toString();
+	
+
+%>
+
+/ <a  href="<%=url%>"><%=pathItem.getLabel()%> </a>
+<%	
+	}
+	
+%>	
+</div>
+<% } %>	
+
+<%	
 String displayModeHeader = (String) request.getAttribute("displayMode");
 String folderPathHeader = (String) request.getAttribute("folderPath");
-
-
 %>
 
 
@@ -24,6 +54,10 @@ function selectMode( form)
 	parent.location.href = form.list.value;
 }
 </script>
+
+<div class="path">
+
+</div>
 
 <div class="switch-display-mode">
 

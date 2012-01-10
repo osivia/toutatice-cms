@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -141,11 +142,18 @@ public class CMSPortlet extends GenericPortlet {
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
 
-				String id = resourceRequest.getResourceID();
-
+				String docPath = resourceRequest.getParameter("docPath");
+				docPath = URLDecoder.decode(docPath, "UTF-8");
+				
+				// Liens vers un document qui n'a pas été lu (accès direct par le path)
+				// Le scope peut être insuffisant en terme de droit 
+				//  >> on supprime le scope
+				String scope = ctx.getScope();
+				ctx.setScope(null);
+				
 				
 				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-						.executeNuxeoCommand(new DocumentFetchCommand(id));
+						.executeNuxeoCommand(new DocumentFetchPublishedCommand(docPath));
 
 				
 				String url = null;
@@ -155,7 +163,11 @@ public class CMSPortlet extends GenericPortlet {
 				} else	{
 					Link link = ctx.getLink(doc);
 					url = link.getUrl();
+					
 				}
+				
+				// On remet le scope
+				ctx.setScope(scope);
 				
 				
 				// To keep historic

@@ -35,13 +35,14 @@ import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
+import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.LinkHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplatesHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultLinkHandler;
