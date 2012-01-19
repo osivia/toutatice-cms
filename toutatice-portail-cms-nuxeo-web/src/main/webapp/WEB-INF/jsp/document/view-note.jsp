@@ -45,4 +45,4 @@ if( note != null)
 		<%= note %>
 </div>
 			
-	
+<!-- NOTE -->
