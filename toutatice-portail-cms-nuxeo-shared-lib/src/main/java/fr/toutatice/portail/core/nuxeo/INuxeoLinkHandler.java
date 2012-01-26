@@ -15,6 +15,7 @@ public interface INuxeoLinkHandler {
 	
 	
 	public Link getLink( LinkHandlerCtx ctx) throws Exception ;
+	public Link getDirectLink( LinkHandlerCtx ctx) throws Exception ;
 
 
 }

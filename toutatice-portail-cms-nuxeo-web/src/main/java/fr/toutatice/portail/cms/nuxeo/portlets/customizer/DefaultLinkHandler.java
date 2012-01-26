@@ -158,7 +158,7 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 	}
 	
 	
-	public Link getLink(LinkHandlerCtx ctx)	throws Exception  {
+	public Link getDirectLink(LinkHandlerCtx ctx)	throws Exception  {
 			
 
 		Document doc = ctx.getDoc();
@@ -197,7 +197,25 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 	}
 
 	
-	
+	public Link getLink(LinkHandlerCtx ctx)	throws Exception  {
+		
+		Map<String, String> windowProperties = new HashMap<String, String>();
+		
+		windowProperties.put("pia.cms.scope", ctx.getScope());
+		
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.uri", ctx.getDoc().getPath());
+		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		
+		windowProperties.put("pia.hideDecorators", "1");	
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
+		
+		Map<String, String> params = new HashMap<String, String>();
+
+		String url = portalUrlFactory.getStartProcUrl(new PortalControllerContext(ctx.getPortletCtx(), ctx.getRequest(),
+				ctx.getResponse()), ctx.getPageId(), "toutatice-portail-cms-nuxeo-viewDocumentPortletInstance", "virtual", "cms", windowProperties, params);
+
+		return new Link (url, false);
+	}
 	
 	
 }

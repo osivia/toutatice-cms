@@ -412,14 +412,20 @@ public class NuxeoController {
 		NuxeoCommandServiceFactory.stopNuxeoCommandService(getPortletCtx());
 	}
 	
-	
-	
 	public Link getLink(Document doc) throws Exception 	{
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+	}	
+	
+	public Link getDirectLink(Document doc) throws Exception 	{
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
+		return nuxeoService.getLinkHandler().getDirectLink(handlerCtx);
 	}
 	
 	public Map<String, ListTemplate> getListTemplates()	throws Exception {
