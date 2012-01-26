@@ -328,6 +328,17 @@ public class NuxeoController {
 
 		return resourceURL.toString();
 	}
+	
+	public String createExternalLink(Document doc) {
+
+		ResourceURL resourceURL = response.createResourceURL();
+		resourceURL.setResourceID(doc.getId());
+		resourceURL.setParameter("type", "link");
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+
+		return resourceURL.toString();
+	}
 
 	public String createAttachedFileLink(String path, String fileIndex) {
 
