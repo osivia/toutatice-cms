@@ -27,7 +27,7 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 int parite =  (Integer) renderRequest.getAttribute("parite");
 
 
-Link link = ctx.getDirectLink(doc);
+Link link = ctx.getLink(doc);
 String url = link.getUrl();
 String target = Formater.formatTarget(link);
 

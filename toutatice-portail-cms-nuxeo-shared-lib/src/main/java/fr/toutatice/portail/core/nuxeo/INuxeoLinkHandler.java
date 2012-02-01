@@ -13,8 +13,15 @@ import fr.toutatice.portail.api.urls.Link;
 
 public interface INuxeoLinkHandler {
 	
-	
+	/* Lien par defaut d'accès à un contenu 
+	 * (moteur de recherche, lien intercontenus)
+	 * */
 	public Link getLink( LinkHandlerCtx ctx) throws Exception ;
+	
+	/* Lien par défaut d'accès au service associé à un contenu
+	 * (utilisé depuis de portal site)
+	 * */
+	 
 	public Link getDirectLink( LinkHandlerCtx ctx) throws Exception ;
 
 
