@@ -83,12 +83,25 @@ return requete;
 <br/>
 		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
 <br/>	
+
+<%			
+			String checkShowMetadatas = "checked";
+			String showMetadatas = (String) request.getAttribute("showMetadatas");
+			if( ! "1".equals( showMetadatas))
+				checkShowMetadatas = "";
+%>			
+			
+		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>	Afficher les méta-données (sur le détail des documents) <br/>	
+	
 <br/>
 		<input type="checkbox" name="displayNuxeoRequest" value="1" <%= displayNuxeoRequest%>/>Affichage de la requête (pour test) <br/>
 <br/>
 		<label>Limiter les résultats à <input type="text" name="maxItems" value="${maxItems}" size="2"> items <br/><br/>
 
-		<label>Pagination :</label> <input type="text" name="pageSize" value="${pageSize}" size="2"> items par page<br/><br/>
+		<label>Pagination :</label> <br/>
+			&nbsp;&nbsp;Mode normal&nbsp;&nbsp;&nbsp;&nbsp;: <input type="text" name="pageSize" value="${pageSize}" size="2"> items par page<br/>
+			&nbsp;&nbsp;Mode maximized&nbsp: <input type="text" name="pageSizeMax" value="${pageSizeMax}" size="2"> items par page<br/><br/>
+			
 		<label>Style d'affichage</label><br/>
 		<select name="style">
 <%

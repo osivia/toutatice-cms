@@ -48,10 +48,12 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		windowProperties.put("pia.cms.scope", ctx.getScope());
 		
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.cms.uri", ctx.getDoc().getPath());
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		
 		windowProperties.put("pia.hideDecorators", "1");	
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
+
 		
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -69,7 +71,8 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");			
 		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());		
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.title", "Dossier " + ctx.getDoc().getTitle());
 
 		
@@ -90,7 +93,8 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
 		windowProperties.put("pia.cms.scope",  ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());		
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", "1");
 		windowProperties.put("pia.title", "Annonces " + ctx.getDoc().getTitle());	
 
 		
@@ -125,7 +129,8 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
 		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());		
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.title", "Liste de liens");	
 
 		
@@ -142,7 +147,8 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
 		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());		
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());	
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.cms.uri", uid);
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		
 		windowProperties.put("pia.hideDecorators", "1");
@@ -204,6 +210,7 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		windowProperties.put("pia.cms.scope", ctx.getScope());
 		
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.cms.uri", ctx.getDoc().getPath());
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		
 		windowProperties.put("pia.hideDecorators", "1");	

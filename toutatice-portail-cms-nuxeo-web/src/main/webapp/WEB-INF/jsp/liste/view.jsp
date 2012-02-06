@@ -93,6 +93,8 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 	PortletURL pageURL = renderResponse.createRenderURL();
 
 	pageURL.setParameter( "currentPage", Integer.toString(numPage));
+	pageURL.setParameter( "currentState", renderRequest.getWindowState().toString());
+	
 	if( selectors != null)
 		pageURL.setParameter( "lastSelectors", selectors);	
 	

@@ -80,6 +80,12 @@ public class ViewListPortlet extends CMSPortlet  {
 				window.setProperty("pia.cms.displayLiveVersion", "1");
 			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
 				window.setProperty("pia.cms.displayLiveVersion", null);	
+			
+			if (! "1".equals(req.getParameter("showMetadatas")))
+				window.setProperty("pia.cms.hideMetaDatas", "1");
+			else if (window.getProperty("pia.cms.hideMetaDatas") != null)
+				window.setProperty("pia.cms.hideMetaDatas", null);
+			
 
 			
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
@@ -106,6 +112,22 @@ public class ViewListPortlet extends CMSPortlet  {
 				window.setProperty("pia.cms.pageSize", Integer.toString(pageSize));
 			else if (window.getProperty("pia.cms.pageSize") != null)
 				window.setProperty("pia.cms.pageSize", null);
+			
+			
+			// Taille de page max
+			int pageSizeMax = 0;
+			if (req.getParameter("pageSizeMax") != null )	{
+				try	{
+					pageSizeMax = Integer.parseInt(req.getParameter("pageSizeMax"));
+				} catch(Exception e){
+					// Mal formatté
+				}
+			}
+			
+			if (pageSizeMax > 0)
+				window.setProperty("pia.cms.pageSizeMax", Integer.toString(pageSizeMax));
+			else if (window.getProperty("pia.cms.pageSizeMax") != null)
+				window.setProperty("pia.cms.pageSizeMax", null);			
 	
 				
 			//Limite
@@ -166,7 +188,11 @@ public class ViewListPortlet extends CMSPortlet  {
 			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 		
-		
+		String showMetadatas = "1";
+		if( "1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+				showMetadatas = "0";
+		req.setAttribute("showMetadatas", showMetadatas);		
+
 		
 
 		String beanShell = "";
@@ -194,6 +220,9 @@ public class ViewListPortlet extends CMSPortlet  {
 		
 		String pageSize = window.getProperty("pia.cms.pageSize");
 		req.setAttribute("pageSize", pageSize);
+		
+		String pageSizeMax = window.getProperty("pia.cms.pageSizeMax");
+		req.setAttribute("pageSizeMax", pageSizeMax);		
 		
 		String maxItems = window.getProperty("pia.cms.maxItems");
 		req.setAttribute("maxItems", maxItems);
@@ -250,28 +279,47 @@ public class ViewListPortlet extends CMSPortlet  {
 			
 			/* Filtre pour sélectionner uniquement les version publiées */
 
-			
-				
 			int maxItems = -1;
 			if (window.getProperty("pia.cms.maxItems") != null)
 				maxItems = Integer.parseInt(window.getProperty("pia.cms.maxItems"));
 			
-			int pageSize = -1;
-			int currentPage = 0;
-			if (window.getProperty("pia.cms.pageSize") != null )		{
-				pageSize = Integer.parseInt(window.getProperty("pia.cms.pageSize"));
+			
+			/* Initialisation de la page courante et de la taille de la page*/ 
+			  
+			
+			 int pageSize = -1;
+			 int currentPage = 0;
+			
+			 
+			 String pageSizeAttributeName = "pia.cms.pageSize";
+			 if( WindowState.MAXIMIZED.equals(request.getWindowState()))
+				 pageSizeAttributeName = "pia.cms.pageSizeMax";
+			
+			 if (window.getProperty(pageSizeAttributeName) != null )		{
+				pageSize = Integer.parseInt(window.getProperty(pageSizeAttributeName));
+				
+				String currentState = request.getParameter("currentState");
 				String sCurrentPage =  request.getParameter("currentPage");
-				if( sCurrentPage != null)
+
+				// La page est réinitialisée si on change de mode
+				if( sCurrentPage != null && request.getWindowState().toString().equals(currentState))
 					currentPage = Integer.parseInt(sCurrentPage);
 			}
+			
+			
+			
+			
 			
 			/* Reinitialisation du numéro de page si changement de critères */
 			
 			String selectors = request.getParameter("selectors");
 			String lastSelectors = request.getParameter("lastSelectors");
 			
-			if( lastSelectors != null && !lastSelectors.equals(selectors))
-				currentPage = 0;
+			if( (( selectors != null)	&& ( !selectors.equals(lastSelectors)))
+					|| ( selectors == null)	&& ( lastSelectors != null)
+				)
+					currentPage = 0;
+
 			
 			
 			String style = window.getProperty("pia.cms.style");

@@ -38,6 +38,18 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 %>			
 			
 		<input type="checkbox" name="onlyDescription" value="1" <%=checkOnlyDescription%>/>	Afficher uniquement la description <br/>
+		
+			
+<%			
+			String checkShowMetadatas = "checked";
+			String showMetadatas = (String) request.getAttribute("showMetadatas");
+			if( ! "1".equals( showMetadatas))
+				checkShowMetadatas = "";
+%>			
+			
+		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>	Afficher les méta-données <br/>	
+		
+			
 		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">
