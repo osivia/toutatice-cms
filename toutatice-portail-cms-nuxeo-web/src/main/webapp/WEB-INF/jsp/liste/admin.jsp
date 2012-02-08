@@ -91,12 +91,12 @@ return requete;
 				checkShowMetadatas = "";
 %>			
 			
-		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>	Afficher les méta-données (sur le détail des documents) <br/>	
+		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>Affichage des méta-données (sur le détail des documents) <br/>	
 	
 <br/>
 		<input type="checkbox" name="displayNuxeoRequest" value="1" <%= displayNuxeoRequest%>/>Affichage de la requête (pour test) <br/>
 <br/>
-		<label>Limiter les résultats à <input type="text" name="maxItems" value="${maxItems}" size="2"> items <br/><br/>
+		<label>Limiter les résultats à </label> <input type="text" name="maxItems" value="${maxItems}" size="2"> items <br/><br/>
 
 		<label>Pagination :</label> <br/>
 			&nbsp;&nbsp;Mode normal&nbsp;&nbsp;&nbsp;&nbsp;: <input type="text" name="pageSize" value="${pageSize}" size="2"> items par page<br/>

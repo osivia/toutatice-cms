@@ -374,6 +374,9 @@ public class NuxeoController {
 		
 		ResourceURL resourceURL = response.createResourceURL();
 		resourceURL.setResourceID(path );
+		/*
+		resourceURL.setResourceID("/pagemarker/"+path );
+		*/
 
 		resourceURL.setParameter("type", "documentLink");
 		resourceURL.setParameter("docPath", path);

@@ -256,6 +256,7 @@ public class ViewListPortlet extends CMSPortlet  {
 		try {
 
 			response.setContentType("text/html");
+		
 
 	
 			/* On détermine l'uid et le scope */
@@ -271,6 +272,7 @@ public class ViewListPortlet extends CMSPortlet  {
 				// Evaluation beanshell
 				Interpreter i = new Interpreter();
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
+				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
 				
 

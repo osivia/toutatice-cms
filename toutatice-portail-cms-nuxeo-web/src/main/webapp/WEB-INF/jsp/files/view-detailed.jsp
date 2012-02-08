@@ -42,7 +42,7 @@ String displayMode = (String) request.getAttribute("displayMode");
 
 	<div class="nuxeo-file-list">
 	
-
+		<div class="no-ajax-link"> 
 
 
 <%
@@ -121,6 +121,8 @@ while( it.hasNext())	{
 
 
 <% 	} %>
+
+		</div>
 
 	</div>
 
