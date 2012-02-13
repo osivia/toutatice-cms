@@ -152,7 +152,7 @@ public class NavigationPortlet extends CMSPortlet {
 				List<ServiceDisplayItem> listItems = new ArrayList<ServiceDisplayItem>();
 				for (Document child : portalSite.getChildren()) {
 
-					Link link = ctx.getLink(child);
+					Link link = ctx.getDirectLink(child);
 
 					if (link != null)
 						listItems.add(new ServiceDisplayItem(child.getTitle(), link.getUrl(), link.isExternal()));

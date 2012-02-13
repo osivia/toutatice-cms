@@ -13,7 +13,7 @@
 
 <% if( WindowState.NORMAL.equals(renderRequest.getWindowState()))	{	%>
 
-<div class="path">
+<div class="path"> 
 <%	
 List<PortletPathItem> portletPath = (List) renderRequest.getAttribute("portletPath")	;
 

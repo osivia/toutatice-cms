@@ -15,6 +15,15 @@ public class LinkHandlerCtx {
 	RenderResponse response;
 	String scope;
 	String displayLiveVersion;
+	String hideMetaDatas;
+
+	public String getHideMetaDatas() {
+		return hideMetaDatas;
+	}
+
+	public void setHideMetaDatas(String hideMetaDatas) {
+		this.hideMetaDatas = hideMetaDatas;
+	}
 
 	String pageId;
 	URI nuxeoBaseURI;

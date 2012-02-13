@@ -65,6 +65,15 @@ public class NuxeoController {
 	IProfilManager profilManager;
 	String scope;
 	String displayLiveVersion;
+	String hideMetaDatas;
+	public String getHideMetaDatas() {
+		return hideMetaDatas;
+	}
+
+	public void setHideMetaDatas(String hideMetaDatas) {
+		this.hideMetaDatas = hideMetaDatas;
+	}
+
 	String pageMarker;
 	
 	public void setPageMarker(String pageMarker) {
@@ -204,9 +213,11 @@ public class NuxeoController {
 		
 		String scope = window.getProperty("pia.cms.scope");
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
 		setScope(scope);
 		setDisplayLiveVersion(displayLiveVersion);
+		setHideMetaDatas(hideMetadatas);
 		
 		setPageMarker((String) request.getAttribute("pia.pageMarker"));
 		
@@ -328,6 +339,17 @@ public class NuxeoController {
 
 		return resourceURL.toString();
 	}
+	
+	public String createExternalLink(Document doc) {
+
+		ResourceURL resourceURL = response.createResourceURL();
+		resourceURL.setResourceID(doc.getId());
+		resourceURL.setParameter("type", "link");
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+
+		return resourceURL.toString();
+	}
 
 	public String createAttachedFileLink(String path, String fileIndex) {
 
@@ -352,6 +374,9 @@ public class NuxeoController {
 		
 		ResourceURL resourceURL = response.createResourceURL();
 		resourceURL.setResourceID(path );
+		/*
+		resourceURL.setResourceID("/pagemarker/"+path );
+		*/
 
 		resourceURL.setParameter("type", "documentLink");
 		resourceURL.setParameter("docPath", path);
@@ -401,14 +426,22 @@ public class NuxeoController {
 		NuxeoCommandServiceFactory.stopNuxeoCommandService(getPortletCtx());
 	}
 	
-	
-	
 	public Link getLink(Document doc) throws Exception 	{
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+	}	
+	
+	public Link getDirectLink(Document doc) throws Exception 	{
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
+		return nuxeoService.getLinkHandler().getDirectLink(handlerCtx);
 	}
 	
 	public Map<String, ListTemplate> getListTemplates()	throws Exception {

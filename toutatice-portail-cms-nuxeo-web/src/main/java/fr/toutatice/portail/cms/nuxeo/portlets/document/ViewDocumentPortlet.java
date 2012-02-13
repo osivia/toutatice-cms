@@ -102,6 +102,12 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			else if (window.getProperty("pia.document.onlyDescription") != null)
 				window.setProperty("pia.document.onlyDescription", null);
 			
+			if (! "1".equals(req.getParameter("showMetadatas")))
+				window.setProperty("pia.cms.hideMetaDatas", "1");
+			else if (window.getProperty("pia.cms.hideMetaDatas") != null)
+				window.setProperty("pia.cms.hideMetaDatas", null);
+						
+			
 			if ("1".equals(req.getParameter("displayLiveVersion")))
 				window.setProperty("pia.cms.displayLiveVersion", "1");
 			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
@@ -136,6 +142,11 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		String onlyDescription = window.getProperty("pia.document.onlyDescription");
 		req.setAttribute("onlyDescription", onlyDescription);
+		
+		String showMetadatas = "1";
+		if( "1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+				showMetadatas = "0";
+		req.setAttribute("showMetadatas", showMetadatas);		
 
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
@@ -234,7 +245,14 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						request.setAttribute("description", description);
 
 						request.setAttribute("onlyDescription", window.getProperty("pia.document.onlyDescription"));
-
+						
+						
+						String showMetadatas = "1";
+						if( "1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+							showMetadatas = "0";
+						request.setAttribute("showMetadatas", showMetadatas);
+						
+	
 
 						getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request,
 								response);

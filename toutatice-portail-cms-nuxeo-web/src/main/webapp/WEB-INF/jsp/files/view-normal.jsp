@@ -75,6 +75,7 @@ while( it.hasNext())	{
 	Link link = null;
 	String icon = Formater.formatNuxeoIcon(doc);
 	String target = "";	
+	boolean noAjax = true;
 	
 	 if(  FileBrowserPortlet.isFolder( doc))	{
 		PortletURL folderURL = renderResponse.createRenderURL();
@@ -84,6 +85,11 @@ while( it.hasNext())	{
 	
 		url = folderURL.toString();
 		link = new Link(url, false);
+		
+		// le mode ajax n'est autorise que pour les folders en mode NORMAL
+		if( WindowState.NORMAL.equals(renderRequest.getWindowState()))
+			noAjax = false;
+			
 
 	}	else {
 		link = ctx.getLink(doc);
@@ -101,7 +107,13 @@ while( it.hasNext())	{
 				<%=icon%>
 			</td> 
 			<td>
+<% if (noAjax)		{ %> 
+	 <div class="no-ajax-link"> 
+<% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
+<% if (noAjax)		{ %> 
+	 </div> 
+<% }	%>					
 			</td>
 			<td>
 				<%= Formater.formatDateAndTime(doc) %>

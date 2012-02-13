@@ -146,10 +146,16 @@ public class CMSPortlet extends GenericPortlet {
 				docPath = URLDecoder.decode(docPath, "UTF-8");
 				
 				// Liens vers un document qui n'a pas été lu (accès direct par le path)
+				// On change de parcours de publication				
 				// Le scope peut être insuffisant en terme de droit 
 				//  >> on supprime le scope
 				String scope = ctx.getScope();
 				ctx.setScope(null);
+				
+				// l'affichage des  méta-données n'est pas propagé non plus
+				// 
+				String hideMetadatas = ctx.getHideMetaDatas();
+				ctx.setHideMetaDatas(null);
 				
 				
 				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
@@ -161,13 +167,14 @@ public class CMSPortlet extends GenericPortlet {
 				if ("ContextualLink".equals(doc.getType()))	{
 					url = doc.getString("clink:link");
 				} else	{
-					Link link = ctx.getLink(doc);
+					Link link = ctx.getDirectLink(doc);
 					url = link.getUrl();
 					
 				}
 				
 				// On remet le scope
 				ctx.setScope(scope);
+				ctx.setHideMetaDatas(hideMetadatas);
 				
 				
 				// To keep historic

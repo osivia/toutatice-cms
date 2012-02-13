@@ -192,6 +192,20 @@ div.nuxeo-docview-short-view	{
 	margin: 10px;
 }
 
+div.nuxeo-docview-main {
+
+
+}
+
+div.nuxeo-docview-metadata {
+    background-color: #EAEAEA;
+    color: #666666;
+    float: right;
+    margin-left: 8px;
+    padding: 4px;
+    width: 30%;
+}
+
 /* Template : Vue compacte */
 
 
@@ -211,6 +225,8 @@ div.nuxeo-docview-short-view p.nuxeo-docview-description  {
 div.nuxeo-docview-normal-view div.nuxeo-docview-note	{
 	margin-top:15px;
 }
+
+
 
 /* Template : Vue détaillée annonce */
 

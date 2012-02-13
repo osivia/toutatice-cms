@@ -33,6 +33,8 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 
 String onlyDescription = (String) request.getAttribute("onlyDescription");
 
+String showMetadatas = (String) request.getAttribute("showMetadatas");
+
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 String srcVignette = "";
@@ -56,13 +58,25 @@ if( map != null && map.getString("data") != null)
 
 <div class="nuxeo-docview-normal-view">
 
+	<% if( "1".equals(showMetadatas) )	{	%>
+
+
+	<jsp:include page="view-metadata.jsp"></jsp:include>
+	
+	<% }  %>
+
+	<div class="nuxeo-docview-main">
+
 <% 	
+	if("annonce".equals(doc.getType().toLowerCase()) || ( "note".equals(doc.getType().toLowerCase()) ))	{
 	String jspName = "view-"+ doc.getType().toLowerCase() + ".jsp";
 %>
 		<jsp:include page="<%= jspName %>"></jsp:include>
 
-
+<% } %>	
 			
+
+
 <% 
 	PropertyList files = doc.getProperties().getList("files:files");
 	if( files != null && !files.isEmpty())	{	
@@ -87,9 +101,12 @@ if( map != null && map.getString("data") != null)
 			</ul>
 		</div>	
 		
-<%	} %>						
+<%	} %>	
 
 	</div>
+
+
+</div>
 
 <%	} %>
 			
