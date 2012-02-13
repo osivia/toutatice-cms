@@ -59,7 +59,6 @@ for (String keywordOcc : keywords){
 			<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
 		</form>			
 			
-
 			
 		
 	</div>
