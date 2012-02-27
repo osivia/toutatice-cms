@@ -200,10 +200,10 @@ div.nuxeo-docview-main {
 div.nuxeo-docview-metadata {
     background-color: #EAEAEA;
     color: #666666;
-    float: right;
+    /*float: right;*/
     margin-left: 8px;
     padding: 4px;
-    width: 30%;
+    /*width: 30%;*/
 }
 
 /* Template : Vue compacte */
