@@ -367,6 +367,22 @@ public class NuxeoController {
 		return resourceURL.toString();
 	}
 	
+	public String createPictureLink(String path, String content) {
+
+		ResourceURL resourceURL = response.createResourceURL();
+		resourceURL.setResourceID(path + "/" + content);
+
+		resourceURL.setParameter("type", "picture");
+		resourceURL.setParameter("content", content);
+		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
 	public String createRedirectDocumentLink(String path) {
 
 		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte

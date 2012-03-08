@@ -1,8 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.jbossportal;
 
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,10 +99,16 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 	
 	
+	protected synchronized List<AsyncCommandBean> getAsyncronousCommands() {
+		
+		// Generate a list to avoid concurrency issues
+		List<AsyncCommandBean> commands = new ArrayList<AsyncCommandBean>();
+		
+		for( AsyncCommandBean command : asyncCommands)	{
+			commands.add(command);
+		}
 
-	protected synchronized Set<AsyncCommandBean> getAsyncronousCommand() {
-
-		return asyncCommands;
+		return commands;
 	}
 
 	private boolean checkScope(NuxeoCommandContext ctx) throws Exception {

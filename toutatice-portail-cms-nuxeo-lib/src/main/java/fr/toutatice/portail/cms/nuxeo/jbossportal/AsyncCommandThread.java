@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.jbossportal;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,12 +41,10 @@ public class AsyncCommandThread implements Runnable {
 				//logger.debug("execution asynchrone thread " + Thread.currentThread().getId() + " nb taches:" + commandService.getAsyncronousCommand().size());
 
 				// Nouvelle itération sur les commandes
-
-				Iterator<AsyncCommandBean> iCommands = commandService.getAsyncronousCommand().iterator();
-
-				while (iCommands.hasNext()) {
-
-					AsyncCommandBean command = iCommands.next();
+				
+				List<AsyncCommandBean> commands = commandService.getAsyncronousCommands();
+					
+				for( AsyncCommandBean command : commands)	{
 
 					try {
 

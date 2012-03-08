@@ -126,6 +126,8 @@ public class CMSPortlet extends GenericPortlet {
 
 	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 			throws PortletException, IOException {
+		
+	
 
 		try {
 
@@ -266,23 +268,56 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
+			if ("picture".equals(resourceRequest.getParameter("type"))) {
+				
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String content = resourceRequest.getParameter("content");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+	
+
+				BinaryContent picture = ResourceUtil.getPictureContent(ctx, docPath, content);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(picture.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + picture.getName() + "");
+
+				ResourceUtil.copy(new FileInputStream(picture.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+				
+				
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
+			}
+			
 			
 		} catch( NuxeoException e){
 			/* Pas possible de passer par la valve standard sur les ressources */
 			
 			
 			if( e.getErrorCode() == NuxeoException.ERROR_NOTFOUND)	{
+			
+					URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),
+							System.getProperty("error.default_page_uri"));
+					String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
 
-				URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),  System.getProperty("error.default_page_uri"));
-				String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
-				
-				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-				resourceResponse.setProperty("Location", sUrl);
-				resourceResponse.getPortletOutputStream().close();				
+					resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+							String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+					resourceResponse.setProperty("Location", sUrl);
+					resourceResponse.getPortletOutputStream().close();
+					
+					
 
-
+					String message = "Resource CMSPortlet " + resourceRequest.getParameterMap() + " not found (error 404).";
+					
+					logger.error(message);
 				}
+
+
 			else if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
 				
 

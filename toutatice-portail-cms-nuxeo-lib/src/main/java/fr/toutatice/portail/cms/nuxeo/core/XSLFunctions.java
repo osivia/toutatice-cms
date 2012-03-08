@@ -28,6 +28,9 @@ public class XSLFunctions {
 	// "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
 	
+	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
+	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
+	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
 
 	public XSLFunctions(NuxeoController ctx) {
@@ -117,6 +120,19 @@ public class XSLFunctions {
 						String fileIndex = mRes.group(3);
 						
 						return ctx.createAttachedFileLink(uid, fileIndex);
+						} 
+					}
+					
+					Matcher mPictures = picturesExp.matcher(url.getRawPath());
+					
+					if( mPictures.matches())	{
+
+					if (mPictures.groupCount() > 0) {
+
+						String uid = mPictures.group(1);
+						String content = mPictures.group(2);
+						
+						return ctx.createPictureLink(uid, content);
 						} 
 					}
 					
