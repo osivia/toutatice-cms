@@ -50,24 +50,39 @@ public class FileBrowserPortlet extends CMSPortlet {
 	public static final String DISPLAY_MODE_NORMAL = "normal";
 	public static final String DISPLAY_MODE_DETAILED = "detailed";	
 	
-	public static boolean isFolder( Document doc)	{
+	public static boolean isNavigable( Document doc)	{
 		
-		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType());
+		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType());
+
+	}
+	
+	public static boolean isOrdered (Document doc)	{
+		
+		return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType() );
 
 	}
 
-	static final Comparator<Document> DEFAULT_ORDER = new Comparator<Document>() {
+	public static Comparator<Document> createComparator( final Document parentDoc){
+	
+	 Comparator<Document> comparator = new Comparator<Document>() {
 		
 		public int compare(Document e1, Document e2) {
 			
-			if (isFolder(e1) && !isFolder(e2))
-				return -1;
-
-			if (!isFolder(e1) && isFolder(e2))
-				return +1;
-
-			return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+			if( isOrdered(parentDoc))	{
+				
+				long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+				long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));		
+				
+				return pos1 > pos2 ? 1 : -1;
+				
+			}
+			else	{
+				return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+			}
 		}
+	 };
+		
+		return comparator;
 	};
 
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
@@ -204,7 +219,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
-				Collections.sort(sortedDocs, DEFAULT_ORDER);
+				Collections.sort(sortedDocs, createComparator( doc));
 				request.setAttribute("docs", sortedDocs);
 
 				/* Récupération des parents (pour le path) */

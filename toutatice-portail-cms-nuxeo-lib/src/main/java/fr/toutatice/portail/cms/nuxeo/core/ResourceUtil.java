@@ -176,8 +176,17 @@ public class ResourceUtil {
 				blob.getFile().delete();
 				
 				BinaryContent content = new BinaryContent();
+				
+				// JSS v 1.0.10 : traitement nom fichier à null
+				
+				String fileName = blob.getFileName();
+				if( fileName == null || "null".equals(fileName)){
+					
+					// Pb. sur l'upload, on prend le nom du document
+					fileName = doc.getTitle();
+				}
 
-				content.setName(blob.getFileName());
+				content.setName(fileName);
 				content.setFile(tempFile);
 				content.setMimeType(blob.getMimeType());
 

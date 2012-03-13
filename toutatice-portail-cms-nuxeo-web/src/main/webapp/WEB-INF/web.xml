@@ -12,6 +12,17 @@
     This application is a portlet. It can not be used outside a portal.
     This web.xml file is mandatory in each .par archive file.
 	</description>
+	
+	<servlet>
+		<servlet-name>IconsServlet</servlet-name>
+		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.icons.IconsServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>IconsServlet</servlet-name>
+		<url-pattern>/nuxeo_icons/*</url-pattern>
+	</servlet-mapping>
+	
 
 
 </web-app>

@@ -60,7 +60,7 @@ while( it.hasNext())	{
 	String bigIcon = Formater.formatNuxeoBigIcon(doc);
 	String target = "";	
 	
-	 if( FileBrowserPortlet.isFolder(doc))	{
+	 if( FileBrowserPortlet.isNavigable(doc))	{
 		PortletURL folderURL = renderResponse.createRenderURL();
 		folderURL.setParameter("folderPath", doc.getPath());
 		if( displayMode != null)

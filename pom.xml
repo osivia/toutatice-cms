@@ -4,7 +4,7 @@
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>cms-parent</artifactId>
-	<version>1.0.9-SNAPSHOT</version>
+	<version>1.0.10-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>toutatice-portail-cms</name>
 
@@ -27,7 +27,7 @@
 		<jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
 		<jboss.version>4.2.3.GA</jboss.version>
 
-		<toutatice.core.version>1.0.9</toutatice.core.version>
+		<toutatice.core.version>1.0.10-SNAPSHOT</toutatice.core.version>
 
 
 	</properties>
