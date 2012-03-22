@@ -149,7 +149,7 @@ public class AbstractFormater {
 	 */
 	public static String formatNuxeoIcon(Document doc) {
 		
-		String portalIcon = "file.gif";
+
 		
 		
 		// Tous les éléments navigables sont représentés comme des folders
@@ -157,10 +157,17 @@ public class AbstractFormater {
 		if( "Folder".equals(doc.getType()) 
 				|| "OrderedFolder".equals(doc.getType())
 				|| "Workspace".equals(doc.getType()) 
-				|| "WorkspaceRoot".equals(doc.getType()))
+				|| "WorkspaceRoot".equals(doc.getType())
+				|| "Section".equals(doc.getType())
+				|| "SectionRoot".equals(doc.getType())
+				|| "WorkspaceRoot".equals(doc.getType())
+		)
 		
-			portalIcon = "folder.gif";
+			return "/img/icons/folder.gif";
 		
+		// Autres types de document : on se serta de la méta-donnée 'icon'
+		
+		String portalIcon = "file.gif";
 		
 		String iconName = extractNuxeoIconName( doc);
 

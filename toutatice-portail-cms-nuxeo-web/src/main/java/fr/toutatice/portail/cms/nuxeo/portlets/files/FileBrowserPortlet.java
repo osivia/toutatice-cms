@@ -52,13 +52,13 @@ public class FileBrowserPortlet extends CMSPortlet {
 	
 	public static boolean isNavigable( Document doc)	{
 		
-		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType());
+		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType())|| "PortalSite".equals(doc.getType()) || "Section".equals(doc.getType()) || "SectionRoot".equals(doc.getType());
 
 	}
 	
 	public static boolean isOrdered (Document doc)	{
 		
-		return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType() );
+		return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "PortalSite".equals(doc.getType()) ;
 
 	}
 

@@ -1,5 +1,6 @@
 
-<%@page import="fr.toutatice.portail.core.nuxeo.ListTemplate"%>
+
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>

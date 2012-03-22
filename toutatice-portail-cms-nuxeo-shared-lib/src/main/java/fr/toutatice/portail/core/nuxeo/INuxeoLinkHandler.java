@@ -22,7 +22,7 @@ public interface INuxeoLinkHandler {
 	 * (utilisé depuis de portal site)
 	 * */
 	 
-	public Link getDirectLink( LinkHandlerCtx ctx) throws Exception ;
+	public Link getServiceLink( LinkHandlerCtx ctx) throws Exception ;
 
 
 }

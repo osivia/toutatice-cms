@@ -8,6 +8,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 public class SearchCommand implements INuxeoCommand{
 	
@@ -62,7 +63,7 @@ public class SearchCommand implements INuxeoCommand{
 		request.set("page", pageNumber);
 		
 
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common");
+		request.setHeader(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());
 
 		PaginableDocuments result = (PaginableDocuments) request.execute();
 		

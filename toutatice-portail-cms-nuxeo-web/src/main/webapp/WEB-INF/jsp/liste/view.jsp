@@ -1,3 +1,4 @@
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
 <%@ page contentType="text/plain; charset=UTF-8"%>
@@ -65,7 +66,7 @@ while( it.hasNext())
 
 		// Appel de la jsp
 		
-		String jspName = "view-"+ ctx.getListTemplates().get(style).getKey().toLowerCase() + ".jsp";
+		String jspName = "view-"+ ViewListPortlet.getListTemplates().get(style).getKey().toLowerCase() + ".jsp";
 		renderRequest.setAttribute("parite", parite);
 		renderRequest.setAttribute("doc", doc);
 		

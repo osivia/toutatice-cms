@@ -2,7 +2,6 @@ package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
 
 import javax.servlet.http.HttpSessionEvent;
 
@@ -15,7 +14,6 @@ import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 
 import fr.toutatice.portail.api.profiler.IProfilerService;
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
-import fr.toutatice.portail.core.nuxeo.ListTemplate;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
@@ -29,8 +27,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	private static Log logger = LogFactory.getLog(NuxeoService.class);
 
 	INuxeoLinkHandler linkHandler;
-
-	List<ListTemplate> templates;
 
 	private transient IProfilerService profiler;
 
@@ -104,15 +100,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	}
 
-	public void registerListTemplates(List<ListTemplate> templates) {
-		this.templates = templates;
-
-	}
-
-	public List<ListTemplate> getListTemplates() {
-
-		return templates;
-	}
 
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 

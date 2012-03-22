@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-import javax.portlet.RenderResponse;
 import javax.portlet.ResourceURL;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
@@ -16,19 +14,16 @@ import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
 import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
 
-
-
-public class DefaultLinkHandler implements INuxeoLinkHandler {
+public class DefaultLinkHandler   implements INuxeoLinkHandler {
 	
 	PortletContext portletCtx;
-	protected IPortalUrlFactory portalUrlFactory;	
-
+	protected IPortalUrlFactory portalUrlFactory;		
+	
 	public DefaultLinkHandler(PortletContext ctx) {
 		super();
 		this.portletCtx = ctx;
 		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");		
 	}
-	
 	public String createExternalLink(LinkHandlerCtx ctx) {
 
 		ResourceURL resourceURL = ctx.getResponse().createResourceURL();
@@ -65,6 +60,29 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 
 	public String createFileFolderLink(LinkHandlerCtx ctx) {
 		
+		
+		//Modif JSS v 1.0.9-SNAPSHOT : affichage par défaut d'un folder
+		
+		Map<String, String> windowProperties = new HashMap<String, String>();
+		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ ctx.getDoc().getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
+		windowProperties.put("pia.cms.scope",  ctx.getScope());
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", "1");
+		windowProperties.put("pia.title", "Dossier " + ctx.getDoc().getTitle());	
+		windowProperties.put("pia.cms.pageSizeMax", "10");
+		
+
+		
+		Map<String, String> params = new HashMap<String, String>();
+		
+		String url = portalUrlFactory.getStartProcUrl(new PortalControllerContext(ctx.getPortletCtx(), ctx.getRequest(),
+				ctx.getResponse()), ctx.getPageId(), "toutatice-portail-cms-nuxeo-viewListPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+
+		return url;
+		/*
 		Map<String, String> windowProperties = new HashMap<String, String>();
 		windowProperties.put("pia.cms.uri", ctx.getDoc().getPath());
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");		
@@ -82,6 +100,7 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 				ctx.getResponse()), ctx.getPageId(), "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
 		
 		return url;
+		*/
 	}
 	
 	
@@ -89,13 +108,14 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
 		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ ctx.getDoc().getPath()+"' ");
-		windowProperties.put("pia.cms.style", DefaultListTemplatesHandler.STYLE_EDITORIAL);
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
 		windowProperties.put("pia.cms.scope",  ctx.getScope());
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", "1");
 		windowProperties.put("pia.title", "Annonces " + ctx.getDoc().getTitle());	
+		windowProperties.put("pia.cms.pageSizeMax", "10");
 
 		
 		Map<String, String> params = new HashMap<String, String>();
@@ -125,13 +145,14 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
 		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ctx.getDoc().getPath()+"' ");
-		windowProperties.put("pia.cms.style", DefaultListTemplatesHandler.STYLE_EDITORIAL);
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
 		windowProperties.put("pia.cms.scope", ctx.getScope());
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());		
 		windowProperties.put("pia.title", "Liste de liens");	
+		windowProperties.put("pia.cms.pageSizeMax", "10");
 
 		
 		Map<String, String> params = new HashMap<String, String>();
@@ -164,7 +185,7 @@ public class DefaultLinkHandler implements INuxeoLinkHandler {
 	}
 	
 	
-	public Link getDirectLink(LinkHandlerCtx ctx)	throws Exception  {
+	public Link getServiceLink(LinkHandlerCtx ctx)	throws Exception  {
 			
 
 		Document doc = ctx.getDoc();
