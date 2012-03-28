@@ -169,7 +169,10 @@ public class CMSPortlet extends GenericPortlet {
 				if ("ContextualLink".equals(doc.getType()))	{
 					url = doc.getString("clink:link");
 				} else	{
-					Link link = ctx.getServiceLink(doc);
+					//
+					//Link link = ctx.getServiceLink(doc);
+					// V 1.0.11 : lien vers les documents
+					Link link = ctx.getLink(doc);
 					url = link.getUrl();
 					
 				}

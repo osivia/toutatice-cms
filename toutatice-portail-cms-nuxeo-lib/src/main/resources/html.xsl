@@ -40,6 +40,13 @@
       </xsl:attribute>
 	</xsl:template>
 	
+		<xsl:template match="AREA/@href">
+		<xsl:attribute name="href">
+         	<xsl:value-of select="bridge:link($bridge,  .)" />
+      </xsl:attribute>
+	</xsl:template>
+	
+	
 	
 	<xsl:template match="@*|*">
 		<xsl:copy>
