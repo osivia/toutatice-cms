@@ -30,6 +30,8 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        
 	</portlet>
 	
 	<portlet>
@@ -59,6 +61,8 @@
         </portlet-info>
         
       <supported-public-render-parameter>selectors</supported-public-render-parameter>
+      
+      <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
          
 	</portlet>
 	
@@ -88,6 +92,41 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
+ <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>       
+        
+	</portlet>
+	
+	
+		<portlet>
+	
+	   	<description>Portlet Nuxeo menu publication PIA</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-name>
+        <display-name>Portlet menu publication Nuxeo</display-name>
+		
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.publish.MenuPortlet</portlet-class>
+        
+        <expiration-cache>180</expiration-cache>
+        
+  		        
+        <supports>
+			<mime-type>text/html</mime-type>
+          	<portlet-mode>view</portlet-mode>
+			<portlet-mode>admin</portlet-mode>
+ 		</supports>
+
+        <supported-locale>en</supported-locale>
+    	<supported-locale>fr</supported-locale>        
+
+		<portlet-info>
+			<title>Nuxeo publish menu </title>
+			<short-title>Nuxeo  Publish Portlet</short-title>
+			<keywords>Portlet,Nuxeo,CMS</keywords>
+        </portlet-info>
+        
+        
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>        
 	</portlet>
 	
 	<portlet>
@@ -115,6 +154,8 @@
 			<short-title>Nuxeo  Files Browser</short-title>
 			<keywords>Portlet,Files</keywords>
         </portlet-info>
+
+		<supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
         
 	</portlet>	
 	
@@ -144,7 +185,9 @@
 			<keywords>Portlet,Search</keywords>
         </portlet-info>
         
-      <supported-public-render-parameter>pia.keywords</supported-public-render-parameter>        
+      <supported-public-render-parameter>pia.keywords</supported-public-render-parameter>       
+      
+      <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter> 
        
 	</portlet>	
 	
@@ -175,6 +218,8 @@
        
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
 
           
 	</portlet>
@@ -205,6 +250,8 @@
         </portlet-info>
        
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
 
 	</portlet>
 	
@@ -235,9 +282,13 @@
        
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
 
           
 	</portlet>	
+	
+
 	
 	<public-render-parameter>
         <identifier>selectors</identifier>
@@ -249,6 +300,10 @@
         <name>pia.keywords</name>
 	</public-render-parameter>	
 	
-	
+	<public-render-parameter>
+        <identifier>pia.cms.path</identifier>
+        <name>pia.cms.path</name>
+	</public-render-parameter>	
+		
 	
  </portlet-app>

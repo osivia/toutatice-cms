@@ -1,4 +1,4 @@
-package fr.toutatice.portail.core.nuxeo;
+package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 public class ListTemplate {
 	

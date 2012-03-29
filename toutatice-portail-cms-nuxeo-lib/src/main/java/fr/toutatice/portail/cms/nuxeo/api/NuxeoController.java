@@ -45,7 +45,7 @@ import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
 
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
-import fr.toutatice.portail.core.nuxeo.ListTemplate;
+
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 import fr.toutatice.portail.core.profils.IProfilManager;
@@ -66,6 +66,25 @@ public class NuxeoController {
 	String scope;
 	String displayLiveVersion;
 	String hideMetaDatas;
+	String template;
+	String contextualization;
+	
+	public String getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(String template) {
+		this.template = template;
+	}
+
+	public String getContextualization() {
+		return contextualization;
+	}
+
+	public void setContextualization(String contextualization) {
+		this.contextualization = contextualization;
+	}
+
 	public String getHideMetaDatas() {
 		return hideMetaDatas;
 	}
@@ -434,25 +453,25 @@ public class NuxeoController {
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
 	}	
-	
-	public Link getDirectLink(Document doc) throws Exception 	{
+	/*
+	public Link getServiceLink(Document doc) throws Exception 	{
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
-		return nuxeoService.getLinkHandler().getDirectLink(handlerCtx);
+		return nuxeoService.getLinkHandler().getServiceLink(handlerCtx);
 	}
+*/
 	
-	public Map<String, ListTemplate> getListTemplates()	throws Exception {
+
+	public Link getContextualLink(Document doc) throws Exception 	{
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		List<ListTemplate> templatesList = nuxeoService.getListTemplates();
-		Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
-		for( ListTemplate template : templatesList)
-			templatesMap.put(template.getKey(), template);
-		return templatesMap;
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
+		return nuxeoService.getLinkHandler().getContextualLink(handlerCtx);
 	}
 	
 

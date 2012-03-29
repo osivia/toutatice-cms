@@ -4,9 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -25,29 +22,23 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-
-
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.LinkHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplatesHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultLinkHandler;
+
+import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.profils.ProfilBean;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -72,7 +63,9 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
 			
 			nuxeoService.registerLinkHandler(new LinkHandler(getPortletContext()));
-			nuxeoService.registerListTemplates(new ListTemplatesHandler().getListTemplates());
+
+			
+			nuxeoService.registerCMSService(new CMSService(getPortletContext()));
 			
 
 		} catch( Exception e)	{

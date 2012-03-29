@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,7 +70,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 
-				ControllerContext controllerCtx = (ControllerContext) ctx.getRequest().getAttribute("pia.controller");
+				ControllerContext controllerCtx = ctx.getControlerContext();
+
 
 				User user = (User) controllerCtx.getServerInvocation().getAttribute(Scope.PRINCIPAL_SCOPE,
 						UserInterceptor.USER_KEY);

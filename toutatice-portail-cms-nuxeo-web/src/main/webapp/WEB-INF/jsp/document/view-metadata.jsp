@@ -53,6 +53,6 @@ if( map != null && map.getString("data") != null)
 	<span style="font-weight:bold">Vignette : </span><br/><%=srcVignette %>
 <%} %>
 
-
+<a href="<%= ctx.getContextualLink(doc).getUrl() %>">Recontextualiser</a>
 	
 </div>

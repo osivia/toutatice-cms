@@ -102,7 +102,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 					
 					//Réinitialisation des fenetres en mode NORMAL
-					req.setAttribute("pia.initPageState", "true");
+					req.setAttribute("pia.unsetMaxMode", "true");
 				}
 			}
 			res.setPortletMode(PortletMode.VIEW);
@@ -122,7 +122,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("pia.unsetMaxMode", "true");
 			}
 		}
 

@@ -157,6 +157,8 @@ public class CMSPortlet extends GenericPortlet {
 				String hideMetadatas = ctx.getHideMetaDatas();
 				ctx.setHideMetaDatas(null);
 				
+				String template = ctx.getTemplate();
+				
 				
 				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
 						.executeNuxeoCommand(new DocumentFetchPublishedCommand(docPath));
@@ -167,7 +169,8 @@ public class CMSPortlet extends GenericPortlet {
 				if ("ContextualLink".equals(doc.getType()))	{
 					url = doc.getString("clink:link");
 				} else	{
-					Link link = ctx.getDirectLink(doc);
+					ctx.setTemplate("hyperlink");
+					Link link = ctx.getLink(doc);
 					url = link.getUrl();
 					
 				}
@@ -175,6 +178,7 @@ public class CMSPortlet extends GenericPortlet {
 				// On remet le scope
 				ctx.setScope(scope);
 				ctx.setHideMetaDatas(hideMetadatas);
+				ctx.setTemplate(template);
 				
 				
 				// To keep historic

@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.portlet.PortletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
@@ -111,10 +113,11 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS)
 			return true;
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
-			if ("true".equals(ctx.getRequest().getAttribute("pia.isAdministrator")))
+			if( ctx.isAdministrator())
 				return true;
 			else
 				return getProfilManager( ctx).verifierProfilUtilisateur(ctx.getAuthProfil().getName());
+	
 		}
 		return false;
 	}

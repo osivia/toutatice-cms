@@ -65,7 +65,7 @@ while( it.hasNext())
 
 		// Appel de la jsp
 		
-		String jspName = "view-"+ ctx.getListTemplates().get(style).getKey().toLowerCase() + ".jsp";
+		String jspName = "view-"+ ViewListPortlet.getListTemplates().get(style).getKey().toLowerCase() + ".jsp";
 		renderRequest.setAttribute("parite", parite);
 		renderRequest.setAttribute("doc", doc);
 		

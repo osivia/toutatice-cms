@@ -14,8 +14,12 @@ import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 
 import fr.toutatice.portail.api.profiler.IProfilerService;
+import fr.toutatice.portail.core.cms.CMSException;
+import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.cms.ICMSService;
+
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
-import fr.toutatice.portail.core.nuxeo.ListTemplate;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
@@ -30,7 +34,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	INuxeoLinkHandler linkHandler;
 
-	List<ListTemplate> templates;
+
+	ICMSService cmsService;
 
 	private transient IProfilerService profiler;
 
@@ -104,15 +109,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	}
 
-	public void registerListTemplates(List<ListTemplate> templates) {
-		this.templates = templates;
-
-	}
-
-	public List<ListTemplate> getListTemplates() {
-
-		return templates;
-	}
 
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 
@@ -141,5 +137,22 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		}
 
 	}
+
+	public void registerCMSService(ICMSService cmsService) {
+		this.cmsService = cmsService;
+		
+	}
+
+	public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException{
+		return cmsService.getChildren(ctx, path);
+	}
+
+	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
+
+		return cmsService.getContent(ctx, path);
+	}
+
+
+
 
 }

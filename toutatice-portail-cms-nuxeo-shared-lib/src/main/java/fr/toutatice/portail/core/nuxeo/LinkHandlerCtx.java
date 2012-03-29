@@ -16,6 +16,17 @@ public class LinkHandlerCtx {
 	String scope;
 	String displayLiveVersion;
 	String hideMetaDatas;
+	String template;
+	String contextualization;
+
+
+	public String getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(String template) {
+		this.template = template;
+	}
 
 	public String getHideMetaDatas() {
 		return hideMetaDatas;

@@ -38,10 +38,10 @@ import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultListTemplatesHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplatesHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 
-import fr.toutatice.portail.core.nuxeo.ListTemplate;
+
 import fr.toutatice.portail.core.profils.ProfilBean;
 
 /**
@@ -52,6 +52,13 @@ public class ViewListPortlet extends CMSPortlet  {
 
 	private static Log logger = LogFactory.getLog(ViewListPortlet.class);
 	
+	public static  Map<String, ListTemplate> getListTemplates() {
+		List<ListTemplate> templatesList = CMSCustomizer.getListTemplates();
+		Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
+		for (ListTemplate template : templatesList)
+			templatesMap.put(template.getKey(), template);
+		return templatesMap;
+	}
 
 	
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
@@ -210,12 +217,12 @@ public class ViewListPortlet extends CMSPortlet  {
 		
 		/* Styles d'affichage */
 		
-		Map<String, ListTemplate> templates = ctx.getListTemplates();
+		Map<String, ListTemplate> templates = getListTemplates();
 		req.setAttribute("templates", templates);
 	
 		String style = window.getProperty("pia.cms.style");
 		if( style == null)
-			style = DefaultListTemplatesHandler.STYLE_NORMAL;
+			style = CMSCustomizer.STYLE_NORMAL;
 		req.setAttribute("style", style);
 		
 		String pageSize = window.getProperty("pia.cms.pageSize");
@@ -326,7 +333,7 @@ public class ViewListPortlet extends CMSPortlet  {
 			
 			String style = window.getProperty("pia.cms.style");
 			if( style == null)
-				style = DefaultListTemplatesHandler.STYLE_NORMAL;
+				style = CMSCustomizer.STYLE_NORMAL;
 
 
 
@@ -349,11 +356,11 @@ public class ViewListPortlet extends CMSPortlet  {
 							requestPageSize = Math.min( requestPageSize, maxItems);
 						}
 						
-						ListTemplate template = ctx.getListTemplates().get(style);
+						ListTemplate template = getListTemplates().get(style);
 						if( template == null)
-							template = ctx.getListTemplates().get(DefaultListTemplatesHandler.STYLE_NORMAL);
+							template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
 						
-						String schemas = ctx.getListTemplates().get(style).getSchemas();
+						String schemas = getListTemplates().get(style).getSchemas();
 
 						
 						PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas));
