@@ -139,9 +139,6 @@ public class XSLFunctions {
 
 						String uid = mPictures.group(1);
 						
-						//v 1.0.11 : pb. des pices jointes dans le proxy
-						if(  ctx.getCurrentDoc() != null)
-							uid = ctx.getCurrentDoc().getId();
 						String content = mPictures.group(2);
 						
 						return ctx.createPictureLink(uid, content);
