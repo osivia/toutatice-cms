@@ -4,7 +4,7 @@
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>cms-parent</artifactId>
-	<version>1.0.12</version>
+	<version>1.0.13-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>toutatice-portail-cms</name>
 
@@ -207,7 +207,7 @@
 	</build>
 
  	<scm>
-    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/1.0.12</developerConnection>
+    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/1.0</developerConnection>
   	</scm>
 
 
