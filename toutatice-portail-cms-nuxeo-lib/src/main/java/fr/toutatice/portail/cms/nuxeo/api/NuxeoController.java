@@ -58,6 +58,16 @@ public class NuxeoController {
 	String scope;
 	String displayLiveVersion;
 	String hideMetaDatas;
+	
+	//v 1.0.11 : pb. des pices jointes dans le proxy
+	Document currentDoc;
+	public Document getCurrentDoc() {
+		return currentDoc;
+	}
+	public void setCurrentDoc(Document currentDoc) {
+		this.currentDoc = currentDoc;
+	}
+
 	public String getHideMetaDatas() {
 		return hideMetaDatas;
 	}

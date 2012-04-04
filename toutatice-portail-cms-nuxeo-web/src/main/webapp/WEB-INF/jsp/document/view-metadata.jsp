@@ -1,3 +1,4 @@
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
 <%@ page contentType="text/html; charset=UTF-8"%>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
@@ -52,6 +53,12 @@ if( map != null && map.getString("data") != null)
 <%if(srcVignette.length()!=0) {%>
 	<span style="font-weight:bold">Vignette : </span><br/><%=srcVignette %>
 <%} %>
+
+<% Link adminLink = ViewDocumentPortlet.getAdministrationLink( ctx);
+   if( adminLink != null)	{
+%>
+	<span style="font-weight:bold">Modification : </span><span> <a target="_blank" href="<%=adminLink.getUrl()%>">Accès Nuxeo</a></span><br/>
+<% } %>
 
 
 	

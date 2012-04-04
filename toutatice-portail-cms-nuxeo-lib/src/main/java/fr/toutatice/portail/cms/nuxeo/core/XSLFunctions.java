@@ -36,9 +36,10 @@ public class XSLFunctions {
 	public XSLFunctions(NuxeoController ctx) {
 		this.ctx = ctx;
 
-		// TODO : attention aux images externes
+	
 	}
 	
+
 	
 	
 	/**
@@ -102,6 +103,8 @@ public class XSLFunctions {
 		
 		String trim = link.trim().replace(" ", "%20");
 		URI url = ctx.getNuxeoPublicBaseUri().resolve(trim);
+		
+		
 
 		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
 			if (url.getHost().equals(ctx.getNuxeoPublicBaseUri().getHost())) {
@@ -117,6 +120,11 @@ public class XSLFunctions {
 					if (mRes.groupCount() > 0) {
 
 						String uid = mRes.group(2);
+						
+						//v 1.0.11 : pb. des pices jointes dans le proxy
+						if(  ctx.getCurrentDoc() != null)
+							uid = ctx.getCurrentDoc().getId();
+						
 						String fileIndex = mRes.group(3);
 						
 						return ctx.createAttachedFileLink(uid, fileIndex);
@@ -130,6 +138,10 @@ public class XSLFunctions {
 					if (mPictures.groupCount() > 0) {
 
 						String uid = mPictures.group(1);
+						
+						//v 1.0.11 : pb. des pices jointes dans le proxy
+						if(  ctx.getCurrentDoc() != null)
+							uid = ctx.getCurrentDoc().getId();
 						String content = mPictures.group(2);
 						
 						return ctx.createPictureLink(uid, content);

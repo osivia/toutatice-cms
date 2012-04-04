@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.api.statut.IStatutService;
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -58,6 +59,53 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 	private static Log logger = LogFactory.getLog(ViewDocumentPortlet.class);
 	
 	private INuxeoService nuxeoService;
+	
+	
+	// v 1.0.11 : ajout lien modification dans Nuxeo
+	
+	public static Link getAdministrationLink( NuxeoController ctx ) throws Exception {
+		
+		if( ctx.getRequest().getRemoteUser() == null)
+			return null;
+		
+		
+		String savedScope = ctx.getScope();
+
+		try {
+			ctx.setScope(null);
+
+			Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+					.executeNuxeoCommand(new DocumentFetchLiveCommand(ctx.getCurrentDoc().getPath(), "Write"));
+
+			if (doc != null) {
+				return new Link(ctx.getNuxeoPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
+						+ "/view_documents", true);
+			}
+		}
+
+		catch (Exception e) {
+
+			if (e instanceof NuxeoException) {
+				NuxeoException ne = (NuxeoException) e;
+
+				if (ne.getErrorCode() == NuxeoException.ERROR_FORBIDDEN
+						|| ne.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+					// On ne fait rien : le document n'existe pas ou je n'ai pas
+					// les droits
+				} else
+					throw e;
+			}
+
+			logger.error(e);
+		}
+
+		finally {
+			ctx.setScope(savedScope);
+		}
+
+		return null;
+		
+	}
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -223,6 +271,10 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 //							synchronized (WysiwygParser.getInstance())
 							{
 							Transformer transformer =  WysiwygParser.getInstance().getTemplate().newTransformer();
+
+							//v 1.0.11 : pb. des pices jointes dans le proxy
+							ctx.setCurrentDoc(doc);
+							
 
 							transformer.setParameter("bridge", new XSLFunctions(ctx));
 							OutputStream output = new ByteArrayOutputStream();
