@@ -35,7 +35,8 @@ import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.LinkHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+
 
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
@@ -62,7 +63,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			if (nuxeoService == null) 
 				throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
 			
-			nuxeoService.registerLinkHandler(new LinkHandler(getPortletContext()));
+			nuxeoService.registerLinkHandler(new CMSCustomizer(getPortletContext()));
 
 			
 			nuxeoService.registerCMSService(new CMSService(getPortletContext()));

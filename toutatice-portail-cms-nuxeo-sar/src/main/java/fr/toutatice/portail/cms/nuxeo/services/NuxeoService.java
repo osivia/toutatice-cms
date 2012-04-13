@@ -15,6 +15,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 
 import fr.toutatice.portail.api.profiler.IProfilerService;
 import fr.toutatice.portail.core.cms.CMSException;
+import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
@@ -150,6 +151,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
 
 		return cmsService.getContent(ctx, path);
+	}
+
+	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
+		return  cmsService.getItemHandler(ctx);
 	}
 
 

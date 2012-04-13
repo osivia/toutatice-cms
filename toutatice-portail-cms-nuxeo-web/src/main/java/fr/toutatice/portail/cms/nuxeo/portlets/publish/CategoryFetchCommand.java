@@ -32,7 +32,8 @@ public class CategoryFetchCommand implements INuxeoCommand {
 
 		request =  session.newRequest("Document.Query");
 
-		String nuxeoRequest = "ecm:parentId = '" + doc.getId()+ "'  AND ecm:mixinType IN ('Folderish') ORDER BY ecm:pos";
+		String nuxeoRequest = "ecm:parentId = '" + doc.getId()+ "' ORDER BY ecm:pos";
+		//String nuxeoRequest = "ecm:parentId = '" + doc.getId()+ "'  AND ecm:mixinType IN ('Folderish') ORDER BY ecm:pos";
 		
 		
 		// Insertion du filtre sur les élements publiés

@@ -37,6 +37,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -152,12 +153,20 @@ public class MenuPortlet extends CMSPortlet {
 		 * PageSelectors.encodeProperties(selectors));
 		 */
 
-		Link link = new Link(portalUrlFactory.getCMSUrl(portalCtx,
-				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, null), false);
+		//Link link = new Link(portalUrlFactory.getCMSUrl(portalCtx,
+		//		page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, null, IPortalUrlFactory.TEMPLATE_NAVIGATION, null, null), false);
+		
+		Link link = ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_NAVIGATION);
 
 		boolean selected = false;
 
+		
+		
 		String categoryPath = portalCtx.getRequest().getParameter("pia.cms.path");
+		
+		String itemRelativePath = portalCtx.getRequest().getParameter("pia.cms.itemRelPath");
+		if( itemRelativePath != null)
+			categoryPath += itemRelativePath;
 
 		if (categoryPath != null && categoryPath.startsWith(doc.getPath()))
 			selected = true;

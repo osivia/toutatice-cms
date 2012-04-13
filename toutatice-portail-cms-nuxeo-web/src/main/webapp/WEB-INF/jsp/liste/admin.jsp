@@ -1,5 +1,6 @@
 
-<%@page import="fr.toutatice.portail.core.nuxeo.ListTemplate"%>
+
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -128,6 +129,12 @@ return requete;
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/><br/>
 
 		<label>Référence permalink :</label> <input type="text" name="permaLinkRef" value="${permaLinkRef}" size="10"> <br/><br/>
+
+
+		<label>Référence rss :</label> <input type="text" name="rssLinkRef" value="${rssLinkRef}" size="10"> <br/><br/>
+
+
+		<label>Titre RSS :</label> <input type="text" name="rssTitle" value="${rssTitle}" size="40"> <br/><br/>
 			
 			<input type="submit" name="modifierPrefs"  value="Valider">
 			<input type="submit" name="annuler"  value="Annuler">

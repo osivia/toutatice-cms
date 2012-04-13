@@ -25,6 +25,7 @@ int currentPage = (Integer) request.getAttribute("currentPage");
 int nbPages = (Integer) renderRequest.getAttribute("nbPages")	;
 
 String permaLinkURL = (String) renderRequest.getAttribute("permaLinkURL")	;
+String rssLinkURL = (String) renderRequest.getAttribute("rssLinkURL")	;
 String nuxeoRequest = (String) renderRequest.getAttribute("nuxeoRequest")	;
 String selectors = (String) renderRequest.getAttribute("selectors")	;
 
@@ -33,10 +34,20 @@ String selectors = (String) renderRequest.getAttribute("selectors")	;
 
 <div class="nuxeo-list-<%=style%>">
 
+<div class="no-ajax-link">
+
 <%
 if( permaLinkURL != null)	{
 %>
 	<div class="nuxeo-list-permalink"><a href="#" onclick="alert('<%= permaLinkURL %>');return false">Permalien</a></div>
+<%
+}
+%>
+
+<%
+if( rssLinkURL != null)	{
+%>
+	<div class="nuxeo-list-rsslink"><a href="<%= rssLinkURL %>">RSS</a></div>
 <%
 }
 %>
@@ -50,7 +61,7 @@ if( permaLinkURL != null)	{
 <%	} %>
 
 
-<div class="no-ajax-link">
+
 	<ul>
 <%
 int indice = 0;

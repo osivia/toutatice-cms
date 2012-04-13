@@ -1,3 +1,5 @@
+<%@page import="fr.toutatice.portail.api.urls.IPortalUrlFactory"%>
+
 <%@ page contentType="text/html; charset=UTF-8"%>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
@@ -53,6 +55,14 @@ if( map != null && map.getString("data") != null)
 	<span style="font-weight:bold">Vignette : </span><br/><%=srcVignette %>
 <%} %>
 
-<a href="<%= ctx.getContextualLink(doc).getUrl() %>">Recontextualiser</a>
+<% String contextualization = ctx.getContextualization();
+   ctx.setContextualization("1");
+%>
+
+<a href="<%= ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_HYPERLINK).getUrl() %>">Recontextualiser</a>
+
+<% ctx.setContextualization(contextualization); %>
+
+
 	
 </div>

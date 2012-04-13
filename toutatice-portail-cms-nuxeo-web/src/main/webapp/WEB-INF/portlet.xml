@@ -31,6 +31,7 @@
         </portlet-info>
         
         <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
         
 	</portlet>
 	
@@ -63,6 +64,7 @@
       <supported-public-render-parameter>selectors</supported-public-render-parameter>
       
       <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+      <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>      
          
 	</portlet>
 	
@@ -92,8 +94,9 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
- <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>       
-        
+       <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>  
+       <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>
+
 	</portlet>
 	
 	
@@ -125,6 +128,7 @@
         
         
         <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
         
         <supported-public-render-parameter>selectors</supported-public-render-parameter>        
 	</portlet>
@@ -156,6 +160,7 @@
         </portlet-info>
 
 		<supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>		
         
 	</portlet>	
 	
@@ -188,6 +193,7 @@
       <supported-public-render-parameter>pia.keywords</supported-public-render-parameter>       
       
       <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter> 
+      <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>      
        
 	</portlet>	
 	
@@ -220,6 +226,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
         <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
 
           
 	</portlet>
@@ -252,6 +259,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
         <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
 
 	</portlet>
 	
@@ -284,6 +292,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
         <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>
 
           
 	</portlet>	
@@ -303,6 +312,11 @@
 	<public-render-parameter>
         <identifier>pia.cms.path</identifier>
         <name>pia.cms.path</name>
+	</public-render-parameter>	
+	
+		<public-render-parameter>
+        <identifier>pia.cms.itemRelPath</identifier>
+        <name>pia.cms.itemRelPath</name>
 	</public-render-parameter>	
 		
 	

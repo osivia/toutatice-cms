@@ -12,7 +12,9 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -29,6 +31,7 @@ import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.cache.services.ICacheService;
+import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
@@ -39,12 +42,12 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
 
+
+import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
+
 
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
@@ -56,7 +59,7 @@ public class NuxeoController {
 	private static Log log = LogFactory.getLog(NuxeoController.class);
 
 	PortletRequest request;
-	RenderResponse response;
+	PortletResponse response;
 	PortletContext portletCtx;
 	IPortalUrlFactory urlFactory;
 	String pageId;
@@ -65,9 +68,22 @@ public class NuxeoController {
 	IProfilManager profilManager;
 	String scope;
 	String displayLiveVersion;
+	String contextualization;
+
+	public String getContextualization() {
+		return contextualization;
+	}
+
+	public void setContextualization(String contextualization) {
+		this.contextualization = contextualization;
+	}
+
 	String hideMetaDatas;
 	String template;
-	String contextualization;
+
+	PortalControllerContext portalCtx;
+	
+
 	
 	public String getTemplate() {
 		return template;
@@ -77,13 +93,7 @@ public class NuxeoController {
 		this.template = template;
 	}
 
-	public String getContextualization() {
-		return contextualization;
-	}
 
-	public void setContextualization(String contextualization) {
-		this.contextualization = contextualization;
-	}
 
 	public String getHideMetaDatas() {
 		return hideMetaDatas;
@@ -208,12 +218,20 @@ public class NuxeoController {
 		return nuxeoConnection;
 	}
 
+	public PortalControllerContext getPortalCtx()	{
 
+		if( portalCtx == null)
+			portalCtx = new PortalControllerContext(
+			 getPortletCtx(), request, response);
+		
+		return portalCtx;
+	}
+	
 	public PortletRequest getRequest() {
 		return request;
 	}
 
-	public RenderResponse getResponse() {
+	public PortletResponse getResponse() {
 		return response;
 	}
 
@@ -221,7 +239,7 @@ public class NuxeoController {
 		return portletCtx;
 	}
 
-	public NuxeoController(PortletRequest request, RenderResponse response, PortletContext portletCtx) throws RuntimeException  {
+	public NuxeoController(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws RuntimeException  {
 		super();
 		this.request = request;
 		this.response = response;
@@ -345,9 +363,17 @@ public class NuxeoController {
 
 	}
 
+	private ResourceURL createResourceURL()	{
+		if( response instanceof RenderResponse)
+			return( (RenderResponse) response).createResourceURL();
+		else if( response instanceof ResourceResponse)
+			return( (ResourceResponse) response).createResourceURL();
+		return null;
+	}
+	
 	public String createFileLink(Document doc, String fieldName) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(doc.getId() + "/" + fieldName);
 		resourceURL.setParameter("type", "file");
 		resourceURL.setParameter("docPath", doc.getPath());
@@ -361,7 +387,7 @@ public class NuxeoController {
 	
 	public String createExternalLink(Document doc) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(doc.getId());
 		resourceURL.setParameter("type", "link");
 		// ne marche pas : bug JBP
@@ -372,7 +398,7 @@ public class NuxeoController {
 
 	public String createAttachedFileLink(String path, String fileIndex) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path + "/" + fileIndex);
 
 		resourceURL.setParameter("type", "attachedFile");
@@ -391,7 +417,7 @@ public class NuxeoController {
 		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte
 		// Il est préférable de faire une redirection
 		
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path );
 		/*
 		resourceURL.setResourceID("/pagemarker/"+path );
@@ -419,7 +445,8 @@ public class NuxeoController {
 	}
 
 	public void handleErrors(NuxeoException e) throws Exception {
-		PortletErrorHandler.handleGenericErrors(getResponse(), e);
+		if( response instanceof RenderResponse)
+			PortletErrorHandler.handleGenericErrors((RenderResponse) response, e);
 	}
 
 	public Object executeNuxeoCommand(INuxeoCommand command) throws Exception {
@@ -446,13 +473,78 @@ public class NuxeoController {
 	}
 	
 	public Link getLink(Document doc) throws Exception 	{
+		/*
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+		*/
+		
+		return getLink(doc, null);
+
 	}	
+	
+	public Link getLink(Document doc, String template) throws Exception 	{
+		/*
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());
+		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+		*/
+		
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		
+		PortalControllerContext portalCtx = new PortalControllerContext(getPortletCtx(),
+				getRequest(),getResponse());
+		
+		CMSServiceCtx handlerCtx = new  CMSServiceCtx();
+		handlerCtx.setCtx(new PortalControllerContext(getPortletCtx(),
+				getRequest(),getResponse()).getControllerCtx());
+		handlerCtx.setPortletCtx(getPortletCtx());
+		handlerCtx.setRequest(getRequest());
+		if( response instanceof RenderResponse)
+			handlerCtx.setResponse( (RenderResponse)response);
+		handlerCtx.setScope(getScope());
+		handlerCtx.setDisplayLiveVersion(getDisplayLiveVersion());
+		handlerCtx.setPageId(getPageId());
+		handlerCtx.setDoc(doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());
+		handlerCtx.setTemplate(getTemplate());
+		handlerCtx.setContextualization(getContextualization());
+		
+		// On regarde si le lien est géré par le portlet
+		
+		Link portletLink = nuxeoService.getLinkHandler().getPortletDelegatedLink(handlerCtx);
+		if( portletLink != null)
+			return portletLink;
+		
+		
+		
+		// Sinon on passe par le gestionnaire de cms pour recontextualiser
+		
+		Window window = (Window) portalCtx.getRequest().getAttribute("pia.window");
+		Page page = window.getPage();
+
+		Map<String, String> pageParams = new HashMap<String, String>();
+		
+		Link link = new Link(getPortalUrlFactory().getCMSUrl(portalCtx,
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, getContextualization(), template, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null), false);
+		return link;
+	
+
+	}	
+	
+
+	
+	
+	
+	
 	/*
 	public Link getServiceLink(Document doc) throws Exception 	{
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
@@ -464,15 +556,19 @@ public class NuxeoController {
 	}
 */
 	
-
+/*
 	public Link getContextualLink(Document doc) throws Exception 	{
+
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
 		return nuxeoService.getLinkHandler().getContextualLink(handlerCtx);
+
+		
 	}
+	*/
 	
 
 }

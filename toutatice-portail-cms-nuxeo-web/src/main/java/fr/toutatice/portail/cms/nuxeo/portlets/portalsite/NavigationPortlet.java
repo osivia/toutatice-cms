@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
@@ -134,7 +135,7 @@ public class NavigationPortlet extends CMSPortlet {
 				List<ServiceDisplayItem> listItems = new ArrayList<ServiceDisplayItem>();
 				for (Document child : portalSite.getChildren()) {
 
-					Link link = ctx.getServiceLink(child);
+					Link link = ctx.getLink(child, IPortalUrlFactory.TEMPLATE_NAVIGATION);
 
 					if (link != null)
 						listItems.add(new ServiceDisplayItem(child.getTitle(), link.getUrl(), link.isExternal()));

@@ -15,18 +15,20 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandService;
 import fr.toutatice.portail.core.cms.CMSException;
+import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
 
-public class CMSService implements ICMSService{
+public class CMSService implements ICMSService {
 	
 	private PortletContext portletCtx;
-	INuxeoCommandService nuxeoService;
+	INuxeoCommandService nuxeoCommandService;
+	INuxeoService nuxeoService;
 	IProfilManager profilManager;
 
 	public CMSService(PortletContext portletCtx) {
@@ -51,15 +53,26 @@ public class CMSService implements ICMSService{
 		if (profilManager == null)
 			 profilManager = (IProfilManager) portletCtx.getAttribute("ProfilService");
 		
-
 		return profilManager;
+	}
+	
+	
+
+
+	public INuxeoService getNuxeoService() throws Exception {
+		
+		if (nuxeoService == null)
+			nuxeoService = (INuxeoService) portletCtx.getAttribute("NuxeoService");
+		
+		return nuxeoService;
+
 	}
 
 	
-	public INuxeoCommandService getNuxeoService() throws Exception {
-		if (nuxeoService == null)
-			nuxeoService = (INuxeoCommandService) NuxeoCommandServiceFactory.getNuxeoCommandService(portletCtx);
-		return nuxeoService;
+	public INuxeoCommandService getNuxeoCommandService() throws Exception {
+		if (nuxeoCommandService == null)
+			nuxeoCommandService = (INuxeoCommandService) NuxeoCommandServiceFactory.getNuxeoCommandService(portletCtx);
+		return nuxeoCommandService;
 	}
 
 	private Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
@@ -89,26 +102,34 @@ public class CMSService implements ICMSService{
 			commandCtx.setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
 		}
 		
-		return getNuxeoService().executeCommand(commandCtx, command);
+		return getNuxeoCommandService().executeCommand(commandCtx, command);
 	}
 	
 	
 	
 	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
-		
-		
 		try	{
  
 		 Document doc = (Document) executeNuxeoCommand(cmsCtx,(new DocumentFetchCommand(path)));
 		 return createItem( path, doc.getTitle(), doc);
 		} catch( Exception e){
-			// TODO : gérer les erreurs
 			
-			throw new CMSException();
+			throw new CMSException( e);
 		}
-
-		
-		
 	}
+	
+	
+
+	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
+		//Document doc = ctx.g
+		try	{
+			return getNuxeoService().getLinkHandler().getLink(ctx);
+		} catch( Exception e){
+			
+			throw new CMSException( e);
+		}		
+	}
+	
+
 
 }
