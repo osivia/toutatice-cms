@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
@@ -32,11 +35,13 @@ public class XSLFunctions {
 	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
 	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
+	
+	private static final String PORTAL_REF = "/portalRef?";
+	
+	private static final int PORTAL_REF_LG = PORTAL_REF.length();
 
 	public XSLFunctions(NuxeoController ctx) {
 		this.ctx = ctx;
-
-	
 	}
 	
 
@@ -97,6 +102,42 @@ public class XSLFunctions {
 
 	private String rewrite(String link, boolean checkScope) {
 		
+		// v.0.13 : ajout de liens vers le portail
+		
+		if( link.startsWith(PORTAL_REF) ){
+
+			try {
+				String paramsArray[] = link.substring(PORTAL_REF_LG).split("&");
+				Map<String, String> params = new HashMap<String, String>();
+
+				for (int i = 0; i < paramsArray.length; i++) {
+					String values[] = paramsArray[i].split("=");
+					if (values.length == 2) {
+						params.put(values[0], values[1]);
+					}
+				}
+
+				if ("dynamicPage".equals(params.get("type"))) {
+
+					String templatePath = params.get("templatePath");
+					String pageName = params.get("pageName");
+					if( pageName == null)
+						pageName = "genericDynamicWindow";
+
+					Map<String, String> dynaProps = new HashMap<String, String>();
+					Map<String, String> dynaParams = new HashMap<String, String>();
+
+					String dynamicUrl = ctx.getPortalUrlFactory().getStartPageUrl(ctx.getPortalCtx(), "/default",
+							pageName, templatePath, dynaProps, dynaParams);
+					return dynamicUrl;
+				}
+			} catch (Exception e) {
+				return "";
+			}
+		}
+		
+		
+		
 		//On traite uniquement les liens absolus ou commencant par /nuxeo
 		if( !link.startsWith("http") && !link.startsWith(ctx.getNuxeoConnectionProps().getNuxeoContext()))
 			return "";
@@ -113,7 +154,17 @@ public class XSLFunctions {
 //					private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
 						
 					try	{
-					Matcher mRes = ressourceExp.matcher(url.getRawPath());
+						String query = url.getRawPath();
+						
+
+						
+						
+						
+						
+						
+						
+						
+					Matcher mRes = ressourceExp.matcher(query);
 					
 					if( mRes.matches())	{
 
@@ -122,6 +173,7 @@ public class XSLFunctions {
 						String uid = mRes.group(2);
 						
 						//v 1.0.11 : pb. des pices jointes dans le proxy
+						// Ne fonctionne pas correctement
 						if(  ctx.getCurrentDoc() != null)
 							uid = ctx.getCurrentDoc().getId();
 						
@@ -131,7 +183,7 @@ public class XSLFunctions {
 						} 
 					}
 					
-					Matcher mPictures = picturesExp.matcher(url.getRawPath());
+					Matcher mPictures = picturesExp.matcher(query);
 					
 					if( mPictures.matches())	{
 
@@ -145,7 +197,7 @@ public class XSLFunctions {
 						} 
 					}
 					
-						Matcher mDoc = documentExp.matcher(url.getRawPath());
+						Matcher mDoc = documentExp.matcher(query);
 						
 						if( mDoc.matches())	{
 

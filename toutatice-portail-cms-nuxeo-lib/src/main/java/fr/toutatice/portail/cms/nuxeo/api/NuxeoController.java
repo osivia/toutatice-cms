@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
@@ -46,6 +47,8 @@ import fr.toutatice.portail.core.profils.ProfilBean;
 public class NuxeoController {
 
 	private static Log log = LogFactory.getLog(NuxeoController.class);
+	
+
 
 	PortletRequest request;
 	RenderResponse response;
@@ -67,7 +70,12 @@ public class NuxeoController {
 	public void setCurrentDoc(Document currentDoc) {
 		this.currentDoc = currentDoc;
 	}
+	PortalControllerContext portalCtx;	
+	
 
+	public PortalControllerContext getPortalCtx() {
+		return portalCtx;
+	}
 	public String getHideMetaDatas() {
 		return hideMetaDatas;
 	}
@@ -212,6 +220,8 @@ public class NuxeoController {
 		
 		try	{
 		PortalWindow window = WindowFactory.getWindow(request);
+		
+		portalCtx = new PortalControllerContext(portletCtx, request, response);
 		
 		String scope = window.getProperty("pia.cms.scope");
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
