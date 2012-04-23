@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet-app xmlns="http://java.sun.com/xml/ns/portlet/portlet-app_1_0.xsd"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/portlet/portlet-app_1_0.xsd http://java.sun.com/xml/ns/portlet/portlet-app_1_0.xsd"
+version="1.0">
+
+	<portlet>
+		<description>Portlet Toutatice Fiche Application</description>
+		<portlet-name>toutatice-application-ficheapplication-portailPortlet</portlet-name>
+        <display-name>Toutatice - Fiche Application</display-name>
+		<portlet-class>org.springframework.web.portlet.DispatcherPortlet</portlet-class>
+
+		<!--  Fichier de configuration Spring de l'application --> 
+		<init-param>
+			<name>contextConfigLocation</name>
+			<value>/WEB-INF/applicationContext.xml</value>
+		</init-param>
+		
+		<supports>
+			<mime-type>text/html</mime-type>
+		</supports>
+		<portlet-info>
+			<title>Toutatice - Fiche Application</title>
+		</portlet-info>
+	</portlet>
+	
+	
+</portlet-app>
