@@ -1,0 +1,68 @@
+h1 {
+	font-size: large;
+	font-weight: bolder;
+	color: #000000;
+	text-align: center;
+}
+
+div.ligne {
+		clear:both;
+		display:inline-block;
+    	width: 98%;
+    	margin : 2px;	
+}
+
+div.nomAttr {
+	float:left;
+	padding-right : 2px;
+	text-align : left;
+	width : 30%;
+	font-weight: bolder;
+	border:thin;
+    border-color: #A2B5BF; 
+    border-style: solid;
+    background-color:#D7E3F2;
+    padding : 2px;
+}
+
+div.erreur { 
+	color : red;
+	font-weight: bold;	
+}
+
+div.messageInfo { 
+	font-weight: bold;
+}
+
+div.contenu {
+    padding : 2px;
+    float:left;
+    width : 65%;
+    border:thin;
+    border-color: #D7E3F2; 
+    border-style: solid;
+}
+
+div.boutons {
+	clear:both;
+	display:inline-block;
+	width: 98%;
+    text-align: center;
+	margin : 3px;
+	}
+	
+div.bouton {
+	font-weight: bolder;
+	text-align: center;
+	width : 30%;
+	margin : 2px;
+	padding : 2px;
+	float:left;
+}
+
+
+
+
+
+
+
