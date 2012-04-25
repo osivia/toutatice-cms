@@ -83,7 +83,6 @@ public class ResourceUtil {
 				throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
 			}
 			
-	
 
 
 			InputStream in = blob.getStream();
@@ -123,14 +122,89 @@ public class ResourceUtil {
 	
 	
 	
+	public static BinaryContent getInternalPictureContent(NuxeoController ctx, String path, String pictureIndex) throws Exception {
+
+		return (BinaryContent) ctx.executeNuxeoCommand(new InternalPictureCommand(path,pictureIndex));
+		
+	}
+	
+	
+	
+   private static class InternalPictureCommand implements INuxeoCommand {
+		
+		String path;
+		String pictureIndex;
+		
+		public InternalPictureCommand(String path, String pictureIndex) {
+			super();
+			this.path = path;
+			this.pictureIndex = pictureIndex;
+		}
+		
+		public Object execute( Session session)	throws Exception {
+			
+			Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set(
+					"value", path).execute();
+			
+			Blob blob = null;
+			
+			try	{
+				blob = (Blob) session.newRequest("Blob.Get").setInput(doc).set("xpath",
+					"ttc:images/item[" + pictureIndex + "]/file").execute();
+			} catch( Exception e){
+				// Le not found n'est pas traité pour les blob
+				// On le positionne par défaut pour l'utilisateur
+				throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+			}
+			
+
+
+			InputStream in = blob.getStream();
+
+			File tempFile = File.createTempFile("tempFile", ".tmp");
+			OutputStream out = new FileOutputStream(tempFile);
+
+			try {
+				byte[] b = new byte[4096];
+				int i = -1;
+				while ((i = in.read(b)) != -1) {
+					out.write(b, 0, i);
+				}
+				out.flush();
+			} finally {
+				in.close();
+			}
+
+			BinaryContent content = new BinaryContent();
+
+			content.setName(blob.getFileName());
+			content.setFile(tempFile);
+			content.setMimeType(blob.getMimeType());
+
+			return content;
+			
+
+		
+		};		
+		
+		public String getId() {
+			return "InternalPictureCommand"+path+"/"+pictureIndex;
+		};		
+
+		
+	}
+	
+	
+	
 	public static BinaryContent getBinaryContent(NuxeoController ctx, String path, String fileIndex) throws Exception {
 
 		return (BinaryContent) ctx.executeNuxeoCommand(new BinaryContentCommand(path,fileIndex));
 		
-
-
-
 	}
+	
+	
+	
+	
 	
 	private static class FileContentCommand implements INuxeoCommand {
 		

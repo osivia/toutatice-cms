@@ -379,6 +379,22 @@ public class NuxeoController {
 		return resourceURL.toString();
 	}
 	
+	public String createAttachedPictureLink(String path, String fileIndex) {
+
+		ResourceURL resourceURL = response.createResourceURL();
+		resourceURL.setResourceID(path + "/" + fileIndex);
+
+		resourceURL.setParameter("type", "attachedPicture");
+		resourceURL.setParameter("pictureIndex", fileIndex);
+		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
 	public String createPictureLink(String path, String content) {
 
 		ResourceURL resourceURL = response.createResourceURL();

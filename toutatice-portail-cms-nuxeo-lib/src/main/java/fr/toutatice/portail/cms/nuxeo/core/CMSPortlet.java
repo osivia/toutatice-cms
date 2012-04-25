@@ -269,6 +269,32 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
+			
+			
+			
+			if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {
+
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String pictureIndex = resourceRequest.getParameter("pictureIndex");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+	
+				BinaryContent content = ResourceUtil.getInternalPictureContent(ctx, docPath, pictureIndex);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + content.getName() + "");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+				
+				
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
+			}
+			
 			if ("picture".equals(resourceRequest.getParameter("type"))) {
 				
 

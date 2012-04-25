@@ -34,6 +34,10 @@ public class XSLFunctions {
 	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
 	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
 	
+	///nuxeo/nxfile/default/a1bbb41d-88f7-490c-8480-7772bb085a4c/ttc:images/0/file/banniere.jpg	
+	private final Pattern internalPictureExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
+	
+	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
 	
 	private static final String PORTAL_REF = "/portalRef?";
@@ -182,6 +186,29 @@ public class XSLFunctions {
 						return ctx.createAttachedFileLink(uid, fileIndex);
 						} 
 					}
+					
+					// Ajout v1.0.13 : internal picture
+					
+					Matcher mResInternalPicture = internalPictureExp.matcher(query);
+					
+					if( mResInternalPicture.matches())	{
+
+					if (mResInternalPicture.groupCount() > 0) {
+
+						String uid = mResInternalPicture.group(2);
+						
+						if(  ctx.getCurrentDoc() != null)
+							uid = ctx.getCurrentDoc().getId();
+						
+						String pictureIndex = mResInternalPicture.group(3);
+						
+						return ctx.createAttachedPictureLink(uid, pictureIndex);
+						} 
+					}
+				
+					
+				
+					
 					
 					Matcher mPictures = picturesExp.matcher(query);
 					
