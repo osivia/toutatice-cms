@@ -74,6 +74,6 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 </div>	
 		
 					
-
+<%= ctx.getDebugInfos() %>
 
 

@@ -66,12 +66,6 @@ public class MenuPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
-
-			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
 
 			// Taille de page
 			int nbLevels = 0;
@@ -108,13 +102,6 @@ public class MenuPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
-		if (nuxeoPath == null)
-			nuxeoPath = "";
-		req.setAttribute("nuxeoPath", nuxeoPath);
-
-		String scope = window.getProperty("pia.cms.scope");
-		req.setAttribute("scope", scope);
 
 		String nbLevels = window.getProperty("pia.cms.nbLevels");
 		req.setAttribute("nbLevels", nbLevels);
@@ -204,14 +191,10 @@ public class MenuPortlet extends CMSPortlet {
 			String nuxeoPath = null;
 
 			// portal window parameter (appels dynamiques depuis le portail)
-			nuxeoPath = window.getProperty("pia.cms.uri");
+			nuxeoPath = window.getPageProperty("pia.cms.basePath");
 
 			// logger.debug("doView "+ uid);
 
-			if (nuxeoPath == null) {
-				// WIndow parameter (back-office)
-				nuxeoPath = window.getProperty("pia.nuxeoPath");
-			}
 
 			if (nuxeoPath != null) {
 
@@ -239,7 +222,7 @@ public class MenuPortlet extends CMSPortlet {
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view.jsp").include(request, response);
 			} else {
 				response.setContentType("text/html");
-				response.getWriter().print("<h2>Document non défini</h2>");
+				response.getWriter().print("<h2>Path de la page non défini</h2>");
 				response.getWriter().close();
 				return;
 			}

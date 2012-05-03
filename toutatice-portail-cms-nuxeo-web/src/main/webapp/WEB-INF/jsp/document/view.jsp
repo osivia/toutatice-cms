@@ -112,8 +112,5 @@ if( map != null && map.getString("data") != null)
 			
 </div>
 
-<!--
-<p align="center">
-		scope	<%= ctx.getScope() %> <br/>
-</p>
--->
+
+<%= ctx.getDebugInfos() %>

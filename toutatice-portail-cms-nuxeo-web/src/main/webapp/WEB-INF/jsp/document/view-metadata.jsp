@@ -30,6 +30,8 @@
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 Document doc = (Document) renderRequest.getAttribute("doc");
 
+String permaLinkURL = (String) renderRequest.getAttribute("permaLinkURL")	;
+
 String date = "";
 date = Formater.formatDate( doc);
 
@@ -56,12 +58,15 @@ if( map != null && map.getString("data") != null)
 <%} %>
 
 <% String contextualization = ctx.getContextualization();
-   ctx.setContextualization("1");
+   ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 %>
 
 <a href="<%= ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_HYPERLINK).getUrl() %>">Recontextualiser</a>
 
 <% ctx.setContextualization(contextualization); %>
+
+
+<a href="<%= permaLinkURL %>">Permalink</a>
 
 
 	

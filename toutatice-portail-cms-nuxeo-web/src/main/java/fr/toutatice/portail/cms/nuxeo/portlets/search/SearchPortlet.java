@@ -203,6 +203,8 @@ public class SearchPortlet extends CMSPortlet {
 						response), pageId, "toutatice-portail-cms-nuxeo-searchPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
 
 				request.setAttribute("searchUrl", url);
+				
+				request.setAttribute("ctx", ctx);
 
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/search/view.jsp").include(request, response);
 			}

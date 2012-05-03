@@ -2,8 +2,10 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +30,7 @@ public class RssGenerator {
 	private static Log log = LogFactory.getLog(RssGenerator.class);
 
 	public static org.w3c.dom.Document createDocument(NuxeoController ctx, PortalControllerContext portalCtx, String rssTitle,
-			PaginableDocuments docs) throws Exception {
+			PaginableDocuments docs, String permLinkRef) throws Exception {
 
 		/* Contexts and formaters initialization */
 
@@ -95,10 +97,11 @@ public class RssGenerator {
 			
 
 			Element link = document.createElement("link");
-
-			// TODO template rss
-			Link portalLink = ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_NAVIGATION);
-			link.setTextContent(portalLink.getUrl());
+		
+			
+			String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(portalCtx, null, null, doc.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+			
+			link.setTextContent(permaLinkURL);
 			item.appendChild(link);
 
 			String sDate = doc.getProperties().getString("dc:modified");
@@ -129,10 +132,20 @@ public class RssGenerator {
 			if (map != null && map.getString("data") != null) {
 
 				Element enclosure = document.createElement("enclosure");
+				
+				Map<String, String> params = new HashMap<String, String>();
+				params.put("thubmnailPath", doc.getPath());
+				params.put("thubmnailField", "ttc:vignette");
+				
+				String permaLinkThumbnail = ctx.getPortalUrlFactory().getPermaLink(portalCtx, permLinkRef, params,  portalCtx.getRequest().getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS_PICTURE);
 
+/*
 				String baseUrl = "http://" + request.getServerName() + ":" + request.getServerPort();
 
 				enclosure.setAttribute("url", baseUrl + ctx.createFileLink(doc, "ttc:vignette"));
+
+*/				
+				enclosure.setAttribute("url", permaLinkThumbnail);
 				
 				String mimeType =  map.getString("mime-type");
 				if( mimeType != null)

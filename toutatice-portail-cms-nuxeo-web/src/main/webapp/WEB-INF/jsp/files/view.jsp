@@ -108,9 +108,4 @@ while( it.hasNext())	{
 	
 
 
-
-<!--
-<p align="center">
-		scope	<%=  ctx.getScope() %> <br/>
-</p>
--->
+<%= ctx.getDebugInfos() %>

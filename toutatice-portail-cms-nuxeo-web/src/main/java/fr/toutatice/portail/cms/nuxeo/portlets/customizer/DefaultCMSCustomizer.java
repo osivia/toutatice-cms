@@ -206,7 +206,7 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 			linkProps.setExternalUrl(getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
 					+ "/view_documents?tabId=tab_slideshow");
 			return linkProps;
-		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))) {
+		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))|| ("Rubrique".equals(doc.getType()))) {
 			// types supportés par le CMS du portail
 			return getCMSLink(ctx);
 		} else {

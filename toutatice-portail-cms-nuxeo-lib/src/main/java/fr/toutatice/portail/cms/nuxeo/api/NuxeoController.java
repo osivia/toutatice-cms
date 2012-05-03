@@ -46,6 +46,7 @@ import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 
@@ -66,6 +67,7 @@ public class NuxeoController {
 	URI nuxeoBaseURI;
 	NuxeoConnectionProperties nuxeoConnection;
 	IProfilManager profilManager;
+	IFormatter formatter;
 	String scope;
 	String displayLiveVersion;
 	String contextualization;
@@ -193,7 +195,11 @@ public class NuxeoController {
 		if ("anonymous".equals(scope)) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-		} else if( scope != null) {
+		} else if ("__nocache".equals(scope)) {
+			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+		} else 
+			if( scope != null) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_PROFIL);
 			setScopeProfil(getProfilManager().getProfil(scope));
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
@@ -248,8 +254,23 @@ public class NuxeoController {
 		try	{
 		PortalWindow window = WindowFactory.getWindow(request);
 		
+		// v1.1 : Ajout héritage
 		String scope = window.getProperty("pia.cms.scope");
+		if( scope == null)
+			scope = window.getPageProperty("pia.cms.scope");
+		
+		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		
+		
+		contextualization = window.getPageProperty("pia.cms.contextualization");
+		
+		// COntextualization doesn't support non published items
+		if( "1".equals(displayLiveVersion))
+			contextualization = IPortalUrlFactory.CONTEXTUALIZATION_PORTLET;
+		
+
+		
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
 		setScope(scope);
@@ -288,6 +309,14 @@ public class NuxeoController {
 
 		return profilManager;
 	}
+	
+	public IFormatter getFormatter() throws Exception {
+		if (formatter == null)
+			formatter = (IFormatter) portletCtx.getAttribute("FormatterService");
+		
+
+		return formatter;
+	}
 
 	public String getPageId() {
 		if (pageId == null) {
@@ -318,7 +347,11 @@ public class NuxeoController {
 	}
 
 	public String formatScopeList(String selectedScope) throws Exception {
+		
+		Window window = (Window) request.getAttribute("pia.window");
 
+		return getFormatter().formatScopeList(window, selectedScope);
+		/*
 		// On sélectionne les profils ayant un utilisateur Nuxeo
 		List<ProfilBean> profils = getProfilManager().getListeProfils();
 
@@ -360,6 +393,8 @@ public class NuxeoController {
 		select.append("</select>");
 
 		return select.toString();
+		
+		*/
 
 	}
 
@@ -569,6 +604,14 @@ public class NuxeoController {
 		
 	}
 	*/
-	
+	public String getDebugInfos()	{
+		String output = "";
+		output += "<p align=\"center\">";
+		output += "scope : " + getScope() ;
+		output += "</p>";
+		
+		return output;
+		
+	}
 
 }

@@ -54,5 +54,5 @@ for( ServiceDisplayItem service : servicesItems)	{
 		
 					
 
-
+<%= ctx.getDebugInfos() %>
 

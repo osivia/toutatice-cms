@@ -112,8 +112,4 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 
 
 
-<!--
-<p align="center">
-		scope	<%=   ctx.getScope()  %> <br/>
-</p>
--->
+<%= ctx.getDebugInfos() %>

@@ -26,6 +26,8 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.api.contexte.PortalControllerContext;
+import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -246,7 +248,15 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 							showMetadatas = "0";
 						request.setAttribute("showMetadatas", showMetadatas);
 						
+						
+						
 	
+						String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
+								response), null, null, doc.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+	
+						request.setAttribute("permaLinkURL", permaLinkURL);
+
+						
 
 						getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request,
 								response);

@@ -46,6 +46,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.controller.command.mapper.URLFactory;
+import org.jboss.portal.core.model.instance.InstanceURLFactory;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
@@ -114,13 +116,15 @@ public class ViewListPortlet extends CMSPortlet  {
 			
 			if ("rss".equals(resourceRequest.getParameter("type"))) {
 				
+				String cmsPath = resourceRequest.getParameter("pia.cms.path");
+				
 				/* Contexts initialization */
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
 				
 				PortalControllerContext portalCtx = new PortalControllerContext(getPortletContext(), resourceRequest,resourceResponse);
 			
-				ctx.setContextualization("1");
+				ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 
 				/* On détermine l'uid et le scope */
 
@@ -174,7 +178,7 @@ public class ViewListPortlet extends CMSPortlet  {
 					PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(
 							nuxeoRequest, ctx.isDisplayingLiveVersion(), 0, pageSize, schemas));
 
-					org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx,  window.getProperty("pia.rssTitle"), docs);
+					org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx,  window.getProperty("pia.rssTitle"), docs, window.getProperty("pia.rssLinkRef"));
 					
 					
 					/* Envoi du flux */
@@ -582,9 +586,15 @@ public class ViewListPortlet extends CMSPortlet  {
 							Map<String, String> publicParams = new HashMap<String, String>();
 							if( selectors != null)
 								publicParams.put("selectors", selectors);
-								String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
-										response), permaLinkRef, publicParams, request.getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_PAGE);
-								request.setAttribute("permaLinkURL", permaLinkURL);
+							String permLinkType =  IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
+							if( request.getParameter("pia.cms.path") != null)	{
+								permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
+								permaLinkRef = null;
+							}
+							
+							String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
+										response), permaLinkRef, publicParams, request.getParameter("pia.cms.path"), permLinkType);
+							request.setAttribute("permaLinkURL", permaLinkURL);
 						}
 					
 						
