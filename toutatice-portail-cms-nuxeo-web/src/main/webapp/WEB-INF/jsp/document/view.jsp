@@ -1,4 +1,7 @@
 
+<%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
+<%@page import="fr.toutatice.portail.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
@@ -30,12 +33,25 @@
 <%
 Document doc = (Document) renderRequest.getAttribute("doc");
 
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+
+// Menu bar
+
+Link adminLink = ViewDocumentPortlet.getAdministrationLink( ctx);
+if( adminLink != null)	{
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
+		menuBar.add(new MenubarItem("Ouvrir dans Nuxeo", 15,  adminLink.getUrl(), null, "portlet-menuitem-nuxeo-edit", "nuxeo"));
+} 
+
+
+
+
 
 String onlyDescription = (String) request.getAttribute("onlyDescription");
 
 String showMetadatas = (String) request.getAttribute("showMetadatas");
 
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+
 
 String srcVignette = "";
 PropertyMap map = doc.getProperties().getMap("ttc:vignette");

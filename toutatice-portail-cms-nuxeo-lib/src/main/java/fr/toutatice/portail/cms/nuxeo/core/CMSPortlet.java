@@ -123,6 +123,44 @@ public class CMSPortlet extends GenericPortlet {
 
 		return false;
 	}
+	
+	// v1.0.14 : recherche d'un document lié
+	// Par défaut sur scope courant, sinon sur scope user
+	
+	public Document fetchLinkedDocument( NuxeoController ctx, String docPath)	throws Exception {
+		
+		String decodedPath = URLDecoder.decode(docPath, "UTF-8");
+		Document doc = null;
+		
+		try	{
+			
+			doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+			.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));			
+		} catch( NuxeoException e){
+			 if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
+				 
+				 if( ctx.getScope() != null){
+				 	// Unreachable by profil, get user scope
+					 
+					 //TODO 1.1 : mettre le scope du user
+				 
+					ctx.setScope(null);	
+
+					doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+								.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));
+				 }
+
+			}
+			 else throw e;
+		}
+		
+		return doc;
+		
+	}
+	
+	
+	
+	
 
 	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 			throws PortletException, IOException {
@@ -151,17 +189,16 @@ public class CMSPortlet extends GenericPortlet {
 				// On change de parcours de publication				
 				// Le scope peut être insuffisant en terme de droit 
 				//  >> on supprime le scope
-				String scope = ctx.getScope();
-				ctx.setScope(null);
+				// V 1.0.14 : suppression
+
 				
 				// l'affichage des  méta-données n'est pas propagé non plus
 				// 
 				String hideMetadatas = ctx.getHideMetaDatas();
 				ctx.setHideMetaDatas(null);
 				
-				
-				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-						.executeNuxeoCommand(new DocumentFetchPublishedCommand(docPath));
+				// V 1.0.14 
+				Document doc = fetchLinkedDocument(ctx, docPath);
 
 				
 				String url = null;
@@ -176,7 +213,8 @@ public class CMSPortlet extends GenericPortlet {
 				}
 				
 				// On remet le scope
-				ctx.setScope(scope);
+				// V 1.0.14 : suppression
+				//ctx.setScope(scope);
 				ctx.setHideMetaDatas(hideMetadatas);
 				
 				
@@ -208,6 +246,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
 						.executeNuxeoCommand(new DocumentFetchCommand(id));
+				
 
 				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
 						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
@@ -217,6 +256,7 @@ public class CMSPortlet extends GenericPortlet {
 
 			}
 
+			// Téléchargement d'un fichier présent dans un document externe
 			if ("file".equals(resourceRequest.getParameter("type"))) {
 
 				String docPath = resourceRequest.getParameter("docPath");
@@ -224,9 +264,9 @@ public class CMSPortlet extends GenericPortlet {
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
-
-
-				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, docPath, fieldName);
+				// V 1.0.14 
+				Document doc = fetchLinkedDocument(ctx, docPath);
+				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, doc.getPath(), fieldName);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
@@ -306,7 +346,10 @@ public class CMSPortlet extends GenericPortlet {
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 	
 
-				BinaryContent picture = ResourceUtil.getPictureContent(ctx, docPath, content);
+				
+				// V 1.0.14 : ajout fecth published
+				Document doc = fetchLinkedDocument(ctx, docPath);
+				BinaryContent picture = ResourceUtil.getPictureContent(ctx, doc.getPath(), content);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(picture.getMimeType());

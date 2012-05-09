@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
@@ -72,6 +74,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		String savedScope = ctx.getScope();
 
 		try {
+			// Scope user
 			ctx.setScope(null);
 
 			Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
@@ -96,7 +99,6 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 					throw e;
 			}
 
-			logger.error(e);
 		}
 
 		finally {
@@ -304,8 +306,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 							showMetadatas = "0";
 						request.setAttribute("showMetadatas", showMetadatas);
 						
-	
-
+						
 						getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request,
 								response);
 				} else {
