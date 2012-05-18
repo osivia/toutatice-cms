@@ -37,7 +37,10 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -113,15 +116,24 @@ public class MenuPortlet extends CMSPortlet {
 
 	}
 
-	private NavigationDisplayItem createServiceItem(NuxeoController ctx, PortalControllerContext portalCtx,
-			int curLevel, int maxLevel, String nuxeoPath) throws Exception {
+	private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
+			int curLevel, int maxLevel, String basePath, String nuxeoPath) throws Exception {
+		
+		
+		//TODO : factoriser dans NuxeoController
 
-		CategoryBean portalSite = (CategoryBean) ctx.executeNuxeoCommand(new CategoryFetchCommand(nuxeoPath));
+		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
+		
+		CMSItem navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext, basePath, nuxeoPath);
+		Document doc = (Document) navItem.getNativeItem();
+		
+		
+		
+		// Méthode non optimisée
+		//CategoryBean portalSite = (CategoryBean) ctx.executeNuxeoCommand(new CategoryFetchCommand(nuxeoPath));
+		//Document doc = portalSite.getPortalDocument();
 
-		Document doc = portalSite.getPortalDocument();
-
-		// Link link = ctx.getDirectLink(doc);
-
+		
 		// Get root publish page
 
 		Window window = (Window) portalCtx.getRequest().getAttribute("pia.window");
@@ -162,12 +174,25 @@ public class MenuPortlet extends CMSPortlet {
 				selected);
 
 		if (curLevel + 1 <= maxLevel) {
+			List<CMSItem> navItems = nuxeoService.getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
+			
+			for(CMSItem child : navItems){
+				
+				if (link != null)
+					displayItem.getChildrens().add(
+							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
+				
+				
+			}
+
+			/*
 			for (Document child : portalSite.getChildren()) {
 
 				if (link != null)
 					displayItem.getChildrens().add(
-							createServiceItem(ctx, portalCtx, curLevel + 1, maxLevel, child.getPath()));
+							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
 			}
+			*/
 		}
 
 		return displayItem;
@@ -208,9 +233,17 @@ public class MenuPortlet extends CMSPortlet {
 				String sNbLevels = window.getProperty("pia.cms.nbLevels");
 				if (sNbLevels != null && sNbLevels.length() > 0)
 					maxLevels = Integer.parseInt(sNbLevels);
+				
+				
+				// Navigation context
+				CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
+				cmsReadNavContext.setCtx(ctx.getPortalCtx().getControllerCtx());
+				cmsReadNavContext.setScope(ctx.getScope());				
 
-				NavigationDisplayItem displayItem = createServiceItem(ctx, new PortalControllerContext(
-						getPortletContext(), request, response), 0, maxLevels, nuxeoPath);
+				
+
+				NavigationDisplayItem displayItem = createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
+						getPortletContext(), request, response), 0, maxLevels, nuxeoPath, nuxeoPath);
 
 				if (displayItem.getTitle() != null)
 					response.setTitle(displayItem.getTitle());

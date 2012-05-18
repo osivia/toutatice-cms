@@ -144,9 +144,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		
 	}
 
-	public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException{
-		return cmsService.getChildren(ctx, path);
-	}
 
 	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
 
@@ -155,6 +152,18 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
 		return  cmsService.getItemHandler(ctx);
+	}
+
+	public CMSItem getPortalNavigationItem(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
+		return  cmsService.getPortalNavigationItem(ctx, publishSpacePath, path);
+	}
+
+	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
+		return  cmsService.getPortalNavigationSubitems(ctx, publishSpacePath, path);
+	}
+
+	public CMSItem getPortalPublishSpace(CMSServiceCtx ctx, String path) throws CMSException {
+		return  cmsService.getPortalPublishSpace(ctx, path);
 	}
 
 

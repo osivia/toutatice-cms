@@ -262,15 +262,7 @@ public class NuxeoController {
 		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		
-		
-		contextualization = window.getPageProperty("pia.cms.contextualization");
-		
-		// COntextualization doesn't support non published items
-		if( "1".equals(displayLiveVersion))
-			contextualization = IPortalUrlFactory.CONTEXTUALIZATION_PORTLET;
-		
-
-		
+			
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
 		setScope(scope);
