@@ -54,6 +54,15 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		<a id="displayText" href="javascript:toggleSample();">Exemple</a>)<br/>
 		
 		<div id="toggleText" style="display: none; border: 1px; border-style: solid"> <pre>
+		
+/*
+implicits variables :
+   - navigationPath :  current navigation folder path
+   - basePath :  page folder path
+   - contentPath : current item path
+   - request : portlet request 
+*/		
+
 String requete =  "ecm:path STARTSWITH '/default-domain/workspaces/toutatice'";
 
 if (params.get("title") != null) {

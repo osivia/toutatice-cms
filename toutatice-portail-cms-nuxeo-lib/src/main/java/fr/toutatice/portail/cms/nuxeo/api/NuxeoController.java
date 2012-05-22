@@ -71,6 +71,32 @@ public class NuxeoController {
 	String scope;
 	String displayLiveVersion;
 	String contextualization;
+	String basePath;
+	String navigationPath;	
+	String contentPath;
+	
+	String hideMetaDatas;
+	String template;
+	
+
+
+	PortalControllerContext portalCtx;	
+	
+	
+	public String getBasePath() {
+		
+		return basePath;
+	}
+
+	public String getNavigationPath() {
+		return navigationPath;
+	}
+
+	public String getContentPath() {
+		return contentPath;
+	}
+
+
 
 	public String getContextualization() {
 		return contextualization;
@@ -80,10 +106,6 @@ public class NuxeoController {
 		this.contextualization = contextualization;
 	}
 
-	String hideMetaDatas;
-	String template;
-
-	PortalControllerContext portalCtx;
 	
 
 	
@@ -271,6 +293,11 @@ public class NuxeoController {
 		
 		setPageMarker((String) request.getAttribute("pia.pageMarker"));
 		
+		basePath = window.getPageProperty("pia.cms.basePath");
+		navigationPath =  request.getParameter("pia.cms.path");
+		if	(basePath != null && request.getParameter("pia.cms.itemRelPath") != null)
+			contentPath = basePath + request.getParameter("pia.cms.itemRelPath");
+		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
 		}
@@ -323,6 +350,48 @@ public class NuxeoController {
 		}
 		return pageId;
 	}
+	
+	
+	public String getComputedPath( String portletPath){
+		
+		String computedPath = null;
+		
+		if (portletPath == null) {
+			computedPath = "";
+		} else {
+			computedPath = portletPath;
+
+			if (computedPath.contains("${basePath}")) {
+				String path = getBasePath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{basePath\\}", path);
+			}
+
+			if (computedPath.contains("${navigationPath}")) {
+
+				String path = getNavigationPath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{navigationPath\\}", path);
+			}
+
+			if (computedPath.contains("${contentPath}")) {
+
+				String path = getContentPath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{contentPath\\}", path);
+			}
+		}
+
+		return computedPath;
+
+	}
+	
 
 	public String transformHTMLContent(String htmlContent) throws Exception {
 
@@ -513,7 +582,11 @@ public class NuxeoController {
 
 	}	
 	
-	public Link getLink(Document doc, String template) throws Exception 	{
+	public Link getLink(Document doc, String template) throws Exception	{
+		return getLink( doc,  template, null);
+	}
+	
+	public Link getLink(Document doc, String template, String linkContextualization) throws Exception 	{
 		/*
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
@@ -522,6 +595,12 @@ public class NuxeoController {
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());
 		return nuxeoService.getLinkHandler().getLink(handlerCtx);
 		*/
+		
+		String localContextualization = linkContextualization;
+		
+		if( localContextualization == null)
+			localContextualization = getContextualization();
+		
 		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
@@ -542,8 +621,8 @@ public class NuxeoController {
 		handlerCtx.setPageId(getPageId());
 		handlerCtx.setDoc(doc);
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());
-		handlerCtx.setTemplate(getTemplate());
-		handlerCtx.setContextualization(getContextualization());
+		handlerCtx.setTemplate( template);
+		handlerCtx.setContextualization(localContextualization);
 		
 		// On regarde si le lien est géré par le portlet
 		
@@ -560,9 +639,16 @@ public class NuxeoController {
 
 		Map<String, String> pageParams = new HashMap<String, String>();
 		
-		Link link = new Link(getPortalUrlFactory().getCMSUrl(portalCtx,
-				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, getContextualization(), template, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null), false);
+		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, template, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
+		
+		if( url != null)	{
+		
+		Link link = new Link(url, false);
 		return link;
+		}
+		
+		return null;
 	
 
 	}	

@@ -168,7 +168,7 @@ public class CMSPortlet extends GenericPortlet {
 				if ("ContextualLink".equals(doc.getType()))	{
 					url = doc.getString("clink:link");
 				} else	{
-					Link link = ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_HYPERLINK);
+					Link link = ctx.getLink(doc);
 					url = link.getUrl();
 					
 				}

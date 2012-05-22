@@ -178,16 +178,26 @@ public class FileBrowserPortlet extends CMSPortlet {
 				nuxeoPath = window.getProperty("pia.nuxeoPath");
 			}
 			
+			
+
+			
 			String displayMode = request.getParameter("displayMode");
 
-			String folderPath = nuxeoPath;
-
-			if (request.getParameter("folderPath") != null) {
-				folderPath = request.getParameter("folderPath");
-			}
 
 			if (nuxeoPath != null) {
 				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+				
+				
+				nuxeoPath = ctx.getComputedPath(nuxeoPath);
+				
+				
+				String folderPath = nuxeoPath;
+
+				if (request.getParameter("folderPath") != null) {
+					folderPath = request.getParameter("folderPath");
+				}
+			
+				
 
 				
 				/* Folder courant */

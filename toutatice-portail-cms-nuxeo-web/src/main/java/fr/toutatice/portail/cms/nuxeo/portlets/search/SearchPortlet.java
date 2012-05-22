@@ -188,7 +188,7 @@ public class SearchPortlet extends CMSPortlet {
 				Map<String, String> windowProperties = new HashMap<String, String>();
 				if (ctx.getScope() != null)
 					windowProperties.put("pia.cms.scope", ctx.getScope());
-				windowProperties.put("pia.nuxeoPath", nuxeoPath);
+				windowProperties.put("pia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				
 				windowProperties.put("pia.title", "Résultats de la recherche");

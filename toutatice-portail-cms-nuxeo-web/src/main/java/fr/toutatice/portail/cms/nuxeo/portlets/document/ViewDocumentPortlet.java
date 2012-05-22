@@ -194,6 +194,8 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				if (nuxeoPath != null) {
 
 						NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+						
+						nuxeoPath = ctx.getComputedPath(nuxeoPath);
 							
 						
 						Document doc = null;

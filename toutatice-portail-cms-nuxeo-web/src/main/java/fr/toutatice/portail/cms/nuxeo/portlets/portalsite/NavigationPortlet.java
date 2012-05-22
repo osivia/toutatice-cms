@@ -127,7 +127,7 @@ public class NavigationPortlet extends CMSPortlet {
 				
 
 				PortalSiteBean portalSite = (PortalSiteBean) ctx.executeNuxeoCommand(new PortalSiteFetchCommand(
-						nuxeoPath ));
+						ctx.getComputedPath(nuxeoPath) ));
 
 				if (portalSite.getPortalDocument().getTitle() != null)
 					response.setTitle(portalSite.getPortalDocument().getTitle());
@@ -135,7 +135,7 @@ public class NavigationPortlet extends CMSPortlet {
 				List<ServiceDisplayItem> listItems = new ArrayList<ServiceDisplayItem>();
 				for (Document child : portalSite.getChildren()) {
 
-					Link link = ctx.getLink(child, IPortalUrlFactory.TEMPLATE_NAVIGATION);
+					Link link = ctx.getLink(child, "menu");
 
 					if (link != null)
 						listItems.add(new ServiceDisplayItem(child.getTitle(), link.getUrl(), link.isExternal()));

@@ -155,7 +155,7 @@ public class MenuPortlet extends CMSPortlet {
 		//Link link = new Link(portalUrlFactory.getCMSUrl(portalCtx,
 		//		page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, null, IPortalUrlFactory.TEMPLATE_NAVIGATION, null, null), false);
 		
-		Link link = ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_NAVIGATION);
+		Link link = ctx.getLink(doc,"menu");
 
 		boolean selected = false;
 

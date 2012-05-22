@@ -142,7 +142,12 @@ public class ViewListPortlet extends CMSPortlet  {
 					i.set("params", PageSelectors.decodeProperties(resourceRequest.getParameter("selectors")));
 					i.set("request", resourceRequest);
 					i.set("NXQLFormater", new NXQLFormater());
-					i.set("path",  resourceRequest.getParameter("pia.cms.path"));					
+					//i.set("path",  resourceRequest.getParameter("pia.cms.path"));		
+					
+					i.set("basePath",  ctx.getBasePath());
+					i.set("navigationPath",  ctx.getNavigationPath());
+					i.set("contentPath",  ctx.getContentPath());
+
 
 					nuxeoRequest = (String) i.eval(nuxeoRequest);
 				}
@@ -439,6 +444,8 @@ public class ViewListPortlet extends CMSPortlet  {
 		try {
 
 			response.setContentType("text/html");
+			
+			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 		
 
 	
@@ -455,13 +462,15 @@ public class ViewListPortlet extends CMSPortlet  {
 				// Evaluation beanshell
 				Interpreter i = new Interpreter();
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
-				i.set("path",  request.getParameter("pia.cms.path"));
+				i.set("basePath",  ctx.getBasePath());
+				i.set("navigationPath",  ctx.getNavigationPath());
+				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
 				
 
 				nuxeoRequest = (String)  i.eval( nuxeoRequest);
-			}
+			}	
 			
 			/* Filtre pour sélectionner uniquement les version publiées */
 
@@ -516,7 +525,7 @@ public class ViewListPortlet extends CMSPortlet  {
 
 
 
-						NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+						
 
 						
 						// Calcul de la taille de la page

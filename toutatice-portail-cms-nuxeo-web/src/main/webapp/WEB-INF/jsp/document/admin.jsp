@@ -26,7 +26,11 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		<form method="post" action="<portlet:actionURL/>">
 		
 			<label>Path</label><br/>
+			
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
+			
+			
+			
 			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
 			

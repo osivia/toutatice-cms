@@ -57,13 +57,17 @@ if( map != null && map.getString("data") != null)
 	<span style="font-weight:bold">Vignette : </span><br/><%=srcVignette %>
 <%} %>
 
-<% String contextualization = ctx.getContextualization();
-   ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
+<% 
+   
+   Link contextualLink = ctx.getLink(doc, null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
+   if( contextualLink != null)	{
 %>
 
-<a href="<%= ctx.getLink(doc, IPortalUrlFactory.TEMPLATE_HYPERLINK).getUrl() %>">Recontextualiser</a>
+<a href="<%= contextualLink.getUrl() %>">Recontextualiser</a>
 
-<% ctx.setContextualization(contextualization); %>
+
+
+<% } %>
 
 
 <a href="<%= permaLinkURL %>">Permalink</a>

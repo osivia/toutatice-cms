@@ -68,7 +68,7 @@ while( it.hasNext())	{
 		url = folderURL.toString();
 		link = new Link(url, false);
 	}	else {
-		link = ctx.getLink(doc);
+		link = ctx.getLink(doc, "fileExplorer");
 		url = link.getUrl();
 		target = Formater.formatTarget(link);
 	}
