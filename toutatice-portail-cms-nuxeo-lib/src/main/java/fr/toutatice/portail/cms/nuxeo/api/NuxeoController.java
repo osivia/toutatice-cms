@@ -338,7 +338,13 @@ public class NuxeoController {
 
 	}
 
-	public String createFileLink(Document doc, String fieldName) {
+	public String createFileLink(Document doc, String fieldName)  throws Exception {
+		
+		if( "ttc:vignette".equals(fieldName))	 {
+			String url = getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8") ;
+			return url;
+			
+		}	else	{
 
 		ResourceURL resourceURL = response.createResourceURL();
 		resourceURL.setResourceID(doc.getId() + "/" + fieldName);
@@ -350,6 +356,7 @@ public class NuxeoController {
 		resourceURL.setCacheability(ResourceURL.PAGE);
 
 		return resourceURL.toString();
+		}
 	}
 	
 	public String createExternalLink(Document doc) {

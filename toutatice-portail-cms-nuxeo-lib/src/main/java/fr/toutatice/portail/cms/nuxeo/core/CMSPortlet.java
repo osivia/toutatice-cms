@@ -265,6 +265,7 @@ public class CMSPortlet extends GenericPortlet {
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
 				// V 1.0.14 
+
 				Document doc = fetchLinkedDocument(ctx, docPath);
 				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, doc.getPath(), fieldName);
 
@@ -274,6 +275,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);
+					
 
 				resourceResponse.setProperty("Cache-Control", "max-age="
 						+ resourceResponse.getCacheControl().getExpirationTime());

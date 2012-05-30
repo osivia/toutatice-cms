@@ -14,13 +14,13 @@
 	</description>
 	
 	<servlet>
-		<servlet-name>IconsServlet</servlet-name>
-		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.icons.IconsServlet</servlet-class>
+		<servlet-name>ThumbnailServlet</servlet-name>
+		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet</servlet-class>
 	</servlet>
 	
 	<servlet-mapping>
-		<servlet-name>IconsServlet</servlet-name>
-		<url-pattern>/nuxeo_icons/*</url-pattern>
+		<servlet-name>ThumbnailServlet</servlet-name>
+		<url-pattern>/thumbnail/*</url-pattern>
 	</servlet-mapping>
 	
 

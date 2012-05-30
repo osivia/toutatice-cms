@@ -49,6 +49,7 @@ import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.LinkHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
@@ -122,6 +123,9 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
 			
 			nuxeoService.registerLinkHandler(new LinkHandler(getPortletContext()));
+			
+			// v1.0.16
+			ThumbnailServlet.setPortletContext(getPortletContext());
 			
 			
 
