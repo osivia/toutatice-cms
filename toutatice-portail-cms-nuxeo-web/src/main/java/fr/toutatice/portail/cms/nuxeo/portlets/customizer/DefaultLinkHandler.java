@@ -133,6 +133,15 @@ public class DefaultLinkHandler   implements INuxeoLinkHandler {
 		resourceURL.setParameter("type", "file");
 		resourceURL.setParameter("docPath", ctx.getDoc().getPath());
 		resourceURL.setParameter("fieldName", "file:content");
+		
+		resourceURL.setParameter("test", "file:content");
+		
+		
+		// v1.0.19
+		if( "1".equals(ctx.getDisplayLiveVersion()))	{
+			resourceURL.setParameter("displayLiveVersion", "1");
+		}
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
