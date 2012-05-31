@@ -264,10 +264,14 @@ public class CMSPortlet extends GenericPortlet {
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
-				// V 1.0.14 
-
-				Document doc = fetchLinkedDocument(ctx, docPath);
-				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, doc.getPath(), fieldName);
+				// V 1.0.19 
+				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
+					Document doc = fetchLinkedDocument(ctx, docPath);
+					docPath = doc.getPath();
+				}
+				
+				
+				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, docPath, fieldName);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
@@ -349,9 +353,13 @@ public class CMSPortlet extends GenericPortlet {
 	
 
 				
-				// V 1.0.14 : ajout fecth published
-				Document doc = fetchLinkedDocument(ctx, docPath);
-				BinaryContent picture = ResourceUtil.getPictureContent(ctx, doc.getPath(), content);
+				// V 1.0.19 
+				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
+					Document doc = fetchLinkedDocument(ctx, docPath);
+					docPath = doc.getPath();
+				}
+	
+				BinaryContent picture = ResourceUtil.getPictureContent(ctx, docPath, content);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(picture.getMimeType());

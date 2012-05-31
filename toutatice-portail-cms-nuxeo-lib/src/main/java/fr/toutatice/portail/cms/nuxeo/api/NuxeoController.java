@@ -351,6 +351,13 @@ public class NuxeoController {
 		resourceURL.setParameter("type", "file");
 		resourceURL.setParameter("docPath", doc.getPath());
 		resourceURL.setParameter("fieldName", fieldName);
+		
+		//v1.0.19 : 
+		if( isDisplayingLiveVersion())	{
+			resourceURL.setParameter("displayLiveVersion", "1");
+
+		}
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
