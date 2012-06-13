@@ -87,7 +87,7 @@ public class ResourceUtil {
 
 			InputStream in = blob.getStream();
 
-			File tempFile = File.createTempFile("tempFile", ".tmp");
+			File tempFile = File.createTempFile("tempFile3", ".tmp");
 			OutputStream out = new FileOutputStream(tempFile);
 
 			try {
@@ -161,7 +161,7 @@ public class ResourceUtil {
 
 			InputStream in = blob.getStream();
 
-			File tempFile = File.createTempFile("tempFile", ".tmp");
+			File tempFile = File.createTempFile("tempFile4", ".tmp");
 			OutputStream out = new FileOutputStream(tempFile);
 
 			try {
@@ -233,7 +233,7 @@ public class ResourceUtil {
 
 				InputStream in = new FileInputStream(blob.getFile());
 
-				File tempFile = File.createTempFile("tempFile", ".tmp");
+				File tempFile = File.createTempFile("tempFile1", ".tmp");
 				OutputStream out = new FileOutputStream(tempFile);
 
 				try {
@@ -316,7 +316,7 @@ public class ResourceUtil {
 
 								InputStream in = new FileInputStream(blob.getFile());
 
-								File tempFile = File.createTempFile("tempFile", ".tmp");
+								File tempFile = File.createTempFile("tempFile2", ".tmp");
 								OutputStream out = new FileOutputStream(tempFile);
 
 								try {
