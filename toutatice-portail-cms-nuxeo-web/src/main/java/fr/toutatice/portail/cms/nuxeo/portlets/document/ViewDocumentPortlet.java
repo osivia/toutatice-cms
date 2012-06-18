@@ -4,6 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -22,10 +26,14 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.api.menubar.MenubarItem;
+import fr.toutatice.portail.api.statut.IStatutService;
+import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.windows.PortalWindow;
@@ -34,6 +42,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
+import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
@@ -41,7 +50,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.profils.ProfilBean;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -52,6 +63,53 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 	private static Log logger = LogFactory.getLog(ViewDocumentPortlet.class);
 	
 	private INuxeoService nuxeoService;
+	
+	
+	// v 1.0.11 : ajout lien modification dans Nuxeo
+	
+	public static Link getAdministrationLink( NuxeoController ctx ) throws Exception {
+		
+		if( ctx.getRequest().getRemoteUser() == null)
+			return null;
+		
+		
+		String savedScope = ctx.getScope();
+
+		try {
+			// Scope user
+			ctx.setScope(null);
+
+			Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+					.executeNuxeoCommand(new DocumentFetchLiveCommand(ctx.getCurrentDoc().getPath(), "Write"));
+
+			if (doc != null) {
+				return new Link(ctx.getNuxeoPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
+						+ "/view_documents", true);
+			}
+		}
+
+		catch (Exception e) {
+
+			if (e instanceof NuxeoException) {
+				NuxeoException ne = (NuxeoException) e;
+
+				if (ne.getErrorCode() == NuxeoException.ERROR_FORBIDDEN
+						|| ne.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+					// On ne fait rien : le document n'existe pas ou je n'ai pas
+					// les droits
+				} else
+					throw e;
+			}
+
+		}
+
+		finally {
+			ctx.setScope(savedScope);
+		}
+
+		return null;
+		
+	}
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -67,8 +125,11 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			
 			nuxeoService.registerLinkHandler(new CMSCustomizer(getPortletContext()));
 
-			
 			nuxeoService.registerCMSService(new CMSService(getPortletContext()));
+			
+			// v1.0.16
+			ThumbnailServlet.setPortletContext(getPortletContext());
+			
 			
 
 		} catch( Exception e)	{
@@ -221,6 +282,10 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 //							synchronized (WysiwygParser.getInstance())
 							{
 							Transformer transformer =  WysiwygParser.getInstance().getTemplate().newTransformer();
+
+							//v 1.0.11 : pb. des pices jointes dans le proxy
+							ctx.setCurrentDoc(doc);
+							
 
 							transformer.setParameter("bridge", new XSLFunctions(ctx));
 							OutputStream output = new ByteArrayOutputStream();

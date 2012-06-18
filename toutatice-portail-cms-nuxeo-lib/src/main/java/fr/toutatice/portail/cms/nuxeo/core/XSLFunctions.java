@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
@@ -30,14 +33,24 @@ public class XSLFunctions {
 	// "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
 	
+	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
+	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
+	
+	///nuxeo/nxfile/default/a1bbb41d-88f7-490c-8480-7772bb085a4c/ttc:images/0/file/banniere.jpg	
+	private final Pattern internalPictureExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
+	
+	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
+	
+	private static final String PORTAL_REF = "/portalRef?";
+	
+	private static final int PORTAL_REF_LG = PORTAL_REF.length();
 
 	public XSLFunctions(NuxeoController ctx) {
 		this.ctx = ctx;
-
-		// TODO : attention aux images externes
 	}
 	
+
 	
 	
 	/**
@@ -101,12 +114,50 @@ public class XSLFunctions {
 
 	private String rewrite(String link, boolean checkScope) {
 		
+		// v.0.13 : ajout de liens vers le portail
+		
+		if( link.startsWith(PORTAL_REF) ){
+
+			try {
+				String paramsArray[] = link.substring(PORTAL_REF_LG).split("&");
+				Map<String, String> params = new HashMap<String, String>();
+
+				for (int i = 0; i < paramsArray.length; i++) {
+					String values[] = paramsArray[i].split("=");
+					if (values.length == 2) {
+						params.put(values[0], values[1]);
+					}
+				}
+
+				if ("dynamicPage".equals(params.get("type"))) {
+
+					String templatePath = params.get("templatePath");
+					String pageName = params.get("pageName");
+					if( pageName == null)
+						pageName = "genericDynamicWindow";
+
+					Map<String, String> dynaProps = new HashMap<String, String>();
+					Map<String, String> dynaParams = new HashMap<String, String>();
+
+					String dynamicUrl = ctx.getPortalUrlFactory().getStartPageUrl(ctx.getPortalCtx(), "/default",
+							pageName, templatePath, dynaProps, dynaParams);
+					return dynamicUrl;
+				}
+			} catch (Exception e) {
+				return "";
+			}
+		}
+		
+		
+		
 		//On traite uniquement les liens absolus ou commencant par /nuxeo
 		if( !link.startsWith("http") && !link.startsWith(ctx.getNuxeoConnectionProps().getNuxeoContext()))
 			return "";
 		
 		String trim = link.trim().replace(" ", "%20");
 		URI url = ctx.getNuxeoPublicBaseUri().resolve(trim);
+		
+		
 
 		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
 			if (url.getHost().equals(ctx.getNuxeoPublicBaseUri().getHost())) {
@@ -115,20 +166,73 @@ public class XSLFunctions {
 //					private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
 						
 					try	{
-					Matcher mRes = ressourceExp.matcher(url.getRawPath());
+						String query = url.getRawPath();
+						
+
+						
+						
+						
+						
+						
+						
+						
+					Matcher mRes = ressourceExp.matcher(query);
 					
 					if( mRes.matches())	{
 
 					if (mRes.groupCount() > 0) {
 
 						String uid = mRes.group(2);
+						
+						//v 1.0.11 : pb. des pices jointes dans le proxy
+						// Ne fonctionne pas correctement
+						if(  ctx.getCurrentDoc() != null)
+							uid = ctx.getCurrentDoc().getId();
+						
 						String fileIndex = mRes.group(3);
 						
 						return ctx.createAttachedFileLink(uid, fileIndex);
 						} 
 					}
 					
-						Matcher mDoc = documentExp.matcher(url.getRawPath());
+					// Ajout v1.0.13 : internal picture
+					
+					Matcher mResInternalPicture = internalPictureExp.matcher(query);
+					
+					if( mResInternalPicture.matches())	{
+
+					if (mResInternalPicture.groupCount() > 0) {
+
+						String uid = mResInternalPicture.group(2);
+						
+						if(  ctx.getCurrentDoc() != null)
+							uid = ctx.getCurrentDoc().getId();
+						
+						String pictureIndex = mResInternalPicture.group(3);
+						
+						return ctx.createAttachedPictureLink(uid, pictureIndex);
+						} 
+					}
+				
+					
+				
+					
+					
+					Matcher mPictures = picturesExp.matcher(query);
+					
+					if( mPictures.matches())	{
+
+					if (mPictures.groupCount() > 0) {
+
+						String uid = mPictures.group(1);
+						
+						String content = mPictures.group(2);
+						
+						return ctx.createPictureLink(uid, content);
+						} 
+					}
+					
+						Matcher mDoc = documentExp.matcher(query);
 						
 						if( mDoc.matches())	{
 

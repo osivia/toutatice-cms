@@ -12,6 +12,17 @@
     This application is a portlet. It can not be used outside a portal.
     This web.xml file is mandatory in each .par archive file.
 	</description>
+	
+	<servlet>
+		<servlet-name>ThumbnailServlet</servlet-name>
+		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>ThumbnailServlet</servlet-name>
+		<url-pattern>/thumbnail/*</url-pattern>
+	</servlet-mapping>
+	
 
 
 </web-app>

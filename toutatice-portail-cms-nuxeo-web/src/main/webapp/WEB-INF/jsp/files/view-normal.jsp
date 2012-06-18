@@ -77,7 +77,7 @@ while( it.hasNext())	{
 	String target = "";	
 	boolean noAjax = true;
 	
-	 if(  FileBrowserPortlet.isFolder( doc))	{
+	 if(  FileBrowserPortlet.isNavigable( doc))	{
 		PortletURL folderURL = renderResponse.createRenderURL();
 		folderURL.setParameter("folderPath", doc.getPath());
 		if( displayMode != null)

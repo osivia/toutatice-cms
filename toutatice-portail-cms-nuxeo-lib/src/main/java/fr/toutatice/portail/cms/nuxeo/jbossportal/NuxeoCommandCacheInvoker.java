@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,10 +183,14 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 			logger.debug("Execution commande " + command.getId());
 
-			long begin = System.currentTimeMillis();
+			long begin = 0;
 
 			try {
 				synchronized (nuxeoSession) {
+					// v1.0.16 : déplacement création de session
+					
+					begin = System.currentTimeMillis();
+					
 					res = command.execute(nuxeoSession);
 				}
 			} catch (Exception e) {

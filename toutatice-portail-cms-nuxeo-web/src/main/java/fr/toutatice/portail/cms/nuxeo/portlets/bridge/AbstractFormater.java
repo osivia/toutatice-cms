@@ -109,9 +109,22 @@ public class AbstractFormater {
 		nuxeoIcons.put("xlsx.png", "xls.png");
 		nuxeoIcons.put("ppt.png", "ppt.png");
 		nuxeoIcons.put("pdf.png", "pdf.png");
-		nuxeoIcons.put("ordered_folder.png", "folder.gif");		
-		nuxeoIcons.put("folder.gif", "folder.gif");
+		nuxeoIcons.put("zip.png", "zip.png");		
+		nuxeoIcons.put("odt.png", "odt.png");	
+		nuxeoIcons.put("forum.gif", "forum.gif");
+		nuxeoIcons.put("url-folder.gif","url_folder.gif");
+		nuxeoIcons.put("annonceFolder_16.png","news_folder.png");
+		nuxeoIcons.put("annonce_16.png","annonce_16.png");
+		nuxeoIcons.put("blog_folder.png","blog_folder.png");
+		nuxeoIcons.put("website.gif","website.gif");
+		nuxeoIcons.put("picturebook.gif","picturebook.gif");
+		nuxeoIcons.put("faq-folder-16.png","faq-folder-16.png");	
+		nuxeoIcons.put("portalsite.png","portalsite.png");	
+		nuxeoIcons.put("ordered_folder.png","ordered_folder.png");
+		nuxeoIcons.put("video.png","video.png");
+		nuxeoIcons.put("application.png","application.png");
 		
+
 	}
 
 	private static String extractNuxeoIconName(Document doc)	{
@@ -129,37 +142,42 @@ public class AbstractFormater {
 	}
 
 	/**
-	 * Renvoie l'icone Nuxeo standard (eventuellement une note, si aucun
-	 * icone défini
+	 * Renvoie l'icone Nuxeo standard 
 	 * 
 	 * @param doc
 	 * @return
 	 */
 	public static String formatNuxeoIcon(Document doc) {
+		
 
-		String portalIcon = "note.gif";
-
+		
+		
+		// Tous les éléments navigables sont représentés comme des folders
+		
+		if( "Folder".equals(doc.getType()) 
+				|| "OrderedFolder".equals(doc.getType())
+				|| "Workspace".equals(doc.getType()) 
+				|| "WorkspaceRoot".equals(doc.getType())
+				|| "Section".equals(doc.getType())
+				|| "SectionRoot".equals(doc.getType())
+				|| "WorkspaceRoot".equals(doc.getType())
+		)
+		
+			return "/img/icons/folder.gif";
+		
+		// Autres types de document : on se serta de la méta-donnée 'icon'
+		
+		String portalIcon = "file.gif";
+		
 		String iconName = extractNuxeoIconName( doc);
 
-		if (iconName != null) {
-			if (nuxeoIcons.get(iconName) != null) {
+		if (iconName != null) 
+			if (nuxeoIcons.get(iconName) != null) 
 				portalIcon = nuxeoIcons.get(iconName);
-			} else {
-				
-				// Pas de correspondance : icone par défaut
-				
-				// tous les folders
-				if ("AnnonceFolder".equals(doc.getType()) || "FaqFolder".equals(doc.getType()) || "DocumentUrlContainer".equals(doc.getType()))
-					portalIcon = "folder.gif";
-
-				
-				// Pas de correspondance : icone par défaut
-				if ("File".equals(doc.getType()) )
-					portalIcon = "file.gif";
-			}
-		}
-
+			
 		return "/img/icons/" + portalIcon;
+
+
 	}
 	
 	
@@ -170,13 +188,6 @@ public class AbstractFormater {
 		nuxeoBigIcons = new HashMap<String, String>();
 		nuxeoBigIcons.put("note.gif", "note_100.png");
 		nuxeoBigIcons.put("contextuallink.png", "link_100.png");	
-		nuxeoBigIcons.put("folder.gif", "folder_100.png");
-		nuxeoBigIcons.put("ordered_folder.png", "folder_100.png");
-		nuxeoBigIcons.put("note.gif", "note_100.png");
-		nuxeoBigIcons.put("contextuallink.png", "link_100.png");	
-		nuxeoBigIcons.put("folder.gif", "folder_100.png");
-		nuxeoBigIcons.put("ordered_folder.png", "folder_100.png");		
-		
 	}
 
 	/**
@@ -188,24 +199,21 @@ public class AbstractFormater {
 	 */
 	public static String formatNuxeoBigIcon(Document doc) {
 
-		String portalIcon = "note_100.png";
+		String portalIcon = "file_100.png";
+		
+		if( "Folder".equals(doc.getType()) 
+				|| "OrderedFolder".equals(doc.getType())
+				|| "Workspace".equals(doc.getType()) 
+				|| "WorkspaceRoot".equals(doc.getType()))
+		
+			portalIcon = "folder_100.png";		
 
 		String iconName = extractNuxeoIconName( doc);
 
-		if (iconName != null) {
-			if (nuxeoBigIcons.get(iconName) != null) {
+		if (iconName != null) 
+			if (nuxeoBigIcons.get(iconName) != null) 
 				portalIcon = nuxeoBigIcons.get(iconName);
-			} else {
-				// Pas de correspondance : icone par défaut
-				
-				// tous les folders
-				if ("AnnonceFolder".equals(doc.getType()) || "FaqFolder".equals(doc.getType()) || "DocumentUrlContainer".equals(doc.getType()))
-					portalIcon = "folder_100.png";
-
-				if ("File".equals(doc.getType()) )
-					portalIcon = "file_100.png";
-			}
-		}
+		
 
 		return "/img/icons/" + portalIcon;
 	}

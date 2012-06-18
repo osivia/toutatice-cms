@@ -20,20 +20,15 @@ public interface INuxeoLinkHandler {
 	public CMSHandlerProperties getLink( CMSServiceCtx ctx) throws Exception ;
 	
 	
-	/* renvoie un lien si c'est géré par le portlet (contextual link, download filecontent) ... */	
+	/* renvoie un lien si le contenu est affiché directement par le portlet (contextual link, download filecontent) ... 
+
+	et non par une CMSCommand
+    */	
+
 	
 	public Link getPortletDelegatedLink( CMSServiceCtx ctx) throws Exception ;
 	
-	/* Lien par défaut d'accès au service associé à un contenu
-	 * (utilisé depuis de portal site)
-	 * */
-	 
-	//public Link getServiceLink( LinkHandlerCtx ctx) throws Exception ;
 
-	
-	/* Lien vers un contenu recontextualise
-	 * */
-	 
-	//public Link getContextualLink( LinkHandlerCtx ctx) throws Exception ;
+
 
 }

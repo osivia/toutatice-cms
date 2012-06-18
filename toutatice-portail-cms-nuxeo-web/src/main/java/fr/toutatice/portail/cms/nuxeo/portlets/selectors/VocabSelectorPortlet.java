@@ -191,7 +191,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
 				// Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.unsetMaxMode", "true");
+				req.setAttribute("pia.initPageState", "true");
 			}
 		}
 

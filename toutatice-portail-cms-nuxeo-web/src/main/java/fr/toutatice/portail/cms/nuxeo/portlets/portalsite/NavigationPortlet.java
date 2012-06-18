@@ -83,6 +83,7 @@ public class NavigationPortlet extends CMSPortlet {
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
 		
+
 		
 		req.setAttribute("ctx", ctx);
 

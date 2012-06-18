@@ -193,7 +193,7 @@ public class SearchPortlet extends CMSPortlet {
 				windowProperties.put("pia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				
-
+				windowProperties.put("pia.title", "Résultats de la recherche");
 				windowProperties.put("pia.hideDecorators", "1");
 				
 

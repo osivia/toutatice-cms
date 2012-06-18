@@ -49,15 +49,15 @@ import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
-
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-
 import fr.toutatice.portail.core.profils.IProfilManager;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
 public class NuxeoController {
 
 	private static Log log = LogFactory.getLog(NuxeoController.class);
+	
+
 
 	PortletRequest request;
 	PortletResponse response;
@@ -78,11 +78,19 @@ public class NuxeoController {
 	String hideMetaDatas;
 	String template;
 	
-
-
+	//v 1.0.11 : pb. des pices jointes dans le proxy
+	Document currentDoc;
+	public Document getCurrentDoc() {
+		return currentDoc;
+	}
+	public void setCurrentDoc(Document currentDoc) {
+		this.currentDoc = currentDoc;
+	}
 	PortalControllerContext portalCtx;	
 	
-	
+
+
+
 	public String getBasePath() {
 		
 		return basePath;
@@ -276,15 +284,13 @@ public class NuxeoController {
 		try	{
 		PortalWindow window = WindowFactory.getWindow(request);
 		
+		portalCtx = new PortalControllerContext(portletCtx, request, response);
+		
 		// v1.1 : Ajout héritage
 		String scope = window.getProperty("pia.cms.scope");
 		if( scope == null)
 			scope = window.getPageProperty("pia.cms.scope");
-		
-		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
-		
-			
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
 		setScope(scope);
@@ -412,50 +418,6 @@ public class NuxeoController {
 		Window window = (Window) request.getAttribute("pia.window");
 
 		return getFormatter().formatScopeList(window, selectedScope);
-		/*
-		// On sélectionne les profils ayant un utilisateur Nuxeo
-		List<ProfilBean> profils = getProfilManager().getListeProfils();
-
-		Map<String, String> scopes = new HashMap<String, String>();
-		for (ProfilBean profil : profils) {
-			if (profil.getNuxeoVirtualUser() != null && profil.getNuxeoVirtualUser().length() > 0) {
-				scopes.put(profil.getName(), "Profil " + profil.getName());
-			}
-		}
-		scopes.put("anonymous", "Anonyme");
-
-		StringBuffer select = new StringBuffer();
-		select.append("<select name=\"scope\">");
-
-		if (!scopes.isEmpty()) {
-			if (selectedScope == null || selectedScope.length() == 0) {
-
-				select.append("<option selected=\"selected\" value=\"\">Pas de cache</option>");
-
-			} else {
-
-				select.append("<option value=\"\">Pas de cache</option>");
-
-			}
-			for (String possibleScope : scopes.keySet()) {
-				if (selectedScope != null && selectedScope.length() != 0 && possibleScope.equals(selectedScope)) {
-
-					select.append("<option selected=\"selected\" value=\"" + possibleScope + "\">"
-							+ scopes.get(possibleScope) + "</option>");
-
-				} else {
-
-					select.append("<option value=\"" + possibleScope + "\">" + scopes.get(possibleScope) + "</option>");
-
-				}
-			}
-		}
-
-		select.append("</select>");
-
-		return select.toString();
-		
-		*/
 
 	}
 
@@ -466,19 +428,33 @@ public class NuxeoController {
 			return( (ResourceResponse) response).createResourceURL();
 		return null;
 	}
-	
-	public String createFileLink(Document doc, String fieldName) {
 
-		ResourceURL resourceURL = createResourceURL();
+	public String createFileLink(Document doc, String fieldName)  throws Exception {
+		
+		if( "ttc:vignette".equals(fieldName))	 {
+			String url = getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8") ;
+			return url;
+			
+		}	else	{
+
+		ResourceURL resourceURL =  createResourceURL();
 		resourceURL.setResourceID(doc.getId() + "/" + fieldName);
 		resourceURL.setParameter("type", "file");
 		resourceURL.setParameter("docPath", doc.getPath());
 		resourceURL.setParameter("fieldName", fieldName);
+		
+		//v1.0.19 : 
+		if( isDisplayingLiveVersion())	{
+			resourceURL.setParameter("displayLiveVersion", "1");
+
+		}
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
 
 		return resourceURL.toString();
+		}
 	}
 	
 	public String createExternalLink(Document doc) {
@@ -499,6 +475,38 @@ public class NuxeoController {
 
 		resourceURL.setParameter("type", "attachedFile");
 		resourceURL.setParameter("fileIndex", fileIndex);
+		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
+	public String createAttachedPictureLink(String path, String fileIndex) {
+
+		ResourceURL resourceURL = createResourceURL();
+		resourceURL.setResourceID(path + "/" + fileIndex);
+
+		resourceURL.setParameter("type", "attachedPicture");
+		resourceURL.setParameter("pictureIndex", fileIndex);
+		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
+	public String createPictureLink(String path, String content) {
+
+		ResourceURL resourceURL = createResourceURL();
+		resourceURL.setResourceID(path + "/" + content);
+
+		resourceURL.setParameter("type", "picture");
+		resourceURL.setParameter("content", content);
 		resourceURL.setParameter("docPath", path);
 
 		// ne marche pas : bug JBP
@@ -569,14 +577,6 @@ public class NuxeoController {
 	}
 	
 	public Link getLink(Document doc) throws Exception 	{
-		/*
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());
-		return nuxeoService.getLinkHandler().getLink(handlerCtx);
-		*/
 		
 		return getLink(doc, null);
 
@@ -587,14 +587,7 @@ public class NuxeoController {
 	}
 	
 	public Link getLink(Document doc, String template, String linkContextualization) throws Exception 	{
-		/*
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());
-		return nuxeoService.getLinkHandler().getLink(handlerCtx);
-		*/
+
 		
 		String localContextualization = linkContextualization;
 		
@@ -658,30 +651,7 @@ public class NuxeoController {
 	
 	
 	
-	/*
-	public Link getServiceLink(Document doc) throws Exception 	{
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
-		return nuxeoService.getLinkHandler().getServiceLink(handlerCtx);
-	}
-*/
 	
-/*
-	public Link getContextualLink(Document doc) throws Exception 	{
-
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
-		return nuxeoService.getLinkHandler().getContextualLink(handlerCtx);
-
-		
-	}
-	*/
 	public String getDebugInfos()	{
 		String output = "";
 		output += "<p align=\"center\">";

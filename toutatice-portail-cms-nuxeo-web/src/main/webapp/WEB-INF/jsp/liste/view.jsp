@@ -61,7 +61,7 @@ if( rssLinkURL != null)	{
 <%	} %>
 
 
-
+<div class="no-ajax-link">
 	<ul>
 <%
 int indice = 0;
