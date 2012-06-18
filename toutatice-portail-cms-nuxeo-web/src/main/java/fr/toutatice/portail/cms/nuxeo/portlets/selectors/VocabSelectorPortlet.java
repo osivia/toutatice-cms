@@ -169,7 +169,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				
 
 				// Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("pia.unsetMaxMode", "true");
 
 			}
 

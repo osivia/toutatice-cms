@@ -69,7 +69,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 
-				ControllerContext controllerCtx = (ControllerContext) ctx.getRequest().getAttribute("pia.controller");
+				ControllerContext controllerCtx = ctx.getControlerContext();
+
 
 				User user = (User) controllerCtx.getServerInvocation().getAttribute(Scope.PRINCIPAL_SCOPE,
 						UserInterceptor.USER_KEY);

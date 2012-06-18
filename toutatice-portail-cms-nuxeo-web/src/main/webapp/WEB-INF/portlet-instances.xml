@@ -64,6 +64,27 @@
 		</instance>		
 	</deployment>
 	
+	
+	<deployment>
+		<instance>
+			<display-name xml:lang="en">Toutatice - Nuxeo publish menu</display-name>
+			<display-name xml:lang="fr">Toutatice - Nuxeo menu publication</display-name>
+			<instance-id>toutatice-portail-cms-nuxeo-publishMenuPortletInstance</instance-id>
+			<portlet-ref>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-ref>
+      		<security-constraint>
+            	<policy-permission>
+               		<action-name>admin</action-name>
+               		<role-name>Administrators</role-name>
+           		 </policy-permission>
+            	<policy-permission>
+               <action-name>view</action-name>
+               		<unchecked/>
+            	</policy-permission>
+         	</security-constraint>			
+		</instance>		
+	</deployment>
+
+	
 	<deployment>
 		<instance>
 			<display-name xml:lang="en">Toutatice - Nuxeo file browser</display-name>

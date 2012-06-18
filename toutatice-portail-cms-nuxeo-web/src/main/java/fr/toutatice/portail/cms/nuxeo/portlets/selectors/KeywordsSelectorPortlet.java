@@ -99,7 +99,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("pia.unsetMaxMode", "true");
 				
 			}
 

@@ -10,7 +10,7 @@ public class AsyncCommandBean {
 	
 	protected AsyncCommandBean( NuxeoCommandContext origCtx, INuxeoCommand cmd){
 		
-		ctx = new NuxeoCommandContext(origCtx.getPortletContext(), null);
+		ctx = new NuxeoCommandContext(origCtx.getPortletContext());
 		
 		ctx.setAuthType(origCtx.getAuthType());
 		ctx.setAuthProfil(origCtx.getAuthProfil());

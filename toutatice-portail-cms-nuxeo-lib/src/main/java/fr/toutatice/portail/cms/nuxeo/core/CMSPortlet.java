@@ -49,7 +49,8 @@ public class CMSPortlet extends GenericPortlet {
 	
 		try	{
 			new NuxeoController(getPortletContext()).startNuxeoService();
-			NuxeoCommandServiceFactory.startNuxeoCommandService( getPortletContext());
+			//Definition en double
+			//NuxeoCommandServiceFactory.startNuxeoCommandService( getPortletContext());
 		} catch( Exception e)	{
 			throw new PortletException( e);
 		}
@@ -190,7 +191,8 @@ public class CMSPortlet extends GenericPortlet {
 				// Le scope peut être insuffisant en terme de droit 
 				//  >> on supprime le scope
 				// V 1.0.14 : suppression
-
+				//String scope = ctx.getScope();
+				//ctx.setScope(null);
 				
 				// l'affichage des  méta-données n'est pas propagé non plus
 				// 
@@ -206,8 +208,7 @@ public class CMSPortlet extends GenericPortlet {
 				if ("ContextualLink".equals(doc.getType()))	{
 					url = doc.getString("clink:link");
 				} else	{
-					Link link = ctx.getServiceLink(doc);
-
+					Link link = ctx.getLink(doc);
 					url = link.getUrl();
 					
 				}

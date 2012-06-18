@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
 
@@ -18,6 +19,7 @@
 <%
 
 String searchBaseUrl = (String) request.getAttribute("searchUrl");
+NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 %>
 
@@ -39,3 +41,7 @@ function onsubmitsearch( form)
 			<input type="text" name="keywords" value="" size="20" />	<input type="submit" value="OK" />
 		</form>
 </div>
+
+
+
+<%= ctx.getDebugInfos() %>

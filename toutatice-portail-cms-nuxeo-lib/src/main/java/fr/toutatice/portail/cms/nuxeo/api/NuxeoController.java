@@ -6,12 +6,15 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -27,6 +30,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
@@ -38,8 +42,13 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+
+
+import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.nuxeo.LinkHandlerCtx;
+
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 import fr.toutatice.portail.core.profils.IProfilManager;
 import fr.toutatice.portail.core.profils.ProfilBean;
@@ -51,16 +60,23 @@ public class NuxeoController {
 
 
 	PortletRequest request;
-	RenderResponse response;
+	PortletResponse response;
 	PortletContext portletCtx;
 	IPortalUrlFactory urlFactory;
 	String pageId;
 	URI nuxeoBaseURI;
 	NuxeoConnectionProperties nuxeoConnection;
 	IProfilManager profilManager;
+	IFormatter formatter;
 	String scope;
 	String displayLiveVersion;
+	String contextualization;
+	String basePath;
+	String navigationPath;	
+	String contentPath;
+	
 	String hideMetaDatas;
+	String template;
 	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
@@ -73,9 +89,44 @@ public class NuxeoController {
 	PortalControllerContext portalCtx;	
 	
 
-	public PortalControllerContext getPortalCtx() {
-		return portalCtx;
+
+
+	public String getBasePath() {
+		
+		return basePath;
 	}
+
+	public String getNavigationPath() {
+		return navigationPath;
+	}
+
+	public String getContentPath() {
+		return contentPath;
+	}
+
+
+
+	public String getContextualization() {
+		return contextualization;
+	}
+
+	public void setContextualization(String contextualization) {
+		this.contextualization = contextualization;
+	}
+
+	
+
+	
+	public String getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(String template) {
+		this.template = template;
+	}
+
+
+
 	public String getHideMetaDatas() {
 		return hideMetaDatas;
 	}
@@ -174,7 +225,11 @@ public class NuxeoController {
 		if ("anonymous".equals(scope)) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-		} else if( scope != null) {
+		} else if ("__nocache".equals(scope)) {
+			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+		} else 
+			if( scope != null) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_PROFIL);
 			setScopeProfil(getProfilManager().getProfil(scope));
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
@@ -199,12 +254,20 @@ public class NuxeoController {
 		return nuxeoConnection;
 	}
 
+	public PortalControllerContext getPortalCtx()	{
 
+		if( portalCtx == null)
+			portalCtx = new PortalControllerContext(
+			 getPortletCtx(), request, response);
+		
+		return portalCtx;
+	}
+	
 	public PortletRequest getRequest() {
 		return request;
 	}
 
-	public RenderResponse getResponse() {
+	public PortletResponse getResponse() {
 		return response;
 	}
 
@@ -212,7 +275,7 @@ public class NuxeoController {
 		return portletCtx;
 	}
 
-	public NuxeoController(PortletRequest request, RenderResponse response, PortletContext portletCtx) throws RuntimeException  {
+	public NuxeoController(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws RuntimeException  {
 		super();
 		this.request = request;
 		this.response = response;
@@ -223,7 +286,10 @@ public class NuxeoController {
 		
 		portalCtx = new PortalControllerContext(portletCtx, request, response);
 		
+		// v1.1 : Ajout héritage
 		String scope = window.getProperty("pia.cms.scope");
+		if( scope == null)
+			scope = window.getPageProperty("pia.cms.scope");
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
@@ -232,6 +298,11 @@ public class NuxeoController {
 		setHideMetaDatas(hideMetadatas);
 		
 		setPageMarker((String) request.getAttribute("pia.pageMarker"));
+		
+		basePath = window.getPageProperty("pia.cms.basePath");
+		navigationPath =  request.getParameter("pia.cms.path");
+		if	(basePath != null && request.getParameter("pia.cms.itemRelPath") != null)
+			contentPath = basePath + request.getParameter("pia.cms.itemRelPath");
 		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
@@ -263,6 +334,14 @@ public class NuxeoController {
 
 		return profilManager;
 	}
+	
+	public IFormatter getFormatter() throws Exception {
+		if (formatter == null)
+			formatter = (IFormatter) portletCtx.getAttribute("FormatterService");
+		
+
+		return formatter;
+	}
 
 	public String getPageId() {
 		if (pageId == null) {
@@ -277,6 +356,48 @@ public class NuxeoController {
 		}
 		return pageId;
 	}
+	
+	
+	public String getComputedPath( String portletPath){
+		
+		String computedPath = null;
+		
+		if (portletPath == null) {
+			computedPath = "";
+		} else {
+			computedPath = portletPath;
+
+			if (computedPath.contains("${basePath}")) {
+				String path = getBasePath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{basePath\\}", path);
+			}
+
+			if (computedPath.contains("${navigationPath}")) {
+
+				String path = getNavigationPath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{navigationPath\\}", path);
+			}
+
+			if (computedPath.contains("${contentPath}")) {
+
+				String path = getContentPath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{contentPath\\}", path);
+			}
+		}
+
+		return computedPath;
+
+	}
+	
 
 	public String transformHTMLContent(String htmlContent) throws Exception {
 
@@ -293,49 +414,19 @@ public class NuxeoController {
 	}
 
 	public String formatScopeList(String selectedScope) throws Exception {
+		
+		Window window = (Window) request.getAttribute("pia.window");
 
-		// On sélectionne les profils ayant un utilisateur Nuxeo
-		List<ProfilBean> profils = getProfilManager().getListeProfils();
+		return getFormatter().formatScopeList(window, selectedScope);
 
-		Map<String, String> scopes = new HashMap<String, String>();
-		for (ProfilBean profil : profils) {
-			if (profil.getNuxeoVirtualUser() != null && profil.getNuxeoVirtualUser().length() > 0) {
-				scopes.put(profil.getName(), "Profil " + profil.getName());
-			}
-		}
-		scopes.put("anonymous", "Anonyme");
+	}
 
-		StringBuffer select = new StringBuffer();
-		select.append("<select name=\"scope\">");
-
-		if (!scopes.isEmpty()) {
-			if (selectedScope == null || selectedScope.length() == 0) {
-
-				select.append("<option selected=\"selected\" value=\"\">Pas de cache</option>");
-
-			} else {
-
-				select.append("<option value=\"\">Pas de cache</option>");
-
-			}
-			for (String possibleScope : scopes.keySet()) {
-				if (selectedScope != null && selectedScope.length() != 0 && possibleScope.equals(selectedScope)) {
-
-					select.append("<option selected=\"selected\" value=\"" + possibleScope + "\">"
-							+ scopes.get(possibleScope) + "</option>");
-
-				} else {
-
-					select.append("<option value=\"" + possibleScope + "\">" + scopes.get(possibleScope) + "</option>");
-
-				}
-			}
-		}
-
-		select.append("</select>");
-
-		return select.toString();
-
+	private ResourceURL createResourceURL()	{
+		if( response instanceof RenderResponse)
+			return( (RenderResponse) response).createResourceURL();
+		else if( response instanceof ResourceResponse)
+			return( (ResourceResponse) response).createResourceURL();
+		return null;
 	}
 
 	public String createFileLink(Document doc, String fieldName)  throws Exception {
@@ -346,7 +437,7 @@ public class NuxeoController {
 			
 		}	else	{
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL =  createResourceURL();
 		resourceURL.setResourceID(doc.getId() + "/" + fieldName);
 		resourceURL.setParameter("type", "file");
 		resourceURL.setParameter("docPath", doc.getPath());
@@ -368,7 +459,7 @@ public class NuxeoController {
 	
 	public String createExternalLink(Document doc) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(doc.getId());
 		resourceURL.setParameter("type", "link");
 		// ne marche pas : bug JBP
@@ -379,7 +470,7 @@ public class NuxeoController {
 
 	public String createAttachedFileLink(String path, String fileIndex) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path + "/" + fileIndex);
 
 		resourceURL.setParameter("type", "attachedFile");
@@ -395,7 +486,7 @@ public class NuxeoController {
 	
 	public String createAttachedPictureLink(String path, String fileIndex) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path + "/" + fileIndex);
 
 		resourceURL.setParameter("type", "attachedPicture");
@@ -411,7 +502,7 @@ public class NuxeoController {
 	
 	public String createPictureLink(String path, String content) {
 
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path + "/" + content);
 
 		resourceURL.setParameter("type", "picture");
@@ -430,7 +521,7 @@ public class NuxeoController {
 		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte
 		// Il est préférable de faire une redirection
 		
-		ResourceURL resourceURL = response.createResourceURL();
+		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path );
 		/*
 		resourceURL.setResourceID("/pagemarker/"+path );
@@ -458,7 +549,8 @@ public class NuxeoController {
 	}
 
 	public void handleErrors(NuxeoException e) throws Exception {
-		PortletErrorHandler.handleGenericErrors(getResponse(), e);
+		if( response instanceof RenderResponse)
+			PortletErrorHandler.handleGenericErrors((RenderResponse) response, e);
 	}
 
 	public Object executeNuxeoCommand(INuxeoCommand command) throws Exception {
@@ -485,21 +577,89 @@ public class NuxeoController {
 	}
 	
 	public Link getLink(Document doc) throws Exception 	{
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());
-		return nuxeoService.getLinkHandler().getLink(handlerCtx);
+		
+		return getLink(doc, null);
+
 	}	
 	
-	public Link getServiceLink(Document doc) throws Exception 	{
+	public Link getLink(Document doc, String template) throws Exception	{
+		return getLink( doc,  template, null);
+	}
+	
+	public Link getLink(Document doc, String template, String linkContextualization) throws Exception 	{
+
+		
+		String localContextualization = linkContextualization;
+		
+		if( localContextualization == null)
+			localContextualization = getContextualization();
+		
+		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
-		LinkHandlerCtx handlerCtx = new  LinkHandlerCtx( getPortletCtx(), getRequest(), getResponse(), getScope(), getDisplayLiveVersion(), getPageId(), getNuxeoPublicBaseUri(),  doc);
-		handlerCtx.setHideMetaDatas(getHideMetaDatas());		
-		return nuxeoService.getLinkHandler().getServiceLink(handlerCtx);
-	}
+		
+		PortalControllerContext portalCtx = new PortalControllerContext(getPortletCtx(),
+				getRequest(),getResponse());
+		
+		CMSServiceCtx handlerCtx = new  CMSServiceCtx();
+		handlerCtx.setCtx(new PortalControllerContext(getPortletCtx(),
+				getRequest(),getResponse()).getControllerCtx());
+		handlerCtx.setPortletCtx(getPortletCtx());
+		handlerCtx.setRequest(getRequest());
+		if( response instanceof RenderResponse)
+			handlerCtx.setResponse( (RenderResponse)response);
+		handlerCtx.setScope(getScope());
+		handlerCtx.setDisplayLiveVersion(getDisplayLiveVersion());
+		handlerCtx.setPageId(getPageId());
+		handlerCtx.setDoc(doc);
+		handlerCtx.setHideMetaDatas(getHideMetaDatas());
+		handlerCtx.setTemplate( template);
+		handlerCtx.setContextualization(localContextualization);
+		
+		// On regarde si le lien est géré par le portlet
+		
+		Link portletLink = nuxeoService.getLinkHandler().getPortletDelegatedLink(handlerCtx);
+		if( portletLink != null)
+			return portletLink;
+		
+		
+		
+		// Sinon on passe par le gestionnaire de cms pour recontextualiser
+		
+		Window window = (Window) portalCtx.getRequest().getAttribute("pia.window");
+		Page page = window.getPage();
+
+		Map<String, String> pageParams = new HashMap<String, String>();
+		
+		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, template, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
+		
+		if( url != null)	{
+		
+		Link link = new Link(url, false);
+		return link;
+		}
+		
+		return null;
 	
+
+	}	
+	
+
+	
+	
+	
+	
+	
+	public String getDebugInfos()	{
+		String output = "";
+		output += "<p align=\"center\">";
+		output += "scope : " + getScope() ;
+		output += "</p>";
+		
+		return output;
+		
+	}
+
 }

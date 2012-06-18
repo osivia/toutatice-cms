@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.portlet.PortletURL;
+import javax.portlet.RenderResponse;
+import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 
@@ -87,7 +89,13 @@ public class XSLFunctions {
 	
 	public String maximizedLink() throws WindowStateException	{
 		
-		PortletURL portletUrl = ctx.getResponse().createRenderURL();
+		PortletURL portletUrl = null;
+		
+		
+		if( ctx.getResponse() instanceof RenderResponse)
+		 portletUrl = ((RenderResponse) ctx.getResponse()).createRenderURL();
+		else if( ctx.getResponse() instanceof ResourceResponse)
+		 portletUrl = ((ResourceResponse) ctx.getResponse()).createRenderURL();
 		
 		portletUrl.setWindowState(WindowState.MAXIMIZED);
 		

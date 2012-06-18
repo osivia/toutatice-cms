@@ -92,7 +92,7 @@ while( it.hasNext())	{
 			
 
 	}	else {
-		link = ctx.getLink(doc);
+		link = ctx.getLink(doc,"fileExplorer");
 		url = link.getUrl();
 		target = Formater.formatTarget(link);
 

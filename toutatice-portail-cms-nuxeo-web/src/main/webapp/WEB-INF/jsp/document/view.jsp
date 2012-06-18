@@ -83,14 +83,7 @@ if( map != null && map.getString("data") != null)
 
 	<div class="nuxeo-docview-main">
 
-<% 	
-	if("annonce".equals(doc.getType().toLowerCase()) || ( "note".equals(doc.getType().toLowerCase()) ))	{
-	String jspName = "view-"+ doc.getType().toLowerCase() + ".jsp";
-%>
-		<jsp:include page="<%= jspName %>"></jsp:include>
-
-<% } %>	
-			
+	<jsp:include page="view-dispatch.jsp"></jsp:include>
 
 
 <% 

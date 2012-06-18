@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.List;
 
 import javax.servlet.http.HttpSessionEvent;
 
@@ -13,6 +14,12 @@ import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 
 import fr.toutatice.portail.api.profiler.IProfilerService;
+import fr.toutatice.portail.core.cms.CMSException;
+import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.cms.ICMSService;
+
 import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
@@ -27,6 +34,9 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	private static Log logger = LogFactory.getLog(NuxeoService.class);
 
 	INuxeoLinkHandler linkHandler;
+
+
+	ICMSService cmsService;
 
 	private transient IProfilerService profiler;
 
@@ -128,5 +138,35 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		}
 
 	}
+
+	public void registerCMSService(ICMSService cmsService) {
+		this.cmsService = cmsService;
+		
+	}
+
+
+	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
+
+		return cmsService.getContent(ctx, path);
+	}
+
+	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
+		return  cmsService.getItemHandler(ctx);
+	}
+
+	public CMSItem getPortalNavigationItem(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
+		return  cmsService.getPortalNavigationItem(ctx, publishSpacePath, path);
+	}
+
+	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
+		return  cmsService.getPortalNavigationSubitems(ctx, publishSpacePath, path);
+	}
+
+	public CMSItem getPortalPublishSpace(CMSServiceCtx ctx, String path) throws CMSException {
+		return  cmsService.getPortalPublishSpace(ctx, path);
+	}
+
+
+
 
 }

@@ -30,6 +30,8 @@
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 Document doc = (Document) renderRequest.getAttribute("doc");
 
+String permaLinkURL = (String) renderRequest.getAttribute("permaLinkURL")	;
+
 String date = "";
 date = Formater.formatDate( doc);
 
@@ -54,6 +56,21 @@ if( map != null && map.getString("data") != null)
 <%if(srcVignette.length()!=0) {%>
 	<span style="font-weight:bold">Vignette : </span><br/><%=srcVignette %>
 <%} %>
+
+<% 
+   
+   Link contextualLink = ctx.getLink(doc, null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
+   if( contextualLink != null)	{
+%>
+
+<a href="<%= contextualLink.getUrl() %>">Recontextualiser</a>
+
+
+
+<% } %>
+
+
+<a href="<%= permaLinkURL %>">Permalink</a>
 
 
 	

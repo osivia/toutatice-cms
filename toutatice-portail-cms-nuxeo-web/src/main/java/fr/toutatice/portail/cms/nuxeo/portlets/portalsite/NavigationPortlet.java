@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
+import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
@@ -49,23 +50,7 @@ public class NavigationPortlet extends CMSPortlet {
 			else if (window.getProperty("pia.cms.scope") != null)
 				window.setProperty("pia.cms.scope", null);
 			
-			
-			// Taille de page
-			int nbLevels = 0;
-			if (req.getParameter("nbLevels") != null )	{
-				try	{
-					nbLevels = Integer.parseInt(req.getParameter("nbLevels"));
-				} catch(Exception e){
-					// Mal formatté
-				}
-			}
-			
-			if (nbLevels > 0)
-				window.setProperty("pia.cms.nbLevels", Integer.toString(nbLevels));
-			else if (window.getProperty("pia.cms.nbLevels") != null)
-				window.setProperty("pia.cms.nbLevels", null);
 	
-			
 				
 
 			res.setPortletMode(PortletMode.VIEW);
@@ -98,12 +83,11 @@ public class NavigationPortlet extends CMSPortlet {
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
 		
-		String nbLevels = window.getProperty("pia.cms.nbLevels");
-		req.setAttribute("nbLevels", nbLevels);
+
 		
 		req.setAttribute("ctx", ctx);
 
-		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/navigation/admin.jsp");
+		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/portalsite/admin.jsp");
 		rd.include(req, res);
 
 	}
@@ -144,7 +128,7 @@ public class NavigationPortlet extends CMSPortlet {
 				
 
 				PortalSiteBean portalSite = (PortalSiteBean) ctx.executeNuxeoCommand(new PortalSiteFetchCommand(
-						nuxeoPath ));
+						ctx.getComputedPath(nuxeoPath) ));
 
 				if (portalSite.getPortalDocument().getTitle() != null)
 					response.setTitle(portalSite.getPortalDocument().getTitle());
@@ -152,7 +136,7 @@ public class NavigationPortlet extends CMSPortlet {
 				List<ServiceDisplayItem> listItems = new ArrayList<ServiceDisplayItem>();
 				for (Document child : portalSite.getChildren()) {
 
-					Link link = ctx.getServiceLink(child);
+					Link link = ctx.getLink(child, "menu");
 
 					if (link != null)
 						listItems.add(new ServiceDisplayItem(child.getTitle(), link.getUrl(), link.isExternal()));
@@ -162,7 +146,7 @@ public class NavigationPortlet extends CMSPortlet {
 
 				request.setAttribute("ctx", ctx);
 
-				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/navigation/view.jsp").include(request, response);
+				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/portalsite/view.jsp").include(request, response);
 			} else {
 				response.setContentType("text/html");
 				response.getWriter().print("<h2>Document non défini</h2>");
