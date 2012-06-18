@@ -49,7 +49,8 @@ public class CMSPortlet extends GenericPortlet {
 	
 		try	{
 			new NuxeoController(getPortletContext()).startNuxeoService();
-			NuxeoCommandServiceFactory.startNuxeoCommandService( getPortletContext());
+			//Definition en double
+			//NuxeoCommandServiceFactory.startNuxeoCommandService( getPortletContext());
 		} catch( Exception e)	{
 			throw new PortletException( e);
 		}
