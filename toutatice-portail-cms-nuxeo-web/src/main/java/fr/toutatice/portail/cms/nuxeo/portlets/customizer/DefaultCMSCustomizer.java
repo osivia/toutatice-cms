@@ -142,23 +142,27 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 	public CMSHandlerProperties createFileFolderLink(CMSServiceCtx ctx) {
 		
 		Document doc = (Document) ctx.getDoc();
-
+		
+		//Modif JSS v 1.0.9-SNAPSHOT : affichage par défaut d'un folder
+		
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.cms.uri", doc.getPath());
-		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");
+		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
+		windowProperties.put("pia.cms.scope",  ctx.getScope());
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
-
-
+		windowProperties.put("pia.cms.hideMetaDatas", "1");
+		windowProperties.put("pia.title", "Dossier " + doc.getTitle());	
+		windowProperties.put("pia.cms.pageSizeMax", "10");
+	    Map<String, String> params = new HashMap<String, String>();
+		
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance");
+		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
 		
 		return linkProps;
+
 
 
 	}
