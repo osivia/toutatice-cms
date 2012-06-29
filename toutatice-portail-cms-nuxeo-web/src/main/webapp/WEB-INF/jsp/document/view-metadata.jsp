@@ -1,3 +1,4 @@
+<%@page import="fr.toutatice.portail.api.urls.IPortalUrlFactory"%>
 <%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
 <%@ page contentType="text/html; charset=UTF-8"%>
