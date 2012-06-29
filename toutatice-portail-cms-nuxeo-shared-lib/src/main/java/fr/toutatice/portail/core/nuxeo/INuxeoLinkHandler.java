@@ -29,6 +29,4 @@ public interface INuxeoLinkHandler {
 	public Link getPortletDelegatedLink( CMSServiceCtx ctx) throws Exception ;
 	
 
-
-
 }

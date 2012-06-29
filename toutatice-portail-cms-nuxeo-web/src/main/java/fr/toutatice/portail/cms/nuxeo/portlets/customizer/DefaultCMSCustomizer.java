@@ -180,12 +180,12 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 
 		Map<String, String> params = new HashMap<String, String>();
 
-		String url = portalUrlFactory.getStartProcUrl(new PortalControllerContext(ctx.getPortletCtx(),
-				ctx.getRequest(), ctx.getResponse()), ctx.getPageId(), portletInstance, "virtual", "cms",
+		String url = portalUrlFactory.getStartProcUrl(new PortalControllerContext(ctx.getCtx()), ctx.getPageId(), portletInstance, "virtual", "cms",
 				windowProperties, params);
 		
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setUrl(url);
+		linkProps.setWindowProperties(windowProperties);
+		linkProps.setPortletInstance(portletInstance);
 
 		return linkProps;
 	}
@@ -201,29 +201,37 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 			return createAnnonceFolderLink(ctx);
 		} else if ("DocumentUrlContainer".equals(doc.getType())) {
 			return createDocumentUrlContainerLink(ctx);
-		} else if ("Forum".equals(doc.getType())) {
-			CMSHandlerProperties linkProps = new CMSHandlerProperties();
-			linkProps.setExternalUrl(getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents");
-			return linkProps;
-		} else if ("PictureBook".equals(doc.getType())) {
-			CMSHandlerProperties linkProps = new CMSHandlerProperties();
-			linkProps.setExternalUrl(getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
-					+ "/view_documents?tabId=tab_slideshow");
-			return linkProps;
 		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))|| ("Rubrique".equals(doc.getType()))) {
 			// types supportés par le CMS du portail
 			return getCMSLink(ctx);
 		} else {
-			CMSHandlerProperties linkProps = new CMSHandlerProperties();
-			linkProps.setExternalUrl(getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents");
-			return linkProps;
+			
+			String externalUrl = getExternalViewer(ctx);
+			if( externalUrl == null)
+				externalUrl = getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents";
+			
 			// Par défaut, lien direct sur Nuxeo
-
+			
+			CMSHandlerProperties linkProps = new CMSHandlerProperties();
+			linkProps.setExternalUrl(externalUrl);
+			return linkProps;
 		}		
-		
-		
 	}
 
+	
+	public String getExternalViewer(CMSServiceCtx ctx)	{
+		
+		String url = null;
+		
+		Document doc = (Document) ctx.getDoc();
+		
+		if ("Forum".equals(doc.getType())) {
+			url = getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents";
+		}  
+		
+		return url;
+		
+	}
 
 	public String createPortletDelegatedExternalLink(CMSServiceCtx ctx) {
 
@@ -272,7 +280,14 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 			externalLink = true;
 		} else if ("File".equals(doc.getType())) {
 			url = createPortletDelegatedFileContentLink(ctx);
+		} 
+		
+		if( url == null)	{
+			url = getExternalViewer(ctx);
+			if( url != null)
+				externalLink = true;
 		}
+		
 		
 		if( url != null)	{
 			Link link = new Link( url, externalLink);
