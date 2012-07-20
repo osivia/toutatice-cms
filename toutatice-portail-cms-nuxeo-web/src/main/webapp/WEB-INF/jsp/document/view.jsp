@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.api.urls.IPortalUrlFactory"%>
 <%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
 <%@page import="fr.toutatice.portail.api.urls.Link"%>
@@ -35,13 +36,6 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-// Menu bar
-
-Link adminLink = ViewDocumentPortlet.getAdministrationLink( ctx);
-if( adminLink != null)	{
-		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
-		menuBar.add(new MenubarItem("Ouvrir dans Nuxeo", 15,  adminLink.getUrl(), null, "portlet-menuitem-nuxeo-edit", "nuxeo"));
-} 
 
 
 
@@ -121,8 +115,4 @@ if( map != null && map.getString("data") != null)
 			
 </div>
 
-<!--
-<p align="center">
-		scope	<%= ctx.getScope() %> <br/>
-</p>
--->
+<%= ctx.getDebugInfos() %>

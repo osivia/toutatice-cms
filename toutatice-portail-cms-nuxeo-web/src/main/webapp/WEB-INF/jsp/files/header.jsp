@@ -11,7 +11,11 @@
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet"%><div class="header">
 
-<% if( WindowState.NORMAL.equals(renderRequest.getWindowState()))	{	%>
+<% if( WindowState.NORMAL.equals(renderRequest.getWindowState()))	{	
+
+// Affichage du breadcrum en mode normal
+
+%>
 
 <div class="path"> 
 <%	

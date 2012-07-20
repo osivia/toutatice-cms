@@ -134,7 +134,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "DocumentFetchPublishSpaceCommand/" + path;
+		return "PublishSpaceNavigationCommand/" + path;
 	};
 
 }

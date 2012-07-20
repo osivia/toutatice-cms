@@ -152,7 +152,9 @@ public class XSLFunctions {
 		
 		//On traite uniquement les liens absolus ou commencant par /nuxeo
 		if( !link.startsWith("http") && !link.startsWith(ctx.getNuxeoConnectionProps().getNuxeoContext()))
-			return "";
+			//	correction v2 pour le mailto
+			//return "";
+			return link;
 		
 		String trim = link.trim().replace(" ", "%20");
 		URI url = ctx.getNuxeoPublicBaseUri().resolve(trim);

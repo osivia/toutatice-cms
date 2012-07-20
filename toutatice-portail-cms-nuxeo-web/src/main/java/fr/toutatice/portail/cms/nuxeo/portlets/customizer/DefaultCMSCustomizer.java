@@ -6,21 +6,25 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
+import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchLiveCommand;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
+import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 
 
-public class DefaultCMSCustomizer implements INuxeoLinkHandler {
+public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	PortletContext portletCtx;
 	protected IPortalUrlFactory portalUrlFactory;
@@ -201,7 +205,7 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 			return createAnnonceFolderLink(ctx);
 		} else if ("DocumentUrlContainer".equals(doc.getType())) {
 			return createDocumentUrlContainerLink(ctx);
-		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))|| ("Rubrique".equals(doc.getType()))) {
+		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))|| ("PortalPage".equals(doc.getType())) || ("PortalSite".equals(doc.getType()))) {
 			// types supportés par le CMS du portail
 			return getCMSLink(ctx);
 		} else {
@@ -298,5 +302,15 @@ public class DefaultCMSCustomizer implements INuxeoLinkHandler {
 	}
 	
 	
+	
+	
+	/* 
+	 * Barre de menu des portlets d'affichage de contenu 
+	 */
+
+	
+	public void adaptContentMenuBar(List<MenubarItem> menuBar) throws Exception {
+	}
+
 	
 }

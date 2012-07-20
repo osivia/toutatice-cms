@@ -41,6 +41,13 @@ public class CMSService implements ICMSService {
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("displayName", displayName);
 		properties.put("type", doc.getType());
+		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
+		if( pageTemplate != null && pageTemplate.length() > 0)
+			properties.put("pageTemplate", pageTemplate);
+		String pageScope =  (String) doc.getProperties().get("ttc:pageScope");
+		if( pageScope != null && pageScope.length() > 0)
+			properties.put("pageScope", pageScope);
+
 		return new CMSItem(path, properties, doc);
 	}
 
@@ -187,8 +194,23 @@ public class CMSService implements ICMSService {
 		return null;
 	}
 
-	public CMSItem getPortalPublishSpace(CMSServiceCtx arg0, String path) throws CMSException {
-		// TODO Auto-generated method stub
+	public CMSItem getPortalPublishSpace(CMSServiceCtx cmsCtx, String path) throws CMSException {
+		try {
+
+			Document publishSpace =  (Document) executeNuxeoCommand(cmsCtx,
+					(new DocumentResolvePublishSpaceCommand(path)));
+
+			if (publishSpace != null) {
+				return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace);
+
+			}
+		} catch (NuxeoException e) {
+			e.rethrowCMSException();
+		} catch (Exception e) {
+			throw new CMSException(e);
+		}
+
+		// Not possible
 		return null;
 	}
 

@@ -40,7 +40,9 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 %>
 		<jsp:include page="<%= jspName %>"></jsp:include>
 
-<% } %>	
+<% } else { %>	
 			
-
+		<jsp:include page="view-default.jsp"></jsp:include>
+		
+<% } %> 
 

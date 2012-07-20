@@ -29,7 +29,7 @@ import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * Portlet d'affichage d'un menu de navigation portalSite sur 1 niveau
  */
 
 public class NavigationPortlet extends CMSPortlet {

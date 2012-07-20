@@ -1,3 +1,4 @@
+<%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
 <%@ page contentType="text/plain; charset=UTF-8"%>
@@ -34,21 +35,26 @@ String selectors = (String) renderRequest.getAttribute("selectors")	;
 
 <div class="nuxeo-list-<%=style%>">
 
-<div class="no-ajax-link">
 
 <%
+// Menu items can be customized
+// by jsp duplication
+
+List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
+
 if( permaLinkURL != null)	{
-%>
-	<div class="nuxeo-list-permalink"><a href="#" onclick="alert('<%= permaLinkURL %>');return false">Permalien</a></div>
-<%
+	MenubarItem item = new MenubarItem("Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC, permaLinkURL, null, "portlet-menuitem-permalink", null);
+	item.setAjaxDisabled(true);
+	menuBar.add(item);
 }
 %>
 
 <%
 if( rssLinkURL != null)	{
-%>
-	<div class="nuxeo-list-rsslink"><a href="<%= rssLinkURL %>">RSS</a></div>
-<%
+
+	MenubarItem item = new MenubarItem("RSS", MenubarItem.ORDER_PORTLET_SPECIFIC + 2, rssLinkURL, null, "portlet-menuitem-rss", null);
+	item.setAjaxDisabled(true);
+	menuBar.add(item);	
 }
 %>
 

@@ -20,7 +20,7 @@ import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
 
-import fr.toutatice.portail.core.nuxeo.INuxeoLinkHandler;
+import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
@@ -33,7 +33,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	private static Log logger = LogFactory.getLog(NuxeoService.class);
 
-	INuxeoLinkHandler linkHandler;
+	INuxeoCustomizer linkHandler;
 
 
 	ICMSService cmsService;
@@ -100,12 +100,12 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	}
 
-	public void registerLinkHandler(INuxeoLinkHandler linkHandler) {
+	public void registerLinkHandler(INuxeoCustomizer linkHandler) {
 		this.linkHandler = linkHandler;
 
 	}
 
-	public INuxeoLinkHandler getLinkHandler() {
+	public INuxeoCustomizer getLinkHandler() {
 		return linkHandler;
 
 	}

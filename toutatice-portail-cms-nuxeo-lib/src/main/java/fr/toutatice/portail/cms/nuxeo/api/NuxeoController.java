@@ -33,10 +33,12 @@ import fr.toutatice.portail.api.cache.services.CacheInfo;
 import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.locator.Locator;
+import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
+import fr.toutatice.portail.cms.nuxeo.core.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
@@ -586,6 +588,8 @@ public class NuxeoController {
 		return getLink( doc,  template, null);
 	}
 	
+	
+	
 	public Link getLink(Document doc, String template, String linkContextualization) throws Exception 	{
 
 		
@@ -599,8 +603,6 @@ public class NuxeoController {
 		if( nuxeoService == null)
 			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
 		
-		PortalControllerContext portalCtx = new PortalControllerContext(getPortletCtx(),
-				getRequest(),getResponse());
 		
 		CMSServiceCtx handlerCtx = new  CMSServiceCtx();
 		handlerCtx.setCtx(new PortalControllerContext(getPortletCtx(),
@@ -627,7 +629,7 @@ public class NuxeoController {
 		
 		// Sinon on passe par le gestionnaire de cms pour recontextualiser
 		
-		Window window = (Window) portalCtx.getRequest().getAttribute("pia.window");
+		Window window = (Window) getPortalCtx().getRequest().getAttribute("pia.window");
 		Page page = window.getPage();
 
 		Map<String, String> pageParams = new HashMap<String, String>();
@@ -646,8 +648,24 @@ public class NuxeoController {
 
 	}	
 	
-
 	
+	public void insertContentMenuBarItems 	() throws Exception	{
+		
+		// Création de la barre de menu
+		new MenuBarFormater(this).formatContentMenuBar();
+		
+		// Adaptation via le CMSCustomizer
+		
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		
+		
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");		
+
+		nuxeoService.getLinkHandler().adaptContentMenuBar(menuBar);
+		
+	}
 	
 	
 	

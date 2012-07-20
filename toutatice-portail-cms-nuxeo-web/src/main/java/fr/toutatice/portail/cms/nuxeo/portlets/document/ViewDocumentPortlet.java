@@ -65,51 +65,10 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 	private INuxeoService nuxeoService;
 	
 	
-	// v 1.0.11 : ajout lien modification dans Nuxeo
+
+
 	
-	public static Link getAdministrationLink( NuxeoController ctx ) throws Exception {
-		
-		if( ctx.getRequest().getRemoteUser() == null)
-			return null;
-		
-		
-		String savedScope = ctx.getScope();
-
-		try {
-			// Scope user
-			ctx.setScope(null);
-
-			Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-					.executeNuxeoCommand(new DocumentFetchLiveCommand(ctx.getCurrentDoc().getPath(), "Write"));
-
-			if (doc != null) {
-				return new Link(ctx.getNuxeoPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
-						+ "/view_documents", true);
-			}
-		}
-
-		catch (Exception e) {
-
-			if (e instanceof NuxeoException) {
-				NuxeoException ne = (NuxeoException) e;
-
-				if (ne.getErrorCode() == NuxeoException.ERROR_FORBIDDEN
-						|| ne.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
-					// On ne fait rien : le document n'existe pas ou je n'ai pas
-					// les droits
-				} else
-					throw e;
-			}
-
-		}
-
-		finally {
-			ctx.setScope(savedScope);
-		}
-
-		return null;
-		
-	}
+	
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -270,6 +229,9 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						if (doc.getTitle() != null)
 							response.setTitle(doc.getTitle());
 						
+
+						
+						
 						request.setAttribute("doc", doc);
 						
 
@@ -285,6 +247,9 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 							//v 1.0.11 : pb. des pices jointes dans le proxy
 							ctx.setCurrentDoc(doc);
+							
+							// Insert standard menu bar for content item
+							ctx.insertContentMenuBarItems();
 							
 
 							transformer.setParameter("bridge", new XSLFunctions(ctx));
@@ -317,13 +282,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						
 						
 						
-	
-						String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
-								response), null, null, doc.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-	
-						request.setAttribute("permaLinkURL", permaLinkURL);
-
-						
+					
 
 						getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request,
 								response);
