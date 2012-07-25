@@ -20,7 +20,7 @@ public interface INuxeoCustomizer {
 	
 	/* Lien par defaut d'accès à un contenu */
 
-	public CMSHandlerProperties getLink( CMSServiceCtx ctx) throws Exception ;
+	public CMSHandlerProperties getCMSPlayer( CMSServiceCtx ctx) throws Exception ;
 	
 	
 	/* renvoie un lien si le contenu est affiché directement par le portlet (contextual link, download filecontent) ... 

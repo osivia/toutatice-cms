@@ -130,22 +130,27 @@ public class RssGenerator {
 			PropertyMap map = doc.getProperties().getMap("ttc:vignette");
 
 			if (map != null && map.getString("data") != null) {
-
-				Element enclosure = document.createElement("enclosure");
 				
+				Element enclosure = document.createElement("enclosure");
+
+				/*
+			
 				Map<String, String> params = new HashMap<String, String>();
 				params.put("thubmnailPath", doc.getPath());
 				params.put("thubmnailField", "ttc:vignette");
 				
 				String permaLinkThumbnail = ctx.getPortalUrlFactory().getPermaLink(portalCtx, permLinkRef, params,  portalCtx.getRequest().getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS_PICTURE);
+				
+				enclosure.setAttribute("url", permaLinkThumbnail);
+				*/
 
-/*
+
 				String baseUrl = "http://" + request.getServerName() + ":" + request.getServerPort();
 
 				enclosure.setAttribute("url", baseUrl + ctx.createFileLink(doc, "ttc:vignette"));
 
-*/				
-				enclosure.setAttribute("url", permaLinkThumbnail);
+			
+				
 				
 				String mimeType =  map.getString("mime-type");
 				if( mimeType != null)

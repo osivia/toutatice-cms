@@ -111,8 +111,7 @@ public class ViewListPortlet extends CMSPortlet {
 			
 			if ("rss".equals(resourceRequest.getParameter("type"))) {
 				
-				String cmsPath = resourceRequest.getParameter("pia.cms.path");
-				
+			
 				/* Contexts initialization */
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());

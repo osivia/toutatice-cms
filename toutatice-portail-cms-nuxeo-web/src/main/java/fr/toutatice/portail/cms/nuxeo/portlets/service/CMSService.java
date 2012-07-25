@@ -148,7 +148,7 @@ public class CMSService implements ICMSService {
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
 		// Document doc = ctx.g
 		try {
-			return getNuxeoService().getLinkHandler().getLink(ctx);
+			return getNuxeoService().getLinkHandler().getCMSPlayer(ctx);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {

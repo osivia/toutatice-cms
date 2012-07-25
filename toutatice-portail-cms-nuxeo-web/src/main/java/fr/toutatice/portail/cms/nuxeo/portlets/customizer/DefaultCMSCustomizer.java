@@ -87,7 +87,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	
 
-	public CMSHandlerProperties getCMSLink(CMSServiceCtx ctx) throws Exception {
+	public CMSHandlerProperties getCMSDefaultPlayer(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
 		
@@ -154,7 +154,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	
 	
-	public CMSHandlerProperties createAnnonceFolderLink(CMSServiceCtx ctx) throws Exception {
+	public CMSHandlerProperties getCMSAnnonceFolderPlayer (CMSServiceCtx ctx) throws Exception {
 
 		
 		Document doc = (Document) ctx.getDoc();
@@ -178,7 +178,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	}
 	
-	public CMSHandlerProperties createDocumentUrlContainerLink(CMSServiceCtx ctx) throws Exception {
+	public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws Exception {
 
 		
 		Document doc = (Document) ctx.getDoc();
@@ -204,7 +204,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	
 	
-	public CMSHandlerProperties createFileFolderLink(CMSServiceCtx ctx) throws CMSException {
+	public CMSHandlerProperties getCMSFolderPlayer(CMSServiceCtx ctx) throws CMSException {
 		
 		Document doc = (Document) ctx.getDoc();
 		
@@ -218,7 +218,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		
 		windowProperties.put("pia.cms.scope",  ctx.getScope());
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", "1");
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
 		windowProperties.put("pia.title", "Dossier " + doc.getTitle());	
 		windowProperties.put("pia.cms.pageSizeMax", "10");
 	    Map<String, String> params = new HashMap<String, String>();
@@ -256,20 +256,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return linkProps;
 	}
 	
-	public CMSHandlerProperties getLink(CMSServiceCtx ctx) throws Exception {
+	public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
 		
 		Document doc = (Document) ctx.getDoc();
 
 		
 		if ("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) {
-			return createFileFolderLink(ctx);
+			return getCMSFolderPlayer(ctx);
 		} else if ("AnnonceFolder".equals(doc.getType())) {
-			return createAnnonceFolderLink(ctx);
+			return getCMSAnnonceFolderPlayer(ctx);
 		} else if ("DocumentUrlContainer".equals(doc.getType())) {
-			return createDocumentUrlContainerLink(ctx);
+			return getCMSUrlContainerPlayer(ctx);
 		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))|| ("PortalPage".equals(doc.getType())) || ("PortalSite".equals(doc.getType()))) {
 			// types supportés par le CMS du portail
-			return getCMSLink(ctx);
+			return getCMSDefaultPlayer(ctx);
 		} else {
 			
 			String externalUrl = getExternalViewer(ctx);
@@ -347,12 +347,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		} else if ("File".equals(doc.getType())) {
 			url = createPortletDelegatedFileContentLink(ctx);
 		} 
+
+
+		// Nécessaire pour poser une ancre au moment de la génération du lien
 		
 		if( url == null)	{
 			url = getExternalViewer(ctx);
 			if( url != null)
 				externalLink = true;
 		}
+
 		
 		
 		if( url != null)	{

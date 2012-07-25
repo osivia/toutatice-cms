@@ -25,8 +25,6 @@ public class CMSCustomizer extends DefaultCMSCustomizer {
 	
 	}
 
-	public CMSHandlerProperties getLink(CMSServiceCtx ctx) throws Exception {
-		return super.getLink(ctx);
-	}	
+
 
 }
