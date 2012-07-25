@@ -47,7 +47,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		// TODO : ajouter filtre showInMenu
 		
-		String nuxeoRequest = "ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "' ";
+		String nuxeoRequest = "( ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 )";
 		
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false);

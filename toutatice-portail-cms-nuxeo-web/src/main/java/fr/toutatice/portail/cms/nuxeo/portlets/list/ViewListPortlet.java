@@ -119,7 +119,7 @@ public class ViewListPortlet extends CMSPortlet {
 				
 				PortalControllerContext portalCtx = new PortalControllerContext(getPortletContext(), resourceRequest,resourceResponse);
 			
-				ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
+				//ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 
 				/* On détermine l'uid et le scope */
 

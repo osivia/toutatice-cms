@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 
@@ -17,9 +18,13 @@ import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchLiveCommand;
+import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.cms.ICMSService;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 
@@ -30,6 +35,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	protected IPortalUrlFactory portalUrlFactory;
 	
 	NuxeoConnectionProperties nuxeoConnection;
+	
+	
+	ICMSService CMSService;
+	
+	ICMSService getCMSService()	{
+		if( CMSService ==null)	{
+			CMSService = (INuxeoService) portletCtx.getAttribute("NuxeoService");
+		}
+		return CMSService;
+	}
+
 	
 	public NuxeoConnectionProperties getNuxeoConnectionProps() {
 		if (nuxeoConnection == null)
@@ -95,13 +111,56 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	}
 
 	
+	/**
+	 * Gére les folders 'hiddenInNavigation' 
+	 *  
+	 * Les fils d'un folder 'hiddenInNavigation' sont directement rattachés au parent
+	 * 
+	 * @param ctx
+	 * @return
+	 * @throws CMSException
+	 */
+	
+	protected String createFolderRequest(CMSServiceCtx ctx) throws CMSException	{
+	
+		String nuxeoRequest = null;
+
+		Document doc = (Document) ctx.getDoc();
+
+		if (ctx.getContextualizationBasePath() != null) {
+			// Publication dans un environnement contextualisé
+			// On se sert du menu de navigation et on décompose chaque niveau
+
+			nuxeoRequest = " (ecm:parentId = '" + doc.getId() + "' AND ecm:mixinType != 'Folderish' )";
+
+			List<CMSItem> navItems = getCMSService().getPortalNavigationSubitems(ctx, ctx.getContextualizationBasePath(),
+					doc.getPath());
+
+			for (CMSItem curItem : navItems) {
+				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
+				if ("true".equals(hiddenItem)) {
+					nuxeoRequest = nuxeoRequest + " OR (ecm:path STARTSWITH '" + curItem.getPath()
+							+ "' AND ecm:mixinType != 'Folderish' )";
+				}
+			}
+
+		} else {
+			nuxeoRequest = "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ";
+		}
+		return nuxeoRequest;
+	
+	}
+	
+	
+	
+	
 	public CMSHandlerProperties createAnnonceFolderLink(CMSServiceCtx ctx) throws Exception {
 
 		
 		Document doc = (Document) ctx.getDoc();
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '" + doc.getPath() + "' ");
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest( ctx)); 
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -125,7 +184,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '" + doc.getPath() + "' ");
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest( ctx)); 
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -143,14 +202,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	
 	
-	public CMSHandlerProperties createFileFolderLink(CMSServiceCtx ctx) {
+	
+	
+	public CMSHandlerProperties createFileFolderLink(CMSServiceCtx ctx) throws CMSException {
 		
 		Document doc = (Document) ctx.getDoc();
 		
-		//Modif JSS v 1.0.9-SNAPSHOT : affichage par défaut d'un folder
+
+		
 		
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest( ctx)); 
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");		

@@ -72,13 +72,12 @@ public class NuxeoController {
 	IFormatter formatter;
 	String scope;
 	String displayLiveVersion;
-	String contextualization;
 	String basePath;
 	String navigationPath;	
 	String contentPath;
 	
 	String hideMetaDatas;
-	String template;
+	String displayContext;
 	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
@@ -108,23 +107,15 @@ public class NuxeoController {
 
 
 
-	public String getContextualization() {
-		return contextualization;
-	}
-
-	public void setContextualization(String contextualization) {
-		this.contextualization = contextualization;
-	}
-
 	
 
 	
-	public String getTemplate() {
-		return template;
+	public String getDisplayContext() {
+		return displayContext;
 	}
 
-	public void setTemplate(String template) {
-		this.template = template;
+	public void setDisplayContext(String displayContext) {
+		this.displayContext = displayContext;
 	}
 
 
@@ -584,20 +575,17 @@ public class NuxeoController {
 
 	}	
 	
-	public Link getLink(Document doc, String template) throws Exception	{
-		return getLink( doc,  template, null);
+	public Link getLink(Document doc, String displayContext) throws Exception	{
+		return getLink( doc,  displayContext, null);
 	}
 	
 	
 	
-	public Link getLink(Document doc, String template, String linkContextualization) throws Exception 	{
+	public Link getLink(Document doc, String displayContext, String linkContextualization) throws Exception 	{
 
 		
 		String localContextualization = linkContextualization;
-		
-		if( localContextualization == null)
-			localContextualization = getContextualization();
-		
+
 		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
@@ -616,8 +604,8 @@ public class NuxeoController {
 		handlerCtx.setPageId(getPageId());
 		handlerCtx.setDoc(doc);
 		handlerCtx.setHideMetaDatas(getHideMetaDatas());
-		handlerCtx.setTemplate( template);
-		handlerCtx.setContextualization(localContextualization);
+		handlerCtx.setDisplayContext(displayContext);
+
 		
 		// On regarde si le lien est géré par le portlet
 		
@@ -635,7 +623,7 @@ public class NuxeoController {
 		Map<String, String> pageParams = new HashMap<String, String>();
 		
 		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
-				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, template, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
 		
 		if( url != null)	{
 		

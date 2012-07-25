@@ -39,14 +39,28 @@ public class CMSService implements ICMSService {
 
 	private CMSItem createItem(String path, String displayName, Document doc) {
 		Map<String, String> properties = new HashMap<String, String>();
+		
+		
 		properties.put("displayName", displayName);
 		properties.put("type", doc.getType());
+		
 		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
 		if( pageTemplate != null && pageTemplate.length() > 0)
 			properties.put("pageTemplate", pageTemplate);
+		
 		String pageScope =  (String) doc.getProperties().get("ttc:pageScope");
 		if( pageScope != null && pageScope.length() > 0)
 			properties.put("pageScope", pageScope);
+		
+		
+		String showInMenu =  (String) doc.getProperties().get("ttc:showInMenu");
+		if( showInMenu != null && showInMenu.length() > 0)
+			properties.put("showInMenu", showInMenu);
+		
+		String hiddenInNavigation =  (String) doc.getProperties().get("ttc:hiddenInNavigation");
+		if( hiddenInNavigation != null && hiddenInNavigation.length() > 0)
+			properties.put("hiddenInNavigation", hiddenInNavigation);
+
 
 		return new CMSItem(path, properties, doc);
 	}

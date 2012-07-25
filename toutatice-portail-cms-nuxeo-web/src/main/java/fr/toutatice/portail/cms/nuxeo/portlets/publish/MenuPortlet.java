@@ -129,31 +129,8 @@ public class MenuPortlet extends CMSPortlet {
 		
 		
 		
-		// Méthode non optimisée
-		//CategoryBean portalSite = (CategoryBean) ctx.executeNuxeoCommand(new CategoryFetchCommand(nuxeoPath));
-		//Document doc = portalSite.getPortalDocument();
-
-		
 		// Get root publish page
 
-		Window window = (Window) portalCtx.getRequest().getAttribute("pia.window");
-		Page page = window.getPage();
-
-		Map<String, String> pageParams = new HashMap<String, String>();
-
-		/*
-		 * 
-		 * Map<String, List<String>> selectors =
-		 * PageSelectors.decodeProperties(portalCtx
-		 * .getRequest().getParameter("selectors"));
-		 * 
-		 * if( selectors != null && selectors.size() > 0)
-		 * pageParams.put("selectors",
-		 * PageSelectors.encodeProperties(selectors));
-		 */
-
-		//Link link = new Link(portalUrlFactory.getCMSUrl(portalCtx,
-		//		page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, null, IPortalUrlFactory.TEMPLATE_NAVIGATION, null, null), false);
 		
 		Link link = ctx.getLink(doc,"menu");
 
@@ -178,21 +155,13 @@ public class MenuPortlet extends CMSPortlet {
 			
 			for(CMSItem child : navItems){
 				
-				if (link != null)
+				if (! "true".equals(child.getProperties().get("hiddenInNavigation")) )	{
 					displayItem.getChildrens().add(
 							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
-				
+				}
 				
 			}
 
-			/*
-			for (Document child : portalSite.getChildren()) {
-
-				if (link != null)
-					displayItem.getChildrens().add(
-							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
-			}
-			*/
 		}
 
 		return displayItem;
