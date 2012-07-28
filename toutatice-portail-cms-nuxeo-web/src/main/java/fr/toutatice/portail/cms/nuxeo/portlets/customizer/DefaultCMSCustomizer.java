@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
-import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
@@ -16,8 +14,6 @@ import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchLiveCommand;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
@@ -374,8 +370,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 * Barre de menu des portlets d'affichage de contenu 
 	 */
 
+	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
+		
+		new MenuBarFormater(ctx, this).formatContentMenuBar();
+		
+		List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("pia.menuBar");
+		
+		adaptContentMenuBar( ctx, menuBar);
+
+	}
 	
-	public void adaptContentMenuBar(List<MenubarItem> menuBar) throws Exception {
+	protected void adaptContentMenuBar(CMSServiceCtx ctx, List<MenubarItem> menuBar) throws Exception	{
 	}
 
 	

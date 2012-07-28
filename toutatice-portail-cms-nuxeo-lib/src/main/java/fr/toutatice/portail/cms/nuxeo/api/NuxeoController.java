@@ -38,7 +38,6 @@ import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
-import fr.toutatice.portail.cms.nuxeo.core.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
@@ -78,6 +77,7 @@ public class NuxeoController {
 	
 	String hideMetaDatas;
 	String displayContext;
+	CMSServiceCtx cmsCtx;
 	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
@@ -532,6 +532,12 @@ public class NuxeoController {
 		return resourceURL.toString();
 	}
 
+	public String createPermalink(String path) throws Exception {
+		
+		String permaLinkURL = getPortalUrlFactory().getPermaLink(getPortalCtx(), null, null,
+			path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+		return permaLinkURL;
+	}
 
 	public URI getNuxeoPublicBaseUri() {
 		if (nuxeoBaseURI == null) {
@@ -609,7 +615,7 @@ public class NuxeoController {
 		
 		// On regarde si le lien est géré par le portlet
 		
-		Link portletLink = nuxeoService.getLinkHandler().getPortletDelegatedLink(handlerCtx);
+		Link portletLink = nuxeoService.getCMSCustomizer().getPortletDelegatedLink(handlerCtx);
 		if( portletLink != null)
 			return portletLink;
 		
@@ -632,15 +638,12 @@ public class NuxeoController {
 		}
 		
 		return null;
-	
 
 	}	
 	
 	
 	public void insertContentMenuBarItems 	() throws Exception	{
 		
-		// Création de la barre de menu
-		new MenuBarFormater(this).formatContentMenuBar();
 		
 		// Adaptation via le CMSCustomizer
 		
@@ -651,11 +654,33 @@ public class NuxeoController {
 		
 		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");		
 
-		nuxeoService.getLinkHandler().adaptContentMenuBar(menuBar);
+		nuxeoService.getCMSCustomizer().formatContentMenuBar(getCMSCtx());
 		
 	}
 	
 	
+
+	
+	public CMSServiceCtx getCMSCtx()	{
+		if( cmsCtx == null)	{
+		cmsCtx = new  CMSServiceCtx();
+		
+		cmsCtx.setCtx(new PortalControllerContext(getPortletCtx(),
+				getRequest(),getResponse()).getControllerCtx());
+		cmsCtx.setPortletCtx(getPortletCtx());
+		cmsCtx.setRequest(getRequest());
+		if( response instanceof RenderResponse)
+			cmsCtx.setResponse( (RenderResponse)response);
+		cmsCtx.setScope(getScope());
+		cmsCtx.setDisplayLiveVersion(getDisplayLiveVersion());
+		cmsCtx.setPageId(getPageId());
+		cmsCtx.setDoc(getCurrentDoc());
+		cmsCtx.setHideMetaDatas(getHideMetaDatas());
+		cmsCtx.setDisplayContext(displayContext);
+		}
+		
+		return cmsCtx;
+	}
 	
 	
 	public String getDebugInfos()	{

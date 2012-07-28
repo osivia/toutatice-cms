@@ -35,7 +35,7 @@ public interface INuxeoCustomizer {
 	/* Barre de menu des portlets d'affichage de contenu */
 
 	
-	public void adaptContentMenuBar(List<MenubarItem> menuBar) throws Exception ;
+	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception ;
 	
 	
 

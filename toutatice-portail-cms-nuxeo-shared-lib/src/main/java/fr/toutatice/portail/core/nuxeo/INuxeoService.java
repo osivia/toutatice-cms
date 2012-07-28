@@ -12,9 +12,9 @@ public interface INuxeoService extends ICMSIntegration, ICMSService {
 	
 	public Session createUserSession(String userId) throws Exception ;
 	
-	public void registerLinkHandler( INuxeoCustomizer linkManager);
+	public void registerCMSCustomizer( INuxeoCustomizer linkManager);
 
-	public INuxeoCustomizer getLinkHandler();
+	public INuxeoCustomizer getCMSCustomizer();
 	
 	public void registerCMSService( ICMSService cmsService);
 	

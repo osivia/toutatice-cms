@@ -33,7 +33,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	private static Log logger = LogFactory.getLog(NuxeoService.class);
 
-	INuxeoCustomizer linkHandler;
+	INuxeoCustomizer nuxeoCustomizer;
 
 
 	ICMSService cmsService;
@@ -100,13 +100,13 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	}
 
-	public void registerLinkHandler(INuxeoCustomizer linkHandler) {
-		this.linkHandler = linkHandler;
+	public void registerCMSCustomizer(INuxeoCustomizer CMSCustomizer) {
+		this.nuxeoCustomizer = CMSCustomizer;
 
 	}
 
-	public INuxeoCustomizer getLinkHandler() {
-		return linkHandler;
+	public INuxeoCustomizer getCMSCustomizer() {
+		return nuxeoCustomizer;
 
 	}
 

@@ -10,6 +10,7 @@ import javax.portlet.PortletContext;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
+import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -31,6 +32,7 @@ public class CMSService implements ICMSService {
 	INuxeoCommandService nuxeoCommandService;
 	INuxeoService nuxeoService;
 	IProfilManager profilManager;
+    ICacheService serviceCache;	
 
 	public CMSService(PortletContext portletCtx) {
 		super();
@@ -61,6 +63,15 @@ public class CMSService implements ICMSService {
 		if( hiddenInNavigation != null && hiddenInNavigation.length() > 0)
 			properties.put("hiddenInNavigation", hiddenInNavigation);
 
+		
+		String contextualizeInternalContents =  (String) doc.getProperties().get("ttc:contextualizeInternalContents");
+		if( contextualizeInternalContents != null && contextualizeInternalContents.length() > 0)
+			properties.put("contextualizeInternalContents", contextualizeInternalContents);
+		
+		String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
+		if( contextualizeExternalContents != null && contextualizeInternalContents.length() > 0)
+			properties.put("contextualizeExternalContents", contextualizeInternalContents);
+
 
 		return new CMSItem(path, properties, doc);
 	}
@@ -85,6 +96,20 @@ public class CMSService implements ICMSService {
 		return nuxeoService;
 
 	}
+	
+	
+	
+	public ICacheService getCacheService( ) throws Exception {
+		
+		if (serviceCache == null)
+
+		 serviceCache = (ICacheService) portletCtx.getAttribute("CacheService");
+		
+		
+		return serviceCache;
+	}
+	
+	
 
 	public INuxeoCommandService getNuxeoCommandService() throws Exception {
 		if (nuxeoCommandService == null)
@@ -92,7 +117,7 @@ public class CMSService implements ICMSService {
 		return nuxeoCommandService;
 	}
 
-	private Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
+	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
 
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getCtx());
 
@@ -148,7 +173,7 @@ public class CMSService implements ICMSService {
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
 		// Document doc = ctx.g
 		try {
-			return getNuxeoService().getLinkHandler().getCMSPlayer(ctx);
+			return getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -209,17 +234,51 @@ public class CMSService implements ICMSService {
 	}
 
 	public CMSItem getPortalPublishSpace(CMSServiceCtx cmsCtx, String path) throws CMSException {
+	
 		try {
 
-			Document publishSpace =  (Document) executeNuxeoCommand(cmsCtx,
-					(new DocumentResolvePublishSpaceCommand(path)));
+			/*
+			 * le cache UnresolvablePublishSpaceInvoker permet de ne pas
+			 * multiplier les appels pour un meme contenu tout en conservant un
+			 * scope user les memes objets inresolvables sont donc mutualisés
+			 * entre les scopes et les users
+			 */
 
-			if (publishSpace != null) {
-				return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace);
+			Object unresolvable = new UnresolvablePublishSpaceInvoker();
 
+			String cacheId = "unresolvable/" + path;
+
+			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null,
+					cmsCtx.getRequest(), portletCtx);
+
+			// Pas de controle
+			cacheInfos.setForceNOTReload(true);
+
+			if (getCacheService().getCache(cacheInfos) != null) {
+				// Déja non resolu
+				throw new CMSException(CMSException.ERROR_NOTFOUND);
 			}
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
+
+			try {
+
+				Document publishSpace = (Document) executeNuxeoCommand(cmsCtx, (new DocumentResolvePublishSpaceCommand(
+						path)));
+
+				if (publishSpace != null) {
+					return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace);
+
+				}
+			} catch (NuxeoException e) {
+				if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+					
+					// On notifie qu'il n'y pas 
+					
+					cacheInfos.setForceReload(true);
+
+					getCacheService().getCache(cacheInfos);
+				}
+				e.rethrowCMSException();
+			}
 		} catch (Exception e) {
 			throw new CMSException(e);
 		}
