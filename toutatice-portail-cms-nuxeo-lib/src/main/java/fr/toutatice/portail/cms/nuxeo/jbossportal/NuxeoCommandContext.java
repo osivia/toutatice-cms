@@ -4,9 +4,11 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import org.jboss.mx.server.Invocation;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.controller.PageCustomizerInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
+import org.jboss.portal.server.ServerInvocation;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
 
@@ -22,8 +24,17 @@ public class NuxeoCommandContext {
 	private Object request;
 	
 	private ControllerContext controllerCtx;
+	private ServerInvocation serverInvocation;
 
 	
+	public ServerInvocation getServerInvocation() {
+		return serverInvocation;
+	}
+
+	public void setServerInvocation(ServerInvocation serverInvocation) {
+		this.serverInvocation = serverInvocation;
+	}
+
 	public boolean asynchronousUpdates = false;
 	
 	private boolean administrator = false;
@@ -108,19 +119,21 @@ public class NuxeoCommandContext {
 		}
 	}
 	
-	public NuxeoCommandContext(PortletContext ctx, ControllerContext controllerCtx) {
+	
+	
+	public NuxeoCommandContext(PortletContext ctx, ServerInvocation serverInvocation) {
 		super();
 		this.ctx = ctx;
-		this.controllerCtx =  controllerCtx;
-		this.request = controllerCtx.getServerInvocation().getServerContext().getClientRequest();
+		this.serverInvocation =  serverInvocation;
+
+		this.request = serverInvocation.getServerContext().getClientRequest();
 		
 		
-		Boolean isAdmin = (Boolean) controllerCtx.getAttribute(Scope.PRINCIPAL_SCOPE, "pia.isAdmin");
+		Boolean isAdmin = (Boolean) serverInvocation.getAttribute(Scope.PRINCIPAL_SCOPE, "pia.isAdmin");
 		
 		if( Boolean.TRUE.equals(isAdmin))
 			administrator = true;
 	}
-	
 
 	
 	public ControllerContext getControlerContext()	{

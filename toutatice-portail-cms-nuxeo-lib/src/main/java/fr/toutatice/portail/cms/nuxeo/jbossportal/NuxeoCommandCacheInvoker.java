@@ -14,6 +14,7 @@ import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.identity.User;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 
 import fr.toutatice.portail.api.cache.services.IServiceInvoker;
@@ -68,7 +69,76 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		try {
 
 			if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
+				
+				ServerInvocation invocation = ctx.getServerInvocation();
+				
+				if( invocation == null)	{
+					ControllerContext controllerCtx = ctx.getControlerContext();
+					invocation = controllerCtx.getServerInvocation();
+				}
 
+
+				User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE,
+						UserInterceptor.USER_KEY);
+
+				String userName = null;
+				if (user != null)
+					userName = user.getUserName();
+
+				profilerUser = userName;
+
+				// On regarde s'il existe déjà une session pour cet utilisateur
+				try {
+					nuxeoSession = (Session) invocation.getAttribute(Scope.SESSION_SCOPE,
+							"pia.nuxeoSession");
+				} catch (ClassCastException e) {
+					// Peut arriver si rechargement des classes de Nuxeo
+				}
+
+				String sessionUserName = (String) invocation.getAttribute(Scope.SESSION_SCOPE,
+						"pia.nuxeoSessionUser");
+
+				String sessionCreationSynchronizer = (String) invocation.getAttribute(
+						Scope.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
+
+				if (sessionCreationSynchronizer == null) {
+					sessionCreationSynchronizer = "sessionCreationSynchronizer";
+					invocation.setAttribute(Scope.SESSION_SCOPE, "pia.sessionCreationSynchronizer",
+							sessionCreationSynchronizer);
+				}
+
+				if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
+					// Création d'une nouvelle session
+
+					synchronized (sessionCreationSynchronizer) {
+
+						// On refait les controles pour la synchronisation
+
+						nuxeoSession = (Session) invocation.getAttribute(Scope.SESSION_SCOPE,
+								"pia.nuxeoSession");
+
+						sessionUserName = (String) invocation.getAttribute(Scope.SESSION_SCOPE,
+								"pia.nuxeoSessionUser");
+
+						if (nuxeoSession == null
+								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
+
+							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
+									"pia:service=NuxeoService");
+
+							nuxeoSession = nuxeoService.createUserSession(userName);
+
+							invocation.setAttribute(Scope.SESSION_SCOPE, "pia.nuxeoSession",
+									nuxeoSession);
+
+							if (user != null)
+								invocation.setAttribute(Scope.SESSION_SCOPE, "pia.nuxeoSessionUser",
+										user.getUserName());
+						}
+					}
+				}				
+
+				/*
 				ControllerContext controllerCtx = ctx.getControlerContext();
 
 
@@ -131,6 +201,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 						}
 					}
 				}
+				*/
 			}
 
 			else {

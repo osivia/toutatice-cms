@@ -17,8 +17,10 @@ import fr.toutatice.portail.api.profiler.IProfilerService;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSPage;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
+import fr.toutatice.portail.core.dynamic.DynamicPageBean;
 
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
@@ -121,8 +123,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 			boolean error = false;
 			
 			try {
-			
-			session.getClient().shutdown();
+				session.getClient().shutdown();
 			} finally {
 
 				// log into profiler
@@ -138,15 +139,15 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		}
 
 	}
+	
+	
 
 	public void registerCMSService(ICMSService cmsService) {
 		this.cmsService = cmsService;
 		
 	}
 
-
 	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
-
 		return cmsService.getContent(ctx, path);
 	}
 
@@ -165,6 +166,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public CMSItem getPortalPublishSpace(CMSServiceCtx ctx, String path) throws CMSException {
 		return  cmsService.getPortalPublishSpace(ctx, path);
 	}
+
+	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception {
+		return getCMSCustomizer().computeUserPreloadedPages(cmsCtx);
+	}		
 
 
 

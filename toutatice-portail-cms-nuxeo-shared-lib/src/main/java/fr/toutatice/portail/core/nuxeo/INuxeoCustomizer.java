@@ -13,7 +13,10 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSPage;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.dynamic.DynamicPageBean;
 
 
 public interface INuxeoCustomizer {
@@ -38,5 +41,12 @@ public interface INuxeoCustomizer {
 	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception ;
 	
 	
+	
+	/* Calcul des pages au login de l'utilisateur */
+	
+	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception ;
+	
+	
+
 
 }

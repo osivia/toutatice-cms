@@ -599,7 +599,7 @@ public class NuxeoController {
 		
 		
 		CMSServiceCtx handlerCtx = new  CMSServiceCtx();
-		handlerCtx.setCtx(new PortalControllerContext(getPortletCtx(),
+		handlerCtx.setControllerContext(new PortalControllerContext(getPortletCtx(),
 				getRequest(),getResponse()).getControllerCtx());
 		handlerCtx.setPortletCtx(getPortletCtx());
 		handlerCtx.setRequest(getRequest());
@@ -665,8 +665,10 @@ public class NuxeoController {
 		if( cmsCtx == null)	{
 		cmsCtx = new  CMSServiceCtx();
 		
-		cmsCtx.setCtx(new PortalControllerContext(getPortletCtx(),
+		cmsCtx.setControllerContext(new PortalControllerContext(getPortletCtx(),
 				getRequest(),getResponse()).getControllerCtx());
+		
+		
 		cmsCtx.setPortletCtx(getPortletCtx());
 		cmsCtx.setRequest(getRequest());
 		if( response instanceof RenderResponse)

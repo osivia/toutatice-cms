@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.beans.Customizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
@@ -33,13 +35,24 @@ public class CMSService implements ICMSService {
 	INuxeoService nuxeoService;
 	IProfilManager profilManager;
     ICacheService serviceCache;	
+    CMSCustomizer customizer;
+
 
 	public CMSService(PortletContext portletCtx) {
 		super();
 		this.portletCtx = portletCtx;
 	}
 
-	private CMSItem createItem(String path, String displayName, Document doc) {
+
+	public CMSCustomizer getCustomizer() {
+		return customizer;
+	}
+
+	public void setCustomizer(CMSCustomizer customizer)	{
+		this.customizer = customizer;
+	}
+
+	public CMSItem createItem(String path, String displayName, Document doc, boolean isPublishSpace) {
 		Map<String, String> properties = new HashMap<String, String>();
 		
 		
@@ -72,8 +85,12 @@ public class CMSService implements ICMSService {
 		if( contextualizeExternalContents != null && contextualizeInternalContents.length() > 0)
 			properties.put("contextualizeExternalContents", contextualizeInternalContents);
 
+		CMSItem cmsItem = new CMSItem(path, properties, doc);
+		
+		if( isPublishSpace)
+			getCustomizer().adaptPublishSpaceItems(cmsItem);
 
-		return new CMSItem(path, properties, doc);
+		return cmsItem;
 	}
 
 	public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
@@ -119,7 +136,7 @@ public class CMSService implements ICMSService {
 
 	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
 
-		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getCtx());
+		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
 
 		// pour debug
 		// commandCtx.setCacheTimeOut(0);
@@ -159,7 +176,7 @@ public class CMSService implements ICMSService {
 		try {
 
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchCommand(path)));
-			return createItem(path, doc.getTitle(), doc);
+			return createItem(path, doc.getTitle(), doc, false);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -193,8 +210,12 @@ public class CMSService implements ICMSService {
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);
-				if (navItem != null)
-					return createItem(path, navItem.getMainDoc().getTitle(), navItem.getMainDoc());
+				if (navItem != null)	{
+					boolean isPublishSpace = false;
+					if( publishSpacePath.equals(path))
+						isPublishSpace = true;
+					return createItem(path, navItem.getMainDoc().getTitle(), navItem.getMainDoc(), isPublishSpace);
+				}
 			}
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
@@ -218,7 +239,7 @@ public class CMSService implements ICMSService {
 				if (navItem != null) {
 					List<CMSItem> childrens = new ArrayList<CMSItem>();
 					for (Document child : navItem.getChildren()) {
-						childrens.add(createItem(child.getPath(), child.getTitle(), child));
+						childrens.add(createItem(child.getPath(), child.getTitle(), child, false));
 					}
 					return childrens;
 				}
@@ -265,7 +286,7 @@ public class CMSService implements ICMSService {
 						path)));
 
 				if (publishSpace != null) {
-					return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace);
+					return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace, true);
 
 				}
 			} catch (NuxeoException e) {
