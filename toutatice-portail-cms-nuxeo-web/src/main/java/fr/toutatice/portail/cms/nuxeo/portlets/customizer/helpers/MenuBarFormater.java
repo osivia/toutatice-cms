@@ -4,26 +4,19 @@ import java.util.List;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 import javax.portlet.WindowState;
 
-import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
 import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentResolvePublishSpaceCommand;
 import fr.toutatice.portail.core.cms.CMSException;
+import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.cms.ICMSService;
 
 /**
  * Menu bar associée aux contenus
@@ -148,6 +141,11 @@ public class MenuBarFormater {
 
 		if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState()))
 			return;
+		
+		
+		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
+			return;
+		
 
 		// Link contextualLink = ctx.getLink((((Document) (cmsCtx.getDoc()),
 		// null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
@@ -165,13 +163,24 @@ public class MenuBarFormater {
 				// Scope user
 				cmsCtx.setScope(null);
 
-				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) CMSService.executeNuxeoCommand(
-						cmsCtx, new DocumentResolvePublishSpaceCommand((((Document) (cmsCtx.getDoc())).getPath())));
+				CMSItem publishSpace = (CMSItem) CMSService.getPortalPublishSpace(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 
-				addContextualizationLinkItem(menuBar, doc, url);
+				addContextualizationLinkItem(menuBar, (Document) publishSpace.getNativeItem(), url);
+
+			}	catch (Exception e) {
+
+				if (e instanceof CMSException) {
+					CMSException ne = (CMSException) e;
+
+					if (ne.getErrorCode() == CMSException.ERROR_FORBIDDEN
+							|| ne.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+						// On ne fait rien : le document n'existe pas ou je n'ai pas
+						// les droits
+					} else
+						throw e;
+				}
 
 			}
-
 			finally {
 				cmsCtx.setScope(savedScope);
 			}
@@ -193,6 +202,9 @@ public class MenuBarFormater {
 	protected void getPermaLinkLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
 		if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState()))
+			return;
+		
+		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
 			return;
 
 		String permaLinkURL = getPortalUrlFactory().getPermaLink(

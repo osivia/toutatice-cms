@@ -17,6 +17,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.core.cms.NavigationItem;
 
+
 /**
  * Return all the navigation items
  * 

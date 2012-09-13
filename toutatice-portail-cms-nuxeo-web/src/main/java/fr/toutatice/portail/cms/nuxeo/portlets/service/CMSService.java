@@ -1,6 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.beans.Customizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +17,14 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
 import fr.toutatice.portail.core.cms.NavigationItem;
+
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
@@ -34,64 +34,57 @@ public class CMSService implements ICMSService {
 	INuxeoCommandService nuxeoCommandService;
 	INuxeoService nuxeoService;
 	IProfilManager profilManager;
-    ICacheService serviceCache;	
-    CMSCustomizer customizer;
-
+	ICacheService serviceCache;
+	DefaultCMSCustomizer customizer;
 
 	public CMSService(PortletContext portletCtx) {
 		super();
 		this.portletCtx = portletCtx;
 	}
 
-
-	public CMSCustomizer getCustomizer() {
+	public DefaultCMSCustomizer getCustomizer() {
 		return customizer;
 	}
 
-	public void setCustomizer(CMSCustomizer customizer)	{
+	public void setCustomizer(DefaultCMSCustomizer customizer) {
 		this.customizer = customizer;
 	}
 
-	public CMSItem createItem(String path, String displayName, Document doc, boolean isPublishSpace) {
+	public CMSItem createItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc) throws CMSException {
+		
 		Map<String, String> properties = new HashMap<String, String>();
-		
-		
+
 		properties.put("displayName", displayName);
 		properties.put("type", doc.getType());
-		
-		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
-		if( pageTemplate != null && pageTemplate.length() > 0)
-			properties.put("pageTemplate", pageTemplate);
-		
-		String pageScope =  (String) doc.getProperties().get("ttc:pageScope");
-		if( pageScope != null && pageScope.length() > 0)
-			properties.put("pageScope", pageScope);
-		
-		
-		String showInMenu =  (String) doc.getProperties().get("ttc:showInMenu");
-		if( showInMenu != null && showInMenu.length() > 0)
-			properties.put("showInMenu", showInMenu);
-		
-		String hiddenInNavigation =  (String) doc.getProperties().get("ttc:hiddenInNavigation");
-		if( hiddenInNavigation != null && hiddenInNavigation.length() > 0)
-			properties.put("hiddenInNavigation", hiddenInNavigation);
-
-		
-		String contextualizeInternalContents =  (String) doc.getProperties().get("ttc:contextualizeInternalContents");
-		if( contextualizeInternalContents != null && contextualizeInternalContents.length() > 0)
-			properties.put("contextualizeInternalContents", contextualizeInternalContents);
-		
-		String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
-		if( contextualizeExternalContents != null && contextualizeInternalContents.length() > 0)
-			properties.put("contextualizeExternalContents", contextualizeInternalContents);
 
 		CMSItem cmsItem = new CMSItem(path, properties, doc);
-		
-		if( isPublishSpace)
-			getCustomizer().adaptPublishSpaceItems(cmsItem);
 
 		return cmsItem;
 	}
+	
+	public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc, String publishSpacePath) throws CMSException {
+		
+	
+		CMSItem cmsItem = createItem(cmsCtx, path, displayName, doc);
+
+
+		CMSItem publishSpaceItem = null;
+		
+		if( publishSpacePath != null && ! path.equals(publishSpacePath))
+			publishSpaceItem = getPortalNavigationItem( cmsCtx,  publishSpacePath, publishSpacePath);
+		else
+			publishSpaceItem = cmsItem;
+				
+		getCustomizer().getNavigationItemAdaptor().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
+
+
+		return cmsItem;
+	}
+	
+	
+	
+	
+	
 
 	public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
 
@@ -113,20 +106,15 @@ public class CMSService implements ICMSService {
 		return nuxeoService;
 
 	}
-	
-	
-	
-	public ICacheService getCacheService( ) throws Exception {
-		
+
+	public ICacheService getCacheService() throws Exception {
+
 		if (serviceCache == null)
 
-		 serviceCache = (ICacheService) portletCtx.getAttribute("CacheService");
-		
-		
+			serviceCache = (ICacheService) portletCtx.getAttribute("CacheService");
+
 		return serviceCache;
 	}
-	
-	
 
 	public INuxeoCommandService getNuxeoCommandService() throws Exception {
 		if (nuxeoCommandService == null)
@@ -172,19 +160,159 @@ public class CMSService implements ICMSService {
 		return getNuxeoCommandService().executeCommand(commandCtx, command);
 	}
 
-	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
-		try {
+	
+	
+	
+	private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {
 
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchCommand(path)));
-			return createItem(path, doc.getTitle(), doc, false);
+			return createItem(cmsCtx, path, doc.getTitle(), doc);
+	
+	}
+	
+	
+	
+	
+	
+	
+	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+
+		try {
+
+			/*
+			 * le cache FetchableContentInvoker permet de ne pas
+			 * multiplier les appels sur un scope
+			 * 
+			 * 
+			 * Si un appel sur un scope échoue, on passe en scope user
+			 */
+
+			CMSItem cmsItem;
+			
+			if( cmsCtx.getScope() != null && ! "__nocache".equals( cmsCtx.getScope()))	{
+				
+				String cacheId = "fetchableContentByScope/" + cmsCtx.getScope() + "/" + path;
+
+				CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null,
+						cmsCtx.getRequest(), portletCtx);
+				
+				Object fetchableWithScope = getCacheService().getCache(cacheInfos);
+				if( fetchableWithScope == null || (( (Boolean) fetchableWithScope) == true))	{
+					
+
+					try {
+						// Lecture avec le scope
+						cmsItem = fetchContent(cmsCtx, path);
+						
+						cacheInfos.setInvoker(new FetchableContentInvoker(true));
+						cacheInfos.setForceReload(true);
+						getCacheService().getCache(cacheInfos);
+						
+						return cmsItem;
+
+					} catch (Exception e) {
+							cacheInfos.setInvoker(new FetchableContentInvoker(false));
+							cacheInfos.setForceReload(true);
+							getCacheService().getCache(cacheInfos);
+					}
+				}
+			}
+			
+			
+			/* le chargement par scope n'a pas marché 
+			 * 
+			 * on modifie le scope en scope user
+			 * 
+			 * */
+			
+			cmsCtx.setScope("__nocache");
+			
+			return fetchContent(cmsCtx, path);
+			
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
-			throw new CMSException(e);
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
+		}
+		
+		return null;
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
+
+		String cacheId = "anonymous_content/" + path;
+
+		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
+				portletCtx);
+
+		try {
+
+			Object anonymousCheck = getCacheService().getCache(cacheInfos);
+
+			if (anonymousCheck != null) {
+				return ((Boolean)anonymousCheck);
+			}
+
+			else {
+
+				/* Perform check in anonymous mode */
+
+				CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
+				checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
+				checkAnonymousAccess.setScope("anonymous");
+
+				cacheInfos.setForceReload(true);
+				
+
+				try {
+
+					getContent(checkAnonymousAccess, path);
+					cacheInfos.setInvoker(new AnonymousAccesInvoker(true));
+
+				} catch (CMSException e) {
+					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+						
+						cacheInfos.setInvoker(new AnonymousAccesInvoker(false));
+					else
+						throw e;
+				}
+				
+				return ((Boolean)getCacheService().getCache(cacheInfos));
+
+			}
+		} catch (Exception e) {
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 
-		// Not possible
-		return null;
+
 	}
 
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
@@ -194,7 +322,10 @@ public class CMSService implements ICMSService {
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
-			throw new CMSException(e);
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 
 		// Not possible
@@ -210,17 +341,23 @@ public class CMSService implements ICMSService {
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);
-				if (navItem != null)	{
-					boolean isPublishSpace = false;
-					if( publishSpacePath.equals(path))
-						isPublishSpace = true;
-					return createItem(path, navItem.getMainDoc().getTitle(), navItem.getMainDoc(), isPublishSpace);
+				if (navItem != null) {
+					
+					CMSItem item = navItem.getAdaptedCMSItem();
+					if( item == null)	{
+						navItem.setAdaptedCMSItem(createNavigationItem(cmsCtx, path, navItem.getMainDoc().getTitle(), navItem.getMainDoc(), publishSpacePath));
+					}
+
+					return navItem.getAdaptedCMSItem();
 				}
 			}
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
-			throw new CMSException(e);
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 
 		// Not possible
@@ -239,7 +376,9 @@ public class CMSService implements ICMSService {
 				if (navItem != null) {
 					List<CMSItem> childrens = new ArrayList<CMSItem>();
 					for (Document child : navItem.getChildren()) {
-						childrens.add(createItem(child.getPath(), child.getTitle(), child, false));
+						
+						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath,  child.getPath()));
+						
 					}
 					return childrens;
 				}
@@ -247,7 +386,10 @@ public class CMSService implements ICMSService {
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
-			throw new CMSException(e);
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 
 		// Not possible
@@ -255,53 +397,75 @@ public class CMSService implements ICMSService {
 	}
 
 	public CMSItem getPortalPublishSpace(CMSServiceCtx cmsCtx, String path) throws CMSException {
-	
+
 		try {
 
 			/*
 			 * le cache UnresolvablePublishSpaceInvoker permet de ne pas
 			 * multiplier les appels pour un meme contenu tout en conservant un
-			 * scope user les memes objets inresolvables sont donc mutualisés
+			 * scope user 
+			 * 
+			 * les memes objets inresolvables sont donc mutualisés
 			 * entre les scopes et les users
 			 */
 
-			Object unresolvable = new UnresolvablePublishSpaceInvoker();
-
-			String cacheId = "unresolvable/" + path;
+			String cacheId = "resolvable/" + path;
 
 			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null,
 					cmsCtx.getRequest(), portletCtx);
 
-			// Pas de controle
-			cacheInfos.setForceNOTReload(true);
 
-			if (getCacheService().getCache(cacheInfos) != null) {
+			Object resolvable = getCacheService().getCache(cacheInfos);
+			if( resolvable != null)	{
 				// Déja non resolu
-				throw new CMSException(CMSException.ERROR_NOTFOUND);
+				if( ((Boolean) resolvable) == false)
+					throw new CMSException(CMSException.ERROR_NOTFOUND);
 			}
 
 			try {
-
-				Document publishSpace = (Document) executeNuxeoCommand(cmsCtx, (new DocumentResolvePublishSpaceCommand(
+				
+				
+				NavigationItem publishSpace = (NavigationItem) executeNuxeoCommand(cmsCtx, (new DocumentResolvePublishSpaceCommand(
 						path)));
 
 				if (publishSpace != null) {
-					return createItem(publishSpace.getPath(), publishSpace.getTitle(), publishSpace, true);
 
-				}
-			} catch (NuxeoException e) {
-				if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+					CMSItem item = publishSpace.getAdaptedCMSItem();
 					
-					// On notifie qu'il n'y pas 
+					if( item == null)	{
+						publishSpace.setAdaptedCMSItem(createNavigationItem(cmsCtx, publishSpace.getMainDoc().getPath(), publishSpace.getMainDoc().getTitle(), publishSpace.getMainDoc(), publishSpace.getMainDoc().getPath()));
+					}
+					
+					// On met à jour le cache pour cet objet resovable
 					
 					cacheInfos.setForceReload(true);
-
+					cacheInfos.setInvoker(new ResolvablePublishSpace(true));
 					getCacheService().getCache(cacheInfos);
+
+					return publishSpace.getAdaptedCMSItem();
 				}
+			} catch (NuxeoException e) {
+				
+				if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+
+					// On met à jour le cache pour cet objet non resovable
+
+					cacheInfos.setForceReload(true);
+					cacheInfos.setInvoker(new ResolvablePublishSpace(false));
+					getCacheService().getCache(cacheInfos);
+					
+				}
+				
+				
+				
+				
 				e.rethrowCMSException();
 			}
 		} catch (Exception e) {
-			throw new CMSException(e);
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 
 		// Not possible

@@ -20,7 +20,7 @@ public class NuxeoQueryFilter {
 			// sélection des folders et des documents publiés
 
 			
-			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0 AND ttc:isOnline = 1) OR (ecm:isProxy = 1)) ";
+			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0 AND ttc:isOnline = 1) OR (ecm:isProxy = 1))  AND ecm:currentLifeCycleState <> 'deleted' ";
 			//REMETTRE LE ISONLINE pour test
 			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ((ecm:mixinType = 'Folderish' AND ecm:isCheckedInVersion = 0) OR (ecm:isProxy = 1)) ";
 			

@@ -42,7 +42,7 @@ public class UserPagesLoader {
 		List<CMSPage> pages = new ArrayList<CMSPage>();
 		
 		for (Document child : children) {
-			CMSItem publishSpace = CMSService.createItem(child.getPath(), child.getTitle(), child, true);
+			CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx, child.getPath(), child.getTitle(), child, child.getPath());
 			
 			CMSPage userPage = new CMSPage();
 			userPage.setPublishSpace(publishSpace);

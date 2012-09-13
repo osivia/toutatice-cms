@@ -30,6 +30,7 @@ import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.profils.IProfilManager;
 
 /**
@@ -40,7 +41,17 @@ public class CMSPortlet extends GenericPortlet {
 
 	protected static Log logger = LogFactory.getLog(CMSPortlet.class);
 
+	INuxeoService nuxeoNavigationService;
+	
+	public INuxeoService getNuxeoNavigationService() throws Exception {
 
+		if (nuxeoNavigationService == null)
+			nuxeoNavigationService = (INuxeoService) getPortletContext().getAttribute("NuxeoService");
+
+		return nuxeoNavigationService;
+
+	}
+	
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -160,7 +171,39 @@ public class CMSPortlet extends GenericPortlet {
 	
 	
 	
-	
+	protected void serveResourceException(ResourceRequest resourceRequest, ResourceResponse resourceResponse,
+			NuxeoException e) throws PortletException, IOException {
+
+		if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+
+			URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),
+					System.getProperty("error.default_page_uri"));
+			String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
+
+			resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+					String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+			resourceResponse.setProperty("Location", sUrl);
+			resourceResponse.getPortletOutputStream().close();
+
+			String message = "Resource CMSPortlet " + resourceRequest.getParameterMap() + " not found (error 404).";
+
+			logger.error(message);
+		}
+
+		else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
+
+			URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),
+					System.getProperty("error.default_page_uri"));
+			String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_FORBIDDEN;
+
+			resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+					String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+			resourceResponse.setProperty("Location", sUrl);
+			resourceResponse.getPortletOutputStream().close();
+
+		} else
+			throw e;
+	}
 
 	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 			throws PortletException, IOException {
@@ -174,6 +217,10 @@ public class CMSPortlet extends GenericPortlet {
 
 			
 
+			// v2 : plus utilisée - on se branche sur le CMS classique
+		
+			
+			/*
 
 			// Redirection par path de document
 			
@@ -184,6 +231,11 @@ public class CMSPortlet extends GenericPortlet {
 
 				String docPath = resourceRequest.getParameter("docPath");
 				docPath = URLDecoder.decode(docPath, "UTF-8");
+				
+				
+				
+				
+				
 				
 				// Liens vers un document qui n'a pas été lu (accès direct par le path)
 				// On change de parcours de publication				
@@ -233,7 +285,7 @@ public class CMSPortlet extends GenericPortlet {
 				
 			}
 			
-			
+			*/
 			
 
 			// Redirection
@@ -376,42 +428,7 @@ public class CMSPortlet extends GenericPortlet {
 			
 			
 		} catch( NuxeoException e){
-			/* Pas possible de passer par la valve standard sur les ressources */
-			
-			
-			if( e.getErrorCode() == NuxeoException.ERROR_NOTFOUND)	{
-			
-					URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),
-							System.getProperty("error.default_page_uri"));
-					String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
-
-					resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-							String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-					resourceResponse.setProperty("Location", sUrl);
-					resourceResponse.getPortletOutputStream().close();
-					
-					
-
-					String message = "Resource CMSPortlet " + resourceRequest.getParameterMap() + " not found (error 404).";
-					
-					logger.error(message);
-				}
-
-
-			else if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
-				
-
-				URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(),  System.getProperty("error.default_page_uri"));
-				String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_FORBIDDEN;
-
-				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-				resourceResponse.setProperty("Location", sUrl);
-				resourceResponse.getPortletOutputStream().close();	
-				
-			}
-			else
-				throw e;
+			serveResourceException(  resourceRequest,  resourceResponse, e);
 				
 		}	
 

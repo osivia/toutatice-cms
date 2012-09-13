@@ -26,8 +26,6 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
-			<label>Scope</label><br/>
-<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
 			<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Recherche sur les versions non publiées <br/>
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

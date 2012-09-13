@@ -19,7 +19,10 @@ import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
@@ -64,8 +67,35 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 	
 	private INuxeoService nuxeoService;
 	
-	
+	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+	throws PortletException, IOException {
 
+		try {
+			// Redirection sur lien contextuel
+			
+			if ("link".equals(resourceRequest.getParameter("type"))) {
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+
+				String id = resourceRequest.getResourceID();
+
+				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+						.executeNuxeoCommand(new DocumentFetchCommand(id));
+
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", doc.getString("clink:link"));
+				resourceResponse.getPortletOutputStream().close();
+
+			}
+
+		} catch (NuxeoException e) {
+			serveResourceException(resourceRequest, resourceResponse, e);
+		} catch (Exception e) {
+			throw new PortletException(e);
+
+		}
+	}
 
 	
 	

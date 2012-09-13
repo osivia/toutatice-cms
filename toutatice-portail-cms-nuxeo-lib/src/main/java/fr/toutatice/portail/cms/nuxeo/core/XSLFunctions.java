@@ -241,8 +241,14 @@ public class XSLFunctions {
 						if (mDoc.groupCount() > 0) {
 
 							String path = mDoc.group(2);
+							
+							
+							// v2 : simplification : phase de redirection trop complexe
+							
+							return ctx.getCMSLinkByPath(path, null).getUrl();
+							
 								
-							return ctx.createRedirectDocumentLink(path);
+							//return ctx.createRedirectDocumentLink(path);
 						}
 						else
 							return url.toString();

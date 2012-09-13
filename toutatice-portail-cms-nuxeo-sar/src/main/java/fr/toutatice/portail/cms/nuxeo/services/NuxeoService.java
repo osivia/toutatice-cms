@@ -166,6 +166,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public CMSItem getPortalPublishSpace(CMSServiceCtx ctx, String path) throws CMSException {
 		return  cmsService.getPortalPublishSpace(ctx, path);
 	}
+	
+	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException	{
+		return  cmsService.checkContentAnonymousAccess(cmsCtx, path);
+	}
 
 	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception {
 		return getCMSCustomizer().computeUserPreloadedPages(cmsCtx);

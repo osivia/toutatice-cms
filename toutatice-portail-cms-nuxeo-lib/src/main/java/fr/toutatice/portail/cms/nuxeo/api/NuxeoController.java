@@ -218,11 +218,12 @@ public class NuxeoController {
 		if ("anonymous".equals(scope)) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-		} else if ("__nocache".equals(scope)) {
+		/*} else if ("__nocache".equals(scope)) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+			*/
 		} else 
-			if( scope != null) {
+			if( scope != null && !"__nocache".equals(scope)) {
 			setAuthType( NuxeoCommandContext.AUTH_TYPE_PROFIL);
 			setScopeProfil(getProfilManager().getProfil(scope));
 			setCacheType( CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);			
@@ -279,10 +280,17 @@ public class NuxeoController {
 		
 		portalCtx = new PortalControllerContext(portletCtx, request, response);
 		
-		// v1.1 : Ajout héritage
+		// v2 : Ajout héritage
 		String scope = window.getProperty("pia.cms.scope");
-		if( scope == null)
-			scope = window.getPageProperty("pia.cms.scope");
+		if( "__inherited".equals(scope))	{
+			// scope de contextualisation
+			scope = request.getParameter("pia.cms.pageScope");
+			if( scope == null)
+				scope = window.getPageProperty("pia.cms.scope");
+		}
+		
+		
+		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
 
@@ -587,6 +595,31 @@ public class NuxeoController {
 	
 	
 	
+	
+	
+	
+	public Link getCMSLinkByPath (String path, String displayContext) throws Exception  {
+		
+		
+		Window window = (Window) getPortalCtx().getRequest().getAttribute("pia.window");
+		Page page = window.getPage();
+
+		Map<String, String> pageParams = new HashMap<String, String>();
+
+		
+		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams, null, displayContext, null, null, null, null);
+		
+		if( url != null)	{
+			
+			Link link = new Link(url, false);
+			return link;
+			}
+			
+			return null;
+	}
+	
+	
 	public Link getLink(Document doc, String displayContext, String linkContextualization) throws Exception 	{
 
 		
@@ -686,13 +719,17 @@ public class NuxeoController {
 	
 	
 	public String getDebugInfos()	{
-		String output = "";
-		output += "<p align=\"center\">";
-		output += "scope : " + getScope() ;
-		output += "</p>";
 		
-		return output;
-		
+		if ("1".equals(System.getProperty("nuxeo.debugHtml"))) {
+			String output = "";
+			output += "<p class=\"nuxeo-debug\" align=\"center\">";
+			output += "scope : " + getScope();
+			output += "</p>";
+
+			return output;
+		} else
+			return "";
+
 	}
 
 }

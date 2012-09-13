@@ -69,21 +69,41 @@ public class MenuPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
+			
+			
 
-			// Taille de page
-			int nbLevels = 0;
-			if (req.getParameter("nbLevels") != null) {
+			// Nombre de niveaux ouverts
+			int openLevels = 0;
+			if (req.getParameter("openLevels") != null) {
 				try {
-					nbLevels = Integer.parseInt(req.getParameter("nbLevels"));
+					openLevels = Integer.parseInt(req.getParameter("openLevels"));
 				} catch (Exception e) {
 					// Mal formatté
 				}
 			}
 
-			if (nbLevels > 0)
-				window.setProperty("pia.cms.nbLevels", Integer.toString(nbLevels));
-			else if (window.getProperty("pia.cms.nbLevels") != null)
-				window.setProperty("pia.cms.nbLevels", null);
+			if (openLevels > 0)
+				window.setProperty("pia.cms.openLevels", Integer.toString(openLevels));
+			else if (window.getProperty("pia.cms.openLevels") != null)
+				window.setProperty("pia.cms.openLevels", null);
+			
+			// Nombre de niveaux maximum
+			int maxLevels = 0;
+			if (req.getParameter("maxLevels") != null) {
+				try {
+					maxLevels = Integer.parseInt(req.getParameter("maxLevels"));
+				} catch (Exception e) {
+					// Mal formatté
+				}
+			}
+
+			if (maxLevels > 0)
+				window.setProperty("pia.cms.maxLevels", Integer.toString(maxLevels));
+			else if (window.getProperty("pia.cms.maxLevels") != null)
+				window.setProperty("pia.cms.maxLevels", null);
+			
+			
+			
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -106,8 +126,12 @@ public class MenuPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		String nbLevels = window.getProperty("pia.cms.nbLevels");
-		req.setAttribute("nbLevels", nbLevels);
+		String openLevels = window.getProperty("pia.cms.openLevels");
+		req.setAttribute("openLevels", openLevels);
+		
+
+		String maxLevels = window.getProperty("pia.cms.maxLevels");
+		req.setAttribute("maxLevels", maxLevels);
 
 		req.setAttribute("ctx", ctx);
 
@@ -155,7 +179,7 @@ public class MenuPortlet extends CMSPortlet {
 			
 			for(CMSItem child : navItems){
 				
-				if (! "true".equals(child.getProperties().get("hiddenInNavigation")) )	{
+				if ( "1".equals(child.getProperties().get("menuItem")) )	{
 					displayItem.getChildrens().add(
 							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
 				}
@@ -197,11 +221,18 @@ public class MenuPortlet extends CMSPortlet {
 				// rafraichir en asynchrone
 				ctx.setAsynchronousUpdates(true);
 
-				int maxLevels = 1;
+				int maxLevels = 3;
 
-				String sNbLevels = window.getProperty("pia.cms.nbLevels");
-				if (sNbLevels != null && sNbLevels.length() > 0)
-					maxLevels = Integer.parseInt(sNbLevels);
+				String sMaxLevels = window.getProperty("pia.cms.maxLevels");
+				if (sMaxLevels != null && sMaxLevels.length() > 0)
+					maxLevels = Integer.parseInt(sMaxLevels);
+				
+				int openLevels = 1;
+				
+				String sOpenLevels = window.getProperty("pia.cms.openLevels");
+				if (sOpenLevels != null && sOpenLevels.length() > 0)
+					openLevels = Integer.parseInt(sOpenLevels);
+
 				
 				
 				// Navigation context
@@ -218,6 +249,7 @@ public class MenuPortlet extends CMSPortlet {
 					response.setTitle(displayItem.getTitle());
 
 				request.setAttribute("itemToDisplay", displayItem);
+				request.setAttribute("openLevels", openLevels);
 
 				request.setAttribute("ctx", ctx);
 

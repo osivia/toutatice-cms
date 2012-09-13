@@ -21,8 +21,8 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 		<form method="post" action="<portlet:actionURL/>">
 		
 
-		<label>Nombre de niveaux :</label> <input type="text" name="nbLevels" value="${nbLevels}" size="1"> <br/>
-
+		<label>Nombre de niveaux ouverts :</label> <input type="text" name="openLevels" value="${openLevels}" size="1"> <br/>
+		<label>Nombre de niveaux maximum :</label> <input type="text" name="maxLevels" value="${maxLevels}" size="1"> <br/>
 			
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

@@ -29,7 +29,7 @@
 
 <%!
 
-public void displayItem(javax.servlet.jsp.JspWriter out, NavigationDisplayItem itemToDisplay, int level) throws IOException {
+public void displayItem(javax.servlet.jsp.JspWriter out, NavigationDisplayItem itemToDisplay, int level, int openLevels) throws IOException {
 	
 	
 	if( level > 0)	{
@@ -49,12 +49,15 @@ public void displayItem(javax.servlet.jsp.JspWriter out, NavigationDisplayItem i
 		out.println("</li>");
 	}
 	
-	if( itemToDisplay.getChildrens().size() > 0)	{
-		out.println("<ul>");
+	if( itemToDisplay.isSelected() || (level < openLevels))	{
+	
+		if( itemToDisplay.getChildrens().size() > 0)	{
+			out.println("<ul>");
 		
-		for (NavigationDisplayItem child : itemToDisplay.getChildrens())
-			displayItem( out, child, level +1);
-		out.println("</ul>");
+			for (NavigationDisplayItem child : itemToDisplay.getChildrens())
+				displayItem( out, child, level +1, openLevels);
+			out.println("</ul>");
+		}
 	}
 	
 }
@@ -66,11 +69,12 @@ public void displayItem(javax.servlet.jsp.JspWriter out, NavigationDisplayItem i
 <%
 NavigationDisplayItem itemToDisplay = (NavigationDisplayItem)  renderRequest.getAttribute("itemToDisplay")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+int openLevels = (Integer) request.getAttribute("openLevels");
 %>
 
 
 <div class="nuxeo-publish-navigation">
-	<%	displayItem( out,  itemToDisplay, 0); %>
+	<%	displayItem( out,  itemToDisplay, 0, openLevels); %>
 </div>	
 		
 					

@@ -35,7 +35,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 %>
 
 <% 	
-	if("annonce".equals(doc.getType().toLowerCase()) || ( "note".equals(doc.getType().toLowerCase()) ))	{
+	if("annonce".equals(doc.getType().toLowerCase()) || ( "note".equals(doc.getType().toLowerCase()) ) || ( "contextuallink".equals(doc.getType().toLowerCase()) ) )	{
 	String jspName = "view-"+ doc.getType().toLowerCase() + ".jsp";
 %>
 		<jsp:include page="<%= jspName %>"></jsp:include>

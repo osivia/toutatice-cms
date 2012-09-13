@@ -1,26 +1,13 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -34,57 +21,29 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.controller.command.mapper.URLFactory;
-import org.jboss.portal.core.model.instance.InstanceURLFactory;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
-import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
-import bsh.EvalError;
 import bsh.Interpreter;
-
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.statut.IStatutService;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.core.BinaryContent;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
-
-
-import fr.toutatice.portail.core.profils.ProfilBean;
+import fr.toutatice.portail.core.cms.CMSServiceCtx;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -567,9 +526,30 @@ public class ViewListPortlet extends CMSPortlet {
 							request.setAttribute("permaLinkURL", permaLinkURL);
 						}
 					
+
+
 						
 						String rssLinkRef = window.getProperty("pia.rssLinkRef");
 						if( rssLinkRef != null)	{
+							if( !ctx.isDisplayingLiveVersion())	{
+							
+						
+							boolean anonymousAccess = true;
+							
+							if( request.getParameter("pia.cms.path") != null)	{
+								
+								// check if the navigation folder is accessible in anonymous mode (for rss) 
+								CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
+								cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
+								cmsReadNavContext.setScope(ctx.getScope());		
+								
+								anonymousAccess = getNuxeoNavigationService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("pia.cms.path"));
+							
+								
+							}
+							
+							if( anonymousAccess){
+							
 							Map<String, String> publicParams = new HashMap<String, String>();
 							if( selectors != null)
 								publicParams.put("selectors", selectors);
@@ -579,6 +559,8 @@ public class ViewListPortlet extends CMSPortlet {
 										response), rssLinkRef, publicParams, request.getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
 								
 								request.setAttribute("rssLinkURL", rssLinkURL);
+							}
+							}
 						}
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);

@@ -3,7 +3,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
@@ -11,19 +10,14 @@ import javax.portlet.ResourceURL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Portal;
-import org.jboss.portal.core.model.portal.PortalObject;
-import org.jboss.portal.core.model.portal.PortalObjectContainer;
-import org.jboss.portal.core.model.portal.PortalObjectId;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.locator.Locator;
 import fr.toutatice.portail.api.menubar.MenubarItem;
 import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdaptor;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.cms.CMSException;
@@ -31,12 +25,8 @@ import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSPage;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.cms.ICMSService;
-import fr.toutatice.portail.core.dynamic.DynamicPageBean;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-import fr.toutatice.portail.core.portalobjects.IDynamicObjectContainer;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
@@ -44,6 +34,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	protected IPortalUrlFactory portalUrlFactory;
 	UserPagesLoader userPagesLoader;
 	MenuBarFormater menuBarFormater;
+	NavigationItemAdaptor navigationItemAdaptor;
 	NuxeoConnectionProperties nuxeoConnection;
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
@@ -82,7 +73,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
 	}
 	
-	protected UserPagesLoader getUserPagesLoader()	{
+	public UserPagesLoader getUserPagesLoader()	{
 		if( userPagesLoader == null){
 			userPagesLoader = new UserPagesLoader(portletCtx, this, getCMSService());
 		}
@@ -90,12 +81,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return userPagesLoader;
 	}
 	
-	protected MenuBarFormater getMenuBarFormater()	{
+	public MenuBarFormater getMenuBarFormater()	{
 		if( menuBarFormater == null){
 			menuBarFormater = new MenuBarFormater(portletCtx, this, getCMSService());
 		}
 		
 		return menuBarFormater;
+	}
+	
+	public NavigationItemAdaptor getNavigationItemAdaptor()	{
+		if( navigationItemAdaptor == null){
+			navigationItemAdaptor = new NavigationItemAdaptor(portletCtx, this, getCMSService());
+		}
+		
+		return navigationItemAdaptor;
 	}
 
 
@@ -166,7 +165,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 			for (CMSItem curItem : navItems) {
 				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
-				if ("true".equals(hiddenItem)) {
+				if ("1".equals(hiddenItem)) {
 					nuxeoRequest = nuxeoRequest + " OR (ecm:path STARTSWITH '" + curItem.getPath()
 							+ "' AND ecm:mixinType != 'Folderish' )";
 				}
@@ -280,7 +279,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			return getCMSAnnonceFolderPlayer(ctx);
 		} else if ("DocumentUrlContainer".equals(doc.getType())) {
 			return getCMSUrlContainerPlayer(ctx);
-		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType()))
+		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType())) || ("ContextualLink".equals(doc.getType()))
 				|| ("PortalPage".equals(doc.getType())) || ("PortalSite".equals(doc.getType()))) {
 			// types supportés par le CMS du portail
 			return getCMSDefaultPlayer(ctx);
@@ -345,6 +344,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	/*
 	 * Cas ou le portlet prend directement en charge le rendu
+	 * 
+	 *   - nécessiter de poser une ancre au moment de la génération du lien (contextuallink, lien externes nuxeo, ...)
+	 *   - ressource servie directement par le portlet (download)
 	 */
 	public Link getPortletDelegatedLink(CMSServiceCtx ctx) throws Exception {
 
@@ -353,7 +355,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		String url = null;
 		boolean externalLink = false;
 
-		if ("ContextualLink".equals(doc.getType())) {
+		if ("ContextualLink".equals(doc.getType()) && ( "menu".equals(ctx.getDisplayContext()) || "player".equals(ctx.getDisplayContext()) )) {
 			url = createPortletDelegatedExternalLink(ctx);
 			externalLink = true;
 		} else if ("File".equals(doc.getType())) {
@@ -408,12 +410,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	}
 	
 
-	/*
-	 * Personnalisation des propriétés des publishSpace
-	 */
-
-	public void adaptPublishSpaceItems(CMSItem cmsItem){
-	}
 
 	
 }

@@ -71,10 +71,6 @@ public class SearchPortlet extends CMSPortlet {
 			PortalWindow window = WindowFactory.getWindow(req);
 			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
 
-			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
 			
 			if ("1".equals(req.getParameter("displayLiveVersion")))
 				window.setProperty("pia.cms.displayLiveVersion", "1");
@@ -107,9 +103,6 @@ public class SearchPortlet extends CMSPortlet {
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
-
-		String scope = window.getProperty("pia.cms.scope");
-		req.setAttribute("scope", scope);
 		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
@@ -188,8 +181,6 @@ public class SearchPortlet extends CMSPortlet {
 				// Url d'appel de la recherche
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
-				if (ctx.getScope() != null)
-					windowProperties.put("pia.cms.scope", ctx.getScope());
 				windowProperties.put("pia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				
