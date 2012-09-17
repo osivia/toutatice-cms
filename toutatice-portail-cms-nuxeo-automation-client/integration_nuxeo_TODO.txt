@@ -1,0 +1,32 @@
+Liste des modifications sur le client automation pour report dans Nuxeo
+
+
+1 - Améliorations performances registry
+
+    Constat : L'initialisation du registry d'une session est trop longue (plusieurs secondes)
+
+    Correction : le registry est partagé entre les sessions (peut etre tres long à la premiere connexion).
+        Il est rechargé toutes les minutes
+
+    Modifications dans HttpAutomationClient.java (redéfinition du GetSession() )
+
+
+
+
+2 - Améliorations performances lors du shutdown du client
+
+    Constat : le client met 2 secondes à effecture le shutdown (due à une synchronisation Java)
+
+    Correction : On hérite du AbstractAutomationClient au lieu de  AsyncAutomationClient   
+
+    Modifications dans HttpAutomationClient.java (redéfinition du GetSession() )
+
+
+
+3 - Meilleur gestion des problèmes réseaux
+
+    Constat : lorsque le réseau répond mal ou qu'une requête est trop longue, le client boucle en attente
+
+    Correction : Mise en place d'un timeout sur les requêtes
+
+    Modifications dans HttpConnector.java
