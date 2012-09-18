@@ -5,6 +5,7 @@
 <deployments>
 
 	<deployment>
+	<if-exists>overwrite</if-exists>	
 		<instance>
 			<display-name xml:lang="en">Toutatice - Nuxeo display document</display-name>
 			<display-name xml:lang="fr">Toutatice - Nuxeo affichage document</display-name>
@@ -14,6 +15,8 @@
             	<policy-permission>
                		<action-name>admin</action-name>
                		<role-name>Administrators</role-name>
+               		<action-name>admin</action-name>
+               		<role-name>Agents</role-name>
            		 </policy-permission>
             	<policy-permission>
                <action-name>view</action-name>

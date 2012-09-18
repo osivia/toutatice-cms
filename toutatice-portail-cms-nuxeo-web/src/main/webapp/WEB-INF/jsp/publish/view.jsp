@@ -72,11 +72,13 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 int openLevels = (Integer) request.getAttribute("openLevels");
 %>
 
+<% if( itemToDisplay != null){ %>
 
 <div class="nuxeo-publish-navigation">
 	<%	displayItem( out,  itemToDisplay, 0, openLevels); %>
 </div>	
 		
+<%	}	%>		
 					
 <%= ctx.getDebugInfos() %>
 

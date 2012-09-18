@@ -77,7 +77,11 @@ public class NavigationItemAdaptor {
 	 * Personnalisation des propriétés des éléments de publishSpace
 	 * 
 	 * - pageTemplate par défaut 
-	 * - navigationElement, menuItem, hiddenInNavgigation
+	 * - navigationElement : les navigationElements sont considérés comme des rubriques de publication. La navigation à travers ces éléments est gérée par le portail
+	 *   (breacrumb, menu de publication)
+	 *   A l'intérieur des navigationElement, il y des documents dont l'affichage et la navigation sont gérés directement par les portlets (ex: faq, forums, ...) 
+	 * - menuItem
+	 * - hiddenInNavgigation
 	 * - pageDisplayMode
 	 */
 
@@ -98,6 +102,9 @@ public class NavigationItemAdaptor {
 			
 			if( pageTemplate == null || pageTemplate.length() == 0)
 				pageTemplate =  getDefaultPageTemplate(doc);
+			
+			
+			properties.put("navigationElement", "1");
 			
 			
 			

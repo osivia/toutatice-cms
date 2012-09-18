@@ -141,7 +141,7 @@ public class MenuPortlet extends CMSPortlet {
 	}
 
 	private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
-			int curLevel, int maxLevel, String basePath, String nuxeoPath) throws Exception {
+			int curLevel, int maxLevel, String basePath, String nuxeoPath, boolean isParentNavigable) throws Exception {
 		
 		
 		//TODO : factoriser dans NuxeoController
@@ -149,6 +149,10 @@ public class MenuPortlet extends CMSPortlet {
 		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
 		
 		CMSItem navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext, basePath, nuxeoPath);
+		
+		if( navItem == null)
+			return null;
+		
 		Document doc = (Document) navItem.getNativeItem();
 		
 		
@@ -168,7 +172,11 @@ public class MenuPortlet extends CMSPortlet {
 		if( itemRelativePath != null)
 			categoryPath += itemRelativePath;
 
-		if (categoryPath != null && categoryPath.startsWith(doc.getPath()))
+		if (categoryPath != null && categoryPath.startsWith(doc.getPath()) && isParentNavigable)	
+			// non navigational items are not selected
+			// because children elements are managed at portlet level and not CMS levels
+			// So selection can not be sure
+			// See FAQ sample : links between questions don't interact with CMS
 			selected = true;
 
 		NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
@@ -180,8 +188,10 @@ public class MenuPortlet extends CMSPortlet {
 			for(CMSItem child : navItems){
 				
 				if ( "1".equals(child.getProperties().get("menuItem")) )	{
-					displayItem.getChildrens().add(
-							createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath()));
+					
+					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")));
+					if( newItem != null)
+						displayItem.getChildrens().add(	newItem);
 				}
 				
 			}
@@ -243,12 +253,15 @@ public class MenuPortlet extends CMSPortlet {
 				
 
 				NavigationDisplayItem displayItem = createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
-						getPortletContext(), request, response), 0, maxLevels, nuxeoPath, nuxeoPath);
+						getPortletContext(), request, response), 0, maxLevels, nuxeoPath, nuxeoPath, true);
+				
+				if( displayItem != null)	{
 
-				if (displayItem.getTitle() != null)
-					response.setTitle(displayItem.getTitle());
+					if (displayItem.getTitle() != null)
+						response.setTitle(displayItem.getTitle());
 
-				request.setAttribute("itemToDisplay", displayItem);
+					request.setAttribute("itemToDisplay", displayItem);
+				}
 				request.setAttribute("openLevels", openLevels);
 
 				request.setAttribute("ctx", ctx);

@@ -93,6 +93,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		}
 		
 		// Mémorisation de la commande
+		
 		asyncCommands.add(new AsyncCommandBean(ctx, command));
 	}
 	

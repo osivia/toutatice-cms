@@ -33,78 +33,79 @@ public class AsyncCommandThread implements Runnable {
 		while (true) {
 
 			try {
-				
-
 
 				Thread.sleep(1 * 12000);
-				
-				//logger.debug("execution asynchrone thread " + Thread.currentThread().getId() + " nb taches:" + commandService.getAsyncronousCommand().size());
+
+				// logger.debug("execution asynchrone thread " +
+				// Thread.currentThread().getId() + " nb taches:" +
+				// commandService.getAsyncronousCommand().size());
 
 				// Nouvelle itération sur les commandes
-				
-				List<AsyncCommandBean> commands = commandService.getAsyncronousCommands();
-					
-				for( AsyncCommandBean command : commands)	{
 
-					try {
+				if (!"0".equals(System.getProperty("nuxeo.asyncSupport"))) {
 
-						// On attend que le service Nuxeo soit disponible
+					List<AsyncCommandBean> commands = commandService.getAsyncronousCommands();
 
-						while (!commandService.checkStatus(command.getCtx())) {
-							Thread.sleep(1 * 10000);
+					for (AsyncCommandBean command : commands) {
+
+						try {
+
+							// On attend que le service Nuxeo soit disponible
+
+							while (!commandService.checkStatus(command.getCtx())) {
+								Thread.sleep(1 * 10000);
+							}
+
+							// Appel commande
+							IServiceInvoker cacheInvoker = new NuxeoCommandCacheInvoker(command.getCtx(),
+									command.getCommand());
+
+							int scopeCache = CacheInfo.CACHE_SCOPE_NONE;
+							String cacheId = command.getCommand().getId();
+
+							if (command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_GLOBAL) {
+								scopeCache = CacheInfo.CACHE_SCOPE_GLOBAL;
+							}
+
+							if (command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION) {
+								scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_SESSION;
+							}
+
+							if (command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT) {
+								scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT;
+							}
+
+							if (command.getCtx().getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL) {
+								cacheId = command.getCtx().getAuthProfil().getName() + "/"
+										+ command.getCommand().getId();
+							}
+
+							CacheInfo cacheInfos = new CacheInfo(cacheId, scopeCache, cacheInvoker, null, command
+									.getCtx().getPortletContext());
+
+							// Forçage de la mise à jour du cache
+							cacheInfos.setForceReload(true);
+
+							commandService.getServiceCache(command.getCtx()).getCache(cacheInfos);
 						}
 
-						// Appel commande
-						IServiceInvoker cacheInvoker = new NuxeoCommandCacheInvoker(command.getCtx(),
-								command.getCommand());
-						
-						int scopeCache = CacheInfo.CACHE_SCOPE_NONE;
-						String cacheId = command.getCommand().getId();
-						
-						
-						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_GLOBAL)	{
-							scopeCache = CacheInfo.CACHE_SCOPE_GLOBAL;
-						}
-						
-						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
-							scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_SESSION;
-						}
-						
-						if(  command.getCtx().getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT)	{
-							scopeCache = CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT;
-						}
-						
-						if(  command.getCtx().getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
-								cacheId =  command.getCtx().getAuthProfil().getName() + "/"+ command.getCommand().getId();
-						}
-						
-							
+						catch (Exception e) {
 
-						CacheInfo cacheInfos = new CacheInfo(cacheId, scopeCache, cacheInvoker, null, command.getCtx()
-								.getPortletContext());
+							// Par défaut, en cas d'erreur la commande
+							// asynchrone est supprimée
+							commandService.removeAsyncronousCommand(command);
 
-						// Forçage de la mise à jour du cache
-						cacheInfos.setForceReload(true);
+							commandService.handleError(command.getCtx(), e);
 
-						commandService.getServiceCache(command.getCtx()).getCache(cacheInfos);
+							throw e;
+
+						}
+
 					}
-
-					catch (Exception e) {
-
-						// Par défaut, en cas d'erreur la commande
-						// asynchrone est supprimée
-						commandService.removeAsyncronousCommand(command);
-
-						commandService.handleError(command.getCtx(), e);
-						
-						throw e;
-
-					}
-
 				}
 
 			} catch (Exception e) {
-				logger.error( 		Debug.throwableToString(e));
+				logger.error(Debug.throwableToString(e));
 			}
 
 		}
