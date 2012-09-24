@@ -100,8 +100,9 @@ public class NavigationItemAdaptor {
 			
 			// template par défaut pour le publishspace
 			
-			if( pageTemplate == null || pageTemplate.length() == 0)
+			if( pageTemplate == null || pageTemplate.length() == 0)	{
 				pageTemplate =  getDefaultPageTemplate(doc);
+			}
 			
 			
 			properties.put("navigationElement", "1");

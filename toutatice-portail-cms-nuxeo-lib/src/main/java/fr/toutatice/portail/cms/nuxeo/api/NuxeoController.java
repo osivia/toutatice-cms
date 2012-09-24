@@ -648,7 +648,7 @@ public class NuxeoController {
 		
 		// On regarde si le lien est géré par le portlet
 		
-		Link portletLink = nuxeoService.getCMSCustomizer().getPortletDelegatedLink(handlerCtx);
+		Link portletLink = nuxeoService.getCMSCustomizer().createCustomLink(handlerCtx);
 		if( portletLink != null)
 			return portletLink;
 		

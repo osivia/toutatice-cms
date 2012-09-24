@@ -32,7 +32,7 @@ public interface INuxeoCustomizer {
     */	
 
 	
-	public Link getPortletDelegatedLink( CMSServiceCtx ctx) throws Exception ;
+	public Link createCustomLink( CMSServiceCtx ctx) throws Exception ;
 	
 	
 	/* Barre de menu des portlets d'affichage de contenu */

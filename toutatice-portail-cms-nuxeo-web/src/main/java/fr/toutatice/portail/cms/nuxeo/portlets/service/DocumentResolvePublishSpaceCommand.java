@@ -50,6 +50,8 @@ public class DocumentResolvePublishSpaceCommand implements INuxeoCommand {
 					publishSpace = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
 				.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice")
 				.set("value",sitePath).execute();
+					if( "deleted".equals(publishSpace.getState()))
+							throw e;
 				}
 				
 			} else

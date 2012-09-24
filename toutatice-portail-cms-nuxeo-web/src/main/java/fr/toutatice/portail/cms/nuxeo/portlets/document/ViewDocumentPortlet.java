@@ -87,7 +87,8 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				resourceResponse.setProperty("Location", doc.getString("clink:link"));
 				resourceResponse.getPortletOutputStream().close();
 
-			}
+			}	else
+				super.serveResource(resourceRequest, resourceResponse);
 
 		} catch (NuxeoException e) {
 			serveResourceException(resourceRequest, resourceResponse, e);

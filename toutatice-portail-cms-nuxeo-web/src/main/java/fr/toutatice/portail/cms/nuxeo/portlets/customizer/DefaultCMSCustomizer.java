@@ -50,6 +50,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice";
 	
+	public static String TEMPLATE_DOWNLOAD = "download";	
+	
 	
 	CMSService CMSService;
 
@@ -148,7 +150,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 * @throws CMSException
 	 */
 
-	protected String createFolderRequest(CMSServiceCtx ctx) throws CMSException {
+	protected String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException {
 
 		String nuxeoRequest = null;
 
@@ -173,6 +175,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		} else {
 			nuxeoRequest = "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ";
+			
+			if( ordered)
+				nuxeoRequest += " order by ecm:pos";
 		}
 		return nuxeoRequest;
 
@@ -183,7 +188,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx));
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -199,19 +204,48 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return linkProps;
 
 	}
+	
+	public CMSHandlerProperties getCMSOrderedFolderPlayer(CMSServiceCtx ctx) throws Exception {
+
+		Document doc = (Document) ctx.getDoc();
+
+		Map<String, String> windowProperties = new HashMap<String, String>();
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+		windowProperties.put("pia.cms.scope", ctx.getScope());
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", "1");
+		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("pia.cms.pageSizeMax", "10");
+
+		CMSHandlerProperties linkProps = new CMSHandlerProperties();
+		linkProps.setWindowProperties(windowProperties);
+		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+		return linkProps;
+
+	}
+	
+	
+	
+	
+	
 
 	public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx));
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 		windowProperties.put("pia.cms.scope", ctx.getScope());
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("pia.cms.pageSizeMax", "10");
 		windowProperties.put("pia.title", "Liste de liens");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
@@ -226,7 +260,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx));
+		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
 		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -244,6 +278,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return linkProps;
 
 	}
+	
+	
+	public CMSHandlerProperties getCMSSectionPlayer(CMSServiceCtx ctx) throws Exception {
+		Document doc = (Document) ctx.getDoc();
+
+		Map<String, String> windowProperties = new HashMap<String, String>();
+		
+		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+		windowProperties.put("pia.cms.scope", ctx.getScope());
+		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("pia.cms.pageSizeMax", "10");
+
+		CMSHandlerProperties linkProps = new CMSHandlerProperties();
+		linkProps.setWindowProperties(windowProperties);
+		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+		return linkProps;
+
+
+	}
+	
 
 	public CMSHandlerProperties createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid)
 			throws Exception {
@@ -269,47 +329,54 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return linkProps;
 	}
 
+	
+	
+	
+	/*
+	 * On détermine le player associé à chaque item
+	 */
+
+
+	/*
+	 * On détermine le player associé à chaque item
+	 */
+
 	public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
 
-		if ("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) {
-			return getCMSFolderPlayer(ctx);
-		} else if ("AnnonceFolder".equals(doc.getType())) {
-			return getCMSAnnonceFolderPlayer(ctx);
-		} else if ("DocumentUrlContainer".equals(doc.getType())) {
-			return getCMSUrlContainerPlayer(ctx);
-		} else if ("Note".equals(doc.getType()) || ("Annonce".equals(doc.getType())) || ("ContextualLink".equals(doc.getType()))
-				|| ("PortalPage".equals(doc.getType())) || ("PortalSite".equals(doc.getType()))) {
-			// types supportés par le CMS du portail
-			return getCMSDefaultPlayer(ctx);
-		} else {
-
-			String externalUrl = getExternalViewer(ctx);
-			if (externalUrl == null)
-				externalUrl = getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
-						+ "/view_documents";
-
-			// Par défaut, lien direct sur Nuxeo
-
-			CMSHandlerProperties linkProps = new CMSHandlerProperties();
-			linkProps.setExternalUrl(externalUrl);
-			return linkProps;
+		if ("UserWorkspace".equals(doc.getType())) {
+			// Pas de filtre sur les versions publiées
+			ctx.setDisplayLiveVersion("1");
+			return createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
 		}
+		
+		if ( ("DocumentUrlContainer".equals(doc.getType()))  ) 
+			return getCMSUrlContainerPlayer(ctx);		
+		
+		if ("AnnonceFolder".equals(doc.getType()) ) {
+			return getCMSAnnonceFolderPlayer(ctx);
+		} 		
+
+		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) ) {
+			return getCMSFolderPlayer(ctx);
+		} 
+		
+		return getCMSDefaultPlayer(ctx);
+
 	}
+	
 
-	public String getExternalViewer(CMSServiceCtx ctx) {
-
-		String url = null;
+	public String getDefaultExternalViewer(CMSServiceCtx ctx) {
 
 		Document doc = (Document) ctx.getDoc();
 
-		if ("Forum".equals(doc.getType())) {
-			url = getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId()
-					+ "/view_documents";
-		}
+		String externalUrl =  getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"
+				+ doc.getId() + "/view_documents";
 
-		return url;
+		// Par défaut, lien direct sur Nuxeo
+
+		return externalUrl;
 
 	}
 
@@ -342,41 +409,73 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return resourceURL.toString();
 	}
 
+	
+	public String getNuxeoNativeViewerUrl (CMSServiceCtx ctx)	{
+		return null;
+
+	}
+	
+
+
 	/*
-	 * Cas ou le portlet prend directement en charge le rendu
 	 * 
-	 *   - nécessiter de poser une ancre au moment de la génération du lien (contextuallink, lien externes nuxeo, ...)
-	 *   - ressource servie directement par le portlet (download)
+	 * Ici, on intercepte le traitement CMS lors de la génération du lien
+	 * 
+	 * C'est le cas pour :
+	 *    - des traitements directements pris en charge par le portlet (ex : download d'un document)
+	 *    - des liens s'ouvrant dans des fenetres externes
+	 *    
+	 * Si le lien n'est pas pris en charge ici, il sera intégré au traitement CMS
+	 * standard, cad
+	 *    - lien de type /cms/
+	 *    - passage par la couche player au moment du click sur le lien
+	 * 
+	 * 
+	 * displayContext : menu, download, fileExplorer, permlink ...
 	 */
-	public Link getPortletDelegatedLink(CMSServiceCtx ctx) throws Exception {
+	
+	
+	public Link createCustomLink(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
 
 		String url = null;
 		boolean externalLink = false;
+	
 
-		if ("ContextualLink".equals(doc.getType()) && ( "menu".equals(ctx.getDisplayContext()) || "player".equals(ctx.getDisplayContext()) )) {
-			url = createPortletDelegatedExternalLink(ctx);
-			externalLink = true;
-		} else if ("File".equals(doc.getType())) {
+		if ("File".equals(doc.getType()) && (TEMPLATE_DOWNLOAD.equals(ctx.getDisplayContext()))) {
 			url = createPortletDelegatedFileContentLink(ctx);
 		}
-
-		// Nécessaire pour poser une ancre au moment de la génération du lien
-
-		if (url == null) {
-			url = getExternalViewer(ctx);
-			if (url != null)
-				externalLink = true;
+	
+		
+		if ("ContextualLink".equals(doc.getType())) {
+			url = createPortletDelegatedExternalLink(ctx);
+			externalLink = true;
 		}
+		
+			
+		// Gestion des vues externes
+		// Nécessaire pour poser une ancre au moment de la génération du lien
+		
+		if (url == null) {
+		
+			url = getNuxeoNativeViewerUrl(ctx);
+			externalLink = true;
+
+		}
+		
 
 		if (url != null) {
 			Link link = new Link(url, externalLink);
 			return link;
 
-		}
+		} 
 		return null;
 	}
+
+	
+	
+	
 
 	/*
 	 * Barre de menu des portlets d'affichage de contenu
