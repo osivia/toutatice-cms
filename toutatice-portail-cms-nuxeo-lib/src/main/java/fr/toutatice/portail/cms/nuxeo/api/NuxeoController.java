@@ -46,6 +46,7 @@ import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
 
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
+import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
@@ -77,6 +78,8 @@ public class NuxeoController {
 	
 	String hideMetaDatas;
 	String displayContext;
+	String navigationScope = null;
+	CMSItem navItem;
 	CMSServiceCtx cmsCtx;
 	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
@@ -289,7 +292,7 @@ public class NuxeoController {
 				scope = window.getPageProperty("pia.cms.scope");
 		}
 		
-		
+		navigationScope = window.getPageProperty("pia.cms.navigationScope");
 		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
@@ -309,7 +312,32 @@ public class NuxeoController {
 			throw new RuntimeException( e);
 		}
 	}
+	
+	
+	public CMSItem getNavigationItem()	throws Exception {
+		if( navItem == null){
+			if( getNavigationPath() != null){
+				// Navigation context
+				CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
+				cmsReadNavContext.setControllerContext(getPortalCtx().getControllerCtx());
+				cmsReadNavContext.setScope(getNavigationScope());		
+				
+				//TODO : factoriser dans NuxeoController
 
+				INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+				navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext,  getBasePath(), getNavigationPath());
+			}
+				
+		}
+		
+		return navItem;
+	}
+	
+	
+
+	public String getNavigationScope() {
+		return navigationScope;
+	}
 	public NuxeoController(PortletContext portletCtx) {
 		super();
 		this.portletCtx = portletCtx;
@@ -418,7 +446,7 @@ public class NuxeoController {
 		
 		Window window = (Window) request.getAttribute("pia.window");
 
-		return getFormatter().formatScopeList(window, selectedScope);
+		return getFormatter().formatScopeList(window, "scope", selectedScope);
 
 	}
 
@@ -719,16 +747,23 @@ public class NuxeoController {
 	
 	
 	public String getDebugInfos()	{
+		String output = "";
 		
 		if ("1".equals(System.getProperty("nuxeo.debugHtml"))) {
-			String output = "";
+			
 			output += "<p class=\"nuxeo-debug\" align=\"center\">";
 			output += "scope : " + getScope();
 			output += "</p>";
 
 			return output;
-		} else
-			return "";
+		} else	{
+			
+			output += "<!--";
+			output += "scope : " + getScope();
+			output += "-->";
+		}
+		
+		return output;
 
 	}
 

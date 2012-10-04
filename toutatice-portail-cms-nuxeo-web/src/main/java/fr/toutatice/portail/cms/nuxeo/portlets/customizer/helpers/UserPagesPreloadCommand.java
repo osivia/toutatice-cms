@@ -37,7 +37,7 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false);
 	
-		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
+		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ttc:tabOrder");
 		
 	
 		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");

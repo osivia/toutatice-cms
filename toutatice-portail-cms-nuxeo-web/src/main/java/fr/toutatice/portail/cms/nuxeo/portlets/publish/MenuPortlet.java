@@ -248,7 +248,7 @@ public class MenuPortlet extends CMSPortlet {
 				// Navigation context
 				CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
 				cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
-				cmsReadNavContext.setScope(ctx.getScope());				
+				cmsReadNavContext.setScope(ctx.getNavigationScope());				
 
 				
 

@@ -39,7 +39,9 @@ public class DocumentResolvePublishSpaceCommand implements INuxeoCommand {
 		.set("value", path).execute();
 		} catch (RemoteException e){
 			if( e.getStatus() == 404){
-				String prefix = "/default-domain/workspaces/ac-rennes/";
+				//String prefix = "/default-domain/workspaces/ac-rennes/";
+				// Préfixe modifié pour acrennes
+				String prefix = "/default/";
 				
 				
 				if( path.startsWith(prefix))	{

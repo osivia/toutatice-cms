@@ -43,7 +43,9 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
+import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -405,6 +407,10 @@ public class ViewListPortlet extends CMSPortlet {
 				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
+				
+				CMSItem navItem = ctx.getNavigationItem();
+				i.set("navItem",  navItem);
+
 
 				nuxeoRequest = (String) i.eval(nuxeoRequest);
 			}

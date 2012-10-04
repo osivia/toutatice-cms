@@ -18,8 +18,9 @@
 
 <script language="javascript"> 
 function toggleSample() {
-	var ele = document.getElementById("toggleText");
-	var text = document.getElementById("displayText");
+
+	var ele = document.getElementById("toggleSampleText");
+
 	if(ele.style.display == "block") {
     		ele.style.display = "none";
   	}
@@ -53,11 +54,12 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		
 		<a id="displayText" href="javascript:toggleSample();">Exemple</a>)<br/>
 		
-		<div id="toggleText" style="display: none; border: 1px; border-style: solid"> <pre>
+		<div id="toggleSampleText" style="display: none; border: 1px; border-style: solid"> <pre>
 		
 /*
 implicits variables :
    - navigationPath :  current navigation folder path
+   - navItem : current navigation item (see portal API)   
    - basePath :  page folder path
    - contentPath : current item path
    - request : portlet request 
