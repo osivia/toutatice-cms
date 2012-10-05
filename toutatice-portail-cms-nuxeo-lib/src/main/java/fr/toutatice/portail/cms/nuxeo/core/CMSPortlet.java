@@ -315,7 +315,39 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
-			
+			// v.0.27 : ajout blob
+			if ("blob".equals(resourceRequest.getParameter("type"))) {
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String blobIndex = resourceRequest.getParameter("blobIndex");
+
+					
+				
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+				
+				// On traite comme s'il s'agissait d'un hyper-lien
+
+				Document doc = fetchLinkedDocument(ctx, docPath);
+				docPath = doc.getPath();
+	
+	
+
+				BinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + content.getName() + "");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+				
+				
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
+			}
 			
 			
 			if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {

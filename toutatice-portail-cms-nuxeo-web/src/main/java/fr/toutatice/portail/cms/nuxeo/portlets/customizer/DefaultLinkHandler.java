@@ -206,8 +206,13 @@ public class DefaultLinkHandler   implements INuxeoLinkHandler {
 	if ("ContextualLink".equals(doc.getType())) {
 		url = createExternalLink(ctx);
 		externalLink = true;
-	} else if ("File".equals(doc.getType()))  {
-		url = createFileContentLink(ctx);
+	} else if ("File".equals(doc.getType()))	{
+	// v1.0.27 : plantage sur liens documents
+		if(  ctx.getResponse() != null)  
+	 		url = createFileContentLink(ctx);
+		else
+			url = createCMSLink(ctx);
+	
 	} else if ("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())){
 		url = createFileFolderLink(ctx);
 	} else if ("AnnonceFolder".equals(doc.getType())){

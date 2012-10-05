@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class VocabularyEntry {
+import fr.toutatice.portail.api.cache.services.IGlobalParameters;
+
+public class VocabularyEntry implements IGlobalParameters{
 	
 	private String id;
 	private String label;

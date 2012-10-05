@@ -16,6 +16,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.Constants;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
 
+import fr.toutatice.portail.api.cache.services.IGlobalParameters;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
 

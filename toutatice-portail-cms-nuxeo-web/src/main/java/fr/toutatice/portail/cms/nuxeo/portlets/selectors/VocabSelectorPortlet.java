@@ -312,7 +312,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			
 			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
 			ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-			ctx.setAsynchronousUpdates(true);
+			
+			//1.0.27 : rechargement par l'administration
+			ctx.setCacheTimeOut(3600 * 1000L);
+			//ctx.setAsynchronousUpdates(true);
 
 			VocabularyIdentifier vocabIdentifier = new VocabularyIdentifier( vocabsName, vocabsName);
 

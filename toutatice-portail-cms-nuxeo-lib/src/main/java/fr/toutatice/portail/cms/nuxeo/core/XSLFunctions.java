@@ -31,6 +31,8 @@ public class XSLFunctions {
 	// "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
 	
+	private final Pattern blobExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
+	
 	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
 	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
 	
@@ -39,6 +41,10 @@ public class XSLFunctions {
 	
 	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
+	
+	private final Pattern permaLinkExp = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
+	
+	//http://integration.toutatice.fr/nuxeo/nxdoc/default/e8126717-d152-424e-84a0-fddd55e4d55c/view_documents?tabIds=%3A&conversationId=0NXMAIN
 	
 	private static final String PORTAL_REF = "/portalRef?";
 	
@@ -239,6 +245,43 @@ public class XSLFunctions {
 						else
 							return url.toString();
 						}
+						
+						
+						// 1.0.27 ajout permalin nuxeo + blobholder (lien téléchargement)
+												
+						Matcher permaDoc = permaLinkExp.matcher(query);
+						
+						if( permaDoc.matches())	{
+
+						if (permaDoc.groupCount() > 0) {
+
+							String path = permaDoc.group(1);
+								
+							return ctx.createRedirectDocumentLink(path);
+						}
+						else
+							return url.toString();
+						}
+
+						
+											
+						// Lien téléchargement directement extrait de nuxeo
+						Matcher mBlobExp = blobExp.matcher(query);
+						
+						if( mBlobExp.matches())	{
+
+						if (mBlobExp.groupCount() > 0) {
+
+							String uid = mBlobExp.group(2);
+							
+
+							String blobIndex = mBlobExp.group(3);
+							
+							return ctx.createAttachedBlobLink(uid, blobIndex);
+							} 
+						}
+						
+						
 				} catch (Exception e) {
 					//incorrect parsing, continue with the native value
 				}
