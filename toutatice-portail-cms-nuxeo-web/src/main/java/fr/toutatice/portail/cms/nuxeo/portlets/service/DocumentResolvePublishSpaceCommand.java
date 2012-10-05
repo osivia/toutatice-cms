@@ -33,10 +33,14 @@ public class DocumentResolvePublishSpaceCommand implements INuxeoCommand {
 		Document publishSpace = null;
 
 
-		try	{
+/*		
+ try	{ 
+ */
 		 publishSpace = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
 		.newRequest("Document.FetchPublishSpace").setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice")
 		.set("value", path).execute();
+		 
+		 /*
 		} catch (RemoteException e){
 			if( e.getStatus() == 404){
 				//String prefix = "/default-domain/workspaces/ac-rennes/";
@@ -59,7 +63,7 @@ public class DocumentResolvePublishSpaceCommand implements INuxeoCommand {
 			} else
 				throw e;
 		}
-
+*/
 
 
 		navItem.setMainDoc(publishSpace);
