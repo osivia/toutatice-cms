@@ -127,6 +127,8 @@ public class CMSPortlet extends GenericPortlet {
 	// v1.0.14 : recherche d'un document lié
 	// Par défaut sur scope courant, sinon sur scope user
 	
+	
+	
 	public Document fetchLinkedDocument( NuxeoController ctx, String docPath)	throws Exception {
 		
 		String decodedPath = URLDecoder.decode(docPath, "UTF-8");
@@ -149,6 +151,17 @@ public class CMSPortlet extends GenericPortlet {
 					doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
 								.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));
 				 }
+
+			} 
+			 /// 1.0.28 : accès version LIVE si version publiée inexistante
+			 
+			 else if( e.getErrorCode() == NuxeoException.ERROR_NOTFOUND){
+				ctx.setScope(null);
+				ctx.setDisplayLiveVersion("1");
+				
+					
+				doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+					.executeNuxeoCommand(new DocumentFetchCommand(decodedPath));			
 
 			}
 			 else throw e;
@@ -315,7 +328,7 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
-			// v.0.27 : ajout blob
+			// v1.0.27 : ajout blob (lien téléchargement direct depuis Nuxeo)
 			if ("blob".equals(resourceRequest.getParameter("type"))) {
 
 				// Gestion d'un cache global
@@ -331,7 +344,6 @@ public class CMSPortlet extends GenericPortlet {
 
 				Document doc = fetchLinkedDocument(ctx, docPath);
 				docPath = doc.getPath();
-	
 	
 
 				BinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
