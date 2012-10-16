@@ -513,6 +513,23 @@ public class NuxeoController {
 		return resourceURL.toString();
 	}
 	
+	//v1.0.27
+	public String createAttachedBlobLink(String path, String blobIndex) {
+
+		ResourceURL resourceURL = createResourceURL();
+		resourceURL.setResourceID(path + "/" + blobIndex);
+
+		resourceURL.setParameter("type", "blob");
+		resourceURL.setParameter("blobIndex", blobIndex);
+		resourceURL.setParameter("docPath", path);
+
+		// ne marche pas : bug JBP
+		// resourceURL.setCacheability(ResourceURL.PORTLET);
+		resourceURL.setCacheability(ResourceURL.PAGE);
+
+		return resourceURL.toString();
+	}
+	
 	public String createAttachedPictureLink(String path, String fileIndex) {
 
 		ResourceURL resourceURL = createResourceURL();
@@ -545,6 +562,7 @@ public class NuxeoController {
 		return resourceURL.toString();
 	}
 	
+	/*
 	public String createRedirectDocumentLink(String path) {
 
 		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte
@@ -552,9 +570,7 @@ public class NuxeoController {
 		
 		ResourceURL resourceURL = createResourceURL();
 		resourceURL.setResourceID(path );
-		/*
-		resourceURL.setResourceID("/pagemarker/"+path );
-		*/
+
 
 		resourceURL.setParameter("type", "documentLink");
 		resourceURL.setParameter("docPath", path);
@@ -567,6 +583,7 @@ public class NuxeoController {
 
 		return resourceURL.toString();
 	}
+	*/
 
 	public String createPermalink(String path) throws Exception {
 		

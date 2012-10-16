@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -356,7 +357,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
-				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + content.getName() + "");
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
 
 				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);
@@ -368,6 +369,41 @@ public class CMSPortlet extends GenericPortlet {
 			}
 			
 			
+			// v.0.27 : ajout blob
+			if ("blob".equals(resourceRequest.getParameter("type"))) {
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String blobIndex = resourceRequest.getParameter("blobIndex");
+
+					
+				
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+				
+				// On traite comme s'il s'agissait d'un hyper-lien
+
+				Document doc = fetchLinkedDocument(ctx, docPath);
+				docPath = doc.getPath();
+	
+	
+
+				BinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
+				
+					
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+				
+				
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
+			}
 			
 			
 			if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {
@@ -382,7 +418,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
-				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + content.getName() + "");
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
 
 				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);
@@ -415,7 +451,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(picture.getMimeType());
-				resourceResponse.setProperty("Content-Disposition", "attachment; filename=" + picture.getName() + "");
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + picture.getName() + "\"");
 
 				ResourceUtil.copy(new FileInputStream(picture.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);

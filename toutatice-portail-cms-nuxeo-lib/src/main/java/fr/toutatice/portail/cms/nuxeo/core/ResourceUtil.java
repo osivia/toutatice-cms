@@ -372,5 +372,79 @@ public class ResourceUtil {
 	}
 	
 	
+	
+	// 1.0.27 : ajout blob
+	
+	
+	private static class BlobHolderCommand implements INuxeoCommand {
+			
+			String path;
+			String blobIndex;
+			
+			public BlobHolderCommand(String path, String blobIndex) {
+				super();
+				this.path = path;
+				this.blobIndex = blobIndex;
+			}
+			
+			public Object execute( Session session)	throws Exception {
+				
+				Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set(
+						"value", path).execute();
+				
+				Blob blob = null;
+				
+				try	{
+					blob = (Blob) session.newRequest("Blob.Get").setInput(doc).set("xpath",
+						"/file:content").execute();
+				} catch( Exception e){
+					// Le not found n'est pas traité pour les blob
+					// On le positionne par défaut pour l'utilisateur
+					throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+				}
+				
+
+
+				InputStream in = blob.getStream();
+
+				File tempFile = File.createTempFile("tempFile4", ".tmp");
+				OutputStream out = new FileOutputStream(tempFile);
+
+				try {
+					byte[] b = new byte[4096];
+					int i = -1;
+					while ((i = in.read(b)) != -1) {
+						out.write(b, 0, i);
+					}
+					out.flush();
+				} finally {
+					in.close();
+				}
+
+				BinaryContent content = new BinaryContent();
+
+				content.setName(blob.getFileName());
+				content.setFile(tempFile);
+				content.setMimeType(blob.getMimeType());
+
+				return content;
+				
+
+			
+			};		
+			
+			public String getId() {
+				return "BlobHolderCommand"+path+"/"+blobIndex;
+			};		
+
+			
+		}
+		
+		public static BinaryContent getBlobHolderContent(NuxeoController ctx, String path, String fileIndex) throws Exception {
+
+			return (BinaryContent) ctx.executeNuxeoCommand(new BlobHolderCommand(path,fileIndex));
+			
+		}
+		
 
 }

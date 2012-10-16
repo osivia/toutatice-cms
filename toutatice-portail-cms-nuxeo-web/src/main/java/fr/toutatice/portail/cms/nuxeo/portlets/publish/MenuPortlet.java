@@ -172,12 +172,17 @@ public class MenuPortlet extends CMSPortlet {
 		if( itemRelativePath != null)
 			categoryPath += itemRelativePath;
 
-		if (categoryPath != null && categoryPath.startsWith(doc.getPath()) && isParentNavigable)	
+
+		if (categoryPath != null)	{ 
+			categoryPath += "/";
+			
+			if( categoryPath.startsWith(doc.getPath() + "/") && isParentNavigable)	
 			// non navigational items are not selected
 			// because children elements are managed at portlet level and not CMS levels
 			// So selection can not be sure
 			// See FAQ sample : links between questions don't interact with CMS
-			selected = true;
+				selected = true;
+		}
 
 		NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
 				selected);

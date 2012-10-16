@@ -445,6 +445,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		if ("File".equals(doc.getType()) && (TEMPLATE_DOWNLOAD.equals(ctx.getDisplayContext()))) {
 			url = createPortletDelegatedFileContentLink(ctx);
+			
+			// v1.0.27 : plantage sur liens documents
+			//TODO : A INTEGRER ???
+			/*
+			if(  ctx.getResponse() != null)  
+		 		url = createFileContentLink(ctx);
+			else
+				url = createCMSLink(ctx);
+				*/
 		}
 	
 		
