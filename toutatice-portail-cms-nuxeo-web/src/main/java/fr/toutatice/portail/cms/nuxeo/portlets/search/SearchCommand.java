@@ -47,11 +47,16 @@ public class SearchCommand implements INuxeoCommand{
 		
 		if( path != null && path.length() > 0)
 			searchQuery = addClause(searchQuery, "ecm:path STARTSWITH '"+path+"'");
+
+		String searchKeywords = keywords;
+		if( searchKeywords == null)
+			searchKeywords = "";
 		
-		if( keywords != null)
-			searchQuery = addClause(searchQuery, "ecm:fulltext = '"+keywords+"'" );
+		searchKeywords += " -noindex";
 		
+		searchQuery = addClause(searchQuery, "ecm:fulltext = '"+searchKeywords+"'" );
 		
+
 
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(searchQuery, displayLiveVersion);

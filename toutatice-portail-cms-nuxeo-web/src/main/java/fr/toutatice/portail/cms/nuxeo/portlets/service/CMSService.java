@@ -159,10 +159,10 @@ public class CMSService implements ICMSService {
 		if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
 
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchCommand(path)));
-			return createItem(cmsCtx, path, doc.getTitle(), doc);
+			return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
 		} else {
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
-			return createItem(cmsCtx, path, doc.getTitle(), doc);
+			return createItem(cmsCtx,  doc.getPath(), doc.getTitle(), doc);
 		}
 
 	}
