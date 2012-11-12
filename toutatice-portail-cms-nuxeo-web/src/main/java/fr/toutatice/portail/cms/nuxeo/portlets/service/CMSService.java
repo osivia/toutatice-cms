@@ -138,7 +138,7 @@ public class CMSService implements ICMSService {
 		if (scope != null) {
 			if (!"__nocache".equals(scope)) {
 
-				commandCtx.setAsynchronousUpdates(true);
+				//commandCtx.setAsynchronousUpdates(true);
 
 				if ("anonymous".equals(scope)) {
 					commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
