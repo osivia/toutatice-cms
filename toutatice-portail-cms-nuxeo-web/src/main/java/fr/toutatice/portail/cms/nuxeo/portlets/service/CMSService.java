@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
+import org.jboss.portal.common.invocation.Scope;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.cache.services.CacheInfo;
@@ -22,6 +23,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
 import fr.toutatice.portail.core.cms.NavigationItem;
@@ -438,6 +440,46 @@ public class CMSService implements ICMSService {
 
 		// Not possible
 		return null;
+	}
+
+	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+		try {
+			CMSPublicationInfos pubInfos = (CMSPublicationInfos) ctx.getControllerContext().getAttribute(Scope.REQUEST_SCOPE,
+					"pia.publicationInfos." + path);
+
+			if (pubInfos == null) {
+
+				pubInfos = new CMSPublicationInfos();
+
+				// A remplacer par l'opération
+				CMSItem publishSpace = null;
+				try {
+					publishSpace = getPortalPublishSpace(ctx, path);
+				} catch (CMSException e) {
+
+				}
+
+				pubInfos.setDocumentPath(path);
+
+				if (publishSpace != null) {
+					pubInfos.setPublishSpaceDisplayName(publishSpace.getProperties().get("displayName"));
+					pubInfos.setPublishSpacePath(publishSpace.getPath());
+				}
+
+				ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE,
+						"pia.publicationInfos." + path, pubInfos);
+			}
+
+			return pubInfos;
+
+		} catch (Exception e) {
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
+		}
+		
+
 	}
 
 }

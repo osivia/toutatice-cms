@@ -18,6 +18,7 @@ import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSPage;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.cms.ICMSService;
 import fr.toutatice.portail.core.dynamic.DynamicPageBean;
@@ -173,6 +174,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception {
 		return getCMSCustomizer().computeUserPreloadedPages(cmsCtx);
+	}
+
+	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+		return  cmsService.getPublicationInfos(ctx, path);
 	}		
 
 

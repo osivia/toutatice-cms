@@ -16,6 +16,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 
 /**
@@ -163,9 +164,19 @@ public class MenuBarFormater {
 				// Scope user
 				cmsCtx.setScope(null);
 
-				CMSItem publishSpace = (CMSItem) CMSService.getPortalPublishSpace(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+				//CMSItem publishSpace = (CMSItem) CMSService.getPortalPublishSpace(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+				//addContextualizationLinkItem(menuBar, (Document) publishSpace.getNativeItem(), url);
+				
+				CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+				
+				MenubarItem item = new MenubarItem("Espace " + pubInfos.getPublishSpaceDisplayName(), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
+						null, "portlet-menuitem-contextualize", null);
 
-				addContextualizationLinkItem(menuBar, (Document) publishSpace.getNativeItem(), url);
+				item.setAjaxDisabled(true);
+				menuBar.add(item);
+				
+
+				
 
 			}	catch (Exception e) {
 
