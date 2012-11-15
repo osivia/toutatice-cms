@@ -58,6 +58,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PublishInfosCommand";
+		return "PublishInfosCommand" + inputNuxeoDocIdent;
 	}
 }

@@ -245,52 +245,21 @@ public class CMSService implements ICMSService {
 	
 	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
-		String cacheId = "anonymous_content/" + path;
-
-		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
-				portletCtx);
-
 		try {
-
-			Object anonymousCheck = getCacheService().getCache(cacheInfos);
-
-			if (anonymousCheck != null) {
-				return ((Boolean) anonymousCheck);
-			}
-
-			else {
-
-				/* Perform check in anonymous mode */
-
-				CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
-				checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
-				checkAnonymousAccess.setScope("anonymous");
-
-				cacheInfos.setForceReload(true);
-
-				try {
-
-					getContent(checkAnonymousAccess, path);
-					cacheInfos.setInvoker(new AnonymousAccesInvoker(true));
-
-				} catch (CMSException e) {
-					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
-
-						cacheInfos.setInvoker(new AnonymousAccesInvoker(false));
-					else
-						throw e;
-				}
-
-				return ((Boolean) getCacheService().getCache(cacheInfos));
-
-			}
+			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+				
+			return pubInfos.isAnonymouslyReadable();
+		} catch (NuxeoException e) {
+			e.rethrowCMSException();
 		} catch (Exception e) {
 			if (!(e instanceof CMSException))
 				throw new CMSException(e);
 			else
 				throw (CMSException) e;
-		}
+		}	
 
+		// Ne passe jamamis
+		return false;
 	}
 
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
