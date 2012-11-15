@@ -27,10 +27,12 @@ import fr.toutatice.portail.core.cms.NavigationItem;
 public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 	String path;
-
-	public DocumentPublishSpaceNavigationCommand(  String path) {
+	boolean live;
+	
+	public DocumentPublishSpaceNavigationCommand(  String path, boolean live) {
 		super();
 		this.path = path;
+		this.live = live;
 	}
 
 	public Object execute(Session session) throws Exception {
@@ -51,7 +53,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		String nuxeoRequest = "( ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 )";
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live);
 	
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
 		

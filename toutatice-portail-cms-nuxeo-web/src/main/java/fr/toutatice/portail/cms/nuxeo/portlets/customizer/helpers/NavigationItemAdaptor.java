@@ -180,6 +180,13 @@ public class NavigationItemAdaptor {
 		String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
 		if( contextualizeExternalContents != null && "true".equals(contextualizeExternalContents) )
 			properties.put("contextualizeExternalContents", "1");		
+		
+		
+		if("Workspace".equals(doc.getType()))	{
+			properties.put("contextualizeInternalContents", "1");
+			properties.put("contextualizeExternalContents", "1");
+			properties.put("pageTemplate", "/default/templates/workspace");
+		}
 
 		
 

@@ -158,11 +158,15 @@ public class CMSService implements ICMSService {
 
 	private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {
 
-		if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
+		CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+		
+		
+		if ("1".equals(cmsCtx.getDisplayLiveVersion()) || ! pubInfos.isPublished()) {
 
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchCommand(path)));
 			return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
 		} else {
+
 			Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
 			return createItem(cmsCtx,  doc.getPath(), doc.getTitle(), doc);
 		}
@@ -234,6 +238,11 @@ public class CMSService implements ICMSService {
 
 	}
 
+	
+	
+	
+	
+	
 	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
 		String cacheId = "anonymous_content/" + path;
@@ -305,8 +314,17 @@ public class CMSService implements ICMSService {
 			throws CMSException {
 		try {
 
+			
+
+			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			
+			boolean live = false;
+			if ( ("1".equals(cmsCtx.getDisplayLiveVersion())) || ! pubInfos.isPublished()) 
+				live = true;
+
+			
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpacePath)));
+					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);
@@ -340,9 +358,16 @@ public class CMSService implements ICMSService {
 	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
 		try {
+			
+		CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			
+			boolean live = false;
+			if ( ("1".equals(cmsCtx.getDisplayLiveVersion())) || ! pubInfos.isPublished()) 
+				live = true;
+
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpacePath)));
+					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);
@@ -368,81 +393,37 @@ public class CMSService implements ICMSService {
 		// Not possible
 		return null;
 	}
+	
+	
 
 	public CMSItem getPortalPublishSpace(CMSServiceCtx cmsCtx, String path) throws CMSException {
+		
 
-		try {
+		
+		CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+		
+		
+		if( pubInfos.getPublishSpacePath() != null)	{
+			//TODO : prendre le scope de navigation
+			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getPublishSpacePath(), pubInfos.getPublishSpacePath());
+			return portalSpace;
+		}	
+		
+		
+		if( pubInfos.getWorkspacePath() != null)	{
+			//TODO : prendre le scope de navigation
+			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getWorkspacePath(), pubInfos.getWorkspacePath());
+			return portalSpace;
+		}	
+		
+		
+		throw new CMSException(CMSException.ERROR_NOTFOUND);
 
-			/*
-			 * le cache UnresolvablePublishSpaceInvoker permet de ne pas
-			 * multiplier les appels pour un meme contenu tout en conservant un
-			 * scope user
-			 * 
-			 * les memes objets inresolvables sont donc mutualisés entre les
-			 * scopes et les users
-			 */
 
-			String cacheId = "resolvable/" + path;
-
-			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null,
-					cmsCtx.getRequest(), portletCtx);
-
-			Object resolvable = getCacheService().getCache(cacheInfos);
-			if (resolvable != null) {
-				// Déja non resolu
-				if (((Boolean) resolvable) == false)
-					throw new CMSException(CMSException.ERROR_NOTFOUND);
-			}
-
-			try {
-
-				NavigationItem publishSpace = (NavigationItem) executeNuxeoCommand(cmsCtx,
-						(new DocumentResolvePublishSpaceCommand(path)));
-
-				if (publishSpace != null) {
-
-					CMSItem item = publishSpace.getAdaptedCMSItem();
-
-					if (item == null) {
-						publishSpace.setAdaptedCMSItem(createNavigationItem(cmsCtx,
-								publishSpace.getMainDoc().getPath(), publishSpace.getMainDoc().getTitle(),
-								publishSpace.getMainDoc(), publishSpace.getMainDoc().getPath()));
-					}
-
-					// On met à jour le cache pour cet objet resovable
-
-					cacheInfos.setForceReload(true);
-					cacheInfos.setInvoker(new ResolvablePublishSpace(true));
-					getCacheService().getCache(cacheInfos);
-
-					return publishSpace.getAdaptedCMSItem();
-				}
-			} catch (NuxeoException e) {
-
-				if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
-
-					// On met à jour le cache pour cet objet non resovable
-
-					cacheInfos.setForceReload(true);
-					cacheInfos.setInvoker(new ResolvablePublishSpace(false));
-					getCacheService().getCache(cacheInfos);
-
-				}
-
-				e.rethrowCMSException();
-			}
-		} catch (Exception e) {
-			if (!(e instanceof CMSException))
-				throw new CMSException(e);
-			else
-				throw (CMSException) e;
-		}
-
-		// Not possible
-		return null;
 	}
+	
 
-	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+	public CMSPublicationInfos getPublicationInfosTest(CMSServiceCtx ctx, String path) throws CMSException {
 		try {
 			CMSPublicationInfos pubInfos = (CMSPublicationInfos) ctx.getControllerContext().getAttribute(Scope.REQUEST_SCOPE,
 					"pia.publicationInfos." + path);
@@ -450,6 +431,16 @@ public class CMSService implements ICMSService {
 			if (pubInfos == null) {
 
 				pubInfos = new CMSPublicationInfos();
+				
+				pubInfos.setDocumentPath(path);
+				
+				if( path.startsWith("/default-domain/workspaces/seria"))	{
+				pubInfos.setWorkspaceDisplayName("SERIA");
+				pubInfos.setWorkspacePath("/default-domain/workspaces/seria");
+				pubInfos.setPublished(false);
+				pubInfos.getErrorCodes().add(CMSPublicationInfos.ERROR_PUBLISH_SPACE_NOT_FOUND);
+				}
+				else	{
 
 				// A remplacer par l'opération
 				CMSItem publishSpace = null;
@@ -459,12 +450,16 @@ public class CMSService implements ICMSService {
 
 				}
 
-				pubInfos.setDocumentPath(path);
 
 				if (publishSpace != null) {
 					pubInfos.setPublishSpaceDisplayName(publishSpace.getProperties().get("displayName"));
 					pubInfos.setPublishSpacePath(publishSpace.getPath());
+					pubInfos.setPublished(true);
 				}
+				}
+
+				
+
 
 				ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE,
 						"pia.publicationInfos." + path, pubInfos);
@@ -478,8 +473,58 @@ public class CMSService implements ICMSService {
 			else
 				throw (CMSException) e;
 		}
+	}
+		
+		public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String docIdent) throws CMSException {
+			CMSPublicationInfos pubInfos = null;
+
+			try {
+				pubInfos = (CMSPublicationInfos) ctx.getControllerContext().getAttribute(Scope.REQUEST_SCOPE,
+						"pia.publicationInfos." + docIdent);
+
+				if (pubInfos == null) {
+					pubInfos = new CMSPublicationInfos();
+
+					Map<String, Object> cmsInfos = (Map<String, Object>) executeNuxeoCommand(ctx, (new PublishInfosCommand(
+							docIdent)));
+
+					List<Integer> errors = (List<Integer>) cmsInfos.get("errors");
+					if (errors != null) {
+						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+							throw new CMSException(CMSException.ERROR_FORBIDDEN);
+						}
+						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+							throw new CMSException(CMSException.ERROR_NOTFOUND);
+						}
+					}
+					pubInfos.setErrorCodes(errors);
+					pubInfos.setDocumentPath((String) cmsInfos.get("documentPath"));
+					pubInfos.setPublishSpaceDisplayName((String) cmsInfos.get("publishSpaceDisplayName"));
+					pubInfos.setPublishSpacePath((String) cmsInfos.get("publishSpacePath"));
+					pubInfos.setWorkspaceDisplayName((String) cmsInfos.get("workspaceDisplayName"));
+					pubInfos.setWorkspacePath((String) cmsInfos.get("workspacePath"));
+					pubInfos.setEditableByUser((Boolean) cmsInfos.get("editableByUser"));
+					pubInfos.setPublished(((Boolean) cmsInfos.get("published")).booleanValue());
+					pubInfos.setAnonymouslyReadable(((Boolean) cmsInfos.get("anonymouslyReadable")).booleanValue());
+
+					ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE, "pia.publicationInfos." + docIdent,
+							pubInfos);
+
+				}
+
+			} catch (Exception e) {
+				if (!(e instanceof CMSException))
+					throw new CMSException(e);
+				else
+					throw (CMSException) e;
+			}
+
+			return pubInfos;
+
+		}
+
 		
 
-	}
+	
 
 }

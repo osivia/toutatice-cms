@@ -54,6 +54,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
+import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.profils.ProfilBean;
 
@@ -259,10 +260,24 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						Document doc = null;
 						
 
+						
+
+						//TODO : 
+						// gestion des erreurs
+						//gestion du no-uri-proxy_conversion : a quoi sert-il ?
+						//factoriser dans NuxeoController
+
+						INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
+						
+						CMSItem navItem = nuxeoService.getContent(ctx.getCMSCtx(), nuxeoPath);
+						doc = (Document) navItem.getNativeItem();
+
+						/*
 						if( "1".equals(window.getProperty("pia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
 							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(nuxeoPath));
 						else
 							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchPublishedCommand(nuxeoPath));
+							*/
 		
 						if (doc.getTitle() != null)
 							response.setTitle(doc.getTitle());
