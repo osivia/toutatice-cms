@@ -42,12 +42,15 @@ public class PublishInfosCommand implements INuxeoCommand {
 			Iterator it = rows.iterator();
 			while (it.hasNext()) {
 				JSONObject obj = (JSONObject) it.next();
-				infos.put("errors", obj.get("errors"));
+				infos.put("errorCodes", obj.get("errorCodes"));
 				infos.put("documentPath", obj.get("documentPath"));
+				infos.put("liveId", obj.get("liveId"));
 				infos.put("publishSpacePath", obj.get("publishSpacePath"));
 				infos.put("publishSpaceDisplayName", obj.get("publishSpaceDisplayName"));
+				infos.put("publishSpaceInContextualization", obj.get("publishSpaceInContextualization"));
 				infos.put("workspacePath", obj.get("workspacePath"));
 				infos.put("workspaceDisplayName", obj.get("workspaceDisplayName"));
+				infos.put("workspaceInContextualization", obj.get("workspaceInContextualization"));
 				infos.put("editableByUser", obj.get("editableByUser"));
 				infos.put("published", obj.get("published"));
 				infos.put("anonymouslyReadable", obj.get("anonymouslyReadable"));
