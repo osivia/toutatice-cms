@@ -45,6 +45,7 @@ import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
 
+import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
@@ -736,11 +737,31 @@ public class NuxeoController {
 		
 	}
 	
-	
+	public Document fetchDocument 	( String path) throws Exception	{
+
+		try	{
+		
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+		
+		
+		CMSItem cmsItem = nuxeoService.getContent(getCMSCtx(), path);
+		return (Document) cmsItem.getNativeItem();
+		
+		} catch( CMSException e){
+			if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
+				throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+			if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+				throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+			throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+			
+		}
+	}
 
 	
 	public CMSServiceCtx getCMSCtx()	{
-		if( cmsCtx == null)	{
+
 		cmsCtx = new  CMSServiceCtx();
 		
 		cmsCtx.setControllerContext(new PortalControllerContext(getPortletCtx(),
@@ -757,7 +778,7 @@ public class NuxeoController {
 		cmsCtx.setDoc(getCurrentDoc());
 		cmsCtx.setHideMetaDatas(getHideMetaDatas());
 		cmsCtx.setDisplayContext(displayContext);
-		}
+
 		
 		return cmsCtx;
 	}

@@ -66,16 +66,26 @@ public class MenuBarFormater {
 		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
 
 		// Menu bar
+		
+		try{
 
 		getPermaLinkLink(cmsCtx, menuBar);
 
 		getContextualizationLink(cmsCtx, menuBar);
 
 		getAdministrationLink(cmsCtx, menuBar);
+		} 	catch(CMSException e)	{
+			if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN
+					|| e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+				// On ne fait rien : le document n'existe pas ou je n'ai pas
+				// les droits
+			} else
+				throw e;
+		}
 	}
 
 	
-	protected void addAdministrationLinkItem(List<MenubarItem> menuBar, Document doc, String url) throws Exception {
+	protected void addAdministrationLinkItem(List<MenubarItem> menuBar, String url) throws Exception {
 
 		MenubarItem item = new MenubarItem("Editer dans Nuxeo", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
 				url, null, "portlet-menuitem-nuxeo-edit", "nuxeo");
@@ -90,45 +100,22 @@ public class MenuBarFormater {
 		if (cmsCtx.getRequest().getRemoteUser() == null)
 			return;
 
-		String savedScope = cmsCtx.getScope();
+		
+		CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+		
+		
+		if( pubInfos.isEditableByUser())	{
+			String url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"
+					+  pubInfos.getLiveId() + "/view_documents";
+			
+			addAdministrationLinkItem(menuBar,url);
 
-		try {
-			// Scope user
-			cmsCtx.setScope(null);
-
-			Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) CMSService.executeNuxeoCommand(
-					cmsCtx, new DocumentFetchLiveCommand((((Document) (cmsCtx.getDoc())).getPath()), "Write"));
-
-			if (doc != null) {
-				String url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"
-						+ doc.getId() + "/view_documents";
-				
-				addAdministrationLinkItem(menuBar, doc, url);
-
-			}
-		}
-
-		catch (Exception e) {
-
-			if (e instanceof CMSException) {
-				CMSException ne = (CMSException) e;
-
-				if (ne.getErrorCode() == CMSException.ERROR_FORBIDDEN
-						|| ne.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-					// On ne fait rien : le document n'existe pas ou je n'ai pas
-					// les droits
-				} else
-					throw e;
-			}
-
-		}
-
-		finally {
-			cmsCtx.setScope(savedScope);
 		}
 	}
 
 	protected void addContextualizationLinkItem(List<MenubarItem> menuBar, Document doc, String url) throws Exception {
+		
+		
 
 		MenubarItem item = new MenubarItem("Espace " + doc.getTitle(), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
 				null, "portlet-menuitem-contextualize", null);
@@ -144,12 +131,10 @@ public class MenuBarFormater {
 			return;
 		
 		
-		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
-			return;
+//		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
+//			return;
 		
 
-		// Link contextualLink = ctx.getLink((((Document) (cmsCtx.getDoc()),
-		// null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 
 		String url = getPortalUrlFactory().getCMSUrl(
 				new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
@@ -158,44 +143,36 @@ public class MenuBarFormater {
 
 		if (url != null) {
 
-			String savedScope = cmsCtx.getScope();
-
-			try {
-				// Scope user
-				cmsCtx.setScope(null);
 
 				//CMSItem publishSpace = (CMSItem) CMSService.getPortalPublishSpace(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 				//addContextualizationLinkItem(menuBar, (Document) publishSpace.getNativeItem(), url);
 				
 				CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 				
-				MenubarItem item = new MenubarItem("Espace " + pubInfos.getPublishSpaceDisplayName(), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
+				String spaceDisplayName = null;
+				
+				if( pubInfos.getPublishSpacePath() != null && pubInfos.isPublishSpaceInContextualization())	{
+					spaceDisplayName =  pubInfos.getPublishSpaceDisplayName();
+					
+				}	else	{
+					if( pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization())	{
+						spaceDisplayName =  pubInfos.getWorkspaceDisplayName();
+					}
+				}
+				
+				if( spaceDisplayName != null){
+					MenubarItem item = new MenubarItem("Espace " + spaceDisplayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
 						null, "portlet-menuitem-contextualize", null);
 
-				item.setAjaxDisabled(true);
-				menuBar.add(item);
-				
-
-				
-
-			}	catch (Exception e) {
-
-				if (e instanceof CMSException) {
-					CMSException ne = (CMSException) e;
-
-					if (ne.getErrorCode() == CMSException.ERROR_FORBIDDEN
-							|| ne.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-						// On ne fait rien : le document n'existe pas ou je n'ai pas
-						// les droits
-					} else
-						throw e;
+					item.setAjaxDisabled(true);
+					menuBar.add(item);
 				}
 
-			}
-			finally {
-				cmsCtx.setScope(savedScope);
-			}
-		}
+				
+
+			}	
+			
+
 
 		return;
 	}
@@ -215,8 +192,8 @@ public class MenuBarFormater {
 		if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState()))
 			return;
 		
-		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
-			return;
+//		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
+//			return;
 
 		String permaLinkURL = getPortalUrlFactory().getPermaLink(
 				new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,

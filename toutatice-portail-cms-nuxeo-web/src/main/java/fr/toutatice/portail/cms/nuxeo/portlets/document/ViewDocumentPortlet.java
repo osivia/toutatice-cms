@@ -257,20 +257,14 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						nuxeoPath = ctx.getComputedPath(nuxeoPath);
 							
 						
-						Document doc = null;
 						
-
-						
-
 						//TODO : 
 						// gestion des erreurs
 						//gestion du no-uri-proxy_conversion : a quoi sert-il ?
-						//factoriser dans NuxeoController
+	
 
-						INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
+						Document doc = ctx.fetchDocument(nuxeoPath);
 						
-						CMSItem navItem = nuxeoService.getContent(ctx.getCMSCtx(), nuxeoPath);
-						doc = (Document) navItem.getNativeItem();
 
 						/*
 						if( "1".equals(window.getProperty("pia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
@@ -300,6 +294,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 							//v 1.0.11 : pb. des pices jointes dans le proxy
 							ctx.setCurrentDoc(doc);
+							
 							
 							// Insert standard menu bar for content item
 							ctx.insertContentMenuBarItems();
