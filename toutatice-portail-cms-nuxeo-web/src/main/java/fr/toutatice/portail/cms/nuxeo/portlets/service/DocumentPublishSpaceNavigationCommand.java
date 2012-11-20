@@ -88,12 +88,14 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			/* Update parent children */
 
 			String parentPath = child.getPath().substring(0, child.getPath().lastIndexOf('/'));
+			if( parentPath.contains(path))	{
 			navItem = navItems.get(parentPath);
 			if (navItem == null) {
 				navItem = new NavigationItem();
 				navItems.put(parentPath, navItem);
 			}
 			navItem.getChildren().add(child);
+			}
 		}
 
 		/* Sort children */

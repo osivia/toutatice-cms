@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -234,6 +235,11 @@ public class CMSService implements ICMSService {
 		// Not possible
 		return null;
 	}
+	
+	
+	
+	
+	
 
 	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
@@ -323,14 +329,12 @@ public class CMSService implements ICMSService {
 		CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
 
 		if (pubInfos.getPublishSpacePath() != null) {
-			// TODO : prendre le scope de navigation
 			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getPublishSpacePath(),
 					pubInfos.getPublishSpacePath());
 			return portalSpace;
 		}
 
 		if (pubInfos.getWorkspacePath() != null) {
-			// TODO : prendre le scope de navigation
 			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getWorkspacePath(),
 					pubInfos.getWorkspacePath());
 			return portalSpace;
@@ -340,52 +344,7 @@ public class CMSService implements ICMSService {
 
 	}
 
-	public CMSPublicationInfos getPublicationInfosTest(CMSServiceCtx ctx, String path) throws CMSException {
-		try {
-			CMSPublicationInfos pubInfos = (CMSPublicationInfos) ctx.getControllerContext().getAttribute(
-					Scope.REQUEST_SCOPE, "pia.publicationInfos." + path);
-
-			if (pubInfos == null) {
-
-				pubInfos = new CMSPublicationInfos();
-
-				pubInfos.setDocumentPath(path);
-
-				if (path.startsWith("/default-domain/workspaces/seria")) {
-					pubInfos.setWorkspaceDisplayName("SERIA");
-					pubInfos.setWorkspacePath("/default-domain/workspaces/seria");
-					pubInfos.setPublished(false);
-					pubInfos.getErrorCodes().add(CMSPublicationInfos.ERROR_PUBLISH_SPACE_NOT_FOUND);
-				} else {
-
-					// A remplacer par l'opération
-					CMSItem publishSpace = null;
-					try {
-						publishSpace = getPortalPublishSpace(ctx, path);
-					} catch (CMSException e) {
-
-					}
-
-					if (publishSpace != null) {
-						pubInfos.setPublishSpaceDisplayName(publishSpace.getProperties().get("displayName"));
-						pubInfos.setPublishSpacePath(publishSpace.getPath());
-						pubInfos.setPublished(true);
-					}
-				}
-
-				ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE, "pia.publicationInfos." + path, pubInfos);
-			}
-
-			return pubInfos;
-
-		} catch (Exception e) {
-			if (!(e instanceof CMSException))
-				throw new CMSException(e);
-			else
-				throw (CMSException) e;
-		}
-	}
-
+	
 	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String docIdent) throws CMSException {
 		CMSPublicationInfos pubInfos = null;
 
@@ -395,6 +354,11 @@ public class CMSService implements ICMSService {
 
 			if (pubInfos == null) {
 				pubInfos = new CMSPublicationInfos();
+				
+				String savedScope = ctx.getScope();
+				
+				try	{
+					ctx.setScope(null);
 
 				Map<String, Object> cmsInfos = (Map<String, Object>) executeNuxeoCommand(ctx, (new PublishInfosCommand(
 						docIdent)));
@@ -409,13 +373,14 @@ public class CMSService implements ICMSService {
 					}
 				}
 				pubInfos.setErrorCodes(errors);
-				pubInfos.setDocumentPath((String) cmsInfos.get("documentPath"));
+				pubInfos.setDocumentPath( (String) cmsInfos.get("documentPath"));
 				pubInfos.setLiveId((String) cmsInfos.get("liveId"));
 				pubInfos.setPublishSpaceDisplayName((String) cmsInfos.get("publishSpaceDisplayName"));
 				pubInfos.setPublishSpaceInContextualization(((Boolean) cmsInfos.get("publishSpaceInContextualization"))
 						.booleanValue());
 				pubInfos.setPublishSpacePath((String) cmsInfos.get("publishSpacePath"));
 				pubInfos.setWorkspaceDisplayName((String) cmsInfos.get("workspaceDisplayName"));
+				pubInfos.setPublishSpaceType((String) cmsInfos.get("publishSpaceType"));
 				pubInfos.setWorkspaceInContextualization(((Boolean) cmsInfos.get("workspaceInContextualization"))
 						.booleanValue());
 				pubInfos.setWorkspacePath((String) cmsInfos.get("workspacePath"));
@@ -425,6 +390,9 @@ public class CMSService implements ICMSService {
 
 				ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE, "pia.publicationInfos." + docIdent,
 						pubInfos);
+				} finally	{
+					ctx.setScope(savedScope);
+				}
 
 			}
 

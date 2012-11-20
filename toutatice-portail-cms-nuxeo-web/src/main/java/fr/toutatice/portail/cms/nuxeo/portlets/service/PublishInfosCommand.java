@@ -3,6 +3,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,13 +44,19 @@ public class PublishInfosCommand implements INuxeoCommand {
 			while (it.hasNext()) {
 				JSONObject obj = (JSONObject) it.next();
 				infos.put("errorCodes", obj.get("errorCodes"));
-				infos.put("documentPath", obj.get("documentPath"));
+				if( obj.get("documentPath") != null)
+					infos.put("documentPath",  URLDecoder.decode((String) obj.get("documentPath"), "UTF-8"));
 				infos.put("liveId", obj.get("liveId"));
-				infos.put("publishSpacePath", obj.get("publishSpacePath"));
-				infos.put("publishSpaceDisplayName", obj.get("publishSpaceDisplayName"));
+				if( obj.get("publishSpacePath") != null)
+					infos.put("publishSpacePath",  URLDecoder.decode((String)obj.get("publishSpacePath"), "UTF-8"));
+				if( obj.get("publishSpaceDisplayName") != null)
+					infos.put("publishSpaceDisplayName",  URLDecoder.decode((String)obj.get("publishSpaceDisplayName"), "UTF-8"));
 				infos.put("publishSpaceInContextualization", obj.get("publishSpaceInContextualization"));
-				infos.put("workspacePath", obj.get("workspacePath"));
-				infos.put("workspaceDisplayName", obj.get("workspaceDisplayName"));
+				infos.put("publishSpaceType", obj.get("publishSpaceType"));
+				if( obj.get("workspacePath") != null)
+					infos.put("workspacePath",  URLDecoder.decode((String)obj.get("workspacePath"), "UTF-8"));
+				if( obj.get("workspaceDisplayName") != null)
+					infos.put("workspaceDisplayName",  URLDecoder.decode((String) obj.get("workspaceDisplayName"), "UTF-8"));
 				infos.put("workspaceInContextualization", obj.get("workspaceInContextualization"));
 				infos.put("editableByUser", obj.get("editableByUser"));
 				infos.put("published", obj.get("published"));

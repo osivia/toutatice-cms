@@ -1,11 +1,14 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.List;
+import java.util.Locale;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
+import org.jboss.portal.core.model.portal.Page;
+import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.api.contexte.PortalControllerContext;
@@ -18,6 +21,7 @@ import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
+
 
 /**
  * Menu bar associée aux contenus
@@ -66,17 +70,16 @@ public class MenuBarFormater {
 		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
 
 		// Menu bar
-		
-		try{
 
-		getPermaLinkLink(cmsCtx, menuBar);
+		try {
 
-		getContextualizationLink(cmsCtx, menuBar);
+			getPermaLinkLink(cmsCtx, menuBar);
 
-		getAdministrationLink(cmsCtx, menuBar);
-		} 	catch(CMSException e)	{
-			if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN
-					|| e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+			getContextualizationLink(cmsCtx, menuBar);
+
+			getAdministrationLink(cmsCtx, menuBar);
+		} catch (CMSException e) {
+			if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN || e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
 				// On ne fait rien : le document n'existe pas ou je n'ai pas
 				// les droits
 			} else
@@ -113,66 +116,93 @@ public class MenuBarFormater {
 		}
 	}
 
-	protected void addContextualizationLinkItem(List<MenubarItem> menuBar, Document doc, String url) throws Exception {
+	protected void addContextualizationLinkItem(List<MenubarItem> menuBar, String displayName, String url) throws Exception {
 		
 		
 
-		MenubarItem item = new MenubarItem("Espace " + doc.getTitle(), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
+		MenubarItem item = new MenubarItem("Espace " + displayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
 				null, "portlet-menuitem-contextualize", null);
 
 		item.setAjaxDisabled(true);
 		menuBar.add(item);
 
 	}
+	
+	
+	
+	
 
+	/**
+	 * Affiche un lien de recontextualisation explicite
+	 * (dans une page existante ou une nouvelle page)
+	 * 
+	 * @param cmsCtx
+	 * @param menuBar
+	 * @throws Exception
+	 */
 	protected void getContextualizationLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
 		if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState()))
 			return;
+
+		PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+				cmsCtx.getResponse());
+
+		Page currentPage = null;
+
+		Window window = (Window) cmsCtx.getRequest().getAttribute("pia.window");
+		if (window != null)
+			currentPage = window.getPage();
+
+		// On regarde dans quelle page le contenu ext contextualisé
 		
-		
-//		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
-//			return;
-		
+		Page page = getPortalUrlFactory().getPortalCMSContextualizedPage(portalCtx,
+				(((Document) (cmsCtx.getDoc())).getPath()));
 
+		// Si la page correspond à la page courant on affiche pas le lien
+		if (page == null || !page.getId().equals(currentPage.getId())) {
 
-		String url = getPortalUrlFactory().getCMSUrl(
-				new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
-				(((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, null,
-				null, null, null, null);
+			// On détermine le nom de l'espace
+			
+			String spaceDisplayName = null;
 
-		if (url != null) {
+			if (page != null) {
+				// Soit le nom de la page
+				Locale locale = Locale.FRENCH;
+				spaceDisplayName = page.getDisplayName().getString(locale, true);
+				if (spaceDisplayName == null)
+					spaceDisplayName = page.getName();
 
-
-				//CMSItem publishSpace = (CMSItem) CMSService.getPortalPublishSpace(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
-				//addContextualizationLinkItem(menuBar, (Document) publishSpace.getNativeItem(), url);
+			} else {
+				// Soit le nom de l'espace de publication
 				
-				CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
-				
-				String spaceDisplayName = null;
-				
-				if( pubInfos.getPublishSpacePath() != null && pubInfos.isPublishSpaceInContextualization())	{
-					spaceDisplayName =  pubInfos.getPublishSpaceDisplayName();
-					
-				}	else	{
-					if( pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization())	{
-						spaceDisplayName =  pubInfos.getWorkspaceDisplayName();
+				CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx,
+						(((Document) (cmsCtx.getDoc())).getPath()));
+
+				if (pubInfos.getPublishSpacePath() != null) {
+					if (pubInfos.isPublishSpaceInContextualization())
+						spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
+
+				} else {
+					if (pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization()) {
+						spaceDisplayName = pubInfos.getWorkspaceDisplayName();
 					}
 				}
-				
-				if( spaceDisplayName != null){
-					MenubarItem item = new MenubarItem("Espace " + spaceDisplayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url,
-						null, "portlet-menuitem-contextualize", null);
+			}
 
-					item.setAjaxDisabled(true);
-					menuBar.add(item);
-				}
-
+			if (spaceDisplayName != null) {
 				
 
-			}	
-			
+				String url = getPortalUrlFactory().getCMSUrl(
+						new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
+						null, (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL,
+						null, null, null, null, null);
+				
+				addContextualizationLinkItem( menuBar, spaceDisplayName,  url) ;
+				
+			}
 
+		}
 
 		return;
 	}
@@ -204,4 +234,8 @@ public class MenuBarFormater {
 		}
 
 	}
+	
+	
+	
+	
 }
