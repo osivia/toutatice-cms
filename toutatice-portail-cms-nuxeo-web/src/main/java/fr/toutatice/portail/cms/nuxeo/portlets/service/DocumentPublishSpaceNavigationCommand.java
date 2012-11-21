@@ -48,9 +48,9 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		request = session.newRequest("Document.Query");
 
-		// TODO : ajouter filtre showInMenu
+		// TODO : gerer le PortalVirtualPage de maniere générique
 		
-		String nuxeoRequest = "( ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 )";
+		String nuxeoRequest = "( ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
 		
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live);

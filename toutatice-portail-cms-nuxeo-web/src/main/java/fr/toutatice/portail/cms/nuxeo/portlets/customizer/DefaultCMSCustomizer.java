@@ -307,6 +307,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
 	}
+
+	
+	public CMSHandlerProperties getCMSVirtualPagePlayer(CMSServiceCtx ctx) throws CMSException {
+
+		Document doc = (Document) ctx.getDoc();
+
+		Map<String, String> windowProperties = new HashMap<String, String>();
+		windowProperties.put("pia.nuxeoRequest", doc.getString("ttc:queryPart"));
+		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+		windowProperties.put("pia.cms.scope", ctx.getScope());
+		//windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("pia.cms.pageSizeMax", "10");
+		Map<String, String> params = new HashMap<String, String>();
+
+		CMSHandlerProperties linkProps = new CMSHandlerProperties();
+		linkProps.setWindowProperties(windowProperties);
+		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+		return linkProps;
+
+	}
+	
 	
 
 	public CMSHandlerProperties createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid)
@@ -361,6 +387,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) ) {
 			return getCMSFolderPlayer(ctx);
 		} 
+		
+		if ("PortalVirtualPage".equals(doc.getType())) {
+			return getCMSVirtualPagePlayer(ctx);
+		}
 		
 		return getCMSDefaultPlayer(ctx);
 
