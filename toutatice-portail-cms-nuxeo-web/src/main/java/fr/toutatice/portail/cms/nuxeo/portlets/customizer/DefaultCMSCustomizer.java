@@ -119,6 +119,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	}
 
+	
+
 	public CMSHandlerProperties getCMSDefaultPlayer(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
@@ -126,13 +128,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Map<String, String> windowProperties = new HashMap<String, String>();
 
 		windowProperties.put("pia.cms.scope", ctx.getScope());
-
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
 		windowProperties.put("pia.cms.uri", doc.getPath());
 		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -195,7 +197,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		windowProperties.put("pia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("pia.cms.displayLiveVersion",ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", "1");
 		windowProperties.put("pia.title", "Annonces " + doc.getTitle());
 
@@ -334,10 +336,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	
 	
 	
-	/*
-	 * On détermine le player associé à chaque item
-	 */
-
 
 	/*
 	 * On détermine le player associé à chaque item
