@@ -3,10 +3,10 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -19,55 +19,69 @@ import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 
 public class PublishInfosCommand implements INuxeoCommand {
 
 	protected static Log logger = LogFactory.getLog(PublishInfosCommand.class);
 
-	private final String inputNuxeoDocIdent;
+	private final String path;
 
-	public PublishInfosCommand(String inputIdentDoc) {
-		this.inputNuxeoDocIdent = inputIdentDoc;
+	public PublishInfosCommand(String path) {
+		this.path = path;
 	}
 
-	public Map<String, Object> execute(Session automationSession) throws Exception {
-		Map<String, Object> infos = new HashMap<String, Object>();
+	public CMSPublicationInfos execute(Session automationSession) throws Exception {
+		CMSPublicationInfos publiInfos = null;
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
-		request.set("docIdent", inputNuxeoDocIdent);
+		request.set("path", path);
 		Blob binariesInfos = (Blob) request.execute();
 
 		if (binariesInfos != null) {
+			publiInfos = new CMSPublicationInfos();
 			String content = FileUtils.read(binariesInfos.getStream());
-			JSONArray rows = JSONArray.fromObject(content);
-			Iterator it = rows.iterator();
+			JSONArray row = JSONArray.fromObject(content);
+			Iterator it = row.iterator();
 			while (it.hasNext()) {
 				JSONObject obj = (JSONObject) it.next();
-				infos.put("errorCodes", obj.get("errorCodes"));
-				if( obj.get("documentPath") != null)
-					infos.put("documentPath",  URLDecoder.decode((String) obj.get("documentPath"), "UTF-8"));
-				infos.put("liveId", obj.get("liveId"));
-				if( obj.get("publishSpacePath") != null)
-					infos.put("publishSpacePath",  URLDecoder.decode((String)obj.get("publishSpacePath"), "UTF-8"));
-				if( obj.get("publishSpaceDisplayName") != null)
-					infos.put("publishSpaceDisplayName",  URLDecoder.decode((String)obj.get("publishSpaceDisplayName"), "UTF-8"));
-				infos.put("publishSpaceInContextualization", obj.get("publishSpaceInContextualization"));
-				infos.put("publishSpaceType", obj.get("publishSpaceType"));
-				if( obj.get("workspacePath") != null)
-					infos.put("workspacePath",  URLDecoder.decode((String)obj.get("workspacePath"), "UTF-8"));
-				if( obj.get("workspaceDisplayName") != null)
-					infos.put("workspaceDisplayName",  URLDecoder.decode((String) obj.get("workspaceDisplayName"), "UTF-8"));
-				infos.put("workspaceInContextualization", obj.get("workspaceInContextualization"));
-				infos.put("editableByUser", obj.get("editableByUser"));
-				infos.put("published", obj.get("published"));
-				infos.put("anonymouslyReadable", obj.get("anonymouslyReadable"));
+				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
+				publiInfos.setDocumentPath(decode((String) obj.get("documentPath")));
+				publiInfos.setLiveId((String) obj.get("liveId"));
+				publiInfos.setPublishSpacePath(decode((String) obj.get("publishSpacePath")));
+				publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
+				publiInfos.setPublishSpaceInContextualization((Boolean) obj.get("publishSpaceInContextualization"));
+				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
+				publiInfos.setWorkspacePath(decode((String) obj.get("workspacePath")));
+				publiInfos.setWorkspaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
+				publiInfos.setWorkspaceInContextualization((Boolean) obj.get("workspaceInContextualization"));
+
+				publiInfos.setEditableByUser((Boolean) obj.get("editableByUser"));
+				publiInfos.setPublished((Boolean) obj.get("published"));
+				publiInfos.setAnonymouslyReadable((Boolean) obj.get("anonymouslyReadable"));
 			}
 
 		}
-		return infos;
+		return publiInfos;
 	}
 
 	public String getId() {
-		return "PublishInfosCommand" + inputNuxeoDocIdent;
+		return "PublishInfosCommand" + path;
 	}
+
+	/**
+	 * Décode une chaîne de caractères en UTF-8
+	 * 
+	 * @param value
+	 *            chaîne de caractères à décoder
+	 * @return la chaîne de caractères décodée
+	 * @throws UnsupportedEncodingException
+	 */
+	private String decode(String value) throws UnsupportedEncodingException {
+		if (value != null) {
+			return URLDecoder.decode(value, "UTF-8");
+		}
+		return value;
+	}
+
 }

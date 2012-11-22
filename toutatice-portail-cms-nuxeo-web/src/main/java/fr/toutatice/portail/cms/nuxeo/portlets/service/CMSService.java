@@ -1,6 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -235,11 +234,6 @@ public class CMSService implements ICMSService {
 		// Not possible
 		return null;
 	}
-	
-	
-	
-	
-	
 
 	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
@@ -344,53 +338,38 @@ public class CMSService implements ICMSService {
 
 	}
 
-	
-	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String docIdent) throws CMSException {
-		CMSPublicationInfos pubInfos = null;
+	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+		/* Instanciation pour que la méthode soit techniquement "null safe" */
+		CMSPublicationInfos pubInfos = new CMSPublicationInfos();
 
 		try {
 			pubInfos = (CMSPublicationInfos) ctx.getControllerContext().getAttribute(Scope.REQUEST_SCOPE,
-					"pia.publicationInfos." + docIdent);
+					"pia.publicationInfos." + path);
 
 			if (pubInfos == null) {
-				pubInfos = new CMSPublicationInfos();
-				
+
 				String savedScope = ctx.getScope();
-				
-				try	{
+
+				try {
 					ctx.setScope(null);
 
-				Map<String, Object> cmsInfos = (Map<String, Object>) executeNuxeoCommand(ctx, (new PublishInfosCommand(
-						docIdent)));
+					pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
-				List<Integer> errors = (List<Integer>) cmsInfos.get("errorCodes");
-				if (errors != null) {
-					if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
-						throw new CMSException(CMSException.ERROR_FORBIDDEN);
-					}
-					if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
-						throw new CMSException(CMSException.ERROR_NOTFOUND);
-					}
-				}
-				pubInfos.setErrorCodes(errors);
-				pubInfos.setDocumentPath( (String) cmsInfos.get("documentPath"));
-				pubInfos.setLiveId((String) cmsInfos.get("liveId"));
-				pubInfos.setPublishSpaceDisplayName((String) cmsInfos.get("publishSpaceDisplayName"));
-				pubInfos.setPublishSpaceInContextualization(((Boolean) cmsInfos.get("publishSpaceInContextualization"))
-						.booleanValue());
-				pubInfos.setPublishSpacePath((String) cmsInfos.get("publishSpacePath"));
-				pubInfos.setWorkspaceDisplayName((String) cmsInfos.get("workspaceDisplayName"));
-				pubInfos.setPublishSpaceType((String) cmsInfos.get("publishSpaceType"));
-				pubInfos.setWorkspaceInContextualization(((Boolean) cmsInfos.get("workspaceInContextualization"))
-						.booleanValue());
-				pubInfos.setWorkspacePath((String) cmsInfos.get("workspacePath"));
-				pubInfos.setEditableByUser((Boolean) cmsInfos.get("editableByUser"));
-				pubInfos.setPublished(((Boolean) cmsInfos.get("published")).booleanValue());
-				pubInfos.setAnonymouslyReadable(((Boolean) cmsInfos.get("anonymouslyReadable")).booleanValue());
+					if (pubInfos != null) {
+						List<Integer> errors = pubInfos.getErrorCodes();
+						if (errors != null) {
+							if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+								throw new CMSException(CMSException.ERROR_FORBIDDEN);
+							}
+							if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+								throw new CMSException(CMSException.ERROR_NOTFOUND);
+							}
+						}
 
-				ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE, "pia.publicationInfos." + docIdent,
-						pubInfos);
-				} finally	{
+						ctx.getControllerContext().setAttribute(Scope.REQUEST_SCOPE, "pia.publicationInfos." + path,
+								pubInfos);
+					}
+				} finally {
 					ctx.setScope(savedScope);
 				}
 
