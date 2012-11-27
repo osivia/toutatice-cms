@@ -48,6 +48,7 @@ import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSObjectPath;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
@@ -76,7 +77,9 @@ public class NuxeoController {
 	String basePath;
 	String navigationPath;	
 	String contentPath;
+	String spacePath;
 	
+
 	String hideMetaDatas;
 	String displayContext;
 	String navigationScope = null;
@@ -85,6 +88,8 @@ public class NuxeoController {
 	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
+	
+	
 	public Document getCurrentDoc() {
 		return currentDoc;
 	}
@@ -94,7 +99,12 @@ public class NuxeoController {
 	PortalControllerContext portalCtx;	
 	
 
-
+	public String getSpacePath() {
+		return spacePath;
+	}
+	public void setSpacePath(String spacePath) {
+		this.spacePath = spacePath;
+	}
 
 	public String getBasePath() {
 		
@@ -304,10 +314,38 @@ public class NuxeoController {
 		
 		setPageMarker((String) request.getAttribute("pia.pageMarker"));
 		
-		basePath = window.getPageProperty("pia.cms.basePath");
+		spacePath = window.getPageProperty("pia.cms.basePath");
+		
+		
+		Window jbpWindow = (Window) request.getAttribute("pia.window");
+		Page page = (Page) jbpWindow.getParent();
+		
+
+		if( "cms".equals(page.getPortal().getProperty("pia.navigationMode")))	{
+			
+			// En navigation CMS, on descend d'un niveau par rapport à l'espace pour déterminer le path de la page
+			basePath = request.getParameter("pia.cms.path");
+			if( basePath != null)	{
+			CMSObjectPath parent = CMSObjectPath.parse(basePath).getParent();
+			String parentPath= parent.toString();
+
+			while ( parentPath.contains(spacePath) && !(parentPath.equals(spacePath)))	{
+				  
+				 basePath = parentPath.toString();
+				 
+				 parent = CMSObjectPath.parse(basePath).getParent();
+				 parentPath= parent.toString();
+				 
+			 }
+			}
+		}
+		else
+			basePath = window.getPageProperty("pia.cms.basePath");
+		
+		
 		navigationPath =  request.getParameter("pia.cms.path");
-		if	(basePath != null && request.getParameter("pia.cms.itemRelPath") != null)
-			contentPath = basePath + request.getParameter("pia.cms.itemRelPath");
+		if	(spacePath != null && request.getParameter("pia.cms.itemRelPath") != null)
+			contentPath = spacePath + request.getParameter("pia.cms.itemRelPath");
 		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
@@ -326,7 +364,7 @@ public class NuxeoController {
 				//TODO : factoriser dans NuxeoController
 
 				INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-				navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext,  getBasePath(), getNavigationPath());
+				navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext,  getSpacePath(), getNavigationPath());
 			}
 				
 		}

@@ -141,14 +141,14 @@ public class MenuPortlet extends CMSPortlet {
 	}
 
 	private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
-			int curLevel, int maxLevel, String basePath, String nuxeoPath, boolean isParentNavigable) throws Exception {
+			int curLevel, int maxLevel, String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable) throws Exception {
 		
 		
 		//TODO : factoriser dans NuxeoController
 
 		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
 		
-		CMSItem navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext, basePath, nuxeoPath);
+		CMSItem navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext, spacePath, nuxeoPath);
 		
 		if( navItem == null)
 			return null;
@@ -194,7 +194,7 @@ public class MenuPortlet extends CMSPortlet {
 				
 				if ( "1".equals(child.getProperties().get("menuItem")) )	{
 					
-					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")));
+					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, spacePath, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")));
 					if( newItem != null)
 						displayItem.getChildrens().add(	newItem);
 				}
@@ -223,15 +223,13 @@ public class MenuPortlet extends CMSPortlet {
 
 			String nuxeoPath = null;
 
-			// portal window parameter (appels dynamiques depuis le portail)
-			nuxeoPath = window.getPageProperty("pia.cms.basePath");
 
 			// logger.debug("doView "+ uid);
+			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+
+			if (ctx.getBasePath() != null) {
 
 
-			if (nuxeoPath != null) {
-
-				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
 				// rafraichir en asynchrone
 				ctx.setAsynchronousUpdates(true);
@@ -258,7 +256,7 @@ public class MenuPortlet extends CMSPortlet {
 				
 
 				NavigationDisplayItem displayItem = createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
-						getPortletContext(), request, response), 0, maxLevels, nuxeoPath, nuxeoPath, true);
+						getPortletContext(), request, response), 0, maxLevels, ctx.getSpacePath(), ctx.getBasePath(),  ctx.getBasePath(), true);
 				
 				if( displayItem != null)	{
 
