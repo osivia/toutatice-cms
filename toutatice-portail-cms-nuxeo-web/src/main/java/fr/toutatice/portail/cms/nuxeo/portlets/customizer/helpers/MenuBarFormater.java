@@ -8,6 +8,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
 import org.jboss.portal.core.model.portal.Page;
+import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
@@ -195,7 +196,7 @@ public class MenuBarFormater {
 
 				String url = getPortalUrlFactory().getCMSUrl(
 						new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
-						null, (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL,
+						currentPage.getId().toString(PortalObjectPath.CANONICAL_FORMAT), (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL,
 						null, null, null, null, null);
 				
 				addContextualizationLinkItem( menuBar, spaceDisplayName,  url) ;

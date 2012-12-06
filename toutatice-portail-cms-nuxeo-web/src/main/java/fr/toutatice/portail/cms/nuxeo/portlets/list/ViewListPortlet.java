@@ -568,6 +568,10 @@ public class ViewListPortlet extends CMSPortlet {
 							}
 							}
 						}
+						
+						// Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
+						if( currentPage == 0 && docs.size() == 0)
+							request.setAttribute("pia.emptyResponse", "1");
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 

@@ -321,7 +321,7 @@ public class NuxeoController {
 		Page page = (Page) jbpWindow.getParent();
 		
 
-		if( "cms".equals(page.getPortal().getProperty("pia.navigationMode")))	{
+		if( "cms".equals(page.getProperty("pia.navigationMode")))	{
 			
 			// En navigation CMS, on descend d'un niveau par rapport à l'espace pour déterminer le path de la page
 			basePath = request.getParameter("pia.cms.path");

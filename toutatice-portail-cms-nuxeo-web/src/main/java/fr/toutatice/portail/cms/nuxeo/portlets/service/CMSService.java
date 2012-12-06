@@ -238,8 +238,9 @@ public class CMSService implements ICMSService {
 	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
 		try {
-
-			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
+			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)
+			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
 
 			boolean live = false;
 			if (pubInfos.getPublishSpacePath() == null)
@@ -282,8 +283,10 @@ public class CMSService implements ICMSService {
 	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
 		try {
-
-			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
+			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)			
+			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
+			
 
 			boolean live = false;
 			if (pubInfos.getPublishSpacePath() == null)
