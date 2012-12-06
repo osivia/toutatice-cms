@@ -67,6 +67,7 @@ public class NuxeoController {
 	PortletResponse response;
 	PortletContext portletCtx;
 	IPortalUrlFactory urlFactory;
+	INuxeoService nuxeoCMSService;
 	String pageId;
 	URI nuxeoBaseURI;
 	NuxeoConnectionProperties nuxeoConnection;
@@ -353,6 +354,8 @@ public class NuxeoController {
 	}
 	
 	
+	
+	
 	public CMSItem getNavigationItem()	throws Exception {
 		if( navItem == null){
 			if( getNavigationPath() != null){
@@ -381,6 +384,9 @@ public class NuxeoController {
 		super();
 		this.portletCtx = portletCtx;
 	}
+	
+	
+	
 
 	public IPortalUrlFactory getPortalUrlFactory( ) throws Exception{
 		if (urlFactory == null)
@@ -410,6 +416,16 @@ public class NuxeoController {
 
 		return formatter;
 	}
+	
+	
+	
+
+	public INuxeoService getNuxeoCMSService()		{
+		if( nuxeoCMSService == null)
+			nuxeoCMSService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		return nuxeoCMSService;
+	}
+	
 
 	public String getPageId() {
 		if (pageId == null) {

@@ -5,7 +5,7 @@
 <deployments>
 
 	<deployment>
-	<if-exists>overwrite</if-exists>	
+	
 		<instance>
 			<display-name xml:lang="en">Toutatice - Nuxeo display document</display-name>
 			<display-name xml:lang="fr">Toutatice - Nuxeo affichage document</display-name>
@@ -15,8 +15,6 @@
             	<policy-permission>
                		<action-name>admin</action-name>
                		<role-name>Administrators</role-name>
-               		<action-name>admin</action-name>
-               		<role-name>Agents</role-name>
            		 </policy-permission>
             	<policy-permission>
                <action-name>view</action-name>
@@ -26,6 +24,26 @@
 		</instance>		
 	</deployment>
 	
+	<deployment>
+		<instance>
+			<display-name xml:lang="en">Toutatice - Nuxeo display fragment</display-name>
+			<display-name xml:lang="fr">Toutatice - Nuxeo affichage fragment</display-name>
+			<instance-id>toutatice-portail-cms-nuxeo-viewFragmentPortletInstance</instance-id>
+			<portlet-ref>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-ref>
+      		<security-constraint>
+            	<policy-permission>
+               		<action-name>admin</action-name>
+               		<role-name>Administrators</role-name>
+           		 </policy-permission>
+            	<policy-permission>
+               <action-name>view</action-name>
+               		<unchecked/>
+            	</policy-permission>
+         	</security-constraint>			
+		</instance>		
+	</deployment>
+
+
 
 	<deployment>
 		<instance>

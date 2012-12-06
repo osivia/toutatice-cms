@@ -36,6 +36,39 @@
         
 	</portlet>
 	
+	
+	<portlet>
+	
+	   	<description>Portlet Nuxeo Fragment PIA</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
+        <display-name>Portlet Fragment Nuxeo</display-name>
+		
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.fragment.ViewFragmentPortlet</portlet-class>
+        
+        <expiration-cache>180</expiration-cache>
+   		        
+        <supports>
+			<mime-type>text/html</mime-type>
+          	<portlet-mode>view</portlet-mode>
+			<portlet-mode>admin</portlet-mode>
+ 		</supports>
+
+        <supported-locale>en</supported-locale>
+    	<supported-locale>fr</supported-locale>        
+
+		<portlet-info>
+			<title>Nuxeo Cms </title>
+			<short-title>Nuxeo Cms Portlet</short-title>
+			<keywords>Portlet,Nuxeo,CMS</keywords>
+        </portlet-info>
+        
+        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        
+	</portlet>
+	
+	
 	<portlet>
 	
 	   	<description>Portlet Nuxeo list</description>
