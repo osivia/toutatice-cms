@@ -27,6 +27,7 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 	
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="50"><br/>
+			<label>Nom de la propriété (ex: 'dc:title')</label><br/>
 			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
 			<label>Scope</label><br/>
 			<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
