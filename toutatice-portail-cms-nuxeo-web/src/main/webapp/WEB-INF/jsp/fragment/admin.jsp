@@ -1,5 +1,7 @@
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.fragment.FragmentType"%>
+
+
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 

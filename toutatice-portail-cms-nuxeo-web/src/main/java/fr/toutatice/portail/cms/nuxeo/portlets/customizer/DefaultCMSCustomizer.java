@@ -19,6 +19,8 @@ import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdaptor;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.cms.CMSException;
@@ -77,6 +79,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
 	}
 	
+	
+	
+	
 	public UserPagesLoader getUserPagesLoader()	{
 		if( userPagesLoader == null){
 			userPagesLoader = new UserPagesLoader(portletCtx, this, getCMSService());
@@ -111,6 +116,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		templates.add(new ListTemplate(STYLE_EDITORIAL, "Editorial [vignette, titre, description]", DEFAULT_SCHEMAS));
 
 		return templates;
+	}
+	
+	
+	
+	public static List<FragmentType> getFragmentTypes() {
+		
+
+		List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
+		
+		fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
+		fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
+		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
+
+		return fragmentTypes;
 	}
 
 	public static String getSearchSchema() {
