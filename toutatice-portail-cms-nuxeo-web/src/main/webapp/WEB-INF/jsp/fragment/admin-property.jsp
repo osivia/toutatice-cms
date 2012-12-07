@@ -36,7 +36,6 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 			
 		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
 
-		</form>
 	</div>
 	
 	

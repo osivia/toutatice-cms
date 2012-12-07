@@ -134,20 +134,26 @@ public class CMSService implements ICMSService {
 
 		// Par défaut
 		commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
-		commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
+		commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
 		if (scope != null) {
 			if (!"__nocache".equals(scope)) {
 
 				// commandCtx.setAsynchronousUpdates(true);
-
-				if ("anonymous".equals(scope)) {
-					commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
-					commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+				
+				
+				if ("user_session".equals(scope))	{
+					commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
+					commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
 				} else {
-					commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
-					commandCtx.setAuthProfil(getProfilManager().getProfil(scope));
-					commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+					if ("anonymous".equals(scope)) {
+						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+					} else {
+						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
+						commandCtx.setAuthProfil(getProfilManager().getProfil(scope));
+						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+					}
 				}
 			}
 		}
@@ -241,22 +247,26 @@ public class CMSService implements ICMSService {
 			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
 			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
-
+			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
 			boolean live = false;
 			if (pubInfos.getPublishSpacePath() == null)
 				live = true;
+			
+			if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
+				cmsCtx.setScope("user_session");
+			}
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
 
 			if (navItems != null) {
-				NavigationItem navItem = navItems.get(path);
+				NavigationItem navItem = navItems.get(livePath);
 				if (navItem != null) {
 
 					CMSItem item = navItem.getAdaptedCMSItem();
 					if (item == null) {
 						if (navItem.getMainDoc() != null)
-							navItem.setAdaptedCMSItem(createNavigationItem(cmsCtx, path, navItem.getMainDoc()
+							navItem.setAdaptedCMSItem(createNavigationItem(cmsCtx, livePath, navItem.getMainDoc()
 									.getTitle(), navItem.getMainDoc(), publishSpacePath));
 						else
 							return null;
@@ -287,10 +297,15 @@ public class CMSService implements ICMSService {
 			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)			
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
 			
+			
 
 			boolean live = false;
 			if (pubInfos.getPublishSpacePath() == null)
 				live = true;
+			
+			if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
+				cmsCtx.setScope("user_session");
+			}
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
@@ -301,7 +316,7 @@ public class CMSService implements ICMSService {
 					List<CMSItem> childrens = new ArrayList<CMSItem>();
 					for (Document child : navItem.getChildren()) {
 
-						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath, child.getPath()));
+						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath,child.getPath()));
 
 					}
 					return childrens;

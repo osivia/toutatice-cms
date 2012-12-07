@@ -155,7 +155,7 @@ public class MenuPortlet extends CMSPortlet {
 		
 		Document doc = (Document) navItem.getNativeItem();
 		
-		
+		String navPath = (String) navItem.getPath();
 		
 		// Get root publish page
 
@@ -165,18 +165,13 @@ public class MenuPortlet extends CMSPortlet {
 		boolean selected = false;
 
 		
-		
-		String categoryPath = portalCtx.getRequest().getParameter("pia.cms.path");
-		
-		String itemRelativePath = portalCtx.getRequest().getParameter("pia.cms.itemRelPath");
-		if( itemRelativePath != null)
-			categoryPath += itemRelativePath;
+		String itemPath = ctx.getContentPath();
 
 
-		if (categoryPath != null)	{ 
-			categoryPath += "/";
+		if (itemPath != null)	{ 
+			itemPath += "/";
 			
-			if( categoryPath.startsWith(doc.getPath() + "/") && isParentNavigable)	
+			if( itemPath.startsWith(navPath + "/") && isParentNavigable)	
 			// non navigational items are not selected
 			// because children elements are managed at portlet level and not CMS levels
 			// So selection can not be sure

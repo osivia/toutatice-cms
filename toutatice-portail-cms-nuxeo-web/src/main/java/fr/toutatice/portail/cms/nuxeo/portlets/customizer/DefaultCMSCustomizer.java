@@ -23,6 +23,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPict
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.cms.CMSException;
 import fr.toutatice.portail.core.cms.CMSHandlerProperties;
 import fr.toutatice.portail.core.cms.CMSItem;
@@ -178,15 +179,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		String nuxeoRequest = null;
 
 		Document doc = (Document) ctx.getDoc();
+		
+		CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(ctx, doc.getPath());
 
 		if (ctx.getContextualizationBasePath() != null) {
 			// Publication dans un environnement contextualisé
 			// On se sert du menu de navigation et on décompose chaque niveau
 
-			nuxeoRequest = " (ecm:parentId = '" + doc.getId() + "' AND ecm:mixinType != 'Folderish' )";
+			nuxeoRequest = " (ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish' )";
 
 			List<CMSItem> navItems = getCMSService().getPortalNavigationSubitems(ctx,
-					ctx.getContextualizationBasePath(), doc.getPath());
+					ctx.getContextualizationBasePath(), DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
 
 			for (CMSItem curItem : navItems) {
 				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
@@ -197,7 +200,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			}
 
 		} else {
-			nuxeoRequest = "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ";
+			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
 			
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";

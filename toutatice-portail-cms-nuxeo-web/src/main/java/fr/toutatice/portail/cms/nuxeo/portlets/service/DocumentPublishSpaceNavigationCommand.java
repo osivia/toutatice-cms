@@ -35,6 +35,13 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		this.live = live;
 	}
 
+	public static String  computeNavPath(String path){
+		String result = path;
+		if( path.endsWith(".proxy"))
+			result = result.substring(0, result.length() - 6);
+		return result;
+	}
+	
 	public Object execute(Session session) throws Exception {
 
 		/*
@@ -50,7 +57,12 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		// TODO : gerer le PortalVirtualPage de maniere générique
 		
-		String nuxeoRequest = "( ecm:path = '" + path + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
+		String spacePath = path;
+		if( !live)
+			spacePath += ".proxy";
+		
+		String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
+		
 		
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live);
@@ -76,20 +88,21 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			NavigationItem navItem;
 
 			/* Update current Item */
-
-			navItem = navItems.get(child.getPath());
+			String navPath = computeNavPath(child.getPath());
+			
+			navItem = navItems.get(navPath);
 			if (navItem == null) {
 
 				navItem = new NavigationItem();
-				navItems.put(child.getPath(), navItem);
+				navItems.put(navPath, navItem);
 			}
 			navItem.setMainDoc(child);
 
 			/* Update parent children */
 
-			String parentPath = child.getPath().substring(0, child.getPath().lastIndexOf('/'));
+			String parentPath = navPath.substring(0, navPath.lastIndexOf('/'));
 			if( parentPath.contains(path))	{
-			navItem = navItems.get(parentPath);
+				navItem = navItems.get(parentPath);
 			if (navItem == null) {
 				navItem = new NavigationItem();
 				navItems.put(parentPath, navItem);

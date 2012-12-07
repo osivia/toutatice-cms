@@ -40,6 +40,7 @@ import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -223,7 +224,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 				/* Récupération des fils */
 				
 				
-				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(doc, ctx.isDisplayingLiveVersion()));
+				CMSPublicationInfos pubInfos = ctx.getNuxeoCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
+				
+				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion()));
 				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();

@@ -11,12 +11,14 @@ import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 
 public class FolderGetFilesCommand implements INuxeoCommand {
 	
-	Document folder;
+	String folderId;
+	String folderPath;
 	boolean displayLiveVersion;	
 	
-	public FolderGetFilesCommand(Document folder,  boolean displayLiveVersion) {
+	public FolderGetFilesCommand(String folderPath, String folderId,  boolean displayLiveVersion) {
 		super();
-		this.folder = folder;
+		this.folderId = folderId;
+		this.folderPath = folderPath;
 		this.displayLiveVersion = displayLiveVersion;
 	}
 	
@@ -32,7 +34,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 
 			request =  session.newRequest("Document.Query");
 
-			String nuxeoRequest = "ecm:parentId = '" + folder.getId()+ "' ORDER BY ecm:pos ";
+			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ORDER BY ecm:pos ";
 			
 			
 			// Insertion du filtre sur les élements publiés
@@ -50,7 +52,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "FolderGetFilesCommand/" + displayLiveVersion + "/" + folder.getPath();
+		return "FolderGetFilesCommand/" + displayLiveVersion + "/" +folderPath;
 	};		
 
 }

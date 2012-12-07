@@ -95,13 +95,15 @@ public class NavigationItemAdaptor {
 		/* Template */
 		
 		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
+		boolean defaultTemplate = false;
 		
-		if (doc.getPath().equals(publishSpaceItem.getPath())) {
+		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 			
 			// template par défaut pour le publishspace
 			
 			if( pageTemplate == null || pageTemplate.length() == 0)	{
 				pageTemplate =  getDefaultPageTemplate(doc);
+				defaultTemplate = true;
 			}
 			
 			
@@ -111,9 +113,12 @@ public class NavigationItemAdaptor {
 			
 		}
 		
-		if( pageTemplate != null && pageTemplate.length() > 0)
-		
+		if( pageTemplate != null && pageTemplate.length() > 0)	{
+			if( defaultTemplate)
+				properties.put("defaultTemplate", "1");
+
 			properties.put("pageTemplate", pageTemplate);
+		}
 
 			
 		/* scope */
