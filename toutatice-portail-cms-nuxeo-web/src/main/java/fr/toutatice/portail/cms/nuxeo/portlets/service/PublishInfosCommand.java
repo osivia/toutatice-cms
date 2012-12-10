@@ -49,10 +49,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setDocumentPath(decode((String) obj.get("documentPath")));
 				publiInfos.setLiveId((String) obj.get("liveId"));
 				
-				// TODO : .proxy a supprimer dans l'opération
+
 				String publishSpacePath = decode((String) obj.get("publishSpacePath"));
-				if( publishSpacePath != null)
-					publishSpacePath = DocumentPublishSpaceNavigationCommand.computeNavPath(publishSpacePath);
 				
 				publiInfos.setPublishSpacePath(publishSpacePath);
 				
