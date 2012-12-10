@@ -10,6 +10,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.cms.CMSPage;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
@@ -42,7 +43,9 @@ public class UserPagesLoader {
 		List<CMSPage> pages = new ArrayList<CMSPage>();
 		
 		for (Document child : children) {
-			CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx, child.getPath(), child.getTitle(), child, child.getPath());
+			String spacePath = DocumentPublishSpaceNavigationCommand.computeNavPath(child.getPath());
+			
+			CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx, spacePath, child.getTitle(), child, spacePath);
 			
 			CMSPage userPage = new CMSPage();
 			userPage.setPublishSpace(publishSpace);

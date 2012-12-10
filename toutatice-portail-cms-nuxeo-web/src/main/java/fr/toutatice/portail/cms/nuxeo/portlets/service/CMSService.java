@@ -243,6 +243,13 @@ public class CMSService implements ICMSService {
 
 	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
+		
+		String savedScope = cmsCtx.getScope();
+		
+		if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
+			cmsCtx.setScope("user_session");
+		}
+		
 		try {
 			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
 			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)
@@ -252,9 +259,7 @@ public class CMSService implements ICMSService {
 			if (pubInfos.getPublishSpacePath() == null)
 				live = true;
 			
-			if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
-				cmsCtx.setScope("user_session");
-			}
+			
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
@@ -285,6 +290,9 @@ public class CMSService implements ICMSService {
 			else
 				throw (CMSException) e;
 		}
+		finally	{
+			cmsCtx.setScope(savedScope);
+		}
 
 		// Not possible
 		return null;
@@ -292,6 +300,12 @@ public class CMSService implements ICMSService {
 
 	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
+		
+		String savedScope = cmsCtx.getScope();
+		
+		if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
+			cmsCtx.setScope("user_session");
+		}
 		try {
 			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
 			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)			
@@ -303,9 +317,6 @@ public class CMSService implements ICMSService {
 			if (pubInfos.getPublishSpacePath() == null)
 				live = true;
 			
-			if( cmsCtx.getScope() == null || "__nocache".equals(cmsCtx.getScope()) )	{
-				cmsCtx.setScope("user_session");
-			}
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
@@ -331,6 +342,10 @@ public class CMSService implements ICMSService {
 			else
 				throw (CMSException) e;
 		}
+		finally	{
+			cmsCtx.setScope(savedScope);
+		}
+
 
 		// Not possible
 		return null;
