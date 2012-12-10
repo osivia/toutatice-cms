@@ -1,11 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.nuxeo.ecm.automation.client.jaxrs.Constants;
 import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
@@ -75,7 +71,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		
 
 
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");
+		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice, wcm_navigation");
 
 		//request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
 		// Build navItems
