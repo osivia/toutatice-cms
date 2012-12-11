@@ -3,13 +3,12 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 
 import fr.toutatice.portail.api.windows.PortalWindow;
-import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 import fr.toutatice.portail.core.cms.CMSException;
@@ -19,30 +18,49 @@ import fr.toutatice.portail.core.cms.CMSServiceCtx;
 
 public class NavigationPictureFragmentModule implements IFragmentModule {
 
-	private String computePageTemplate(NuxeoController ctx, CMSServiceCtx navCtx) throws CMSException {
+	private Document computePicture(NuxeoController ctx, CMSServiceCtx navCtx) throws CMSException {
 
+		Document pictureContainer = null;
+		boolean hasPicture = false;
+		
 		String pathToCheck = ctx.getNavigationPath();
-		String pageTemplate = null;
+		
+		CMSItem currentItem = ctx.getNuxeoCMSService().getContent(navCtx, ctx.getContentPath());
+		Document currentDoc = (Document) currentItem.getNativeItem();
+		CMSItem currentCmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(),
+				pathToCheck);
+		Document currentNavDoc = (Document) currentCmsItemNav.getNativeItem();
 
-		do {
+		if (!currentDoc.getPath().equals(currentNavDoc.getPath())) {
+			if (docHasPicture(currentDoc)) {
+				return currentDoc;
+			}
+		} else {
+			
+			do {
 
-			CMSItem cmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
-
-			if (cmsItemNav != null) {
-
-				if (cmsItemNav.getProperties().get("pageTemplate") != null) {
-					pageTemplate = cmsItemNav.getProperties().get("pageTemplate");
+				CMSItem cmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(),
+						pathToCheck);
+				pictureContainer = (Document) cmsItemNav.getNativeItem();
+				if (pictureContainer != null) {
+					hasPicture = docHasPicture(pictureContainer);
 				}
 
-			}
+				// One level up
+				CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+				pathToCheck = parentPath.toString();
 
-			// One level up
-			CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-			pathToCheck = parentPath.toString();
+			} while (!hasPicture && pathToCheck.contains(ctx.getSpacePath()));
+		}
 
-		} while (pageTemplate == null && pathToCheck.contains(ctx.getSpacePath()));
+		return pictureContainer;
+	}
 
-		return pageTemplate;
+	private boolean docHasPicture(Document currentDoc) {
+		boolean hasPicture;
+		PropertyMap picture = (PropertyMap) currentDoc.getProperties().get("wcmnvg:picture");
+		hasPicture = picture != null && picture.get("data") != null;
+		return hasPicture;
 	}
 
 	public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
@@ -56,7 +74,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 		request.setAttribute("ctx", ctx);
 
 		if (ctx.getNavigationPath() != null)
-			request.setAttribute("navigationPageTemplate", computePageTemplate(ctx, cmsReadNavContext));
+			request.setAttribute("navigationPictureContainer", computePicture(ctx, cmsReadNavContext));
 
 	}
 
