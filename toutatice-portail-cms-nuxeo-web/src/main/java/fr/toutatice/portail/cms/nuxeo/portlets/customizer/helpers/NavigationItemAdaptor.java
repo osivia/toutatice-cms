@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -118,6 +119,12 @@ public class NavigationItemAdaptor {
 				properties.put("defaultTemplate", "1");
 
 			properties.put("pageTemplate", pageTemplate);
+		}
+		
+		/* Template des sous-espaces de navigation de "publishSpaceNavigationItem" */
+		String childrenPageTemplate =  (String) doc.getProperties().get("ttc:childrenPageTemplate");
+		if(StringUtils.isNotEmpty(childrenPageTemplate)){
+			properties.put("childrenPageTemplate", childrenPageTemplate);
 		}
 
 			
