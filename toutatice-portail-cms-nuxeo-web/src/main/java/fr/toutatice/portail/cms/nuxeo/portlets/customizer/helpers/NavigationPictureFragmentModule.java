@@ -22,25 +22,20 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 
 		Document pictureContainer = null;
 		boolean hasPicture = false;
-		
+
 		String pathToCheck = ctx.getNavigationPath();
-		
+
 		CMSItem currentItem = ctx.getNuxeoCMSService().getContent(navCtx, ctx.getContentPath());
 		Document currentDoc = (Document) currentItem.getNativeItem();
-		CMSItem currentCmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(),
-				pathToCheck);
-		Document currentNavDoc = (Document) currentCmsItemNav.getNativeItem();
 
-		if (!currentDoc.getPath().equals(currentNavDoc.getPath())) {
-			if (docHasPicture(currentDoc)) {
-				return currentDoc;
-			}
+		if (docHasPicture(currentDoc)) {
+			return currentDoc;
+
 		} else {
-			
+
 			do {
 
-				CMSItem cmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(),
-						pathToCheck);
+				CMSItem cmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
 				pictureContainer = (Document) cmsItemNav.getNativeItem();
 				if (pictureContainer != null) {
 					hasPicture = docHasPicture(pictureContainer);

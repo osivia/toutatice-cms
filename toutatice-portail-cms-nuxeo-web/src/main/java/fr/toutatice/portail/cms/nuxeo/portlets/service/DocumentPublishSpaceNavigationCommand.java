@@ -24,6 +24,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 	String path;
 	boolean live;
+	public final static String basicNavigationSchemas = "dublincore,common, toutatice";
 	
 	public DocumentPublishSpaceNavigationCommand(  String path, boolean live) {
 		super();
@@ -69,9 +70,14 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		//String nuxeoRequest = "ecm:parentId = 'a984744a-838c-4f89-9627-50acec8df78b'";
 		//request.set("query", "SELECT * FROM Document WHERE " + nuxeoRequest + " ORDER BY ecm:pos");
 		
+		String navigationSchemas = basicNavigationSchemas;
+		
+		String extraNavigationSchemas = System.getProperty("nuxeo.navigationSchemas");
+		
+		if( extraNavigationSchemas != null)
+			navigationSchemas += "," + extraNavigationSchemas;
 
-
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice, wcm_navigation");
+		request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
 
 		//request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
 		// Build navItems

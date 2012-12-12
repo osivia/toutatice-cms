@@ -44,6 +44,7 @@ import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 import fr.toutatice.portail.core.cms.CMSItem;
+import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
@@ -404,6 +405,10 @@ public class ViewListPortlet extends CMSPortlet {
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
 				i.set("basePath",  ctx.getBasePath());
 				i.set("navigationPath",  ctx.getNavigationPath());
+				if( ctx.getNavigationPath() != null)	{
+					CMSPublicationInfos navigationPubInfos = ctx.getNuxeoCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
+					i.set("navigationPubInfos",  navigationPubInfos);
+				}
 				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
@@ -578,7 +583,7 @@ public class ViewListPortlet extends CMSPortlet {
 			} else {
 
 				response.setContentType("text/html");
-				response.getWriter().print("<h2>Document non défini</h2>");
+				response.getWriter().print("<h2>Requête non définie</h2>");
 				response.getWriter().close();
 				return;
 
@@ -589,6 +594,16 @@ public class ViewListPortlet extends CMSPortlet {
 		}
 
 		catch (Exception e) {
+			if( e instanceof bsh.EvalError){
+				response.setContentType("text/html");
+				response.getWriter().print("<h2>Requête incorrecte : </h2>");
+				response.getWriter().print(((bsh.EvalError) e).getMessage());
+				response.getWriter().close();
+				return;
+				
+				
+			}	else
+			
 			if (!(e instanceof PortletException))
 				throw new PortletException(e);
 		}

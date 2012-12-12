@@ -255,6 +255,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				//Injection du path vers le portail
 				request.setAttribute("pia.portletPath", portletPath);
+				//response.setProperty("pia.emptyResponse", "1");
 				
 				/* attributs de la JSP */
 				
