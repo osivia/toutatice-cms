@@ -21,6 +21,7 @@ Document navigationPictureContainer = (Document) renderRequest.getAttribute("nav
 
 %>
 
+<div class="nuxeo-fragment-view-picture">
 
 <% if( navigationPictureContainer != null) { 
  String src = ctx.createFileLink(navigationPictureContainer, "wcmnvg:picture"); %>
@@ -29,6 +30,6 @@ Document navigationPictureContainer = (Document) renderRequest.getAttribute("nav
 
 <%	}	%>
 
-
+</div>
 
 
