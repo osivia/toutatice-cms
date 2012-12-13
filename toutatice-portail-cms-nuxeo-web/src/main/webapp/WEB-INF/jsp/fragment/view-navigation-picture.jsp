@@ -18,17 +18,19 @@
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 Document navigationPictureContainer = (Document) renderRequest.getAttribute("navigationPictureContainer");
+String propertyName = (String) renderRequest.getAttribute("propertyName");
 
 %>
 
 <div class="nuxeo-fragment-view-picture">
 
 <% if( navigationPictureContainer != null) { 
- String src = ctx.createFileLink(navigationPictureContainer, "wcmnvg:picture"); %>
+ String src = ctx.createFileLink(navigationPictureContainer,propertyName); %>
 
 	<img src="<%= src %>">
 
-<%	}	%>
+
+<%	} %>
 
 </div>
 

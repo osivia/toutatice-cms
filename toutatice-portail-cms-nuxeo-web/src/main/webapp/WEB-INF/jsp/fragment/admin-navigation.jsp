@@ -19,5 +19,10 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 %>
 
 
+	<div>
+			<label>Nom de la propriété (ex: 'webpage:picture')</label><br/>
+			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
+
+	</div>
 	
 	

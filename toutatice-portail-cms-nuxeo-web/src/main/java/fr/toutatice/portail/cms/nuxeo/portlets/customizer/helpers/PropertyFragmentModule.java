@@ -34,8 +34,9 @@ public class PropertyFragmentModule implements IFragmentModule {
 			request.setAttribute("doc", doc);
 			request.setAttribute("ctx", ctx);
 			request.setAttribute("propertyName", window.getProperty("pia.propertyName"));
-
-		}
+		}	else
+			// Notification du portail
+			request.setAttribute("pia.emptyResponse", "1");
 
 	}
 
