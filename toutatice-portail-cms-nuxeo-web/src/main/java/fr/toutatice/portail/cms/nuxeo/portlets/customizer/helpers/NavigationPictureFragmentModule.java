@@ -29,7 +29,6 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 		CMSItem currentItem = ctx.getNuxeoCMSService().getContent(navCtx, ctx.getContentPath());
 		Document currentDoc = (Document) currentItem.getNativeItem();
 
-		
 		if (docHasPicture(currentDoc, propertyName)) {
 			return currentDoc;
 
@@ -49,7 +48,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 
 			} while (!hasPicture && pathToCheck.contains(ctx.getSpacePath()));
 		}
-		if( hasPicture)
+		if (hasPicture)
 			return pictureContainer;
 		else
 			return null;
@@ -65,35 +64,39 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 	public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
 			throws Exception {
 
+		boolean emptyResponse = true;
+
 		// Navigation context
 		CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
 		cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
 		cmsReadNavContext.setScope(ctx.getNavigationScope());
 
 		request.setAttribute("ctx", ctx);
-		
-		String propertyName =  window.getProperty("pia.propertyName");
 
-		if ((ctx.getNavigationPath() != null)  && (propertyName != null))	{
+		String propertyName = window.getProperty("pia.propertyName");
+
+		if ((ctx.getNavigationPath() != null) && (propertyName != null)) {
 			Document navigationPictureContainer = computePicture(ctx, cmsReadNavContext, propertyName);
-			if( navigationPictureContainer != null)	{
+			if (navigationPictureContainer != null) {
 				request.setAttribute("propertyName", propertyName);
 				request.setAttribute("navigationPictureContainer", computePicture(ctx, cmsReadNavContext, propertyName));
-			}	else	{
-				request.setAttribute("pia.emptyResponse", "1");
+				emptyResponse = false;
 			}
+
+		}
+		if (emptyResponse) {
+			request.setAttribute("pia.emptyResponse", "1");
 		}
 
 	}
 
 	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
 			throws Exception {
-		
+
 		String propertyName = window.getProperty("pia.propertyName");
 		if (propertyName == null)
 			propertyName = "";
 		request.setAttribute("propertyName", propertyName);
-
 
 	}
 
@@ -105,7 +108,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 			else if (window.getProperty("pia.propertyName") != null)
 				window.setProperty("pia.propertyName", null);
 		}
-		
+
 	}
 
 }

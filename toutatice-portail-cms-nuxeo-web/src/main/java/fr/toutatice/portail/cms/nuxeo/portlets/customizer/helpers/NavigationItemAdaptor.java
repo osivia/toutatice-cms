@@ -165,9 +165,11 @@ public class NavigationItemAdaptor {
 		if( showInMenu != null && "true".equals(showInMenu) )
 			properties.put("menuItem", "1");
 		
-		if( "1".equals(properties.get("navigationElement")))	{
-			properties.put("menuItem", "1");
-		}
+	
+		
+//		if( "1".equals(properties.get("navigationElement")))	{
+//			properties.put("menuItem", "1");
+//		}
 		
 		
 		/*
@@ -194,10 +196,17 @@ public class NavigationItemAdaptor {
 			properties.put("contextualizeExternalContents", "1");		
 		
 		
+		/* Workspace */
+		
 		if("Workspace".equals(doc.getType()))	{
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
 			properties.put("pageTemplate", "/default/templates/workspace");
+		}
+		
+		if( publishSpaceItem != null && "Workspace".equals(((Document) publishSpaceItem.getNativeItem()).getType()))	{
+			// Tous les sous-items d'un workspace sont navigables
+			properties.put("menuItem", "1");
 		}
 
 		

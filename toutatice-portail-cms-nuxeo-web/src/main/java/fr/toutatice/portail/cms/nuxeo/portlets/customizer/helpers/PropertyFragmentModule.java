@@ -15,9 +15,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 
 public class PropertyFragmentModule implements IFragmentModule {
 
-	public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+	public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
+			throws Exception {
 
 		String nuxeoPath = null;
+		boolean emptyContent = true;
 
 		nuxeoPath = window.getProperty("pia.nuxeoPath");
 
@@ -30,17 +32,31 @@ public class PropertyFragmentModule implements IFragmentModule {
 			if (doc.getTitle() != null)
 				response.setTitle(doc.getTitle());
 
-			ctx.setCurrentDoc(doc);
-			request.setAttribute("doc", doc);
-			request.setAttribute("ctx", ctx);
-			request.setAttribute("propertyName", window.getProperty("pia.propertyName"));
-		}	else
-			// Notification du portail
+			String propertyName = window.getProperty("pia.propertyName");
+
+			if (propertyName != null) {
+
+				String content = (String) doc.getProperties().get(propertyName);
+
+				if (content != null && content.length() > 0) {
+					
+					ctx.setCurrentDoc(doc);
+					request.setAttribute("doc", doc);
+					request.setAttribute("ctx", ctx);
+					request.setAttribute("propertyName", window.getProperty("pia.propertyName"));
+
+					emptyContent = false;
+				}
+			}
+		}
+
+		if (emptyContent)
 			request.setAttribute("pia.emptyResponse", "1");
 
 	}
 
-	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
+			throws Exception {
 
 		String nuxeoPath = window.getProperty("pia.nuxeoPath");
 		if (nuxeoPath == null)
@@ -61,10 +77,9 @@ public class PropertyFragmentModule implements IFragmentModule {
 		request.setAttribute("displayLiveVersion", displayLiveVersion);
 
 	}
-	
-	public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
-		
 
+	public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res)
+			throws Exception {
 
 		if (request.getParameter("nuxeoPath") != null)
 			window.setProperty("pia.nuxeoPath", request.getParameter("nuxeoPath"));
@@ -90,8 +105,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
 				window.setProperty("pia.cms.displayLiveVersion", null);
 		}
-	
+
 	}
-	
 
 }
