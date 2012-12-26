@@ -31,16 +31,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.statut.IStatutService;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.api.menubar.MenubarItem;
-import fr.toutatice.portail.api.statut.IStatutService;
-import fr.toutatice.portail.api.urls.Link;
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.windows.PortalWindow;
-import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
@@ -54,9 +56,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
-import fr.toutatice.portail.core.cms.CMSItem;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.profils.ProfilBean;
 
 /**
  * Portlet d'affichage d'un document Nuxeo

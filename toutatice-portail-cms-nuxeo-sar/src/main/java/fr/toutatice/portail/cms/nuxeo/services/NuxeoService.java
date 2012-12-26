@@ -12,16 +12,16 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
+import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPage;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.dynamic.DynamicPageBean;
 
-import fr.toutatice.portail.api.profiler.IProfilerService;
-import fr.toutatice.portail.core.cms.CMSException;
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSPage;
-import fr.toutatice.portail.core.cms.CMSPublicationInfos;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.cms.ICMSService;
-import fr.toutatice.portail.core.dynamic.DynamicPageBean;
 
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;

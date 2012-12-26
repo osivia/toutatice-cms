@@ -1,5 +1,5 @@
 
-<%@page import="fr.toutatice.portail.api.urls.Link"%>
+<%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
 

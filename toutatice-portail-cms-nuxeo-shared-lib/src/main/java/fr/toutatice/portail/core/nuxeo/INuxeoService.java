@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
-import fr.toutatice.portail.core.cms.ICMSService;
-import fr.toutatice.portail.core.cms.spi.ICMSIntegration;
 
 public interface INuxeoService extends ICMSIntegration, ICMSService {
 	

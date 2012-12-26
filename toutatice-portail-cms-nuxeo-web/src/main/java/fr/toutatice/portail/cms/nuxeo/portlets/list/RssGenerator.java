@@ -17,11 +17,11 @@ import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
 import org.w3c.dom.Element;
 
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
 

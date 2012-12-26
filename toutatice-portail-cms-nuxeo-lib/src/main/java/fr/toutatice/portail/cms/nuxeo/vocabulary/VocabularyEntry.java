@@ -4,7 +4,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import fr.toutatice.portail.api.cache.services.IGlobalParameters;
+import org.osivia.portal.api.cache.services.IGlobalParameters;
+
 
 public class VocabularyEntry implements IGlobalParameters {
 	

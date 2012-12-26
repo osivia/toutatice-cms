@@ -9,17 +9,17 @@ import javax.portlet.RenderResponse;
 
 import org.jboss.portal.core.model.portal.Page;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPage;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.dynamic.DynamicPageBean;
 
 
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.menubar.MenubarItem;
-import fr.toutatice.portail.api.urls.Link;
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSPage;
-import fr.toutatice.portail.core.cms.CMSPublicationInfos;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.dynamic.DynamicPageBean;
 
 
 public interface INuxeoCustomizer {

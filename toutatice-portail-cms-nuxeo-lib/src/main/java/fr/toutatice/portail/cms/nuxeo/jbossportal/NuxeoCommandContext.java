@@ -9,10 +9,10 @@ import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.controller.PageCustomizerInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.core.profils.ProfilBean;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
 
-import fr.toutatice.portail.core.profils.ProfilBean;
 
 public class NuxeoCommandContext {
 

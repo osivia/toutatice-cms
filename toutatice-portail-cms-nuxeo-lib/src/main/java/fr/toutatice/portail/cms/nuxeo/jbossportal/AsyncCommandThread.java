@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.IServiceInvoker;
+import org.osivia.portal.core.error.Debug;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
-import fr.toutatice.portail.api.cache.services.IServiceInvoker;
-import fr.toutatice.portail.core.error.Debug;
 
 /**
  * Execution asynchrone des commandes Nuxeo

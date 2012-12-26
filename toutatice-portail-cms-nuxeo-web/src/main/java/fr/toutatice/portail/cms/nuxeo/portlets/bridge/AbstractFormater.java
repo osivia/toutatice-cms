@@ -12,8 +12,8 @@ import java.util.TimeZone;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
+import org.osivia.portal.api.urls.Link;
 
-import fr.toutatice.portail.api.urls.Link;
 
 public class AbstractFormater {
 

@@ -11,11 +11,17 @@ import javax.portlet.ResourceURL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPage;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.menubar.MenubarItem;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdaptor;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
@@ -23,12 +29,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragme
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
-import fr.toutatice.portail.core.cms.CMSException;
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSPage;
-import fr.toutatice.portail.core.cms.CMSPublicationInfos;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 

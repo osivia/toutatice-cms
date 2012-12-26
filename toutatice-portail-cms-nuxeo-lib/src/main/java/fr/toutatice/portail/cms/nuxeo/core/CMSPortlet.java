@@ -24,15 +24,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.statut.IStatutService;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.profils.IProfilManager;
 
-import fr.toutatice.portail.api.cache.services.ICacheService;
-import fr.toutatice.portail.api.statut.IStatutService;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.profils.IProfilManager;
 
 /**
  * Portlet d'affichage d'un document Nuxeo

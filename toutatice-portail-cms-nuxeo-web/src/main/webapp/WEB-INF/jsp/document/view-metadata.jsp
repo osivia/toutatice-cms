@@ -1,5 +1,5 @@
-<%@page import="fr.toutatice.portail.api.urls.IPortalUrlFactory"%>
-<%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
+<%@page import="org.osivia.portal.api.urls.IPortalUrlFactory"%>
+<%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
 <%@ page contentType="text/html; charset=UTF-8"%>
 
@@ -23,7 +23,7 @@
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.VocabularyHelper"%>
-<%@page import="fr.toutatice.portail.api.urls.Link"%>
+<%@page import="org.osivia.portal.api.urls.Link"%>
 
 <portlet:defineObjects />
 

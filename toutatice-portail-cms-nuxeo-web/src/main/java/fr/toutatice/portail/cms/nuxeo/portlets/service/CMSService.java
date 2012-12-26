@@ -9,9 +9,17 @@ import javax.portlet.PortletContext;
 
 import org.jboss.portal.common.invocation.Scope;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.profils.IProfilManager;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
-import fr.toutatice.portail.api.cache.services.ICacheService;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -20,15 +28,7 @@ import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
-import fr.toutatice.portail.core.cms.CMSException;
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSPublicationInfos;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.cms.ICMSService;
-import fr.toutatice.portail.core.cms.NavigationItem;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.profils.IProfilManager;
 
 public class CMSService implements ICMSService {
 
@@ -271,8 +271,8 @@ public class CMSService implements ICMSService {
 					CMSItem item = navItem.getAdaptedCMSItem();
 					if (item == null) {
 						if (navItem.getMainDoc() != null)
-							navItem.setAdaptedCMSItem(createNavigationItem(cmsCtx, livePath, navItem.getMainDoc()
-									.getTitle(), navItem.getMainDoc(), publishSpacePath));
+							navItem.setAdaptedCMSItem(createNavigationItem(cmsCtx, livePath, ((Document) navItem.getMainDoc())
+									.getTitle(), (Document) navItem.getMainDoc(), publishSpacePath));
 						else
 							return null;
 					}
@@ -325,9 +325,9 @@ public class CMSService implements ICMSService {
 				NavigationItem navItem = navItems.get(path);
 				if (navItem != null) {
 					List<CMSItem> childrens = new ArrayList<CMSItem>();
-					for (Document child : navItem.getChildren()) {
+					for (Object child : navItem.getChildren()) {
 
-						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath,child.getPath()));
+						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath, ((Document)child).getPath()));
 
 					}
 					return childrens;

@@ -7,9 +7,9 @@ import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.WindowFactory;
 
-import fr.toutatice.portail.api.windows.PortalWindow;
-import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 

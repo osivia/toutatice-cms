@@ -1,4 +1,4 @@
-<%@page import="fr.toutatice.portail.api.menubar.MenubarItem"%>
+<%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
 <%@ page contentType="text/plain; charset=UTF-8"%>

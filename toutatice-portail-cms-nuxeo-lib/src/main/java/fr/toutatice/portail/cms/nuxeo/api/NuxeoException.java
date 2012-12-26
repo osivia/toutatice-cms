@@ -1,6 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import fr.toutatice.portail.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSException;
 
 public class NuxeoException extends RuntimeException {
 	

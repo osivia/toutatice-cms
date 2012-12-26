@@ -5,7 +5,8 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
-import fr.toutatice.portail.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.PortalWindow;
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 public interface IFragmentModule {

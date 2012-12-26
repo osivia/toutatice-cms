@@ -6,10 +6,10 @@ import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.core.cms.CMSItem;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.core.cms.CMSItem;
 
 public class NavigationItemAdaptor {
 	

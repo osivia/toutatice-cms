@@ -7,14 +7,14 @@ import javax.portlet.RenderResponse;
 
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
+import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSObjectPath;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.api.windows.PortalWindow;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
-import fr.toutatice.portail.core.cms.CMSException;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSObjectPath;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
 
 public class NavigationPictureFragmentModule implements IFragmentModule {
 

@@ -1,8 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
+import org.osivia.portal.core.profils.IProfilManager;
+
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.core.profils.IProfilManager;
 
 public interface INuxeoCommandService {
 	

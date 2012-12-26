@@ -26,18 +26,26 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSObjectPath;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.formatters.IFormatter;
+import org.osivia.portal.core.profils.IProfilManager;
+import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
-import fr.toutatice.portail.api.cache.services.ICacheService;
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.locator.Locator;
-import fr.toutatice.portail.api.menubar.MenubarItem;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
-import fr.toutatice.portail.api.urls.Link;
-import fr.toutatice.portail.api.windows.PortalWindow;
-import fr.toutatice.portail.api.windows.WindowFactory;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
@@ -45,17 +53,9 @@ import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
 
-import fr.toutatice.portail.core.cms.CMSException;
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSItem;
-import fr.toutatice.portail.core.cms.CMSObjectPath;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
-import fr.toutatice.portail.core.formatters.IFormatter;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-import fr.toutatice.portail.core.profils.IProfilManager;
-import fr.toutatice.portail.core.profils.ProfilBean;
 
 public class NuxeoController {
 

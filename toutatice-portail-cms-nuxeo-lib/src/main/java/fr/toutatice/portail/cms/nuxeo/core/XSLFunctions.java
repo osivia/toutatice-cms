@@ -15,9 +15,9 @@ import javax.portlet.WindowStateException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.urls.Link;
 
-import fr.toutatice.portail.api.contexte.PortalControllerContext;
-import fr.toutatice.portail.api.urls.Link;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 public class XSLFunctions {

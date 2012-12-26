@@ -2,7 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.core;
 
 import java.io.File;
 
-import fr.toutatice.portail.api.cache.services.ICacheDataListener;
+import org.osivia.portal.api.cache.services.ICacheDataListener;
+
 
 public class BinaryContent implements ICacheDataListener {
 	

@@ -17,9 +17,9 @@ import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.core.cms.CMSPublicationInfos;
 
 public class PublishInfosCommand implements INuxeoCommand {
 

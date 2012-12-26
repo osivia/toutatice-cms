@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.bridge;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.CacheInfo;
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;

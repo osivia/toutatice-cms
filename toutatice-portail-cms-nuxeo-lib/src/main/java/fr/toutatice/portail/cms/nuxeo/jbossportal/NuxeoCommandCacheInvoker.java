@@ -16,10 +16,10 @@ import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
+import org.osivia.portal.api.cache.services.IServiceInvoker;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.profiler.IProfilerService;
 
-import fr.toutatice.portail.api.cache.services.IServiceInvoker;
-import fr.toutatice.portail.api.locator.Locator;
-import fr.toutatice.portail.api.profiler.IProfilerService;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 

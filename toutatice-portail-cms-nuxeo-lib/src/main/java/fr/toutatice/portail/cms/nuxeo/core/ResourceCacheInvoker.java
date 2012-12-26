@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
-import fr.toutatice.portail.api.cache.services.IServiceInvoker;
+import org.osivia.portal.api.cache.services.IServiceInvoker;
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 

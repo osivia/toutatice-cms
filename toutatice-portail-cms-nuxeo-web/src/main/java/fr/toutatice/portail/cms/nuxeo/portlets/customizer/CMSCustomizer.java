@@ -2,8 +2,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import javax.portlet.PortletContext;
 
-import fr.toutatice.portail.core.cms.CMSHandlerProperties;
-import fr.toutatice.portail.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.CMSHandlerProperties;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+
 
 
 /**

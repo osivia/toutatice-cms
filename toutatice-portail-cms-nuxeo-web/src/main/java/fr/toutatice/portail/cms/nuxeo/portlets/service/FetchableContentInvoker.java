@@ -1,6 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import fr.toutatice.portail.api.cache.services.IServiceInvoker;
+import org.osivia.portal.api.cache.services.IServiceInvoker;
 
 /**
  * Just to mark that publish site is not fetchable for this publication

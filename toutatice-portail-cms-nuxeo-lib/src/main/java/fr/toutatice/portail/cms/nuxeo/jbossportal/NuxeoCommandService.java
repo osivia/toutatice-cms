@@ -15,21 +15,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
 import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.cache.services.IServiceInvoker;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.statut.IStatutService;
+import org.osivia.portal.api.statut.ServeurIndisponible;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.core.profils.IProfilManager;
 
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
-import fr.toutatice.portail.api.cache.services.ICacheService;
-import fr.toutatice.portail.api.cache.services.IServiceInvoker;
-import fr.toutatice.portail.api.locator.Locator;
-import fr.toutatice.portail.api.statut.IStatutService;
-import fr.toutatice.portail.api.statut.ServeurIndisponible;
-import fr.toutatice.portail.api.urls.IPortalUrlFactory;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-import fr.toutatice.portail.core.profils.IProfilManager;
 
 /**
  * Gestionnaire de commandes Nuxeo 

@@ -3,9 +3,10 @@ package fr.toutatice.portail.cms.nuxeo.jbossportal;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.core.profils.ProfilBean;
 
-import fr.toutatice.portail.core.profils.ProfilBean;
+
 
 public class PortletNuxeoCommandContext {
 

@@ -4,9 +4,9 @@
 package fr.toutatice.portail.cms.nuxeo.services;
 
 import org.jboss.system.ServiceMBean;
+import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
-import fr.toutatice.portail.api.profiler.IProfilerService;
-import fr.toutatice.portail.core.cms.spi.ICMSIntegration;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 

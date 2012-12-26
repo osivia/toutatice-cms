@@ -1,7 +1,7 @@
 
 <%@page import="java.util.Map"%>
 <%@page import="java.util.Set"%>
-<%@page import="fr.toutatice.portail.api.path.PortletPathItem"%>
+<%@page import="org.osivia.portal.api.path.PortletPathItem"%>
 <%@page import="javax.portlet.PortletURL"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Iterator"%>

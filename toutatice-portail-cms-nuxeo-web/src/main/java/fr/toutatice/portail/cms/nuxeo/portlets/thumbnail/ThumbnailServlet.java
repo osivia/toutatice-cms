@@ -16,7 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import fr.toutatice.portail.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cache.services.CacheInfo;
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.core.BinaryContent;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
