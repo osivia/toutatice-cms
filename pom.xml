@@ -70,14 +70,14 @@
 		
 
 	 	<dependency>
-			<groupId>osivia-portal</groupId>
+			<groupId>org.osivia.portal</groupId>
 	     		<artifactId>osivia-portal-api</artifactId>
 	     		<version>${osivia-portal.version}</version>
 	     		<scope>provided</scope>
 		</dependency>
 
   	 	<dependency>
-			<groupId>osivia-portal.core</groupId>
+			<groupId>org.osivia.portal.core</groupId>
 	     		<artifactId>osivia-portal-custom-lib-utils</artifactId>
 	     		<version>${osivia-portal.version}</version>
 	     		<scope>provided</scope>
