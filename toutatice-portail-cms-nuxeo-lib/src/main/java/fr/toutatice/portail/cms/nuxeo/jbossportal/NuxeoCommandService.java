@@ -163,17 +163,24 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		CacheInfo cacheInfos = new CacheInfo(cacheId,
 				ctx.getCacheType(),
 				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
+		
+		if( ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
+			// 2 minutes de cache de session
+			// (PublishInfos & Navigation)
+			cacheInfos.setDelaiExpiration( 120000);
+		}	else	{
 
-		if (ctx.getCacheTimeOut() == -1) {
-			// Traitement par défaut de cache (valeur dans variable système
-			// nuxeo.cacheTimeOut
+			if (ctx.getCacheTimeOut() == -1) {
+				// Traitement par défaut de cache (valeur dans variable système
+				// nuxeo.cacheTimeOut
 
-			if (System.getProperty("nuxeo.cacheTimeout") != null)
-				cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
-			else
-				cacheInfos.setDelaiExpiration(0L);
-		} else
-			cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+				if (System.getProperty("nuxeo.cacheTimeout") != null)
+					cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
+				else
+					cacheInfos.setDelaiExpiration(0L);
+			} else
+				cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+		}
 
 		return getServiceCache(ctx).getCache(cacheInfos);
 	}

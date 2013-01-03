@@ -319,10 +319,13 @@ public class CMSPortlet extends GenericPortlet {
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
 				// V 1.0.19 
+				// V2 suppression a valider
+				/*
 				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
 					Document doc = fetchLinkedDocument(ctx, docPath);
 					docPath = doc.getPath();
 				}
+				*/
 
 				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
 
@@ -443,10 +446,13 @@ public class CMSPortlet extends GenericPortlet {
 				
 				// V 1.0.19 
 				/* TOCHECK si on peut mettre en commentaire */
+				// V2 suppression a valider
+				/*				
 				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
 					Document doc = fetchLinkedDocument(ctx, docPath);
 					docPath = doc.getPath();
 				}
+				*/
 				CMSBinaryContent picture = ctx.fetchPicture(docPath, content);
 				
 				// Les headers doivent être positionnées avant la réponse
