@@ -68,8 +68,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 			propertyName = "";
 		request.setAttribute("propertyName", propertyName);
 
-		String scope = window.getProperty("pia.cms.scope");
-		request.setAttribute("scope", scope);
 
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
@@ -83,13 +81,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 
 		if (request.getParameter("nuxeoPath") != null)
 			window.setProperty("pia.nuxeoPath", request.getParameter("nuxeoPath"));
-
-		if (request.getParameter("scope") != null) {
-			if (request.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", request.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
-		}
 
 		if (request.getParameter("propertyName") != null) {
 			if (request.getParameter("propertyName").length() > 0)

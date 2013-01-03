@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,6 @@ import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
@@ -35,8 +33,8 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -51,10 +49,7 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-
-
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
-
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoController {
@@ -812,6 +807,65 @@ public class NuxeoController {
 			
 		}
 	}
+	
+	public CMSBinaryContent fetchAttachedPicture(String docPath, String pictureIndex) {
+		try	{
+			
+			INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+			if( nuxeoService == null)
+				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+			
+			
+			return nuxeoService.getBinaryContent(getCMSCtx(), "attachedPicture", docPath, pictureIndex);
+			
+			} catch( CMSException e){
+				if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
+					throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+				if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+					throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+				throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+				
+			}
+	}
+	
+	public CMSBinaryContent fetchPicture(String docPath, String content) {
+		try {
+
+			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+			if (nuxeoService == null)
+				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+
+			return nuxeoService.getBinaryContent(getCMSCtx(), "picture", docPath, content);
+
+		} catch (CMSException e) {
+			if (e.getErrorCode() == CMSException.ERROR_NOTFOUND)
+				throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+			if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+				throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
+			throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+
+		}
+	}
+	
+	public CMSBinaryContent fetchFileContent(String docPath, String fieldName) {
+		try {
+
+			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+			if (nuxeoService == null)
+				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+
+			return nuxeoService.getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
+
+		} catch (CMSException e) {
+			if (e.getErrorCode() == CMSException.ERROR_NOTFOUND)
+				throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+			if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+				throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
+			throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+
+		}
+	}
+
 
 	
 	public CMSServiceCtx getCMSCtx()	{

@@ -147,10 +147,12 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			PortalWindow window = WindowFactory.getWindow(req);
 			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
 
+			/*
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("pia.cms.scope", req.getParameter("scope"));
 			else if (window.getProperty("pia.cms.scope") != null)
 				window.setProperty("pia.cms.scope", null);
+				*/
 
 			if ("1".equals(req.getParameter("onlyDescription")))
 				window.setProperty("pia.document.onlyDescription", "1");
@@ -203,9 +205,10 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				showMetadatas = "0";
 		req.setAttribute("showMetadatas", showMetadatas);		
 
+		/*
 		String scope = window.getProperty("pia.cms.scope");
 		req.setAttribute("scope", scope);
-		
+		*/
 		
 		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)

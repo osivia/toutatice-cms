@@ -28,6 +28,7 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.statut.IStatutService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -322,9 +323,8 @@ public class CMSPortlet extends GenericPortlet {
 					Document doc = fetchLinkedDocument(ctx, docPath);
 					docPath = doc.getPath();
 				}
-				
-				
-				BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, docPath, fieldName);
+
+				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
@@ -353,7 +353,7 @@ public class CMSPortlet extends GenericPortlet {
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 	
 
-				BinaryContent content = ResourceUtil.getBinaryContent(ctx, docPath, fileIndex);
+				CMSBinaryContent content = ResourceUtil.getCMSBinaryContent(ctx, docPath, fileIndex);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
@@ -388,7 +388,7 @@ public class CMSPortlet extends GenericPortlet {
 	
 	
 
-				BinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
+				CMSBinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
 				
 					
 
@@ -413,8 +413,8 @@ public class CMSPortlet extends GenericPortlet {
 				String pictureIndex = resourceRequest.getParameter("pictureIndex");
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
-	
-				BinaryContent content = ResourceUtil.getInternalPictureContent(ctx, docPath, pictureIndex);
+
+				CMSBinaryContent content = ctx.fetchAttachedPicture(docPath, pictureIndex);
 
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
@@ -442,13 +442,13 @@ public class CMSPortlet extends GenericPortlet {
 
 				
 				// V 1.0.19 
+				/* TOCHECK si on peut mettre en commentaire */
 				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
 					Document doc = fetchLinkedDocument(ctx, docPath);
 					docPath = doc.getPath();
 				}
-	
-				BinaryContent picture = ResourceUtil.getPictureContent(ctx, docPath, content);
-
+				CMSBinaryContent picture = ctx.fetchPicture(docPath, content);
+				
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(picture.getMimeType());
 				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + picture.getName() + "\"");

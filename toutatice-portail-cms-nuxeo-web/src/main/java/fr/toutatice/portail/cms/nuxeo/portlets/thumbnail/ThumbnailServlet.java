@@ -17,11 +17,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.core.BinaryContent;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 
 public class ThumbnailServlet extends HttpServlet
 
@@ -101,7 +102,8 @@ public class ThumbnailServlet extends HttpServlet
 			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
 			ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-			BinaryContent content = (BinaryContent) ResourceUtil.getFileContent(ctx, docPath, "ttc:vignette");
+			//CMSBinaryContent content = (CMSBinaryContent) ResourceUtil.getFileContent(ctx, docPath, "ttc:vignette");
+			CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(new FileContentCommand(docPath,"ttc:vignette"));
 
 			// Les headers doivent être positionnées avant la réponse
 			theResponse.setContentType(content.getMimeType());

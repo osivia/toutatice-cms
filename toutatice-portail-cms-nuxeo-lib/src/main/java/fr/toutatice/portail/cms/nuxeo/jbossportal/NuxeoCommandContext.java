@@ -74,7 +74,7 @@ public class NuxeoCommandContext {
 	}
 
 	ProfilBean profil = null;
-	long cacheTimeOut = 50 * 1000;
+	long cacheTimeOut = -1;
 
 	public int getAuthType() {
 		return authType;

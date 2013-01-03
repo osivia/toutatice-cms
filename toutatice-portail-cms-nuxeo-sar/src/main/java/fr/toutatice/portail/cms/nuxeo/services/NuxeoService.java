@@ -13,6 +13,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
@@ -178,7 +179,12 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
 		return  cmsService.getPublicationInfos(ctx, path);
-	}		
+	}
+
+	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String path, String parameter)
+			throws CMSException {
+		return cmsService.getBinaryContent(cmsCtx, type, path, parameter);
+	}
 
 
 

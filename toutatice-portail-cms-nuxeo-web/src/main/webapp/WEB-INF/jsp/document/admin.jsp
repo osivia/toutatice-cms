@@ -27,8 +27,8 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
-			<label>Scope</label><br/>
-<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
+<!--  			<label>Scope</label><br/>
+<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %>--><br/> 
 			
 <%			
 			String checkOnlyDescription = "checked";

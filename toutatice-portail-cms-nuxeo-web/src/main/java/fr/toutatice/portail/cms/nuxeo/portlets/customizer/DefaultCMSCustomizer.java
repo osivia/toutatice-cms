@@ -146,7 +146,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
 
-		windowProperties.put("pia.cms.scope", ctx.getScope());
+		/*windowProperties.put("pia.cms.scope", ctx.getScope());*/
 		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
 		windowProperties.put("pia.cms.uri", doc.getPath());

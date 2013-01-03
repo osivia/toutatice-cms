@@ -55,15 +55,15 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setPublishSpacePath(publishSpacePath);
 				
 				publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
-				publiInfos.setPublishSpaceInContextualization((Boolean) obj.get("publishSpaceInContextualization"));
+				publiInfos.setPublishSpaceInContextualization(convertBoolean(obj.get("publishSpaceInContextualization")));
 				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
 				publiInfos.setWorkspacePath(decode((String) obj.get("workspacePath")));
 				publiInfos.setWorkspaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
-				publiInfos.setWorkspaceInContextualization((Boolean) obj.get("workspaceInContextualization"));
+				publiInfos.setWorkspaceInContextualization(convertBoolean(obj.get("workspaceInContextualization")));
 
-				publiInfos.setEditableByUser((Boolean) obj.get("editableByUser"));
-				publiInfos.setPublished((Boolean) obj.get("published"));
-				publiInfos.setAnonymouslyReadable((Boolean) obj.get("anonymouslyReadable"));
+				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
+				publiInfos.setPublished(convertBoolean(obj.get("published")));
+				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
 			}
 
 		}
@@ -87,6 +87,14 @@ public class PublishInfosCommand implements INuxeoCommand {
 			return URLDecoder.decode(value, "UTF-8");
 		}
 		return value;
+	}
+	
+	private Boolean convertBoolean(Object value) {
+		if (value != null) {
+			return (Boolean) value;
+		} else {
+			return Boolean.FALSE;
+		}
 	}
 
 }

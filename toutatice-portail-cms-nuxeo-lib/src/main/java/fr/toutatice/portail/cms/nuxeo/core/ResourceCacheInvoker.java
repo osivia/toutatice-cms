@@ -29,7 +29,7 @@ public class ResourceCacheInvoker implements IServiceInvoker {
 	
 
 	public Object invoke() throws Exception {
-		return ResourceUtil.getBinaryContent(ctx, path, fileIndex);
+		return ResourceUtil.getCMSBinaryContent(ctx, path, fileIndex);
 	}
 
 	
