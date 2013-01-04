@@ -28,9 +28,6 @@ public class InternalPictureCommand implements INuxeoCommand {
 	
 	public Object execute( Session session)	throws Exception {
 		
-//		Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set(
-//				"value", containerDoc).execute();
-		
 		Blob blob = null;
 		
 		try	{

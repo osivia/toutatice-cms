@@ -588,6 +588,10 @@ public class NuxeoController {
 		resourceURL.setParameter("type", "attachedPicture");
 		resourceURL.setParameter("pictureIndex", fileIndex);
 		resourceURL.setParameter("docPath", path);
+		
+		if( isDisplayingLiveVersion())	{
+			resourceURL.setParameter("displayLiveVersion", "1");
+		}
 
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);

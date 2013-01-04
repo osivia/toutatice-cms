@@ -21,8 +21,8 @@ String propertyName = (String) renderRequest.getAttribute("propertyName");
 %>
 
 
-<% if( propertyName != null && doc.getProperties().get(propertyName) != null) { %>
-
+<% if( doc != null && propertyName != null && doc.getProperties().get(propertyName) != null) { %>
+  
 <%= doc.getProperties().get(propertyName) %>
 
 <%	}	%>

@@ -243,35 +243,39 @@ public class CMSService implements ICMSService {
 	}
 
 	private CMSBinaryContent fetchAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws Exception {
-		
+		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
 		try {
-			/*
-			 * Si l'utilisateur n'a pas le droit de lecture sur le document "conteneur", 
-			 * getPublicationsInfos lève une exception.
-			 */
-			getPublicationInfos(cmsCtx, docPath);			
-			Document containerDoc = (Document) fetchContent(cmsCtx, docPath).getNativeItem();
-			
-			cmsCtx.setScope("superuser_context");
-			
-			return (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new InternalPictureCommand(containerDoc,
-					pictureIndex)));
+			CMSItem containerDoc = fetchContent(cmsCtx, docPath);
+			if (containerDoc != null) {
+				cmsCtx.setScope("superuser_context");
+
+				pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new InternalPictureCommand(
+						(Document) containerDoc.getNativeItem(), pictureIndex)));
+			}
 
 		} finally {
 			cmsCtx.setScope(savedScope);
 		}
-
+		return pictureContent;
 	}
 	
 	public CMSBinaryContent getPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws CMSException{
 		CMSBinaryContent cmsContent = null;
 		try {
-			CMSPublicationInfos infos = getPublicationInfos(cmsCtx, docPath);
-			boolean isAnonymous = infos.isAnonymouslyReadable();
-
-			cmsContent = fetchPicture(cmsCtx, docPath, content, isAnonymous);
-
+			/*CMSPublicationInfos infos = getPublicationInfos(cmsCtx, docPath);
+			boolean isAnonymous = infos.isAnonymouslyReadable();*/
+			
+			/*
+			 * On prend toujours la version publiée de l'image si elle existe;
+			 * on ne prend donc pas en compte le displayLiveVersion.
+			 */
+			String displayLive = cmsCtx.getDisplayLiveVersion();
+			cmsCtx.setDisplayLiveVersion("0");
+			
+			cmsContent = fetchPicture(cmsCtx, docPath, content/* , isAnonymous */);
+			
+			cmsCtx.setDisplayLiveVersion(displayLive);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -285,22 +289,26 @@ public class CMSService implements ICMSService {
 	}
 	
 	
-	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content, boolean isAnonymous) throws Exception {
+	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content/*, boolean isAnonymous*/) throws Exception {
+		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
 		try {
-			if(!isAnonymous){
-				getPublicationInfos(cmsCtx, docPath);
+			// if(!isAnonymous){
+			// getPublicationInfos(cmsCtx, docPath);
+			// }
+			CMSItem image = fetchContent(cmsCtx, docPath);
+			if (image != null) {
+
+				cmsCtx.setScope("superuser_context");
+
+				pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
+						(Document) image.getNativeItem(), content)));
 			}
-
-			cmsCtx.setScope("superuser_context");
-
-			return (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(docPath,
-					content)));
 
 		} finally {
 			cmsCtx.setScope(savedScope);
 		}
-
+		return pictureContent;
 	}
 	
 	public CMSBinaryContent getFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws CMSException{
@@ -322,20 +330,21 @@ public class CMSService implements ICMSService {
 	}
 	
 	private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
+		CMSBinaryContent content = null;
 		String savedScope = cmsCtx.getScope();
 		try {
-			getPublicationInfos(cmsCtx, docPath);
-			Document doc = (Document) fetchContent(cmsCtx, docPath).getNativeItem();
+			CMSItem doc = fetchContent(cmsCtx, docPath);
+			if(doc != null){
 			
 			cmsCtx.setScope("superuser_context");
 
-			return (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new FileContentCommand(doc,
+			content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new FileContentCommand((Document) doc.getNativeItem(),
 					fieldName)));
-
+			}
 		} finally {
 			cmsCtx.setScope(savedScope);
 		}
-
+		return content;
 	}
 
 

@@ -19,21 +19,18 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 
 public class PictureContentCommand implements INuxeoCommand {
 
-	String path;
+	Document image;
 	String content;
 	
-	public PictureContentCommand(String path, String content) {
+	public PictureContentCommand(Document image, String content) {
 		super();
-		this.path = path;
+		this.image = image;
 		this.content = content;
 	}
 	
 	public Object execute( Session session)	throws Exception {
 		
-		Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set(
-				"value", path).execute();
-		
-		 PropertyList views = doc.getProperties().getList("picture:views");
+		 PropertyList views = image.getProperties().getList("picture:views");
 		 
 		 if( views != null)	{
 			 for( Object viewObject: views.list())	{
@@ -65,6 +62,7 @@ public class PictureContentCommand implements INuxeoCommand {
 								out.flush();
 							} finally {
 								in.close();
+								out.close();
 							}
 
 							blob.getFile().delete();
@@ -74,7 +72,7 @@ public class PictureContentCommand implements INuxeoCommand {
 							content.setName(blob.getFileName());
 							content.setFile(tempFile);
 							content.setMimeType(blob.getMimeType());
-
+							
 							return content;
 						 
 						 
@@ -91,7 +89,7 @@ public class PictureContentCommand implements INuxeoCommand {
 	};		
 	
 	public String getId() {
-		return "CMSBinaryContentCommand"+path+"/"+content;
+		return "CMSBinaryContentCommand"+image+"/"+content;
 	};		
 
 

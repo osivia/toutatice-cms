@@ -1,11 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -13,27 +11,20 @@ import java.util.TimeZone;
 
 import javax.portlet.GenericPortlet;
 import javax.portlet.PortletConfig;
-import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
-import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.osivia.portal.api.cache.services.ICacheService;
-import org.osivia.portal.api.statut.IStatutService;
-import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSBinaryContent;
-import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
+
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -311,6 +302,7 @@ public class CMSPortlet extends GenericPortlet {
 			}
 
 			// Téléchargement d'un fichier présent dans un document externe
+			/* Fichier, image "contenue dans un document - propriété spécifique du document (ex: annonce:image) */
 			if ("file".equals(resourceRequest.getParameter("type"))) {
 
 				String docPath = resourceRequest.getParameter("docPath");
@@ -408,7 +400,7 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
-			
+			/* Image "contenue" dans le document - propriété ttc:images */
 			if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {
 
 
@@ -432,6 +424,7 @@ public class CMSPortlet extends GenericPortlet {
 				resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
 			}
 			
+			/* Image externe au document - "objet nuxeo */
 			if ("picture".equals(resourceRequest.getParameter("type"))) {
 				
 

@@ -33,4 +33,6 @@ FragmentType fragmentType = (FragmentType) renderRequest.getAttribute("fragmentT
 
 
 
-<%= ctx.getDebugInfos() %>
+<% if (ctx != null){%>
+		<%= ctx.getDebugInfos() %>
+<% } %>
