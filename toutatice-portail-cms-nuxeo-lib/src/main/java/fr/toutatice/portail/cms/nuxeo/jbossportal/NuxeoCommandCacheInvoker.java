@@ -90,20 +90,20 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				// On regarde s'il existe déjà une session pour cet utilisateur
 				try {
 					nuxeoSession = (Session) invocation.getAttribute(Scope.SESSION_SCOPE,
-							"pia.nuxeoSession");
+							"osivia.nuxeoSession");
 				} catch (ClassCastException e) {
 					// Peut arriver si rechargement des classes de Nuxeo
 				}
 
 				String sessionUserName = (String) invocation.getAttribute(Scope.SESSION_SCOPE,
-						"pia.nuxeoSessionUser");
+						"osivia.nuxeoSessionUser");
 
 				String sessionCreationSynchronizer = (String) invocation.getAttribute(
-						Scope.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
+						Scope.SESSION_SCOPE, "osivia.sessionCreationSynchronizer");
 
 				if (sessionCreationSynchronizer == null) {
 					sessionCreationSynchronizer = "sessionCreationSynchronizer";
-					invocation.setAttribute(Scope.SESSION_SCOPE, "pia.sessionCreationSynchronizer",
+					invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.sessionCreationSynchronizer",
 							sessionCreationSynchronizer);
 				}
 
@@ -115,24 +115,24 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 						// On refait les controles pour la synchronisation
 
 						nuxeoSession = (Session) invocation.getAttribute(Scope.SESSION_SCOPE,
-								"pia.nuxeoSession");
+								"osivia.nuxeoSession");
 
 						sessionUserName = (String) invocation.getAttribute(Scope.SESSION_SCOPE,
-								"pia.nuxeoSessionUser");
+								"osivia.nuxeoSessionUser");
 
 						if (nuxeoSession == null
 								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
 
 							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
-									"pia:service=NuxeoService");
+									"osivia:service=NuxeoService");
 
 							nuxeoSession = nuxeoService.createUserSession(userName);
 
-							invocation.setAttribute(Scope.SESSION_SCOPE, "pia.nuxeoSession",
+							invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSession",
 									nuxeoSession);
 
 							if (user != null)
-								invocation.setAttribute(Scope.SESSION_SCOPE, "pia.nuxeoSessionUser",
+								invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSessionUser",
 										user.getUserName());
 						}
 					}
@@ -154,20 +154,20 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				// On regarde s'il existe déjà une session pour cet utilisateur
 				try {
 					nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-							"pia.nuxeoSession");
+							"osivia.nuxeoSession");
 				} catch (ClassCastException e) {
 					// Peut arriver si rechargement des classes de Nuxeo
 				}
 
 				String sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-						"pia.nuxeoSessionUser");
+						"osivia.nuxeoSessionUser");
 
 				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(
-						ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer");
+						ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer");
 
 				if (sessionCreationSynchronizer == null) {
 					sessionCreationSynchronizer = "sessionCreationSynchronizer";
-					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.sessionCreationSynchronizer",
+					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer",
 							sessionCreationSynchronizer);
 				}
 
@@ -179,24 +179,24 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 						// On refait les controles pour la synchronisation
 
 						nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"pia.nuxeoSession");
+								"osivia.nuxeoSession");
 
 						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"pia.nuxeoSessionUser");
+								"osivia.nuxeoSessionUser");
 
 						if (nuxeoSession == null
 								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
 
 							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
-									"pia:service=NuxeoService");
+									"osivia:service=NuxeoService");
 
 							nuxeoSession = nuxeoService.createUserSession(userName);
 
-							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSession",
+							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSession",
 									nuxeoSession);
 
 							if (user != null)
-								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "pia.nuxeoSessionUser",
+								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSessionUser",
 										user.getUserName());
 						}
 					}
@@ -213,7 +213,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				PortletContext portletCtx = ctx.getPortletContext();
 
 				// Valeurs par défaut
-				String sessionKey = "pia.nuxeoSession_virtualuser.";
+				String sessionKey = "osivia.nuxeoSession_virtualuser.";
 				String virtualUser = null;
 
 				if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS) {
@@ -247,7 +247,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				if (nuxeoSession == null) {
 					logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
-					INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+					INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 					nuxeoSession = nuxeoService.createUserSession(virtualUser);
 				}
 			}
@@ -277,7 +277,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
 
-				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "pia:service=ProfilerService");
+				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
 
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				
 			}

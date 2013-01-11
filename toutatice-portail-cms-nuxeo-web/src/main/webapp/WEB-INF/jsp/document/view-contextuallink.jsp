@@ -26,7 +26,7 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 
-List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
+List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
 MenubarItem item = new MenubarItem("Ouvrir le lien", MenubarItem.ORDER_PORTLET_SPECIFIC, ctx.getLink(doc, "player").getUrl(), null, "portlet-menuitem-contextuallink", "_new");
 item.setAjaxDisabled(true);

@@ -93,19 +93,19 @@ public class FileBrowserPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
 			
 			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("pia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
-				window.setProperty("pia.cms.displayLiveVersion", null);	
+				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);	
 
 			
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
+				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
+			else if (window.getProperty("osivia.cms.scope") != null)
+				window.setProperty("osivia.cms.scope", null);
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -129,20 +129,20 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
 		
 		
-		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
 			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 
 
 	
-		String scope = window.getProperty("pia.cms.scope");
+		String scope = window.getProperty("osivia.cms.scope");
 		req.setAttribute("scope", scope);
 		
 		req.setAttribute("ctx", ctx);
@@ -187,11 +187,11 @@ public class FileBrowserPortlet extends CMSPortlet {
 			String nuxeoPath = null;
 
 			// portal window parameter (appels dynamiques depuis le portail)
-			nuxeoPath = window.getProperty("pia.cms.uri");
+			nuxeoPath = window.getProperty("osivia.cms.uri");
 
 			// logger.debug("doView "+ uid);
 			if (nuxeoPath == null) {
-				nuxeoPath = window.getProperty("pia.nuxeoPath");
+				nuxeoPath = window.getProperty("osivia.nuxeoPath");
 			}
 			
 			String displayMode = request.getParameter("displayMode");
@@ -254,8 +254,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				
 				//Injection du path vers le portail
-				request.setAttribute("pia.portletPath", portletPath);
-				//response.setProperty("pia.emptyResponse", "1");
+				request.setAttribute("osivia.portletPath", portletPath);
+				//response.setProperty("osivia.emptyResponse", "1");
 				
 				/* attributs de la JSP */
 				

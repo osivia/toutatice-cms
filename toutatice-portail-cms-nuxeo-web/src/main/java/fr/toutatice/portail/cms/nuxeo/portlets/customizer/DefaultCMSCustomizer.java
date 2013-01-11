@@ -146,12 +146,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
 
-		/*windowProperties.put("pia.cms.scope", ctx.getScope());*/
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.cms.uri", doc.getPath());
-		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");
-		windowProperties.put("pia.hideDecorators", "1");
+		/*windowProperties.put("osivia.cms.scope", ctx.getScope());*/
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.cms.uri", doc.getPath());
+		windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 
 
@@ -213,14 +213,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion",ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", "1");
-		windowProperties.put("pia.title", "Annonces " + doc.getTitle());
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion",ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", "1");
+		windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -235,15 +235,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", "1");
-		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("pia.cms.pageSizeMax", "10");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", "1");
+		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("osivia.cms.pageSizeMax", "10");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -263,15 +263,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.cms.pageSizeMax", "10");
-		windowProperties.put("pia.title", "Liste de liens");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.cms.pageSizeMax", "10");
+		windowProperties.put("osivia.title", "Liste de liens");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -285,15 +285,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", createFolderRequest(ctx, true));
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("pia.cms.pageSizeMax", "10");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("osivia.cms.pageSizeMax", "10");
 		Map<String, String> params = new HashMap<String, String>();
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
@@ -310,15 +310,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
 		
-		windowProperties.put("pia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("pia.cms.pageSizeMax", "10");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("osivia.cms.pageSizeMax", "10");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -335,15 +335,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.nuxeoRequest", doc.getString("ttc:queryPart"));
-		windowProperties.put("pia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.nuxeoRequest", doc.getString("ttc:queryPart"));
+		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		//windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("pia.cms.pageSizeMax", "10");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		//windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+		windowProperties.put("osivia.cms.pageSizeMax", "10");
 		Map<String, String> params = new HashMap<String, String>();
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
@@ -360,12 +360,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			throws Exception {
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("pia.cms.scope", ctx.getScope());
-		windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("pia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("pia.cms.uri", uid);
-		windowProperties.put("pia.cms.publishPathAlreadyConverted", "1");
-		windowProperties.put("pia.hideDecorators", "1");
+		windowProperties.put("osivia.cms.scope", ctx.getScope());
+		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+		windowProperties.put("osivia.cms.uri", uid);
+		windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
+		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 
 		Map<String, String> params = new HashMap<String, String>();
@@ -545,7 +545,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		getMenuBarFormater().formatContentMenuBar(ctx);
 
-		List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("pia.menuBar");
+		List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("osivia.menuBar");
 
 		adaptContentMenuBar(ctx, menuBar);
 

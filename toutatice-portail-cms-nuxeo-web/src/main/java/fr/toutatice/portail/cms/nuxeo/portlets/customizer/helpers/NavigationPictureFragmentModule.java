@@ -73,7 +73,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 
 		request.setAttribute("ctx", ctx);
 
-		String propertyName = window.getProperty("pia.propertyName");
+		String propertyName = window.getProperty("osivia.propertyName");
 
 		if ((ctx.getNavigationPath() != null) && (propertyName != null)) {
 			Document navigationPictureContainer = computePicture(ctx, cmsReadNavContext, propertyName);
@@ -85,7 +85,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 
 		}
 		if (emptyResponse) {
-			request.setAttribute("pia.emptyResponse", "1");
+			request.setAttribute("osivia.emptyResponse", "1");
 		}
 
 	}
@@ -93,7 +93,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
 			throws Exception {
 
-		String propertyName = window.getProperty("pia.propertyName");
+		String propertyName = window.getProperty("osivia.propertyName");
 		if (propertyName == null)
 			propertyName = "";
 		request.setAttribute("propertyName", propertyName);
@@ -104,9 +104,9 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 			throws Exception {
 		if (request.getParameter("propertyName") != null) {
 			if (request.getParameter("propertyName").length() > 0)
-				window.setProperty("pia.propertyName", request.getParameter("propertyName"));
-			else if (window.getProperty("pia.propertyName") != null)
-				window.setProperty("pia.propertyName", null);
+				window.setProperty("osivia.propertyName", request.getParameter("propertyName"));
+			else if (window.getProperty("osivia.propertyName") != null)
+				window.setProperty("osivia.propertyName", null);
 		}
 
 	}

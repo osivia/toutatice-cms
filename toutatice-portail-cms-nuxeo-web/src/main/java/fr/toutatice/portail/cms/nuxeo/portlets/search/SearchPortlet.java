@@ -69,13 +69,13 @@ public class SearchPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
 
 			
 			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("pia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
-				window.setProperty("pia.cms.displayLiveVersion", null);	
+				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);	
 			
 
 			res.setPortletMode(PortletMode.VIEW);
@@ -99,12 +99,12 @@ public class SearchPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
 		
-		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
 			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
@@ -125,13 +125,13 @@ public class SearchPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(request);
 
-		String	nuxeoPath =  window.getProperty("pia.nuxeoPath");
+		String	nuxeoPath =  window.getProperty("osivia.nuxeoPath");
 			
 		String keywords = request.getParameter("keywords");
 		
 		if( keywords == null)
 			// on prend les keywords public
-			keywords = request.getParameter("pia.keywords");
+			keywords = request.getParameter("osivia.keywords");
 
 			
 		
@@ -173,7 +173,7 @@ public class SearchPortlet extends CMSPortlet {
 			} else {
 
 				// Page de recherche
-				Window windowPortal = (Window) request.getAttribute("pia.window");
+				Window windowPortal = (Window) request.getAttribute("osivia.window");
 
 				Page page = (Page) windowPortal.getParent();
 				String pageId = URLEncoder.encode(page.getId().toString(PortalObjectPath.SAFEST_FORMAT), "UTF-8");
@@ -181,11 +181,11 @@ public class SearchPortlet extends CMSPortlet {
 				// Url d'appel de la recherche
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
-				windowProperties.put("pia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
-				windowProperties.put("pia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+				windowProperties.put("osivia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
+				windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				
-				windowProperties.put("pia.title", "Résultats de la recherche");
-				windowProperties.put("pia.hideDecorators", "1");
+				windowProperties.put("osivia.title", "Résultats de la recherche");
+				windowProperties.put("osivia.hideDecorators", "1");
 				
 
 				Map<String, String> params = new HashMap<String, String>();

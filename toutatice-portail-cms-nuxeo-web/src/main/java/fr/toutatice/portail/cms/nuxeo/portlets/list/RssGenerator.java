@@ -139,7 +139,7 @@ public class RssGenerator {
 				params.put("thubmnailPath", doc.getPath());
 				params.put("thubmnailField", "ttc:vignette");
 				
-				String permaLinkThumbnail = ctx.getPortalUrlFactory().getPermaLink(portalCtx, permLinkRef, params,  portalCtx.getRequest().getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS_PICTURE);
+				String permaLinkThumbnail = ctx.getPortalUrlFactory().getPermaLink(portalCtx, permLinkRef, params,  portalCtx.getRequest().getParameter("osivia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS_PICTURE);
 				
 				enclosure.setAttribute("url", permaLinkThumbnail);
 				*/

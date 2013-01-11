@@ -68,7 +68,7 @@ public class MenuBarFormater {
 
 		PortletRequest request = cmsCtx.getRequest();
 
-		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
 		// Menu bar
 
@@ -151,7 +151,7 @@ public class MenuBarFormater {
 
 		Page currentPage = null;
 
-		Window window = (Window) cmsCtx.getRequest().getAttribute("pia.window");
+		Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
 		if (window != null)
 			currentPage = window.getPage();
 

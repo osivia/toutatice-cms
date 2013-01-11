@@ -117,7 +117,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 
-		Session session = (Session) sessionEvent.getSession().getAttribute("portal.session" + "pia.nuxeoSession");
+		Session session = (Session) sessionEvent.getSession().getAttribute("portal.session" + "osivia.nuxeoSession");
 
 		if (session != null) {
 			

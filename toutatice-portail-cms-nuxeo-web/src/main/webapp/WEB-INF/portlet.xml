@@ -30,9 +30,9 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
         
 	</portlet>
 	
@@ -62,9 +62,9 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
         
 	</portlet>
 	
@@ -97,9 +97,9 @@
         
       <supported-public-render-parameter>selectors</supported-public-render-parameter>
       
-      <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>      
-      <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>      
+      <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>      
+      <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>      
          
 	</portlet>
 	
@@ -129,9 +129,9 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
-       <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>  
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>       
-       <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>
+       <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>  
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>       
+       <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>
 
 	</portlet>
 	
@@ -163,9 +163,9 @@
         </portlet-info>
         
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
         
         <supported-public-render-parameter>selectors</supported-public-render-parameter>        
 	</portlet>
@@ -196,9 +196,9 @@
 			<keywords>Portlet,Files</keywords>
         </portlet-info>
 
-		<supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>		
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>		
+		<supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>		
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>		
         
 	</portlet>	
 	
@@ -228,11 +228,11 @@
 			<keywords>Portlet,Search</keywords>
         </portlet-info>
         
-      <supported-public-render-parameter>pia.keywords</supported-public-render-parameter>       
+      <supported-public-render-parameter>osivia.keywords</supported-public-render-parameter>       
       
-      <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter> 
-	  <supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>      
-      <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>      
+      <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter> 
+	  <supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>      
+      <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>      
        
 	</portlet>	
 	
@@ -264,9 +264,9 @@
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
 
           
 	</portlet>
@@ -298,9 +298,9 @@
        
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
 
 	</portlet>
 	
@@ -332,9 +332,9 @@
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
-        <supported-public-render-parameter>pia.cms.path</supported-public-render-parameter>
-		<supported-public-render-parameter>pia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>pia.cms.itemRelPath</supported-public-render-parameter>
+        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
+		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>
 
           
 	</portlet>	
@@ -347,23 +347,23 @@
 	</public-render-parameter>
 	
 	<public-render-parameter>
-        <identifier>pia.keywords</identifier>
-        <name>pia.keywords</name>
+        <identifier>osivia.keywords</identifier>
+        <name>osivia.keywords</name>
 	</public-render-parameter>	
 	
 	<public-render-parameter>
-        <identifier>pia.cms.path</identifier>
-        <name>pia.cms.path</name>
+        <identifier>osivia.cms.path</identifier>
+        <name>osivia.cms.path</name>
 	</public-render-parameter>	
 	
 	<public-render-parameter>
-        <identifier>pia.cms.pageScope</identifier>
-        <name>pia.cms.pageScope</name>
+        <identifier>osivia.cms.pageScope</identifier>
+        <name>osivia.cms.pageScope</name>
 	</public-render-parameter>	
 	
 	<public-render-parameter>
-        <identifier>pia.cms.itemRelPath</identifier>
-        <name>pia.cms.itemRelPath</name>
+        <identifier>osivia.cms.itemRelPath</identifier>
+        <name>osivia.cms.itemRelPath</name>
 	</public-render-parameter>	
 		
 		

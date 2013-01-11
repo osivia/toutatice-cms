@@ -88,17 +88,17 @@ public class ViewListPortlet extends CMSPortlet {
 
 				PortalWindow window = WindowFactory.getWindow(resourceRequest);
 
-				nuxeoRequest = window.getProperty("pia.nuxeoRequest");
+				nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
 				
 
 
-				if ("beanShell".equals(window.getProperty("pia.requestInterpretor"))) {
+				if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
 					// Evaluation beanshell
 					Interpreter i = new Interpreter();
 					i.set("params", PageSelectors.decodeProperties(resourceRequest.getParameter("selectors")));
 					i.set("request", resourceRequest);
 					i.set("NXQLFormater", new NXQLFormater());
-					//i.set("path",  resourceRequest.getParameter("pia.cms.path"));		
+					//i.set("path",  resourceRequest.getParameter("osivia.cms.path"));		
 					
 					i.set("basePath",  ctx.getBasePath());
 					i.set("navigationPath",  ctx.getNavigationPath());
@@ -113,12 +113,12 @@ public class ViewListPortlet extends CMSPortlet {
 
 				int pageSize = 10;
 
-				String pageSizeAttributeName = "pia.cms.pageSizeMax";
+				String pageSizeAttributeName = "osivia.cms.pageSizeMax";
 				if (window.getProperty(pageSizeAttributeName) != null) {
 					pageSize = Integer.parseInt(window.getProperty(pageSizeAttributeName));
 				}
 
-				String style = window.getProperty("pia.cms.style");
+				String style = window.getProperty("osivia.cms.style");
 				if (style == null)
 					style = CMSCustomizer.STYLE_NORMAL;
 
@@ -139,7 +139,7 @@ public class ViewListPortlet extends CMSPortlet {
 					PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(
 							nuxeoRequest, ctx.isDisplayingLiveVersion(), 0, pageSize, schemas));
 
-					org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx,  window.getProperty("pia.rssTitle"), docs, window.getProperty("pia.rssLinkRef"));
+					org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx,  window.getProperty("osivia.rssTitle"), docs, window.getProperty("osivia.rssLinkRef"));
 					
 					
 					/* Envoi du flux */
@@ -182,37 +182,37 @@ public class ViewListPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoRequest", req.getParameter("nuxeoRequest"));
+			window.setProperty("osivia.nuxeoRequest", req.getParameter("nuxeoRequest"));
 
 			if ("1".equals(req.getParameter("beanShell")))
-				window.setProperty("pia.requestInterpretor", "beanShell");
-			else if (window.getProperty("pia.requestInterpretor") != null)
-				window.setProperty("pia.requestInterpretor", null);
+				window.setProperty("osivia.requestInterpretor", "beanShell");
+			else if (window.getProperty("osivia.requestInterpretor") != null)
+				window.setProperty("osivia.requestInterpretor", null);
 
 			if ("1".equals(req.getParameter("displayNuxeoRequest")))
-				window.setProperty("pia.displayNuxeoRequest", "1");
-			else if (window.getProperty("pia.displayNuxeoRequest") != null)
-				window.setProperty("pia.displayNuxeoRequest", null);
+				window.setProperty("osivia.displayNuxeoRequest", "1");
+			else if (window.getProperty("osivia.displayNuxeoRequest") != null)
+				window.setProperty("osivia.displayNuxeoRequest", null);
 
 			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("pia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
-				window.setProperty("pia.cms.displayLiveVersion", null);
+				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);
 
 			if (!"1".equals(req.getParameter("showMetadatas")))
-				window.setProperty("pia.cms.hideMetaDatas", "1");
-			else if (window.getProperty("pia.cms.hideMetaDatas") != null)
-				window.setProperty("pia.cms.hideMetaDatas", null);
+				window.setProperty("osivia.cms.hideMetaDatas", "1");
+			else if (window.getProperty("osivia.cms.hideMetaDatas") != null)
+				window.setProperty("osivia.cms.hideMetaDatas", null);
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
+				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
+			else if (window.getProperty("osivia.cms.scope") != null)
+				window.setProperty("osivia.cms.scope", null);
 
 			if (req.getParameter("style") != null && req.getParameter("style").length() > 0)
-				window.setProperty("pia.cms.style", req.getParameter("style"));
-			else if (window.getProperty("pia.cms.style") != null)
-				window.setProperty("pia.cms.style", null);
+				window.setProperty("osivia.cms.style", req.getParameter("style"));
+			else if (window.getProperty("osivia.cms.style") != null)
+				window.setProperty("osivia.cms.style", null);
 
 			// Taille de page
 			int pageSize = 0;
@@ -225,9 +225,9 @@ public class ViewListPortlet extends CMSPortlet {
 			}
 
 			if (pageSize > 0)
-				window.setProperty("pia.cms.pageSize", Integer.toString(pageSize));
-			else if (window.getProperty("pia.cms.pageSize") != null)
-				window.setProperty("pia.cms.pageSize", null);
+				window.setProperty("osivia.cms.pageSize", Integer.toString(pageSize));
+			else if (window.getProperty("osivia.cms.pageSize") != null)
+				window.setProperty("osivia.cms.pageSize", null);
 
 			// Taille de page max
 			int pageSizeMax = 0;
@@ -240,9 +240,9 @@ public class ViewListPortlet extends CMSPortlet {
 			}
 
 			if (pageSizeMax > 0)
-				window.setProperty("pia.cms.pageSizeMax", Integer.toString(pageSizeMax));
-			else if (window.getProperty("pia.cms.pageSizeMax") != null)
-				window.setProperty("pia.cms.pageSizeMax", null);
+				window.setProperty("osivia.cms.pageSizeMax", Integer.toString(pageSizeMax));
+			else if (window.getProperty("osivia.cms.pageSizeMax") != null)
+				window.setProperty("osivia.cms.pageSizeMax", null);
 
 			// Limite
 			int maxItems = 0;
@@ -255,26 +255,26 @@ public class ViewListPortlet extends CMSPortlet {
 			}
 
 			if (maxItems > 0)
-				window.setProperty("pia.cms.maxItems", Integer.toString(maxItems));
-			else if (window.getProperty("pia.cms.maxItems") != null)
-				window.setProperty("pia.cms.maxItems", null);
+				window.setProperty("osivia.cms.maxItems", Integer.toString(maxItems));
+			else if (window.getProperty("osivia.cms.maxItems") != null)
+				window.setProperty("osivia.cms.maxItems", null);
 
 			if (req.getParameter("permaLinkRef") != null && req.getParameter("permaLinkRef").length() > 0)
-				window.setProperty("pia.permaLinkRef", req.getParameter("permaLinkRef"));
-			else if (window.getProperty("pia.permaLinkRef") != null)
-				window.setProperty("pia.permaLinkRef", null);
+				window.setProperty("osivia.permaLinkRef", req.getParameter("permaLinkRef"));
+			else if (window.getProperty("osivia.permaLinkRef") != null)
+				window.setProperty("osivia.permaLinkRef", null);
 			
 			if (req.getParameter("rssLinkRef") != null && req.getParameter("rssLinkRef").length() > 0)
-				window.setProperty("pia.rssLinkRef", req.getParameter("rssLinkRef"));
-			else if (window.getProperty("pia.rssLinkRef") != null)
-				window.setProperty("pia.rssLinkRef", null);
+				window.setProperty("osivia.rssLinkRef", req.getParameter("rssLinkRef"));
+			else if (window.getProperty("osivia.rssLinkRef") != null)
+				window.setProperty("osivia.rssLinkRef", null);
 			
 			
 			
 			if (req.getParameter("rssTitle") != null && req.getParameter("rssTitle").length() > 0)
-				window.setProperty("pia.rssTitle", req.getParameter("rssTitle"));
-			else if (window.getProperty("pia.rssTitle") != null)
-				window.setProperty("pia.rssTitle", null);
+				window.setProperty("osivia.rssTitle", req.getParameter("rssTitle"));
+			else if (window.getProperty("osivia.rssTitle") != null)
+				window.setProperty("osivia.rssTitle", null);
 			
 
 
@@ -302,30 +302,30 @@ public class ViewListPortlet extends CMSPortlet {
 
 			PortalWindow window = WindowFactory.getWindow(req);
 
-			String nuxeoRequest = window.getProperty("pia.nuxeoRequest");
+			String nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
 			if (nuxeoRequest == null)
 				nuxeoRequest = "";
 			req.setAttribute("nuxeoRequest", nuxeoRequest);
 
-			String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+			String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 			if (displayLiveVersion == null)
 				displayLiveVersion = "";
 			req.setAttribute("displayLiveVersion", displayLiveVersion);
 
 			String showMetadatas = "1";
-			if ("1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+			if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
 				showMetadatas = "0";
 			req.setAttribute("showMetadatas", showMetadatas);
 
 			String beanShell = "";
-			String interpretor = window.getProperty("pia.requestInterpretor");
+			String interpretor = window.getProperty("osivia.requestInterpretor");
 			if ("beanShell".equals(interpretor))
 				beanShell = "1";
 			req.setAttribute("beanShell", beanShell);
 
-			req.setAttribute("displayNuxeoRequest", window.getProperty("pia.displayNuxeoRequest"));
+			req.setAttribute("displayNuxeoRequest", window.getProperty("osivia.displayNuxeoRequest"));
 
-			String scope = window.getProperty("pia.cms.scope");
+			String scope = window.getProperty("osivia.cms.scope");
 			req.setAttribute("scope", scope);
 
 			/* Styles d'affichage */
@@ -333,33 +333,33 @@ public class ViewListPortlet extends CMSPortlet {
 			Map<String, ListTemplate> templates = getListTemplates();
 			req.setAttribute("templates", templates);
 
-			String style = window.getProperty("pia.cms.style");
+			String style = window.getProperty("osivia.cms.style");
 			if (style == null)
 				style = CMSCustomizer.STYLE_NORMAL;
 			req.setAttribute("style", style);
 
-			String pageSize = window.getProperty("pia.cms.pageSize");
+			String pageSize = window.getProperty("osivia.cms.pageSize");
 			req.setAttribute("pageSize", pageSize);
 
-			String pageSizeMax = window.getProperty("pia.cms.pageSizeMax");
+			String pageSizeMax = window.getProperty("osivia.cms.pageSizeMax");
 			req.setAttribute("pageSizeMax", pageSizeMax);
 
-			String maxItems = window.getProperty("pia.cms.maxItems");
+			String maxItems = window.getProperty("osivia.cms.maxItems");
 			req.setAttribute("maxItems", maxItems);
 
-			String permaLinkRef = window.getProperty("pia.permaLinkRef");
+			String permaLinkRef = window.getProperty("osivia.permaLinkRef");
 			if (permaLinkRef == null)
 				permaLinkRef = "";
 			req.setAttribute("permaLinkRef", permaLinkRef);
 
 
-		String rssLinkRef = window.getProperty("pia.rssLinkRef");
+		String rssLinkRef = window.getProperty("osivia.rssLinkRef");
 		if (rssLinkRef == null )
 			rssLinkRef = "";
 		req.setAttribute("rssLinkRef", rssLinkRef);
 	
 
-		String rssTitle = window.getProperty("pia.rssTitle");
+		String rssTitle = window.getProperty("osivia.rssTitle");
 		if (rssTitle == null )
 			rssTitle = "";
 		req.setAttribute("rssTitle", rssTitle);
@@ -397,9 +397,9 @@ public class ViewListPortlet extends CMSPortlet {
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			nuxeoRequest = window.getProperty("pia.nuxeoRequest");
+			nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
 
-			if ("beanShell".equals(window.getProperty("pia.requestInterpretor"))) {
+			if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
 				// Evaluation beanshell
 				Interpreter i = new Interpreter();
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
@@ -423,17 +423,17 @@ public class ViewListPortlet extends CMSPortlet {
 			/* Filtre pour sélectionner uniquement les version publiées */
 
 			int maxItems = -1;
-			if (window.getProperty("pia.cms.maxItems") != null)
-				maxItems = Integer.parseInt(window.getProperty("pia.cms.maxItems"));
+			if (window.getProperty("osivia.cms.maxItems") != null)
+				maxItems = Integer.parseInt(window.getProperty("osivia.cms.maxItems"));
 
 			/* Initialisation de la page courante et de la taille de la page */
 
 			int pageSize = -1;
 			int currentPage = 0;
 
-			String pageSizeAttributeName = "pia.cms.pageSize";
+			String pageSizeAttributeName = "osivia.cms.pageSize";
 			if (WindowState.MAXIMIZED.equals(request.getWindowState()))
-				pageSizeAttributeName = "pia.cms.pageSizeMax";
+				pageSizeAttributeName = "osivia.cms.pageSizeMax";
 
 			if (window.getProperty(pageSizeAttributeName) != null) {
 				pageSize = Integer.parseInt(window.getProperty(pageSizeAttributeName));
@@ -455,7 +455,7 @@ public class ViewListPortlet extends CMSPortlet {
 					&& (lastSelectors != null))
 				currentPage = 0;
 
-			String style = window.getProperty("pia.cms.style");
+			String style = window.getProperty("osivia.cms.style");
 			if (style == null)
 				style = CMSCustomizer.STYLE_NORMAL;
 
@@ -514,47 +514,47 @@ public class ViewListPortlet extends CMSPortlet {
 
 				request.setAttribute("nbPages", nbPages);
 
-				if ("1".equals(window.getProperty("pia.displayNuxeoRequest")))
+				if ("1".equals(window.getProperty("osivia.displayNuxeoRequest")))
 					request.setAttribute("nuxeoRequest", nuxeoRequest);
 
 				request.setAttribute("selectors", request.getParameter("selectors"));
 
 				request.setAttribute("style", style);
 
-						String permaLinkRef = window.getProperty("pia.permaLinkRef");
+						String permaLinkRef = window.getProperty("osivia.permaLinkRef");
 						if( permaLinkRef != null)	{
 							Map<String, String> publicParams = new HashMap<String, String>();
 							if( selectors != null)
 								publicParams.put("selectors", selectors);
 							String permLinkType =  IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
-							if( request.getParameter("pia.cms.path") != null)	{
+							if( request.getParameter("osivia.cms.path") != null)	{
 								permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
 								permaLinkRef = null;
 							}
 							
 							String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
-										response), permaLinkRef, publicParams, request.getParameter("pia.cms.path"), permLinkType);
+										response), permaLinkRef, publicParams, request.getParameter("osivia.cms.path"), permLinkType);
 							request.setAttribute("permaLinkURL", permaLinkURL);
 						}
 					
 
 
 						
-						String rssLinkRef = window.getProperty("pia.rssLinkRef");
+						String rssLinkRef = window.getProperty("osivia.rssLinkRef");
 						if( rssLinkRef != null)	{
 							if( !ctx.isDisplayingLiveVersion())	{
 							
 						
 							boolean anonymousAccess = true;
 							
-							if( request.getParameter("pia.cms.path") != null)	{
+							if( request.getParameter("osivia.cms.path") != null)	{
 								
 								// check if the navigation folder is accessible in anonymous mode (for rss) 
 								CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
 								cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
 								cmsReadNavContext.setScope(ctx.getScope());		
 								
-								anonymousAccess = getNuxeoNavigationService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("pia.cms.path"));
+								anonymousAccess = getNuxeoNavigationService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("osivia.cms.path"));
 							
 								
 							}
@@ -567,7 +567,7 @@ public class ViewListPortlet extends CMSPortlet {
 							
 							
 								String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request,
-										response), rssLinkRef, publicParams, request.getParameter("pia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
+										response), rssLinkRef, publicParams, request.getParameter("osivia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
 								
 								request.setAttribute("rssLinkURL", rssLinkURL);
 							}
@@ -576,7 +576,7 @@ public class ViewListPortlet extends CMSPortlet {
 						
 						// Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
 						if( currentPage == 0 && docs.size() == 0)
-							request.setAttribute("pia.emptyResponse", "1");
+							request.setAttribute("osivia.emptyResponse", "1");
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 

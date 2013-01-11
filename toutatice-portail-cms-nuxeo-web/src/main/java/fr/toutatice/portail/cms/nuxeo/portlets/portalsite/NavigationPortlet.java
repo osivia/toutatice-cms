@@ -43,12 +43,12 @@ public class NavigationPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
+				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
+			else if (window.getProperty("osivia.cms.scope") != null)
+				window.setProperty("osivia.cms.scope", null);
 			
 	
 				
@@ -74,13 +74,13 @@ public class NavigationPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
 		
 		
-		String scope = window.getProperty("pia.cms.scope");
+		String scope = window.getProperty("osivia.cms.scope");
 		req.setAttribute("scope", scope);
 		
 
@@ -109,13 +109,13 @@ public class NavigationPortlet extends CMSPortlet {
 			String nuxeoPath = null;
 	
 			// portal window parameter (appels dynamiques depuis le portail)
-			nuxeoPath = window.getProperty("pia.cms.uri");
+			nuxeoPath = window.getProperty("osivia.cms.uri");
 
 			// logger.debug("doView "+ uid);
 
 			if (nuxeoPath == null) {
 				// WIndow parameter (back-office)
-				nuxeoPath = window.getProperty("pia.nuxeoPath");
+				nuxeoPath = window.getProperty("osivia.nuxeoPath");
 			}
 
 			if (nuxeoPath != null) {

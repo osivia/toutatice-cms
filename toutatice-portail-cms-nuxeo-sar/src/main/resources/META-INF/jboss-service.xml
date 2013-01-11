@@ -4,9 +4,9 @@
 	
 	<mbean
 		code="fr.toutatice.portail.cms.nuxeo.services.NuxeoService"
-		name="pia:service=NuxeoService">
+		name="osivia:service=NuxeoService">
 		
-		 	 <depends optional-attribute-name="Profiler" proxy-type="attribute">pia:service=ProfilerService</depends>
+		 	 <depends optional-attribute-name="Profiler" proxy-type="attribute">osivia:service=ProfilerService</depends>
  
 	</mbean>
 	

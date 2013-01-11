@@ -291,36 +291,36 @@ public class NuxeoController {
 		portalCtx = new PortalControllerContext(portletCtx, request, response);
 		
 		// v2 : Ajout héritage
-		String scope = window.getProperty("pia.cms.scope");
+		String scope = window.getProperty("osivia.cms.scope");
 		if( "__inherited".equals(scope))	{
 			// scope de contextualisation
-			scope = request.getParameter("pia.cms.pageScope");
+			scope = request.getParameter("osivia.cms.pageScope");
 			if( scope == null)
-				scope = window.getPageProperty("pia.cms.scope");
+				scope = window.getPageProperty("osivia.cms.scope");
 		}
 		
-		navigationScope = window.getPageProperty("pia.cms.navigationScope");
+		navigationScope = window.getPageProperty("osivia.cms.navigationScope");
 		
-		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
-		String hideMetadatas = window.getProperty("pia.cms.hideMetaDatas");
+		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+		String hideMetadatas = window.getProperty("osivia.cms.hideMetaDatas");
 
 		setScope(scope);
 		setDisplayLiveVersion(displayLiveVersion);
 		setHideMetaDatas(hideMetadatas);
 		
-		setPageMarker((String) request.getAttribute("pia.pageMarker"));
+		setPageMarker((String) request.getAttribute("osivia.pageMarker"));
 		
-		spacePath = window.getPageProperty("pia.cms.basePath");
+		spacePath = window.getPageProperty("osivia.cms.basePath");
 		
 		
-		Window jbpWindow = (Window) request.getAttribute("pia.window");
+		Window jbpWindow = (Window) request.getAttribute("osivia.window");
 		Page page = (Page) jbpWindow.getParent();
 		
 
-		if( "cms".equals(page.getProperty("pia.navigationMode")))	{
+		if( "cms".equals(page.getProperty("osivia.navigationMode")))	{
 			
 			// En navigation CMS, on descend d'un niveau par rapport à l'espace pour déterminer le path de la page
-			basePath = request.getParameter("pia.cms.path");
+			basePath = request.getParameter("osivia.cms.path");
 			if( basePath != null)	{
 			CMSObjectPath parent = CMSObjectPath.parse(basePath).getParent();
 			String parentPath= parent.toString();
@@ -336,12 +336,12 @@ public class NuxeoController {
 			}
 		}
 		else
-			basePath = window.getPageProperty("pia.cms.basePath");
+			basePath = window.getPageProperty("osivia.cms.basePath");
 		
 		
-		navigationPath =  request.getParameter("pia.cms.path");
-		if	(spacePath != null && request.getParameter("pia.cms.itemRelPath") != null)
-			contentPath = spacePath + request.getParameter("pia.cms.itemRelPath");
+		navigationPath =  request.getParameter("osivia.cms.path");
+		if	(spacePath != null && request.getParameter("osivia.cms.itemRelPath") != null)
+			contentPath = spacePath + request.getParameter("osivia.cms.itemRelPath");
 		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
@@ -424,7 +424,7 @@ public class NuxeoController {
 
 	public String getPageId() {
 		if (pageId == null) {
-			Window window = (Window) request.getAttribute("pia.window");
+			Window window = (Window) request.getAttribute("osivia.window");
 			Page page = (Page) window.getParent();
 			try {
 				pageId = URLEncoder.encode(page.getId().toString(PortalObjectPath.SAFEST_FORMAT), "UTF-8");
@@ -494,7 +494,7 @@ public class NuxeoController {
 
 	public String formatScopeList(String selectedScope) throws Exception {
 		
-		Window window = (Window) request.getAttribute("pia.window");
+		Window window = (Window) request.getAttribute("osivia.window");
 
 		return getFormatter().formatScopeList(window, "scope", selectedScope);
 
@@ -700,7 +700,7 @@ public class NuxeoController {
 	public Link getCMSLinkByPath (String path, String displayContext) throws Exception  {
 		
 		
-		Window window = (Window) getPortalCtx().getRequest().getAttribute("pia.window");
+		Window window = (Window) getPortalCtx().getRequest().getAttribute("osivia.window");
 		Page page = window.getPage();
 
 		Map<String, String> pageParams = new HashMap<String, String>();
@@ -727,7 +727,7 @@ public class NuxeoController {
 		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		
 		CMSServiceCtx handlerCtx = new  CMSServiceCtx();
@@ -755,7 +755,7 @@ public class NuxeoController {
 		
 		// Sinon on passe par le gestionnaire de cms pour recontextualiser
 		
-		Window window = (Window) getPortalCtx().getRequest().getAttribute("pia.window");
+		Window window = (Window) getPortalCtx().getRequest().getAttribute("osivia.window");
 		Page page = window.getPage();
 
 		Map<String, String> pageParams = new HashMap<String, String>();
@@ -781,10 +781,10 @@ public class NuxeoController {
 		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		
-		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("pia.menuBar");		
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");		
 
 		nuxeoService.getCMSCustomizer().formatContentMenuBar(getCMSCtx());
 		
@@ -796,7 +796,7 @@ public class NuxeoController {
 		
 		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		
 		CMSItem cmsItem = nuxeoService.getContent(getCMSCtx(), path);
@@ -817,7 +817,7 @@ public class NuxeoController {
 			
 			INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 			if( nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 			
 			
 			return nuxeoService.getBinaryContent(getCMSCtx(), "attachedPicture", docPath, pictureIndex);
@@ -837,7 +837,7 @@ public class NuxeoController {
 
 			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 			if (nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
 			return nuxeoService.getBinaryContent(getCMSCtx(), "picture", docPath, content);
 
@@ -856,7 +856,7 @@ public class NuxeoController {
 
 			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
 			if (nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "pia:service=NuxeoService");
+				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
 			return nuxeoService.getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
 

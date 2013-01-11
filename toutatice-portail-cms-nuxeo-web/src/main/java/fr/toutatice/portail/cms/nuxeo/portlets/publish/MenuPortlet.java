@@ -83,9 +83,9 @@ public class MenuPortlet extends CMSPortlet {
 			}
 
 			if (openLevels > 0)
-				window.setProperty("pia.cms.openLevels", Integer.toString(openLevels));
-			else if (window.getProperty("pia.cms.openLevels") != null)
-				window.setProperty("pia.cms.openLevels", null);
+				window.setProperty("osivia.cms.openLevels", Integer.toString(openLevels));
+			else if (window.getProperty("osivia.cms.openLevels") != null)
+				window.setProperty("osivia.cms.openLevels", null);
 			
 			// Nombre de niveaux maximum
 			int maxLevels = 0;
@@ -98,9 +98,9 @@ public class MenuPortlet extends CMSPortlet {
 			}
 
 			if (maxLevels > 0)
-				window.setProperty("pia.cms.maxLevels", Integer.toString(maxLevels));
-			else if (window.getProperty("pia.cms.maxLevels") != null)
-				window.setProperty("pia.cms.maxLevels", null);
+				window.setProperty("osivia.cms.maxLevels", Integer.toString(maxLevels));
+			else if (window.getProperty("osivia.cms.maxLevels") != null)
+				window.setProperty("osivia.cms.maxLevels", null);
 			
 			
 			
@@ -126,11 +126,11 @@ public class MenuPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		String openLevels = window.getProperty("pia.cms.openLevels");
+		String openLevels = window.getProperty("osivia.cms.openLevels");
 		req.setAttribute("openLevels", openLevels);
 		
 
-		String maxLevels = window.getProperty("pia.cms.maxLevels");
+		String maxLevels = window.getProperty("osivia.cms.maxLevels");
 		req.setAttribute("maxLevels", maxLevels);
 
 		req.setAttribute("ctx", ctx);
@@ -231,13 +231,13 @@ public class MenuPortlet extends CMSPortlet {
 
 				int maxLevels = 3;
 
-				String sMaxLevels = window.getProperty("pia.cms.maxLevels");
+				String sMaxLevels = window.getProperty("osivia.cms.maxLevels");
 				if (sMaxLevels != null && sMaxLevels.length() > 0)
 					maxLevels = Integer.parseInt(sMaxLevels);
 				
 				int openLevels = 1;
 				
-				String sOpenLevels = window.getProperty("pia.cms.openLevels");
+				String sOpenLevels = window.getProperty("osivia.cms.openLevels");
 				if (sOpenLevels != null && sOpenLevels.length() > 0)
 					openLevels = Integer.parseInt(sOpenLevels);
 

@@ -60,9 +60,9 @@ public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			PortalWindow window = WindowFactory.getWindow(req);
 
 			if (req.getParameter("fragmentTypeId") != null && req.getParameter("fragmentTypeId").length() > 0)
-				window.setProperty("pia.fragmentTypeId", req.getParameter("fragmentTypeId"));
-			else if (window.getProperty("pia.fragmentTypeId") != null)
-				window.setProperty("pia.fragmentTypeId", null);
+				window.setProperty("osivia.fragmentTypeId", req.getParameter("fragmentTypeId"));
+			else if (window.getProperty("osivia.fragmentTypeId") != null)
+				window.setProperty("osivia.fragmentTypeId", null);
 
 		
 			String fragmentTypeId = req.getParameter("fragmentTypeId");
@@ -103,7 +103,7 @@ public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		String fragmentTypeId = req.getParameter("fragmentTypeId");
 		if (fragmentTypeId == null)
-			fragmentTypeId = window.getProperty("pia.fragmentTypeId");
+			fragmentTypeId = window.getProperty("osivia.fragmentTypeId");
 
 		if (fragmentTypeId != null) {
 			FragmentType fragmentType = getFragments().get(fragmentTypeId);
@@ -142,7 +142,7 @@ public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			String fragmentTypeId = (String) window.getProperty("pia.fragmentTypeId");
+			String fragmentTypeId = (String) window.getProperty("osivia.fragmentTypeId");
 
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 

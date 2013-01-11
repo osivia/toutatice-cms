@@ -114,8 +114,8 @@ public class NuxeoCommandContext {
 		this.request = request;
 		
 		if( request instanceof PortletRequest)	{
-			controllerCtx =  (ControllerContext) ((PortletRequest) getRequest()).getAttribute("pia.controller");
-			administrator = "true".equals(     (((PortletRequest) getRequest()).getAttribute("pia.isAdministrator")))		;	
+			controllerCtx =  (ControllerContext) ((PortletRequest) getRequest()).getAttribute("osivia.controller");
+			administrator = "true".equals(     (((PortletRequest) getRequest()).getAttribute("osivia.isAdministrator")))		;	
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class NuxeoCommandContext {
 		this.request = serverInvocation.getServerContext().getClientRequest();
 		
 		
-		Boolean isAdmin = (Boolean) serverInvocation.getAttribute(Scope.PRINCIPAL_SCOPE, "pia.isAdmin");
+		Boolean isAdmin = (Boolean) serverInvocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
 		
 		if( Boolean.TRUE.equals(isAdmin))
 			administrator = true;

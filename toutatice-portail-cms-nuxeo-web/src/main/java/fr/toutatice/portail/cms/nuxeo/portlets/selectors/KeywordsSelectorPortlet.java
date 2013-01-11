@@ -62,9 +62,9 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			if( req.getParameter("selectorId").length() > 0)
-				window.setProperty("pia.selectorId", req.getParameter("selectorId"));
-			else if (window.getProperty("pia.selectorId") != null)
-				window.setProperty("pia.selectorId", null);	
+				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
+			else if (window.getProperty("osivia.selectorId") != null)
+				window.setProperty("osivia.selectorId", null);	
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -80,7 +80,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 		if ("view".equals(req.getPortletMode().toString())  && (req.getParameter("add.x") != null || req.getParameter("add") != null)) {
 
 			// Set public parameter
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) {
 
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
@@ -99,7 +99,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.unsetMaxMode", "true");
+				req.setAttribute("osivia.unsetMaxMode", "true");
 				
 			}
 
@@ -112,7 +112,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			int occ = new Integer(req.getParameter("occ"));
 
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> keywords = selectors.get(selectorId);
 			if (keywords != null && keywords.size() > occ) {
@@ -121,7 +121,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("osivia.initPageState", "true");
 			}
 		}
 
@@ -135,7 +135,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		String selectorId = window.getProperty("pia.selectorId");
+		String selectorId = window.getProperty("osivia.selectorId");
 		if (selectorId == null)
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
@@ -157,7 +157,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			String keyword = request.getParameter("keyword");
 
 			if (selectorId != null) {

@@ -66,7 +66,7 @@ public class HttpConnector implements Connector {
         ctx.setAttribute(ClientContext.COOKIE_STORE, new BasicCookieStore());
         this.http = (AbstractHttpClient) http;
         this.ctx = ctx;
-        String wsTimeOut =  System.getProperty("toutatice.webServiceTimeOut");
+        String wsTimeOut =  System.getProperty("ws.webServiceTimeOut");
         if( wsTimeOut != null)
         	this.webServiceTimeOut = Integer.parseInt(wsTimeOut) * 1000;
     }

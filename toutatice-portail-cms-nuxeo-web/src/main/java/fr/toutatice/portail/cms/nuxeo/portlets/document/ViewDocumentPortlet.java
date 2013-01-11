@@ -145,30 +145,30 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("pia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
 
 			/*
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("pia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("pia.cms.scope") != null)
-				window.setProperty("pia.cms.scope", null);
+				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
+			else if (window.getProperty("osivia.cms.scope") != null)
+				window.setProperty("osivia.cms.scope", null);
 				*/
 
 			if ("1".equals(req.getParameter("onlyDescription")))
-				window.setProperty("pia.document.onlyDescription", "1");
-			else if (window.getProperty("pia.document.onlyDescription") != null)
-				window.setProperty("pia.document.onlyDescription", null);
+				window.setProperty("osivia.document.onlyDescription", "1");
+			else if (window.getProperty("osivia.document.onlyDescription") != null)
+				window.setProperty("osivia.document.onlyDescription", null);
 			
 			if (! "1".equals(req.getParameter("showMetadatas")))
-				window.setProperty("pia.cms.hideMetaDatas", "1");
-			else if (window.getProperty("pia.cms.hideMetaDatas") != null)
-				window.setProperty("pia.cms.hideMetaDatas", null);
+				window.setProperty("osivia.cms.hideMetaDatas", "1");
+			else if (window.getProperty("osivia.cms.hideMetaDatas") != null)
+				window.setProperty("osivia.cms.hideMetaDatas", null);
 						
 			
 			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("pia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
-				window.setProperty("pia.cms.displayLiveVersion", null);	
+				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);	
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -192,25 +192,25 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
 
-		String onlyDescription = window.getProperty("pia.document.onlyDescription");
+		String onlyDescription = window.getProperty("osivia.document.onlyDescription");
 		req.setAttribute("onlyDescription", onlyDescription);
 		
 		String showMetadatas = "1";
-		if( "1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+		if( "1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
 				showMetadatas = "0";
 		req.setAttribute("showMetadatas", showMetadatas);		
 
 		/*
-		String scope = window.getProperty("pia.cms.scope");
+		String scope = window.getProperty("osivia.cms.scope");
 		req.setAttribute("scope", scope);
 		*/
 		
-		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
 			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
@@ -242,14 +242,14 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 
 				// portal window parameter (appels dynamiques depuis le portail)
-				nuxeoPath = window.getProperty("pia.cms.uri");
+				nuxeoPath = window.getProperty("osivia.cms.uri");
 				
 
 				// logger.debug("doView "+ uid);
 
 				if (nuxeoPath == null) {
 					// WIndow parameter (back-office)
-					nuxeoPath = window.getProperty("pia.nuxeoPath");
+					nuxeoPath = window.getProperty("osivia.nuxeoPath");
 				}
 
 
@@ -270,7 +270,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						
 
 						/*
-						if( "1".equals(window.getProperty("pia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
+						if( "1".equals(window.getProperty("osivia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
 							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(nuxeoPath));
 						else
 							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchPublishedCommand(nuxeoPath));
@@ -285,7 +285,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						request.setAttribute("doc", doc);
 						
 
-						if (!"1".equals(window.getProperty("pia.document.onlyDescription")) || request.getWindowState().equals(WindowState.MAXIMIZED)) {
+						if (!"1".equals(window.getProperty("osivia.document.onlyDescription")) || request.getWindowState().equals(WindowState.MAXIMIZED)) {
 
 							/* transformation de la partie wysiwyg */
 
@@ -323,11 +323,11 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						String description = doc.getString("dc:description", "");
 						request.setAttribute("description", description);
 
-						request.setAttribute("onlyDescription", window.getProperty("pia.document.onlyDescription"));
+						request.setAttribute("onlyDescription", window.getProperty("osivia.document.onlyDescription"));
 						
 						
 						String showMetadatas = "1";
-						if( "1".equals(window.getProperty("pia.cms.hideMetaDatas")))
+						if( "1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
 							showMetadatas = "0";
 						request.setAttribute("showMetadatas", showMetadatas);
 						

@@ -21,7 +21,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 		String nuxeoPath = null;
 		boolean emptyContent = true;
 
-		nuxeoPath = window.getProperty("pia.nuxeoPath");
+		nuxeoPath = window.getProperty("osivia.nuxeoPath");
 
 		if (nuxeoPath != null) {
 
@@ -32,7 +32,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 			if (doc.getTitle() != null)
 				response.setTitle(doc.getTitle());
 
-			String propertyName = window.getProperty("pia.propertyName");
+			String propertyName = window.getProperty("osivia.propertyName");
 
 			if (propertyName != null) {
 
@@ -43,7 +43,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 					ctx.setCurrentDoc(doc);
 					request.setAttribute("doc", doc);
 					request.setAttribute("ctx", ctx);
-					request.setAttribute("propertyName", window.getProperty("pia.propertyName"));
+					request.setAttribute("propertyName", window.getProperty("osivia.propertyName"));
 
 					emptyContent = false;
 				}
@@ -51,25 +51,25 @@ public class PropertyFragmentModule implements IFragmentModule {
 		}
 
 		if (emptyContent)
-			request.setAttribute("pia.emptyResponse", "1");
+			request.setAttribute("osivia.emptyResponse", "1");
 
 	}
 
 	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
 			throws Exception {
 
-		String nuxeoPath = window.getProperty("pia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		request.setAttribute("nuxeoPath", nuxeoPath);
 
-		String propertyName = window.getProperty("pia.propertyName");
+		String propertyName = window.getProperty("osivia.propertyName");
 		if (propertyName == null)
 			propertyName = "";
 		request.setAttribute("propertyName", propertyName);
 
 
-		String displayLiveVersion = window.getProperty("pia.cms.displayLiveVersion");
+		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
 			displayLiveVersion = "";
 		request.setAttribute("displayLiveVersion", displayLiveVersion);
@@ -80,21 +80,21 @@ public class PropertyFragmentModule implements IFragmentModule {
 			throws Exception {
 
 		if (request.getParameter("nuxeoPath") != null)
-			window.setProperty("pia.nuxeoPath", request.getParameter("nuxeoPath"));
+			window.setProperty("osivia.nuxeoPath", request.getParameter("nuxeoPath"));
 
 		if (request.getParameter("propertyName") != null) {
 			if (request.getParameter("propertyName").length() > 0)
-				window.setProperty("pia.propertyName", request.getParameter("propertyName"));
-			else if (window.getProperty("pia.propertyName") != null)
-				window.setProperty("pia.propertyName", null);
+				window.setProperty("osivia.propertyName", request.getParameter("propertyName"));
+			else if (window.getProperty("osivia.propertyName") != null)
+				window.setProperty("osivia.propertyName", null);
 		}
 
 		if (request.getParameter("displayLiveVersion") != null) {
 
 			if ("1".equals(request.getParameter("displayLiveVersion")))
-				window.setProperty("pia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("pia.cms.displayLiveVersion") != null)
-				window.setProperty("pia.cms.displayLiveVersion", null);
+				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);
 		}
 
 	}

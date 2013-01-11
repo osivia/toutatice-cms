@@ -63,9 +63,9 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			if( req.getParameter("selectorId").length() > 0)
-				window.setProperty("pia.selectorId", req.getParameter("selectorId"));
-			else if (window.getProperty("pia.selectorId") != null)
-				window.setProperty("pia.selectorId", null);	
+				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
+			else if (window.getProperty("osivia.selectorId") != null)
+				window.setProperty("osivia.selectorId", null);	
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -80,7 +80,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
 		if ("view".equals(req.getPortletMode().toString()) && (req.getParameter("add.x") != null || req.getParameter("add") != null) ) 
 		{
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) 
 			{
 				if(!req.getParameter("datefrom").isEmpty() && !req.getParameter("dateto").isEmpty())
@@ -102,7 +102,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 					
 					//Réinitialisation des fenetres en mode NORMAL
-					req.setAttribute("pia.unsetMaxMode", "true");
+					req.setAttribute("osivia.unsetMaxMode", "true");
 				}
 			}
 			res.setPortletMode(PortletMode.VIEW);
@@ -113,7 +113,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		if ("view".equals(req.getPortletMode().toString()) && "delete".equals(req.getParameter("action")) ) 
 		{
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> dates = selectors.get(selectorId);
 			if (dates != null && dates.size() > 0) 
@@ -122,7 +122,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("osivia.initPageState", "true");
 			}
 		}
 
@@ -136,7 +136,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		String selectorId = window.getProperty("pia.selectorId");
+		String selectorId = window.getProperty("osivia.selectorId");
 		if (selectorId == null)
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
@@ -158,7 +158,7 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			String dateFrom = request.getParameter("datefrom");
 			String dateTo = request.getParameter("dateto");
 

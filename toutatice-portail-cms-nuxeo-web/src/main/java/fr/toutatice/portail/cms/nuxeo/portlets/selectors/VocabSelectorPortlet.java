@@ -82,31 +82,31 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 			
 			if( req.getParameter("selectorId").length() > 0)
-				window.setProperty("pia.selectorId", req.getParameter("selectorId"));
-			else if (window.getProperty("pia.selectorId") != null)
-				window.setProperty("pia.selectorId", null);	
+				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
+			else if (window.getProperty("osivia.selectorId") != null)
+				window.setProperty("osivia.selectorId", null);	
 			
 			if( req.getParameter("libelle").length() > 0)
-				window.setProperty("pia.libelle", req.getParameter("libelle"));
-			else if (window.getProperty("pia.libelle") != null)
-				window.setProperty("pia.libelle", null);	
+				window.setProperty("osivia.libelle", req.getParameter("libelle"));
+			else if (window.getProperty("osivia.libelle") != null)
+				window.setProperty("osivia.libelle", null);	
 				
 			
 			if( req.getParameter("vocabName1").length() > 0)
-				window.setProperty("pia.vocabName1", req.getParameter("vocabName1"));
-			else if (window.getProperty("pia.vocabName1") != null)
-				window.setProperty("pia.vocabName1", null);				
+				window.setProperty("osivia.vocabName1", req.getParameter("vocabName1"));
+			else if (window.getProperty("osivia.vocabName1") != null)
+				window.setProperty("osivia.vocabName1", null);				
 
 			if( req.getParameter("vocabName2").length() > 0)
-				window.setProperty("pia.vocabName2", req.getParameter("vocabName2"));
-			else if (window.getProperty("pia.vocabName2") != null)
-				window.setProperty("pia.vocabName2", null);				
+				window.setProperty("osivia.vocabName2", req.getParameter("vocabName2"));
+			else if (window.getProperty("osivia.vocabName2") != null)
+				window.setProperty("osivia.vocabName2", null);				
 			
 
 			if( req.getParameter("vocabName3").length() > 0)
-				window.setProperty("pia.vocabName3", req.getParameter("vocabName3"));
-			else if (window.getProperty("pia.vocabName3") != null)
-				window.setProperty("pia.vocabName3", null);				
+				window.setProperty("osivia.vocabName3", req.getParameter("vocabName3"));
+			else if (window.getProperty("osivia.vocabName3") != null)
+				window.setProperty("osivia.vocabName3", null);				
 
 			
 			res.setPortletMode(PortletMode.VIEW);
@@ -123,7 +123,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 		if ("view".equals(req.getPortletMode().toString())  && (req.getParameter("add.x") != null || req.getParameter("add") != null)) {
 
 			// Set public parameter
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) {
 
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
@@ -169,7 +169,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				
 
 				// Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.unsetMaxMode", "true");
+				req.setAttribute("osivia.unsetMaxMode", "true");
 
 			}
 
@@ -182,7 +182,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			int occ = new Integer(req.getParameter("occ"));
 
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> vocabIds = selectors.get(selectorId);
 			if (vocabIds != null && vocabIds.size() > occ) {
@@ -191,7 +191,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
 				// Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("pia.initPageState", "true");
+				req.setAttribute("osivia.initPageState", "true");
 			}
 		}
 
@@ -205,29 +205,29 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 		PortalWindow window = WindowFactory.getWindow(req);
 		
-		String libelle = window.getProperty("pia.libelle");
+		String libelle = window.getProperty("osivia.libelle");
 		if (libelle == null)
 			libelle = "";
 		req.setAttribute("libelle", libelle);
 
 
-		String selectorId = window.getProperty("pia.selectorId");
+		String selectorId = window.getProperty("osivia.selectorId");
 		if (selectorId == null)
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
 
-		String vocabName1 = window.getProperty("pia.vocabName1");
+		String vocabName1 = window.getProperty("osivia.vocabName1");
 		if (vocabName1 == null)
 			vocabName1 = "";
 		req.setAttribute("vocabName1", vocabName1);
 		
 
-		String vocabName2 = window.getProperty("pia.vocabName2");
+		String vocabName2 = window.getProperty("osivia.vocabName2");
 		if (vocabName2 == null)
 			vocabName2 = "";
 		req.setAttribute("vocabName2", vocabName2);
 		
-		String vocabName3 = window.getProperty("pia.vocabName3");
+		String vocabName3 = window.getProperty("osivia.vocabName3");
 		if (vocabName3 == null)
 			vocabName3 = "";
 		req.setAttribute("vocabName3", vocabName3);
@@ -251,10 +251,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			String libelle = window.getProperty("pia.libelle");
+			String libelle = window.getProperty("osivia.libelle");
 			request.setAttribute("libelle", libelle);
 			
-			String selectorId = window.getProperty("pia.selectorId");
+			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId == null) {
 				response.getWriter().print("<h2>Identifiant non défini</h2>");
 				response.getWriter().close();
@@ -263,7 +263,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			}
 			
 
-			String vocabName1 = window.getProperty("pia.vocabName1");
+			String vocabName1 = window.getProperty("osivia.vocabName1");
 			if (vocabName1 == null) {
 				response.getWriter().print("<h2>Vocabulaire non défini</h2>");
 				response.getWriter().close();
@@ -274,12 +274,12 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			String vocabsName = vocabName1;
 			
 
-			String vocabName2 = window.getProperty("pia.vocabName2");
+			String vocabName2 = window.getProperty("osivia.vocabName2");
 			if( vocabName2 != null){
 				vocabsName += ";" + vocabName2;
 			}
 			
-			String vocabName3 = window.getProperty("pia.vocabName3");
+			String vocabName3 = window.getProperty("osivia.vocabName3");
 			if( vocabName3 != null){
 				vocabsName += ";" + vocabName3;
 			}
