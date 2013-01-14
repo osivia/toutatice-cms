@@ -32,6 +32,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 public class CMSService implements ICMSService {
@@ -173,19 +174,23 @@ public class CMSService implements ICMSService {
 		String savedScope = cmsCtx.getScope();
 		try {
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			
+			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion())
+					|| (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
+							.isLiveSpace());
 
 			cmsCtx.setScope("superuser_context");
 
-			if ("1".equals(cmsCtx.getDisplayLiveVersion()) || !pubInfos.isPublished()) {
+			if (haveToGetLive) {
 
 				Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(path, "Read")));
-
 				return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
+
 			} else {
 
 				Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
-
 				return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
+
 			}
 		} finally {
 			cmsCtx.setScope(savedScope);
@@ -195,9 +200,9 @@ public class CMSService implements ICMSService {
 
 	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
 		CMSItem content = null;
-		try {
+		try {		
 
-			content =  fetchContent(cmsCtx, path);
+			content =  fetchContent(cmsCtx, path);			
 
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
@@ -210,15 +215,15 @@ public class CMSService implements ICMSService {
 		return content;
 	}
 	
-	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String path, String parameter) throws CMSException {
+	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {
 		CMSBinaryContent content = new CMSBinaryContent();
 		
 		if("file".equals(type)){
-			content = getFileContent(cmsCtx, path, parameter);
+			content = getFileContent(cmsCtx, docPath, parameter);
 		}else if("attachedPicture".equals(type)){
-			content = getAttachedPicture(cmsCtx, path, parameter);
+			content = getAttachedPicture(cmsCtx, docPath, parameter);
 		}else if("picture".equals(type)){
-			content = getPicture(cmsCtx, path, parameter);
+			content = getPicture(cmsCtx, docPath, parameter);
 		}
 		
 		return content;
@@ -229,7 +234,7 @@ public class CMSService implements ICMSService {
 		try {
 
 			cmsContent = fetchAttachedPicture(cmsCtx, docPath, pictureIndex);
-
+			
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -245,8 +250,9 @@ public class CMSService implements ICMSService {
 	private CMSBinaryContent fetchAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws Exception {
 		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
-		try {
-			CMSItem containerDoc = fetchContent(cmsCtx, docPath);
+		try {		
+			 CMSItem containerDoc = fetchContent(cmsCtx, docPath);
+			
 			if (containerDoc != null) {
 				cmsCtx.setScope("superuser_context");
 
@@ -262,20 +268,11 @@ public class CMSService implements ICMSService {
 	
 	public CMSBinaryContent getPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws CMSException{
 		CMSBinaryContent cmsContent = null;
-		try {
-			/*CMSPublicationInfos infos = getPublicationInfos(cmsCtx, docPath);
-			boolean isAnonymous = infos.isAnonymouslyReadable();*/
+
+		try {		
 			
-			/*
-			 * On prend toujours la version publiée de l'image si elle existe;
-			 * on ne prend donc pas en compte le displayLiveVersion.
-			 */
-			String displayLive = cmsCtx.getDisplayLiveVersion();
-			cmsCtx.setDisplayLiveVersion("0");
+			cmsContent = fetchPicture(cmsCtx, docPath, content);
 			
-			cmsContent = fetchPicture(cmsCtx, docPath, content/* , isAnonymous */);
-			
-			cmsCtx.setDisplayLiveVersion(displayLive);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -289,20 +286,20 @@ public class CMSService implements ICMSService {
 	}
 	
 	
-	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content/*, boolean isAnonymous*/) throws Exception {
+	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
 		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
-		try {
-			// if(!isAnonymous){
-			// getPublicationInfos(cmsCtx, docPath);
-			// }
-			CMSItem image = fetchContent(cmsCtx, docPath);
-			if (image != null) {
-
+		try {		
+			CMSItem picture = getAnonymousContent(cmsCtx, docPath);
+			
+			if(picture == null){
+				picture = fetchContent(cmsCtx, docPath);
+			}			
+			if (picture != null) {
 				cmsCtx.setScope("superuser_context");
-
+				
 				pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
-						(Document) image.getNativeItem(), content)));
+						(Document) picture.getNativeItem(), content)));
 			}
 
 		} finally {
@@ -333,13 +330,15 @@ public class CMSService implements ICMSService {
 		CMSBinaryContent content = null;
 		String savedScope = cmsCtx.getScope();
 		try {
-			CMSItem doc = fetchContent(cmsCtx, docPath);
-			if(doc != null){
-			
-			cmsCtx.setScope("superuser_context");
 
-			content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new FileContentCommand((Document) doc.getNativeItem(),
-					fieldName)));
+			CMSItem	document = fetchContent(cmsCtx, docPath);
+			
+			if (document != null) {
+
+				cmsCtx.setScope("superuser_context");
+
+				content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx,
+						(new FileContentCommand((Document) document.getNativeItem(), fieldName)));
 			}
 		} finally {
 			cmsCtx.setScope(savedScope);
@@ -365,6 +364,81 @@ public class CMSService implements ICMSService {
 
 		// Ne passe jamamis
 		return false;
+	}
+	
+	public CMSItem getAnonymousContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+
+		CMSItem anonymousContent = null;
+		String savedScope = cmsCtx.getScope();
+		String cacheId = "anonymous_content/" + path;
+		
+		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
+				portletCtx);
+		CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
+		checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
+		checkAnonymousAccess.setScope("anonymous");
+		
+		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
+		if (commandCtx.getCacheTimeOut() == -1) {
+			if (System.getProperty("nuxeo.cacheTimeout") != null)
+				cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
+			else
+				cacheInfos.setDelaiExpiration(0L);
+		} else
+			cacheInfos.setDelaiExpiration(commandCtx.getCacheTimeOut());
+
+		try {
+
+			Object anonymousCheck = getCacheService().getCache(cacheInfos);
+
+			if (anonymousCheck != null) {
+				AccesStatus anonymousCheckStatus = (AccesStatus) anonymousCheck;
+				if (!anonymousCheckStatus.isAccess()) {
+					if (anonymousCheckStatus.getStatus() == AnonymousAccesInvoker.NOT_FOUND) {
+						throw new CMSException(CMSException.ERROR_NOTFOUND);
+					}
+				}else{
+					/* Le contenu est accessible: aucune erreur n'est possible. */
+					anonymousContent = getContent(checkAnonymousAccess, path);
+				}
+			} else {
+
+				try {
+					cacheInfos.setForceReload(true);
+
+					anonymousContent = getContent(checkAnonymousAccess, path);
+					
+					cacheInfos.setInvoker(new AnonymousAccesInvoker(true, AnonymousAccesInvoker.AUTHORIZED));
+					getCacheService().getCache(cacheInfos);
+
+				} catch (CMSException e) {
+					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+
+						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.FORBIDDEN));
+						getCacheService().getCache(cacheInfos);
+
+					} else if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+
+						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.NOT_FOUND));
+						getCacheService().getCache(cacheInfos);
+						throw new CMSException(CMSException.ERROR_NOTFOUND);
+
+					} else
+						throw e;
+				}
+
+			}
+		} catch (Exception e) {
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
+		} finally {
+			cmsCtx.setScope(savedScope);
+		}
+
+		return anonymousContent;
+
 	}
 
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
@@ -399,7 +473,7 @@ public class CMSService implements ICMSService {
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
 			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
 			boolean live = false;
-			if (pubInfos.getPublishSpacePath() == null)
+			if ((pubInfos.getPublishSpacePath() != null) && (pubInfos.isLiveSpace()))
 				live = true;
 			
 			
@@ -504,11 +578,12 @@ public class CMSService implements ICMSService {
 			return portalSpace;
 		}
 
-		if (pubInfos.getWorkspacePath() != null) {
+		/* TOCHECK
+		  if (pubInfos.getWorkspacePath() != null) {
 			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getWorkspacePath(),
 					pubInfos.getWorkspacePath());
 			return portalSpace;
-		}
+		}*/
 
 		throw new CMSException(CMSException.ERROR_NOTFOUND);
 
@@ -523,7 +598,8 @@ public class CMSService implements ICMSService {
 				String savedScope = ctx.getScope();
 
 				try {
-					if((StringUtils.isEmpty(savedScope)) || ("__nocache".equals(savedScope))){
+					if((StringUtils.isEmpty(savedScope)) || ("__nocache".equals(savedScope)) 
+							|| (!"anonymous".equals(savedScope))){
 						ctx.setScope("user_session");
 					}
 
@@ -555,5 +631,31 @@ public class CMSService implements ICMSService {
 
 		return pubInfos;
 
+	}
+		
+	public CMSItem getPublicationConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
+		CMSItem configItem = null;
+		try {
+			String savedScope = cmsCtx.getScope();
+			try {
+				cmsCtx.setScope("superuser_context");
+				Document configDoc = (Document) executeNuxeoCommand(cmsCtx, (new PublishConfigCommand(publishSpacePath)));
+				
+				String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(publishSpacePath);
+				configItem = createItem(cmsCtx, publishSpacePath, livePath, configDoc);
+				CMSItem publishSpaceItem = new CMSItem(livePath, null, configDoc);
+				getCustomizer().getNavigationItemAdaptor().adaptPublishSpaceNavigationItem(configItem, publishSpaceItem);
+			}
+			finally {
+				cmsCtx.setScope(savedScope);
+			}
+
+		} catch (Exception e) {
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
+		}
+		return configItem;
 	}
 }

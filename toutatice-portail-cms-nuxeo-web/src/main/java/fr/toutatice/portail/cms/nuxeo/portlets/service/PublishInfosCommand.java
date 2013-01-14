@@ -11,6 +11,7 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.common.utils.FileUtils;
@@ -48,22 +49,29 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
 				publiInfos.setDocumentPath(decode((String) obj.get("documentPath")));
 				publiInfos.setLiveId((String) obj.get("liveId"));
-				
-
-				String publishSpacePath = decode((String) obj.get("publishSpacePath"));
-				
-				publiInfos.setPublishSpacePath(publishSpacePath);
-				
-				publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
-				publiInfos.setPublishSpaceInContextualization(convertBoolean(obj.get("publishSpaceInContextualization")));
-				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
-				publiInfos.setWorkspacePath(decode((String) obj.get("workspacePath")));
-				publiInfos.setWorkspaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
-				publiInfos.setWorkspaceInContextualization(convertBoolean(obj.get("workspaceInContextualization")));
-
 				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
 				publiInfos.setPublished(convertBoolean(obj.get("published")));
 				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
+
+				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
+
+				String publishSpacePath = decode((String) obj.get("publishSpacePath"));
+				if (StringUtils.isNotEmpty(publishSpacePath)) {
+					publiInfos.setPublishSpacePath(publishSpacePath);
+					publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
+					publiInfos.setPublishSpaceInContextualization(convertBoolean(obj
+							.get("publishSpaceInContextualization")));
+					publiInfos.setLiveSpace(false);
+				} else {
+					String workspacePath = decode((String) obj.get("workspacePath"));
+					if (StringUtils.isNotEmpty(workspacePath)) {
+						publiInfos.setPublishSpacePath(workspacePath);
+						publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
+						publiInfos.setPublishSpaceInContextualization(convertBoolean(obj
+								.get("workspaceInContextualization")));
+						publiInfos.setLiveSpace(true);
+					}
+				}
 			}
 
 		}
