@@ -184,11 +184,12 @@ public class MenuBarFormater {
 					if (pubInfos.isPublishSpaceInContextualization())
 						spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
 
-				} else {
+				} /*TOCHECK:
+				  else {
 					if (pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization()) {
 						spaceDisplayName = pubInfos.getWorkspaceDisplayName();
 					}
-				}
+				}*/
 			}
 
 			if (spaceDisplayName != null) {
