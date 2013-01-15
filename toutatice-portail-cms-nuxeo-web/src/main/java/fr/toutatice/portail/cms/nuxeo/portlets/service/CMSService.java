@@ -528,12 +528,9 @@ public class CMSService implements ICMSService {
 			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)			
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
 			
-			
-
 			boolean live = false;
-			if (pubInfos.getPublishSpacePath() == null)
+			if ((pubInfos.getPublishSpacePath() != null) && (pubInfos.isLiveSpace()))
 				live = true;
-			
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
@@ -639,12 +636,7 @@ public class CMSService implements ICMSService {
 			String savedScope = cmsCtx.getScope();
 			try {
 				cmsCtx.setScope("superuser_context");
-				Document configDoc = (Document) executeNuxeoCommand(cmsCtx, (new PublishConfigCommand(publishSpacePath)));
-				
-				String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(publishSpacePath);
-				configItem = createItem(cmsCtx, publishSpacePath, livePath, configDoc);
-				CMSItem publishSpaceItem = new CMSItem(livePath, null, configDoc);
-				getCustomizer().getNavigationItemAdaptor().adaptPublishSpaceNavigationItem(configItem, publishSpaceItem);
+				configItem = (CMSItem) executeNuxeoCommand(cmsCtx, (new PublishConfigCommand(this, cmsCtx, publishSpacePath)));
 			}
 			finally {
 				cmsCtx.setScope(savedScope);
