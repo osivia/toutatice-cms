@@ -289,15 +289,21 @@ public class CMSService implements ICMSService {
 	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
 		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
-		try {		
+		try {
+			/*
+			 * On tente de récupérer l'image "Nuxeo" en mode anonyme;
+			 * getAnonymousContent retourne null sil'image n'est pas accessible
+			 * en mode anonyme, i.e. si elle n'est pas publique.
+			 */
 			CMSItem picture = getAnonymousContent(cmsCtx, docPath);
-			
-			if(picture == null){
+
+			if (picture == null) {
+				/* On tente alors de récupérer l'image avec les droits de l'utilisateur. */
 				picture = fetchContent(cmsCtx, docPath);
-			}			
+			}
 			if (picture != null) {
 				cmsCtx.setScope("superuser_context");
-				
+
 				pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
 						(Document) picture.getNativeItem(), content)));
 			}
@@ -372,12 +378,14 @@ public class CMSService implements ICMSService {
 		String savedScope = cmsCtx.getScope();
 		String cacheId = "anonymous_content/" + path;
 		
+		/* Informations du cache pour l'accès en mode anonyme" */
 		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
 				portletCtx);
 		CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
 		checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
-		checkAnonymousAccess.setScope("anonymous");
+		checkAnonymousAccess.setForceScopeToAnonymous(true);
 		
+		/* Affectation du délai d'expiration des caches. */
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
 		if (commandCtx.getCacheTimeOut() == -1) {
 			if (System.getProperty("nuxeo.cacheTimeout") != null)
@@ -392,16 +400,20 @@ public class CMSService implements ICMSService {
 			Object anonymousCheck = getCacheService().getCache(cacheInfos);
 
 			if (anonymousCheck != null) {
+				
 				AccesStatus anonymousCheckStatus = (AccesStatus) anonymousCheck;
+				
 				if (!anonymousCheckStatus.isAccess()) {
+					
 					if (anonymousCheckStatus.getStatus() == AnonymousAccesInvoker.NOT_FOUND) {
+						
 						throw new CMSException(CMSException.ERROR_NOTFOUND);
 					}
 				}else{
 					/* Le contenu est accessible: aucune erreur n'est possible. */
 					anonymousContent = getContent(checkAnonymousAccess, path);
 				}
-			} else {
+			} else {/* Mise en cache. */
 
 				try {
 					cacheInfos.setForceReload(true);
@@ -435,6 +447,7 @@ public class CMSService implements ICMSService {
 				throw (CMSException) e;
 		} finally {
 			cmsCtx.setScope(savedScope);
+			cmsCtx.setForceScopeToAnonymous(false);
 		}
 
 		return anonymousContent;
@@ -585,39 +598,52 @@ public class CMSService implements ICMSService {
 		throw new CMSException(CMSException.ERROR_NOTFOUND);
 
 	}
-
-		public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+	
+	/* (non-Javadoc)
+	 * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
+	 */
+	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
 		/* Instanciation pour que la méthode soit techniquement "null safe" */
 		CMSPublicationInfos pubInfos = new CMSPublicationInfos();
 
 		try {
 
-				String savedScope = ctx.getScope();
+			String savedScope = ctx.getScope();
 
-				try {
-					if((StringUtils.isEmpty(savedScope)) || ("__nocache".equals(savedScope)) 
-							|| (!"anonymous".equals(savedScope))){
-						ctx.setScope("user_session");
-					}
+			try {/*
+				 * getPublicationInfos est toujours utilisé avec les droits de
+				 * l'utilisateur (il remplit en ce sens un testeur de droits car
+				 * les informations retournées sont faites selon ces derniers).
+				 * Cependant, il est possible de forcer son exécution en mode
+				 * anonyme par l'intermédiaire d'une vairiable du CMS Service
+				 * Context (cas de la méthode getAnonymousContent()).
+				 */
+				if (!ctx.isForceScopeToAnonymous()) {
+					ctx.setScope("user_session");
+				}
 
-					pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
+				pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
-					if (pubInfos != null) {
-						List<Integer> errors = pubInfos.getErrorCodes();
-						if (errors != null) {
-							if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
-								throw new CMSException(CMSException.ERROR_FORBIDDEN);
-							}
-							if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
-								throw new CMSException(CMSException.ERROR_NOTFOUND);
-							}
+				if (pubInfos != null) {
+					List<Integer> errors = pubInfos.getErrorCodes();
+					if (errors != null) {
+						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+							throw new CMSException(CMSException.ERROR_FORBIDDEN);
 						}
-
+						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+							throw new CMSException(CMSException.ERROR_NOTFOUND);
+						}
 					}
+
 				}
-				 finally {
-					ctx.setScope(savedScope);
-				}
+			} finally {
+				ctx.setScope(savedScope);
+				/*
+				 * On remet dans tous les cas le "forçage" du mode anonyme à
+				 * faux en vue des prochains appels à getPublicationInfos.
+				 */
+				ctx.setForceScopeToAnonymous(false);
+			}
 
 		} catch (Exception e) {
 			if (!(e instanceof CMSException))
@@ -629,7 +655,7 @@ public class CMSService implements ICMSService {
 		return pubInfos;
 
 	}
-		
+
 	public CMSItem getPublicationConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
 		CMSItem configItem = null;
 		try {
