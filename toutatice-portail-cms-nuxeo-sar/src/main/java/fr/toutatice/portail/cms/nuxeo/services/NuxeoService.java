@@ -180,6 +180,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
 		return  cmsService.getPublicationInfos(ctx, path);
 	}
+	
+	public CMSItem getPublicationConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
+		return cmsService.getPublicationConfig(cmsCtx, publishSpacePath);
+	}
 
 	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String path, String parameter)
 			throws CMSException {
