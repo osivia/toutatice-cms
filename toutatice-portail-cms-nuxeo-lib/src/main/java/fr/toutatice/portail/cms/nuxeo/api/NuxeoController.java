@@ -37,6 +37,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
@@ -294,6 +295,8 @@ public class NuxeoController {
 		String scope = window.getProperty("osivia.cms.scope");
 		if( "__inherited".equals(scope))	{
 			// scope de contextualisation
+			
+			//TODO : ajouter sur le path
 			scope = request.getParameter("osivia.cms.pageScope");
 			if( scope == null)
 				scope = window.getPageProperty("osivia.cms.scope");
@@ -760,8 +763,14 @@ public class NuxeoController {
 
 		Map<String, String> pageParams = new HashMap<String, String>();
 		
+		
+		//v2.0-rc7 : suppression du scope
+//		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
+//				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
+		
 		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
-				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(), getScope(), getDisplayLiveVersion(), null);
+				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(), null, getDisplayLiveVersion(), null);
+		
 		
 		if( url != null)	{
 		
@@ -801,6 +810,28 @@ public class NuxeoController {
 		
 		CMSItem cmsItem = nuxeoService.getContent(getCMSCtx(), path);
 		return (Document) cmsItem.getNativeItem();
+		
+		} catch( CMSException e){
+			if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
+				throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+			if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
+				throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+			throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+			
+		}
+	}
+	
+	public String fetchLiveId 	( String path) throws Exception	{
+
+		try	{
+		
+		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if( nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+		
+		
+		CMSPublicationInfos pubInfos  = nuxeoService.getPublicationInfos(getCMSCtx(), path);
+		return pubInfos.getLiveId();
 		
 		} catch( CMSException e){
 			if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
