@@ -638,11 +638,7 @@ public class CMSService implements ICMSService {
 				}
 			} finally {
 				ctx.setScope(savedScope);
-				/*
-				 * On remet dans tous les cas le "forçage" du mode anonyme à
-				 * faux en vue des prochains appels à getPublicationInfos.
-				 */
-				ctx.setForceScopeToAnonymous(false);
+
 			}
 
 		} catch (Exception e) {
