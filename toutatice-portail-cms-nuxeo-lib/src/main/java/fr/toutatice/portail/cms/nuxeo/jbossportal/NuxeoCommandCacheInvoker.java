@@ -130,6 +130,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 							invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSession",
 									nuxeoSession);
+							
+							invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoProfilerUserSessionTs",
+									System.currentTimeMillis());
 
 							if (user != null)
 								invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSessionUser",
@@ -278,6 +281,20 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
 
 				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
+				
+				// Ajout log profiler
+				if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
+					
+					ServerInvocation invocation = ctx.getServerInvocation();
+					
+					
+					Long userTs = (Long) invocation.getAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoProfilerUserSessionTs");
+					if( userTs != null)
+						name +=", session=" +userTs;
+				}
+				
+
+
 
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				
 			}

@@ -34,6 +34,13 @@ public class NuxeoCommandContext {
 	public void setServerInvocation(ServerInvocation serverInvocation) {
 		this.serverInvocation = serverInvocation;
 	}
+	
+	/**
+	 * Variable indiquant si le résultat de la commande 
+	 * effectuée avec ce contexte doit être mise à jour
+	 * en cache de façon asynchrone.
+	 */
+	private boolean isAsyncCacheRefreshing = false;
 
 	public boolean asynchronousUpdates = false;
 	
@@ -101,7 +108,14 @@ public class NuxeoCommandContext {
 		return ctx;
 	}
 	
-	
+	public boolean isAsyncCacheRefreshing() {
+		return isAsyncCacheRefreshing;
+	}
+
+	public void setAsyncCacheRefreshing(boolean isAsyncCacheRefreshing) {
+		this.isAsyncCacheRefreshing = isAsyncCacheRefreshing;
+	}
+
 	public NuxeoCommandContext(PortletContext ctx) {
 		super();
 		this.ctx = ctx;

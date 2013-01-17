@@ -92,7 +92,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 			
 			String nuxeoUserId = userId;
 			if( nuxeoUserId == null)
-				nuxeoUserId = "anonymous";
+				nuxeoUserId = "null";
 
 			String name = "createAutomationSession,user='" + nuxeoUserId + "'";
 

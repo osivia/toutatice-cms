@@ -125,6 +125,10 @@ public class CMSService implements ICMSService {
 	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
 
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
+		/* Transmission du mode asynchrone ou non de la mise en cache 
+		 * du résultat de la commande.
+		 */
+		commandCtx.setAsyncCacheRefreshing(cmsCtx.isAsyncCacheRefreshing());
 
 		// pour debug
 		// commandCtx.setCacheTimeOut(0);
@@ -250,8 +254,9 @@ public class CMSService implements ICMSService {
 	private CMSBinaryContent fetchAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws Exception {
 		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
-		try {		
-			 CMSItem containerDoc = fetchContent(cmsCtx, docPath);
+		try {
+
+			CMSItem containerDoc = fetchContent(cmsCtx, docPath);
 			
 			if (containerDoc != null) {
 				cmsCtx.setScope("superuser_context");
@@ -336,7 +341,12 @@ public class CMSService implements ICMSService {
 		CMSBinaryContent content = null;
 		String savedScope = cmsCtx.getScope();
 		try {
-
+			/* Si un scope a été posé dans la portlet appelant la resource,
+			 * on applique celui-ci.
+			 */
+			if(StringUtils.isNotEmpty(savedScope)){
+				cmsCtx.setForcePublicationInfosScope(savedScope);
+			}
 			CMSItem	document = fetchContent(cmsCtx, docPath);
 			
 			if (document != null) {
@@ -380,10 +390,10 @@ public class CMSService implements ICMSService {
 		
 		/* Informations du cache pour l'accès en mode anonyme" */
 		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
-				portletCtx);
+				portletCtx, cmsCtx.isAsyncCacheRefreshing());
 		CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
 		checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
-		checkAnonymousAccess.setForceScopeToAnonymous(true);
+		checkAnonymousAccess.setForcePublicationInfosScope("anonymous");
 		
 		/* Affectation du délai d'expiration des caches. */
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
@@ -447,7 +457,7 @@ public class CMSService implements ICMSService {
 				throw (CMSException) e;
 		} finally {
 			cmsCtx.setScope(savedScope);
-			cmsCtx.setForceScopeToAnonymous(false);
+			cmsCtx.setForcePublicationInfosScope(null);
 		}
 
 		return anonymousContent;
@@ -481,16 +491,12 @@ public class CMSService implements ICMSService {
 		}
 		
 		try {
-			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
-			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)
-			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
-			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
-			boolean live = false;
-			if ((pubInfos.getPublishSpacePath() != null) && (pubInfos.isLiveSpace()))
-				live = true;
-			
-			
 
+			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
+			
+			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));			
+			
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
 
@@ -537,13 +543,9 @@ public class CMSService implements ICMSService {
 			cmsCtx.setScope("user_session");
 		}
 		try {
-			// TODO : optimiser l'appel pubInfos (pas d'appel pour connaitre les proprietes du publishSpace)
-			// Attention, peut être appelé à de multiples reprises pour une requete (cas du menu de publication)			
-			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, publishSpacePath);
 			
-			boolean live = false;
-			if ((pubInfos.getPublishSpacePath() != null) && (pubInfos.isLiveSpace()))
-				live = true;
+			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));	
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
@@ -614,11 +616,13 @@ public class CMSService implements ICMSService {
 				 * getPublicationInfos est toujours utilisé avec les droits de
 				 * l'utilisateur (il remplit en ce sens un testeur de droits car
 				 * les informations retournées sont faites selon ces derniers).
-				 * Cependant, il est possible de forcer son exécution en mode
-				 * anonyme par l'intermédiaire d'une vairiable du CMS Service
-				 * Context (cas de la méthode getAnonymousContent()).
+				 * Cependant, il est possible de forcer son exécution avec
+				 * un autre modepar l'intermédiaire d'une vairiable du CMS Service
+				 * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
 				 */
-				if (!ctx.isForceScopeToAnonymous()) {
+				if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
+					ctx.setScope(ctx.getForcePublicationInfosScope());
+				}else{
 					ctx.setScope("user_session");
 				}
 
@@ -657,11 +661,16 @@ public class CMSService implements ICMSService {
 		try {
 			String savedScope = cmsCtx.getScope();
 			try {
+				/* La mise en cache du résultat de cette méthode
+				 * s'effectue de manière asynchrone.
+				 */
+				cmsCtx.setAsyncCacheRefreshing(true);
 				cmsCtx.setScope("superuser_context");
 				configItem = (CMSItem) executeNuxeoCommand(cmsCtx, (new PublishConfigCommand(this, cmsCtx, publishSpacePath)));
 			}
 			finally {
 				cmsCtx.setScope(savedScope);
+				cmsCtx.setAsyncCacheRefreshing(false);
 			}
 
 		} catch (Exception e) {

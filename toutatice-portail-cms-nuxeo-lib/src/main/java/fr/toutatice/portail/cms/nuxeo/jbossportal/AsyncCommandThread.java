@@ -81,7 +81,7 @@ public class AsyncCommandThread implements Runnable {
 							}
 
 							CacheInfo cacheInfos = new CacheInfo(cacheId, scopeCache, cacheInvoker, null, command
-									.getCtx().getPortletContext());
+									.getCtx().getPortletContext(), command.getCtx().isAsyncCacheRefreshing());
 
 							// Forçage de la mise à jour du cache
 							cacheInfos.setForceReload(true);

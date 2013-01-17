@@ -162,7 +162,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		CacheInfo cacheInfos = new CacheInfo(cacheId,
 				ctx.getCacheType(),
-				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
+				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext(), 
+				ctx.isAsyncCacheRefreshing());
 		
 		if( ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
 			// 2 minutes de cache de session
@@ -198,7 +199,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		CacheInfo cacheInfos = new CacheInfo(cacheId,
 				ctx.getCacheType(),
-				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext());
+				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext(),
+				ctx.isAsyncCacheRefreshing());
 		
 		// Pas de controle
 		cacheInfos.setForceNOTReload(true);
