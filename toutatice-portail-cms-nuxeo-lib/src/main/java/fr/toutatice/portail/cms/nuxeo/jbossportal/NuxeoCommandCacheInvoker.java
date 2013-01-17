@@ -286,7 +286,10 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 					
 					ServerInvocation invocation = ctx.getServerInvocation();
-					
+					if( invocation == null)	{
+						ControllerContext controllerCtx = ctx.getControlerContext();
+						invocation = controllerCtx.getServerInvocation();
+					}				
 					
 					Long userTs = (Long) invocation.getAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoProfilerUserSessionTs");
 					if( userTs != null)
