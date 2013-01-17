@@ -304,7 +304,29 @@ public class NuxeoController {
 		
 		navigationScope = window.getPageProperty("osivia.cms.navigationScope");
 		
+		
+		spacePath = window.getPageProperty("osivia.cms.basePath");
+		CMSItem publishSpaceConfig = null;
+		if( spacePath != null)
+			 publishSpaceConfig = getNuxeoCMSService().getPublicationConfig(getCMSCtx(), spacePath);
+		
+		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+
+		
+		if( "__inherited".equals(displayLiveVersion))	{
+			
+			if( publishSpaceConfig != null)
+				displayLiveVersion = publishSpaceConfig.getProperties().get("displayLiveVersion");
+			else
+				displayLiveVersion = window.getPageProperty("osivia.cms.displayLiveVersion");
+		}
+
+		
+		
+		
+		
+		
 		String hideMetadatas = window.getProperty("osivia.cms.hideMetaDatas");
 
 		setScope(scope);
@@ -313,7 +335,6 @@ public class NuxeoController {
 		
 		setPageMarker((String) request.getAttribute("osivia.pageMarker"));
 		
-		spacePath = window.getPageProperty("osivia.cms.basePath");
 		
 		
 		Window jbpWindow = (Window) request.getAttribute("osivia.window");
@@ -500,6 +521,14 @@ public class NuxeoController {
 		Window window = (Window) request.getAttribute("osivia.window");
 
 		return getFormatter().formatScopeList(window, "scope", selectedScope);
+
+	}
+	
+	public String formatDisplayLiveVersionList(String selectedVersion) throws Exception {
+		
+		Window window = (Window) request.getAttribute("osivia.window");
+
+		return getFormatter().formatDisplayLiveVersionList(getCMSCtx(), window, "displayLiveVersion", selectedVersion);
 
 	}
 

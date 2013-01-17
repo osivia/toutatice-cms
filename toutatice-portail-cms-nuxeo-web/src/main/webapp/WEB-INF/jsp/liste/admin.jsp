@@ -40,9 +40,7 @@ if( "1".equals( request.getAttribute("beanShell")))
 String displayNuxeoRequest = "";
 if( "1".equals( request.getAttribute("displayNuxeoRequest")))
 	displayNuxeoRequest = "checked";
-String displayLiveVersion = "";
-if( "1".equals( request.getAttribute("displayLiveVersion")))
-	displayLiveVersion = "checked";
+
 %>
 
 
@@ -93,7 +91,9 @@ return requete;
 </pre>
 </div>	
 <br/>
-		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
+	
+		<label>Version</label><br/>
+<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
 <br/>	
 
 <%			

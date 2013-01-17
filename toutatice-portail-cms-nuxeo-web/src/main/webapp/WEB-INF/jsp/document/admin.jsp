@@ -15,9 +15,7 @@
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-String displayLiveVersion = "";
-if( "1".equals( request.getAttribute("displayLiveVersion")))
-	displayLiveVersion = "checked";
+
 %>
 
 
@@ -27,6 +25,11 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
+			
+					<label>Version</label><br/>
+<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
+<br/>	
+			
 <!--  			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %>--><br/> 
 			
@@ -50,7 +53,6 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>	Afficher les méta-données <br/>	
 		
 			
-		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">
 			<input type="submit" name="annuler"  value="Annuler">

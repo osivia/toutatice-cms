@@ -12,9 +12,7 @@
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-String displayLiveVersion = "";
-if( "1".equals( request.getAttribute("displayLiveVersion")))
-	displayLiveVersion = "checked";
+
 %>
 
 
@@ -26,7 +24,8 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
 
-		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
+				<label>Version</label><br/>
+<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
 <br/>	
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

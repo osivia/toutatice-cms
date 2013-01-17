@@ -165,11 +165,13 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				window.setProperty("osivia.cms.hideMetaDatas", null);
 						
 			
-			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			
+			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);	
-
+				window.setProperty("osivia.cms.displayLiveVersion", null);
+			
+			
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
@@ -211,10 +213,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		*/
 		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
-		if (displayLiveVersion == null)
-			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
-
 		
 		req.setAttribute("ctx", ctx);
 

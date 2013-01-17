@@ -202,6 +202,7 @@ public class NavigationItemAdaptor {
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
 			properties.put("pageTemplate", "/default/templates/workspace");
+			properties.put("displayLiveVersion", "1");
 		}
 		
 		if( publishSpaceItem != null && "Workspace".equals(((Document) publishSpaceItem.getNativeItem()).getType()))	{

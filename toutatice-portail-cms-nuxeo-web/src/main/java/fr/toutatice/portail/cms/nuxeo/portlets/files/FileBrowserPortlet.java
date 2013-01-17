@@ -95,10 +95,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 			PortalWindow window = WindowFactory.getWindow(req);
 			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
 			
-			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);	
+				window.setProperty("osivia.cms.displayLiveVersion", null);
 
 			
 
@@ -136,8 +136,6 @@ public class FileBrowserPortlet extends CMSPortlet {
 		
 		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
-		if (displayLiveVersion == null)
-			displayLiveVersion = "";
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 
 

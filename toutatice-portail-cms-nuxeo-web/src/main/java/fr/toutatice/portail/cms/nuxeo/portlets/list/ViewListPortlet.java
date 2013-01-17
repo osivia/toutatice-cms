@@ -194,10 +194,12 @@ public class ViewListPortlet extends CMSPortlet {
 			else if (window.getProperty("osivia.displayNuxeoRequest") != null)
 				window.setProperty("osivia.displayNuxeoRequest", null);
 
-			if ("1".equals(req.getParameter("displayLiveVersion")))
-				window.setProperty("osivia.cms.displayLiveVersion", "1");
+			
+			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
 				window.setProperty("osivia.cms.displayLiveVersion", null);
+			
 
 			if (!"1".equals(req.getParameter("showMetadatas")))
 				window.setProperty("osivia.cms.hideMetaDatas", "1");
@@ -308,8 +310,6 @@ public class ViewListPortlet extends CMSPortlet {
 			req.setAttribute("nuxeoRequest", nuxeoRequest);
 
 			String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
-			if (displayLiveVersion == null)
-				displayLiveVersion = "";
 			req.setAttribute("displayLiveVersion", displayLiveVersion);
 
 			String showMetadatas = "1";
