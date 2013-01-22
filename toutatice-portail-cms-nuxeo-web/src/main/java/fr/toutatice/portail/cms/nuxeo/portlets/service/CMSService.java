@@ -179,9 +179,19 @@ public class CMSService implements ICMSService {
 		try {
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
 			
-			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion())
-					|| (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
-							.isLiveSpace());
+			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
+			
+			// Document non publié et rattaché à un espace
+			if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
+							.isLiveSpace()))
+					haveToGetLive = true;
+			
+			//Ajout JSS 20130122 
+			//Document non publié et non rattaché à un espace : usage collaboratif
+			if( !pubInfos.isPublished() && pubInfos.getPublishSpacePath() == null)
+					haveToGetLive = true;
+			
+
 
 			cmsCtx.setScope("superuser_context");
 
