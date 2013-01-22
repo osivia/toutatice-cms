@@ -57,31 +57,23 @@ if( "1".equals( request.getAttribute("displayNuxeoRequest")))
 /*
 implicits variables :
    - navigationPath :  current navigation folder path
-   - navItem : current navigation item (see portal API)   
+   - navigationPubInfos : current navigation publication infos   
+           navigationPubInfos.getLiveId() to get folder's live ID
    - basePath :  page folder path
    - contentPath : current item path
    - request : portlet request 
+   - params : public selectors (shared parameters)
 */		
 
-String requete =  "ecm:path STARTSWITH '/default-domain/workspaces/toutatice'";
+String requete =  "ecm:path STARTSWITH '"+navigationPath+"'";
 
+// format search by title
 if (params.get("title") != null) {
 requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
 }
 
-if (params.get("description") != null) {
-requete += " AND " + NXQLFormater.formatTextSearch("dc:description",params.get("description")) ;
-}
-
-if (params.get("nature") != null) {
-requete += " AND " +
-NXQLFormater.formatVocabularySearch("dc:nature",params.get("nature")) ;
-
-}
-
-if (params.get("subject") != null) {
-requete += " AND " +
-NXQLFormater.formatVocabularySearch("dc:subjects",params.get("subject")) ;
+// get childrens
+requete =  "AND ecm:parentId =  '"+navigationPubInfos.getLiveId()+"'";
 
 }
 

@@ -495,6 +495,10 @@ public class CMSService implements ICMSService {
 			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
 			
 			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			
+			if( publishSpaceConfig == null)
+				throw new CMSException(CMSException.ERROR_NOTFOUND);
+			
 			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));			
 			
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
@@ -545,6 +549,10 @@ public class CMSService implements ICMSService {
 		try {
 			
 			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			
+			if( publishSpaceConfig == null)
+				throw new CMSException(CMSException.ERROR_NOTFOUND);
+			
 			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));	
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
@@ -674,10 +682,16 @@ public class CMSService implements ICMSService {
 			}
 
 		} catch (Exception e) {
-			if (!(e instanceof CMSException))
-				throw new CMSException(e);
-			else
-				throw (CMSException) e;
+			if (!(e instanceof CMSException))	{
+				if( e instanceof NuxeoException && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+					return null;
+				else
+					throw new CMSException(e);
+			}
+			else	{
+				
+					throw (CMSException) e;
+			}
 		}
 		return configItem;
 	}

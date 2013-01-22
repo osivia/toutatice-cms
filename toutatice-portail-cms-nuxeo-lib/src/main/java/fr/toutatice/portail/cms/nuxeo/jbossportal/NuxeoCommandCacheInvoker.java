@@ -279,24 +279,10 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				// log into profiler
 
 				String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
+				
+				name +=", nuxeoSession=" +nuxeoSession.hashCode();
 
 				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
-				
-				// Ajout log profiler
-				if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
-					
-					ServerInvocation invocation = ctx.getServerInvocation();
-					if( invocation == null)	{
-						ControllerContext controllerCtx = ctx.getControlerContext();
-						invocation = controllerCtx.getServerInvocation();
-					}				
-					
-					Long userTs = (Long) invocation.getAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoProfilerUserSessionTs");
-					if( userTs != null)
-						name +=", session=" +userTs;
-				}
-				
-
 
 
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				

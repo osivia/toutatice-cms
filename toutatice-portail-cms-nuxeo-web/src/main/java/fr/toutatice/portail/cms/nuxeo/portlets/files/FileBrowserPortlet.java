@@ -214,7 +214,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				/* Folder courant */
 				
-				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+				//Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+				Document doc = ctx.fetchDocument(folderPath);
 
 
 				//Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
@@ -233,21 +234,23 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 				/* Récupération des parents (pour le path) */
 
-				NuxeoController ctxSession = new NuxeoController(request, response, getPortletContext());
-				ctxSession.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
-				ctxSession.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
-
 				List<PortletPathItem> portletPath = new ArrayList<PortletPathItem>();
-
+				
+				
+				// 	delete .proxy extension
+				String curPath =  ctx.getLivePath(doc.getPath());
 				Document curDoc = doc;
 				
-				while (! curDoc.getPath().equals(nuxeoPath) && curDoc.getPath().startsWith(nuxeoPath)) {
+				while (! curPath.equals(nuxeoPath) && curPath.startsWith(nuxeoPath)) {
+					
 					addPathItem(portletPath,curDoc,  displayMode);
-			
-					curDoc = (Document) ctxSession.executeNuxeoCommand(new FolderGetParentCommand(curDoc));
+
+					curPath = ctx.getParentPath(curPath);
+					curDoc = (Document) ctx.fetchDocument(curPath);
+					
 				}
 				
-				if( curDoc.getPath().equals(nuxeoPath))
+				if( curPath.equals(nuxeoPath))
 					addPathItem(portletPath,curDoc,  displayMode);
 				
 				

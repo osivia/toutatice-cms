@@ -872,6 +872,25 @@ public class NuxeoController {
 		}
 	}
 	
+	
+	public String getParentPath 	( String path) throws Exception	{
+		// One level up
+		CMSObjectPath parentPath = CMSObjectPath.parse(path).getParent();
+		return parentPath.toString();
+	}
+	
+	
+	public String  getLivePath(String path){
+		String result = path;
+		if( path.endsWith(".proxy"))
+			result = result.substring(0, result.length() - 6);
+		return result;
+	}
+	
+	
+	
+	
+	
 	public CMSBinaryContent fetchAttachedPicture(String docPath, String pictureIndex) {
 		try	{
 			

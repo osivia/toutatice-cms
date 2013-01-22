@@ -30,6 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -385,7 +387,10 @@ public class ViewListPortlet extends CMSPortlet {
 		logger.debug("doView");
 
 		try {
+			
 
+
+			
 			response.setContentType("text/html");
 			
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
@@ -417,9 +422,14 @@ public class ViewListPortlet extends CMSPortlet {
 				i.set("navItem",  navItem);
 
 
+
+				
 				nuxeoRequest = (String) i.eval(nuxeoRequest);
 			}
 
+			
+	
+			
 			/* Filtre pour sélectionner uniquement les version publiées */
 
 			int maxItems = -1;
@@ -482,9 +492,12 @@ public class ViewListPortlet extends CMSPortlet {
 
 				String schemas = getListTemplates().get(style).getSchemas();
 
+
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
 						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas));
 
+
+				
 				int nbPages = 0;
 
 				if (pageSize != -1) {
@@ -577,6 +590,11 @@ public class ViewListPortlet extends CMSPortlet {
 						// Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
 						if( currentPage == 0 && docs.size() == 0)
 							request.setAttribute("osivia.emptyResponse", "1");
+						
+		
+
+
+
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 
