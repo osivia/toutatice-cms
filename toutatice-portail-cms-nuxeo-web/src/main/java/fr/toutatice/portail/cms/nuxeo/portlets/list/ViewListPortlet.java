@@ -555,7 +555,8 @@ public class ViewListPortlet extends CMSPortlet {
 						
 						String rssLinkRef = window.getProperty("osivia.rssLinkRef");
 						if( rssLinkRef != null)	{
-							if( !ctx.isDisplayingLiveVersion())	{
+							// JSS20120123 : pourquoi filtrer sur les lives
+							//if( !ctx.isDisplayingLiveVersion())	{
 							
 						
 							boolean anonymousAccess = true;
@@ -584,7 +585,7 @@ public class ViewListPortlet extends CMSPortlet {
 								
 								request.setAttribute("rssLinkURL", rssLinkURL);
 							}
-							}
+							//}
 						}
 						
 						// Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
