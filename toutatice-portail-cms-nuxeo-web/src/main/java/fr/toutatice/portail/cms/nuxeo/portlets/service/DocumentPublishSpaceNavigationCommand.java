@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.jaxrs.Constants;
@@ -8,6 +10,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.NavigationItem;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -22,14 +25,14 @@ import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
  */
 public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
-	String path;
-	boolean live;
+
+	CMSItem publishSpaceConfig;
 	public final static String basicNavigationSchemas = "dublincore,common, toutatice";
 	
-	public DocumentPublishSpaceNavigationCommand(  String path, boolean live) {
+	public DocumentPublishSpaceNavigationCommand(  CMSItem publishSpaceConfig) {
 		super();
-		this.path = path;
-		this.live = live;
+
+		this.publishSpaceConfig = publishSpaceConfig;
 	}
 
 	public static String  computeNavPath(String path){
@@ -54,12 +57,26 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		// TODO : gerer le PortalVirtualPage de maniere générique
 		
+		boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));
+		
+		String uuid =  ((Document)publishSpaceConfig.getNativeItem()).getId();
+		
+		/*
 		String spacePath = path;
 		if( !live)
 			spacePath += ".proxy";
+		*/
 		
-		String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
+		String path = publishSpaceConfig.getPath();
 		
+		//String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
+		
+		// Modif JSS 20130130 : vu avec oliver
+		//  1 - filtre uniquement sur ttc:showInMenu
+		//  2 - le 'ecm:path =' pose des problemes de perfs quand il est compibné avec un OR ecm:path startswith -> fetch specifique pour récuperer la racine
+		//  3 - suppression cas particulier PortalVirtualPage
+		
+		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  ttc:showInMenu = 1  )";
 		
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live);
@@ -84,8 +101,28 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		Map<String, NavigationItem> navItems = new HashMap<String, NavigationItem>();
 
 		Documents children = (Documents) request.execute();
+		
+		
+		/* Make children list */
+		
+		
+		List<Document>  concatDocuments = new ArrayList<Document>();
+		
+		// Add root document
+		// oblige de sortir de la requete principale pour des problemes de perfs
+		org.nuxeo.ecm.automation.client.jaxrs.model.Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
+		.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", uuid).execute();
+
+		concatDocuments.add(doc);
 
 		for (Document child : children) {
+			concatDocuments.add(child);
+		
+		}
+		
+		// Iterate over childrens to update hierarchy
+
+		for (Document child : concatDocuments) {
 
 			NavigationItem navItem;
 
@@ -154,7 +191,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PublishSpaceNavigationCommand/" + path;
+		return "PublishSpaceNavigationCommandT2/" + publishSpaceConfig.getPath();
 	};
 
 }

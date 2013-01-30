@@ -145,10 +145,14 @@ public class NavigationItemAdaptor {
 		 *  
 		 *  */
 		
+		
+		// Désactivation du hideInNavigation
+		
+		/*
 		String hiddenInNavigation =  (String) doc.getProperties().get("ttc:hiddenInNavigation");
 		if( hiddenInNavigation != null && "true".equals(hiddenInNavigation) )
 			properties.put("hiddenInNavigation", "1");			
-		
+		*/
 	
 			
 		if (isNavigable( doc)) {
@@ -166,10 +170,6 @@ public class NavigationItemAdaptor {
 			properties.put("menuItem", "1");
 		
 	
-		
-//		if( "1".equals(properties.get("navigationElement")))	{
-//			properties.put("menuItem", "1");
-//		}
 		
 		
 		/*
@@ -205,10 +205,13 @@ public class NavigationItemAdaptor {
 			properties.put("displayLiveVersion", "1");
 		}
 		
+		
+		/*
 		if( publishSpaceItem != null && "Workspace".equals(((Document) publishSpaceItem.getNativeItem()).getType()))	{
 			// Tous les sous-items d'un workspace sont navigables
 			properties.put("menuItem", "1");
 		}
+		*/
 
 		
 

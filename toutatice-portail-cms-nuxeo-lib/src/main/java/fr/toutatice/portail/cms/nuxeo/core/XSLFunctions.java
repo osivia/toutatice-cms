@@ -1,7 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.core;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +58,42 @@ public class XSLFunctions {
 		this.ctx = ctx;
 	}
 	
+	private static  List<URI> baseURIs = null;
+	
+	public static List<URI> getNuxeoBaseURIs(NuxeoController ctx) throws URISyntaxException	{
+		
+		if (baseURIs == null) {
+			setNuxeoBaseURIs(ctx);
+		}
+
+		return baseURIs;
+	}
+	
+
+	
+	public static synchronized void setNuxeoBaseURIs(NuxeoController ctx) throws URISyntaxException	{
+		
+		if( baseURIs == null){
+		
+			List<URI> tmpBaseURIs = new ArrayList<URI>();
+
+			// First, the nuxeo public URI
+			tmpBaseURIs.add(ctx.getNuxeoPublicBaseUri());
+
+			// Then the alternate paths
+			String altServers = System.getProperty("nuxeo.alternativeServerNames");
+
+			if (altServers != null) {
+				String[] serverToks = altServers.split("\\|");
+				for (int i = 0; i < serverToks.length; i++) {
+					tmpBaseURIs.add(new URI("http://" + serverToks[i] + ctx.getNuxeoConnectionProps().getNuxeoContext()));
+				}
+			}
+			
+			baseURIs = tmpBaseURIs;
+		}
+
+	}
 
 	
 	
@@ -119,6 +158,8 @@ public class XSLFunctions {
 
 	private String rewrite(String link, boolean checkScope) {
 		
+		try	{
+		
 		// v.0.13 : ajout de liens vers le portail
 		
 		if( link.startsWith(PORTAL_REF) ){
@@ -162,22 +203,21 @@ public class XSLFunctions {
 			return link;
 		
 		String trim = link.trim().replace(" ", "%20");
-		URI url = ctx.getNuxeoPublicBaseUri().resolve(trim);
 		
+	
+	
+		for(URI baseURI : getNuxeoBaseURIs(ctx))	{
+		
+		URI url = baseURI.resolve(trim);
 		
 
 		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
-			if (url.getHost().equals(ctx.getNuxeoPublicBaseUri().getHost())) {
+			if (url.getHost().equals(baseURI.getHost())) {
 
 					//String testUrl = "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
 //					private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
 						
-					try	{
-						String query = url.getRawPath();
-						
-
-						
-						
+					String query = url.getRawPath();
 						
 						
 						
@@ -296,18 +336,24 @@ public class XSLFunctions {
 						}
 						
 						
-				} catch (Exception e) {
-					//incorrect parsing, continue with the native value
-				}
 				
 				return url.toString();
 
-			} else {
-				return url.toString();
-			}
-		} else {
-			return link;
+			} 
+			//else {
+			//	return url.toString();
+			//}
+		} 
+		
 		}
+		
+		} catch (Exception e)	{
+			//Don't block on a link
+			
+			logger.error("Link "+ link + "generates " + e.getMessage() );
+			
+		}
+		return link;
 	}
 
 	private boolean shouldRewrite(URI uri) {

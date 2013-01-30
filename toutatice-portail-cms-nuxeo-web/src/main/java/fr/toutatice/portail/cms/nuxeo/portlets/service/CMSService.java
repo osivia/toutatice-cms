@@ -509,10 +509,10 @@ public class CMSService implements ICMSService {
 			if( publishSpaceConfig == null)
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
 			
-			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));			
+			
 			
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
+					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(livePath);
@@ -563,10 +563,9 @@ public class CMSService implements ICMSService {
 			if( publishSpaceConfig == null)
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
 			
-			boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));	
 
 			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpacePath, live)));
+					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);

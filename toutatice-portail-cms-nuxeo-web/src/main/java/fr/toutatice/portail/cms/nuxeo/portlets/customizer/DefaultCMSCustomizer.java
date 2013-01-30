@@ -180,6 +180,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 		
 		CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(ctx, doc.getPath());
+		
+		
+		/*
 
 		if (ctx.getContextualizationBasePath() != null) {
 			// Publication dans un environnement contextualisé
@@ -204,6 +207,54 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
 		}
+		
+		*/
+		
+		List<CMSItem> navItems = null;
+		
+		
+		
+		if (ctx.getContextualizationBasePath() != null) {
+			// Publication dans un environnement contextualisé
+			// On se sert du menu de navigation et on décompose chaque niveau
+			
+
+			 navItems = getCMSService().getPortalNavigationSubitems(ctx,
+					ctx.getContextualizationBasePath(), DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
+		}
+		
+		if( navItems != null)	{
+
+			nuxeoRequest = "( (ecm:parentId = '" + pubInfos.getLiveId() + "' )";
+			
+			String excludedFoldersRequest = "";
+
+			for (CMSItem curItem : navItems) {
+				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
+				if (!"1".equals(hiddenItem)) {
+					if( excludedFoldersRequest.length() > 0)
+						excludedFoldersRequest += " AND ";
+					excludedFoldersRequest = excludedFoldersRequest + " ( NOT ecm:path STARTSWITH '" + curItem.getPath()	+ "' )";
+				}
+			}
+			
+			nuxeoRequest += " OR ( ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' ) )";
+			
+			if( excludedFoldersRequest.length() > 0)
+				nuxeoRequest += " AND " + excludedFoldersRequest;
+			
+			nuxeoRequest +=  "AND ecm:mixinType != 'Folderish'";
+			
+			
+
+		} else {
+			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
+			
+			if( ordered)
+				nuxeoRequest += " order by ecm:pos";
+		}
+	
+		
 		return nuxeoRequest;
 
 	}
