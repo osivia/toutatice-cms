@@ -45,6 +45,12 @@ public class NXQLFormater {
 		StringBuffer request = new StringBuffer();
 		request.append("(");
 		
+		/* Les documents Nuxeo dont le champ fieldName n'est pas renseigné
+		 * ou existant ne doivent pas être retournés
+		 */
+		request.append(fieldName);
+		request.append(" LIKE '%%' AND ");
+		
 		boolean firstItem = true;
 		
 		for( String selectedVocabsEntry : selectedVocabsEntries)	{
@@ -67,20 +73,20 @@ public class NXQLFormater {
 	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames, String fieldName,
 			String selectedEntry) throws Exception {
 
-		/* Récupération du niveau de vocabulaire */
+		/* Récupération du niveau du dernier vocabulaire affiché */
 		int selectedLevel = selectedEntry.split("/").length;
-
+		
+		/* Récupération de l'arbre des vocabulaires */
 		VocabularyEntry vocabEntry = getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"), vocabsNames);
-
+		
+		/* Récupération du dernier vocabulaire sélectionné 
+		 * avant l'entrée "Autres"
+		 */
 		int levelIndex = 0;
 		VocabularyEntry lastVocab = vocabEntry;
-		/*
-		 * On prends la dernière liste d'entrées soumises par le formulaire du
-		 * selector
-		 */
+
 		String[] entries = selectedEntry.split("/");
-		
-		/* Récupération du dernier vocabulaire sélectionné */
+
 		while (levelIndex < selectedLevel) {
 
 			String entry = entries[levelIndex];
@@ -91,26 +97,46 @@ public class NXQLFormater {
 			levelIndex++;
 		}
 		
-		Collection<VocabularyEntry> vocabsEntries = lastVocab.getChildren().values();
+		/* Ecriture des clauses:
+		 * - une pour les champ déjà sélectionnés et différents de "Autres" (clauseBeforeOther)
+		 * - une pour le champ "Autres" (clause)
+		 */
+	
+		StringBuffer clauseBeforeOther = new StringBuffer();
 		StringBuffer clause = new StringBuffer();
 		
+		Collection<VocabularyEntry> vocabsEntries = lastVocab.getChildren().values();
+		
 		if(vocabsEntries != null && vocabsEntries.size() > 0){
-
-			clause.append("( NOT (");
-	
-			String selectedValuesBeforeOthers = StringUtils.substringBeforeLast(selectedEntry, "/");
-			if(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(selectedValuesBeforeOthers))
-				selectedValuesBeforeOthers = "";
-			else
-				selectedValuesBeforeOthers += "/";
+			
+			clause.append(" ( NOT (");
 			
 			boolean firstItem = true;
 			for (VocabularyEntry displayedEntry : vocabsEntries) {
 				
 				String entry = displayedEntry.getId();
+				
+				String selectedValuesBeforeOthers = StringUtils.substringBeforeLast(selectedEntry, "/");
+				if(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(selectedValuesBeforeOthers))
+					selectedValuesBeforeOthers = "";
+				else
+					selectedValuesBeforeOthers += "/";
+				
+				if(firstItem && StringUtils.isNotEmpty(selectedValuesBeforeOthers))
+					clauseBeforeOther.append(" ( ");
 	
-				if (!firstItem)
+				if (!firstItem){
+					if(StringUtils.isNotEmpty(selectedValuesBeforeOthers))
+						clauseBeforeOther.append(" OR ");
 					clause.append(" OR ");
+				}
+				
+				if(StringUtils.isNotEmpty(selectedValuesBeforeOthers)){
+					clauseBeforeOther.append(fieldName);
+					clauseBeforeOther.append(" STARTSWITH '");
+					clauseBeforeOther.append(selectedValuesBeforeOthers);
+					clauseBeforeOther.append("' ");
+				}
 	
 				clause.append(fieldName);
 				clause.append(" STARTSWITH '");
@@ -120,12 +146,15 @@ public class NXQLFormater {
 	
 				firstItem = false;
 			}
-	
-			clause.append(") )");
+
+			clause.append(" ) ) ");
+			
+			if(StringUtils.isNotEmpty(clauseBeforeOther.toString()))
+				clauseBeforeOther.append(") AND ");
 			
 		} 
 
-		return clause.toString();
+		return clauseBeforeOther.toString() + clause.toString();
 	}
 	
 	/* TODO: à externaliser dans VocabularyHelper */
