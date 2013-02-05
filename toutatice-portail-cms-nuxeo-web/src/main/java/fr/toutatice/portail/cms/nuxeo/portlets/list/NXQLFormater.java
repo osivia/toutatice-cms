@@ -11,6 +11,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.VocabularyHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
@@ -41,7 +42,6 @@ public class NXQLFormater {
 	
 	public String formatVocabularySearch(PortletRequest portletRequest, List vocabsNames, String fieldName, List<String> selectedVocabsEntries) throws Exception{
 		
-		String requestAsString = "";
 		StringBuffer request = new StringBuffer();
 		request.append("(");
 		
@@ -60,16 +60,8 @@ public class NXQLFormater {
 			firstItem = false;
 		}
 		request.append(")");
-		
-		requestAsString = request.toString();
-		
-		/* Cas où le vocabulaire ne contient aucune entrée:
-		 * la clause est toujours vérifiée.
-		 */
-		if("()".equals(requestAsString))
-			requestAsString = "(true)";
 			
-		return requestAsString;
+		return request.toString();
 	}
 	
 	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames, String fieldName,
@@ -88,12 +80,13 @@ public class NXQLFormater {
 		 */
 		String[] entries = selectedEntry.split("/");
 		
-		/* Récupération du dernier vocabulaire "sélectionné */
+		/* Récupération du dernier vocabulaire sélectionné */
 		while (levelIndex < selectedLevel) {
 
 			String entry = entries[levelIndex];
-			if (!VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equals(entry))
+			if (!VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equals(entry)){
 				lastVocab = lastVocab.getChild(entry);
+			}
 
 			levelIndex++;
 		}
@@ -129,13 +122,14 @@ public class NXQLFormater {
 			}
 	
 			clause.append(") )");
-		}
+			
+		} 
 
 		return clause.toString();
 	}
-
+	
+	/* TODO: à externaliser dans VocabularyHelper */
 	private VocabularyEntry getVocabularyEntry(NuxeoController nuxeoCtrl, List vocabsNames) throws Exception {
-		/* TODO: à externaliser, mutualiser */
 		
 		nuxeoCtrl.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
 		nuxeoCtrl.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);

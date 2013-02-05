@@ -61,10 +61,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 	public static String getLabel(String othersLabel, String id, VocabularyEntry vocab) {
 		String res = "";
 
-		if (OTHER_ENTRIES_CHOICE.equalsIgnoreCase(id)
+		if (id.contains(OTHER_ENTRIES_CHOICE)
 				&& StringUtils.isNotEmpty(othersLabel)) {
 
-			res = othersLabel;
+			res = StringUtils.replace(id, OTHER_ENTRIES_CHOICE, othersLabel);
 
 		} else { 
 

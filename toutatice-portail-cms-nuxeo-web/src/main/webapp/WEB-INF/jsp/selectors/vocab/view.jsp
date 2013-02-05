@@ -3,9 +3,11 @@
 <%@page import="org.apache.commons.lang.StringUtils"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet"%>
 <%@page import="java.util.Map"%>
+<%@page import="java.util.Collection"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.PageSelectors"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
 <%@page import="org.osivia.portal.api.windows.PortalWindow"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.KeywordsSelectorPortlet"%>
 <%@page import="org.apache.jasper.tagplugins.jstl.core.ForEach"%>
@@ -145,7 +147,9 @@ if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) {
 			<%						
 							}
 						}
-						if(StringUtils.isNotEmpty(othersLabel)){
+						
+						Collection<VocabularyEntry> children = vocab1.getChildren().values();
+						if(StringUtils.isNotEmpty(othersLabel) && children != null && children.size() > 0){
 			%>
 							<option <%= other1Selected %> value="<%= VocabSelectorPortlet.OTHER_ENTRIES_CHOICE %>"><%= othersLabel %></option>
 			<%          } %>
@@ -194,7 +198,9 @@ if(StringUtils.isNotEmpty(vocab1Id) && vocabName2 != null)	{
 			<%						
 								}
 						}
-						if(StringUtils.isNotEmpty(othersLabel)){
+
+						Collection<VocabularyEntry> children = vocab2.getChildren().values();
+						if(StringUtils.isNotEmpty(othersLabel) && children != null && children.size() > 0){
 			%>
 							<option <%= other2Selected %> value="<%= VocabSelectorPortlet.OTHER_ENTRIES_CHOICE %>"><%= othersLabel %></option>
 			<%          } %>
@@ -242,7 +248,8 @@ if(StringUtils.isNotEmpty(vocab1Id) && StringUtils.isNotEmpty(vocab2Id) && vocab
 							}
 						}
 			
-						if(StringUtils.isNotEmpty(othersLabel)){
+						Collection<VocabularyEntry> children = vocab3.getChildren().values();
+						if(StringUtils.isNotEmpty(othersLabel) && children != null && children.size() > 0){
 			%>
 							<option <%= other3Selected %> value="<%= VocabSelectorPortlet.OTHER_ENTRIES_CHOICE %>"><%= othersLabel %></option>
 			<%          } %>
