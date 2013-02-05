@@ -41,26 +41,35 @@ public class NXQLFormater {
 	
 	public String formatVocabularySearch(PortletRequest portletRequest, List vocabsNames, String fieldName, List<String> selectedVocabsEntries) throws Exception{
 		
+		String requestAsString = "";
 		StringBuffer request = new StringBuffer();
 		request.append("(");
 		
 		boolean firstItem = true;
 		
-		for( String selectedVocabsEbtry : selectedVocabsEntries)	{
+		for( String selectedVocabsEntry : selectedVocabsEntries)	{
 			
 			if( !firstItem)
 				request.append(" OR ");
 
-			if(selectedVocabsEbtry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE))
-				request.append(formatOthersVocabularyEntriesSearch(portletRequest, vocabsNames, fieldName, selectedVocabsEbtry));
+			if(selectedVocabsEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE))
+				request.append(formatOthersVocabularyEntriesSearch(portletRequest, vocabsNames, fieldName, selectedVocabsEntry));
 			else
-				request.append( fieldName+" STARTSWITH '" + selectedVocabsEbtry + "'");
+				request.append( fieldName+" STARTSWITH '" + selectedVocabsEntry + "'");
 			
 			firstItem = false;
 		}
 		request.append(")");
 		
-		return request.toString();
+		requestAsString = request.toString();
+		
+		/* Cas où le vocabulaire ne contient aucune entrée:
+		 * la clause est toujours vérifiée.
+		 */
+		if("()".equals(requestAsString))
+			requestAsString = "(true)";
+			
+		return requestAsString;
 	}
 	
 	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames, String fieldName,
