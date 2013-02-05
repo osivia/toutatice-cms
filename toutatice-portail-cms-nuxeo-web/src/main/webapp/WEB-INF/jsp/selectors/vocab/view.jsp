@@ -108,7 +108,7 @@ if(selectorMultiValued){
 } 
 
 String onChangeEvent1 = "";
-if( vocabName2 != null) { 
+if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) { 
 	// URL de rafraichissement de la liste
 	PortletURL refreshURL = renderResponse.createRenderURL();
 	refreshURL.setParameter("vocab1Id", "SELECTED_VALUE");
