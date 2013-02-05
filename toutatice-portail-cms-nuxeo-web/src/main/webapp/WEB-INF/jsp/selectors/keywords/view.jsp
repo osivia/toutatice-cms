@@ -19,48 +19,62 @@
 <%
 
 List<String> keywords = (List<String>) renderRequest.getAttribute("keywords");
-if( keywords.size() > 0) 	{
-%>
 
-<table class="nuxeo-keywords-selector-table"  cellspacing="5" width="95%">
+if("1".equals(renderRequest.getAttribute("keywordMultivalued"))){
 
-<%
-int occ = 0;
-
-for (String keywordOcc : keywords){
+	if( keywords.size() > 0) 	{
+	%>
 	
-	String sOcc = Integer.toString(occ++);
+	<table class="nuxeo-keywords-selector-table"  cellspacing="5" width="95%">
 	
-%>
-	<tr>
-		<td width="90%"><%= keywordOcc%> </td> <td>
+	<%
+	int occ = 0;
+	
+	for (String keywordOcc : keywords){
 		
-		<a href="<portlet:actionURL>
-         		<portlet:param name="action" value="delete"/>
-         		<portlet:param name="occ" value="<%= sOcc %>"/>
-         </portlet:actionURL>"><img src="<%= renderRequest.getContextPath() %>/img/delete.gif" border="0"/></a>
+		String sOcc = Integer.toString(occ++);
 		
-		</td width="10%">
-	</tr>
-<%			
+	%>
+		<tr>
+			<td width="90%"><%= keywordOcc%> </td> <td>
+			
+			<a href="<portlet:actionURL>
+	         		<portlet:param name="action" value="delete"/>
+	         		<portlet:param name="occ" value="<%= sOcc %>"/>
+	         </portlet:actionURL>"><img src="<%= renderRequest.getContextPath() %>/img/delete.gif" border="0"/></a>
+			
+			</td width="10%">
+		</tr>
+	<%			
+		}
+	%>
+	
+	
+	</table>
+	
+	<%			
 	}
-%>
+	%>
 
-
-</table>
-
-<%			
-}
-%>
-
-<div class="nuxeo-keywords-selector">
-		<form method="post" action="<portlet:actionURL/>">
-			<input type="text" name="keyword" value="${keyword}" size="15">	
-			<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
-		</form>			
-			
-
-			
-		
+	<div class="nuxeo-keywords-selector">
+			<form method="post" action="<portlet:actionURL/>">
+				<input type="text" name="keyword" value="${keyword}" size="15">	
+				<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
+			</form>			
 	</div>
+
+<% } else { 
+	
+	String keywordValue = "";
+	if(keywords != null && keywords.size() == 1)
+		keywordValue = keywords.get(0);
+%>
+	<div class="nuxeo-keywords-selector">
+		<form method="post" action="<portlet:actionURL/>">
+			<input type="text" name="keyword" value="<%= keywordValue %>" size="15">
+			<input border=0 width="16px" height="16px" src="<%= renderRequest.getContextPath() %>/img/submit.jpg" name="monoAdd" type="image" value="submit" align="middle" > 
+		</form>			
+	</div>
+
+<% } %>
 	

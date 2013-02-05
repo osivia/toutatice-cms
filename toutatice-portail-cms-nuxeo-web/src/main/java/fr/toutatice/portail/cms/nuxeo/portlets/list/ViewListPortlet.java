@@ -394,6 +394,7 @@ public class ViewListPortlet extends CMSPortlet {
 			response.setContentType("text/html");
 			
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+			request.setAttribute("ctx", ctx);
 		
 
 			/* On détermine l'uid et le scope */
@@ -410,6 +411,11 @@ public class ViewListPortlet extends CMSPortlet {
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
 				i.set("basePath",  ctx.getBasePath());
 				i.set("navigationPath",  ctx.getNavigationPath());
+				/* Initialisation de navigationPubInfos pour éviter des erreurs 
+				 * de "non définition" lors 
+				 * de la construction d'une requête avec cette variable.
+				 */
+				i.set("navigationPubInfos",  null);
 				if( ctx.getNavigationPath() != null)	{
 					CMSPublicationInfos navigationPubInfos = ctx.getNuxeoCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
 					i.set("navigationPubInfos",  navigationPubInfos);
@@ -521,7 +527,6 @@ public class ViewListPortlet extends CMSPortlet {
 				}
 
 				request.setAttribute("docs", docs);
-				request.setAttribute("ctx", ctx);
 
 				request.setAttribute("currentPage", currentPage);
 

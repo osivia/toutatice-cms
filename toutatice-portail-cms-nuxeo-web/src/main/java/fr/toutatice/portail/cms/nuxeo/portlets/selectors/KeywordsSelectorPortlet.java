@@ -1,14 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,25 +15,16 @@ import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.profils.ProfilBean;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 
 
 /**
@@ -65,6 +49,21 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
 			else if (window.getProperty("osivia.selectorId") != null)
 				window.setProperty("osivia.selectorId", null);	
+			
+			if("1".equals(req.getParameter("keywordMultiValued")))
+				window.setProperty("osivia.keywordMultiValued", "1");
+			else if (window.getProperty("osivia.keywordMultiValued") != null)
+				window.setProperty("osivia.keywordMultiValued", null);
+			
+			/* Initialisation des mots-clés suite à configuration. */
+			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+			if(selectors != null){ 
+				List<String> keywords = selectors.get(req.getParameter("selectorId"));
+				if(keywords != null && keywords.size() > 0){
+					keywords.clear();
+					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+				}
+			}
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -77,30 +76,43 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 		}
 
 		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-		if ("view".equals(req.getPortletMode().toString())  && (req.getParameter("add.x") != null || req.getParameter("add") != null)) {
+		boolean isAddAction = req.getParameter("add.x") != null || req.getParameter("add") != null;
+		boolean isMonoValuedAddAction = req.getParameter("monoAdd.x") != null || req.getParameter("monoAdd") != null;
+		
+		if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction)) {
 
 			// Set public parameter
 			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) {
 
+				String keyword = req.getParameter("keyword");
+
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-
-				if (req.getParameter("keyword") != null && req.getParameter("keyword").length() > 0) {
-
-					List<String> keywords = selectors.get(selectorId);
-					if (keywords == null) {
-						keywords = new ArrayList<String>();
-						selectors.put(selectorId, keywords);
-					}
-					keywords.add(req.getParameter("keyword"));
-
+				
+				List<String> keywords = selectors.get(selectorId);
+				if (keywords == null) {
+					keywords = new ArrayList<String>();
+					selectors.put(selectorId, keywords);
 				}
 
+				if (!"1".equals(window.getProperty("osivia.keywordMultiValued"))) {
+					/*
+					 * On ne conserve qu'une valeur dans le cas d'un
+					 * sélecteur mono-valué.
+					 */
+					keywords.clear();
+				}
+
+				if (keyword != null && keyword.length() > 0) {
+					keywords.add(keyword);							
+				}
+
+				
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-				
-				//Réinitialisation des fenetres en mode NORMAL
+
+				// Réinitialisation des fenetres en mode NORMAL
 				req.setAttribute("osivia.unsetMaxMode", "true");
-				
+
 			}
 
 			res.setPortletMode(PortletMode.VIEW);
@@ -139,6 +151,11 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 		if (selectorId == null)
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
+		
+		String keywordMultiValued = window.getProperty("osivia.keywordMultiValued");
+		if(keywordMultiValued == null)
+			keywordMultiValued = "0";
+		req.setAttribute("keywordMultiValued", keywordMultiValued);
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
 		rd.include(req, res);
@@ -158,6 +175,10 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			PortalWindow window = WindowFactory.getWindow(request);
 
 			String selectorId = window.getProperty("osivia.selectorId");
+			
+			String keywordMultivalued = window.getProperty("osivia.keywordMultiValued");
+			request.setAttribute("keywordMultivalued", keywordMultivalued);
+			
 			String keyword = request.getParameter("keyword");
 
 			if (selectorId != null) {

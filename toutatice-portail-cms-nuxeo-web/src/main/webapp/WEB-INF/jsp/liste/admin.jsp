@@ -63,13 +63,22 @@ implicits variables :
    - contentPath : current item path
    - request : portlet request 
    - params : public selectors (shared parameters)
-*/		
+*/
+
+import java.util.List;
+import java.util.Arrays;		
 
 String requete =  "ecm:path STARTSWITH '"+navigationPath+"'";
 
 // format search by title
 if (params.get("title") != null) {
 requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
+}
+
+// format search by title wich values are defined in vocabularies
+if (params.get("vocabSelectorId") != null) {
+List vocabsNames = Arrays.asList(new String[]{"vocab1Name","vocab2Name","vocab3Name"});
+requete += " AND " + NXQLFormater.formatVocabularySearch(request,vocabsNames,"dc:title",params.get("vocabSelectorId"));
 }
 
 // get childrens
