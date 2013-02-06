@@ -75,14 +75,12 @@ if (params.get("title") != null) {
 requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
 }
 
-// format search by title wich values are defined in vocabularies
-if (params.get("selectorVocabId") != null) {
-List vocabsNames = Arrays.asList(new String[]{"vocabName1","vocabName2","vocabName3"});
-requete += " AND (" 
-+ NXQLFormater.formatVocabularySearch("vcbt:vocaField",params.get("selectorVocabId")) 
-+ " OR " 
-+ NXQLFormater.formatOthersVocabularyEntriesSearch(request,vocabsNames,"vcbt:vocaField",params.get("selectorVocabId")) 
-+ ")";
+// format search by discipline with OTHERs values
+if (params.get("discipline") != null) {
+List vocabsNames = Arrays.asList(new String[]{"disciplines_parent","disciplines"});
+requete += " AND " +
+NXQLFormater.formatOthersVocabularyEntriesSearch(request,vocabsNames,"acrp:disciplines",params.get("discipline")) ;
+
 }
 
 // get childrens

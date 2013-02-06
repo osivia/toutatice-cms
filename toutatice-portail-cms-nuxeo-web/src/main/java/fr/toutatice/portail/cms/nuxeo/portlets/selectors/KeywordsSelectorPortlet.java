@@ -50,10 +50,10 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			else if (window.getProperty("osivia.selectorId") != null)
 				window.setProperty("osivia.selectorId", null);	
 			
-			if("1".equals(req.getParameter("keywordMultiValued")))
-				window.setProperty("osivia.keywordMultiValued", "1");
-			else if (window.getProperty("osivia.keywordMultiValued") != null)
-				window.setProperty("osivia.keywordMultiValued", null);
+			if("1".equals(req.getParameter("keywordMonoValued")))
+				window.setProperty("osivia.keywordMonoValued", "1");
+			else if (window.getProperty("osivia.keywordMonoValued") != null)
+				window.setProperty("osivia.keywordMonoValued", null);
 			
 			/* Initialisation des mots-clés suite à configuration. */
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
@@ -95,7 +95,7 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 					selectors.put(selectorId, keywords);
 				}
 
-				if (!"1".equals(window.getProperty("osivia.keywordMultiValued"))) {
+				if ("1".equals(window.getProperty("osivia.keywordMonoValued"))) {
 					/*
 					 * On ne conserve qu'une valeur dans le cas d'un
 					 * sélecteur mono-valué.
@@ -152,10 +152,10 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
 		
-		String keywordMultiValued = window.getProperty("osivia.keywordMultiValued");
-		if(keywordMultiValued == null)
-			keywordMultiValued = "0";
-		req.setAttribute("keywordMultiValued", keywordMultiValued);
+		String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
+		if(keywordMonoValued == null)
+			keywordMonoValued = "0";
+		req.setAttribute("keywordMonoValued", keywordMonoValued);
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
 		rd.include(req, res);
@@ -176,8 +176,8 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 
 			String selectorId = window.getProperty("osivia.selectorId");
 			
-			String keywordMultivalued = window.getProperty("osivia.keywordMultiValued");
-			request.setAttribute("keywordMultivalued", keywordMultivalued);
+			String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
+			request.setAttribute("keywordMonoValued", keywordMonoValued);
 			
 			String keyword = request.getParameter("keyword");
 

@@ -20,7 +20,7 @@
 
 List<String> keywords = (List<String>) renderRequest.getAttribute("keywords");
 
-if("1".equals(renderRequest.getAttribute("keywordMultivalued"))){
+if(! "1".equals(renderRequest.getAttribute("keywordMonoValued"))){
 
 	if( keywords.size() > 0) 	{
 	%>

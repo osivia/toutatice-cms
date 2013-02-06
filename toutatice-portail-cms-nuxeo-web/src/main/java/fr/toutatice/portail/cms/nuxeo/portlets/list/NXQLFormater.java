@@ -41,7 +41,7 @@ public class NXQLFormater {
 	
 	public String formatVocabularySearch(String fieldName, List<String> selectedVocabsEntries) throws Exception{
 		
-		String clauseAsString = "";
+
 		
 		StringBuffer clause = new StringBuffer();		
 		clause.append("(");
@@ -61,26 +61,17 @@ public class NXQLFormater {
 			}
 		}
 		clause.append(")");
-		
-		clauseAsString = clause.toString();
-		if("()".equals(clauseAsString))
-			clauseAsString = "('1' != '1')";
+
 			
-		return clauseAsString;
+		return clause.toString();
 	}
 	
 	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames,
 			String fieldName, List<String> selectedVocabsEntries) throws Exception {
 		
 		StringBuffer clause = new StringBuffer();
-		clause.append("(");
 		
-		/* Les documents Nuxeo dont le champ fieldName n'est pas renseigné
-		 * ou existant ne doivent pas être retournés
-		 */
-		clause.append("(");
-		clause.append(fieldName);
-		clause.append(" LIKE '%%') AND (");
+
 		
 		int nbOtherEntries = 0;
 
@@ -88,6 +79,9 @@ public class NXQLFormater {
 
 			
 			if (selectedEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE)) {
+				
+				if( nbOtherEntries > 0)
+					clause.append(" OR ");
 				
 				nbOtherEntries++;
 				
@@ -167,21 +161,46 @@ public class NXQLFormater {
 				clause.append(clauseBeforeOther.toString());
 				clause.append(otherClause.toString());
 
-				clause.append(" OR ");
+
 				
 			}
+		}	
+		
+		
+		StringBuffer otherClause = new StringBuffer();
+		
+		 if( nbOtherEntries > 0)	{
+		
+			 otherClause.append("(");
+		
+		/* Les documents Nuxeo dont le champ fieldName n'est pas renseigné
+		 * ou existant ne doivent pas être retournés
+		 */
+			 otherClause.append("(");
+			 otherClause.append(fieldName);
+			 otherClause.append(" LIKE '%%') AND (");
+		
+			 otherClause.append(clause.toString());
+			 otherClause.append("))");
+		 }
+		
+		
+		
+		String resultClause = formatVocabularySearch( fieldName, selectedVocabsEntries);
+		
+		if( resultClause.equals("()"))	
+			resultClause = "";
+		
+	
+		if( nbOtherEntries > 0)	{
+			if( resultClause.length() > 0)
+				resultClause = "(" + resultClause + " OR " + otherClause.toString() + ")";
+			else
+				resultClause = otherClause.toString();
 		}
 		
-		clause.append("))");
-		
-		String result = clause.toString();
-		if(nbOtherEntries == 0)
-			result = "('1' != '1')";
-		else if(" OR ))".equalsIgnoreCase(StringUtils.substring(result, result.length() - " OR ))".length()))){
-			result = StringUtils.replace(result, " OR ))", " ))");
-		}
 
-		return result;
+		return resultClause;
 	}
 	
 	/* TODO: à externaliser dans VocabularyHelper */

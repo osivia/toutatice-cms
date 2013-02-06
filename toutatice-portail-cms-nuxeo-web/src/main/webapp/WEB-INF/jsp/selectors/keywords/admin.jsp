@@ -17,11 +17,11 @@
 				
 			<label>Identifiant sélecteur</label>
 			<input type="text" name="selectorId" value="${selectorId}" size="40"/><br/>
-			<% String multiValued = "";
-				if("1".equals(renderRequest.getAttribute("keywordMultiValued")))
-					multiValued = "checked='checked'";	
+			<% String monovalue = "";
+				if("1".equals(renderRequest.getAttribute("keywordMonoValued")))
+					monovalue = "checked='checked'";	
 			%>
-			<input type="checkbox" name="keywordMultiValued" value="1" <%= multiValued %>/>  Sélecteur multi-valué
+			<input type="checkbox" name="keywordMonoValued" value="1" <%= monovalue %>/>  Sélecteur mono-valué
 			<br/><br/>
 			<input type="submit" name="modifierPrefs"  value="Valider"/>
 			<input type="submit" name="annuler"  value="Annuler"/>
