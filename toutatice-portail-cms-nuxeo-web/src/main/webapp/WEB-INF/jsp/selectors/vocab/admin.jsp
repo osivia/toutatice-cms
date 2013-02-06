@@ -41,12 +41,12 @@
 			<label>Identifiant sélecteur</label><br/>
 			<input type="text" name="selectorId" value="${selectorId}" size="40"/><br/>
 			
-			<% String multiValued = "";
-			   if("1".equals(renderRequest.getAttribute("selectorMultiValued"))){
-					multiValued = "checked='checked'";	
+			<% String monoValued = "";
+			   if("1".equals(renderRequest.getAttribute("selectorMonoValued"))){
+				   monoValued = "checked='checked'";	
 			   }
 			%>
-			<input type="checkbox" name="selectorMultiValued" value="1" <%= multiValued %>/>&nbsp;Sélecteur multivalué<br/>
+			<input type="checkbox" name="selectorMonoValued" value="1" <%= monoValued %>/>&nbsp;Sélecteur monovalué<br/>
 			<br/>
 			
 			<% String othersOption = "";

@@ -15,6 +15,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletSecurityException;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -116,10 +117,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				
 			}
 			
-			if("1".equals(req.getParameter("selectorMultiValued")))
-				window.setProperty("osivia.selectorMultiValued", "1");
-			else if (window.getProperty("osivia.selectorMultiValued") != null)
-				window.setProperty("osivia.selectorMultiValued", null);
+			if("1".equals(req.getParameter("selectorMonoValued")))
+				window.setProperty("osivia.selectorMonoValued", "1");
+			else if (window.getProperty("osivia.selectorMonoValued") != null)
+				window.setProperty("osivia.selectorMonoValued", null);
 			
 			if("1".equals(req.getParameter("othersOption")))
 				window.setProperty("osivia.othersOption", "1");
@@ -289,10 +290,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			
 		}
 		
-		String selectorMultiValued = window.getProperty("osivia.selectorMultiValued");
-		if(selectorMultiValued == null)
-			selectorMultiValued = "0";
-		req.setAttribute("selectorMultiValued", selectorMultiValued);
+		String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
+		if(selectorMonoValued == null)
+			selectorMonoValued = "0";
+		req.setAttribute("selectorMonoValued", selectorMonoValued);
 		
 		String othersOption = window.getProperty("osivia.othersOption");
 		if(othersOption == null)
@@ -333,8 +334,8 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			}
 			
-			String selectorMultiValued = window.getProperty("osivia.selectorMultiValued");
-			request.setAttribute("selectorMultiValued", selectorMultiValued);			
+			String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
+			request.setAttribute("selectorMonoValued", selectorMonoValued);			
 
 			String vocabName1 = window.getProperty("osivia.vocabName1");
 			if (vocabName1 == null) {

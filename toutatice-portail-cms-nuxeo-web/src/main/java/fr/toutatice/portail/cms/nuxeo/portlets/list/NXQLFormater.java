@@ -11,7 +11,6 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.VocabularyHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
@@ -40,121 +39,149 @@ public class NXQLFormater {
 		return request.toString();
 	}
 	
-	public String formatVocabularySearch(PortletRequest portletRequest, List vocabsNames, String fieldName, List<String> selectedVocabsEntries) throws Exception{
+	public String formatVocabularySearch(String fieldName, List<String> selectedVocabsEntries) throws Exception{
 		
-		StringBuffer request = new StringBuffer();
-		request.append("(");
+		String clauseAsString = "";
+		
+		StringBuffer clause = new StringBuffer();		
+		clause.append("(");
+		
+		boolean firstItem = true;
+		
+		for (String selectedVocabsEntry : selectedVocabsEntries) {
+
+			if (!selectedVocabsEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE)) {
+
+				if (!firstItem)
+					clause.append(" OR ");
+
+				clause.append(fieldName + " STARTSWITH '" + selectedVocabsEntry + "'");
+
+				firstItem = false;
+			}
+		}
+		clause.append(")");
+		
+		clauseAsString = clause.toString();
+		if("()".equals(clauseAsString))
+			clauseAsString = "('1' != '1')";
+			
+		return clauseAsString;
+	}
+	
+	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames,
+			String fieldName, List<String> selectedVocabsEntries) throws Exception {
+		
+		StringBuffer clause = new StringBuffer();
+		clause.append("(");
 		
 		/* Les documents Nuxeo dont le champ fieldName n'est pas renseigné
 		 * ou existant ne doivent pas être retournés
 		 */
-		request.append(fieldName);
-		request.append(" LIKE '%%' AND ");
+		clause.append("(");
+		clause.append(fieldName);
+		clause.append(" LIKE '%%') AND (");
 		
-		boolean firstItem = true;
-		
-		for( String selectedVocabsEntry : selectedVocabsEntries)	{
+		int nbOtherEntries = 0;
+
+		for(String selectedEntry : selectedVocabsEntries) {
+
 			
-			if( !firstItem)
-				request.append(" OR ");
-
-			if(selectedVocabsEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE))
-				request.append(formatOthersVocabularyEntriesSearch(portletRequest, vocabsNames, fieldName, selectedVocabsEntry));
-			else
-				request.append( fieldName+" STARTSWITH '" + selectedVocabsEntry + "'");
-			
-			firstItem = false;
-		}
-		request.append(")");
-			
-		return request.toString();
-	}
-	
-	public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List vocabsNames, String fieldName,
-			String selectedEntry) throws Exception {
-
-		/* Récupération du niveau du dernier vocabulaire affiché */
-		int selectedLevel = selectedEntry.split("/").length;
-		
-		/* Récupération de l'arbre des vocabulaires */
-		VocabularyEntry vocabEntry = getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"), vocabsNames);
-		
-		/* Récupération du dernier vocabulaire sélectionné 
-		 * avant l'entrée "Autres"
-		 */
-		int levelIndex = 0;
-		VocabularyEntry lastVocab = vocabEntry;
-
-		String[] entries = selectedEntry.split("/");
-
-		while (levelIndex < selectedLevel) {
-
-			String entry = entries[levelIndex];
-			if (!VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equals(entry)){
-				lastVocab = lastVocab.getChild(entry);
-			}
-
-			levelIndex++;
-		}
-		
-		/* Ecriture des clauses:
-		 * - une pour les champ déjà sélectionnés et différents de "Autres" (clauseBeforeOther)
-		 * - une pour le champ "Autres" (clause)
-		 */
-	
-		StringBuffer clauseBeforeOther = new StringBuffer();
-		StringBuffer clause = new StringBuffer();
-		
-		Collection<VocabularyEntry> vocabsEntries = lastVocab.getChildren().values();
-		
-		if(vocabsEntries != null && vocabsEntries.size() > 0){
-			
-			clause.append(" ( NOT (");
-			
-			boolean firstItem = true;
-			for (VocabularyEntry displayedEntry : vocabsEntries) {
+			if (selectedEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE)) {
 				
-				String entry = displayedEntry.getId();
+				nbOtherEntries++;
+				
+				StringBuffer clauseBeforeOther = new StringBuffer();
+				StringBuffer otherClause = new StringBuffer();
 				
 				String selectedValuesBeforeOthers = StringUtils.substringBeforeLast(selectedEntry, "/");
-				if(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(selectedValuesBeforeOthers))
+				if (VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(selectedValuesBeforeOthers))
 					selectedValuesBeforeOthers = "";
 				else
 					selectedValuesBeforeOthers += "/";
-				
-				if(firstItem && StringUtils.isNotEmpty(selectedValuesBeforeOthers))
+
+				if (StringUtils.isNotEmpty(selectedValuesBeforeOthers)){
 					clauseBeforeOther.append(" ( ");
-	
-				if (!firstItem){
-					if(StringUtils.isNotEmpty(selectedValuesBeforeOthers))
-						clauseBeforeOther.append(" OR ");
-					clause.append(" OR ");
-				}
-				
-				if(StringUtils.isNotEmpty(selectedValuesBeforeOthers)){
 					clauseBeforeOther.append(fieldName);
 					clauseBeforeOther.append(" STARTSWITH '");
 					clauseBeforeOther.append(selectedValuesBeforeOthers);
 					clauseBeforeOther.append("' ");
+					clauseBeforeOther.append(") AND ");
 				}
-	
-				clause.append(fieldName);
-				clause.append(" STARTSWITH '");
-				clause.append(selectedValuesBeforeOthers);
-				clause.append(entry);
-				clause.append("' ");
-	
-				firstItem = false;
+				
+
+				/* Récupération du niveau du dernier vocabulaire affiché */
+				int selectedLevel = selectedEntry.split("/").length;
+
+				/* Récupération de l'arbre des vocabulaires */
+				VocabularyEntry vocabEntry = getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"),
+						vocabsNames);
+
+				/*
+				 * Récupération du dernier vocabulaire sélectionné avant
+				 * l'entrée "Autres"
+				 */
+				int levelIndex = 0;
+				VocabularyEntry lastVocab = vocabEntry;
+
+				String[] entries = selectedEntry.split("/");
+
+				while (levelIndex < selectedLevel) {
+
+					String entry = entries[levelIndex];
+					if (!VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equals(entry)) {
+						lastVocab = lastVocab.getChild(entry);
+					}
+
+					levelIndex++;
+				}
+
+
+				Collection<VocabularyEntry> vocabsEntries = lastVocab.getChildren().values();
+
+				if (vocabsEntries != null && vocabsEntries.size() > 0) {
+
+					otherClause.append(" ( NOT (");
+
+					boolean firstItem = true;
+					for (VocabularyEntry displayedEntry : vocabsEntries) {
+
+						String entry = displayedEntry.getId();
+
+						if (!firstItem) 
+							otherClause.append(" OR ");
+
+						otherClause.append(fieldName);
+						otherClause.append(" STARTSWITH '");
+						otherClause.append(selectedValuesBeforeOthers);
+						otherClause.append(entry);
+						otherClause.append("' ");
+
+						firstItem = false;
+					}
+
+					otherClause.append(" ) ) ");
+
+				}
+				
+				clause.append(clauseBeforeOther.toString());
+				clause.append(otherClause.toString());
+
+				clause.append(" OR ");
+				
 			}
+		}
+		
+		clause.append("))");
+		
+		String result = clause.toString();
+		if(nbOtherEntries == 0)
+			result = "('1' != '1')";
+		else if(" OR ))".equalsIgnoreCase(StringUtils.substring(result, result.length() - " OR ))".length()))){
+			result = StringUtils.replace(result, " OR ))", " ))");
+		}
 
-			clause.append(" ) ) ");
-			
-			if(StringUtils.isNotEmpty(clauseBeforeOther.toString()))
-				clauseBeforeOther.append(") AND ");
-			
-		} 
-
-		return clauseBeforeOther.toString() + clause.toString();
+		return result;
 	}
 	
 	/* TODO: à externaliser dans VocabularyHelper */

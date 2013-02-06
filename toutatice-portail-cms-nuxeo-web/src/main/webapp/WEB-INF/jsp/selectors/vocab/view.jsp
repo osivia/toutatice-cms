@@ -5,7 +5,6 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.util.Collection"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.PageSelectors"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
 <%@page import="org.osivia.portal.api.windows.PortalWindow"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
 
@@ -38,25 +37,7 @@ String vocabName2 = (String) request.getAttribute("vocabName2");
 String vocabName3 = (String) request.getAttribute("vocabName3");
 
 String othersLabel = (String) window.getProperty("osivia.othersLabel");
-%>
 
-<script type="text/javascript">
-	function submitVocabsForm(selectIndex, formId){
-		var form = document.forms[formId]; 
-		// RAZ des champs des sélecteurs suivants si ils ont été renseignés 
-		for(var index = selectIndex + 1; index < 4; index++){
-			var indexString = index.toString();
-			var input = form.elements["vocab" + indexString + "Id"];
-			if(typeof(input) != 'undefined'){
-				input.value = '';
-			}
-		}
-		form.submit();
-		return false;
-	}
-</script>
-
-<%
 if( libelle != null)	{
 %><span class="selector-libelle"><%= libelle %></span> <%	
 }
@@ -67,9 +48,9 @@ if( libelle != null)	{
 
 List<String> vocabsId = (List<String>) renderRequest.getAttribute("vocabsId");
 
-boolean selectorMultiValued = "1".equals(renderRequest.getAttribute("selectorMultiValued"));
+boolean selectorMonoValued = "1".equals(renderRequest.getAttribute("selectorMonoValued"));
 
-if(selectorMultiValued){
+if(!selectorMonoValued){
 
 	if( vocabsId.size() > 0) 	{
 	%>
@@ -111,17 +92,30 @@ if(selectorMultiValued){
 
 String onChangeEvent1 = "";
 if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) { 
-	// URL de rafraichissement de la liste
-	PortletURL refreshURL = renderResponse.createRenderURL();
-	refreshURL.setParameter("vocab1Id", "SELECTED_VALUE");
+	
 	
 	/* Pour faire apparaître le deuxième sélecteur (si il existe)
 	 * en cas de choix sur le premier
 	 * sélecteur.
-	 */
-	onChangeEvent1 = "onchange=\"refreshOnVocabularyChange(this,'"+ refreshURL +"');\""; 
-	if(!selectorMultiValued) 
-		onChangeEvent1 = "onchange=\"submitVocabsForm(1, this.form.id);\"";
+	 */ 
+	if(selectorMonoValued) {
+		
+		PortletURL actionUrl = renderResponse.createActionURL();
+		actionUrl.setParameter("vocab1Id", "SELECTED_VALUE");
+		actionUrl.setParameter("vocab12d", "");
+		actionUrl.setParameter("vocab13d", "");
+		actionUrl.setParameter("monovaluedSubmit", "monovaluedSubmit");
+		
+		onChangeEvent1 = "onchange=\"refreshOnVocabularyChange(this,'"+ actionUrl +"');\"";
+		
+	} else {
+		
+		// URL de rafraichissement de la liste
+		PortletURL refreshURL = renderResponse.createRenderURL();
+		refreshURL.setParameter("vocab1Id", "SELECTED_VALUE");
+		
+		onChangeEvent1 = "onchange=\"refreshOnVocabularyChange(this,'"+ refreshURL +"');\"";		
+	}
 		
 	String other1Selected = "";
 	if(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(vocab1Id))
@@ -164,17 +158,27 @@ if(StringUtils.isNotEmpty(vocab1Id) && vocabName2 != null)	{
 	vocab2  = vocab1.getChild(vocab1Id);
 	if( vocab2 != null)	{	
 		
-		PortletURL refreshURL2 = renderResponse.createRenderURL();
-		refreshURL2.setParameter("vocab1Id", vocab1Id);
-		refreshURL2.setParameter("vocab2Id", "SELECTED_VALUE");
-		
 		String onChangeEvent2 = "";
-		if( vocabName2 != null) {
-			onChangeEvent2 = "onchange=\"refreshOnVocabularyChange(this,'"+ refreshURL2 +"');\"";
-		 }	
 		
-		if( vocabName2 != null && !selectorMultiValued) 
-				onChangeEvent2 = "onchange=\"submitVocabsForm(2, this.form.id);\"";
+		if(selectorMonoValued) {
+			
+			PortletURL actionUrl2 = renderResponse.createActionURL();
+			actionUrl2.setParameter("vocab1Id", vocab1Id);
+			actionUrl2.setParameter("vocab2Id", "SELECTED_VALUE");
+			actionUrl2.setParameter("vocab3Id", "");
+			actionUrl2.setParameter("monovaluedSubmit", "monovaluedSubmit");
+			
+			onChangeEvent2 = "onchange=\"refreshOnVocabularyChange(this,'"+ actionUrl2 +"');\"";
+			
+		} else {
+			
+			PortletURL refreshURL2 = renderResponse.createRenderURL();
+			refreshURL2.setParameter("vocab1Id", vocab1Id);
+			refreshURL2.setParameter("vocab2Id", "SELECTED_VALUE");
+			
+			onChangeEvent2 = "onchange=\"refreshOnVocabularyChange(this,'"+ refreshURL2 +"');\"";
+		
+		}
 				
 		String other2Selected = "";
 		if(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(vocab2Id))
@@ -221,8 +225,17 @@ if(StringUtils.isNotEmpty(vocab1Id) && StringUtils.isNotEmpty(vocab2Id) && vocab
 	if( vocab3 != null)	{	
 		
 		String onChangeEvent3 = "";
-		if(!selectorMultiValued){
-			onChangeEvent3 = "onchange=\"submitVocabsForm(3, this.form.id);\"";
+		
+		if(selectorMonoValued) {
+			
+			PortletURL actionUrl3 = renderResponse.createActionURL();
+			actionUrl3.setParameter("vocab1Id", vocab1Id);
+			actionUrl3.setParameter("vocab2Id", vocab2Id);
+			actionUrl3.setParameter("vocab3Id", "SELECTED_VALUE");
+			actionUrl3.setParameter("monovaluedSubmit", "monovaluedSubmit");
+			
+			onChangeEvent3 = "onchange=\"refreshOnVocabularyChange(this,'"+ actionUrl3 +"');\"";
+			
 		}
 		
 		String other3Selected = "";
@@ -260,12 +273,12 @@ if(StringUtils.isNotEmpty(vocab1Id) && StringUtils.isNotEmpty(vocab2Id) && vocab
 		}
 	} 
 
-if(selectorMultiValued){	
+if(!selectorMonoValued){	
 %>  
 						<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" /> 
 							    					
 <% } else { %>	
-	<input type="hidden" name="monovaluedSubmit" value="monovaluedSubmit"/>
+	<!--<input type="hidden" name="monovaluedSubmit" value="monovaluedSubmit"/>-->
 <% } %>
 			
 	</form>		

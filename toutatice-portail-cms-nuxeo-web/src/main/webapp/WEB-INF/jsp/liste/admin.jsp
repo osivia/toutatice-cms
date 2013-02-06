@@ -76,9 +76,13 @@ requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title"
 }
 
 // format search by title wich values are defined in vocabularies
-if (params.get("vocabSelectorId") != null) {
-List vocabsNames = Arrays.asList(new String[]{"vocab1Name","vocab2Name","vocab3Name"});
-requete += " AND " + NXQLFormater.formatVocabularySearch(request,vocabsNames,"dc:title",params.get("vocabSelectorId"));
+if (params.get("selectorVocabId") != null) {
+List vocabsNames = Arrays.asList(new String[]{"vocabName1","vocabName2","vocabName3"});
+requete += " AND (" 
++ NXQLFormater.formatVocabularySearch("vcbt:vocaField",params.get("selectorVocabId")) 
++ " OR " 
++ NXQLFormater.formatOthersVocabularyEntriesSearch(request,vocabsNames,"vcbt:vocaField",params.get("selectorVocabId")) 
++ ")";
 }
 
 // get childrens
