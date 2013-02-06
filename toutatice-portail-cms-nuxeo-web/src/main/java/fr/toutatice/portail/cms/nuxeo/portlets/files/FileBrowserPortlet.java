@@ -153,14 +153,21 @@ public class FileBrowserPortlet extends CMSPortlet {
 	
 	
 	
-	private void addPathItem(List<PortletPathItem> portletPath, Document curDoc, String displayMode)	{
+	private void addPathItem(List<PortletPathItem> portletPath, Document curDoc, String displayMode, String prefixName)	{
 		Map<String, String> renderParams = new Hashtable<String, String>();
 		renderParams.put("folderPath", curDoc.getPath());
 		
 		if( displayMode != null)
 			renderParams.put("displayMode", displayMode);
 		
-		PortletPathItem pathItem = new PortletPathItem(renderParams, curDoc.getTitle());
+		String title = curDoc.getTitle();
+		
+		if( prefixName != null)	{
+			title = prefixName + title;
+			
+		}
+		
+		PortletPathItem pathItem = new PortletPathItem(renderParams, title);
 		
 		portletPath.add(0, pathItem);
 	}
@@ -243,15 +250,19 @@ public class FileBrowserPortlet extends CMSPortlet {
 				
 				while (! curPath.equals(nuxeoPath) && curPath.startsWith(nuxeoPath)) {
 					
-					addPathItem(portletPath,curDoc,  displayMode);
+					addPathItem(portletPath,curDoc,  displayMode, null);
 
 					curPath = ctx.getParentPath(curPath);
 					curDoc = (Document) ctx.fetchDocument(curPath);
 					
 				}
 				
-				if( curPath.equals(nuxeoPath))
-					addPathItem(portletPath,curDoc,  displayMode);
+				if( curPath.equals(nuxeoPath))	{
+					String portletName = null;
+					if( WindowState.MAXIMIZED.equals(request.getWindowState()))
+							portletName =  "Explorateur ";
+					addPathItem(portletPath,curDoc,  displayMode, portletName);
+				}
 				
 				
 				//Injection du path vers le portail

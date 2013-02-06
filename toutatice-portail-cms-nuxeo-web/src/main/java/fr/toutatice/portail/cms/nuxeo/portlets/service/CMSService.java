@@ -181,7 +181,7 @@ public class CMSService implements ICMSService {
 			
 			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
 			
-			// Document non publié et rattaché à un espace
+			// Document non publié et rattaché à un workspace
 			if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
 							.isLiveSpace()))
 					haveToGetLive = true;

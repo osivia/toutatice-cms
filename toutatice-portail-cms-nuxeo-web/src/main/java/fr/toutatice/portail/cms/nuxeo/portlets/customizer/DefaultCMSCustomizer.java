@@ -230,7 +230,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			String excludedFoldersRequest = "";
 
 			for (CMSItem curItem : navItems) {
-				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
+				String hiddenItem = curItem.getProperties().get("hideInNavigation");
 				if (!"1".equals(hiddenItem)) {
 					if( excludedFoldersRequest.length() > 0)
 						excludedFoldersRequest += " AND ";

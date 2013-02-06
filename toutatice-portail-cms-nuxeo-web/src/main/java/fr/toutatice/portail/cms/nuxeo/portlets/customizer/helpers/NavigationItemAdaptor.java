@@ -148,15 +148,15 @@ public class NavigationItemAdaptor {
 		
 		// Désactivation du hideInNavigation
 		
-		/*
-		String hiddenInNavigation =  (String) doc.getProperties().get("ttc:hiddenInNavigation");
-		if( hiddenInNavigation != null && "true".equals(hiddenInNavigation) )
-			properties.put("hiddenInNavigation", "1");			
-		*/
+
+		String hideInNavigation =  (String) doc.getProperties().get("ttc:hideInNavigation");
+		if( hideInNavigation != null && "true".equals(hideInNavigation) )
+			properties.put("hideInNavigation", "1");			
+
 	
 			
 		if (isNavigable( doc)) {
-			if (!"1".equals(properties.get("hiddenInNavigation")))	{
+			if (!"1".equals(properties.get("hideInNavigation")))	{
 				properties.put("navigationElement", "1");
 			}
 		}
