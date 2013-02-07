@@ -176,12 +176,12 @@ public class NXQLFormater {
 		/* Les documents Nuxeo dont le champ fieldName n'est pas renseigné
 		 * ou existant ne doivent pas être retournés
 		 */
-			 otherClause.append("(");
-			 otherClause.append(fieldName);
-			 otherClause.append(" LIKE '%%') AND (");
+	//		 otherClause.append("(");
+	//		 otherClause.append(fieldName);
+	//		 otherClause.append(" LIKE '%%') AND (");
 		
 			 otherClause.append(clause.toString());
-			 otherClause.append("))");
+			 otherClause.append(")");
 		 }
 		
 		
