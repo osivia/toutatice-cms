@@ -111,7 +111,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		// Add root document
 		// oblige de sortir de la requete principale pour des problemes de perfs
 		org.nuxeo.ecm.automation.client.jaxrs.model.Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
-		.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", uuid).execute();
+		.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas).set("value", uuid).execute();
 
 		concatDocuments.add(doc);
 

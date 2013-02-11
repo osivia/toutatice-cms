@@ -43,7 +43,7 @@ String selectors = (String) renderRequest.getAttribute("selectors")	;
 List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
 if( permaLinkURL != null)	{
-	MenubarItem item = new MenubarItem("Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC, permaLinkURL, null, "portlet-menuitem-permalink", null);
+	MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC, permaLinkURL, null, "portlet-menuitem-permalink", null);
 	item.setAjaxDisabled(true);
 	menuBar.add(item);
 }
@@ -52,7 +52,7 @@ if( permaLinkURL != null)	{
 <%
 if( rssLinkURL != null)	{
 
-	MenubarItem item = new MenubarItem("RSS", MenubarItem.ORDER_PORTLET_SPECIFIC + 2, rssLinkURL, null, "portlet-menuitem-rss", null);
+	MenubarItem item = new MenubarItem("RSS", "RSS", MenubarItem.ORDER_PORTLET_SPECIFIC + 2, rssLinkURL, null, "portlet-menuitem-rss", null);
 	item.setAjaxDisabled(true);
 	menuBar.add(item);	
 }
