@@ -621,6 +621,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	/*
 	 * Parsing CMS spécifiques
+	 * 
+	 * renvoie une Map si l'url est interprétée . Cette Map contient :
+	 * 
+	 *    - cmsPath : le path cms de l'élément à afficher
 	 */
 	
 	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
