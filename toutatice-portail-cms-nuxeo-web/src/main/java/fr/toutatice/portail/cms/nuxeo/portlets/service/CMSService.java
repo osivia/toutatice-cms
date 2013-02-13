@@ -15,6 +15,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
@@ -27,6 +28,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -703,5 +705,44 @@ public class CMSService implements ICMSService {
 			}
 		}
 		return configItem;
+	}
+
+	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
+			throws CMSException  {
+		try {
+		
+			return customizer.parseCMSURL(cmsCtx, requestPath, requestParameters);
+		}
+			catch (Exception e) {
+				if (!(e instanceof CMSException))	{
+					if( e instanceof NuxeoException && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+						return null;
+					else
+						throw new CMSException(e);
+				}
+				else	{
+					
+						throw (CMSException) e;
+				}
+			}			
+	}
+
+	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws CMSException {
+		try {		
+
+		return customizer.computeUserPreloadedPages(cmsCtx);
+		}
+		catch (Exception e) {
+			if (!(e instanceof CMSException))	{
+				if( e instanceof NuxeoException && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+					return null;
+				else
+					throw new CMSException(e);
+			}
+			else	{
+				
+					throw (CMSException) e;
+			}
+		}
 	}
 }

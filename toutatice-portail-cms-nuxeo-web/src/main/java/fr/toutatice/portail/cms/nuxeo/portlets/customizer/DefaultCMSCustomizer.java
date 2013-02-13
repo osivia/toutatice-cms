@@ -618,6 +618,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception	{
 		return getUserPagesLoader().computeUserPreloadedPages(cmsCtx);
 	}
+
+	/*
+	 * Parsing CMS spécifiques
+	 */
+	
+	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
+			throws Exception {
+		
+		return null;
+	}
 	
 
 	

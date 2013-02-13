@@ -1,6 +1,7 @@
 package fr.toutatice.portail.core.nuxeo;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -44,10 +45,6 @@ public interface INuxeoCustomizer {
 	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception ;
 	
 	
-	
-	/* Calcul des pages au login de l'utilisateur */
-	
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception ;
 	
 	
 	

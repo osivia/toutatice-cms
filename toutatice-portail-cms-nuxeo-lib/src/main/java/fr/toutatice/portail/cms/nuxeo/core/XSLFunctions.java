@@ -309,9 +309,9 @@ public class XSLFunctions {
 
 						if (permaDoc.groupCount() > 0) {
 
-							String path = permaDoc.group(1);
+							String id = permaDoc.group(1);
 								
-							return ctx.getCMSLinkByPath(path, null).getUrl();
+							return ctx.getCMSLinkById(id, null).getUrl();
 						}
 						else
 							return url.toString();

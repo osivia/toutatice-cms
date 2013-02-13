@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.services;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSessionEvent;
 
@@ -173,8 +174,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		return  cmsService.checkContentAnonymousAccess(cmsCtx, path);
 	}
 
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception {
-		return getCMSCustomizer().computeUserPreloadedPages(cmsCtx);
+	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws CMSException {
+		return cmsService.computeUserPreloadedPages(cmsCtx);
 	}
 
 	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
@@ -188,6 +189,11 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String path, String parameter)
 			throws CMSException {
 		return cmsService.getBinaryContent(cmsCtx, type, path, parameter);
+	}
+
+	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
+			throws CMSException {
+		return cmsService.parseCMSURL( cmsCtx,  requestPath, requestParameters);
 	}
 
 
