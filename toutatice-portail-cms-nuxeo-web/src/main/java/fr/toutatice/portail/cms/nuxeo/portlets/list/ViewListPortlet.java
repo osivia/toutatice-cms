@@ -606,7 +606,6 @@ public class ViewListPortlet extends CMSPortlet {
 		
 
 
-
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 
