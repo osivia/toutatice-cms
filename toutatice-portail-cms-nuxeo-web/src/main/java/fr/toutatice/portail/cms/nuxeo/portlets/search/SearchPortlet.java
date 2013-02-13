@@ -1,10 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.search;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -17,22 +15,17 @@ import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-
-
-
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -62,7 +55,6 @@ public class SearchPortlet extends CMSPortlet {
 		
 		if( PortletMode.VIEW.equals(req.getPortletMode()) && req.getParameter("searchAction") != null){
 			res.setRenderParameter("keywords", req.getParameter("keywords"));
-			
 		}
 
 
@@ -76,7 +68,7 @@ public class SearchPortlet extends CMSPortlet {
 				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
 				window.setProperty("osivia.cms.displayLiveVersion", null);
-
+			
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
@@ -156,6 +148,8 @@ public class SearchPortlet extends CMSPortlet {
 
 				request.setAttribute("docs", docs);
 				request.setAttribute("ctx", ctx);
+				
+				request.setAttribute("hideSearchSubForm", window.getProperty("osivia.hideSearchSubForm"));
 
 				request.setAttribute("keywords", keywords);
 				
@@ -179,6 +173,7 @@ public class SearchPortlet extends CMSPortlet {
 				Map<String, String> windowProperties = new HashMap<String, String>();
 				windowProperties.put("osivia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+				windowProperties.put("osivia.hideSearchSubForm", "1");
 				
 				windowProperties.put("osivia.title", "Résultats de la recherche");
 				windowProperties.put("osivia.hideDecorators", "1");

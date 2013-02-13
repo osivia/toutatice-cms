@@ -75,6 +75,11 @@ if (params.get("title") != null) {
 requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
 }
 
+//format for dates search
+if (params.get("datesId") != null) {
+requete += " AND " + NXQLFormater.formatDateSearch("dc:created",params.get("datesId")) ;
+}
+
 // format search by discipline with OTHERs values
 if (params.get("discipline") != null) {
 List vocabsNames = Arrays.asList(new String[]{"disciplines_parent","disciplines"});

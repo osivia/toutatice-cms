@@ -17,6 +17,11 @@
 
 
 <%
+String libelle = (String) request.getAttribute("libelle");
+
+if( libelle != null)	{
+%><span class="selector-libelle"><%= libelle %></span> <%	
+}
 
 List<String> keywords = (List<String>) renderRequest.getAttribute("keywords");
 

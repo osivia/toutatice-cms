@@ -1,14 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,25 +15,15 @@ import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.profils.ProfilBean;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 
 
 
@@ -51,6 +34,8 @@ import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMSPortlet {
 
 	private static Log logger = LogFactory.getLog(DateSelectorPortlet.class);
+	
+	public static String DATES_SEPARATOR = "%";
 
 	//public static String DELETE_PREFIX = "delete_";
 
@@ -66,6 +51,27 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
 			else if (window.getProperty("osivia.selectorId") != null)
 				window.setProperty("osivia.selectorId", null);	
+			
+			if( req.getParameter("libelle").length() > 0)
+				window.setProperty("osivia.libelle", req.getParameter("libelle"));
+			else if (window.getProperty("osivia.libelle") != null)
+				window.setProperty("osivia.libelle", null);
+			
+			if("1".equals(req.getParameter("datesMonoValued")))
+				window.setProperty("osivia.datesMonoValued", "1");
+			else if (window.getProperty("osivia.datesMonoValued") != null)
+				window.setProperty("osivia.datesMonoValued", null);
+			
+			/* Initialisation des dates suite à configuration. */
+			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+			if(selectors != null){ 
+				List<String> dates = selectors.get(req.getParameter("selectorId"));
+				if(dates != null && dates.size() > 0){
+					dates.clear();
+					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+				}
+			}
+
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -78,7 +84,10 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		}
 
 		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-		if ("view".equals(req.getPortletMode().toString()) && (req.getParameter("add.x") != null || req.getParameter("add") != null) ) 
+		boolean isAddAction = req.getParameter("add.x") != null || req.getParameter("add") != null;
+		boolean isMonoValuedAddAction = req.getParameter("monoAdd.x") != null || req.getParameter("monoAdd") != null;
+		
+		if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction)) 
 		{
 			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) 
@@ -87,16 +96,18 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				{
 					Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
 	
-					if (req.getParameter("datefrom") != null && req.getParameter("datefrom").length() > 0) {
+					if (req.getParameter("datefrom") != null && req.getParameter("datefrom").length() > 0) {/* TO ASK: utilité du test? */
 	
 						List<String> dates = selectors.get(selectorId);
 						if (dates == null) {
 							dates = new ArrayList<String>();
 							selectors.put(selectorId, dates);
 						}
-						dates.clear();
-						dates.add(req.getParameter("datefrom"));
-						dates.add(req.getParameter("dateto"));
+						if("1".equals(window.getProperty("osivia.datesMonoValued")))
+							dates.clear();
+						
+						dates.add(req.getParameter("datefrom") + DATES_SEPARATOR + req.getParameter("dateto"));
+
 					}
 	
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
@@ -111,14 +122,16 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		// Delete
 		if ("view".equals(req.getPortletMode().toString()) && "delete".equals(req.getParameter("action")) ) 
-		{
+		{	
+			int occ = new Integer(req.getParameter("occ"));
+			
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
 			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> dates = selectors.get(selectorId);
 			if (dates != null && dates.size() > 0) 
 			{
-				dates.remove(0);dates.remove(0);
+				dates.remove(occ);
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				
 				//Réinitialisation des fenetres en mode NORMAL
@@ -140,6 +153,17 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		if (selectorId == null)
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
+		
+
+		String libelle = window.getProperty("osivia.libelle");
+		if (libelle == null)
+			libelle = "";
+		req.setAttribute("libelle", libelle);
+		
+		String datesMonoValued = window.getProperty("osivia.datesMonoValued");
+		if(datesMonoValued == null)
+			datesMonoValued = "0";
+		req.setAttribute("datesMonoValued", datesMonoValued);
 
 		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/date/admin.jsp");
 		rd.include(req, res);
@@ -159,6 +183,10 @@ public class DateSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			PortalWindow window = WindowFactory.getWindow(request);
 
 			String selectorId = window.getProperty("osivia.selectorId");
+			String libelle = window.getProperty("osivia.libelle");
+			request.setAttribute("libelle", libelle);
+			String datesMonoValued = window.getProperty("osivia.datesMonoValued");
+			request.setAttribute("datesMonoValued", datesMonoValued);
 			String dateFrom = request.getParameter("datefrom");
 			String dateTo = request.getParameter("dateto");
 

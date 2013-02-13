@@ -32,6 +32,7 @@ PaginableDocuments docs = (PaginableDocuments) renderRequest.getAttribute("docs"
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String keywords = (String) request.getAttribute("keywords");
 int currentPage = (Integer) request.getAttribute("currentPage");
+String hideSearchSubForm = (String) request.getAttribute("hideSearchSubForm");
 
 %>
 
@@ -40,12 +41,15 @@ int currentPage = (Integer) request.getAttribute("currentPage");
 
 <div class="nuxeo-results-search">
 
-<div class="nuxeo-input-search">
-		<form method="post" action="<portlet:actionURL/>">
-			<input type="text" name="keywords" value="<%= keywords %>" size="40">	<input type="submit" value="Rechercher" name="searchAction"/>
-		</form>
-</div>
+<% if(!"1".equals(hideSearchSubForm)){ %>
 
+	<div class="nuxeo-input-search">
+			<form method="post" action="<portlet:actionURL/>">
+				<input type="text" name="keywords" value="<%= keywords %>" size="40">	<input type="submit" value="Rechercher" name="searchAction"/>
+			</form>
+	</div>
+	
+<% } %>
 
 <div class="nuxeo-nb-results_search">
 

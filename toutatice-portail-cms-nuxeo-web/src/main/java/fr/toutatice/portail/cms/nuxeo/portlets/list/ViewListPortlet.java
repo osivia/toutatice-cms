@@ -433,7 +433,13 @@ public class ViewListPortlet extends CMSPortlet {
 				nuxeoRequest = (String) i.eval(nuxeoRequest);
 			}
 
-			
+			if("EMPTY_REQUEST".equals(nuxeoRequest))	{
+				request.setAttribute("osivia.emptyResponse", "1");
+				response.getWriter().print("<h2>Requête vide</h2>");
+				response.getWriter().close();
+				return;
+				
+			}
 	
 			
 			/* Filtre pour sélectionner uniquement les version publiées */

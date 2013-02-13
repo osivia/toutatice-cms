@@ -50,6 +50,12 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			else if (window.getProperty("osivia.selectorId") != null)
 				window.setProperty("osivia.selectorId", null);	
 			
+
+			if( req.getParameter("libelle").length() > 0)
+				window.setProperty("osivia.libelle", req.getParameter("libelle"));
+			else if (window.getProperty("osivia.libelle") != null)
+				window.setProperty("osivia.libelle", null);
+			
 			if("1".equals(req.getParameter("keywordMonoValued")))
 				window.setProperty("osivia.keywordMonoValued", "1");
 			else if (window.getProperty("osivia.keywordMonoValued") != null)
@@ -152,6 +158,11 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			selectorId = "";
 		req.setAttribute("selectorId", selectorId);
 		
+		String libelle = window.getProperty("osivia.libelle");
+		if (libelle == null)
+			libelle = "";
+		req.setAttribute("libelle", libelle);
+		
 		String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
 		if(keywordMonoValued == null)
 			keywordMonoValued = "0";
@@ -175,6 +186,9 @@ public class KeywordsSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core
 			PortalWindow window = WindowFactory.getWindow(request);
 
 			String selectorId = window.getProperty("osivia.selectorId");
+			
+			String libelle = window.getProperty("osivia.libelle");
+			request.setAttribute("libelle", libelle);
 			
 			String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
 			request.setAttribute("keywordMonoValued", keywordMonoValued);

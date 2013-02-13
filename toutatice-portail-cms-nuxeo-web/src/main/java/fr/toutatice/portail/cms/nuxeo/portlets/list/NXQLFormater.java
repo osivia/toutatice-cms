@@ -11,6 +11,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
@@ -226,29 +227,49 @@ public class NXQLFormater {
 	}
 	
 	public String formatDateSearch( String fieldName, List<String> searchValue)
-	{
+	{	
+		StringBuffer request = new StringBuffer();
+		
 		String delimFrontend = "/";
 		String delimBackend = "-";
-		String jj = "";
-		String mm = "";
-		String aaaa = "";
 		
-		StringTokenizer st = new StringTokenizer(searchValue.get(0), delimFrontend);
-		jj = st.nextToken();
-		mm = st.nextToken();
-		aaaa = st.nextToken();
-		String paramFrom = aaaa + delimBackend + mm + delimBackend + jj;
+		if(searchValue != null && searchValue.size() > 0){
+			
+			request.append("(");
+			
+			int index = 0;
+			
+			for(String datesInterval : searchValue){
+				
+				String jj = "";
+				String mm = "";
+				String aaaa = "";
+				
+				if(index > 0)
+					request.append(" OR ");
+				
+				String[] decomposedInterval = datesInterval.split(DateSelectorPortlet.DATES_SEPARATOR);
 		
-		st = new StringTokenizer(searchValue.get(1), delimFrontend);
-		jj = st.nextToken();
-		mm = st.nextToken();
-		aaaa = st.nextToken();
-		String paramTo = aaaa + delimBackend + mm + delimBackend + jj;
-
-		StringBuffer request = new StringBuffer();
-		request.append("(");
-		request.append( fieldName + " BETWEEN DATE '" + paramFrom + "' AND DATE '"+ paramTo +"' ");
-		request.append(")");
+				StringTokenizer st = new StringTokenizer(decomposedInterval[0], delimFrontend);
+				jj = st.nextToken();
+				mm = st.nextToken();
+				aaaa = st.nextToken();
+				String paramFrom = aaaa + delimBackend + mm + delimBackend + jj;
+				
+				st = new StringTokenizer(decomposedInterval[1], delimFrontend);
+				jj = st.nextToken();
+				mm = st.nextToken();
+				aaaa = st.nextToken();
+				String paramTo = aaaa + delimBackend + mm + delimBackend + jj;
+		
+				request.append("(");
+				request.append( fieldName + " BETWEEN DATE '" + paramFrom + "' AND DATE '"+ paramTo +"' ");
+				request.append(")");
+				
+				index++;
+			}
+			request.append(")");
+		}
 		
 		return request.toString();
 	}

@@ -14,9 +14,14 @@
 
 	<div>
 		<form method="post" action="<portlet:actionURL/>">
+		
+			<label>Libellé</label><br/>
+			<input type="text" name="libelle" value="${libelle}" size="40"/><br/>
+			<br/>
 				
-			<label>Identifiant sélecteur</label>
+			<label>Identifiant sélecteur</label><br/>
 			<input type="text" name="selectorId" value="${selectorId}" size="40"/><br/>
+			<br/>
 			<% String monovalue = "";
 				if("1".equals(renderRequest.getAttribute("keywordMonoValued")))
 					monovalue = "checked='checked'";	

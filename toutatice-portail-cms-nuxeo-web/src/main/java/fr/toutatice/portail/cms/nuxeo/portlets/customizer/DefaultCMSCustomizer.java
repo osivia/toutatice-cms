@@ -25,6 +25,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdaptor;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -128,7 +129,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
 		fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
-
+		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
 		return fragmentTypes;
 	}
 
@@ -621,10 +622,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	/*
 	 * Parsing CMS spécifiques
-	 * 
-	 * renvoie une Map si l'url est interprétée . Cette Map contient :
-	 * 
-	 *    - cmsPath : le path cms de l'élément à afficher
 	 */
 	
 	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
@@ -633,6 +630,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return null;
 	}
 	
+
+
 
 	
 
