@@ -77,6 +77,18 @@ div.nuxeo-list-editorial ul	{
 	margin-left: 0px;
 	}
 
+
+div.nuxeo-list-editorial ul li a.download	{
+ background: transparent url(../img/download.png) center right no-repeat;
+ padding-right: 18px;
+}
+
+div.nuxeo-list-editorial ul li a.external	{
+ background: transparent url(../img/external-small.gif) center right no-repeat;
+ padding-right: 18px;
+}
+
+
 div.nuxeo-list-editorial ul li separateur	{
 	clear:both;
 	display:block;

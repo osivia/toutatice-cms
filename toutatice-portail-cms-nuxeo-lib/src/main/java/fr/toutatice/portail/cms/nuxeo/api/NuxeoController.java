@@ -752,27 +752,7 @@ public class NuxeoController {
 	
 	
 	
-	public Link getCMSLinkById (String id, String displayContext) throws Exception  {
 		
-		
-		Window window = (Window) getPortalCtx().getRequest().getAttribute("osivia.window");
-		Page page = window.getPage();
-
-		Map<String, String> pageParams = new HashMap<String, String>();
-
-		
-		String url = getPortalUrlFactory().getCMSUrl(portalCtx,
-				page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), "/_ID_/" + id , pageParams, null, displayContext, null, null, null, null);
-		
-		if( url != null)	{
-			
-			Link link = new Link(url, false);
-			return link;
-			}
-			
-			return null;
-	}
-	
 	public Link getLink(Document doc, String displayContext, String linkContextualization) throws Exception 	{
 
 		

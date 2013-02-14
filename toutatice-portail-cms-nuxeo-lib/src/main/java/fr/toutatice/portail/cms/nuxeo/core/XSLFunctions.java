@@ -311,7 +311,7 @@ public class XSLFunctions {
 
 							String id = permaDoc.group(1);
 								
-							return ctx.getCMSLinkById(id, null).getUrl();
+							return ctx.getCMSLinkByPath(id, null).getUrl();
 						}
 						else
 							return url.toString();

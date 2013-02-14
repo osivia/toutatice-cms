@@ -1,9 +1,11 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +30,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
@@ -72,6 +75,17 @@ public class ViewListPortlet extends CMSPortlet {
 		try {
 
 			/* Génération Flux RSS */
+			
+			if( "zoom".equals(resourceRequest.getResourceID()))	{
+				NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
+				
+				Document doc = ctx.fetchDocument(resourceRequest.getParameter("docId"));
+				
+				resourceRequest.setAttribute("doc", doc);
+				
+				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/zoom.jsp").include(resourceRequest, resourceResponse);
+				
+			}
 			
 			if ("rss".equals(resourceRequest.getParameter("type"))) {
 				
