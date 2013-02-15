@@ -518,7 +518,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	}
 	
-
+	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc)  throws CMSException {
+		return false;
+	}
 
 	/*
 	 * 

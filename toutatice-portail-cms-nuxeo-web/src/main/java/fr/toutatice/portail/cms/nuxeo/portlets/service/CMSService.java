@@ -745,4 +745,24 @@ public class CMSService implements ICMSService {
 			}
 		}
 	}
+	
+	
+	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc)  throws CMSException {
+		
+		
+		try {		
+
+			return customizer.supportsOnlyPortalContextualization(cmsCtx, fetchedDoc);
+			}
+			catch (Exception e) {
+				if (!(e instanceof CMSException))	{
+						throw new CMSException(e);
+				}
+				else	{
+					
+						throw (CMSException) e;
+				}
+			}
+	}
+
 }

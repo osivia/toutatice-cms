@@ -77,14 +77,15 @@ public class ViewListPortlet extends CMSPortlet {
 			/* Génération Flux RSS */
 			
 			if( "zoom".equals(resourceRequest.getResourceID()))	{
+				
 				NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
 				
 				Document doc = ctx.fetchDocument(resourceRequest.getParameter("docId"));
 				
 				resourceRequest.setAttribute("doc", doc);
+				resourceRequest.setAttribute("ctx", ctx);
 				
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/zoom.jsp").include(resourceRequest, resourceResponse);
-				
 			}
 			
 			if ("rss".equals(resourceRequest.getParameter("type"))) {

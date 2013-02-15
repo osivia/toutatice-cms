@@ -196,6 +196,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		return cmsService.parseCMSURL( cmsCtx,  requestPath, requestParameters);
 	}
 
+	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc) throws CMSException {
+		return cmsService.supportsOnlyPortalContextualization(cmsCtx, fetchedDoc);
+	}
+
 
 
 

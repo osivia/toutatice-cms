@@ -64,6 +64,10 @@ resourceURL.setParameter("docId", doc.getId());
 			<p style="text-align: right;" class="action-link">
 				<a title="+ d'infos" class="fancyframe" href="<%= resourceURL %>">+ d'infos</a>
 			</p>
+			
+			<p style="text-align: right;" class="action-link">
+				<a title="+ d'infos" class="fancyframe" href="<%= resourceURL %>">+ d'infos</a>
+			</p>
 	
 			<div class="separateur"></div>
 		</li>
