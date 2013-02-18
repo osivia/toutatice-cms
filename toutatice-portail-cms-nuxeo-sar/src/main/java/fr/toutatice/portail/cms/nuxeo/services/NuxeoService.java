@@ -143,19 +143,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 	}
 	
-	
-
-	public void registerCMSService(ICMSService cmsService) {
-		this.cmsService = cmsService;
-		
-	}
-
-	
-	public ICMSService getCMSService() {
-		return cmsService;
-	}
-
-
 
 
 

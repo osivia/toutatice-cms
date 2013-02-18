@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.statut.IStatutService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -39,6 +40,7 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -118,7 +120,9 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			nuxeoService.registerCMSCustomizer(customizer);
 			
 			CMSService CMSservice = new CMSService(getPortletContext());
-			nuxeoService.registerCMSService(CMSservice);
+			ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
+			cmsLocator.register(CMSservice);
+
 			
 			customizer.setCMSService(CMSservice);
 			CMSservice.setCustomizer(customizer);

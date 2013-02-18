@@ -40,6 +40,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
@@ -84,9 +85,13 @@ public class NuxeoController {
 	CMSItem navItem;
 	CMSServiceCtx cmsCtx;
 	
+
+	
 	//v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
+	PortalControllerContext portalCtx;		
 	
+	private static ICMSServiceLocator cmsServiceLocator ;
 	
 	public Document getCurrentDoc() {
 		return currentDoc;
@@ -94,7 +99,7 @@ public class NuxeoController {
 	public void setCurrentDoc(Document currentDoc) {
 		this.currentDoc = currentDoc;
 	}
-	PortalControllerContext portalCtx;	
+
 	
 
 	public String getSpacePath() {
@@ -835,10 +840,7 @@ public class NuxeoController {
 
 		try	{
 		
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-		
+			
 		
 		CMSItem cmsItem = getCMSService().getContent(getCMSCtx(), path);
 		return (Document) cmsItem.getNativeItem();
@@ -857,9 +859,7 @@ public class NuxeoController {
 
 		try	{
 		
-		INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if( nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+
 		
 		
 		CMSPublicationInfos pubInfos  = getCMSService().getPublicationInfos(getCMSCtx(), path);
@@ -897,10 +897,6 @@ public class NuxeoController {
 	public CMSBinaryContent fetchAttachedPicture(String docPath, String pictureIndex) {
 		try	{
 			
-			INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-			if( nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-			
 			
 			return getCMSService().getBinaryContent(getCMSCtx(), "attachedPicture", docPath, pictureIndex);
 			
@@ -917,9 +913,6 @@ public class NuxeoController {
 	public CMSBinaryContent fetchPicture(String docPath, String content) {
 		try {
 
-			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-			if (nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
 			return getCMSService().getBinaryContent(getCMSCtx(), "picture", docPath, content);
 
@@ -936,11 +929,8 @@ public class NuxeoController {
 	public CMSBinaryContent fetchFileContent(String docPath, String fieldName) {
 		try {
 
-			INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-			if (nuxeoService == null)
-				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-			return nuxeoService.getCMSService().getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
+			return getCMSService().getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
 
 		} catch (CMSException e) {
 			if (e.getErrorCode() == CMSException.ERROR_NOTFOUND)
@@ -952,12 +942,19 @@ public class NuxeoController {
 		}
 	}
 
-	public ICMSService getCMSService()	{
-		INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-		if (nuxeoService == null)
-			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-		return nuxeoService.getCMSService();
+	
+
+
+	public static ICMSService getCMSService()  {
+		
+		if( cmsServiceLocator == null){
+			cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
+		}
+	
+		return cmsServiceLocator.getCMSService();
+
 	}
+
 	
 	public CMSServiceCtx getCMSCtx()	{
 

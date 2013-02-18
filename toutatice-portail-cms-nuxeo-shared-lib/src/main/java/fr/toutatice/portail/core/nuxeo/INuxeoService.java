@@ -15,9 +15,5 @@ public interface INuxeoService extends ICMSIntegration {
 	public void registerCMSCustomizer( INuxeoCustomizer linkManager);
 
 	public INuxeoCustomizer getCMSCustomizer();
-	
-	public void registerCMSService( ICMSService cmsService);
-	
-
 
 }
