@@ -29,13 +29,13 @@ int parite = (Integer) renderRequest.getAttribute("parite");
 
 
 Link link = ctx.getLink(doc);
-String url = link.getUrl();
-String target = Formater.formatTarget(link);
+
 String icon = Formater.formatNuxeoIcon(doc);
+
 
 icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
 
 
 %>
 
-		<li> <div class="list-bloc">  <%= icon%> <a class="title" <%=target%> href="<%=url%>"><span><%=doc.getTitle()%></span> </a><p class="list-date"><%= Formater.formatDateAndTime(doc)%></p></div></li>	
+		<li> <div class="list-bloc">  <%= icon%> <%= Formater.formatLink(link, doc, "title") %><p class="list-date"><%= Formater.formatDateAndTime(doc)%></p></div></li>	

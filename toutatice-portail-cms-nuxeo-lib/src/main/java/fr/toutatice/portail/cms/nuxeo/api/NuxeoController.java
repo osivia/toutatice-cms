@@ -39,6 +39,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
@@ -308,7 +309,7 @@ public class NuxeoController {
 		spacePath = window.getPageProperty("osivia.cms.basePath");
 		CMSItem publishSpaceConfig = null;
 		if( spacePath != null)
-			 publishSpaceConfig = getNuxeoCMSService().getPublicationConfig(getCMSCtx(), spacePath);
+			 publishSpaceConfig = getCMSService().getPublicationConfig(getCMSCtx(), spacePath);
 		
 		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
@@ -386,7 +387,7 @@ public class NuxeoController {
 				//TODO : factoriser dans NuxeoController
 
 				INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
-				navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext,  getSpacePath(), getNavigationPath());
+				navItem = getCMSService().getPortalNavigationItem(cmsReadNavContext,  getSpacePath(), getNavigationPath());
 			}
 				
 		}
@@ -839,7 +840,7 @@ public class NuxeoController {
 			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		
-		CMSItem cmsItem = nuxeoService.getContent(getCMSCtx(), path);
+		CMSItem cmsItem = getCMSService().getContent(getCMSCtx(), path);
 		return (Document) cmsItem.getNativeItem();
 		
 		} catch( CMSException e){
@@ -861,7 +862,7 @@ public class NuxeoController {
 			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		
-		CMSPublicationInfos pubInfos  = nuxeoService.getPublicationInfos(getCMSCtx(), path);
+		CMSPublicationInfos pubInfos  = getCMSService().getPublicationInfos(getCMSCtx(), path);
 		return pubInfos.getLiveId();
 		
 		} catch( CMSException e){
@@ -901,7 +902,7 @@ public class NuxeoController {
 				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 			
 			
-			return nuxeoService.getBinaryContent(getCMSCtx(), "attachedPicture", docPath, pictureIndex);
+			return getCMSService().getBinaryContent(getCMSCtx(), "attachedPicture", docPath, pictureIndex);
 			
 			} catch( CMSException e){
 				if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
@@ -920,7 +921,7 @@ public class NuxeoController {
 			if (nuxeoService == null)
 				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-			return nuxeoService.getBinaryContent(getCMSCtx(), "picture", docPath, content);
+			return getCMSService().getBinaryContent(getCMSCtx(), "picture", docPath, content);
 
 		} catch (CMSException e) {
 			if (e.getErrorCode() == CMSException.ERROR_NOTFOUND)
@@ -939,7 +940,7 @@ public class NuxeoController {
 			if (nuxeoService == null)
 				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-			return nuxeoService.getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
+			return nuxeoService.getCMSService().getBinaryContent(getCMSCtx(), "file", docPath, fieldName);
 
 		} catch (CMSException e) {
 			if (e.getErrorCode() == CMSException.ERROR_NOTFOUND)
@@ -951,7 +952,12 @@ public class NuxeoController {
 		}
 	}
 
-
+	public ICMSService getCMSService()	{
+		INuxeoService nuxeoService = (INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+		if (nuxeoService == null)
+			nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+		return nuxeoService.getCMSService();
+	}
 	
 	public CMSServiceCtx getCMSCtx()	{
 
@@ -976,6 +982,19 @@ public class NuxeoController {
 		return cmsCtx;
 	}
 	
+	
+	public Map<String, String> getDocumentConfiguration(Document doc) throws Exception{
+
+			// Adaptation via le CMSCustomizer
+			
+			INuxeoService nuxeoService =(INuxeoService) getPortletCtx().getAttribute("NuxeoService");
+			if( nuxeoService == null)
+				nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+
+
+			return nuxeoService.getCMSCustomizer().getDocumentConfiguration(getCMSCtx(), doc);
+		 
+	}
 	
 	public String getDebugInfos()	{
 		String output = "";

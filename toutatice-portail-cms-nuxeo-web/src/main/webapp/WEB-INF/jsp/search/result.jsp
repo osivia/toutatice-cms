@@ -69,14 +69,13 @@ while( it.hasNext())	{
 	Document doc = (Document) it.next();
 	
 	Link link = ctx.getLink(doc);
-	
+
 
 	String	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+Formater.formatSpecificIcon(doc)+"\">";
-	String target = Formater.formatTarget(link);	
-	String url = link.getUrl();
+
 	
 %>
-		<li><%=icon%>  <a <%=target%> href="<%=url%>"><%=doc.getTitle()%></a>  <br><p class="description"><%= Formater.formatDescription(doc)%></p><div class="separateur"></div></li>
+		<li><%=icon%>  <%= Formater.formatLink(link, doc, "title") %>  <br><p class="description"><%= Formater.formatDescription(doc)%></p><div class="separateur"></div></li>
 
 <%
 }

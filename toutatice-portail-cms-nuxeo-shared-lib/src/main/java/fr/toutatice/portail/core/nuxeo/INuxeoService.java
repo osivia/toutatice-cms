@@ -8,7 +8,7 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 
-public interface INuxeoService extends ICMSIntegration, ICMSService {
+public interface INuxeoService extends ICMSIntegration {
 	
 	public Session createUserSession(String userId) throws Exception ;
 	

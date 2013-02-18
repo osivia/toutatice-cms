@@ -230,7 +230,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 				/* Récupération des fils */
 				
 				
-				CMSPublicationInfos pubInfos = ctx.getNuxeoCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
+				CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
 				
 				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion()));
 				

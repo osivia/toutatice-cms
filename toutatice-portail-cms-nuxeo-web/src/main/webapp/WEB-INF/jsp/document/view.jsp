@@ -38,12 +38,12 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 
 
-
-
-
 String onlyDescription = (String) request.getAttribute("onlyDescription");
 
 String showMetadatas = (String) request.getAttribute("showMetadatas");
+
+if( "detailedView".equals(ctx.getDisplayContext()))
+	showMetadatas = "1";
 
 
 

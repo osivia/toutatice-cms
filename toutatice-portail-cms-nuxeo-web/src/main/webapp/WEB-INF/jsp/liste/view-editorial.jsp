@@ -1,5 +1,7 @@
 
 
+<%@page import="java.util.Map"%>
+<%@page import="org.osivia.portal.core.cms.CMSItem"%>
 <%@page import="javax.portlet.ResourceURL"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
@@ -28,8 +30,6 @@ int parite = (Integer) renderRequest.getAttribute("parite");
 
 
 Link link = ctx.getLink(doc);
-String url = link.getUrl();
-String target = Formater.formatTarget(link);
 
 String srcVignette = "";
 PropertyMap map = doc.getProperties().getMap("ttc:vignette");
@@ -39,30 +39,21 @@ if( map != null && map.getString("data") != null)
 else
 	srcVignette = "<div class=\"vignette-vide\"> </div>";
 
-String linkClassName = "";
 
-if( "File".equals(doc.getType()))	
-	linkClassName = " download";
+Map<String,String> docCfg = ctx.getDocumentConfiguration( doc);
 	
-if(	link.isExternal())
-	linkClassName = " external";
-
-
-ResourceURL resourceURL = renderResponse.createResourceURL();
-resourceURL.setResourceID("zoom");
-resourceURL.setParameter("docId", doc.getId());
-
 %>
 
 		<li class="item<%=parite%>">
 			<%=srcVignette%>
-			<a class="title<%= linkClassName%>" <%=target%> href="<%=url%>"><%=doc.getTitle()%></a>
+			<%= Formater.formatLink(link, doc) %>
 			
 			
 			<p class="description"><%= Formater.formatDescription(doc)%></p>
 
+
 			<p style="text-align: right;" class="action-link">
-				<a title="+ d'infos" class="fancyframe" href="<%= resourceURL %>">+ d'infos</a>
+				<a title="+ d'infos" class="" href="<%= ctx.getLink(doc,"detailedView").getUrl() %>">Vue détaillée</a>
 			</p>
 			
 	

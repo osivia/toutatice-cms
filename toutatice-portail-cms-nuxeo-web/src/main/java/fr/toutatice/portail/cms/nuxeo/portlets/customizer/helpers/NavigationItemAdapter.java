@@ -11,13 +11,13 @@ import org.osivia.portal.core.cms.CMSItem;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
-public class NavigationItemAdaptor {
+public class NavigationItemAdapter {
 	
 	CMSService CMSService;
 	DefaultCMSCustomizer customizer;
 	PortletContext portletCtx;
 	
-	public NavigationItemAdaptor(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+	public NavigationItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
 		super();
 		CMSService = cmsService;
 		this.portletCtx = portletCtx;
@@ -212,9 +212,6 @@ public class NavigationItemAdaptor {
 			properties.put("menuItem", "1");
 		}
 		*/
-
-		
-
 	}
 
 }

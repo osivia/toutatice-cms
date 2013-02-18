@@ -27,12 +27,8 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 Document doc = (Document) renderRequest.getAttribute("doc");
 int parite = (Integer) renderRequest.getAttribute("parite");
 
-
 Link link = ctx.getLink(doc);
-String url = link.getUrl();
-String target = Formater.formatTarget(link);
-
 
 %>
 
-<li class="item<%=parite%>">  <a <%=target%> href="<%=url%>"><%=doc.getTitle()%> </a>  </li>
+<li class="item<%=parite%>">  <%= Formater.formatLink(link, doc) %>  </li>

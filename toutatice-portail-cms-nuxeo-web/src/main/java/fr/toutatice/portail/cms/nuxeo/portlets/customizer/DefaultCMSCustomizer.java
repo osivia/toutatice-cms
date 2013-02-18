@@ -22,8 +22,9 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdaptor;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
@@ -39,7 +40,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	protected IPortalUrlFactory portalUrlFactory;
 	UserPagesLoader userPagesLoader;
 	MenuBarFormater menuBarFormater;
-	NavigationItemAdaptor navigationItemAdaptor;
+	NavigationItemAdapter navigationItemAdapter;
+	CMSItemAdapter cmsItemAdapter;
 	NuxeoConnectionProperties nuxeoConnection;
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
@@ -99,12 +101,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return menuBarFormater;
 	}
 	
-	public NavigationItemAdaptor getNavigationItemAdaptor()	{
-		if( navigationItemAdaptor == null){
-			navigationItemAdaptor = new NavigationItemAdaptor(portletCtx, this, getCMSService());
+	public NavigationItemAdapter getNavigationItemAdapter()	{
+		if( navigationItemAdapter == null){
+			navigationItemAdapter = new NavigationItemAdapter(portletCtx, this, getCMSService());
 		}
 		
-		return navigationItemAdaptor;
+		return navigationItemAdapter;
+	}
+	
+	public CMSItemAdapter getCMSItemAdaptor()	{
+		if( cmsItemAdapter == null){
+			cmsItemAdapter = new CMSItemAdapter(portletCtx, this, getCMSService());
+		}
+		
+		return cmsItemAdapter;
 	}
 
 
@@ -518,10 +528,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	}
 	
-	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc)  throws CMSException {
-		return false;
-	}
-
 	/*
 	 * 
 	 * Ici, on intercepte le traitement CMS lors de la génération du lien
@@ -546,44 +552,37 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		String url = null;
 		boolean externalLink = false;
-	
+		boolean downloadable = false;
 
-		if ("File".equals(doc.getType()) && (TEMPLATE_DOWNLOAD.equals(ctx.getDisplayContext()))) {
-			url = createPortletDelegatedFileContentLink(ctx);
-			
-			// v1.0.27 : plantage sur liens documents
-			//TODO : A INTEGRER ???
-			/*
-			if(  ctx.getResponse() != null)  
-		 		url = createFileContentLink(ctx);
-			else
-				url = createCMSLink(ctx);
-				*/
-		}
-	
-		
-		if ("ContextualLink".equals(doc.getType())) {
-			url = createPortletDelegatedExternalLink(ctx);
-			externalLink = true;
-		}
-		
-			
-		// Gestion des vues externes
-		// Nécessaire pour poser une ancre au moment de la génération du lien
-		
-		if (url == null) {
-		
-			url = getNuxeoNativeViewerUrl(ctx);
-			externalLink = true;
+		if (!"detailedView".equals(ctx.getDisplayContext())) {
+			if ("File".equals(doc.getType())) {
+				url = createPortletDelegatedFileContentLink(ctx);
+				downloadable = true;
+			}
 
+			if ("ContextualLink".equals(doc.getType())) {
+				url = createPortletDelegatedExternalLink(ctx);
+				externalLink = true;
+			}
+
+			// Gestion des vues externes
+			// Nécessaire pour poser une ancre au moment de la génération du
+			// lien
+
+			if (url == null) {
+
+				url = getNuxeoNativeViewerUrl(ctx);
+				externalLink = true;
+
+			}
 		}
-		
 
 		if (url != null) {
 			Link link = new Link(url, externalLink);
+			link.setDownloadable(downloadable);
 			return link;
 
-		} 
+		}
 		return null;
 	}
 
@@ -631,7 +630,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		
 		return null;
 	}
-	
+
+	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
+		return getCMSItemAdaptor().adaptDocument( ctx,  doc);
+	}
 
 
 

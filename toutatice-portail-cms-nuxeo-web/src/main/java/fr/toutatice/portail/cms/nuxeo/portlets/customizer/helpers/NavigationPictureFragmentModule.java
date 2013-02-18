@@ -26,7 +26,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 		String pathToCheck = ctx.getNavigationPath();
 
 		// On regarde dans le document courant
-		CMSItem currentItem = ctx.getNuxeoCMSService().getContent(navCtx, ctx.getContentPath());
+		CMSItem currentItem = ctx.getCMSService().getContent(navCtx, ctx.getContentPath());
 		Document currentDoc = (Document) currentItem.getNativeItem();
 
 		if (docHasPicture(currentDoc, propertyName)) {
@@ -36,7 +36,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 			// Puis dans l'arbre de navigation
 			do {
 
-				CMSItem cmsItemNav = ctx.getNuxeoCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
+				CMSItem cmsItemNav = ctx.getCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
 				pictureContainer = (Document) cmsItemNav.getNativeItem();
 				if (pictureContainer != null) {
 					hasPicture = docHasPicture(pictureContainer, propertyName);

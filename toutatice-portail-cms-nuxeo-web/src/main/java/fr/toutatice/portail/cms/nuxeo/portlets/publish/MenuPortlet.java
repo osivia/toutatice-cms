@@ -148,7 +148,7 @@ public class MenuPortlet extends CMSPortlet {
 
 		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
 		
-		CMSItem navItem = nuxeoService.getPortalNavigationItem(cmsReadNavContext, spacePath, nuxeoPath);
+		CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, spacePath, nuxeoPath);
 		
 		if( navItem == null)
 			return null;
@@ -183,7 +183,7 @@ public class MenuPortlet extends CMSPortlet {
 				selected);
 
 		if (curLevel + 1 <= maxLevel) {
-			List<CMSItem> navItems = nuxeoService.getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
+			List<CMSItem> navItems = ctx.getCMSService().getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
 			
 			for(CMSItem child : navItems){
 				

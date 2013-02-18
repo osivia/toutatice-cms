@@ -75,7 +75,9 @@ public class ViewListPortlet extends CMSPortlet {
 		try {
 
 			/* Génération Flux RSS */
+		
 			
+			/* pour tests
 			if( "zoom".equals(resourceRequest.getResourceID()))	{
 				
 				NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
@@ -87,6 +89,8 @@ public class ViewListPortlet extends CMSPortlet {
 				
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/zoom.jsp").include(resourceRequest, resourceResponse);
 			}
+			*/
+			
 			
 			if ("rss".equals(resourceRequest.getParameter("type"))) {
 				
@@ -432,7 +436,7 @@ public class ViewListPortlet extends CMSPortlet {
 				 */
 				i.set("navigationPubInfos",  null);
 				if( ctx.getNavigationPath() != null)	{
-					CMSPublicationInfos navigationPubInfos = ctx.getNuxeoCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
+					CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
 					i.set("navigationPubInfos",  navigationPubInfos);
 				}
 				i.set("contentPath",  ctx.getContentPath());
@@ -594,7 +598,7 @@ public class ViewListPortlet extends CMSPortlet {
 								cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
 								cmsReadNavContext.setScope(ctx.getScope());		
 								
-								anonymousAccess = getNuxeoNavigationService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("osivia.cms.path"));
+								anonymousAccess = ctx.getCMSService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("osivia.cms.path"));
 							
 								
 							}

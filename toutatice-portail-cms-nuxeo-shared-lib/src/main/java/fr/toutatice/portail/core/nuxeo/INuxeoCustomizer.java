@@ -45,7 +45,9 @@ public interface INuxeoCustomizer {
 	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception ;
 	
 	
+	/* Adaptation des items CMS */
 	
+	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception ;
 	
 	
 }

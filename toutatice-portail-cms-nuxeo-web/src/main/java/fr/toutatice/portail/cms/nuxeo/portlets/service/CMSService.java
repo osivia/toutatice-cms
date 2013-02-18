@@ -83,7 +83,7 @@ public class CMSService implements ICMSService {
 		else
 			publishSpaceItem = cmsItem;
 
-		getCustomizer().getNavigationItemAdaptor().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
+		getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
 
 		return cmsItem;
 	}
@@ -213,12 +213,18 @@ public class CMSService implements ICMSService {
 		}
 
 	}
+	
+	
 
 	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+		
+		
 		CMSItem content = null;
 		try {		
 
-			content =  fetchContent(cmsCtx, path);			
+			content =  fetchContent(cmsCtx, path);		
+			
+			getCustomizer().getCMSItemAdaptor().adaptItem(content);
 
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
@@ -479,7 +485,10 @@ public class CMSService implements ICMSService {
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
 		// Document doc = ctx.g
 		try {
-			return getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
+			if( !"detailedView".equals(ctx.getDisplayContext()))
+				return getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
+			else
+				return ((DefaultCMSCustomizer) getNuxeoService().getCMSCustomizer()).getCMSDefaultPlayer(ctx);
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -745,24 +754,10 @@ public class CMSService implements ICMSService {
 			}
 		}
 	}
-	
-	
-	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc)  throws CMSException {
-		
-		
-		try {		
 
-			return customizer.supportsOnlyPortalContextualization(cmsCtx, fetchedDoc);
-			}
-			catch (Exception e) {
-				if (!(e instanceof CMSException))	{
-						throw new CMSException(e);
-				}
-				else	{
-					
-						throw (CMSException) e;
-				}
-			}
-	}
+	
+
+	
+	
 
 }

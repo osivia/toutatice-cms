@@ -14,6 +14,8 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.urls.Link;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+
 
 public class AbstractFormater {
 
@@ -292,6 +294,32 @@ public class AbstractFormater {
 		}
 
 		return "/img/icons/" + portalIcon;
+	}
+	
+	
+	public static String formatLink( Link link, Document doc, String extraClassName)	{
+
+		
+		String linkClassName = extraClassName;
+
+		if( link.isDownloadable())	
+			linkClassName += " osivia-link-download";
+			
+		if(	link.isExternal())
+			linkClassName += " osivia-link-external";
+		
+		String target = formatTarget(link);
+		
+		String res = "<a "+ target+" href=\""+ link.getUrl()+"\" class=\""+linkClassName+"\" ><span>"+doc.getTitle()+"</span></a>";
+		
+		return res;
+		
+	}
+	
+	
+	public static String formatLink( Link link, Document doc) 	{
+		return formatLink(  link,  doc, "");
+	
 	}
 
 }

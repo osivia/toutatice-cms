@@ -27,7 +27,7 @@ public class PublishConfigCommand implements INuxeoCommand {
 		String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(configDoc.getPath());
 		CMSItem configItem = cmsService.createItem(cmsCtx, configDoc.getPath(), livePath, configDoc);
 		CMSItem publishSpaceItem = new CMSItem(livePath, null, configDoc);
-		cmsService.getCustomizer().getNavigationItemAdaptor().adaptPublishSpaceNavigationItem(configItem, publishSpaceItem);
+		cmsService.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, publishSpaceItem);
 		return configItem;
 	}
 

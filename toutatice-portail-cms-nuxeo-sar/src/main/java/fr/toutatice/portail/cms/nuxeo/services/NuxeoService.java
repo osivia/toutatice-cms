@@ -150,55 +150,11 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 		
 	}
 
-	public CMSItem getContent(CMSServiceCtx ctx, String path) throws CMSException{
-		return cmsService.getContent(ctx, path);
-	}
-
-	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
-		return  cmsService.getItemHandler(ctx);
-	}
-
-	public CMSItem getPortalNavigationItem(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
-		return  cmsService.getPortalNavigationItem(ctx, publishSpacePath, path);
-	}
-
-	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx ctx, String publishSpacePath, String path) throws CMSException {
-		return  cmsService.getPortalNavigationSubitems(ctx, publishSpacePath, path);
-	}
-
-	public CMSItem getPortalPublishSpace(CMSServiceCtx ctx, String path) throws CMSException {
-		return  cmsService.getPortalPublishSpace(ctx, path);
-	}
 	
-	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException	{
-		return  cmsService.checkContentAnonymousAccess(cmsCtx, path);
+	public ICMSService getCMSService() {
+		return cmsService;
 	}
 
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws CMSException {
-		return cmsService.computeUserPreloadedPages(cmsCtx);
-	}
-
-	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
-		return  cmsService.getPublicationInfos(ctx, path);
-	}
-	
-	public CMSItem getPublicationConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
-		return cmsService.getPublicationConfig(cmsCtx, publishSpacePath);
-	}
-
-	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String path, String parameter)
-			throws CMSException {
-		return cmsService.getBinaryContent(cmsCtx, type, path, parameter);
-	}
-
-	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
-			throws CMSException {
-		return cmsService.parseCMSURL( cmsCtx,  requestPath, requestParameters);
-	}
-
-	public boolean supportsOnlyPortalContextualization(CMSServiceCtx cmsCtx, CMSItem fetchedDoc) throws CMSException {
-		return cmsService.supportsOnlyPortalContextualization(cmsCtx, fetchedDoc);
-	}
 
 
 
