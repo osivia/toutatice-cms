@@ -153,6 +153,8 @@ public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 					try {
 						fragmentType.getModule().injectViewAttributes(ctx, window, request, response);
+					} catch (NuxeoException e) {
+						PortletErrorHandler.handleGenericErrors(response, e);
 					} catch (Exception e) {
 						throw new PortletException(e);
 					}
