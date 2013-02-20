@@ -110,10 +110,13 @@ public class SearchPortlet extends CMSPortlet {
 			PortletSecurityException, IOException {
 
 		logger.debug("doView");
+		
+		NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
 		PortalWindow window = WindowFactory.getWindow(request);
 
 		String	nuxeoPath =  window.getProperty("osivia.nuxeoPath");
+
 			
 		String keywords = request.getParameter("keywords");
 		
@@ -129,7 +132,7 @@ public class SearchPortlet extends CMSPortlet {
 		try {
 			response.setContentType("text/html");
 			
-			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+		
 
 			if (keywords != null) {
 				// Page de resultats
