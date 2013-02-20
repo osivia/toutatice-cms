@@ -76,7 +76,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		//  2 - le 'ecm:path =' pose des problemes de perfs quand il est compibné avec un OR ecm:path startswith -> fetch specifique pour récuperer la racine
 		//  3 - suppression cas particulier PortalVirtualPage
 		
-		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  ttc:showInMenu = 1  )";
+		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
 		
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live);

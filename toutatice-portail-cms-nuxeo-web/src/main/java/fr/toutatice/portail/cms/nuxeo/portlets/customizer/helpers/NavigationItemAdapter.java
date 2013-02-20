@@ -196,13 +196,19 @@ public class NavigationItemAdapter {
 			properties.put("contextualizeExternalContents", "1");		
 		
 		
-		/* Workspace */
+		/* Workspace et UserWorkspaces*/
 		
-		if("Workspace".equals(doc.getType()))	{
+		if(("Workspace".equals(doc.getType())) || ("UserWorkspace".equals(doc.getType())))	{
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
 			properties.put("pageTemplate", "/default/templates/workspace");
 			properties.put("displayLiveVersion", "1");
+		}
+		
+		
+		if(("WebSite".equals(doc.getType())) || ("BlogSite".equals(doc.getType()))){
+			properties.put("contextualizeInternalContents", "1");
+			properties.put("contextualizeExternalContents", "1");
 		}
 		
 		

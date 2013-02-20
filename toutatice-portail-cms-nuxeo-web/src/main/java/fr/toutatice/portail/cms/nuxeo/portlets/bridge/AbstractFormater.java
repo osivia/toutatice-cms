@@ -297,7 +297,7 @@ public class AbstractFormater {
 	}
 	
 	
-	public static String formatLink( Link link, Document doc, String extraClassName)	{
+	public static String formatLink( Link link, Document doc, String extraClassName, String title)	{
 
 		
 		String linkClassName = extraClassName;
@@ -310,10 +310,14 @@ public class AbstractFormater {
 		
 		String target = formatTarget(link);
 		
-		String res = "<a "+ target+" href=\""+ link.getUrl()+"\" class=\""+linkClassName+"\" ><span>"+doc.getTitle()+"</span></a>";
+		String res = "<a "+ target+" href=\""+ link.getUrl()+"\" class=\""+linkClassName+"\" title=\"" + title + "\"><span>"+doc.getTitle()+"</span></a>";
 		
 		return res;
 		
+	}
+	
+	public static String formatLink( Link link, Document doc, String extraClassName) {
+		return formatLink(link, doc, extraClassName, "");
 	}
 	
 	
