@@ -1,11 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,13 +26,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
-import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -51,7 +47,6 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -629,11 +624,29 @@ public class ViewListPortlet extends CMSPortlet {
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 
 			} else {
+				
+				if((StringUtils.isNotEmpty((String) request.getAttribute("bsh.title"))) || (StringUtils.isNotEmpty((String) request.getAttribute("bsh.html")))){
+					
+					if(StringUtils.isNotEmpty((String) request.getAttribute("bsh.title")))
+						response.setTitle((String) request.getAttribute("bsh.title"));
+					
+					if(StringUtils.isNotEmpty((String) request.getAttribute("bsh.html"))){
+						
+						response.setContentType("text/html");
+						response.getWriter().print((String) request.getAttribute("bsh.html"));
+						response.getWriter().close();
+						
+					}
+					return;
+					
+				}else{
 
-				response.setContentType("text/html");
-				response.getWriter().print("<h2>Requête non définie</h2>");
-				response.getWriter().close();
-				return;
+					response.setContentType("text/html");
+					response.getWriter().print("<h2>Requête non définie</h2>");
+					response.getWriter().close();
+					return;
+				
+				}
 
 			}
 
