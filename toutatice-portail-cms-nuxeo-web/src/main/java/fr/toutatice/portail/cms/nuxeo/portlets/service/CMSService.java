@@ -180,7 +180,11 @@ public class CMSService implements ICMSService {
 
 		String savedScope = cmsCtx.getScope();
 		try {
+			boolean saveAsync = cmsCtx.isAsyncCacheRefreshing();
+			
+			cmsCtx.setAsyncCacheRefreshing(false);
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
+			cmsCtx.setAsyncCacheRefreshing(saveAsync);
 			
 			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
 			
@@ -575,7 +579,7 @@ public class CMSService implements ICMSService {
 				/* appel de la commande */
 
 				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig,
-						navItems, idsToFetch, fetchRoot)));
+						navItems, idsToFetch, fetchRoot, path)));
 
 				/* Stockage de l'arbre partiel */
 
@@ -689,9 +693,22 @@ public class CMSService implements ICMSService {
 				NavigationItem navItem = navItems.get(path);
 				if (navItem != null) {
 					List<CMSItem> childrens = new ArrayList<CMSItem>();
+				
+					
 					for (Object child : navItem.getChildren()) {
-
-						childrens.add(getPortalNavigationItem(cmsCtx, publishSpacePath, ((Document)child).getPath()));
+						
+						Document docChild = (Document) child;
+						
+						NavigationItem navChild =  navItems.get(docChild.getPath());
+						
+						CMSItem item = navChild.getAdaptedCMSItem();
+						if (item == null) {
+							if (navChild.getMainDoc() != null)
+								navChild.setAdaptedCMSItem(createNavigationItem(cmsCtx, docChild.getPath(), ((Document) navChild.getMainDoc())
+										.getTitle(), (Document) navChild.getMainDoc(), publishSpacePath));
+						}
+						
+						childrens.add(navChild.getAdaptedCMSItem());
 
 					}
 					return childrens;

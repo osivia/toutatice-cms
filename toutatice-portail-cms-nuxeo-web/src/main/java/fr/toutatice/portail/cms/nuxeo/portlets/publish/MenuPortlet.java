@@ -141,10 +141,11 @@ public class MenuPortlet extends CMSPortlet {
 	}
 
 	private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
-			int curLevel, int maxLevel, String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable) throws Exception {
+			int curLevel, int maxLevel, String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws Exception {
 		
 		
 		//TODO : factoriser dans NuxeoController
+		
 
 		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
 		
@@ -182,14 +183,14 @@ public class MenuPortlet extends CMSPortlet {
 		NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
 				selected);
 
-		if (curLevel + 1 <= maxLevel) {
+		if ( (partialOpenLevels == -1 && curLevel + 1 <= maxLevel )  || (partialOpenLevels != -1 && ( selected || (curLevel + 1 <= partialOpenLevels))))  {
 			List<CMSItem> navItems = ctx.getCMSService().getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
 			
 			for(CMSItem child : navItems){
 				
 				if ( "1".equals(child.getProperties().get("menuItem")) )	{
 					
-					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, spacePath, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")));
+					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, spacePath, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")), partialOpenLevels);
 					if( newItem != null)
 						displayItem.getChildrens().add(	newItem);
 				}
@@ -225,7 +226,11 @@ public class MenuPortlet extends CMSPortlet {
 			if (ctx.getBasePath() != null) {
 
 
-
+				
+				
+				
+				
+				
 				// rafraichir en asynchrone
 				ctx.setAsynchronousUpdates(true);
 
@@ -249,9 +254,17 @@ public class MenuPortlet extends CMSPortlet {
 				cmsReadNavContext.setScope(ctx.getNavigationScope());				
 
 				
+				int partialOpenLevels = -1;
+				CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, ctx.getBasePath(), ctx.getBasePath());
+				
+				if( "1".equals(navItem.getProperties().get("partialLoading")))	{
+					partialOpenLevels = openLevels;
+					
+				}
+				
 
 				NavigationDisplayItem displayItem = createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
-						getPortletContext(), request, response), 0, maxLevels, ctx.getSpacePath(), ctx.getBasePath(),  ctx.getBasePath(), true);
+						getPortletContext(), request, response), 0, maxLevels, ctx.getSpacePath(), ctx.getBasePath(),  ctx.getBasePath(), true , partialOpenLevels);
 				
 				if( displayItem != null)	{
 

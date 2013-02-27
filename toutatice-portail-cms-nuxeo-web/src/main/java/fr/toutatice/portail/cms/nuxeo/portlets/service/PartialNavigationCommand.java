@@ -32,14 +32,16 @@ public class PartialNavigationCommand implements INuxeoCommand {
 	List<String> docIds;
 	public final static String basicNavigationSchemas = "dublincore,common, toutatice";
 	boolean fetchRoot = false;
+	String commandPath;
 	
-	public PartialNavigationCommand(  CMSItem publishSpaceConfig, Map<String, NavigationItem> navItems, List<String> docIds, boolean fetchRoot) {
+	public PartialNavigationCommand(  CMSItem publishSpaceConfig, Map<String, NavigationItem> navItems, List<String> docIds, boolean fetchRoot, String commandPath) {
 		super();
 
 		this.publishSpaceConfig = publishSpaceConfig;
 		this.navItems = navItems;
 		this.docIds = docIds;
 		this.fetchRoot = fetchRoot;
+		this.commandPath = commandPath;
 	}
 
 
@@ -146,7 +148,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PartialNavigationCommand/" + publishSpaceConfig.getPath();
+		return "PartialNavigationCommand/" + commandPath;
 	};
 
 }

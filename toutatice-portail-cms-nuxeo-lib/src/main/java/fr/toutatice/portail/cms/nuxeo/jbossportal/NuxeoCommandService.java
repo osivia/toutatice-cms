@@ -10,10 +10,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
+import org.jboss.portal.core.controller.ControllerContext;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
@@ -148,6 +151,24 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		IServiceInvoker nuxeoInvoker = new NuxeoCommandCacheInvoker(ctx, command);
 
+		/* On regarde si la commande a déjà été traitée dans la requete http */
+		
+		ServerInvocation  serverInvoc = ctx.getServerInvocation();
+		if( serverInvoc == null)	{
+			ControllerContext controllerCtx = ctx.getControlerContext();
+			serverInvoc = controllerCtx.getServerInvocation();
+		}
+		
+		HttpServletRequest portalRequest = null;
+		
+		if(serverInvoc != null){		
+			portalRequest = serverInvoc.getServerContext().getClientRequest();
+			Object value =  portalRequest.getAttribute(command.getId());
+			if( value != null)
+				return value;
+		}
+		
+		
 		// Cache user non géré -> Appel direct
 		if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
 			return nuxeoInvoker.invoke();
@@ -183,7 +204,11 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
 		}
 
-		return getServiceCache(ctx).getCache(cacheInfos);
+		Object response =  getServiceCache(ctx).getCache(cacheInfos);
+		if(portalRequest != null)
+			portalRequest.setAttribute(command.getId(), response);
+		return response;
+		
 	}
 	
 	
