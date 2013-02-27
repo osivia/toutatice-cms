@@ -15,6 +15,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -502,6 +503,101 @@ public class CMSService implements ICMSService {
 		return null;
 	}
 
+	
+	
+	
+	
+	
+	public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path) throws CMSException{
+		
+		String savedScope = cmsCtx.getScope();
+		
+		try {
+
+			
+			Map<String, NavigationItem> navItems = null;
+			
+			List<String> idsToFetch = new ArrayList<String>();
+			boolean fetchRoot = false;
+			
+			/* On récupère le dernier arbre de publication partiel */
+
+
+			String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
+			Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
+			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, portletCtx,
+					false);
+			// délai d'une session
+			cacheInfos.setDelaiExpiration(200000);
+			cacheInfos.setForceNOTReload(true);
+
+			navItems = (Map<String, NavigationItem>) getCacheService().getCache(cacheInfos);
+
+
+
+			if (navItems == null) {
+
+				navItems = new HashMap<String, NavigationItem>();
+				fetchRoot = true;
+			}
+
+			/* Boucle sur l'arbo pour recuperer les ids à fetcher
+			 * (doc absents de l'arbre)
+			 * */
+
+			String pathToCheck = path;
+			
+			CMSServiceCtx superUserCtx = new CMSServiceCtx();
+			superUserCtx.setControllerContext(cmsCtx.getControllerContext());
+			cmsCtx.setScope("superuser_context");
+			
+			do {
+				NavigationItem navItem = navItems.get(pathToCheck);
+				if (navItem == null || navItem.isUnfetchedChildren()) {
+					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+
+					idsToFetch.add(doc.getId());
+				}
+
+				CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+				pathToCheck = parentPath.toString();
+
+			} while (pathToCheck.contains(publishSpaceConfig.getPath()));
+
+
+
+			
+			if( idsToFetch.size() > 0 || fetchRoot)
+
+			{
+				cmsCtx.setScope("__nocache");
+
+				/* appel de la commande */
+
+				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig,
+						navItems, idsToFetch, fetchRoot)));
+
+				/* Stockage de l'arbre partiel */
+
+				cacheInfos.setForceReload(true);
+				cacheInfos.setForceNOTReload(false);
+				cacheInfos.setInvoker(new PartialNavigationInvoker(navItems));
+				getCacheService().getCache(cacheInfos);
+
+			}
+
+			return navItems;
+		} catch (Exception e) {
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
+		}		finally	{
+			cmsCtx.setScope(savedScope);
+		}
+	}
+	
+	
 	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
 			throws CMSException {
 		
@@ -522,7 +618,13 @@ public class CMSService implements ICMSService {
 			
 			
 			
-			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
+			Map<String, NavigationItem> navItems = null;
+			
+			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	{
+				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path);
+			}	else
+			
+				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
 
 			if (navItems != null) {
@@ -575,7 +677,12 @@ public class CMSService implements ICMSService {
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
 			
 
-			Map<String, NavigationItem> navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
+			Map<String, NavigationItem> navItems = null;
+			
+			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	
+				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path);
+				else
+				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
 
 			if (navItems != null) {

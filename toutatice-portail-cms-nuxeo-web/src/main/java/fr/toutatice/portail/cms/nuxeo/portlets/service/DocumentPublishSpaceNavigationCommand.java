@@ -150,41 +150,6 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			}
 		}
 
-		/* Sort children */
-		
-		/*
-
-		for (Entry<String, NavigationItem> item : navItems.entrySet()) {
-			
-			
-			List<Document> childrens = item.getValue().getChildren();
-
-			Collections.sort(childrens, new Comparator<Document>() {
-
-				public int compare(Document e1, Document e2) {
-					int pos1 = 0;
-					int pos2 = 0;
-
-					try {
-						String sPos1 = (String) e1.getProperties().get("ecm:pos");
-						if (sPos1 != null)
-							pos1 = Integer.parseInt(sPos1);
-
-						String sPos2 = (String) e2.getProperties().get("ecm:pos");
-						if (sPos2 != null)
-							pos2 = Integer.parseInt(sPos2);
-					} catch (Exception e) {
-
-					}
-					if (pos1 < pos2)
-						return -1;
-					else
-						return 1;
-				}
-			});
-
-		}
-		*/
 
 		return navItems;
 
