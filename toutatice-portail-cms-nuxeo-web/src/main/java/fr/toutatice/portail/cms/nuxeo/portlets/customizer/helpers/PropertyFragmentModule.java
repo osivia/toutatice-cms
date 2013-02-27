@@ -3,12 +3,11 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.windows.PortalWindow;
-import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -23,7 +22,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 
 		nuxeoPath = window.getProperty("osivia.nuxeoPath");
 
-		if (nuxeoPath != null) {
+		if (StringUtils.isNotEmpty(nuxeoPath)) {
 
 			nuxeoPath = ctx.getComputedPath(nuxeoPath);
 
@@ -34,7 +33,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 
 			String propertyName = window.getProperty("osivia.propertyName");
 
-			if (propertyName != null) {
+			if (StringUtils.isNotEmpty(propertyName)) {
 
 				String content = (String) doc.getProperties().get(propertyName);
 

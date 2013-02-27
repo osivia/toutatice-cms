@@ -693,8 +693,11 @@ public class CMSService implements ICMSService {
 				 * s'effectue de manière asynchrone.
 				 */
 				cmsCtx.setAsyncCacheRefreshing(true);
-				cmsCtx.setScope("superuser_context");
-				configItem = (CMSItem) executeNuxeoCommand(cmsCtx, (new PublishConfigCommand(this, cmsCtx, publishSpacePath)));
+				cmsCtx.setForcePublicationInfosScope("superuser_context");
+
+				configItem = fetchContent(cmsCtx, publishSpacePath);
+				
+				getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
 			}
 			finally {
 				cmsCtx.setScope(savedScope);

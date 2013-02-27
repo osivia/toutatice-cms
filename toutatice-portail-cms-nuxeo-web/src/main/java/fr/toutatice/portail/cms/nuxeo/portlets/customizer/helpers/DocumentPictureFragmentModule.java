@@ -5,13 +5,10 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.api.windows.PortalWindow;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSObjectPath;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -29,7 +26,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 
 		nuxeoPath = window.getProperty("osivia.nuxeoPath");
 
-		if (nuxeoPath != null) {
+		if (StringUtils.isNotEmpty(nuxeoPath)) {
 
 			nuxeoPath = ctx.getComputedPath(nuxeoPath);
 
@@ -40,7 +37,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 
 			String propertyName = window.getProperty("osivia.propertyName");
 
-			if (propertyName != null) {
+			if (StringUtils.isNotEmpty(propertyName)) {
 
 			
 				PropertyMap map = doc.getProperties().getMap(propertyName);

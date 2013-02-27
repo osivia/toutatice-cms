@@ -176,12 +176,12 @@ public class MenuBarFormater {
 
 			} else {
 				// Soit le nom de l'espace de publication
-				
 				CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx,
-						(((Document) (cmsCtx.getDoc())).getPath()));
+						((Document) (cmsCtx.getDoc())).getPath());
 
 				if (pubInfos.getPublishSpacePath() != null) {
-					if (pubInfos.isPublishSpaceInContextualization())
+					CMSItem pubConfig = CMSService.getPublicationConfig(cmsCtx, pubInfos.getPublishSpacePath());
+					if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents")))
 						spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
 
 				} /*TOCHECK:

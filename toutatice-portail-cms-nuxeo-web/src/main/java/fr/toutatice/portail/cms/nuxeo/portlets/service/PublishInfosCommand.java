@@ -59,16 +59,12 @@ public class PublishInfosCommand implements INuxeoCommand {
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
 					publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
-					publiInfos.setPublishSpaceInContextualization(convertBoolean(obj
-							.get("publishSpaceInContextualization")));
 					publiInfos.setLiveSpace(false);
 				} else {
 					String workspacePath = decode((String) obj.get("workspacePath"));
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
 						publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
-						publiInfos.setPublishSpaceInContextualization(convertBoolean(obj
-								.get("workspaceInContextualization")));
 						publiInfos.setLiveSpace(true);
 					}
 				}
