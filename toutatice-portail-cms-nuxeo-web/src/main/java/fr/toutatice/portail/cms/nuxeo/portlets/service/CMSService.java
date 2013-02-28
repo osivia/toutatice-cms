@@ -205,12 +205,12 @@ public class CMSService implements ICMSService {
 			if (haveToGetLive) {
 
 				Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(path, "Read")));
-				return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
+				return createItem(cmsCtx, path, doc.getTitle(), doc);
 
 			} else {
 
 				Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
-				return createItem(cmsCtx, doc.getPath(), doc.getTitle(), doc);
+				return createItem(cmsCtx, path, doc.getTitle(), doc);
 
 			}
 		} finally {
@@ -512,7 +512,7 @@ public class CMSService implements ICMSService {
 	
 	
 	
-	public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path) throws CMSException{
+	public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path, boolean fetchSubItems) throws CMSException{
 		
 		String savedScope = cmsCtx.getScope();
 		
@@ -533,7 +533,7 @@ public class CMSService implements ICMSService {
 					false);
 			// délai d'une session
 			cacheInfos.setDelaiExpiration(200000);
-			cacheInfos.setForceNOTReload(true);
+
 
 			navItems = (Map<String, NavigationItem>) getCacheService().getCache(cacheInfos);
 
@@ -557,7 +557,7 @@ public class CMSService implements ICMSService {
 			
 			do {
 				NavigationItem navItem = navItems.get(pathToCheck);
-				if (navItem == null || navItem.isUnfetchedChildren()) {
+				if (navItem == null || (fetchSubItems && navItem.isUnfetchedChildren() )) {
 					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
 					idsToFetch.add(doc.getId());
@@ -625,7 +625,7 @@ public class CMSService implements ICMSService {
 			Map<String, NavigationItem> navItems = null;
 			
 			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	{
-				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path);
+				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
 			}	else
 			
 				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
@@ -684,7 +684,7 @@ public class CMSService implements ICMSService {
 			Map<String, NavigationItem> navItems = null;
 			
 			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	
-				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path);
+				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
 				else
 				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
 					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
@@ -699,12 +699,14 @@ public class CMSService implements ICMSService {
 						
 						Document docChild = (Document) child;
 						
-						NavigationItem navChild =  navItems.get(docChild.getPath());
+						String childNavPath = DocumentPublishSpaceNavigationCommand.computeNavPath(docChild.getPath());
+						
+						NavigationItem navChild =  navItems.get( childNavPath);
 						
 						CMSItem item = navChild.getAdaptedCMSItem();
 						if (item == null) {
 							if (navChild.getMainDoc() != null)
-								navChild.setAdaptedCMSItem(createNavigationItem(cmsCtx, docChild.getPath(), ((Document) navChild.getMainDoc())
+								navChild.setAdaptedCMSItem(createNavigationItem(cmsCtx, childNavPath, ((Document) navChild.getMainDoc())
 										.getTitle(), (Document) navChild.getMainDoc(), publishSpacePath));
 						}
 						

@@ -156,7 +156,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		ServerInvocation  serverInvoc = ctx.getServerInvocation();
 		if( serverInvoc == null)	{
 			ControllerContext controllerCtx = ctx.getControlerContext();
-			serverInvoc = controllerCtx.getServerInvocation();
+			if( controllerCtx != null)
+				// Ne marche pas pour les ressources
+				serverInvoc = controllerCtx.getServerInvocation();
 		}
 		
 		HttpServletRequest portalRequest = null;

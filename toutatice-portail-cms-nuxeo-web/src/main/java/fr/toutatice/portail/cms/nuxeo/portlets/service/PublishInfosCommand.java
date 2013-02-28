@@ -47,7 +47,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 			while (it.hasNext()) {
 				JSONObject obj = (JSONObject) it.next();
 				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
-				publiInfos.setDocumentPath(decode((String) obj.get("documentPath")));
+				publiInfos.setDocumentPath( decode((String) obj.get("documentPath")));
 				publiInfos.setLiveId((String) obj.get("liveId"));
 				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
 				publiInfos.setPublished(convertBoolean(obj.get("published")));

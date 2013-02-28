@@ -193,33 +193,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(ctx, doc.getPath());
 		
 		
-		/*
-
-		if (ctx.getContextualizationBasePath() != null) {
-			// Publication dans un environnement contextualisé
-			// On se sert du menu de navigation et on décompose chaque niveau
-
-			nuxeoRequest = " (ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish' )";
-
-			List<CMSItem> navItems = getCMSService().getPortalNavigationSubitems(ctx,
-					ctx.getContextualizationBasePath(), DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
-
-			for (CMSItem curItem : navItems) {
-				String hiddenItem = curItem.getProperties().get("hiddenInNavigation");
-				if ("1".equals(hiddenItem)) {
-					nuxeoRequest = nuxeoRequest + " OR (ecm:path STARTSWITH '" + curItem.getPath()
-							+ "' AND ecm:mixinType != 'Folderish' )";
-				}
-			}
-
-		} else {
-			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
-			
-			if( ordered)
-				nuxeoRequest += " order by ecm:pos";
-		}
-		
-		*/
+	
 		
 		List<CMSItem> navItems = null;
 		
