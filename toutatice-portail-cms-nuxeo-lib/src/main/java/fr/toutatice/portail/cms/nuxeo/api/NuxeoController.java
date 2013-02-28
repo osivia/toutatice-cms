@@ -314,7 +314,7 @@ public class NuxeoController {
 		spacePath = window.getPageProperty("osivia.cms.basePath");
 		CMSItem publishSpaceConfig = null;
 		if( spacePath != null)
-			 publishSpaceConfig = getCMSService().getPublicationConfig(getCMSCtx(), spacePath);
+			 publishSpaceConfig = getCMSService().getSpaceConfig(getCMSCtx(), spacePath);
 		
 		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");

@@ -210,6 +210,9 @@ public class CMSService implements ICMSService {
 			} else {
 
 				Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
+				
+
+				
 				return createItem(cmsCtx, path, doc.getTitle(), doc);
 
 			}
@@ -615,7 +618,7 @@ public class CMSService implements ICMSService {
 
 			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
 			
-			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			CMSItem publishSpaceConfig = getSpaceConfig(cmsCtx, publishSpacePath);
 			
 			if( publishSpaceConfig == null)
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
@@ -675,7 +678,7 @@ public class CMSService implements ICMSService {
 		}
 		try {
 			
-			CMSItem publishSpaceConfig = getPublicationConfig(cmsCtx, publishSpacePath);
+			CMSItem publishSpaceConfig = getSpaceConfig(cmsCtx, publishSpacePath);
 			
 			if( publishSpaceConfig == null)
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
@@ -734,26 +737,6 @@ public class CMSService implements ICMSService {
 		return null;
 	}
 
-	public CMSItem getPortalPublishSpace(CMSServiceCtx cmsCtx, String path) throws CMSException {
-
-		CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
-
-		if (pubInfos.getPublishSpacePath() != null) {
-			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getPublishSpacePath(),
-					pubInfos.getPublishSpacePath());
-			return portalSpace;
-		}
-
-		/* TOCHECK
-		  if (pubInfos.getWorkspacePath() != null) {
-			CMSItem portalSpace = getPortalNavigationItem(cmsCtx, pubInfos.getWorkspacePath(),
-					pubInfos.getWorkspacePath());
-			return portalSpace;
-		}*/
-
-		throw new CMSException(CMSException.ERROR_NOTFOUND);
-
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
@@ -781,6 +764,31 @@ public class CMSService implements ICMSService {
 				}
 
 				pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
+				
+				
+				
+				
+				/* Cas de la pulication Toutatice : le document et son proxy sont dans le meme folder 
+				 * 
+				 * On retient alors le path du document live (et non du proxy)
+				 */
+				
+				pubInfos.setDocumentPath(DocumentPublishSpaceNavigationCommand.computeNavPath(pubInfos.getDocumentPath()));
+				
+				/*
+				Document docLive = (Document) executeNuxeoCommand(ctx, (new DocumentFetchLiveCommand(pubInfos.getLiveId(), "Read")));
+				
+				CMSObjectPath curParent = CMSObjectPath.parse(pubInfos.getDocumentPath()).getParent();
+				CMSObjectPath liveParent = CMSObjectPath.parse(docLive.getPath()).getParent();
+				
+				if( curParent.toString().equals(liveParent.toString()))
+					pubInfos.setDocumentPath(docLive.getPath());
+						
+				*/
+				
+				
+				
+				
 
 				if (pubInfos != null) {
 					List<Integer> errors = pubInfos.getErrorCodes();
@@ -810,7 +818,7 @@ public class CMSService implements ICMSService {
 
 	}
 
-	public CMSItem getPublicationConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
+	public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
 		CMSItem configItem = null;
 		try {
 			String savedScope = cmsCtx.getScope();

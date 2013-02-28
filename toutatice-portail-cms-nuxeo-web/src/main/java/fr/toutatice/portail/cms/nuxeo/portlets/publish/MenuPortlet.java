@@ -39,6 +39,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
@@ -167,6 +168,7 @@ public class MenuPortlet extends CMSPortlet {
 
 		
 		String itemPath = ctx.getContentPath();
+
 
 
 		if (itemPath != null)	{ 

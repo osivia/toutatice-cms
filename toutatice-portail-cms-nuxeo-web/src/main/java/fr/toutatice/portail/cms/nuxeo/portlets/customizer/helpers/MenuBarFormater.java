@@ -180,7 +180,7 @@ public class MenuBarFormater {
 						((Document) (cmsCtx.getDoc())).getPath());
 
 				if (pubInfos.getPublishSpacePath() != null) {
-					CMSItem pubConfig = CMSService.getPublicationConfig(cmsCtx, pubInfos.getPublishSpacePath());
+					CMSItem pubConfig = CMSService.getSpaceConfig(cmsCtx, pubInfos.getPublishSpacePath());
 					if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents")))
 						spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
 
