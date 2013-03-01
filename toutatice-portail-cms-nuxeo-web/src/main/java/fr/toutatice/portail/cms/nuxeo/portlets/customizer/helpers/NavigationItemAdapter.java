@@ -73,6 +73,17 @@ public class NavigationItemAdapter {
 	}
 	
 	
+	/**
+	 * Cet element doit-il être affiché systématiquement dans le menu
+	 * 
+	 * @param doc
+	 * @return
+	 */
+	protected boolean isShowInMenu(Document doc)	{
+		
+		return false;
+	}
+	
 
 	/*
 	 * Personnalisation des propriétés des éléments de publishSpace
@@ -166,7 +177,7 @@ public class NavigationItemAdapter {
 		/* Menus */
 		
 		String showInMenu =  (String) doc.getProperties().get("ttc:showInMenu");
-		if( showInMenu != null && "true".equals(showInMenu) )
+		if( isShowInMenu(doc) || (showInMenu != null && "true".equals(showInMenu) ))
 			properties.put("menuItem", "1");
 		
 	

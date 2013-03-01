@@ -767,29 +767,6 @@ public class CMSService implements ICMSService {
 				
 				
 				
-				
-				/* Cas de la pulication specifique Toutatice : le document et son proxy sont dans le meme folder 
-				 * 
-				 * On retient alors le path du document live (et non du proxy) pour ne pas avoir de traitement spécifique dans le socle
-				 * (rapprochements entre le contenu et la navigation)
-				 */
-				
-				//pubInfos.setDocumentPath(DocumentPublishSpaceNavigationCommand.computeNavPath(pubInfos.getDocumentPath()));
-				
-								
-				if( pubInfos.getDocumentPath().endsWith(".proxy"))	{
-					
-					ctx.setScope("superuser_context");
-
-					Document docLive = (Document) executeNuxeoCommand(ctx, (new DocumentFetchLiveCommand(pubInfos.getLiveId(), "Read")));
-				
-					CMSObjectPath curParent = CMSObjectPath.parse(pubInfos.getDocumentPath()).getParent();
-					CMSObjectPath liveParent = CMSObjectPath.parse(docLive.getPath()).getParent();
-				
-					if( curParent.toString().equals(liveParent.toString()))
-						pubInfos.setDocumentPath(DocumentPublishSpaceNavigationCommand.computeNavPath(pubInfos.getDocumentPath()));
-				}
-						
 
 				
 				

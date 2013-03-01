@@ -180,6 +180,16 @@ public class MenuPortlet extends CMSPortlet {
 			// So selection can not be sure
 			// See FAQ sample : links between questions don't interact with CMS
 				selected = true;
+			
+			else	{
+				// Les path proxy items de l'arbre navigation peut être filtrés à tort
+				// cas du 'publier vers' de Nuxeo
+				// Dans ce cas, on compare avec le nativeItem
+				
+				if( ctx.getContentPath().equals(doc.getPath()))
+					selected = true;
+				
+			}
 		}
 
 		NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
