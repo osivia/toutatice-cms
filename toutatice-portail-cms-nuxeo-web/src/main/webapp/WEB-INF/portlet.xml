@@ -32,7 +32,10 @@
         
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>     
+        
+        <!-- v2.0-SP1 : ajout selecteur -->
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>   
         
 	</portlet>
 	

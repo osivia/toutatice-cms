@@ -285,6 +285,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 				request.setAttribute("ctx", ctx);
 				
+				//v2.0-SP1 : lien contextualisés
+				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage") ))
+					request.setAttribute("cmsLink", "1");	
+				
 				if(  DISPLAY_MODE_DETAILED.equals( displayMode) )	
 					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);
 				else

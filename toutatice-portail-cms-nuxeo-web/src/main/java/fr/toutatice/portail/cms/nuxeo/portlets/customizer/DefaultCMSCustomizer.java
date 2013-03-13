@@ -210,7 +210,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		
 		if( navItems != null)	{
 
+			
+				
+			//v2.0-SP1 : suppression des folders cachés
+			
+			nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
+			if( ordered)
+				nuxeoRequest += " order by ecm:pos";
+			
+			/*
 			nuxeoRequest = "( (ecm:parentId = '" + pubInfos.getLiveId() + "' )";
+
 			
 			String excludedFoldersRequest = "";
 
@@ -229,7 +239,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 				nuxeoRequest += " AND " + excludedFoldersRequest;
 			
 			nuxeoRequest +=  "AND ecm:mixinType != 'Folderish'";
-			
+			*/
 			
 
 		} else {
@@ -442,6 +452,22 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		} 		
 
 		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) ) {
+			 if (ctx.getContextualizationBasePath() != null) {
+					
+				 	CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
+					
+				 	// v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
+					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
+						// Pas de filtre sur les versions publiées
+						ctx.setDisplayLiveVersion("1");
+						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+						props.getWindowProperties().put("osivia.title", "Liste des documents");
+						return props;
+					}
+						
+
+				 
+			 }
 			return getCMSFolderPlayer(ctx);
 		} 
 		
