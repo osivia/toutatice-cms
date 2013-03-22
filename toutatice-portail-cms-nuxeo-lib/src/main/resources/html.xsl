@@ -28,6 +28,21 @@
 	</xsl:template>
 	
 	
+	<xsl:template match="@src">
+		<xsl:attribute name="src">
+         	<xsl:value-of select="bridge:link($bridge,  .)" />
+      </xsl:attribute>
+	</xsl:template>
+	
+	<xsl:template match="@href">
+		<xsl:attribute name="href">
+         	<xsl:value-of select="bridge:link($bridge,  .)" />
+      </xsl:attribute>
+	</xsl:template>
+	
+<!-- 	
+	
+	
 	<xsl:template match="IMG/@src">
 		<xsl:attribute name="src">
          	<xsl:value-of select="bridge:link($bridge,  .)" />
@@ -39,7 +54,7 @@
          	<xsl:value-of select="bridge:link($bridge,  .)" />
       </xsl:attribute>
 	</xsl:template>
-	
+-->
 		<xsl:template match="AREA/@href">
 		<xsl:attribute name="href">
          	<xsl:value-of select="bridge:link($bridge,  .)" />
