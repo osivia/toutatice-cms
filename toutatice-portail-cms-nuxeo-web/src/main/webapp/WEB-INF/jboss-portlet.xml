@@ -111,6 +111,19 @@
 		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
 	  </header-content>
  
+</portlet>   
+
+ <portlet>
+      <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
+
+      <ajax>
+      		<partial-refresh>false</partial-refresh>
+   	  </ajax>
+   	
+   	    <transaction>
+            <trans-attribute>Required</trans-attribute>            
+        </transaction>
+ 
 </portlet>     
 
   <portlet>

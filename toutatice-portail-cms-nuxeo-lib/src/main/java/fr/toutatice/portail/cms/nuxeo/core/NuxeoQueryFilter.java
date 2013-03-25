@@ -18,8 +18,7 @@ public class NuxeoQueryFilter {
 			// sélection des folders et des documents publiés
 
 			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 1  AND ecm:currentLifeCycleState <> 'deleted' ";
-			// la section n'a pas de proxy
-			requestFilter = "(ecm:isProxy = 1 OR ecm:primaryType = 'Section') AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
+			requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
 
 		}
 
