@@ -8,10 +8,12 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.core.cms.CMSBinaryContent;
+import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
@@ -873,6 +875,86 @@ public class CMSService implements ICMSService {
 					throw (CMSException) e;
 			}
 		}
+	}
+
+	public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+		try {
+			
+			// TODO : Si mode contribution, faire un fetch en mode live
+			CMSItem pageItem = fetchContent(cmsCtx, pagePath);
+
+			List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
+
+			// TODO : parser les proprietes complexes de la page
+
+			Document doc = (Document) pageItem.getNativeItem();
+
+			String description = doc.getProperties().getString("dc:description");
+
+			if (description != null && description.length() > 0) {
+				String app[] = description.split("\n");
+				for (int i = 0; i < app.length; i++) {
+
+					String prop[] = app[i].split(",");
+
+					String windowName = null;
+					String type = null;
+					String uri = null;
+					Map<String, String> portletProps = new HashMap<String, String>();
+
+					if (prop.length > 0) {
+						for (int j = 0; j < prop.length; j++) {
+							String tok[] = prop[j].split("=");
+							if (tok.length == 2) {
+								if ("type".equals(tok[0])) {
+									type = tok[1];
+								} else if ("name".equals(tok[0])) {
+									windowName = tok[1];
+								} else if ("uri".equals(tok[0])) {
+									uri = tok[1];
+								} else
+									portletProps.put(tok[0],  tok[1]);
+							}
+						}
+						
+						if( windowName != null && "portlet".equals(type) && uri != null) {
+							CMSEditableWindow window = new CMSEditableWindow(windowName, uri, portletProps);
+							windows.add(window);
+						}
+
+					}
+
+				}
+			}
+			
+			/*
+			Map<String, String> props = new HashMap<String, String>();
+			props.put(ThemeConstants.PORTAL_PROP_REGION, "col2");
+			props.put(ThemeConstants.PORTAL_PROP_ORDER, "100");
+			props.put("osivia.title", pagePath);
+
+			CMSEditableWindow window = new CMSEditableWindow("test1", "toutatice-demo-test-portletInstance", props);
+			windows.add(window);
+
+			Map<String, String> props2 = new HashMap<String, String>();
+			props2.put(ThemeConstants.PORTAL_PROP_REGION, "col2");
+			props2.put(ThemeConstants.PORTAL_PROP_ORDER, "101");
+			props2.put("osivia.title", pagePath);
+
+			CMSEditableWindow window2 = new CMSEditableWindow("test2", "toutatice-demo-test-portletInstance", props2);
+			windows.add(window2);
+			*/
+
+			return windows;
+		} catch (Exception e) {
+			if (!(e instanceof CMSException)) {
+				throw new CMSException(e);
+			} else {
+
+				throw (CMSException) e;
+			}
+		}
+		
 	}
 
 	
