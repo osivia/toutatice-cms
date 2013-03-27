@@ -15,6 +15,7 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -181,7 +182,9 @@ public static String transformPortalUrl(String orginalUrl,  Matcher mResReferenc
 		transformedUrl = "http://"+ mResOriginal.group(1);
 		
 		//Port
-		transformedUrl += mResOriginal.group(2);
+		if(StringUtils.isNotEmpty(mResOriginal.group(2))){
+			transformedUrl += mResOriginal.group(2);
+		}
 		//context
 		transformedUrl += "/" + mResReference.group(3);
 		
