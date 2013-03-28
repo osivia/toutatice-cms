@@ -33,6 +33,9 @@ String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
 String displayMode = (String) request.getAttribute("displayMode");
 
+//v2.0-SP1 : lien contextualisés
+String cmsLink = (String) request.getAttribute("cmsLink");
+
 %>
 
 <div class="nuxeo-file-browser">
@@ -60,7 +63,7 @@ while( it.hasNext())	{
 	String bigIcon = Formater.formatNuxeoBigIcon(doc);
 	String target = "";	
 	
-	 if( FileBrowserPortlet.isNavigable(doc))	{
+	 if(  ! "1".equals(cmsLink) && FileBrowserPortlet.isNavigable(doc))	{
 		PortletURL folderURL = renderResponse.createRenderURL();
 		folderURL.setParameter("folderPath", doc.getPath());
 		if( displayMode != null)

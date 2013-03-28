@@ -35,9 +35,14 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 		String nuxeoRequest = "ttc:isPreloadedOnLogin = 1";
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false);
+		StringBuffer bufferedRequest = new StringBuffer();
+		bufferedRequest.append("((");
+		bufferedRequest.append(NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false));
+		bufferedRequest.append(") OR (");
+		bufferedRequest.append(NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true));
+		bufferedRequest.append("))");
 	
-		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ttc:tabOrder");
+		request.set("query", "SELECT * FROM Document WHERE " + bufferedRequest.toString() + " ORDER BY ttc:tabOrder");
 		
 	
 		request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");

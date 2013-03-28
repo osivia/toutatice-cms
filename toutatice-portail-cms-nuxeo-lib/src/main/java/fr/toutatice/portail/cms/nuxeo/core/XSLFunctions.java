@@ -50,6 +50,9 @@ public class XSLFunctions {
 	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
 	
+	private final Pattern portalRefExp = Pattern.compile("http://([^/:]*)(:[0-9]*)?/([^/]*)(/auth/|/)pagemarker/([0-9]*)/(.*)");
+	private Matcher portalMatcherReference = null;
+	
 	private static final String PORTAL_REF = "/portalRef?";
 	
 	private static final int PORTAL_REF_LG = PORTAL_REF.length();
@@ -155,45 +158,159 @@ public class XSLFunctions {
 			return rewrite(link, true);
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+public static String transformPortalUrl(String orginalUrl,  Matcher mResReference) throws Exception	{
+		// Les urls portail sont toutes absolues 
+		
+		Pattern expOrginial = Pattern.compile("http://([^/:]*)(:[0-9]*)?/"+mResReference.group(3)+"(/auth/|/)((pagemarker/[0-9]*/)?)(.*)");
+		
+		
+		Matcher mResOriginal = expOrginial.matcher(orginalUrl);
+		
+		if( !mResOriginal.matches())
+			throw new Exception("Not a portal URL !!!");
+	
+		
+		String transformedUrl = "";
+		transformedUrl = "http://"+ mResOriginal.group(1);
+		
+		//Port
+		if(StringUtils.isNotEmpty(mResOriginal.group(2))){
+			transformedUrl += mResOriginal.group(2);
+		}
+		//context
+		transformedUrl += "/" + mResReference.group(3);
+		
+		//auth
+		transformedUrl +=  mResReference.group(4);
+		
+		// add pagemarker
+		transformedUrl += "pagemarker/";
+		transformedUrl += mResReference.group(5) + '/';
+		
+		// End of url
+		transformedUrl += mResOriginal.group(6);
+		
+		return transformedUrl;
+	}
+
+
+
+// TODO : enlever bidouille ( génération d'un lien pour récupérer host, context, page marker)
+// car inaccessibles dans le context sans modifie l'API
+// A refaire pendant packaging toutatice-cms
+
+
+public Matcher getPortalMatcherReference() throws Exception	{
+	
+	if( portalMatcherReference == null)	{
+		String sampleUrl = ctx.getPortalUrlFactory().getCMSUrl(
+				ctx.getPortalCtx(), null, "", null, null, null, null,
+				null, null, null);
+		
+		Matcher mReference = portalRefExp.matcher(sampleUrl);
+
+		if( mReference.matches())	{
+			portalMatcherReference = mReference;
+		}	else 
+				throw new Exception("reference is unmatchable");
+
+	}
+		
+		return portalMatcherReference;
+}
+
+
 
 	private String rewrite(String link, boolean checkScope) {
 		
 		try	{
 		
 		// v.0.13 : ajout de liens vers le portail
+			
+		/* Liens vers le portail */
+			
+			
+		// JSS 20130321 : 
+		// - le lien portalRef peut etre préfixé
+		// - les liens portails type permalink doitent etre regénérés avec un pageMarker (gestion du retour des onglets dynamiques)
 		
-		if( link.startsWith(PORTAL_REF) ){
+			
+			try	{
+			
+			int iPortalRef = link.indexOf(PORTAL_REF);
 
-			try {
-				String paramsArray[] = link.substring(PORTAL_REF_LG).split("&");
-				Map<String, String> params = new HashMap<String, String>();
+			if (iPortalRef != -1) {	
+			
+				// Liens de type portalRef permettant d'instancier une page dynamique
 
-				for (int i = 0; i < paramsArray.length; i++) {
-					String values[] = paramsArray[i].split("=");
-					if (values.length == 2) {
-						params.put(values[0], values[1]);
-					}
-				}
+							String paramsArray[] = link.substring(
+									iPortalRef + PORTAL_REF_LG).split("&");
+							Map<String, String> params = new HashMap<String, String>();
 
-				if ("dynamicPage".equals(params.get("type"))) {
+							for (int i = 0; i < paramsArray.length; i++) {
+								String values[] = paramsArray[i].split("=");
+								if (values.length == 2) {
+									params.put(values[0], values[1]);
+								}
+							}
 
-					String templatePath = params.get("templatePath");
-					String pageName = params.get("pageName");
-					if( pageName == null)
-						pageName = "genericDynamicWindow";
+							if ("dynamicPage".equals(params.get("type"))) {
 
-					Map<String, String> dynaProps = new HashMap<String, String>();
-					Map<String, String> dynaParams = new HashMap<String, String>();
+								String templatePath = params
+										.get("templatePath");
+								String pageName = params.get("pageName");
+								if (pageName == null)
+									pageName = "genericDynamicWindow";
 
-					String dynamicUrl = ctx.getPortalUrlFactory().getStartPageUrl(ctx.getPortalCtx(), "/default",
-							pageName, templatePath, dynaProps, dynaParams);
-					return dynamicUrl;
-				}
-			} catch (Exception e) {
-				return "";
-			}
+								Map<String, String> dynaProps = new HashMap<String, String>();
+								Map<String, String> dynaParams = new HashMap<String, String>();
+
+								String dynamicUrl = ctx.getPortalUrlFactory()
+										.getStartPageUrl(ctx.getPortalCtx(),
+												"/default", pageName,
+												templatePath, dynaProps,
+												dynaParams);
+								return dynamicUrl;
+							}
+
 		}
-		
+			else	{
+					// Autres liens portails
+					// Ils sont retraités pour ajouter le page marker
+
+					Matcher mReference = getPortalMatcherReference();
+
+					// COntrole du host + context (portail ou portal ...)
+					if (link.startsWith("http://" + mReference.group(1))) {
+						// COntrole du contexte portail, portal
+						int indiceRawPath = link.indexOf("/", 7);
+						if (indiceRawPath != -1) {
+							String rawPath = link.substring(indiceRawPath);
+							if (rawPath.length() > 1
+									&& rawPath.substring(1).startsWith(
+											mReference.group(3))) {
+
+								return transformPortalUrl(link, mReference);
+
+							}
+						}
+
+					}
+			}
+			} catch( Exception e)	{
+				// Probleme dans le parsing, on continue plutot de de renvoyer l'url d'origine
+				// il peut par exemple s'agir d'une url nuxeo mal parsée ...
+		}
 		
 		
 		//On traite uniquement les liens absolus ou commencant par /nuxeo

@@ -31,24 +31,27 @@ List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.men
 menuBar.add(new MenubarItem("DOWNLOAD", "Télécharger...", 20, lien, null, "portlet-menuitem portlet-menuitem-download", ""));
 
 PropertyMap map = doc.getProperties().getMap("file:content");
-String nom = map.getString("name");
-String taille = map.getString("length");
-double tailleKo = 0;
-if(taille != null)
-{
-	tailleKo = Math.floor(Double.parseDouble(taille)/1024);
-}
+if(map != null && !map.isEmpty()){
+	String nom = map.getString("name");
+	String taille = map.getString("length");
+	double tailleKo = 0;
+	if(taille != null)
+	{
+		tailleKo = Math.floor(Double.parseDouble(taille)/1024);
+	}
 
-String mimeType = map.getString("mime-type");
+    String mimeType = map.getString("mime-type");
 
-String icon = Formater.formatNuxeoIcon(doc);
-icon = "<img alt=\""+mimeType+"\" class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
-%>
-
-<div class="nuxeo-docview-normal-view">
-	<div class="nuxeo-docview-description">
-		<%=icon%> <a href="<%=lien%>"><%=nom%></a> (<%=tailleKo%> Koctets)
+	String icon = Formater.formatNuxeoIcon(doc);
+	icon = "<img alt=\""+mimeType+"\" class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
+	%>
+	
+	<div class="nuxeo-docview-normal-view">
+		<div class="nuxeo-docview-description">
+			<%=icon%> <a href="<%=lien%>"><%=nom%></a> (<%=tailleKo%> Koctets)
+		</div>
 	</div>
-</div>
+	
+<% } %>
 
 

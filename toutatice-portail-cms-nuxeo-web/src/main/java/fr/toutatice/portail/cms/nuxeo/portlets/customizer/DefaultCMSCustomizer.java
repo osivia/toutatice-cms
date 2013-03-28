@@ -11,6 +11,7 @@ import javax.portlet.ResourceURL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -23,6 +24,8 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
@@ -55,7 +58,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	public static final String STYLE_DETAILED = "detailed";
 	public static final String STYLE_EDITORIAL = "editorial";
 
-	public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice";
+	public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice, file";
 	
 	public static String TEMPLATE_DOWNLOAD = "download";	
 	
@@ -140,12 +143,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
 		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
+		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
 		return fragmentTypes;
 	}
 
 	public static String getSearchSchema() {
 
-		return "dublincore,common";
+		return "dublincore,common,file";
 
 	}
 
@@ -210,7 +214,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		
 		if( navItems != null)	{
 
+			
+				
+			//v2.0-SP1 : suppression des folders cachés
+			
+			nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
+			if( ordered)
+				nuxeoRequest += " order by ecm:pos";
+			
+			/*
 			nuxeoRequest = "( (ecm:parentId = '" + pubInfos.getLiveId() + "' )";
+
 			
 			String excludedFoldersRequest = "";
 
@@ -229,7 +243,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 				nuxeoRequest += " AND " + excludedFoldersRequest;
 			
 			nuxeoRequest +=  "AND ecm:mixinType != 'Folderish'";
-			
+			*/
 			
 
 		} else {
@@ -441,7 +455,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			return getCMSAnnonceFolderPlayer(ctx);
 		} 		
 
-		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) ) {
+		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
+			 if (ctx.getContextualizationBasePath() != null) {
+					
+				 	CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
+					
+				 	// v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
+					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
+						// Pas de filtre sur les versions publiées
+						ctx.setDisplayLiveVersion("1");
+						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+						props.getWindowProperties().put("osivia.title", "Liste des documents");
+						return props;
+					}
+						
+
+				 
+			 }
 			return getCMSFolderPlayer(ctx);
 		} 
 		
@@ -498,6 +528,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	
 	public String getNuxeoNativeViewerUrl (CMSServiceCtx ctx)	{
+		if(("file-browser-menu".equals(ctx.getDisplayContext())))
+			return getDefaultExternalViewer(ctx);
+		
 		return null;
 
 	}

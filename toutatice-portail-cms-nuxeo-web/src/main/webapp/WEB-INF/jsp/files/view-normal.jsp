@@ -30,6 +30,8 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
 String displayMode = (String) request.getAttribute("displayMode");
+//v2.0-SP1 : lien contextualisés
+String cmsLink = (String) request.getAttribute("cmsLink");
 
 %>
 
@@ -41,16 +43,16 @@ String displayMode = (String) request.getAttribute("displayMode");
 	
 <div class="separateur"></div>	
 
-<table class="nuxeo-file-browser-table"  cellspacing="5" width="95%">
+<table class="nuxeo-file-browser-table"  cellspacing="4" width="95%">
 
 <% if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	%>
 
 <tr align="left">
 	<th width="5%">&nbsp;</th>
-	<th width="20%">Nom</th>
-	<th width="15%">Date</th>	
+	<th width="55%">Nom</th>
+	<th width="30%">Date</th>	
 	<th width="10%">Taille</th>
-	<th >Description</th>
+	<!-- <th >Description</th> -->
 </tr>	
 
 <% } else	{%>
@@ -77,7 +79,7 @@ while( it.hasNext())	{
 	String target = "";	
 	boolean noAjax = true;
 	
-	 if(  FileBrowserPortlet.isNavigable( doc))	{
+	 if(  ! "1".equals(cmsLink) && 	 FileBrowserPortlet.isNavigable( doc) )	{
 		PortletURL folderURL = renderResponse.createRenderURL();
 		folderURL.setParameter("folderPath", doc.getPath());
 		if( displayMode != null)
@@ -102,7 +104,7 @@ while( it.hasNext())	{
 %>
 
 
-		<tr> 
+		<tr align="left"> 
 			<td> 
 				<%=icon%>
 			</td> 
@@ -122,17 +124,7 @@ while( it.hasNext())	{
 				<%= Formater.formatSize(doc) %>
 			</td>
 			
-<% 		if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	
-			String description = Formater.formatDescription(doc, false);
-			if( description.length() > 20)
-				description = description.substring(0, 20) + "...";
-	
-%>			
-			<td>
-				<%= description %>
-			</td>
-<% 		} %>
-			
+		
 		</tr>
 		
 

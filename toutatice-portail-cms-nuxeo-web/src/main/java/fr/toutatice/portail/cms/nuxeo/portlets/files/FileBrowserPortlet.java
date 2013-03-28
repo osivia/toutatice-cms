@@ -24,6 +24,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -257,11 +258,27 @@ public class FileBrowserPortlet extends CMSPortlet {
 					
 				}
 				
-				if( curPath.equals(nuxeoPath))	{
+				if (curPath.equals(nuxeoPath)) {
 					String portletName = null;
-					if( WindowState.MAXIMIZED.equals(request.getWindowState()))
-							portletName =  "Explorateur ";
-					addPathItem(portletPath,curDoc,  displayMode, portletName);
+					if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+						portletName = "Explorateur ";
+						addPathItem(portletPath, curDoc, displayMode,
+								portletName);
+
+						String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu").getUrl();
+
+						if (nuxeoFolderLink != null) {
+							List<MenubarItem> menuBar = (List<MenubarItem>) request
+									.getAttribute("osivia.menuBar");
+							MenubarItem item = new MenubarItem("EDIT",
+									"Ouvrir dans Nuxeo",
+									MenubarItem.ORDER_PORTLET_SPECIFIC,
+									nuxeoFolderLink, null,
+									"portlet-menuitem-nuxeo-edit", "nuxeo");
+							item.setAjaxDisabled(true);
+							menuBar.add(item);
+						}
+					}
 				}
 				
 				
@@ -284,6 +301,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
 				request.setAttribute("ctx", ctx);
+				
+				//v2.0-SP1 : lien contextualisés
+				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage") ))
+					request.setAttribute("cmsLink", "1");	
 				
 				if(  DISPLAY_MODE_DETAILED.equals( displayMode) )	
 					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);

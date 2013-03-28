@@ -121,7 +121,19 @@ public class PartialNavigationCommand implements INuxeoCommand {
 				navItem = new NavigationItem();
 				navItems.put(parentPath, navItem);
 			}
-			navItem.getChildren().add(child);
+			
+			//v2.0-SP1 : éviter les doublons d'enfants
+			
+			boolean isAlreadyAChild = false;
+			
+			for( Object iChild: navItem.getChildren())	{
+				Document childDoc = (Document) iChild;
+				if( childDoc.getPath().equals(child.getPath()))
+						isAlreadyAChild = true;	
+			}
+			
+			if( !isAlreadyAChild)
+				navItem.getChildren().add(child);
 			}
 		}
 		
