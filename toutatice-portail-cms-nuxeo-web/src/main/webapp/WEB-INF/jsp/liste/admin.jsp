@@ -63,6 +63,7 @@ implicits variables :
    - contentPath : current item path
    - request : portlet request 
    - params : public selectors (shared parameters)
+   - spaceId : space's (workspace or published space) live id
 */
 
 import java.util.List;

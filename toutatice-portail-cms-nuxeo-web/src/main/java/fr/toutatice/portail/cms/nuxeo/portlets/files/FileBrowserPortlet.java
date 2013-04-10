@@ -251,18 +251,14 @@ public class FileBrowserPortlet extends CMSPortlet {
 					String portletName = null;
 					if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
 						portletName = "Explorateur ";
-						addPathItem(portletPath, curDoc, displayMode,
-								portletName);
+						addPathItem(portletPath, curDoc, displayMode, portletName);
 
-						String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu").getUrl();
+						String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu-workspace").getUrl();
 
 						if (nuxeoFolderLink != null) {
-							List<MenubarItem> menuBar = (List<MenubarItem>) request
-									.getAttribute("osivia.menuBar");
-							MenubarItem item = new MenubarItem("EDIT",
-									"Ouvrir dans Nuxeo",
-									MenubarItem.ORDER_PORTLET_SPECIFIC,
-									nuxeoFolderLink, null,
+							List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+							MenubarItem item = new MenubarItem("EDIT", "Ouvrir dans Nuxeo",
+									MenubarItem.ORDER_PORTLET_SPECIFIC, nuxeoFolderLink, null,
 									"portlet-menuitem-nuxeo-edit", "nuxeo");
 							item.setAjaxDisabled(true);
 							menuBar.add(item);

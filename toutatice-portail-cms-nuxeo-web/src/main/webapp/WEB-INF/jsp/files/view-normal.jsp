@@ -43,15 +43,15 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 	
 <div class="separateur"></div>	
 
-<table class="nuxeo-file-browser-table"  cellspacing="4" width="95%">
+<table class="nuxeo-file-browser-table"  cellspacing="4" width="100%">
 
 <% if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	%>
 
 <tr align="left">
 	<th width="5%">&nbsp;</th>
-	<th width="55%">Nom</th>
+	<th width="65%">Nom</th>
 	<th width="30%">Date</th>	
-	<th width="10%">Taille</th>
+	<!-- <th width="10%">Taille</th> -->
 	<!-- <th >Description</th> -->
 </tr>	
 
@@ -59,9 +59,9 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 
 <tr align="left">
 	<th width="5%">&nbsp;</th>
-	<th width="40%">Nom</th>
-	<th width="35%">Date</th>	
-	<th width="25%">Taille</th>
+	<th width="65%">Nom</th>
+	<th width="25%">Date</th>	
+	<!-- <th width="25%">Taille</th> -->
 </tr>	
 <% } %>
 
@@ -113,16 +113,19 @@ while( it.hasNext())	{
 	 <div class="no-ajax-link"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
-<% if (noAjax)		{ %> 
+<% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
+				&nbsp;(<%= Formater.formatSize(doc) %>)
+<% }
+   if (noAjax){ %> 
 	 </div> 
 <% }	%>					
 			</td>
 			<td>
 				<%= Formater.formatDateAndTime(doc) %>
 			</td>
-			<td align="right">
+			<!-- <td align="right">
 				<%= Formater.formatSize(doc) %>
-			</td>
+			</td> -->
 			
 <!-- <% 		if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	
 			String description = Formater.formatDescription(doc, false);

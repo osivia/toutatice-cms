@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -434,6 +435,14 @@ public class ViewListPortlet extends CMSPortlet {
 					CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
 					i.set("navigationPubInfos",  navigationPubInfos);
 				}
+				
+				i.set("spaceId", null);
+				if(ctx.getSpacePath() != null){
+					CMSPublicationInfos spacePubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getSpacePath());
+					if(spacePubInfos != null)
+						i.set("spaceId", spacePubInfos.getLiveId()); 
+				}					
+				
 				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());

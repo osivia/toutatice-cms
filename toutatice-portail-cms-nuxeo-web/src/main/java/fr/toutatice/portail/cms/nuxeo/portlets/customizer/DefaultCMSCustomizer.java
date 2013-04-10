@@ -527,7 +527,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	
 	public String getNuxeoNativeViewerUrl (CMSServiceCtx ctx)	{
-		if(("file-browser-menu".equals(ctx.getDisplayContext())))
+		if(("file-browser-menu-workspace".equals(ctx.getDisplayContext())))
 			return getDefaultExternalViewer(ctx);
 		
 		return null;
@@ -560,7 +560,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		boolean externalLink = false;
 		boolean downloadable = false;
 
-		if (!"detailedView".equals(ctx.getDisplayContext())) {
+		if (!"detailedView".equals(ctx.getDisplayContext()) && !"fileExplorer".equals(ctx.getDisplayContext())) {
 			if ("File".equals(doc.getType())) {
 				PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
 				if(attachedFileProperties != null && !attachedFileProperties.isEmpty()){

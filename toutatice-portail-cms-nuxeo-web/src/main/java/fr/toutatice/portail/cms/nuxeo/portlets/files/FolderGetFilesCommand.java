@@ -43,7 +43,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
 		
-			request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");
+			request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice, file");
 
 			Documents children = (Documents) request.execute();	     
 			

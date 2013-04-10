@@ -325,5 +325,6 @@ public class AbstractFormater {
 		return formatLink(  link,  doc, "");
 	
 	}
+	
 
 }
