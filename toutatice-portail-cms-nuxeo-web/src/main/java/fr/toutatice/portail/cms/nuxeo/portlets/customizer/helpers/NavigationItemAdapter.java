@@ -50,7 +50,8 @@ public class NavigationItemAdapter {
 	
 	protected boolean isNavigable(Document doc)	{
 		
-		if (doc.getType().equals("PortalPage") || (doc.getType().equals("Folder"))	|| ((doc.getType().equals("OrderedFolder")))  || ((doc.getType().equals("DocumentUrlContainer")))  || ((doc.getType().equals("AnnonceFolder"))) || ((doc.getType().equals("PortalVirtualPage")))  )
+		if (doc.getType().equals("PortalPage") || (doc.getType().equals("Folder"))	|| ((doc.getType().equals("OrderedFolder")))  || ((doc.getType().equals("DocumentUrlContainer")))  || ((doc.getType().equals("AnnonceFolder"))) || ((doc.getType().equals("PortalVirtualPage"))) 
+				||(doc.getType().equals("SimplePage")))
 			return true;
 		
 		return false;
