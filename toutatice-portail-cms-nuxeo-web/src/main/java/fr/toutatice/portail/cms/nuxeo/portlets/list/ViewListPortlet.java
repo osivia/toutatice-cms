@@ -152,8 +152,12 @@ public class ViewListPortlet extends CMSPortlet {
 
 					String schemas = getListTemplates().get(style).getSchemas();
 
+					boolean applyPortalRequestFilter = true;
+					if( "global".equals(window.getProperty("osivia.cms.requestFilteringPolicy")))
+							applyPortalRequestFilter = false;
+					
 					PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(
-							nuxeoRequest, ctx.isDisplayingLiveVersion(), 0, pageSize, schemas));
+							nuxeoRequest, ctx.isDisplayingLiveVersion(), 0, pageSize, schemas, window.getProperty("osivia.cms.requestFilteringPolicy")));
 
 					org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx,  window.getProperty("osivia.rssTitle"), docs, window.getProperty("osivia.rssLinkRef"));
 					
@@ -216,7 +220,15 @@ public class ViewListPortlet extends CMSPortlet {
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
 				window.setProperty("osivia.cms.displayLiveVersion", null);
 			
+	
+			
+			if (req.getParameter("requestFilteringPolicy") != null && req.getParameter("requestFilteringPolicy").length() > 0)
+				window.setProperty("osivia.cms.requestFilteringPolicy", req.getParameter("requestFilteringPolicy"));
+			else if (window.getProperty("osivia.cms.requestFilteringPolicy") != null)
+				window.setProperty("osivia.cms.requestFilteringPolicy", null);
 
+			
+		
 			if (!"1".equals(req.getParameter("showMetadatas")))
 				window.setProperty("osivia.cms.hideMetaDatas", "1");
 			else if (window.getProperty("osivia.cms.hideMetaDatas") != null)
@@ -327,7 +339,13 @@ public class ViewListPortlet extends CMSPortlet {
 
 			String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 			req.setAttribute("displayLiveVersion", displayLiveVersion);
-
+			
+			
+			String requestFilteringPolicy = window.getProperty("osivia.cms.requestFilteringPolicy");
+			req.setAttribute("requestFilteringPolicy", requestFilteringPolicy);
+			
+			
+		
 			String showMetadatas = "1";
 			if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
 				showMetadatas = "0";
@@ -379,6 +397,8 @@ public class ViewListPortlet extends CMSPortlet {
 		if (rssTitle == null )
 			rssTitle = "";
 		req.setAttribute("rssTitle", rssTitle);
+		
+		
 
 
 			req.setAttribute("ctx", ctx);
@@ -518,9 +538,9 @@ public class ViewListPortlet extends CMSPortlet {
 
 				String schemas = getListTemplates().get(style).getSchemas();
 
-
+	
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
-						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas));
+						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,window.getProperty("osivia.cms.requestFilteringPolicy")));
 
 
 				

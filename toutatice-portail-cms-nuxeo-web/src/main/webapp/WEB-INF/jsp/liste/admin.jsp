@@ -104,6 +104,10 @@ return requete;
 <%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
 <br/>	
 
+		<label>Filtre sur les contenus</label><br/>
+<%= ctx.formatRequestFilteringPolicyList( (String) renderRequest.getAttribute("requestFilteringPolicy")) %><br/><br/>
+<br/>	
+
 <%			
 			String checkShowMetadatas = "checked";
 			String showMetadatas = (String) request.getAttribute("showMetadatas");

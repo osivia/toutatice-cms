@@ -16,15 +16,17 @@ public class ListCommand implements INuxeoCommand {
 	int pageSize;
 	String schemas;
 	boolean displayLiveVersion;
+	String portalPolicyFilter;
 
 	
-	public ListCommand( String nuxeoRequest, boolean displayLiveVersion, int pageNumber, int pageSize, String schemas) {
+	public ListCommand( String nuxeoRequest, boolean displayLiveVersion, int pageNumber, int pageSize, String schemas, String portalPolicyFilter) {
 		super();
 		this.nuxeoRequest = nuxeoRequest;
 		this.displayLiveVersion = displayLiveVersion;
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;
 		this.schemas = schemas;
+		this.portalPolicyFilter = portalPolicyFilter;
 
 	}
 	
@@ -38,7 +40,7 @@ public class ListCommand implements INuxeoCommand {
 		request.set("page", pageNumber);
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, portalPolicyFilter);
 
 		
 		request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);

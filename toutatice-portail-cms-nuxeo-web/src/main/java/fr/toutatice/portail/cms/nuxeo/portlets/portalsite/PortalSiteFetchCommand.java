@@ -36,7 +36,7 @@ public class PortalSiteFetchCommand implements INuxeoCommand {
 		
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false, "global");
 
 		
 		request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);

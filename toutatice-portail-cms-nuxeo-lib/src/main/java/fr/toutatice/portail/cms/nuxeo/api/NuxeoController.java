@@ -22,6 +22,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Page;
+import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
@@ -77,7 +78,8 @@ public class NuxeoController {
 	String navigationPath;	
 	String contentPath;
 	String spacePath;
-	
+	String requestFilteringPolicy;
+
 
 	String hideMetaDatas;
 	String displayContext;
@@ -285,6 +287,14 @@ public class NuxeoController {
 	public PortletContext getPortletCtx() {
 		return portletCtx;
 	}
+	
+
+	public String getRequestFilteringPolicy() {
+		return requestFilteringPolicy;
+	}
+	public void setRequestFilteringPolicy(String requestFilteringPolicy) {
+		this.requestFilteringPolicy = requestFilteringPolicy;
+	}
 
 	public NuxeoController(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws RuntimeException  {
 		super();
@@ -345,6 +355,8 @@ public class NuxeoController {
 		
 		Window jbpWindow = (Window) request.getAttribute("osivia.window");
 		Page page = (Page) jbpWindow.getParent();
+		Portal portal = (Portal) page.getPortal();
+		requestFilteringPolicy = portal.getProperty("osivia.portal.requestFilteringPolicy");
 		
 
 		if( "cms".equals(page.getProperty("osivia.navigationMode")))	{
@@ -527,6 +539,15 @@ public class NuxeoController {
 		Window window = (Window) request.getAttribute("osivia.window");
 
 		return getFormatter().formatScopeList(window, "scope", selectedScope);
+
+	}
+	
+	
+	public String formatRequestFilteringPolicyList(String selectedRequestFilteringPolicy) throws Exception {
+		
+		Window window = (Window) request.getAttribute("osivia.window");
+
+		return getFormatter().formatRequestFilteringPolicyList(window, "requestFilteringPolicy", selectedRequestFilteringPolicy);
 
 	}
 	

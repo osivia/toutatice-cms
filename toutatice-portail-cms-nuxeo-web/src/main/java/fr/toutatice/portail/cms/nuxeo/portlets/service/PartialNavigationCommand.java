@@ -73,7 +73,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 		String nuxeoRequest = "( " + itemRequest + ")  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1) ";
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true, "global");
 	
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
 		
