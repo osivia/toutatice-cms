@@ -52,27 +52,41 @@ public class PropertyFragmentModule implements IFragmentModule {
 						PropertyList dataContents = (PropertyList) content;
 
 						if (dataContents != null && dataContents.size() > 0) {
-							int index = 0;
-							PropertyMap mProperty = dataContents.getMap(0);
-							String refURIValue = (String) mProperty
-									.get(REF_URI);
-							index += 1;
-
-							while (index < dataContents.size()
-									&& !refURI.equalsIgnoreCase(refURIValue)) {
-								refURIValue = ((PropertyMap) dataContents
-										.getMap(index)).getString(REF_URI);
-								index++;
-							}
 							
-							// Si propriété trouvée, renseignement du contenu
-							if (index != dataContents.size()) {
-								content = ((PropertyMap) dataContents
-										.getMap(index)).getString("data");
-							// sinon, affichage d'un champ vide (ou "Propriété inexistante")
-							} else {
+							for(int index = 0; index < dataContents.size(); index++) {
+								PropertyMap mProperty = dataContents.getMap(index);
+								String refURIValue = (String) mProperty
+										.get(REF_URI);
+								
+								if(refURI.equalsIgnoreCase(refURIValue)) {
+									content = ((PropertyMap) dataContents
+											.getMap(index)).getString("data");
+									break;
+								}
 								content = "";
 							}
+							
+//							 index = 0;
+//							PropertyMap mProperty = dataContents.getMap(0);
+//							String refURIValue = (String) mProperty
+//									.get(REF_URI);
+//							//index += 1;
+//
+//							while (index < dataContents.size()
+//									&& !refURI.equalsIgnoreCase(refURIValue)) {
+//								refURIValue = ((PropertyMap) dataContents
+//										.getMap(index++)).getString(REF_URI);
+//								//index++;
+//							}
+//							
+//							// Si propriété trouvée, renseignement du contenu
+//							if (index != dataContents.size()) {
+//								content = ((PropertyMap) dataContents
+//										.getMap(index -1)).getString("data");
+//							// sinon, affichage d'un champ vide (ou "Propriété inexistante")
+//							} else {
+//								content = "";
+//							}
 						}
 					}
 					// Erreur si refUri renseigné et que la valeur n'est pas une propriété complexe
