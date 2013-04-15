@@ -16,14 +16,14 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-String propertyName = (String) renderRequest.getAttribute("propertyName");
+String dataContent = (String) renderRequest.getAttribute("dataContent");
 
 %>
 
 
-<% if(doc != null && propertyName != null && doc.getProperties().get(propertyName) != null) { %>
+<% if(doc != null && dataContent != null) { %>
 	
-<%= ctx.transformHTMLContent( (String) doc.getProperties().get(propertyName)) %>
+<%= ctx.transformHTMLContent(dataContent) %>
 
 
 <%	}	%>

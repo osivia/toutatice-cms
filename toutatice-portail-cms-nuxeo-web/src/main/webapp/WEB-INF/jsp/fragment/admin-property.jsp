@@ -5,7 +5,7 @@
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 
-<%@ page isELIgnored="false" %>
+<%@page isELIgnored="false" %>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Map"%>
 
@@ -28,7 +28,10 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="50"><br/>
 			<label>Nom de la propriété (ex: 'dc:title')</label><br/>
-			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
+			<input type="text" name="propertyName" value="${propertyName}" size="20">&nbsp;&nbsp;
+			<label>RefURI</label>
+			<input type="text" name="refURI" value="${refURI}" size="20">
+			<br/>
 		
 
 			

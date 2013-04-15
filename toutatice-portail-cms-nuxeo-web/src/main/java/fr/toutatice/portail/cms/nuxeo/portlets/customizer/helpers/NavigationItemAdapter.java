@@ -67,7 +67,7 @@ public class NavigationItemAdapter {
 	 */
 	protected boolean isDisplayedAsAPage(Document doc)	{
 		
-		if (doc.getType().equals("PortalPage")) 
+		if (doc.getType().equals("PortalPage") ||(doc.getType().equals("SimplePage"))) 
 			return true;
 		
 		return false;
