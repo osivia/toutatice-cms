@@ -10,6 +10,8 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
+import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -31,7 +33,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -876,6 +877,9 @@ public class CMSService implements ICMSService {
 			}
 		}
 	}
+	
+	public static String PM_FRAGMENTS_SCHEMA = "fgts:fragments"; 
+	public static String PM_HTML_FRAGMENT = "htmlFragment";
 
 	public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 		try {
@@ -889,43 +893,65 @@ public class CMSService implements ICMSService {
 
 			Document doc = (Document) pageItem.getNativeItem();
 
-			String description = doc.getProperties().getString("dc:description");
+			PropertyList pmFragmentsValues = doc.getProperties().getList(
+					PM_FRAGMENTS_SCHEMA);
 
-			if (description != null && description.length() > 0) {
-				String app[] = description.split("\n");
-				for (int i = 0; i < app.length; i++) {
+			if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
 
-					String prop[] = app[i].split(",");
+				Map<String, String> portletProps = new HashMap<String, String>();
 
-					String windowName = null;
-					String type = null;
-					String uri = null;
-					Map<String, String> portletProps = new HashMap<String, String>();
+				for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
 
-					if (prop.length > 0) {
-						for (int j = 0; j < prop.length; j++) {
-							String tok[] = prop[j].split("=");
-							if (tok.length == 2) {
-								if ("type".equals(tok[0])) {
-									type = tok[1];
-								} else if ("name".equals(tok[0])) {
-									windowName = tok[1];
-								} else if ("uri".equals(tok[0])) {
-									uri = tok[1];
-								} else
-									portletProps.put(tok[0],  tok[1]);
-							}
-						}
-						
-						if( windowName != null && "portlet".equals(type) && uri != null) {
-							CMSEditableWindow window = new CMSEditableWindow(windowName, uri, portletProps);
-							windows.add(window);
-						}
+					if (isHtmlPMFragment(pmFragmentsValues.getMap(fragmentIndex))) {
+
+						portletProps = fillHtmlMPFragmentPortletProps(fragmentIndex, doc, pmFragmentsValues.getMap(fragmentIndex), portletProps);
+						windows.add(getMPFragmentWindow(fragmentIndex, PM_HTML_FRAGMENT, portletProps));
 
 					}
-
 				}
+
 			}
+			
+			
+			
+
+//			String description = doc.getProperties().getString("dc:description");
+//
+//			if (description != null && description.length() > 0) {
+//				String app[] = description.split("\n");
+//				for (int i = 0; i < app.length; i++) {
+//
+//					String prop[] = app[i].split(",");
+//
+//					String windowName = null;
+//					String type = null;
+//					String uri = null;
+//					Map<String, String> portletProps = new HashMap<String, String>();
+//
+//					if (prop.length > 0) {
+//						for (int j = 0; j < prop.length; j++) {
+//							String tok[] = prop[j].split("=");
+//							if (tok.length == 2) {
+//								if ("type".equals(tok[0])) {
+//									type = tok[1];
+//								} else if ("name".equals(tok[0])) {
+//									windowName = tok[1];
+//								} else if ("uri".equals(tok[0])) {
+//									uri = tok[1];
+//								} else
+//									portletProps.put(tok[0],  tok[1]);
+//							}
+//						}
+//						
+//						if( windowName != null && "portlet".equals(type) && uri != null) {
+//							CMSEditableWindow window = new CMSEditableWindow(windowName, uri, portletProps);
+//							windows.add(window);
+//						}
+//
+//					}
+//
+//				}
+//			}
 			
 			/*
 			Map<String, String> props = new HashMap<String, String>();
@@ -955,6 +981,48 @@ public class CMSService implements ICMSService {
 			}
 		}
 		
+	}
+	
+
+	public static String PM_HTML_FRAGMENT_TYPE = "html";
+	public static String PROPS_SEPARATOR = "\n";
+	public static String VALUES_SEPARATOR = "=";
+	
+	private String getPMFragmentPropertyValue(String fragment, String property) {
+		String[] keysValues = fragment.split(PROPS_SEPARATOR);
+		for(String keyValue : keysValues){
+			String[] separatedKeyValue = keyValue.split(VALUES_SEPARATOR);
+			if(property.equalsIgnoreCase(separatedKeyValue[0])){
+				return separatedKeyValue[1];
+			}
+		}
+		return "";
+	}
+	
+	
+	// TODO: externaliser constantes 
+	private Map<String, String> fillHtmlMPFragmentPortletProps(int pos, Document doc, PropertyMap fragment,
+			Map<String, String> portletProps) {
+		Map<String, String> propsFilled = portletProps;
+		propsFilled.put("osivia.fragmentTypeId", "html_property");
+		propsFilled.put("osivia.nuxeoPath", doc.getPath());
+		propsFilled.put("osivia.propertyName", "htmlContent");
+		propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
+		propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, Integer.valueOf(100 + pos).toString());
+		return propsFilled;
+
+	}
+	
+	private boolean isHtmlPMFragment(PropertyMap fragment) {
+		String fragmentType = fragment.getString("fragmentCategory");
+		if(StringUtils.isNotEmpty(fragmentType))
+			return PM_HTML_FRAGMENT_TYPE.equalsIgnoreCase(fragmentType);
+
+		return false;
+	}
+	
+	private CMSEditableWindow getMPFragmentWindow(int id, String fragmentType, Map<String, String> portletProps) {
+		return new CMSEditableWindow("html_Frag_" + id, "toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", portletProps);
 	}
 
 	
