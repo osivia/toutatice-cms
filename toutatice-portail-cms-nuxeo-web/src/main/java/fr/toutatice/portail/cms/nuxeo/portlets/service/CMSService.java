@@ -898,18 +898,15 @@ public class CMSService implements ICMSService {
 
 			if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
 
-				Map<String, String> portletProps = new HashMap<String, String>();
-
 				for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
 
 					if (isHtmlPMFragment(pmFragmentsValues.getMap(fragmentIndex))) {
 
-						portletProps = fillHtmlMPFragmentPortletProps(fragmentIndex, doc, pmFragmentsValues.getMap(fragmentIndex), portletProps);
+						Map<String, String> portletProps = fillHtmlMPFragmentPortletProps(doc, pmFragmentsValues.getMap(fragmentIndex), false);
 						windows.add(getMPFragmentWindow(fragmentIndex, PM_HTML_FRAGMENT, portletProps));
 
 					}
 				}
-
 			}
 			
 			
@@ -984,7 +981,7 @@ public class CMSService implements ICMSService {
 	}
 	
 
-	public static String PM_HTML_FRAGMENT_TYPE = "html";
+	public static String PM_HTML_FRAGMENT_TYPE = "fgt.html";
 	public static String PROPS_SEPARATOR = "\n";
 	public static String VALUES_SEPARATOR = "=";
 	
@@ -1000,15 +997,34 @@ public class CMSService implements ICMSService {
 	}
 	
 	
-	// TODO: externaliser constantes 
-	private Map<String, String> fillHtmlMPFragmentPortletProps(int pos, Document doc, PropertyMap fragment,
-			Map<String, String> portletProps) {
-		Map<String, String> propsFilled = portletProps;
+	// TODO: externaliser constantes
+	/**
+	 * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo
+	 * et retourne ces propriétés pour créer chaque ViewFragmentPortlet.
+	 * @param doc simplesite ou simplepage (conteneur des fragments)
+	 * @param fragment les props du fragment
+	 * @param modeEditionPage page en cours d'édition
+	 * @return les props de la window
+	 */
+	private Map<String, String> fillHtmlMPFragmentPortletProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
+		Map<String, String> propsFilled = new HashMap<String, String>();
 		propsFilled.put("osivia.fragmentTypeId", "html_property");
 		propsFilled.put("osivia.nuxeoPath", doc.getPath());
-		propsFilled.put("osivia.propertyName", "htmlContent");
+		propsFilled.put("osivia.propertyName", "htmlfgt:htmlFragment");
+		
+		propsFilled.put("osivia.refURI", fragment.getString("uri"));
+		
+		propsFilled.put("osivia.title", fragment.getString("title"));
+		
+		if(fragment.getBoolean("hideTitle").equals(Boolean.TRUE)) {
+			propsFilled.put("osivia.hideTitle", "1");
+		}
+		else {
+			propsFilled.put("osivia.hideTitle", "0");
+		}
+						
 		propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
-		propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, Integer.valueOf(100 + pos).toString());
+		propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, fragment.getString("order"));
 		return propsFilled;
 
 	}
