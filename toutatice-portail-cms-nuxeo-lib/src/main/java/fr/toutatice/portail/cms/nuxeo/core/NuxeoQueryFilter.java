@@ -51,7 +51,9 @@ public class NuxeoQueryFilter {
 			policyFilter = requestFilteringPolicy;
 		else	{
 			// Get portal policy filter
-			policyFilter = po.getProperty("osivia.portal.requestFilteringPolicy");
+			String sitePolicy = po.getProperty("osivia.portal.publishingPolicy");
+			if( "satellite".equals(sitePolicy))
+				policyFilter = "local";
 		}
 
 		

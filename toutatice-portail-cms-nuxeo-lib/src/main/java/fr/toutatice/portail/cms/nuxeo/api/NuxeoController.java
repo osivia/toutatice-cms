@@ -78,7 +78,7 @@ public class NuxeoController {
 	String navigationPath;	
 	String contentPath;
 	String spacePath;
-	String requestFilteringPolicy;
+
 
 
 	String hideMetaDatas;
@@ -289,12 +289,7 @@ public class NuxeoController {
 	}
 	
 
-	public String getRequestFilteringPolicy() {
-		return requestFilteringPolicy;
-	}
-	public void setRequestFilteringPolicy(String requestFilteringPolicy) {
-		this.requestFilteringPolicy = requestFilteringPolicy;
-	}
+
 
 	public NuxeoController(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws RuntimeException  {
 		super();
@@ -356,7 +351,7 @@ public class NuxeoController {
 		Window jbpWindow = (Window) request.getAttribute("osivia.window");
 		Page page = (Page) jbpWindow.getParent();
 		Portal portal = (Portal) page.getPortal();
-		requestFilteringPolicy = portal.getProperty("osivia.portal.requestFilteringPolicy");
+		
 		
 
 		if( "cms".equals(page.getProperty("osivia.navigationMode")))	{
