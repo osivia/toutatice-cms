@@ -74,9 +74,12 @@ while( it.hasNext())	{
 	Document doc = (Document) it.next();
 
 	String url = null;
+	String downloadFileUrl = null;
 	Link link = null;
+	Link downloadFileLink = null;
 	String icon = Formater.formatNuxeoIcon(doc);
 	String target = "";	
+	String downloadFileTarget = "";
 	boolean noAjax = true;
 	
 	 if(  ! "1".equals(cmsLink) && 	 FileBrowserPortlet.isNavigable( doc) )	{
@@ -97,7 +100,12 @@ while( it.hasNext())	{
 		link = ctx.getLink(doc,"fileExplorer");
 		url = link.getUrl();
 		target = Formater.formatTarget(link);
-
+		
+		if("File".equals(doc.getType())){
+			downloadFileLink = ctx.getLink(doc,"downloableFile");
+			downloadFileUrl = downloadFileLink.getUrl();
+			downloadFileTarget = Formater.formatTarget(downloadFileLink);
+		}
 	}
 	 
 	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+icon+"\">";					
@@ -113,6 +121,9 @@ while( it.hasNext())	{
 	 <div class="no-ajax-link"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
+<% if(downloadFileLink != null) {%>
+				<a <%=downloadFileTarget%> href="<%=downloadFileUrl%>"><img src="/toutatice-portail-acrennes-charte/themes/atomo/images/download-small.png" border="0"></a>
+<% } %>
 <% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
 				&nbsp;(<%= Formater.formatSize(doc) %>)
 <% }
