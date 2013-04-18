@@ -152,7 +152,8 @@ public class SearchPortlet extends CMSPortlet {
 				request.setAttribute("docs", docs);
 				request.setAttribute("ctx", ctx);
 				
-				request.setAttribute("hideSearchSubForm", window.getProperty("osivia.hideSearchSubForm"));
+				//v2.0.5 : on repete le formulaire de recherche
+				//request.setAttribute("hideSearchSubForm", window.getProperty("osivia.hideSearchSubForm"));
 
 				request.setAttribute("keywords", keywords);
 				

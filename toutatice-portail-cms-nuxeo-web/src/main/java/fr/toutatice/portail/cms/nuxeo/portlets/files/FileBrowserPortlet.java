@@ -27,6 +27,7 @@ import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -92,7 +93,22 @@ public class FileBrowserPortlet extends CMSPortlet {
 			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
 				window.setProperty("osivia.cms.displayLiveVersion", null);
 
+			// v2.0.5
+			if (req.getParameter("forceContextualization") != null && req.getParameter("forceContextualization").length() > 0)
+				window.setProperty("osivia.cms.forceContextualization", req.getParameter("forceContextualization"));
+			else if (window.getProperty("osivia.cms.forceContextualization") != null)
+				window.setProperty("osivia.cms.forceContextualization", null);
 			
+			if (req.getParameter("changeDisplayMode") != null && req.getParameter("changeDisplayMode").length() > 0)
+				window.setProperty("osivia.cms.changeDisplayMode", req.getParameter("changeDisplayMode"));
+			else if (window.getProperty("osivia.cms.changeDisplayMode") != null)
+				window.setProperty("osivia.cms.changeDisplayMode", null);			
+
+			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
+			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+				window.setProperty("osivia.cms.displayLiveVersion", null);
+
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
@@ -130,6 +146,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 
+		//v2.0.5
+		req.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
+		req.setAttribute("forceContextualization", window.getProperty("osivia.cms.forceContextualization"));
 
 	
 		String scope = window.getProperty("osivia.cms.scope");
@@ -219,10 +238,20 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 				/* Récupération des fils */
 				
+					
+				//v2.0.5 : liens contextualisés par paramétrage
+				// On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
+				boolean filterByNav = false;
+				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization")))	{
+					request.setAttribute("cmsLink", "1");
+					filterByNav = true;
+				}
 				
 				CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
 				
-				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion()));
+				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion(), filterByNav ));
+				
+
 				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
@@ -283,13 +312,12 @@ public class FileBrowserPortlet extends CMSPortlet {
 						displayMode = DISPLAY_MODE_NORMAL;
 				
 				request.setAttribute("displayMode", displayMode);
+				
+				request.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
 
 
 				request.setAttribute("ctx", ctx);
 				
-				//v2.0-SP1 : lien contextualisés
-				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage") ))
-					request.setAttribute("cmsLink", "1");	
 				
 				if(  DISPLAY_MODE_DETAILED.equals( displayMode) )	
 					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);

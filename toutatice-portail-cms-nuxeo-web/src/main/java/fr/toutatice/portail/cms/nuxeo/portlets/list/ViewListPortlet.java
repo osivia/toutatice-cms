@@ -341,6 +341,10 @@ public class ViewListPortlet extends CMSPortlet {
 			req.setAttribute("beanShell", beanShell);
 
 			req.setAttribute("displayNuxeoRequest", window.getProperty("osivia.displayNuxeoRequest"));
+			
+			//v2.0.5
+			req.setAttribute("changeDisplayMode", window.getProperty("osivia.changeDisplayMode"));
+			req.setAttribute("forceContextualization", window.getProperty("osivia.forceContextualization"));
 
 			String scope = window.getProperty("osivia.cms.scope");
 			req.setAttribute("scope", scope);

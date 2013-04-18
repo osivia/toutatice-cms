@@ -483,6 +483,16 @@ public class NuxeoController {
 
 				computedPath = computedPath.replaceAll("\\$\\{basePath\\}", path);
 			}
+			
+			//v2.0.5
+			if (computedPath.contains("${spacePath}")) {
+				String path = getSpacePath();
+				if (path == null)
+					path = "";
+
+				computedPath = computedPath.replaceAll("\\$\\{spacePath\\}", path);
+			}
+
 
 			if (computedPath.contains("${navigationPath}")) {
 

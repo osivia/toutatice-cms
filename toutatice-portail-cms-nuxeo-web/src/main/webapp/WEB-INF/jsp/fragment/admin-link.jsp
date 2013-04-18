@@ -12,7 +12,7 @@
 
 	<div>
 			<label>Nom du lien</label><br/>
-			<i>Il peur s'agir d'une propriété du document Nuxeo; ex: cd:title</i><br/>
+			<i>Il peur s'agir d'une propriété du document Nuxeo; ex: dc:title</i><br/>
 			<input type="text" name="linkName" value="${linkName}" size="40"><br/>
 			<br/>
 	

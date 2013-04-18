@@ -121,12 +121,15 @@ while( it.hasNext())	{
 	 <div class="no-ajax-link"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
-<% if(downloadFileLink != null) {%>
-				<a <%=downloadFileTarget%> href="<%=downloadFileUrl%>"><img src="/toutatice-portail-acrennes-charte/themes/atomo/images/download-small.png" border="0"></a>
-<% } %>
 <% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
 				&nbsp;(<%= Formater.formatSize(doc) %>)
-<% }
+<% } %>
+<% if(downloadFileLink != null) {%>
+				<a <%=downloadFileTarget%> href="<%=downloadFileUrl%>"><img src="<%=renderRequest.getContextPath()%>/img/download-vert-small.png" border="0"></a>
+<% } %>
+
+
+<%
    if (noAjax){ %> 
 	 </div> 
 <% }	%>					

@@ -460,7 +460,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 				 	CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
 					
 				 	// v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
-					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
+				 	// v2.0.5 : file explorer également sur userworkspace
+				 	String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
+					if( "Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType))	{
+				 	
+//					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
 						// Pas de filtre sur les versions publiées
 						ctx.setDisplayLiveVersion("1");
 						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
