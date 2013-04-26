@@ -1,7 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.util.List;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -66,27 +64,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 								content = "";
 							}
 							
-//							 index = 0;
-//							PropertyMap mProperty = dataContents.getMap(0);
-//							String refURIValue = (String) mProperty
-//									.get(REF_URI);
-//							//index += 1;
-//
-//							while (index < dataContents.size()
-//									&& !refURI.equalsIgnoreCase(refURIValue)) {
-//								refURIValue = ((PropertyMap) dataContents
-//										.getMap(index++)).getString(REF_URI);
-//								//index++;
-//							}
-//							
-//							// Si propriété trouvée, renseignement du contenu
-//							if (index != dataContents.size()) {
-//								content = ((PropertyMap) dataContents
-//										.getMap(index -1)).getString("data");
-//							// sinon, affichage d'un champ vide (ou "Propriété inexistante")
-//							} else {
-//								content = "";
-//							}
 						}
 					}
 					// Erreur si refUri renseigné et que la valeur n'est pas une propriété complexe
@@ -126,11 +103,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 			propertyName = "";
 		request.setAttribute("propertyName", propertyName);
 
-		String refURI = window.getProperty("osivia.refURI");
-		if (refURI == null)
-			refURI = "";
-		request.setAttribute(REF_URI, refURI);
-
 		String displayLiveVersion = window
 				.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
@@ -153,14 +125,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 						request.getParameter("propertyName"));
 			else if (window.getProperty("osivia.propertyName") != null)
 				window.setProperty("osivia.propertyName", null);
-
-			if (request.getParameter(REF_URI) != null) {
-				if (request.getParameter(REF_URI).length() > 0)
-					window.setProperty("osivia.refURI",
-							request.getParameter(REF_URI));
-				else if (window.getProperty("osivia.refURI") != null)
-					window.setProperty("osivia.refURI", null);
-			}
 		}
 
 		if (request.getParameter("displayLiveVersion") != null) {
