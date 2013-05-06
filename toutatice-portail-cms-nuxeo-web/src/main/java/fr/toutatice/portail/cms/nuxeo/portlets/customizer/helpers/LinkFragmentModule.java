@@ -38,7 +38,10 @@ public class LinkFragmentModule implements IFragmentModule {
 		if (StringUtils.isNotEmpty(docPathForLink)) {
 
 			docPathForLink = ctx.getComputedPath(docPathForLink);
-
+			
+			/* Version live en cas de lien Nuxeo */
+			if("1".equals(window.getProperty("osivia.isNuxeoLink")))
+				ctx.setDisplayLiveVersion("1");
 			Document doc = ctx.fetchDocument(docPathForLink);
 
 			if (doc != null) {
