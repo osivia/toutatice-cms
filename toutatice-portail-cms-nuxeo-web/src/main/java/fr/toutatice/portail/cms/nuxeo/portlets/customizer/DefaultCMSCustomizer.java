@@ -112,7 +112,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return navigationItemAdapter;
 	}
 	
-	public CMSItemAdapter getCMSItemAdaptor()	{
+	public CMSItemAdapter getCMSItemAdapter()	{
 		if( cmsItemAdapter == null){
 			cmsItemAdapter = new CMSItemAdapter(portletCtx, this, getCMSService());
 		}
@@ -639,7 +639,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	}
 
 	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
-		return getCMSItemAdaptor().adaptDocument( ctx,  doc);
+		return getCMSItemAdapter().adaptDocument( ctx,  doc);
 	}
 
 

@@ -235,7 +235,7 @@ public class CMSService implements ICMSService {
 
 			content =  fetchContent(cmsCtx, path);		
 			
-			getCustomizer().getCMSItemAdaptor().adaptItem(content);
+			getCustomizer().getCMSItemAdapter().adaptItem(content);
 
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();

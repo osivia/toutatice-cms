@@ -167,7 +167,7 @@ public class MenuPortlet extends CMSPortlet {
 		boolean selected = false;
 
 		
-		String itemPath = ctx.getContentPath();
+		String itemPath = ctx.getItemNavigationPath();
 
 
 
@@ -186,7 +186,7 @@ public class MenuPortlet extends CMSPortlet {
 				// cas du 'publier vers' de Nuxeo
 				// Dans ce cas, on compare avec le nativeItem
 				
-				if( ctx.getContentPath().equals(doc.getPath()))
+				if( ctx.getItemNavigationPath().equals(doc.getPath()))
 					selected = true;
 				
 			}

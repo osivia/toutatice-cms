@@ -32,7 +32,8 @@
         
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
-        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>     
+        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>  
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>    
         
         <!-- v2.0-SP1 : ajout selecteur -->
         <supported-public-render-parameter>selectors</supported-public-render-parameter>   
@@ -68,7 +69,7 @@
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
-        
+         <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>         
 	</portlet>
 	
 	
@@ -103,7 +104,7 @@
       <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>      
       <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>      
-         
+         <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>          
 	</portlet>
 	
 		<portlet>
@@ -135,7 +136,7 @@
        <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>  
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>       
        <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>
-
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>  
 	</portlet>
 	
 	
@@ -169,7 +170,7 @@
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
-        
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>          
         <supported-public-render-parameter>selectors</supported-public-render-parameter>        
 	</portlet>
 	
@@ -202,7 +203,7 @@
 		<supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>		
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>		
-        
+         <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>         
 	</portlet>	
 	
 	
@@ -236,7 +237,7 @@
       <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter> 
 	  <supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>      
       <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>      
-       
+         <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>        
 	</portlet>	
 	
 	<portlet>
@@ -270,7 +271,7 @@
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
-
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>  
           
 	</portlet>
 	
@@ -304,7 +305,7 @@
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>        
-
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>  
 	</portlet>
 	
 	<portlet>
@@ -338,7 +339,7 @@
         <supported-public-render-parameter>osivia.cms.path</supported-public-render-parameter>
 		<supported-public-render-parameter>osivia.cms.pageScope</supported-public-render-parameter>        
         <supported-public-render-parameter>osivia.cms.itemRelPath</supported-public-render-parameter>
-
+        <supported-public-render-parameter>osivia.cms.contentPath</supported-public-render-parameter>  
           
 	</portlet>	
 	
@@ -370,6 +371,10 @@
 	</public-render-parameter>	
 		
 		
-
+	<public-render-parameter>
+        <identifier>osivia.cms.contentPath</identifier>
+        <name>osivia.cms.contentPath</name>
+	</public-render-parameter>	
+		
 	
  </portlet-app>

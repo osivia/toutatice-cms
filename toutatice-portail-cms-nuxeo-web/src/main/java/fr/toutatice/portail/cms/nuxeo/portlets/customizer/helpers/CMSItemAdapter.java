@@ -56,7 +56,7 @@ public class CMSItemAdapter {
 	
 	
 	
-	protected boolean supportsOnlyPortalContextualization(Document doc)	{
+	public boolean supportsOnlyPortalContextualization(Document doc)	{
 		if (doc.getType().equals("PortalPage")   || ((doc.getType().equals("PortalSite"))) || ((doc.getType().equals("PortalVirtualPage")))  )
 			return true;
 		
@@ -66,11 +66,19 @@ public class CMSItemAdapter {
 	
 	
 	
+	public void adaptNavigationProperties(Document doc, Map<String, String> properties)	{
+		return;
+
+	}
+	
 	public void adaptDoc(Document doc, Map<String, String> properties) {
 
 		
 		if( supportsOnlyPortalContextualization(doc))
 			properties.put( "supportsOnlyPortalContextualization", "1");
+		
+		
+		adaptNavigationProperties(doc, properties);
 
 		
 

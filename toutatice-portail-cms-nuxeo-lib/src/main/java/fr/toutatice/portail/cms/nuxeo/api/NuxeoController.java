@@ -76,6 +76,8 @@ public class NuxeoController {
 	String displayLiveVersion;
 	String basePath;
 	String navigationPath;	
+	String itemNavigationPath;
+
 	String contentPath;
 	String spacePath;
 
@@ -120,11 +122,22 @@ public class NuxeoController {
 		return navigationPath;
 	}
 
+	/**
+	 * path reel de contenu
+	 * @return
+	 */
 	public String getContentPath() {
 		return contentPath;
 	}
 
 
+	/**
+	 * path de navigation du contenu
+	 * @return
+	 */
+	public String getItemNavigationPath() {
+		return itemNavigationPath;
+	}
 
 	
 
@@ -377,8 +390,12 @@ public class NuxeoController {
 		
 		
 		navigationPath =  request.getParameter("osivia.cms.path");
+		
+		
 		if	(spacePath != null && request.getParameter("osivia.cms.itemRelPath") != null)
-			contentPath = spacePath + request.getParameter("osivia.cms.itemRelPath");
+			itemNavigationPath = spacePath + request.getParameter("osivia.cms.itemRelPath");
+		
+		contentPath = request.getParameter("osivia.cms.contentPath");
 		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
