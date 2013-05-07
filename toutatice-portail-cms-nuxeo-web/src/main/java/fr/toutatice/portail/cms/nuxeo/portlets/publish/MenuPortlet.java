@@ -230,12 +230,25 @@ public class MenuPortlet extends CMSPortlet {
 			PortalWindow window = WindowFactory.getWindow(request);
 
 			String nuxeoPath = null;
+			
+
 
 
 			// logger.debug("doView "+ uid);
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-
-			if (ctx.getBasePath() != null) {
+			
+			
+			// v2.1 : proto dafpic : on fixe le path du menu meme dans les pages de recherche
+			// (toutes les pages non contextualisées)
+			String basePath = ctx.getBasePath();
+			String spacePath = ctx.getSpacePath();
+			String menuRootPath = window.getPageProperty("osivia.navigation.menuRootPath");
+			if( menuRootPath != null)	{
+				basePath = menuRootPath;
+				spacePath = menuRootPath;
+			}
+	
+			if (basePath != null) {
 
 
 				
@@ -267,7 +280,7 @@ public class MenuPortlet extends CMSPortlet {
 
 				
 				int partialOpenLevels = -1;
-				CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, ctx.getBasePath(), ctx.getBasePath());
+				CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, basePath, basePath);
 				
 				if( "1".equals(navItem.getProperties().get("partialLoading")))	{
 					partialOpenLevels = openLevels;
@@ -276,7 +289,7 @@ public class MenuPortlet extends CMSPortlet {
 				
 
 				NavigationDisplayItem displayItem = createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
-						getPortletContext(), request, response), 0, maxLevels, ctx.getSpacePath(), ctx.getBasePath(),  ctx.getBasePath(), true , partialOpenLevels);
+						getPortletContext(), request, response), 0, maxLevels, spacePath, basePath,  basePath, true , partialOpenLevels);
 				
 				if( displayItem != null)	{
 
