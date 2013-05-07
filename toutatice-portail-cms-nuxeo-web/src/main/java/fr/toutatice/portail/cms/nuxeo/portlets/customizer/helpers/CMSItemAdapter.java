@@ -16,9 +16,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 public class CMSItemAdapter {
 	
-	CMSService CMSService;
-	DefaultCMSCustomizer customizer;
-	PortletContext portletCtx;
+	protected CMSService CMSService;
+	protected DefaultCMSCustomizer customizer;
+	protected PortletContext portletCtx;
 	
 	public CMSItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
 		super();
@@ -28,6 +28,14 @@ public class CMSItemAdapter {
 
 	};
 	
+	// TODO : remonter dans ICMSService
+	public static String  computeNavPath(String path){
+		String result = path;
+		if( path.endsWith(".proxy"))
+			result = result.substring(0, result.length() - 6);
+		return result;
+	}
+	
 	
 	/*
 	 * Personnalisation des propriétés des éléments d'un CMSItem
@@ -35,20 +43,20 @@ public class CMSItemAdapter {
 
 	 */
 
-	public void adaptItem(CMSItem item) {
+	public void adaptItem(CMSServiceCtx ctx, CMSItem item) throws Exception{
 
 		Document doc = (Document) item.getNativeItem();
 		
 		Map<String, String> properties = item.getProperties();
 
-		adaptDoc(doc, properties);
+		adaptDoc(ctx, doc, properties);
 	}
 	
-	public  Map<String, String> adaptDocument(CMSServiceCtx ctx, Document doc) {
+	public  Map<String, String> adaptDocument(CMSServiceCtx ctx, Document doc) throws Exception {
 
 		Map<String, String> properties = new HashMap<String, String>();
 		
-		adaptDoc(doc, properties);
+		adaptDoc(ctx, doc, properties);
 		
 		return properties;
 	}
@@ -56,7 +64,7 @@ public class CMSItemAdapter {
 	
 	
 	
-	public boolean supportsOnlyPortalContextualization(Document doc)	{
+	public boolean supportsOnlyPortalContextualization(CMSServiceCtx ctx, Document doc)	{
 		if (doc.getType().equals("PortalPage")   || ((doc.getType().equals("PortalSite"))) || ((doc.getType().equals("PortalVirtualPage")))  )
 			return true;
 		
@@ -66,19 +74,19 @@ public class CMSItemAdapter {
 	
 	
 	
-	public void adaptNavigationProperties(Document doc, Map<String, String> properties)	{
+	public void adaptNavigationProperties(CMSServiceCtx ctx, Document doc, Map<String, String> properties)	throws Exception {
 		return;
 
 	}
 	
-	public void adaptDoc(Document doc, Map<String, String> properties) {
+	public void adaptDoc(CMSServiceCtx ctx, Document doc, Map<String, String> properties) throws Exception {
 
 		
-		if( supportsOnlyPortalContextualization(doc))
+		if( supportsOnlyPortalContextualization(ctx, doc))
 			properties.put( "supportsOnlyPortalContextualization", "1");
 		
 		
-		adaptNavigationProperties(doc, properties);
+		adaptNavigationProperties(ctx, doc, properties);
 
 		
 

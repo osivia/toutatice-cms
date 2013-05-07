@@ -12,18 +12,17 @@
 <portlet:defineObjects />
 
 <%
-Document doc = (Document) renderRequest.getAttribute("doc");
 
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-String propertyName = (String) renderRequest.getAttribute("propertyName");
+String dataContent = (String) renderRequest.getAttribute("dataContent");
 
 %>
 
 
-<% if( doc != null && propertyName != null && doc.getProperties().get(propertyName) != null) { %>
+<% if( dataContent != null) { %>
   
-<%= doc.getProperties().get(propertyName) %>
+<%=dataContent %>
 
 <%	}	%>
 
