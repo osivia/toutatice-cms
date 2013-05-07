@@ -126,7 +126,7 @@ if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) {
 <div class="nuxeo-keywords-selector">
 		<form id="<portlet:namespace />vocabsForm" method="post" action="<portlet:actionURL/>">
 				
-						<select id="<portlet:namespace />Topic" name="vocab1Id" style="width: 80%" <%= onChangeEvent1 %> >
+						<select id="<portlet:namespace />Topic" name="vocab1Id" <%= onChangeEvent1 %> >
 							<option value="">Tous</option>					
 			<% 								
 						for(VocabularyEntry possible : vocab1.getChildren().values()){
