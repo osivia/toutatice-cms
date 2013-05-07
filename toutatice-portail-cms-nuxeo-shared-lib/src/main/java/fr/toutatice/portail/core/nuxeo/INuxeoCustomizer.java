@@ -50,4 +50,9 @@ public interface INuxeoCustomizer {
 	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception ;
 	
 	
+	/* Ajout des filtres de requetes */
+
+	public String addPublicationFilter( CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception ;
+	
+	
 }

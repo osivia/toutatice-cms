@@ -4,12 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.model.portal.Portal;
+import org.jboss.portal.core.model.portal.PortalObject;
+import org.jboss.portal.core.model.portal.PortalObjectContainer;
+import org.jboss.portal.core.model.portal.PortalObjectId;
+import org.jboss.portal.core.model.portal.PortalObjectPath;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.api.contexte.PortalControllerContext;
@@ -22,6 +31,8 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.page.PageProperties;
+import org.osivia.portal.core.tracker.RequestContextUtil;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
@@ -642,9 +653,104 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		return getCMSItemAdapter().adaptDocument( ctx,  doc);
 	}
 
+	public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
+	/* Filtre pour sélectionner uniquement les version publiées */
+
+		
+		
+		String requestFilter = "";
+
+		if ("1".equals(ctx.getDisplayLiveVersion())) {
+			// selection des versions lives : il faut exclure les proxys
+			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
+		} else {
+			// sélection des folders et des documents publiés
+
+			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 1  AND ecm:currentLifeCycleState <> 'deleted' ";
+			requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
+		}
+		
+		String policyFilter = null;
+		
+		ServerInvocation invocation = ctx.getServerInvocation();
+		String portalName = PageProperties.getProperties().getPagePropertiesMap().get("portalName");
+		PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute( Scope.REQUEST_SCOPE,  "osivia.portalObjectContainer");
+		PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+
+		
+		if( requestFilteringPolicy != null)
+			policyFilter = requestFilteringPolicy;
+		else	{
+			// Get portal policy filter
+			String sitePolicy = po.getProperty("osivia.portal.publishingPolicy");
+			if( "satellite".equals(sitePolicy))
+				policyFilter = "local";
+		}
+
+		
+		if( "local".equals(policyFilter)){
+			// Parcours des pages pour appliquer le filtre sur les  paths
+
+			String pathFilter = "";
+
+			for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
+				String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
+				if (cmsPath != null && cmsPath.length() > 0) {
+					if (pathFilter.length() > 0)
+						pathFilter += " OR ";
+					pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+				}
+			}
+
+			if (pathFilter.length() > 0) {
+				requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
+			}
+		}
+		
+		
+		String extraFilter =  getExtraRequestFilter( ctx,  requestFilteringPolicy);
+		if( extraFilter != null){
+			requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+		}
+		
+
+		// Insertion du filtre avant le order
+
+		String beforeOrderBy = "";
+		String orderBy = "";
+
+		try {
+			Pattern ressourceExp = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
+
+			Matcher m = ressourceExp.matcher(nuxeoRequest.toUpperCase());
+			m.matches();
+
+			if (m.groupCount() == 3) {
+				beforeOrderBy = nuxeoRequest.substring(0, m.group(1).length());
+				orderBy = nuxeoRequest.substring(m.group(1).length());
+			}
+		} catch (IllegalStateException e) {
+			beforeOrderBy = nuxeoRequest;
+		}
+
+		String finalRequest = beforeOrderBy;
+
+		if (finalRequest.length() > 0)
+			finalRequest += " AND ";
+		finalRequest += "(" + requestFilter + ") ";
+
+		finalRequest += " " + orderBy;
+		nuxeoRequest = finalRequest;
+
+		return nuxeoRequest;
+
+	}
 
 
-	
+	public String getExtraRequestFilter(CMSServiceCtx ctx, String requestFilteringPolicy) throws Exception {
+		return null;
+	}
+
 
 	
 }
