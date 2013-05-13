@@ -163,9 +163,19 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		
 		HttpServletRequest portalRequest = null;
 		
+		
+		
+		// v2.0.8 : ajout d'une request key pour distinguer les types d'autorisation
+		String requestKey = "" + ctx.getAuthType()  ;
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	
+			requestKey += ctx.getAuthProfil().getName();
+		requestKey += "/" +command.getId();
+		
+		
+		
 		if(serverInvoc != null){		
 			portalRequest = serverInvoc.getServerContext().getClientRequest();
-			Object value =  portalRequest.getAttribute(command.getId());
+			Object value =  portalRequest.getAttribute(requestKey);
 			if( value != null)
 				return value;
 		}
@@ -208,7 +218,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		Object response =  getServiceCache(ctx).getCache(cacheInfos);
 		if(portalRequest != null)
-			portalRequest.setAttribute(command.getId(), response);
+			portalRequest.setAttribute(requestKey, response);
 		return response;
 		
 	}

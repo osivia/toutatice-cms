@@ -129,12 +129,12 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 
 
 
-
+	<jsp:include page="footer.jsp"></jsp:include>
 
 </div>
 
 
 
 
-<%= ctx.getDebugInfos() %>
+
 
