@@ -805,6 +805,7 @@ public class CMSService implements ICMSService {
 		CMSItem configItem = null;
 		try {
 			String savedScope = cmsCtx.getScope();
+			String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
 			try {
 				/* La mise en cache du résultat de cette méthode
 				 * s'effectue de manière asynchrone.
@@ -819,6 +820,7 @@ public class CMSService implements ICMSService {
 			finally {
 				cmsCtx.setScope(savedScope);
 				cmsCtx.setAsyncCacheRefreshing(false);
+				cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
 			}
 
 		} catch (Exception e) {

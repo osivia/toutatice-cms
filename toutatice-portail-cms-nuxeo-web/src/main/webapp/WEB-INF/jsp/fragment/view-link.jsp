@@ -25,7 +25,7 @@ boolean isNuxeoLink = isNuxeoLinkParam != null && "1".equals(isNuxeoLinkParam);
 if(doc != null){%>
 	
 	<% if(isNuxeoLink) { %>		
-		<a target="_blank" title="<%= linkName %>" href="<%= ctx.getLink(doc,"nuxeo-link").getUrl() %>">
+		<a target="nuxeo" title="<%= linkName %>" href="<%= ctx.getLink(doc,"nuxeo-link").getUrl() %>">
 			<span class="<%= cssLinkClass %>"><%= linkName %>&nbsp;</span>
 		</a>
 	<% } else { %>
