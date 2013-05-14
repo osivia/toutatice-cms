@@ -18,6 +18,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
@@ -25,6 +26,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.statut.IStatutService;
 import org.osivia.portal.api.statut.ServeurIndisponible;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.profils.IProfilManager;
 
 
@@ -166,6 +168,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		
 		
 		// v2.0.8 : ajout d'une request key pour distinguer les types d'autorisation
+		// (il ne faut pas mélanger les résultats pour des authentifications différentes)
 		String requestKey = "" + ctx.getAuthType()  ;
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	
 			requestKey += ctx.getAuthProfil().getName();
@@ -217,8 +220,14 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		}
 
 		Object response =  getServiceCache(ctx).getCache(cacheInfos);
-		if(portalRequest != null)
-			portalRequest.setAttribute(requestKey, response);
+		
+		
+		if(portalRequest != null)	{
+			// v2.0.8 : dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos 
+			// pour éviter les classcast exception  entre 2 webapps
+			if( response instanceof Document || response instanceof CMSPublicationInfos)
+				portalRequest.setAttribute(requestKey, response);
+		}
 		return response;
 		
 	}
