@@ -43,8 +43,12 @@
 		for (NavigationDisplayItem child : itemToDisplay.getChildrens()) {
 			{
 				String target = "";
-				if (child.isExternal())
+				cssClass = "";
+				
+				if (child.isExternal()){
 					target = "target=\"_blank\"";
+					cssClass += " osivia-link-external";
+				} 
 
 				cssClass = "";
 	
