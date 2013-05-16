@@ -48,7 +48,6 @@ public class XSLFunctions {
 	
 	private final Pattern permaLinkExp = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
 
-	
 	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
 	
 	private final Pattern portalRefExp = Pattern.compile("http://([^/:]*)(:[0-9]*)?/([^/]*)(/auth/|/)pagemarker/([0-9]*)/(.*)");
