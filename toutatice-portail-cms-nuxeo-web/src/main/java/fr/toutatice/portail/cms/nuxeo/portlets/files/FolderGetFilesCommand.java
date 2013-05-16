@@ -14,12 +14,14 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 	String folderId;
 	String folderPath;
 	boolean displayLiveVersion;	
+	boolean navigationFilter;
 	
-	public FolderGetFilesCommand(String folderPath, String folderId,  boolean displayLiveVersion) {
+	public FolderGetFilesCommand(String folderPath, String folderId,  boolean displayLiveVersion, boolean navigationFilter) {
 		super();
 		this.folderId = folderId;
 		this.folderPath = folderPath;
 		this.displayLiveVersion = displayLiveVersion;
+		this.navigationFilter = navigationFilter;
 	}
 	
 	public Object execute( Session session)	throws Exception {
@@ -34,7 +36,13 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 
 			request =  session.newRequest("Document.Query");
 
-			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ORDER BY ecm:pos ";
+			//String nuxeoRequest = "ecm:parentId = '" + folderId + "' ORDER BY ecm:pos ";
+			
+			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ";
+			if( navigationFilter){
+				nuxeoRequest += " AND  (ecm:mixinType != 'Folderish' OR ttc:showInMenu = 1) ";
+			}
+			nuxeoRequest += " ORDER BY ecm:pos ";
 			
 			
 			// Insertion du filtre sur les élements publiés
@@ -43,7 +51,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
 		
-			request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice");
+			request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice, file");
 
 			Documents children = (Documents) request.execute();	     
 			

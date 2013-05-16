@@ -5,6 +5,14 @@ public class ListTemplate {
 	private String key;
 	private String label;
 	private String schemas;
+	private ITemplateModule module;
+	
+	public ITemplateModule getModule() {
+		return module;
+	}
+	public void setModule(ITemplateModule module) {
+		this.module = module;
+	}
 	public String getKey() {
 		return key;
 	}

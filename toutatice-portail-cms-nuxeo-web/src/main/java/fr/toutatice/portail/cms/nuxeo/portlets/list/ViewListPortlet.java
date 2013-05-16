@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -46,6 +47,7 @@ import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 
 /**
@@ -64,6 +66,21 @@ public class ViewListPortlet extends CMSPortlet {
 		return templatesMap;
 	}
 
+	
+	public ListTemplate getCurrentTemplate( PortalWindow window)	{
+		
+		String style = window.getProperty("osivia.cms.style");
+		if (style == null)
+			style = CMSCustomizer.STYLE_NORMAL;
+
+		ListTemplate template = getListTemplates().get(style);
+	
+		if (template == null)
+			template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
+		
+		return template;
+	}
+	
 	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 	throws PortletException, IOException {
 
@@ -198,10 +215,13 @@ public class ViewListPortlet extends CMSPortlet {
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
 		logger.debug("processAction ");
+		
+		PortalWindow window = WindowFactory.getWindow(req);
+		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
-			PortalWindow window = WindowFactory.getWindow(req);
+
 			window.setProperty("osivia.nuxeoRequest", req.getParameter("nuxeoRequest"));
 
 			if ("1".equals(req.getParameter("beanShell")))
@@ -317,6 +337,20 @@ public class ViewListPortlet extends CMSPortlet {
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
+		
+		
+		
+		
+		// v2.0.8 : ajout custom
+		ListTemplate template = getCurrentTemplate( window);
+		
+		if( template.getModule() != null)	{
+			try {
+				template.getModule().processAction(ctx, window, req, res);
+			} catch (Exception e) {
+				throw new PortletException(e);
+			}
+		}
 	}
 
 	@RenderMode(name = "admin")
@@ -358,6 +392,10 @@ public class ViewListPortlet extends CMSPortlet {
 			req.setAttribute("beanShell", beanShell);
 
 			req.setAttribute("displayNuxeoRequest", window.getProperty("osivia.displayNuxeoRequest"));
+			
+			//v2.0.5
+			req.setAttribute("changeDisplayMode", window.getProperty("osivia.changeDisplayMode"));
+			req.setAttribute("forceContextualization", window.getProperty("osivia.forceContextualization"));
 
 			String scope = window.getProperty("osivia.cms.scope");
 			req.setAttribute("scope", scope);
@@ -454,6 +492,14 @@ public class ViewListPortlet extends CMSPortlet {
 					CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
 					i.set("navigationPubInfos",  navigationPubInfos);
 				}
+				
+				i.set("spaceId", null);
+				if(ctx.getSpacePath() != null){
+					CMSPublicationInfos spacePubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getSpacePath());
+					if(spacePubInfos != null)
+						i.set("spaceId", spacePubInfos.getLiveId()); 
+				}					
+				
 				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
@@ -532,11 +578,11 @@ public class ViewListPortlet extends CMSPortlet {
 					requestPageSize = Math.min(requestPageSize, maxItems);
 				}
 
-				ListTemplate template = getListTemplates().get(style);
-				if (template == null)
-					template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
+				// v2.0.8 : ajout custom
+				ListTemplate template = getCurrentTemplate( window);
+	
 
-				String schemas = getListTemplates().get(style).getSchemas();
+				String schemas = template.getSchemas();
 
 	
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
@@ -638,7 +684,9 @@ public class ViewListPortlet extends CMSPortlet {
 							request.setAttribute("osivia.emptyResponse", "1");
 						
 		
-
+				// v2.0.8 : ajout custom
+				if( template.getModule() != null)
+					template.getModule().doView(ctx, window, request, response);
 
 		
 				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);

@@ -33,6 +33,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -802,6 +803,7 @@ public class CMSService implements ICMSService {
 		CMSItem configItem = null;
 		try {
 			String savedScope = cmsCtx.getScope();
+			String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
 			try {
 				/* La mise en cache du résultat de cette méthode
 				 * s'effectue de manière asynchrone.
@@ -816,6 +818,7 @@ public class CMSService implements ICMSService {
 			finally {
 				cmsCtx.setScope(savedScope);
 				cmsCtx.setAsyncCacheRefreshing(false);
+				cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
 			}
 
 		} catch (Exception e) {

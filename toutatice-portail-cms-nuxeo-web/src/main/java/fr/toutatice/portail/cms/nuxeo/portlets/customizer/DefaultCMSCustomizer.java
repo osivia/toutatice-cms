@@ -472,7 +472,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 				 	CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
 					
 				 	// v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
-					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
+				 	// v2.0.5 : file explorer également sur userworkspace
+				 	String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
+					if( "Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType))	{
+				 	
+//					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
 						// Pas de filtre sur les versions publiées
 						ctx.setDisplayLiveVersion("1");
 						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
@@ -539,7 +543,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 	
 	public String getNuxeoNativeViewerUrl (CMSServiceCtx ctx)	{
-		if(("file-browser-menu".equals(ctx.getDisplayContext())))
+		if(("file-browser-menu-workspace".equals(ctx.getDisplayContext())))
 			return getDefaultExternalViewer(ctx);
 		
 		return null;
@@ -572,10 +576,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		boolean externalLink = false;
 		boolean downloadable = false;
 
-		if (!"detailedView".equals(ctx.getDisplayContext())) {
+		if (!"detailedView".equals(ctx.getDisplayContext()) && !"fileExplorer".equals(ctx.getDisplayContext())) {
 			if ("File".equals(doc.getType())) {
-				url = createPortletDelegatedFileContentLink(ctx);
-				downloadable = true;
+				PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
+				if(attachedFileProperties != null && !attachedFileProperties.isEmpty()){
+					url = createPortletDelegatedFileContentLink(ctx);
+					downloadable = true;
+				}
 			}
 
 			if ("ContextualLink".equals(doc.getType())) {
