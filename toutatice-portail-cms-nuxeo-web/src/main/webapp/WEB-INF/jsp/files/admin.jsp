@@ -11,6 +11,12 @@
 
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+String changeDisplayMode = "";
+if( "1".equals( request.getAttribute("changeDisplayMode")))
+	changeDisplayMode = "checked";
+String forceContextualization = "";
+if( "1".equals( request.getAttribute("forceContextualization")))
+	forceContextualization = "checked";
 
 
 %>
@@ -24,8 +30,21 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 			<label>Scope</label><br/>
 <%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
 
-				<label>Version</label><br/>
-<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
+			<label>Version</label><br/>
+<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/>
+
+		<input type="checkbox" name="forceContextualization" value="1" <%= forceContextualization%>/>Contextualiser dans la page<br/>
+
+		<input type="checkbox" name="changeDisplayMode" value="1" <%= changeDisplayMode%>/>Sélecteur mode affichage détaillé<br/>
+		
+		
+		
+<br/>
+
+
+
+
+<br/>
 <br/>	
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

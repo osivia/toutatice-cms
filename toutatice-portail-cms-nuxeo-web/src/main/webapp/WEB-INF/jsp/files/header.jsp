@@ -63,6 +63,8 @@ function selectMode( form)
 
 </div>
 
+<% if( "1".equals(request.getAttribute("changeDisplayMode")))	{ %>
+
 <div class="switch-display-mode">
 
 <FORM NAME="switchMode">
@@ -104,5 +106,7 @@ String detailedURL = detailedModeURL.toString();
 </FORM>
 	
 </div>
+
+<%	} %>
 
 </div>

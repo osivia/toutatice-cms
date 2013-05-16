@@ -43,15 +43,15 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 	
 <div class="separateur"></div>	
 
-<table class="nuxeo-file-browser-table"  cellspacing="4" width="95%">
+<table class="nuxeo-file-browser-table"  cellspacing="4" width="100%">
 
 <% if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	%>
 
 <tr align="left">
 	<th width="5%">&nbsp;</th>
-	<th width="55%">Nom</th>
+	<th width="65%">Nom</th>
 	<th width="30%">Date</th>	
-	<th width="10%">Taille</th>
+	<!-- <th width="10%">Taille</th> -->
 	<!-- <th >Description</th> -->
 </tr>	
 
@@ -59,9 +59,9 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 
 <tr align="left">
 	<th width="5%">&nbsp;</th>
-	<th width="40%">Nom</th>
-	<th width="35%">Date</th>	
-	<th width="25%">Taille</th>
+	<th width="65%">Nom</th>
+	<th width="25%">Date</th>	
+	<!-- <th width="25%">Taille</th> -->
 </tr>	
 <% } %>
 
@@ -74,9 +74,12 @@ while( it.hasNext())	{
 	Document doc = (Document) it.next();
 
 	String url = null;
+	String downloadFileUrl = null;
 	Link link = null;
+	Link downloadFileLink = null;
 	String icon = Formater.formatNuxeoIcon(doc);
 	String target = "";	
+	String downloadFileTarget = "";
 	boolean noAjax = true;
 	
 	 if(  ! "1".equals(cmsLink) && 	 FileBrowserPortlet.isNavigable( doc) )	{
@@ -97,7 +100,12 @@ while( it.hasNext())	{
 		link = ctx.getLink(doc,"fileExplorer");
 		url = link.getUrl();
 		target = Formater.formatTarget(link);
-
+		
+		if("File".equals(doc.getType())){
+			downloadFileLink = ctx.getLink(doc,"downloableFile");
+			downloadFileUrl = downloadFileLink.getUrl();
+			downloadFileTarget = Formater.formatTarget(downloadFileLink);
+		}
 	}
 	 
 	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+icon+"\">";					
@@ -113,16 +121,24 @@ while( it.hasNext())	{
 	 <div class="no-ajax-link"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
-<% if (noAjax)		{ %> 
+<% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
+				&nbsp;(<%= Formater.formatSize(doc) %>)
+<% } %>
+<% if(downloadFileLink != null) {%>
+				<a <%=downloadFileTarget%> href="<%=downloadFileUrl%>"><img src="<%=renderRequest.getContextPath()%>/img/download-vert-small.png" border="0"></a>
+<% } %>
+
+
+<%
+   if (noAjax){ %> 
 	 </div> 
 <% }	%>					
 			</td>
 			<td>
 				<%= Formater.formatDateAndTime(doc) %>
 			</td>
-			<td align="right">
-				<%= Formater.formatSize(doc) %>
-			</td>
+
+
 			
 		
 		</tr>
