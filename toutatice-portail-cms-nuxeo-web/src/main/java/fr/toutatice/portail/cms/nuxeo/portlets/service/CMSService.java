@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
@@ -883,8 +884,7 @@ public class CMSService implements ICMSService {
 	 */
 	public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 		try {
-			
-			// TODO : Si mode contribution, faire un fetch en mode live
+
 			CMSItem pageItem = fetchContent(cmsCtx, pagePath);
 
 			List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();

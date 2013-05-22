@@ -52,7 +52,7 @@ public class NuxeoQueryFilter {
 		if( displayLiveVersion)
 			ctx.setDisplayLiveVersion("1");
 		try {
-			return nuxeoService.getCMSCustomizer().addPublicationFilter(getCMSCtx(), nuxeoRequest, requestFilteringPolicy);
+			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, requestFilteringPolicy);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

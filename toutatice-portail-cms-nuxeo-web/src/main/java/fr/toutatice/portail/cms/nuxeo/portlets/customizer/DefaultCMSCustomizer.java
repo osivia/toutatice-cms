@@ -681,37 +681,41 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		
 		ServerInvocation invocation = ctx.getServerInvocation();
 		String portalName = PageProperties.getProperties().getPagePropertiesMap().get("portalName");
-		PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute( Scope.REQUEST_SCOPE,  "osivia.portalObjectContainer");
-		PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
-
 		
-		if( requestFilteringPolicy != null)
-			policyFilter = requestFilteringPolicy;
-		else	{
-			// Get portal policy filter
-			String sitePolicy = po.getProperty("osivia.portal.publishingPolicy");
-			if( "satellite".equals(sitePolicy))
-				policyFilter = "local";
-		}
+		// Dans certaines cas, le nom du portail n'est pas connu
+		// cas des stacks server (par exemple, le pre-cahrgement des pages)
+		if( portalName != null) {
+			PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
+			PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
-		
-		if( "local".equals(policyFilter)){
-			// Parcours des pages pour appliquer le filtre sur les  paths
+			if (requestFilteringPolicy != null)
+				policyFilter = requestFilteringPolicy;
+			else {
+				// Get portal policy filter
+				String sitePolicy = po.getProperty("osivia.portal.publishingPolicy");
+				if ("satellite".equals(sitePolicy))
+					policyFilter = "local";
+			}
 
-			String pathFilter = "";
+			if ("local".equals(policyFilter)) {
+				// Parcours des pages pour appliquer le filtre sur les paths
 
-			for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
-				String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
-				if (cmsPath != null && cmsPath.length() > 0) {
-					if (pathFilter.length() > 0)
-						pathFilter += " OR ";
-					pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+				String pathFilter = "";
+
+				for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
+					String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
+					if (cmsPath != null && cmsPath.length() > 0) {
+						if (pathFilter.length() > 0)
+							pathFilter += " OR ";
+						pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+					}
+				}
+
+				if (pathFilter.length() > 0) {
+					requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
 				}
 			}
-
-			if (pathFilter.length() > 0) {
-				requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
-			}
+		
 		}
 		
 		
