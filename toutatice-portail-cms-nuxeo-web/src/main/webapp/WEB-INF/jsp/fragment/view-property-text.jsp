@@ -12,6 +12,7 @@
 <portlet:defineObjects />
 
 <%
+Document doc = (Document) renderRequest.getAttribute("doc");
 
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
@@ -20,11 +21,13 @@ String dataContent = (String) renderRequest.getAttribute("dataContent");
 %>
 
 
-<% if( dataContent != null) { %>
-  
-<%=dataContent %>
+<% if(doc != null && dataContent != null) { %>
+	
+<%= dataContent %>
+
 
 <%	}	%>
+
 
 
 
