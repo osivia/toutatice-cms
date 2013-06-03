@@ -1,4 +1,5 @@
 
+<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
@@ -45,7 +46,7 @@ String hideSearchSubForm = (String) request.getAttribute("hideSearchSubForm");
 
 	<div class="nuxeo-input-search">
 			<form method="post" action="<portlet:actionURL/>">
-				<input type="text" name="keywords" value="<%= keywords %>" size="40">	<input type="submit" value="Rechercher" name="searchAction"/>
+				<input type="text" name="keywords" value="<%= StringEscapeUtils.escapeHtml((String) request.getAttribute("keywords")) %>" size="40">	<input type="submit" value="Rechercher" name="searchAction"/>
 			</form>
 	</div>
 	
