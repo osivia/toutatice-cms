@@ -128,40 +128,6 @@ public class CMSPortlet extends GenericPortlet {
 		return false;
 	}
 	
-	// v1.0.14 : recherche d'un document lié
-	// Par défaut sur scope courant, sinon sur scope user
-	
-	public Document fetchLinkedDocument( NuxeoController ctx, String docPath)	throws Exception {
-		
-		String decodedPath = URLDecoder.decode(docPath, "UTF-8");
-		Document doc = null;
-		
-		try	{
-			
-			doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-			.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));			
-		} catch( NuxeoException e){
-			 if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
-				 
-				 if( ctx.getScope() != null){
-				 	// Unreachable by profil, get user scope
-					 
-					 //TODO 1.1 : mettre le scope du user
-				 
-					ctx.setScope(null);	
-
-					doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-								.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));
-				 }
-
-			}
-			 else throw e;
-		}
-		
-		return doc;
-		
-	}
-	
 	
 	
 	protected void serveResourceException(ResourceRequest resourceRequest, ResourceResponse resourceResponse,
@@ -210,75 +176,7 @@ public class CMSPortlet extends GenericPortlet {
 
 			
 
-			// v2 : plus utilisée - on se branche sur le CMS classique
 		
-			
-			/*
-
-			// Redirection par path de document
-			
-			if ("documentLink".equals(resourceRequest.getParameter("type"))) {
-
-				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
-
-
-				String docPath = resourceRequest.getParameter("docPath");
-				docPath = URLDecoder.decode(docPath, "UTF-8");
-				
-				
-				
-				
-				
-				
-				// Liens vers un document qui n'a pas été lu (accès direct par le path)
-				// On change de parcours de publication				
-				// Le scope peut être insuffisant en terme de droit 
-				//  >> on supprime le scope
-				// V 1.0.14 : suppression
-				//String scope = ctx.getScope();
-				//ctx.setScope(null);
-				
-				// l'affichage des  méta-données n'est pas propagé non plus
-				// 
-				String hideMetadatas = ctx.getHideMetaDatas();
-				ctx.setHideMetaDatas(null);
-				
-				// V 1.0.14 
-				Document doc = fetchLinkedDocument(ctx, docPath);
-
-				
-				String url = null;
-				
-				if ("ContextualLink".equals(doc.getType()))	{
-					url = doc.getString("clink:link");
-				} else	{
-					Link link = ctx.getLink(doc);
-					url = link.getUrl();
-					
-				}
-				
-				// On remet le scope
-				// V 1.0.14 : suppression
-				//ctx.setScope(scope);
-				ctx.setHideMetaDatas(hideMetadatas);
-				
-				
-				// To keep historic
-				if( resourceRequest.getParameter("pageMarker") != null)	{
-					url = url.replaceAll("/pagemarker/([0-9]*)/","/pagemarker/"+resourceRequest.getParameter("pageMarker")+"/");
-				}
-				
-				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-				resourceResponse.setProperty("Location", url);
-
-				resourceResponse.getPortletOutputStream().close();
-
-	
-				
-			}
-			
-			*/
 			
 
 			// Redirection
@@ -376,11 +274,12 @@ public class CMSPortlet extends GenericPortlet {
 				
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 				
+                // v2.0.9 : fetch direct
 				// On traite comme s'il s'agissait d'un hyper-lien
 
-				Document doc = fetchLinkedDocument(ctx, docPath);
-				docPath = doc.getPath();
-	
+//				Document doc = fetchLinkedDocument(ctx, docPath);
+//				docPath = doc.getPath();
+//	
 	
 
 				CMSBinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);

@@ -31,17 +31,11 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 
 		request = session.newRequest("Document.Query");
 
-		
-		String nuxeoRequest = "ttc:isPreloadedOnLogin = 1";
-		
-		// Insertion du filtre sur les élements publiés
-		StringBuffer bufferedRequest = new StringBuffer();
-		bufferedRequest.append("((");
-		bufferedRequest.append(NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, false));
-		bufferedRequest.append(") OR (");
-		bufferedRequest.append(NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true));
-		bufferedRequest.append("))");
-	
+  		
+		//v2.0.9 : suite demande Marc
+		String bufferedRequest = "ttc:isPreloadedOnLogin = 1 AND ecm:mixinType = 'Space' AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView' AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 ))";
+
+
 		request.set("query", "SELECT * FROM Document WHERE " + bufferedRequest.toString() + " ORDER BY ttc:tabOrder");
 		
 	
