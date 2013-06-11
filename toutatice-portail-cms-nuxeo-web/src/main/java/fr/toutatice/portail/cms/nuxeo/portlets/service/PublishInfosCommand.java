@@ -52,6 +52,9 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
 				publiInfos.setPublished(convertBoolean(obj.get("published")));
 				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
+				
+				/* Renvoie un tableau vide si aucun sous-type n'est permis */
+				publiInfos.setSubTypes((List<String>) obj.get("subTypes"));
 
 				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
 
