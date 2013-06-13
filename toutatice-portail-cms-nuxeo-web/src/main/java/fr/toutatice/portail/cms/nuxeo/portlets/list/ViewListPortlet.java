@@ -4,10 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -461,9 +463,6 @@ public class ViewListPortlet extends CMSPortlet {
 
 		try {
 			
-
-
-			
 			response.setContentType("text/html");
 			
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
@@ -476,7 +475,34 @@ public class ViewListPortlet extends CMSPortlet {
 
 			PortalWindow window = WindowFactory.getWindow(request);
 
-			nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
+			// Mode fil de documents
+			Map<String, Integer> documentOrder = new HashMap<String, Integer>();
+			
+			if("true".equals(window.getProperty("osivia.cms.feed"))) {
+				nuxeoRequest = "return \"";
+				boolean first = true;
+				int nbElements = Integer.parseInt(window.getProperty("osivia.cms.news.size"));
+				
+				
+				for(Integer i = 0; i<nbElements; i++) {
+					if(first) first = false;
+					else {
+						nuxeoRequest = nuxeoRequest.concat(" OR ");	
+					}
+					
+					String path = window.getProperty("osivia.cms.news."+i.toString()+".docURI");
+					
+					documentOrder.put(path, Integer.parseInt(window.getProperty("osivia.cms.news."+i.toString()+".order")));
+					
+					nuxeoRequest = nuxeoRequest.concat("ecm:path = '"+path+"'");
+					
+				}
+				nuxeoRequest = nuxeoRequest.concat("\";");
+			}
+			// Mode requêtage classique
+			else {
+				nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
+			}
 
 			if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
 				// Evaluation beanshell
@@ -590,7 +616,11 @@ public class ViewListPortlet extends CMSPortlet {
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
 						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,window.getProperty("osivia.cms.requestFilteringPolicy")));
 
-
+				
+				// En mode fil, on trie les documents suivant l'ordre défini par l'utilisateur
+				if("true".equals(window.getProperty("osivia.cms.feed"))) {
+					Collections.sort(docs, new DocumentComparator(documentOrder));
+				}
 				
 				int nbPages = 0;
 

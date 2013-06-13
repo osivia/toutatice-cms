@@ -165,33 +165,43 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		
 		HttpServletRequest portalRequest = null;
 		
-		
-		
-		// v2.0.8 : ajout d'une request key pour distinguer les types d'autorisation
-		// (il ne faut pas mélanger les résultats pour des authentifications différentes)
-		String requestKey = "" + ctx.getAuthType()  ;
-		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	
-			requestKey += ctx.getAuthProfil().getName();
-		requestKey += "/" +command.getId();
-		
-		
-		
-		if(serverInvoc != null){		
-			portalRequest = serverInvoc.getServerContext().getClientRequest();
-			Object value =  portalRequest.getAttribute(requestKey);
-			if( value != null)
-				return value;
-		}
-		
-		
-		// Cache user non géré -> Appel direct
-		if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
-			return nuxeoInvoker.invoke();
 
-		// Cache invalidé -> Appel direct
-		if (ctx.getCacheTimeOut() == 0)
-			return nuxeoInvoker.invoke();
 		
+		// v2.0.8 : ajout d'une request key pour distinguer les types
+		// d'autorisation
+		// (il ne faut pas mélanger les résultats pour des authentifications
+		// différentes)
+		
+		String requestKey = "" + ctx.getAuthType();
+		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)
+			requestKey += ctx.getAuthProfil().getName();
+		requestKey += "/" + command.getId();
+
+		if (serverInvoc != null) {
+			portalRequest = serverInvoc.getServerContext()
+					.getClientRequest();
+		}		
+		
+		// LOIC BILLON : cas de la modification/ suppression de fragment
+		// On force l'invocation pour recharger le fragment dans tous les cas
+		// Meme si présent dans la requete
+		if (!ctx.isForceReload())	{
+
+			if (portalRequest != null) {
+				Object value = portalRequest.getAttribute(requestKey);
+				if (value != null)
+					return value;
+			}
+
+			// Cache user non géré -> Appel direct
+			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
+				return nuxeoInvoker.invoke();
+
+			// Cache invalidé -> Appel direct
+			if (ctx.getCacheTimeOut() == 0)
+				return nuxeoInvoker.invoke();
+
+		}
 
 		String cacheId = getCacheId(ctx, command);
 	
@@ -201,23 +211,32 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext(), 
 				ctx.isAsyncCacheRefreshing());
 		
-		if( ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
-			// 2 minutes de cache de session
-			// (PublishInfos & Navigation)
-			cacheInfos.setDelaiExpiration( 120000);
-		}	else	{
+		// LOIC BILLON : cas de la modification/ suppression de fragment
+		if (!ctx.isForceReload())	{
+		
+			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION) {
+				// 2 minutes de cache de session
+				// (PublishInfos & Navigation)
+				cacheInfos.setDelaiExpiration(120000);
+			} else {
 
-			if (ctx.getCacheTimeOut() == -1) {
-				// Traitement par défaut de cache (valeur dans variable système
-				// nuxeo.cacheTimeOut
+				if (ctx.getCacheTimeOut() == -1) {
+					// Traitement par défaut de cache (valeur dans variable
+					// système
+					// nuxeo.cacheTimeOut
 
-				if (System.getProperty("nuxeo.cacheTimeout") != null)
-					cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
-				else
-					cacheInfos.setDelaiExpiration(0L);
-			} else
-				cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+					if (System.getProperty("nuxeo.cacheTimeout") != null)
+						cacheInfos.setDelaiExpiration(Long.parseLong(System
+								.getProperty("nuxeo.cacheTimeout")) * 1000);
+					else
+						cacheInfos.setDelaiExpiration(0L);
+				} else
+					cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+			}
+		} 	else {
+			cacheInfos.setForceReload(true);
 		}
+		
 
 		Object response =  getServiceCache(ctx).getCache(cacheInfos);
 		

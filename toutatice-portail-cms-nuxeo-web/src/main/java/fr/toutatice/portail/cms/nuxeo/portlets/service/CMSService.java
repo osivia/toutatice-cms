@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,11 +9,10 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.portal.core.controller.ControllerCommand;
-import org.jboss.portal.theme.ThemeConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -24,6 +24,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.EcmCommand;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.profils.IProfilManager;
@@ -34,17 +35,22 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowService;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowTypeEnum;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 public class CMSService implements ICMSService {
 
+	protected static final Log logger = LogFactory.getLog(CMSService.class);
+	
 	private final PortletContext portletCtx;
 	INuxeoCommandService nuxeoCommandService;
 	INuxeoService nuxeoService;
@@ -137,6 +143,10 @@ public class CMSService implements ICMSService {
 		 * du résultat de la commande.
 		 */
 		commandCtx.setAsyncCacheRefreshing(cmsCtx.isAsyncCacheRefreshing());
+		
+		if( cmsCtx.isForceReload())	{
+			commandCtx.setForceReload(true);
+		}
 
 		// pour debug
 		// commandCtx.setCacheTimeOut(0);
@@ -876,9 +886,6 @@ public class CMSService implements ICMSService {
 		}
 	}
 	
-	public static String PM_FRAGMENTS_SCHEMA = "fgts:fragments"; 
-	public static String PM_HTML_FRAGMENT = "htmlFragment";
-
 	/**
 	 * Création des fragments dans la page
 	 */
@@ -888,13 +895,16 @@ public class CMSService implements ICMSService {
 			CMSItem pageItem = fetchContent(cmsCtx, pagePath);
 
 			List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
-
-			// TODO : parser les proprietes complexes de la page
+			
+			boolean editionMode = false;
+			if( "1".equals(cmsCtx.getDisplayLiveVersion()))
+				editionMode = true;
 
 			Document doc = (Document) pageItem.getNativeItem();
 
+			// Propriétés générales des fragments
 			PropertyList pmFragmentsValues = doc.getProperties().getList(
-					PM_FRAGMENTS_SCHEMA);
+					EditableWindowService.SCHEMA);
 
 			if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
 
@@ -903,23 +913,25 @@ public class CMSService implements ICMSService {
 
 					// Test de la catégorie
 					String fragmentCategory = (String) pmFragmentsValues.getMap(fragmentIndex).get("fragmentCategory");
-					FragmentTypeEnum type = FragmentTypeEnum.findByName(fragmentCategory);
-					
-					
-					// Récupération des propriétés communes
-					Map<String, String> portletProps = fillGenericProps(doc, pmFragmentsValues.getMap(fragmentIndex), false);
-					
-					// Si porlet liste, ajout de propriétés spécifiques
-					if (type == FragmentTypeEnum.liste) {
-						portletProps = fillListProps(portletProps, pmFragmentsValues.getMap(fragmentIndex), false);
-					}
-					
-					if(type != null) {
-						windows.add(type.createNewFragmentWindow(fragmentIndex, portletProps));
+					String uri = (String) pmFragmentsValues.getMap(fragmentIndex).get("uri");
+
+					EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(fragmentCategory);
+
+					if (type != null) {
+						
+						// Récupération d'une classe utilitaire se chargeant des traitements spécifiques à chaque fgt
+						EditableWindowService ewService = type.getService();
+						
+						// Valorisation des propriétés 
+						Map<String, String> props = ewService.fillProps(doc, pmFragmentsValues.getMap(fragmentIndex), editionMode);
+
+						// Construction de la window
+						windows.add(ewService.createNewEditabletWindow(fragmentIndex, props));
+						
 					}
 					// Si type de portlet non trouvé, erreur.
 					else {
-						throw new CMSException(new Exception("Type de fragment "+fragmentCategory+" non géré"));
+						logger.warn("Type de fragment "+fragmentCategory+" non géré");
 					}
 				}
 			}
@@ -937,87 +949,113 @@ public class CMSService implements ICMSService {
 		
 	}
 	
+	
+	public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI)  throws CMSException {
 
-//	public static String PM_HTML_FRAGMENT_TYPE = "fgt.html";
-//	public static String PM_LISTE_FRAGMENT_TYPE = "fgt.liste";
-	
-	public static String PROPS_SEPARATOR = "\n";
-	public static String VALUES_SEPARATOR = "=";
-	
-	private String getPMFragmentPropertyValue(String fragment, String property) {
-		String[] keysValues = fragment.split(PROPS_SEPARATOR);
-		for(String keyValue : keysValues){
-			String[] separatedKeyValue = keyValue.split(VALUES_SEPARATOR);
-			if(property.equalsIgnoreCase(separatedKeyValue[0])){
-				return separatedKeyValue[1];
+		cmsCtx.setDisplayLiveVersion("1");
+		
+		CMSItem cmsItem = getContent(cmsCtx, pagePath);
+		Document doc = (Document) cmsItem.getNativeItem();
+		
+		// Propriétés générales des fragments
+		PropertyList fragments = doc.getProperties().getList(
+				EditableWindowService.SCHEMA);
+
+		List<String> propertiesToRemove = null;
+		if (fragments != null && !fragments.isEmpty()) {
+
+			// Recherche du fragment
+			for (int fragmentIndex = 0; fragmentIndex < fragments.size(); fragmentIndex++) {
+				if(refURI.equals(fragments.getMap(fragmentIndex).get(EditableWindowService.FGT_URI))) {
+					
+					String typeStr = (String) fragments.getMap(fragmentIndex).get(EditableWindowService.FGT_TYPE);
+
+					EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(typeStr);
+					
+					if(type != null) {
+						EditableWindowService service = type.getService();
+						propertiesToRemove = service.prepareDelete(doc, refURI);
+					}
+				}
 			}
 		}
-		return "";
-	}
-	
-	
-	// TODO: externaliser constantes
-	/**
-	 * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo
-	 * et retourne ces propriétés pour créer chaque ViewFragmentPortlet.
-	 * @param doc simplesite ou simplepage (conteneur des fragments)
-	 * @param fragment les props du fragment
-	 * @param modeEditionPage page en cours d'édition
-	 * @return les props de la window
-	 */
-	private Map<String, String> fillGenericProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
-		
-		// Propriétés génériques
-		Map<String, String> propsFilled = new HashMap<String, String>();
-		propsFilled.put("osivia.fragmentTypeId", "html_property");
-		propsFilled.put("osivia.nuxeoPath", doc.getPath());
-		propsFilled.put("osivia.propertyName", "htmlfgt:htmlFragment");
-		
-		propsFilled.put("osivia.refURI", fragment.getString("uri"));
-		
-		propsFilled.put("osivia.title", fragment.getString("title"));
-		
-		if(fragment.getBoolean("hideTitle").equals(Boolean.TRUE)) {
-			propsFilled.put("osivia.hideTitle", "1");
-		}
-		else {
-			propsFilled.put("osivia.hideTitle", "0");
-		}
-						
-		propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
-		propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, fragment.getString("order"));
 
-		return propsFilled;
+		
+        try {
+			if(propertiesToRemove != null) {
+				
+				Document docSaved = (Document) executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
+				
+				// On force le rechargement du cache
+				cmsCtx.setForceReload(true);
+				getContent(cmsCtx, pagePath);
+				cmsCtx.setForceReload(false);
+			}
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+
 	}
+
+
 	
-	/**
-	 * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo
-	 * et retourne ces propriétés pour créer chaque ViewFragmentPortlet.
-	 * @param doc simplesite ou simplepage (conteneur des fragments)
-	 * @param fragment les props du fragment
-	 * @param modeEditionPage page en cours d'édition
-	 * @return les props de la window
-	 */
-	private Map<String, String> fillListProps(Map<String, String> propsFilled, PropertyMap fragment, Boolean modeEditionPage) {
-		propsFilled.put("osivia.nuxeoRequest", fragment.getString("request"));
-		propsFilled.put("osivia.requestInterpretor", "beanShell");
+	public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path,
+			Map<String, String> requestParameters) throws CMSException {
 		
-		propsFilled.put("osivia.displayNuxeoRequest", null);
-		propsFilled.put("osivia.cms.displayLiveVersion", null);
-		propsFilled.put("osivia.cms.requestFilteringPolicy", null);
-		propsFilled.put("osivia.cms.hideMetaDatas", null);
-		propsFilled.put("osivia.cms.scope", null);
+		String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");
+		String nuxeoPublicPort = System.getProperty("nuxeo.publicPort");
+		String nuxeoCtx = "/nuxeo";
+
+		URI uri = null;
+
+		try {
+			uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort + nuxeoCtx);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+
+		String url = "";
 		
-		propsFilled.put("osivia.cms.style", fragment.getString("style"));
-		propsFilled.put("osivia.cms.pageSize", fragment.getString("pageSize"));
-		propsFilled.put("osivia.cms.pageSizeMax", fragment.getString("pageSizeMax"));
-		propsFilled.put("osivia.cms.maxItems", fragment.getString("maxItems"));
+		if(command == EcmCommand.createFgtInRegion) {
+			url = uri.toString() + "/nxpath/default" + path + "@fragment_create?";
+		}
+		else if(command == EcmCommand.createFgtBelowWindow) {
+			url = uri.toString() + "/nxpath/default" + path + "@fragment_create?";
+		}
+		else if(command == EcmCommand.editFgt) {
+			url = uri.toString() + "/nxpath/default" + path + "@fragment_edit?";
+		}
 		
-		propsFilled.put("osivia.permaLinkRef", null);
-		propsFilled.put("osivia.rssLinkRef", null);
-		propsFilled.put("osivia.rssTitle", null);
+		for(Map.Entry<String, String> param : requestParameters.entrySet()) {
+			url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
+		}
 		
-		return propsFilled;
+		return url;
 	}
-	
+
+	public void moveFragment(CMSServiceCtx cmsCtx, String pagePath,
+			String refURI, String toURI, boolean belowFragment, boolean dropOnEmptyRegion)
+			throws CMSException {
+		
+		cmsCtx.setDisplayLiveVersion("1");
+		
+		CMSItem cmsItem = getContent(cmsCtx, pagePath);
+		Document doc = (Document) cmsItem.getNativeItem();
+		
+
+		List<String> propertiesToUpdate = EditableWindowService.prepareMove(doc, refURI, toURI, belowFragment,
+				dropOnEmptyRegion);
+		
+		try {
+			if(propertiesToUpdate.size() > 0) {
+				
+				executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
+			}
+		} catch (Exception e) {
+            throw new CMSException(e);
+		}
+	}
+
 }

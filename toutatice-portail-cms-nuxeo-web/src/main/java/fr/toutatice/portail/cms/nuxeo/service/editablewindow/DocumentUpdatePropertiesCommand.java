@@ -1,0 +1,53 @@
+package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
+
+import java.util.List;
+
+import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
+import org.nuxeo.ecm.automation.client.jaxrs.Session;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+
+/**
+ * Requête Nuxeo pour modifier plusieurs propriétés.
+ * 
+ */
+public class DocumentUpdatePropertiesCommand implements INuxeoCommand {
+
+    /** Document courant */
+    private Document inputDoc;
+
+    /** liste de propriétés */
+    private List<String> propertiesToUpdate;
+
+    public DocumentUpdatePropertiesCommand(Document inputDoc, List<String> propertiesToUpdate) {
+        this.inputDoc = inputDoc;
+        this.propertiesToUpdate = propertiesToUpdate;
+    }
+
+    public Object execute(Session nuxeoSession) throws Exception {
+
+        Object execute = null;
+
+        OperationRequest request = nuxeoSession.newRequest("Document.Update").setInput(inputDoc);
+
+        StringBuilder sb = new StringBuilder();
+        for (String property : propertiesToUpdate) {
+            sb.append(property);
+            sb.append("\n");
+        }
+
+        request.set("properties", sb.toString());
+
+        execute = request.execute();
+
+        return execute;
+    }
+
+    public String getId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+}
