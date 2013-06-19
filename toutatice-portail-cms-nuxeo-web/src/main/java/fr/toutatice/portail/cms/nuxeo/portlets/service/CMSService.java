@@ -1052,6 +1052,12 @@ public class CMSService implements ICMSService {
 			if(propertiesToUpdate.size() > 0) {
 				
 				executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
+				
+                
+                // On force le rechargement du cache
+                cmsCtx.setForceReload(true);
+                getContent(cmsCtx, pagePath);
+                cmsCtx.setForceReload(false);
 			}
 		} catch (Exception e) {
             throw new CMSException(e);
