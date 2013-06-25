@@ -5,8 +5,11 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -41,7 +44,9 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
+			
 			String content = FileUtils.read(binariesInfos.getStream());
+			
 			JSONArray row = JSONArray.fromObject(content);
 			Iterator it = row.iterator();
 			while (it.hasNext()) {
@@ -52,6 +57,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
 				publiInfos.setPublished(convertBoolean(obj.get("published")));
 				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
+				
+				publiInfos.setSubTypes(decodeSubTypes((JSONObject) obj.get("subTypes")));
 
 				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
 
@@ -72,6 +79,21 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		}
 		return publiInfos;
+	}
+
+	/**
+	 * Décode en UTF-8 les labels de la Map des sous-types permis.
+	 * @param map
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
+		Map<String, String> decodedSubTypes = new HashMap<String, String>();
+		for(Entry<String, String> subType : subTypes.entrySet()){
+			String decodedLabel = decode(subType.getValue());
+			decodedSubTypes.put(subType.getKey(), decodedLabel);
+		}
+		return decodedSubTypes;
 	}
 
 	public String getId() {

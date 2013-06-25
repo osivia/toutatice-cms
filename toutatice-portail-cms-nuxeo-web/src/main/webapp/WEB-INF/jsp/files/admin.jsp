@@ -18,7 +18,9 @@ String forceContextualization = "";
 if( "1".equals( request.getAttribute("forceContextualization")))
 	forceContextualization = "checked";
 
-
+String ecmMenu = "";
+if( "1".equals( request.getAttribute("ecmMenu")))
+    ecmMenu = "checked";
 %>
 
 
@@ -34,7 +36,7 @@ if( "1".equals( request.getAttribute("forceContextualization")))
 <%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/>
 
 		<input type="checkbox" name="forceContextualization" value="1" <%= forceContextualization%>/>Contextualiser dans la page<br/>
-
+		<input type="checkbox" name="ecmMenu" value="1" <%= ecmMenu%>/>Affichage menu GED<br/>
 		<input type="checkbox" name="changeDisplayMode" value="1" <%= changeDisplayMode%>/>Sélecteur mode affichage détaillé<br/>
 		
 		

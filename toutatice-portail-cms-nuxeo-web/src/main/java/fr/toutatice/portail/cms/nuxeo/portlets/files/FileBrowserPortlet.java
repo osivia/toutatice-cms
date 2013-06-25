@@ -39,7 +39,6 @@ import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 
-
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
@@ -49,314 +48,349 @@ import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
  */
 
 public class FileBrowserPortlet extends CMSPortlet {
-	
-	public static final String DISPLAY_MODE_NORMAL = "normal";
-	public static final String DISPLAY_MODE_DETAILED = "detailed";	
-	
-	public static boolean isNavigable( Document doc)	{
-		
-		return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType())|| "PortalSite".equals(doc.getType()) || "Section".equals(doc.getType()) || "SectionRoot".equals(doc.getType());
 
-	}
-	
-	public static boolean isOrdered (Document doc)	{
-		
-		return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "PortalSite".equals(doc.getType()) ;
+    public static final String DISPLAY_MODE_NORMAL = "normal";
+    public static final String DISPLAY_MODE_DETAILED = "detailed";
 
-	}
+    public static boolean isNavigable(Document doc) {
 
-	public static Comparator<Document> createComparator( final Document parentDoc){
-	
-	 Comparator<Document> comparator = new Comparator<Document>() {
-		
-		public int compare(Document e1, Document e2) {
-			
-			if( isOrdered(parentDoc))	{
-				
-				long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
-				long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));		
-				
-				return pos1 > pos2 ? 1 : -1;
-				
-			}
-			else	{
-				return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
-			}
-		}
-	 };
-		
-		return comparator;
-	};
+        return "Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "Workspace".equals(doc.getType())
+                || "WorkspaceRoot".equals(doc.getType()) || "PortalSite".equals(doc.getType()) || "Section".equals(doc.getType())
+                || "SectionRoot".equals(doc.getType());
 
-	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    }
 
-		logger.debug("processAction ");
+    public static boolean isOrdered(Document doc) {
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+        return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())
+                || "PortalSite".equals(doc.getType());
 
-			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
-			
-			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);
+    }
 
-			// v2.0.5
-			if (req.getParameter("forceContextualization") != null && req.getParameter("forceContextualization").length() > 0)
-				window.setProperty("osivia.cms.forceContextualization", req.getParameter("forceContextualization"));
-			else if (window.getProperty("osivia.cms.forceContextualization") != null)
-				window.setProperty("osivia.cms.forceContextualization", null);
-			
-			if (req.getParameter("changeDisplayMode") != null && req.getParameter("changeDisplayMode").length() > 0)
-				window.setProperty("osivia.cms.changeDisplayMode", req.getParameter("changeDisplayMode"));
-			else if (window.getProperty("osivia.cms.changeDisplayMode") != null)
-				window.setProperty("osivia.cms.changeDisplayMode", null);			
+    public static Comparator<Document> createComparator(final Document parentDoc) {
 
-			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);
+        Comparator<Document> comparator = new Comparator<Document>() {
+
+            public int compare(Document e1, Document e2) {
+
+                if (isOrdered(parentDoc)) {
+
+                    long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+                    long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+
+                    return pos1 > pos2 ? 1 : -1;
+
+                } else {
+                    return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+                }
+            }
+        };
+
+        return comparator;
+    };
+
+    public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+
+        logger.debug("processAction ");
+
+        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+
+            PortalWindow window = WindowFactory.getWindow(req);
+            window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
+
+            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+                window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
+            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+                window.setProperty("osivia.cms.displayLiveVersion", null);
+
+            // v2.0.5
+            if (req.getParameter("forceContextualization") != null && req.getParameter("forceContextualization").length() > 0)
+                window.setProperty("osivia.cms.forceContextualization", req.getParameter("forceContextualization"));
+            else if (window.getProperty("osivia.cms.forceContextualization") != null)
+                window.setProperty("osivia.cms.forceContextualization", null);
+
+            if (req.getParameter("changeDisplayMode") != null && req.getParameter("changeDisplayMode").length() > 0)
+                window.setProperty("osivia.cms.changeDisplayMode", req.getParameter("changeDisplayMode"));
+            else if (window.getProperty("osivia.cms.changeDisplayMode") != null)
+                window.setProperty("osivia.cms.changeDisplayMode", null);
 
 
-			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("osivia.cms.scope") != null)
-				window.setProperty("osivia.cms.scope", null);
+            if (req.getParameter("ecmMenu") != null && req.getParameter("ecmMenu").length() > 0)
+                window.setProperty("osivia.cms.ecmMenu", req.getParameter("ecmMenu"));
+            else if (window.getProperty("osivia.cms.ecmMenu") != null)
+                window.setProperty("osivia.cms.ecmMenu", null);
 
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-	}
-
-	@RenderMode(name = "admin")
-	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
-
-		res.setContentType("text/html");
-
-		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
-		
-		PortletRequestDispatcher rd = null;
-
-		PortalWindow window = WindowFactory.getWindow(req);
-
-		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
-		if (nuxeoPath == null)
-			nuxeoPath = "";
-		req.setAttribute("nuxeoPath", nuxeoPath);
-		
-		
-		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
-		req.setAttribute("displayLiveVersion", displayLiveVersion);
-
-		//v2.0.5
-		req.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
-		req.setAttribute("forceContextualization", window.getProperty("osivia.cms.forceContextualization"));
-
-	
-		String scope = window.getProperty("osivia.cms.scope");
-		req.setAttribute("scope", scope);
-		
-		req.setAttribute("ctx", ctx);
+            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+                window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
+            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+                window.setProperty("osivia.cms.displayLiveVersion", null);
 
 
-		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/admin.jsp");
-		rd.include(req, res);
+            if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
+                window.setProperty("osivia.cms.scope", req.getParameter("scope"));
+            else if (window.getProperty("osivia.cms.scope") != null)
+                window.setProperty("osivia.cms.scope", null);
 
-	}
-	
-	
-	
-	private void addPathItem(List<PortletPathItem> portletPath, Document curDoc, String displayMode, String prefixName)	{
-		Map<String, String> renderParams = new Hashtable<String, String>();
-		renderParams.put("folderPath", curDoc.getPath());
-		
-		if( displayMode != null)
-			renderParams.put("displayMode", displayMode);
-		
-		String title = curDoc.getTitle();
-		
-		if( prefixName != null)	{
-			title = prefixName + title;
-			
-		}
-		
-		PortletPathItem pathItem = new PortletPathItem(renderParams, title);
-		
-		portletPath.add(0, pathItem);
-	}
-	
-	
+            res.setPortletMode(PortletMode.VIEW);
+            res.setWindowState(WindowState.NORMAL);
+        }
 
-	@SuppressWarnings("unchecked")
-	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-			PortletSecurityException, IOException {
+        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
 
-		logger.debug("doView");
+            res.setPortletMode(PortletMode.VIEW);
+            res.setWindowState(WindowState.NORMAL);
+        }
+    }
 
-		try {
+    @RenderMode(name = "admin")
+    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
-			response.setContentType("text/html");
+        res.setContentType("text/html");
 
-			PortalWindow window = WindowFactory.getWindow(request);
-			
+        NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 
-			/* On détermine l'uid et le scope */
+        PortletRequestDispatcher rd = null;
 
-			String nuxeoPath = null;
+        PortalWindow window = WindowFactory.getWindow(req);
 
-			// portal window parameter (appels dynamiques depuis le portail)
-			nuxeoPath = window.getProperty("osivia.cms.uri");
-
-			// logger.debug("doView "+ uid);
-			if (nuxeoPath == null) {
-				nuxeoPath = window.getProperty("osivia.nuxeoPath");
-			}
-			
-			String displayMode = request.getParameter("displayMode");
+        String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+        if (nuxeoPath == null)
+            nuxeoPath = "";
+        req.setAttribute("nuxeoPath", nuxeoPath);
 
 
+        String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+        req.setAttribute("displayLiveVersion", displayLiveVersion);
 
-			if (nuxeoPath != null) {
-				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-				
-				
-				nuxeoPath = ctx.getComputedPath(nuxeoPath);
-				
-				
-				String folderPath = nuxeoPath;
+        // v2.0.5
+        req.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
+        req.setAttribute("forceContextualization", window.getProperty("osivia.cms.forceContextualization"));
 
-				if (request.getParameter("folderPath") != null) {
-					folderPath = request.getParameter("folderPath");
-				}
-			
-				
-
-				
-				/* Folder courant */
-				
-				//Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
-				Document doc = ctx.fetchDocument(folderPath);
+        req.setAttribute("ecmMenu", window.getProperty("osivia.cms.ecmMenu"));
 
 
-				//Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+        String scope = window.getProperty("osivia.cms.scope");
+        req.setAttribute("scope", scope);
 
-				/* Récupération des fils */
-				
-					
-				//v2.0.5 : liens contextualisés par paramétrage
-				// On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
-				boolean filterByNav = false;
-				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization")))	{
-					request.setAttribute("cmsLink", "1");
-					filterByNav = true;
-				}
-				
-				CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
-				
-				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion(), filterByNav ));
-				
-
-				
-				// Tri pour affichage
-				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
-				Collections.sort(sortedDocs, createComparator( doc));
-				request.setAttribute("docs", sortedDocs);
-
-				/* Récupération des parents (pour le path) */
-
-				List<PortletPathItem> portletPath = new ArrayList<PortletPathItem>();
-				
-				
-				// 	delete .proxy extension
-				String curPath =  ctx.getLivePath(doc.getPath());
-				Document curDoc = doc;
-				
-				while (! curPath.equals(nuxeoPath) && curPath.startsWith(nuxeoPath)) {
-					
-					addPathItem(portletPath,curDoc,  displayMode, null);
-
-					curPath = ctx.getParentPath(curPath);
-					curDoc = (Document) ctx.fetchDocument(curPath);
-					
-				}
-				
-				if (curPath.equals(nuxeoPath)) {
-					String portletName = null;
-					if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
-						portletName = "Explorateur ";
-						addPathItem(portletPath, curDoc, displayMode,
-								portletName);
-
-						String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu-workspace").getUrl();
-
-						if (nuxeoFolderLink != null) {
-							List<MenubarItem> menuBar = (List<MenubarItem>) request
-									.getAttribute("osivia.menuBar");
-							MenubarItem item = new MenubarItem("EDIT",
-									"Ouvrir dans Nuxeo",
-									MenubarItem.ORDER_PORTLET_SPECIFIC,
-									nuxeoFolderLink, null,
-									"portlet-menuitem-nuxeo-edit", "nuxeo");
-							item.setAjaxDisabled(true);
-							menuBar.add(item);
-						}
-					}
-				}
-				
-				
-				//Injection du path vers le portail
-				request.setAttribute("osivia.portletPath", portletPath);
-				//response.setProperty("osivia.emptyResponse", "1");
-				
-				/* attributs de la JSP */
-				
-				request.setAttribute("portletPath", portletPath);
-				
-				request.setAttribute("basePath", nuxeoPath);
-				request.setAttribute("folderPath", folderPath);
-				
-				// Pas d'affichage détaillé en mode normal
-				if(DISPLAY_MODE_DETAILED.equals(displayMode) && !WindowState.MAXIMIZED.equals(request.getWindowState()))
-						displayMode = DISPLAY_MODE_NORMAL;
-				
-				request.setAttribute("displayMode", displayMode);
-				
-				request.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
+        req.setAttribute("ctx", ctx);
 
 
-				request.setAttribute("ctx", ctx);
-				
-				
-				if(  DISPLAY_MODE_DETAILED.equals( displayMode) )	
-					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);
-				else
-					getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-normal.jsp").include(request, response);
-					
-			} else {
-				response.setContentType("text/html");
-				response.getWriter().print("<h2>Document non défini</h2>");
-				response.getWriter().close();
-				return;
-			}
+        rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/admin.jsp");
+        rd.include(req, res);
 
-		} catch( NuxeoException e){
-			PortletErrorHandler.handleGenericErrors(response, e);
-		}
+    }
 
-		catch (Exception e) {
-			if (!(e instanceof PortletException))
-				throw new PortletException(e);
-		}
 
-		logger.debug("doView end");
+    private void addPathItem(List<PortletPathItem> portletPath, Document curDoc, String displayMode, String prefixName) {
+        Map<String, String> renderParams = new Hashtable<String, String>();
+        renderParams.put("folderPath", curDoc.getPath());
 
-	}
+        if (displayMode != null)
+            renderParams.put("displayMode", displayMode);
+
+        String title = curDoc.getTitle();
+
+        if (prefixName != null) {
+            title = prefixName + title;
+
+        }
+
+        PortletPathItem pathItem = new PortletPathItem(renderParams, title);
+
+        portletPath.add(0, pathItem);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+
+        logger.debug("doView");
+
+        try {
+
+            response.setContentType("text/html");
+
+            PortalWindow window = WindowFactory.getWindow(request);
+
+
+            /* On détermine l'uid et le scope */
+
+            String nuxeoPath = null;
+
+            // portal window parameter (appels dynamiques depuis le portail)
+            nuxeoPath = window.getProperty("osivia.cms.uri");
+
+            // logger.debug("doView "+ uid);
+            if (nuxeoPath == null) {
+                nuxeoPath = window.getProperty("osivia.nuxeoPath");
+            }
+
+            String displayMode = request.getParameter("displayMode");
+
+
+            if (nuxeoPath != null) {
+                NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+
+
+                nuxeoPath = ctx.getComputedPath(nuxeoPath);
+
+
+                String folderPath = nuxeoPath;
+
+                if (request.getParameter("folderPath") != null) {
+                    folderPath = request.getParameter("folderPath");
+                }
+
+
+                /* Folder courant */
+
+                // Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+                Document doc = ctx.fetchDocument(folderPath);
+
+
+                // Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(folderPath));
+
+                /* Récupération des fils */
+
+
+                // v2.0.5 : liens contextualisés par paramétrage
+                // On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
+                boolean filterByNav = false;
+                if ("1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization"))) {
+                    request.setAttribute("cmsLink", "1");
+                    filterByNav = true;
+                }
+
+                CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
+
+                Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx
+                        .isDisplayingLiveVersion(), filterByNav));
+
+
+                // Tri pour affichage
+                List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
+                Collections.sort(sortedDocs, createComparator(doc));
+                request.setAttribute("docs", sortedDocs);
+
+                /* Récupération des parents (pour le path) */
+
+                List<PortletPathItem> portletPath = new ArrayList<PortletPathItem>();
+
+
+                // delete .proxy extension
+                String curPath = ctx.getLivePath(doc.getPath());
+                Document curDoc = doc;
+
+                while (!curPath.equals(nuxeoPath) && curPath.startsWith(nuxeoPath)) {
+
+                    addPathItem(portletPath, curDoc, displayMode, null);
+
+                    curPath = ctx.getParentPath(curPath);
+                    curDoc = (Document) ctx.fetchDocument(curPath);
+
+                }
+
+                if (curPath.equals(nuxeoPath)) {
+
+                    if ("1".equals(window.getProperty("osivia.cms.ecmMenu"))) {
+                        List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+
+
+                        Map<String, String> subTypes = pubInfos.getSubTypes();
+
+
+                        List<SubDocumentType> docsToCreate = new ArrayList<SubDocumentType>();
+
+                        for (String docType : subTypes.keySet()) {
+
+                            SubDocumentType subType = new SubDocumentType();
+
+                            if (docType.equals("File")) {
+                                subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@toutatice_create?type=" + docType);
+                            } else {
+                                subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@create_document?type=" + docType);
+                            }
+
+                            docsToCreate.add(subType);
+                        }
+
+                        if (docsToCreate.size() > 1) {
+                            MenubarItem item = new MenubarItem("EDIT", "Création ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, "", null,
+                                    "portlet-menuitem-nuxeo-edit", "nuxeo");
+                            item.setAjaxDisabled(true);
+                            // item.setChildrens(createItems);
+                            menuBar.add(item);
+                        }
+
+
+                    }
+
+
+                    String portletName = null;
+                    if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+                        portletName = "Explorateur ";
+                        addPathItem(portletPath, curDoc, displayMode, portletName);
+
+                        String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu-workspace").getUrl();
+
+                        if (nuxeoFolderLink != null) {
+                            List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+                            MenubarItem item = new MenubarItem("EDIT", "Ouvrir dans Nuxeo", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, nuxeoFolderLink, null,
+                                    "portlet-menuitem-nuxeo-edit", "nuxeo");
+                            item.setAjaxDisabled(true);
+                            menuBar.add(item);
+                        }
+                    }
+                }
+
+
+                // Injection du path vers le portail
+                request.setAttribute("osivia.portletPath", portletPath);
+                // response.setProperty("osivia.emptyResponse", "1");
+
+                /* attributs de la JSP */
+
+                request.setAttribute("portletPath", portletPath);
+
+                request.setAttribute("basePath", nuxeoPath);
+                request.setAttribute("folderPath", folderPath);
+
+                // Pas d'affichage détaillé en mode normal
+                if (DISPLAY_MODE_DETAILED.equals(displayMode) && !WindowState.MAXIMIZED.equals(request.getWindowState()))
+                    displayMode = DISPLAY_MODE_NORMAL;
+
+                request.setAttribute("displayMode", displayMode);
+
+
+                request.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
+
+
+                request.setAttribute("ctx", ctx);
+
+
+                if (DISPLAY_MODE_DETAILED.equals(displayMode))
+                    getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-detailed.jsp").include(request, response);
+                else
+                    getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view-normal.jsp").include(request, response);
+
+            } else {
+                response.setContentType("text/html");
+                response.getWriter().print("<h2>Document non défini</h2>");
+                response.getWriter().close();
+                return;
+            }
+
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        }
+
+        catch (Exception e) {
+            if (!(e instanceof PortletException))
+                throw new PortletException(e);
+        }
+
+        logger.debug("doView end");
+
+    }
 
 }
