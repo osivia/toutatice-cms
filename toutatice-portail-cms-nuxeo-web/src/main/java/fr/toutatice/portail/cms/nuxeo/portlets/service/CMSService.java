@@ -644,10 +644,13 @@ public class CMSService implements ICMSService {
 			
 			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	{
 				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
-			}	else
-			
+			}	else   {
+			    boolean forceLiveVersion = false;
+                if ("1".equals(cmsCtx.getDisplayLiveVersion()))
+			            forceLiveVersion = true;  
 				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
+					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig, forceLiveVersion)));
+			}
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(livePath);
@@ -703,9 +706,15 @@ public class CMSService implements ICMSService {
 			
 			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	
 				navItems = loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
-				else
+            else {
+                boolean forceLiveVersion = false;
+                if ("1".equals(cmsCtx.getDisplayLiveVersion()))
+                    forceLiveVersion = true;
+
 				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig)));
+ (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
+                        forceLiveVersion)));
+            }
 
 			if (navItems != null) {
 				NavigationItem navItem = navItems.get(path);
@@ -1036,7 +1045,7 @@ public class CMSService implements ICMSService {
 	}
 
 	public void moveFragment(CMSServiceCtx cmsCtx, String pagePath,
-			String refURI, String toURI, boolean belowFragment, boolean dropOnEmptyRegion)
+ String fromRegion, Integer fromPos, String toRegion, Integer toPos)
 			throws CMSException {
 		
 		cmsCtx.setDisplayLiveVersion("1");
@@ -1045,8 +1054,7 @@ public class CMSService implements ICMSService {
 		Document doc = (Document) cmsItem.getNativeItem();
 		
 
-		List<String> propertiesToUpdate = EditableWindowService.prepareMove(doc, refURI, toURI, belowFragment,
-				dropOnEmptyRegion);
+        List<String> propertiesToUpdate = EditableWindowService.prepareMove(doc, fromRegion, fromPos, toRegion, toPos);
 		
 		try {
 			if(propertiesToUpdate.size() > 0) {
@@ -1056,8 +1064,13 @@ public class CMSService implements ICMSService {
                 
                 // On force le rechargement du cache
                 cmsCtx.setForceReload(true);
-                getContent(cmsCtx, pagePath);
+
+                CMSItem content = getContent(cmsCtx, pagePath);
+                Document docReloaded = (Document) content.getNativeItem();
+
+
                 cmsCtx.setForceReload(false);
+
 			}
 		} catch (Exception e) {
             throw new CMSException(e);

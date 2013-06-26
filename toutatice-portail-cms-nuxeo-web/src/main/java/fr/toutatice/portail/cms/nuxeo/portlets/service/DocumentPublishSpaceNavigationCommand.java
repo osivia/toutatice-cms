@@ -27,12 +27,17 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 
 	CMSItem publishSpaceConfig;
+	
+	/** Récupérer aussi les versions en cours de travail */
+    private boolean forceLiveVersion;
+    
 	public final static String basicNavigationSchemas = "dublincore,common, toutatice";
 	
-	public DocumentPublishSpaceNavigationCommand(  CMSItem publishSpaceConfig) {
+    public DocumentPublishSpaceNavigationCommand(CMSItem publishSpaceConfig, boolean forceLiveVersion) {
 		super();
 
 		this.publishSpaceConfig = publishSpaceConfig;
+        this.forceLiveVersion = forceLiveVersion;
 	}
 
 	public static String  computeNavPath(String path){
@@ -43,13 +48,6 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 	}
 	
 	public Object execute(Session session) throws Exception {
-
-		/*
-		org.nuxeo.ecm.automation.client.jaxrs.model.Document publishSpace = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
-				.newRequest("Document.FetchPublishSpace").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
-				.set("value", path).execute();
-*/
-		
 		
 		OperationRequest request;
 
@@ -57,7 +55,11 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		// TODO : gerer le PortalVirtualPage de maniere générique
 		
-		boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));
+        boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));
+
+        if (forceLiveVersion)
+        // XXX temp
+            live = true;
 		
 		String uuid =  ((Document)publishSpaceConfig.getNativeItem()).getId();
 		
@@ -156,7 +158,10 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PublishSpaceNavigationCommandT2/" + publishSpaceConfig.getPath();
+        String sLive = "false";
+        if (forceLiveVersion)
+            sLive = "true";
+        return "PublishSpaceNavigationCommandT2/" + sLive + "/" + publishSpaceConfig.getPath();
 	};
 
 }

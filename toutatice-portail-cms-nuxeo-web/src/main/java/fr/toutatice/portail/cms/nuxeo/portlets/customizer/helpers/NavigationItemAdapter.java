@@ -104,6 +104,11 @@ public class NavigationItemAdapter {
 		
 		Map<String, String> properties = publishSpaceNavigationItem.getProperties();
 		
+        /* titre */
+        String title = (String) doc.getProperties().get("dc:title");
+        if (title != null) {
+            properties.put("title", title);
+        }
 
 		/* Template */
 		
@@ -121,7 +126,7 @@ public class NavigationItemAdapter {
 			
 			
 			properties.put("navigationElement", "1");
-			
+            properties.put("pageDisplayMode", "1");
 			
 			
 		}

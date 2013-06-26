@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -34,6 +35,7 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.auth.constants.InternalConstants;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -909,11 +911,18 @@ public class NuxeoController {
 
     public Document fetchDocument 	( String path) throws Exception	{
 
+
+
         try	{
+            CMSServiceCtx cmsCtx = this.getCMSCtx();
+            // Prévisualisation des portlets définis au niveau du template
+            if (path.equals(getNavigationPath())) {
+                if ("preview".equals(getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
+                        InternalConstants.ATTR_TOOLBAR_CMS_EDITION_MODE)))
+                    cmsCtx.setDisplayLiveVersion("1");
+            }
 
-
-
-            CMSItem cmsItem = getCMSService().getContent(this.getCMSCtx(), path);
+            CMSItem cmsItem = getCMSService().getContent(cmsCtx, path);
             return (Document) cmsItem.getNativeItem();
 
         } catch( CMSException e){
