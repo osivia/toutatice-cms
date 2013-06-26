@@ -224,80 +224,66 @@ public abstract class EditableWindowService {
     /**
      * 
      * @param doc
-     * @param refURI uri source
-     * @param toURI uri destination si c'est un fragment, ou non de la région si elle ne contient aucun fragment
-     * @param belowFragment positionne le fragment au dessus ou en dessous du fragment destination
-     * @param dropOnEmptyRegion D&D vers une région vide
+     * @param fromRegion the identifier of the region from the fragment is moved
+     * @param fromPos position in the fromRegion (from 0 (top) to N-1 ( number of current fgts in the region)
+     * @param toRegion the identifier of the region where the fragment is dropped
+     * @param toPos the new position of the fgt in the toRegion
      * @return
      */
-    public static List<String> prepareMove(Document doc, String refURI, String toURI, boolean belowFragment, boolean dropOnEmptyRegion) {
+    public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos) {
 
         List<String> propertiesToUpdate = new ArrayList<String>();
 
-        PropertyMap propRefUri = findSchemaByRefURI(doc, SCHEMA, refURI);
-        String regionRefUri = propRefUri.getString(FGT_REGION);
-        Integer orderRefUri = Integer.parseInt(propRefUri.getString(FGT_ORDER));
 
-        String regionToUri;
-        Integer orderToUri;
-
-        // En cas de déplacement d'un fragment dans une région vide, l'uri passée est le nom
-        // de la région, la position est celle tout en haut (0 par défaut).
-        if (dropOnEmptyRegion) {
-            regionToUri = toURI;
-            orderToUri = 0;
+        if (logger.isDebugEnabled()) {
+            logger.debug("+-------> Move (" + fromRegion + "/" + fromPos + ") to (" + toRegion + "/" + toPos + ") ");
         }
-        // Sinon, déterminer la position du fragment de destination pour le remplacer.
-        else {
-            PropertyMap propToUri = findSchemaByRefURI(doc, SCHEMA, toURI);
-            regionToUri = propToUri.getString(FGT_REGION);
-            orderToUri = Integer.parseInt(propToUri.getString(FGT_ORDER));
+
+        // Test si déplacement au même endroit, rien à faire
+        if (fromRegion.equals(toRegion) && fromPos.equals(toPos)) {
+            return propertiesToUpdate;
         }
 
 
         PropertyList list = doc.getProperties().getList(SCHEMA);
         Integer index = 0;
 
-        for (Object o : list.list()) {
-            if (o instanceof PropertyMap) {
-                PropertyMap currentFrag = (PropertyMap) o;
 
-                Integer orderCurrent = Integer.parseInt(currentFrag.getString(FGT_ORDER));
+        // Cas d'un déplacement dans une même région
+        if (fromRegion.equals(toRegion)) {
+            boolean moveDown = true; // Déterminer le sens du déplacement
+            Integer minOrder = fromPos;
+            Integer maxOrder = toPos;
+            if (fromPos > toPos) {
+                moveDown = false;
+                minOrder = toPos;
+                maxOrder = fromPos;
+            }
 
-                // Si fgt en cours de déplacement :
-                // Attribution de la nouvelle région et de la nouvelle position
-                if (refURI.equals(currentFrag.get(FGT_URI))) {
-                    String moveToRegion = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_REGION).concat("=").concat(regionToUri);
+            for (Object o : list.list()) {
+                if (o instanceof PropertyMap) {
+                    PropertyMap currentFrag = (PropertyMap) o;
 
-                    propertiesToUpdate.add(moveToRegion);
+                    Integer currentOrder = Integer.parseInt(currentFrag.getString(FGT_ORDER));
 
-                    Integer newOrder = orderToUri;
-                    if (belowFragment)
-                        newOrder = orderToUri + 1;
+                    // Si fgt en cours de déplacement :
+                    // Attribution de la nouvelle région et de la nouvelle position
+                    if (fromRegion.equals(currentFrag.getString(FGT_REGION))) {
 
-                    String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=").concat(newOrder.toString());
 
-                    propertiesToUpdate.add(moveToOrder);
-                } else {
-                    // Si fgt de la région d'origine et en dessous du fgt
-                    // déplacé
-                    // Décalage vers le haut
-                    if (regionRefUri.equals(currentFrag.getString(FGT_REGION)) && orderCurrent > orderRefUri) {
+                        if (fromPos.equals(currentOrder)) {
 
-                        Integer newOrder = orderCurrent - 1;
-                        String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=").concat(newOrder.toString());
+                            Integer newOrder = toPos;
 
-                        propertiesToUpdate.add(moveToOrder);
-                    }
+                            String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                                    .concat(newOrder.toString());
 
-                    // Si fgt de la région cible est au niveau de la région
-                    // déplacée
-                    // Décalage vers le bas
-                    if (regionToUri.equals(currentFrag.getString(FGT_REGION))) {
+                            propertiesToUpdate.add(moveToOrder);
+                        }
 
-                        if ((belowFragment && orderCurrent > orderToUri) || (!belowFragment && (orderCurrent >= orderToUri))) {
+                        else if (fromRegion.equals(currentFrag.getString(FGT_REGION)) && (currentOrder >= minOrder && currentOrder <= maxOrder)) {
 
-                            Integer newOrder = orderCurrent + 1;
+                            Integer newOrder = moveDown ? currentOrder - 1 : currentOrder + 1;
                             String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
                                     .concat(newOrder.toString());
 
@@ -305,10 +291,63 @@ public abstract class EditableWindowService {
                         }
                     }
                 }
+                index++;
             }
-            index++;
-        }
 
+        } else {
+            for (Object o : list.list()) {
+                if (o instanceof PropertyMap) {
+                    PropertyMap currentFrag = (PropertyMap) o;
+
+                    Integer currentOrder = Integer.parseInt(currentFrag.getString(FGT_ORDER));
+
+                    // Si fgt en cours de déplacement :
+                    // Attribution de la nouvelle région et de la nouvelle position
+                    if ((fromRegion.equals(currentFrag.getString(FGT_REGION))) && (fromPos.equals(currentOrder))) {
+
+                        String moveToRegion = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_REGION).concat("=").concat(toRegion);
+
+                        propertiesToUpdate.add(moveToRegion);
+
+                        Integer newOrder = toPos;
+
+                        String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=").concat(newOrder.toString());
+
+                        propertiesToUpdate.add(moveToOrder);
+                    } else {
+
+                        // Si fgt de la région d'origine et en dessous du fgt
+                        // déplacé
+                        // Décalage vers le haut
+                        if (fromRegion.equals(currentFrag.getString(FGT_REGION)) && currentOrder > fromPos) {
+
+                            Integer newOrder = currentOrder - 1;
+                            String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                                    .concat(newOrder.toString());
+
+                            propertiesToUpdate.add(moveToOrder);
+                        }
+
+                        // Si fgt de la région cible est au niveau de la région
+                        // déplacée
+                        // Décalage vers le bas
+                        if (toRegion.equals(currentFrag.getString(FGT_REGION))) {
+
+                            if (currentOrder > toPos) {
+
+                                Integer newOrder = currentOrder + 1;
+                                String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                                        .concat(newOrder.toString());
+
+                                propertiesToUpdate.add(moveToOrder);
+                            }
+                        }
+                    }
+                }
+                index++;
+            }
+
+        }
         return propertiesToUpdate;
     }
 }

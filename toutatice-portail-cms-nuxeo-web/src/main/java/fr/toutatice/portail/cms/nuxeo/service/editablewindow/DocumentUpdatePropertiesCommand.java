@@ -2,6 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
@@ -13,6 +15,8 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
  * 
  */
 public class DocumentUpdatePropertiesCommand implements INuxeoCommand {
+
+    protected static final Log logger = LogFactory.getLog(DocumentUpdatePropertiesCommand.class);
 
     /** Document courant */
     private Document inputDoc;
@@ -38,6 +42,10 @@ public class DocumentUpdatePropertiesCommand implements INuxeoCommand {
         }
 
         request.set("properties", sb.toString());
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(sb.toString());
+        }
 
         execute = request.execute();
 
