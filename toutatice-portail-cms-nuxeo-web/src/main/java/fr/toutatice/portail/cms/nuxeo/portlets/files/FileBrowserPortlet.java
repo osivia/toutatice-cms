@@ -19,15 +19,12 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
-import org.osivia.portal.api.cache.services.CacheInfo;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -254,7 +251,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 				
 				// Tri pour affichage
-				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
+				List<Document> sortedDocs = (ArrayList<Document>) docs.list();
 				Collections.sort(sortedDocs, createComparator( doc));
 				request.setAttribute("docs", sortedDocs);
 

@@ -11,12 +11,10 @@
  */
 package org.nuxeo.ecm.automation.client.jaxrs.impl;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import javax.mail.internet.MimeMultipart;
-
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -26,14 +24,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
+import org.nuxeo.ecm.automation.client.RemoteException;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.Connector;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.Request;
 
@@ -132,14 +129,14 @@ public class HttpConnector implements Connector {
                 return null;
             }
             throw new RemoteException(status, "ServerError", "Server Error",
-                    null);
+                    "");
         }
         Header ctypeHeader = entity.getContentType();
         if (ctypeHeader == null) { // handle broken responses with no ctype
             if (status != 200) {
                 // this may happen when login failed
                 throw new RemoteException(status, "ServerError",
-                        "Server Error", null);
+                        "Server Error", "");
             }
             return null; // cannot handle responses with no ctype
         }

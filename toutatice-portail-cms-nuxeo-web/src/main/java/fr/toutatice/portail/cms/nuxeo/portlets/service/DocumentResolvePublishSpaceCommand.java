@@ -1,10 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Constants;
-import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
-import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.Constants;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.NavigationItem;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -36,7 +34,7 @@ public class DocumentResolvePublishSpaceCommand implements INuxeoCommand {
 /*		
  try	{ 
  */
-		 publishSpace = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
+		 publishSpace = (org.nuxeo.ecm.automation.client.model.Document) session
 		.newRequest("Document.FetchPublishSpace").setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common, toutatice")
 		.set("value", path).execute();
 		 

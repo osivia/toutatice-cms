@@ -14,14 +14,14 @@
 <%@page import="javax.portlet.WindowState"%>
 
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Documents"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Documents"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 
 
 
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
 <portlet:defineObjects />
 
 <%
