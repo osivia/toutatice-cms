@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>toutatice-portail.cms</groupId>
+		<artifactId>cms-parent</artifactId>
+		<version>2.0.9-nux56</version>
+	</parent>
+
+	<groupId>toutatice-portail.cms</groupId>
+	<artifactId>toutatice-portail-cms-nuxeo-lib</artifactId>
+	<version>2.0.9-nux56</version>
+	<packaging>jar</packaging>
+	<name>Portal Nuxeo library</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>nekohtml</groupId>
+			<artifactId>nekohtml</artifactId>
+			<version>0.9.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>toutatice-portail.cms</groupId>
+			<artifactId>toutatice-portail-cms-nuxeo-shared-lib</artifactId>
+			<version>2.0.9-nux56</version>
+			<scope>provided</scope>
+ 		</dependency>
+	</dependencies>
+
+</project>
