@@ -2,10 +2,6 @@ package fr.toutatice.portail.core.nuxeo;
 
 import java.net.URI;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
-import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
-
 public class NuxeoConnectionProperties {
 	
 	private static String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");

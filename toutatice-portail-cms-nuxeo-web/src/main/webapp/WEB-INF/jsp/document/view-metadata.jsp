@@ -14,10 +14,10 @@
 <%@page import="javax.portlet.WindowState"%>
 <%@page import="javax.portlet.ResourceURL"%>
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyList"%>
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>

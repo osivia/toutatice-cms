@@ -13,7 +13,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
@@ -30,8 +29,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -48,7 +47,6 @@ import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 
 /**
@@ -570,7 +568,7 @@ public class ViewListPortlet extends CMSPortlet {
 						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas));
 
 
-				
+				List<Document> docsList = docs.list();
 				int nbPages = 0;
 
 				if (pageSize != -1) {
@@ -587,13 +585,13 @@ public class ViewListPortlet extends CMSPortlet {
 							int pageLimit = Math.max(0, maxItems - currentPage * requestPageSize);
 
 							while (docs.size() > pageLimit)
-								docs.remove(docs.size() - 1);
+								docsList.remove(docs.size() - 1);
 						}
 
 					}
 				}
 
-				request.setAttribute("docs", docs);
+				request.setAttribute("docs", new PaginableDocuments(docsList, docs.getTotalSize(), docs.getPageSize(), docs.getPageCount(), docs.getPageCount()));
 
 				request.setAttribute("currentPage", currentPage);
 
