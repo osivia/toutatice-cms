@@ -1,3 +1,4 @@
+<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
 <%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
@@ -61,7 +62,7 @@ if( rssLinkURL != null)	{
 <% if( nuxeoRequest != null)	{ %>
 
 		<div class="displayRequest" style="border: 1px; border-style: solid"> 
-			<%= nuxeoRequest %>
+			<%= StringEscapeUtils.escapeHtml(nuxeoRequest) %>
 		</div>
 
 <%	} %>

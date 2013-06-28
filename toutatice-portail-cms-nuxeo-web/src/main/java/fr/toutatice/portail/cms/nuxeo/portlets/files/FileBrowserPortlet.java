@@ -55,25 +55,49 @@ public class FileBrowserPortlet extends CMSPortlet {
 		return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType()) || "PortalSite".equals(doc.getType()) ;
 
 	}
+	
+	public static boolean isFolderish (Document doc)	{
+		return "PictureBook".equals(doc.getType()) || "DocumentUrlContainer".equals(doc.getType()) || isNavigable(doc);
+	
+	}
 
+	
+	
+	//2.0.9 : Ajout tri sur folder / libelle 
+	// Doit être mis à jour en parallele avec le MenuPortlet.createComparator
+	
 	public static Comparator<Document> createComparator( final Document parentDoc){
 	
-	 Comparator<Document> comparator = new Comparator<Document>() {
-		
-		public int compare(Document e1, Document e2) {
-			
-			if( isOrdered(parentDoc))	{
+		Comparator<Document> comparator = new Comparator<Document>() {
+
+			public int compare(Document e1, Document e2) {
 				
-				long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
-				long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));		
-				
-				return pos1 > pos2 ? 1 : -1;
-				
+				//2.0.9 : ecm:pos jamais renseigné
+
+//				if (isOrdered(parentDoc)) {
+//
+//					long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+//					long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+//
+//					return pos1 > pos2 ? 1 : -1;
+//
+//				} else {
+					if (isFolderish(e1)) {
+						if (isFolderish(e2)) {
+							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+						} else
+							return -1;
+
+					} else {
+						if (isFolderish(e2)) {
+							return 1;
+						} else {
+							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+						}
+
+					}
+				//}
 			}
-			else	{
-				return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
-			}
-		}
 	 };
 		
 		return comparator;
@@ -241,21 +265,24 @@ public class FileBrowserPortlet extends CMSPortlet {
 					
 				//v2.0.5 : liens contextualisés par paramétrage
 				// On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
-				boolean filterByNav = false;
+//				boolean filterByNav = false;
 				if(  "1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization")))	{
 					request.setAttribute("cmsLink", "1");
-					filterByNav = true;
+//					filterByNav = true;
 				}
 				
 				CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
 				
-				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion(), filterByNav ));
+				Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx.isDisplayingLiveVersion() ));
 				
 
 				
 				// Tri pour affichage
 				List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
-				Collections.sort(sortedDocs, createComparator( doc));
+				
+				if( ! isOrdered(doc))
+					Collections.sort(sortedDocs, createComparator( doc));
+				
 				request.setAttribute("docs", sortedDocs);
 
 				/* Récupération des parents (pour le path) */

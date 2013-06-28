@@ -221,35 +221,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
 			
-			/*
-			nuxeoRequest = "( (ecm:parentId = '" + pubInfos.getLiveId() + "' )";
+			//v2.0.9 : ordre par date de modif par défaut
+			else
+				nuxeoRequest += " order by dc:modified desc";
+			
 
-			
-			String excludedFoldersRequest = "";
-
-			for (CMSItem curItem : navItems) {
-				String hiddenItem = curItem.getProperties().get("hideInNavigation");
-				if (!"1".equals(hiddenItem)) {
-					if( excludedFoldersRequest.length() > 0)
-						excludedFoldersRequest += " AND ";
-					excludedFoldersRequest = excludedFoldersRequest + " ( NOT ecm:path STARTSWITH '" + curItem.getPath()	+ "' )";
-				}
-			}
-			
-			nuxeoRequest += " OR ( ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' ) )";
-			
-			if( excludedFoldersRequest.length() > 0)
-				nuxeoRequest += " AND " + excludedFoldersRequest;
-			
-			nuxeoRequest +=  "AND ecm:mixinType != 'Folderish'";
-			*/
-			
 
 		} else {
 			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
 			
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
+			else
+				//v2.0.9 : ordre par date de modif par défaut				
+				nuxeoRequest += " order by dc:modified desc";
 		}
 	
 		
@@ -334,7 +319,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, false));
 		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -471,11 +456,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 						props.getWindowProperties().put("osivia.title", "Liste des documents");
 						return props;
 					}
-						
-
-				 
+			 }	else	{
+				 //v2.0.9 : ordre par date de modif par défaut				 
+				 if ("Folder".equals(doc.getType()))
+					 return getCMSFolderPlayer(ctx);
+				 else
+					 getCMSOrderedFolderPlayer(ctx);
 			 }
-			return getCMSFolderPlayer(ctx);
 		} 
 		
 		if ("PortalVirtualPage".equals(doc.getType())) {

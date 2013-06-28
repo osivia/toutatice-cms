@@ -1,4 +1,5 @@
 
+<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.KeywordsSelectorPortlet"%>
 <%@page import="org.apache.jasper.tagplugins.jstl.core.ForEach"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
@@ -41,7 +42,7 @@ if(! "1".equals(renderRequest.getAttribute("keywordMonoValued"))){
 		
 	%>
 		<tr>
-			<td width="90%"><%= keywordOcc%> </td> <td>
+			<td width="90%"><%= StringEscapeUtils.escapeHtml(keywordOcc) %> </td> <td>
 			
 			<a href="<portlet:actionURL>
 	         		<portlet:param name="action" value="delete"/>
@@ -61,12 +62,19 @@ if(! "1".equals(renderRequest.getAttribute("keywordMonoValued"))){
 	}
 	%>
 
+	<%
+	String escapedKeyword = StringEscapeUtils.escapeHtml((String) request.getAttribute("keyword")); 
+	if( escapedKeyword == null)
+		escapedKeyword = "";
+%>	
+
 	<div class="nuxeo-keywords-selector">
 			<form method="post" action="<portlet:actionURL/>">
-				<input type="text" name="keyword" value="${keyword}" size="15">	
+				<input type="text" name="keyword" value="<%= escapedKeyword %>" size="15">	
 				<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
 			</form>			
 	</div>
+	
 
 <% } else { 
 	

@@ -57,8 +57,9 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
 				publiInfos.setPublished(convertBoolean(obj.get("published")));
 				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
-				
-				publiInfos.setSubTypes(decodeSubTypes((JSONObject) obj.get("subTypes")));
+	
+				// Commenté par JSS pour l'instant (fonctionnalité non active)
+//				publiInfos.setSubTypes(decodeSubTypes((JSONObject) obj.get("subTypes")));
 
 				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
 
