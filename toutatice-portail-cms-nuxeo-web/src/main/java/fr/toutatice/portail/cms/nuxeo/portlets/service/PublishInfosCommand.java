@@ -39,39 +39,39 @@ public class PublishInfosCommand implements INuxeoCommand {
 		CMSPublicationInfos publiInfos = null;
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
-		request.set("path", path);
+		request.set("path", this.path);
 		Blob binariesInfos = (Blob) request.execute();
 
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
-			
+
 			String content = FileUtils.read(binariesInfos.getStream());
-			
+
 			JSONArray row = JSONArray.fromObject(content);
 			Iterator it = row.iterator();
 			while (it.hasNext()) {
 				JSONObject obj = (JSONObject) it.next();
 				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
-				publiInfos.setDocumentPath( decode((String) obj.get("documentPath")));
+				publiInfos.setDocumentPath( this.decode((String) obj.get("documentPath")));
 				publiInfos.setLiveId((String) obj.get("liveId"));
-				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
-				publiInfos.setPublished(convertBoolean(obj.get("published")));
-				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
-				
-				publiInfos.setSubTypes(decodeSubTypes((JSONObject) obj.get("subTypes")));
+				publiInfos.setEditableByUser(this.convertBoolean(obj.get("editableByUser")));
+				publiInfos.setPublished(this.convertBoolean(obj.get("published")));
+				publiInfos.setAnonymouslyReadable(this.convertBoolean(obj.get("anonymouslyReadable")));
+
+				publiInfos.setSubTypes(this.decodeSubTypes((JSONObject) obj.get("subTypes")));
 
 				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
 
-				String publishSpacePath = decode((String) obj.get("publishSpacePath"));
+				String publishSpacePath = this.decode((String) obj.get("publishSpacePath"));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
-					publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
+					publiInfos.setPublishSpaceDisplayName(this.decode((String) obj.get("publishSpaceDisplayName")));
 					publiInfos.setLiveSpace(false);
 				} else {
-					String workspacePath = decode((String) obj.get("workspacePath"));
+					String workspacePath = this.decode((String) obj.get("workspacePath"));
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
-						publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
+						publiInfos.setPublishSpaceDisplayName(this.decode((String) obj.get("workspaceDisplayName")));
 						publiInfos.setLiveSpace(true);
 					}
 				}
@@ -81,28 +81,33 @@ public class PublishInfosCommand implements INuxeoCommand {
 		return publiInfos;
 	}
 
-	/**
-	 * Décode en UTF-8 les labels de la Map des sous-types permis.
-	 * @param map
-	 * @return
-	 * @throws UnsupportedEncodingException 
-	 */
-	private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
-		Map<String, String> decodedSubTypes = new HashMap<String, String>();
-		for(Entry<String, String> subType : subTypes.entrySet()){
-			String decodedLabel = decode(subType.getValue());
-			decodedSubTypes.put(subType.getKey(), decodedLabel);
-		}
-		return decodedSubTypes;
-	}
+    /**
+     * Décode en UTF-8 les labels de la Map des sous-types permis.
+     *
+     * @param map
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
+        if (subTypes != null) {
+            Map<String, String> decodedSubTypes = new HashMap<String, String>();
+            for (Entry<String, String> subType : subTypes.entrySet()) {
+                String decodedLabel = this.decode(subType.getValue());
+                decodedSubTypes.put(subType.getKey(), decodedLabel);
+            }
+            return decodedSubTypes;
+        } else {
+            return null;
+        }
+    }
 
 	public String getId() {
-		return "PublishInfosCommand" + path;
+		return "PublishInfosCommand" + this.path;
 	}
 
 	/**
 	 * Décode une chaîne de caractères en UTF-8
-	 * 
+	 *
 	 * @param value
 	 *            chaîne de caractères à décoder
 	 * @return la chaîne de caractères décodée
@@ -114,7 +119,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return value;
 	}
-	
+
 	private Boolean convertBoolean(Object value) {
 		if (value != null) {
 			return (Boolean) value;
