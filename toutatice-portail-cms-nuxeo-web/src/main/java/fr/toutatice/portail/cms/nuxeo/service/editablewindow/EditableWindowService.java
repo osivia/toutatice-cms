@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,6 +14,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
 import org.osivia.portal.core.cms.CMSEditableWindow;
+import org.osivia.portal.core.cms.CMSException;
 
 /**
  * Classe générique de manipulation des schémas complexes nuxeo côté portail
@@ -35,6 +38,9 @@ public abstract class EditableWindowService {
 
     /** Référence du type de window */
     protected EditableWindowTypeEnum type;
+
+    /** Comparateur de fragments */
+    private static FragmentComparator comparator = new FragmentComparator();
 
     /**
      * Définit le type référent à la classe de service
@@ -222,21 +228,87 @@ public abstract class EditableWindowService {
     }
 
     /**
+     * Vérification de la cohérence des n° d'ordre dans les fragments
+     * 
+     * @param doc
+     * @return
+     */
+    public static List<String> checkBeforeMove(Document doc, String fromRegion, Integer fromPos, String refUri) throws CMSException {
+        List<String> propertiesToUpdate = new ArrayList<String>();
+
+        PropertyList list = doc.getProperties().getList(SCHEMA);
+        
+        // Détecter des cas de désynchro
+        PropertyMap currentInNuxeo = findSchemaByRefURI(doc, SCHEMA, refUri);
+        if (!(currentInNuxeo.getString(FGT_ORDER).equals(Integer.toString(fromPos)) && currentInNuxeo.getString(FGT_REGION).equals(fromRegion))) {
+            throw new CMSException("Document Nuxéo désynchronisé");
+
+        }
+
+        
+
+        Map<String, SortedSet<PropertyMap>> map = new HashMap<String, SortedSet<PropertyMap>>();
+
+        // Pour chaque fragment...
+        for (Object o : list.list()) {
+            if (o instanceof PropertyMap) {
+                PropertyMap currentFrag = (PropertyMap) o;
+
+                String currentRegion = currentFrag.getString(FGT_REGION);
+
+                SortedSet<PropertyMap> currentSet;
+
+                if (map.get(currentRegion) != null) {
+                    currentSet = map.get(currentRegion);
+                } else {
+                    currentSet = new TreeSet<PropertyMap>(comparator);
+                    map.put(currentRegion, currentSet);
+                }
+
+                currentSet.add(currentFrag);
+            }
+        }
+
+        for (SortedSet<PropertyMap> region : map.values()) {
+            Integer expectedOrder = 0;
+            for (PropertyMap fragment : region) {
+                Integer currentOrder = Integer.parseInt(fragment.getString(FGT_ORDER));
+
+                if (!(currentOrder == expectedOrder)) {
+                    Integer fgtToUpdate = findIndexByURI(doc, fragment.getString(FGT_URI));
+
+                    String moveToOrder = SCHEMA.concat("/").concat(fgtToUpdate.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                            .concat(expectedOrder.toString());
+
+                    propertiesToUpdate.add(moveToOrder);
+                }
+
+                expectedOrder++;
+            }
+        }
+
+        return propertiesToUpdate;
+    }
+
+    /**
+     * Prepare the list of nuxeo update commands to move the fragment
      * 
      * @param doc
      * @param fromRegion the identifier of the region from the fragment is moved
      * @param fromPos position in the fromRegion (from 0 (top) to N-1 ( number of current fgts in the region)
      * @param toRegion the identifier of the region where the fragment is dropped
      * @param toPos the new position of the fgt in the toRegion
-     * @return
+     * @param refUri the id of the window moved
+     * @return list of nuxeo properties and values
+     * @throws CMSException
      */
-    public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos) {
+    public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri) {
 
         List<String> propertiesToUpdate = new ArrayList<String>();
 
 
         if (logger.isDebugEnabled()) {
-            logger.debug("+-------> Move (" + fromRegion + "/" + fromPos + ") to (" + toRegion + "/" + toPos + ") ");
+            logger.debug("+-------> Move " + refUri + " (" + fromRegion + "/" + fromPos + ") to (" + toRegion + "/" + toPos + ") ");
         }
 
         // Test si déplacement au même endroit, rien à faire
@@ -333,7 +405,7 @@ public abstract class EditableWindowService {
                         // Décalage vers le bas
                         if (toRegion.equals(currentFrag.getString(FGT_REGION))) {
 
-                            if (currentOrder > toPos) {
+                            if (currentOrder >= toPos) {
 
                                 Integer newOrder = currentOrder + 1;
                                 String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
@@ -350,4 +422,6 @@ public abstract class EditableWindowService {
         }
         return propertiesToUpdate;
     }
+
+
 }

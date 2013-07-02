@@ -916,9 +916,10 @@ public class NuxeoController {
         try	{
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(this.getNavigationPath())) {
-                if ("preview".equals(this.getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
-                        InternalConstants.ATTR_TOOLBAR_CMS_EDITION_MODE))) {
+            if (path.equals(getNavigationPath())) {
+                if (InternalConstants.CMS_VERSION_PREVIEW.equals(getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
+                        InternalConstants.ATTR_TOOLBAR_CMS_VERSION))) {
+
                     cmsCtx.setDisplayLiveVersion("1");
                 }
 

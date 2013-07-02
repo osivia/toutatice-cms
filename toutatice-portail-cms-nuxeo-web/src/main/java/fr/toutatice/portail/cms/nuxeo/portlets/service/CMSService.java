@@ -1027,7 +1027,12 @@ public class CMSService implements ICMSService {
 
 		String url = "";
 		
-		if(command == EcmCommand.createFgtInRegion) {
+        if (command == EcmCommand.createPage) {
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_document?";
+            requestParameters.put("type", "SimplePage");
+        } else if (command == EcmCommand.editPage) {
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
+        } else if (command == EcmCommand.createFgtInRegion) {
 			url = uri.toString() + "/nxpath/default" + path + "@fragment_create?";
 		}
 		else if(command == EcmCommand.createFgtBelowWindow) {
@@ -1035,8 +1040,10 @@ public class CMSService implements ICMSService {
 		}
 		else if(command == EcmCommand.editFgt) {
 			url = uri.toString() + "/nxpath/default" + path + "@fragment_edit?";
-		}
-		
+        } else if (command == EcmCommand.viewSummary) {
+            url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
+        }
+
 		for(Map.Entry<String, String> param : requestParameters.entrySet()) {
 			url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
 		}
@@ -1044,37 +1051,44 @@ public class CMSService implements ICMSService {
 		return url;
 	}
 
-	public void moveFragment(CMSServiceCtx cmsCtx, String pagePath,
- String fromRegion, Integer fromPos, String toRegion, Integer toPos)
-			throws CMSException {
-		
-		cmsCtx.setDisplayLiveVersion("1");
-		
-		CMSItem cmsItem = getContent(cmsCtx, pagePath);
-		Document doc = (Document) cmsItem.getNativeItem();
-		
+    public void moveFragment(CMSServiceCtx cmsCtx, String pagePath, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri)
+            throws CMSException {
 
-        List<String> propertiesToUpdate = EditableWindowService.prepareMove(doc, fromRegion, fromPos, toRegion, toPos);
-		
-		try {
-			if(propertiesToUpdate.size() > 0) {
-				
-				executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
-				
-                
-                // On force le rechargement du cache
-                cmsCtx.setForceReload(true);
+        // On force le rechargement du cache
+        cmsCtx.setForceReload(true);
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+
+            List<String> propertiesToUpdate = EditableWindowService.checkBeforeMove(doc, fromRegion, fromPos, refUri);
+            if (propertiesToUpdate.size() > 0) {
+                executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
+
+                CMSItem content = getContent(cmsCtx, pagePath);
+                doc = (Document) content.getNativeItem();
+
+            }
+
+
+            propertiesToUpdate = EditableWindowService.prepareMove(doc, fromRegion, fromPos, toRegion, toPos, refUri);
+
+            if (propertiesToUpdate.size() > 0) {
+
+                executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
 
                 CMSItem content = getContent(cmsCtx, pagePath);
                 Document docReloaded = (Document) content.getNativeItem();
 
 
-                cmsCtx.setForceReload(false);
-
-			}
-		} catch (Exception e) {
+            }
+        } catch (Exception e) {
             throw new CMSException(e);
-		}
-	}
+        } finally {
+            cmsCtx.setForceReload(false);
+        }
+    }
 
 }
