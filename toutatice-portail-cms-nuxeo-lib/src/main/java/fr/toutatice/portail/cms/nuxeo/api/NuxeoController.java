@@ -35,7 +35,6 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.auth.constants.InternalConstants;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -44,6 +43,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
@@ -239,7 +239,7 @@ public class NuxeoController {
 
     /**
      * Peuplement à partir de l'interface
-     * 
+     *
      * @param scope
      * @throws Exception
      */
@@ -909,18 +909,25 @@ public class NuxeoController {
 
     }
 
-    public Document fetchDocument 	( String path) throws Exception	{
+    public Document fetchDocument(String path, boolean reload) throws Exception {
 
 
 
         try	{
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(getNavigationPath())) {
-                if ("preview".equals(getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
-                        InternalConstants.ATTR_TOOLBAR_CMS_EDITION_MODE)))
+            if (path.equals(this.getNavigationPath())) {
+                if ("preview".equals(this.getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
+                        InternalConstants.ATTR_TOOLBAR_CMS_EDITION_MODE))) {
                     cmsCtx.setDisplayLiveVersion("1");
+                }
+
             }
+
+            if (reload) {
+                cmsCtx.setForceReload(true);
+            }
+
 
             CMSItem cmsItem = getCMSService().getContent(cmsCtx, path);
             return (Document) cmsItem.getNativeItem();
@@ -935,6 +942,11 @@ public class NuxeoController {
             throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
 
         }
+    }
+
+
+    public Document fetchDocument(String path) throws Exception {
+        return this.fetchDocument(path, false);
     }
 
     public String fetchLiveId 	( String path) throws Exception	{
