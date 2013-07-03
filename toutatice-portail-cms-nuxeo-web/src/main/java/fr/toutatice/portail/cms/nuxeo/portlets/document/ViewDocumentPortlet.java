@@ -34,7 +34,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.statut.IStatutService;
+import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;

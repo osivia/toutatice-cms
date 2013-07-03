@@ -24,8 +24,8 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.statut.IStatutService;
-import org.osivia.portal.api.statut.ServeurIndisponible;
+import org.osivia.portal.api.status.IStatusService;
+import org.osivia.portal.api.status.UnavailableServer;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.page.PageProperties;
@@ -80,8 +80,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		return profilManager;
 	}
 
-	public IStatutService getServiceStatut(NuxeoCommandContext ctx ) throws Exception {
-		IStatutService serviceStatut = (IStatutService) ctx.getPortletContext().getAttribute("StatutService");
+	public IStatusService getServiceStatut(NuxeoCommandContext ctx ) throws Exception {
+		IStatusService serviceStatut = (IStatusService) ctx.getPortletContext().getAttribute("StatusService");
 		return serviceStatut;
 	}
 
@@ -314,7 +314,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 			} else {
 				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
-						new ServeurIndisponible(e.getMessage()));
+						new UnavailableServer(e.getMessage()));
 				
 			}
 		} else if (e instanceof RuntimeException) {
@@ -324,7 +324,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			
 			if( cause instanceof HttpHostConnectException || cause instanceof SocketTimeoutException)
 				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
-						new ServeurIndisponible(e.getMessage()));
+						new UnavailableServer(e.getMessage()));
 			
 		} 
 		// Par défaut les exceptions sont propagées
