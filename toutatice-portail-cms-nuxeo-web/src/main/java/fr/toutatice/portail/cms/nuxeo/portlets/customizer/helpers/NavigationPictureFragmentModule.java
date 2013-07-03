@@ -12,6 +12,7 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -68,7 +69,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
 
 		// Navigation context
 		CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-		cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
+		cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(ctx.getPortalCtx()));
 		cmsReadNavContext.setScope(ctx.getNavigationScope());
 
 		request.setAttribute("ctx", ctx);

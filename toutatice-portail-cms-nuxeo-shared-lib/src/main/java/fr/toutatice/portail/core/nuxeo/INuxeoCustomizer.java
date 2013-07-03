@@ -10,7 +10,7 @@ import javax.portlet.RenderResponse;
 
 import org.jboss.portal.core.model.portal.Page;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSHandlerProperties;

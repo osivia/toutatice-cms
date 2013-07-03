@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.SubType"%>
 <%@page import="java.util.Map"%>
 <%@page import="java.util.Set"%>
 <%@page import="org.osivia.portal.api.path.PortletPathItem"%>
@@ -110,3 +111,58 @@ String detailedURL = detailedModeURL.toString();
 <%	} %>
 
 </div>
+
+
+
+
+<%	
+List<SubType> portalDocsToCreate = (List) renderRequest.getAttribute("portalDocsToCreate")	;
+
+%>
+
+
+<%
+if( portalDocsToCreate != null) {	
+%>
+<div class="fancybox-content">
+	<div id="<%=renderResponse.getNamespace()%>_PORTAL_CREATE" class="document-types">
+		<div class="main-doc-types" id="<%=renderResponse.getNamespace()%>_MAIN">
+<%
+	for (SubType subDoc: portalDocsToCreate) {
+%>
+		
+			<div class="doc-type-detail">
+	
+						<div class="vignette"> <img src="/toutatice-portail-cms-nuxeo/img/icons/<%= subDoc.getDocType().toLowerCase()%>_100.png"> </div> 	
+					
+						<div class="main">
+							<div class="title">
+								<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>"><%= subDoc.getName() %></a>
+							</div>
+						</div>
+						
+	 		 </div>
+
+	
+		<div class="separateur"></div>	
+		
+<%    
+	}
+%>
+
+		</div>
+	
+
+
+
+
+
+
+
+	
+	</div>
+</div>
+<% } %>
+
+
+

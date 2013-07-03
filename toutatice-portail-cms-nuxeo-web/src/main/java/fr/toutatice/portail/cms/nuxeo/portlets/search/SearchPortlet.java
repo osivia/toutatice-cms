@@ -22,7 +22,7 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -187,7 +187,7 @@ public class SearchPortlet extends CMSPortlet {
 				params.put("keywords", "__REPLACE_KEYWORDS__");
 
 
-				String url = urlFactory.getStartProcUrl(new PortalControllerContext(getPortletContext(), request,
+				String url = urlFactory.getStartPortletInRegionUrl(new PortalControllerContext(getPortletContext(), request,
 						response), pageId, "toutatice-portail-cms-nuxeo-searchPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
 
 				request.setAttribute("searchUrl", url);

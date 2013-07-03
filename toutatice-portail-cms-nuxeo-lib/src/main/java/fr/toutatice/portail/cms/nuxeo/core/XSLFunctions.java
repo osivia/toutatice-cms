@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;

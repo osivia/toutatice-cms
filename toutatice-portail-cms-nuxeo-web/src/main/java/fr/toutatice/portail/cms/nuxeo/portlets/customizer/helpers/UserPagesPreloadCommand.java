@@ -33,7 +33,7 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 
   		
 		//v2.0.9 : suite demande Marc
-		String bufferedRequest = "ttc:isPreloadedOnLogin = 1 AND ecm:mixinType = 'Space' AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView' AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 ))";
+		String bufferedRequest = "ttc:isPreloadedOnLogin = 1 AND ecm:mixinType = 'Space' AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView')) AND (ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 )";
 
 
 		request.set("query", "SELECT * FROM Document WHERE " + bufferedRequest.toString() + " ORDER BY ttc:tabOrder");

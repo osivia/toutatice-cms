@@ -440,11 +440,11 @@ public class CMSService implements ICMSService {
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
 		if (commandCtx.getCacheTimeOut() == -1) {
 			if (System.getProperty("nuxeo.cacheTimeout") != null)
-				cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
+				cacheInfos.setExpirationDelay(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
 			else
-				cacheInfos.setDelaiExpiration(0L);
+				cacheInfos.setExpirationDelay(0L);
 		} else
-			cacheInfos.setDelaiExpiration(commandCtx.getCacheTimeOut());
+			cacheInfos.setExpirationDelay(commandCtx.getCacheTimeOut());
 
 		try {
 
@@ -550,7 +550,7 @@ public class CMSService implements ICMSService {
 			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, portletCtx,
 					false);
 			// délai d'une session
-			cacheInfos.setDelaiExpiration(200000);
+			cacheInfos.setExpirationDelay(200000);
 
 
 			navItems = (Map<String, NavigationItem>) getCacheService().getCache(cacheInfos);

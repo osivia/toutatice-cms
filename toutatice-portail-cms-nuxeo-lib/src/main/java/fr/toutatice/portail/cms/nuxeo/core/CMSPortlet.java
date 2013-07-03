@@ -274,7 +274,7 @@ public class CMSPortlet extends GenericPortlet {
 				
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 				
-                // v2.0.9 : fetch direct
+                // v2.1 : fetch direct (pour l'instant, on ne remonte pas en 2.0)
 				// On traite comme s'il s'agissait d'un hyper-lien
 
 //				Document doc = fetchLinkedDocument(ctx, docPath);

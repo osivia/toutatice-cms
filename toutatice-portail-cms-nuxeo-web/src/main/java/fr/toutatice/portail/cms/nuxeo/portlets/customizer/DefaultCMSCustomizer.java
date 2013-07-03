@@ -21,7 +21,7 @@ import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -431,7 +431,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		Map<String, String> params = new HashMap<String, String>();
 
-		String url = portalUrlFactory.getStartProcUrl(new PortalControllerContext(ctx.getControllerContext()),
+		String url = portalUrlFactory.getStartPortletInRegionUrl(new PortalControllerContext(ctx.getControllerContext()),
 				ctx.getPageId(), portletInstance, "virtual", "cms", windowProperties, params);
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();

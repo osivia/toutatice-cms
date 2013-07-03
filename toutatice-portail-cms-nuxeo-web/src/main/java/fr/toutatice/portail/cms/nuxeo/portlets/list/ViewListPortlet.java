@@ -33,13 +33,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.Interpreter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -688,7 +689,7 @@ public class ViewListPortlet extends CMSPortlet {
 								
 								// check if the navigation folder is accessible in anonymous mode (for rss) 
 								CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-								cmsReadNavContext.setControllerContext(ctx.getPortalCtx().getControllerCtx());
+								cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(ctx.getPortalCtx()));
 								cmsReadNavContext.setScope(ctx.getScope());		
 								
 								anonymousAccess = ctx.getCMSService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("osivia.cms.path"));

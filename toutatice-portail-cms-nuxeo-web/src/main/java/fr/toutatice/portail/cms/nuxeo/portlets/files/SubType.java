@@ -1,12 +1,23 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
 
-public class SubDocumentType {
+public class SubType {
     
     private String url;
-    private boolean portalView;
     private String name;
+    private String docType;
+
     
+    
+    public String getDocType() {
+        return docType;
+    }
+
+    
+    public void setDocType(String docType) {
+        this.docType = docType;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -15,13 +26,6 @@ public class SubDocumentType {
         this.url = url;
     }
     
-    public boolean isPortalView() {
-        return portalView;
-    }
-    
-    public void setPortalView(boolean portalView) {
-        this.portalView = portalView;
-    }
     
     public String getName() {
         return name;
@@ -31,7 +35,7 @@ public class SubDocumentType {
         this.name = name;
     }
 
-    public SubDocumentType() {
+    public SubType() {
         super();
     }
     

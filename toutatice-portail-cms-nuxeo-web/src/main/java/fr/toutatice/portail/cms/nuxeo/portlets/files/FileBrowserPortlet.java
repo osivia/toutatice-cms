@@ -115,12 +115,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 window.setProperty("osivia.cms.changeDisplayMode", null);
 
 
-            if (req.getParameter("ecmMenu") != null && req.getParameter("ecmMenu").length() > 0)
-                window.setProperty("osivia.cms.ecmMenu", req.getParameter("ecmMenu"));
-            else if (window.getProperty("osivia.cms.ecmMenu") != null)
-                window.setProperty("osivia.cms.ecmMenu", null);
-
-            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+              if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
                 window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
             else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
                 window.setProperty("osivia.cms.displayLiveVersion", null);
@@ -166,9 +161,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         req.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
         req.setAttribute("forceContextualization", window.getProperty("osivia.cms.forceContextualization"));
 
-        req.setAttribute("ecmMenu", window.getProperty("osivia.cms.ecmMenu"));
-
-
+   
         String scope = window.getProperty("osivia.cms.scope");
         req.setAttribute("scope", scope);
 
@@ -255,16 +248,16 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // v2.0.5 : liens contextualisés par paramétrage
                 // On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
-                boolean filterByNav = false;
-                if ("1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization"))) {
+                //20130627 : Supprimé par JSS (vu avec Olivier)
+				boolean filterByNav = false;
+              if ("1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization"))) {
                     request.setAttribute("cmsLink", "1");
-                    filterByNav = true;
-                }
+              }
 
                 CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), folderPath);
 
                 Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId(), ctx
-                        .isDisplayingLiveVersion(), filterByNav));
+                        .isDisplayingLiveVersion()));
 
 
                 // Tri pour affichage
@@ -290,40 +283,65 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 }
 
-                if (curPath.equals(nuxeoPath)) {
+ // Les liens doivent apparitre sur tous les folders                
+ //               if (curPath.equals(nuxeoPath)) {
 
-                    if ("1".equals(window.getProperty("osivia.cms.ecmMenu"))) {
+
                         List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
 
                         Map<String, String> subTypes = pubInfos.getSubTypes();
 
 
-                        List<SubDocumentType> docsToCreate = new ArrayList<SubDocumentType>();
+                        List<SubType> portalDocsToCreate = new ArrayList<SubType>();
+                        List<SubType> nativeDocsToCreate = new ArrayList<SubType>();
 
                         for (String docType : subTypes.keySet()) {
 
-                            SubDocumentType subType = new SubDocumentType();
+                            SubType subType = new SubType();
+                            
+                            subType.setDocType(docType);
+                            subType.setName(subTypes.get(docType));
 
-                            if (docType.equals("File")) {
+                            // TODO : A paramétrer dans le Customizer
+                            if (docType.equals("File") || docType.equals("Folder") || docType.equals("Note")) {
                                 subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@toutatice_create?type=" + docType);
+                                portalDocsToCreate.add(subType);
                             } else {
                                 subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@create_document?type=" + docType);
+                                nativeDocsToCreate.add(subType);
                             }
-
-                            docsToCreate.add(subType);
+                            
                         }
 
-                        if (docsToCreate.size() > 1) {
-                            MenubarItem item = new MenubarItem("EDIT", "Création ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, "", null,
-                                    "portlet-menuitem-nuxeo-edit", "nuxeo");
-                            item.setAjaxDisabled(true);
-                            // item.setChildrens(createItems);
-                            menuBar.add(item);
-                        }
+                       
+                            /* Lien de création*/
+                            
+                            String fancyID = null;
+                            
+                            if( portalDocsToCreate.size() > 0)
+                                fancyID ="_PORTAL_CREATE";
+                            else {
+                                if( nativeDocsToCreate.size() > 0)
+                                    fancyID ="_NATIVE_CREATE";
+                            }
+                            
+                            if( fancyID != null) {
+                                
+                                MenubarItem item = new MenubarItem("EDIT", "Création ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, "#"+response.getNamespace()+fancyID, null,
+                                    "fancybox_inline portlet-menuitem-nuxeo-edit", "nuxeo");
+                                item.setAjaxDisabled(true);
 
+                                menuBar.add(item);
 
-                    }
+                            }
+                            
+                            if(  portalDocsToCreate.size() > 0)                               
+                                request.setAttribute("portalDocsToCreate", portalDocsToCreate);
+                            
+                            if(  nativeDocsToCreate.size() > 0)                               
+                                request.setAttribute("nativeDocsToCreate", nativeDocsToCreate);
+
 
 
                     String portletName = null;
@@ -334,14 +352,19 @@ public class FileBrowserPortlet extends CMSPortlet {
                         String nuxeoFolderLink = ctx.getLink(curDoc, "file-browser-menu-workspace").getUrl();
 
                         if (nuxeoFolderLink != null) {
-                            List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+
                             MenubarItem item = new MenubarItem("EDIT", "Ouvrir dans Nuxeo", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, nuxeoFolderLink, null,
                                     "portlet-menuitem-nuxeo-edit", "nuxeo");
                             item.setAjaxDisabled(true);
                             menuBar.add(item);
                         }
                     }
-                }
+ //               }
+                
+                
+                
+                
+                
 
 
                 // Injection du path vers le portail

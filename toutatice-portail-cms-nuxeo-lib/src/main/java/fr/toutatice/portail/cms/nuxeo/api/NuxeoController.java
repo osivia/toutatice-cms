@@ -28,7 +28,7 @@ import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -44,6 +44,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
@@ -421,7 +422,7 @@ public class NuxeoController {
             if( this.getNavigationPath() != null){
                 // Navigation context
                 CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-                cmsReadNavContext.setControllerContext(this.getPortalCtx().getControllerCtx());
+                cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(this.getPortalCtx()));
                 cmsReadNavContext.setScope(this.getNavigationScope());
 
                 //TODO : factoriser dans NuxeoController
@@ -841,8 +842,8 @@ public class NuxeoController {
 
 
         CMSServiceCtx handlerCtx = new  CMSServiceCtx();
-        handlerCtx.setControllerContext(new PortalControllerContext(this.getPortletCtx(),
-                this.getRequest(),this.getResponse()).getControllerCtx());
+        handlerCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(),
+                this.getRequest(),this.getResponse())));
         handlerCtx.setPortletCtx(this.getPortletCtx());
         handlerCtx.setRequest(this.getRequest());
         if( this.response instanceof RenderResponse) {
@@ -917,7 +918,7 @@ public class NuxeoController {
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
             if (path.equals(getNavigationPath())) {
-                if (InternalConstants.CMS_VERSION_PREVIEW.equals(getPortalCtx().getControllerCtx().getAttribute(ControllerCommand.SESSION_SCOPE,
+                if (InternalConstants.CMS_VERSION_PREVIEW.equals(ControllerContextAdapter.getControllerContext(getPortalCtx()).getAttribute(ControllerCommand.SESSION_SCOPE,
                         InternalConstants.ATTR_TOOLBAR_CMS_VERSION))) {
 
                     cmsCtx.setDisplayLiveVersion("1");
@@ -1064,8 +1065,8 @@ public class NuxeoController {
 
         this.cmsCtx = new  CMSServiceCtx();
 
-        this.cmsCtx.setControllerContext(new PortalControllerContext(this.getPortletCtx(),
-                this.getRequest(),this.getResponse()).getControllerCtx());
+        this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(),
+                this.getRequest(),this.getResponse())));
 
 
         this.cmsCtx.setPortletCtx(this.getPortletCtx());

@@ -228,7 +228,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION) {
 				// 2 minutes de cache de session
 				// (PublishInfos & Navigation)
-				cacheInfos.setDelaiExpiration(120000);
+				cacheInfos.setExpirationDelay(120000);
 			} else {
 
 				if (ctx.getCacheTimeOut() == -1) {
@@ -237,12 +237,12 @@ public class NuxeoCommandService implements INuxeoCommandService {
 					// nuxeo.cacheTimeOut
 
 					if (System.getProperty("nuxeo.cacheTimeout") != null)
-						cacheInfos.setDelaiExpiration(Long.parseLong(System
+						cacheInfos.setExpirationDelay(Long.parseLong(System
 								.getProperty("nuxeo.cacheTimeout")) * 1000);
 					else
-						cacheInfos.setDelaiExpiration(0L);
+						cacheInfos.setExpirationDelay(0L);
 				} else
-					cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+					cacheInfos.setExpirationDelay(ctx.getCacheTimeOut());
 			}
 		} 	else {
 			cacheInfos.setForceReload(true);
