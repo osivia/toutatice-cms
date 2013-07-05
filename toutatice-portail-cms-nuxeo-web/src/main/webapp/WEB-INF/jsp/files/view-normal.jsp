@@ -25,7 +25,7 @@
 <portlet:defineObjects />
 
 <%
-Documents docs = (Documents) renderRequest.getAttribute("docs")	;
+List<Document> docs = (List<Document>) renderRequest.getAttribute("docs")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");
