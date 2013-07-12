@@ -12,7 +12,7 @@ public enum EditableWindowTypeEnum {
 	html("fgt.html", "toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_",HtmlEWService.getInstance()),
 	
 	/** Liste de notes */
-	liste("fgt.liste", "toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_",ListEWService.getInstance()),
+    liste("fgt.list", "toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_", ListEWService.getInstance()),
 
 	/** Portlet metier */
 	portlet("fgt.portlet", null, "portlet_Frag_", PortletEWService.getInstance());	

@@ -1033,13 +1033,13 @@ public class CMSService implements ICMSService {
         } else if (command == EcmCommand.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmCommand.createFgtInRegion) {
-			url = uri.toString() + "/nxpath/default" + path + "@fragment_create?";
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
 		}
 		else if(command == EcmCommand.createFgtBelowWindow) {
-			url = uri.toString() + "/nxpath/default" + path + "@fragment_create?";
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
 		}
 		else if(command == EcmCommand.editFgt) {
-			url = uri.toString() + "/nxpath/default" + path + "@fragment_edit?";
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         }

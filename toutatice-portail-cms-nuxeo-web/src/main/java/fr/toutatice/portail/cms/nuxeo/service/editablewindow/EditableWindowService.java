@@ -237,15 +237,7 @@ public abstract class EditableWindowService {
         List<String> propertiesToUpdate = new ArrayList<String>();
 
         PropertyList list = doc.getProperties().getList(SCHEMA);
-        
-        // Détecter des cas de désynchro
-        PropertyMap currentInNuxeo = findSchemaByRefURI(doc, SCHEMA, refUri);
-        if (!(currentInNuxeo.getString(FGT_ORDER).equals(Integer.toString(fromPos)) && currentInNuxeo.getString(FGT_REGION).equals(fromRegion))) {
-            throw new CMSException("Document Nuxéo désynchronisé");
 
-        }
-
-        
 
         Map<String, SortedSet<PropertyMap>> map = new HashMap<String, SortedSet<PropertyMap>>();
 
@@ -302,7 +294,14 @@ public abstract class EditableWindowService {
      * @return list of nuxeo properties and values
      * @throws CMSException
      */
-    public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri) {
+    public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri) throws CMSException {
+
+        // Détecter des cas de désynchro
+        PropertyMap currentInNuxeo = findSchemaByRefURI(doc, SCHEMA, refUri);
+        if (!(currentInNuxeo.getString(FGT_ORDER).equals(Integer.toString(fromPos)) && currentInNuxeo.getString(FGT_REGION).equals(fromRegion))) {
+            throw new CMSException("Document Nuxéo désynchronisé");
+
+        }
 
         List<String> propertiesToUpdate = new ArrayList<String>();
 
