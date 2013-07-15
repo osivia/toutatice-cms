@@ -2,6 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
@@ -141,6 +144,39 @@ public class MenuPortlet extends CMSPortlet {
 		rd.include(req, res);
 
 	}
+	
+	//2.0.9 : Ajout tri sur folder / libelle 
+	// Doit être mis à jour en parallele avec le FileBrowserPortlet.createComparator
+	
+	public static Comparator<NavigationDisplayItem> createComparator( final Document parentDoc){
+		
+		Comparator<NavigationDisplayItem> comparator = new Comparator<NavigationDisplayItem>() {
+
+			public int compare(NavigationDisplayItem item1, NavigationDisplayItem item2) {
+				
+					Document e1 = (Document) item1.getNavItem().getNativeItem();
+					Document e2 = (Document) item2.getNavItem().getNativeItem();
+				
+					if (FileBrowserPortlet.isFolderish(e1)) {
+						if (FileBrowserPortlet.isFolderish(e2)) {
+							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+						} else
+							return -1;
+
+					} else {
+						if (FileBrowserPortlet.isFolderish(e2)) {
+							return 1;
+						} else {
+							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+						}
+
+					}
+				//}
+			}
+	 };
+		
+		return comparator;
+	};
 
 	private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
 			int curLevel, int maxLevel, String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws Exception {
@@ -194,8 +230,11 @@ public class MenuPortlet extends CMSPortlet {
 		}
 
 		NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
-				selected);
-
+				selected, navItem);
+		
+		
+		ArrayList<NavigationDisplayItem> displayChildren = new ArrayList<NavigationDisplayItem>();
+		
 		if ( (partialOpenLevels == -1 && curLevel + 1 <= maxLevel )  || (partialOpenLevels != -1 && ( selected || (curLevel + 1 <= partialOpenLevels))))  {
 			List<CMSItem> navItems = ctx.getCMSService().getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
 			
@@ -205,12 +244,22 @@ public class MenuPortlet extends CMSPortlet {
 					
 					NavigationDisplayItem newItem = createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, spacePath, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")), partialOpenLevels);
 					if( newItem != null)
-						displayItem.getChildrens().add(	newItem);
+						displayChildren.add(	newItem);
+						
 				}
 				
 			}
 
 		}
+		
+		//v2.0.9 Ajout tri pour affichage cohérent avec FileBrowser
+		List<NavigationDisplayItem> sortedDocs = (ArrayList<NavigationDisplayItem>) displayChildren.clone();
+		
+		if( ! FileBrowserPortlet.isOrdered(doc))
+			Collections.sort(sortedDocs, createComparator( doc));
+		
+		displayItem.setChildrens(sortedDocs);
+		
 
 		return displayItem;
 

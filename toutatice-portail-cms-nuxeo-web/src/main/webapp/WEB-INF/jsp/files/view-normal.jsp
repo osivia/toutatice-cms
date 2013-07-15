@@ -1,4 +1,5 @@
 
+<%@page import="javax.portlet.ResourceURL"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>
@@ -43,28 +44,16 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 	
 <div class="separateur"></div>	
 
-<table class="nuxeo-file-browser-table"  cellspacing="4" width="100%">
+<table class="nuxeo-file-browser-table"  cellspacing="0" width="100%">
 
-<% if( WindowState.MAXIMIZED.equals(renderRequest.getWindowState()))	{	%>
-
-<tr align="left">
-	<th width="5%">&nbsp;</th>
-	<th width="65%">Nom</th>
-	<th width="30%">Date</th>	
-	<!-- <th width="10%">Taille</th> -->
-	<!-- <th >Description</th> -->
-</tr>	
-
-<% } else	{%>
 
 <tr align="left">
-	<th width="5%">&nbsp;</th>
-	<th width="65%">Nom</th>
-	<th width="25%">Date</th>	
-	<!-- <th width="25%">Taille</th> -->
+	<th width="3%">&nbsp;</th>
+	<th width="25%">Nom</th>
+	<th width="15%">Date</th>	
+	<th width="5%">Actions</th>		
+	<th width="45%">&nbsp;</th>	
 </tr>	
-<% } %>
-
 
 
 <%
@@ -81,6 +70,16 @@ while( it.hasNext())	{
 	String target = "";	
 	String downloadFileTarget = "";
 	boolean noAjax = true;
+	
+
+	ResourceURL actionsURL = renderResponse.createResourceURL();
+	actionsURL.setParameter("type", "fileActions");
+	actionsURL.setResourceID(doc.getId());
+	String actionsMenuURL = actionsURL.toString();
+
+	String actionId = "actions"+ renderResponse.getNamespace() + doc.getId();
+
+	
 	
 	 if(  ! "1".equals(cmsLink) && 	 FileBrowserPortlet.isNavigable( doc) )	{
 		PortletURL folderURL = renderResponse.createRenderURL();
@@ -112,13 +111,15 @@ while( it.hasNext())	{
 %>
 
 
-		<tr align="left"> 
+		<tr class="file-item" align="left"> 
 			<td> 
 				<%=icon%>
 			</td> 
+			
+						
 			<td>
 <% if (noAjax)		{ %> 
-	 <div class="no-ajax-link"> 
+	 <div class="no-ajax-link file-name"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
 <% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
@@ -134,12 +135,18 @@ while( it.hasNext())	{
 	 </div> 
 <% }	%>					
 			</td>
+			
 			<td>
 				<%= Formater.formatDateAndTime(doc) %>
 			</td>
 
-
+			<td>
+				 <div class="file-actions" onclick="getFileActions('<%= actionsMenuURL %>', '<%= actionId %>');">   <div class="file-actions-menu" id="<%= actionId %>">  <div class="ajax-waiting" > </div> </div> </div>
+			</td>
 			
+			<td>
+			</td>
+
 		
 		</tr>
 		
@@ -150,10 +157,40 @@ while( it.hasNext())	{
 %>
 </table>
 
+<script>
+	var $JQry = jQuery.noConflict();
 
+	$JQry(document).ready(function() {
+		$JQry(".file-item").hover(
+  			function () {
 
+   			 $JQry(this).css("background","#E4E4EC");
 
+   			 var file = Element.down(this, "div.file-actions");
+     		 $JQry(file).css("visibility","visible"); 
+ 			 
+   		}, 
+  			function () {
+  			 $JQry(this).css("background","#FFFFFF");
+  			
+  			 var file = Element.down(this, "div.file-actions");
+     		 $JQry(file).css("visibility","hidden"); 		
+ 			 }
+ 		);
+ 		
+ 	  $JQry(".file-actions-menu").hover(
+  			function () {
+ 			 
+   		}, 
+  			function () {
+     		 $JQry(this).css("visibility","hidden"); 		
+ 			 }
+ 		);
+ 		
+ 		
+	});
 
+</script>
 	
 
 </div>

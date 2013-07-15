@@ -2,8 +2,11 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,10 +46,12 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPict
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
@@ -227,41 +232,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 			
 				
-			//v2.0-SP1 : suppression des folders cachés
-			
+		
 			nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
 			
-			/*
-			nuxeoRequest = "( (ecm:parentId = '" + pubInfos.getLiveId() + "' )";
+			//v2.0.9 : ordre par date de modif par défaut
+			else
+				nuxeoRequest += " order by dc:modified desc";
+			
 
-			
-			String excludedFoldersRequest = "";
-
-			for (CMSItem curItem : navItems) {
-				String hiddenItem = curItem.getProperties().get("hideInNavigation");
-				if (!"1".equals(hiddenItem)) {
-					if( excludedFoldersRequest.length() > 0)
-						excludedFoldersRequest += " AND ";
-					excludedFoldersRequest = excludedFoldersRequest + " ( NOT ecm:path STARTSWITH '" + curItem.getPath()	+ "' )";
-				}
-			}
-			
-			nuxeoRequest += " OR ( ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' ) )";
-			
-			if( excludedFoldersRequest.length() > 0)
-				nuxeoRequest += " AND " + excludedFoldersRequest;
-			
-			nuxeoRequest +=  "AND ecm:mixinType != 'Folderish'";
-			*/
-			
 
 		} else {
 			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
 			
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
+			else
+				//v2.0.9 : ordre par date de modif par défaut				
+				nuxeoRequest += " order by dc:modified desc";
 		}
 	
 		
@@ -346,7 +335,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, false));
 		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -483,11 +472,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 						props.getWindowProperties().put("osivia.title", "Liste des documents");
 						return props;
 					}
-						
-
-				 
+			 }	else	{
+				 //v2.0.9 : ordre par date de modif par défaut				 
+				 if ("Folder".equals(doc.getType()))
+					 return getCMSFolderPlayer(ctx);
+				 else
+					 getCMSOrderedFolderPlayer(ctx);
 			 }
-			return getCMSFolderPlayer(ctx);
 		} 
 		
 		if ("PortalVirtualPage".equals(doc.getType())) {
@@ -761,6 +752,36 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	public String getExtraRequestFilter(CMSServiceCtx ctx, String requestFilteringPolicy) throws Exception {
 		return null;
 	}
+
+	   // V2.1 : workspace
+	
+	private Map<String, DocTypeDefinition> docTypes = null;
+	
+	protected DocTypeDefinition createDocType( String docTypeName, String displayName){
+	    
+	    DocTypeDefinition portalDocType = new DocTypeDefinition();
+	    portalDocType.setName(docTypeName);
+	    portalDocType.setDisplayName(displayName);
+	    portalDocType.setSupportingPortalForm(true);
+    	    
+	    return portalDocType;
+	}
+	
+    public Map<String, DocTypeDefinition> getDocTypeDefinitions(CMSServiceCtx ctx) throws Exception {
+ 
+        if( docTypes == null)   {
+            
+            docTypes = new LinkedHashMap<String,DocTypeDefinition>();
+            
+            docTypes.put("Folder", createDocType("Folder", "Dossier"));            
+            docTypes.put("File", createDocType("File", "Fichier"));
+            docTypes.put("Note", createDocType("Note", "Note"));
+             
+        }
+        return docTypes;
+        
+    }
+
 
 
 	

@@ -2,6 +2,7 @@ package fr.toutatice.portail.core.nuxeo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -53,6 +54,11 @@ public interface INuxeoCustomizer {
 	/* Ajout des filtres de requetes */
 
 	public String addPublicationFilter( CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception ;
+
 	
+	   /* Sous-documents du doc courant */
+
+    public Map<String, DocTypeDefinition> getDocTypeDefinitions( CMSServiceCtx ctx) throws Exception ;
+
 	
 }

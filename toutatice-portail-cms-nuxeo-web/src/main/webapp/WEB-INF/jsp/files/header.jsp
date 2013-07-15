@@ -116,6 +116,8 @@ String detailedURL = detailedModeURL.toString();
 
 
 <%	
+// V2.1 : workspace
+
 List<SubType> portalDocsToCreate = (List) renderRequest.getAttribute("portalDocsToCreate")	;
 
 %>

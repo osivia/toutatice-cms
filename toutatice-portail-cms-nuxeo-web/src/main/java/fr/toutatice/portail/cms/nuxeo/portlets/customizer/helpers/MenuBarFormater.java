@@ -5,6 +5,10 @@ import java.util.Locale;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+import javax.portlet.PortletURL;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.jboss.portal.core.model.portal.Page;
@@ -22,6 +26,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 
 /**
@@ -77,6 +82,8 @@ public class MenuBarFormater {
 			getPermaLinkLink(cmsCtx, menuBar);
 
 			getContextualizationLink(cmsCtx, menuBar);
+			
+			getEditLink(cmsCtx, menuBar);
 
 			getAdministrationLink(cmsCtx, menuBar);
 		} catch (CMSException e) {
@@ -91,12 +98,13 @@ public class MenuBarFormater {
 	
 	protected void addAdministrationLinkItem(List<MenubarItem> menuBar, String url) throws Exception {
 
-		MenubarItem item = new MenubarItem("EDIT", "Editer dans Nuxeo", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
-				url, null, "portlet-menuitem-nuxeo-edit", "nuxeo");
+		MenubarItem item = new MenubarItem("MANAGE", "Gérer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 3,
+				url, null, "portlet-menuitem-nuxeo-manage", "nuxeo");
 		item.setAjaxDisabled(true);
 		menuBar.add(item);
 
 	}
+	
 
 	
 	protected void getAdministrationLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
@@ -109,13 +117,67 @@ public class MenuBarFormater {
 		
 		
 		if( pubInfos.isEditableByUser())	{
-			String url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"
-					+  pubInfos.getLiveId() + "/view_documents";
+		    
+		    String url = null;
+		    
+		    Document doc = (Document) cmsCtx.getDoc();
+		    
+	        url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"  +  pubInfos.getLiveId() + "/view_documents";
 			
 			addAdministrationLinkItem(menuBar,url);
 
 		}
 	}
+	
+	
+	   protected void addEditLinkItem(List<MenubarItem> menuBar, String onClick, String url ) throws Exception {
+
+	        MenubarItem item = new MenubarItem("EDIT", "Modifier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
+	                url, onClick, "fancyframe_refresh portlet-menuitem-nuxeo-edit", "nuxeo");
+	        item.setAjaxDisabled(true);
+	        menuBar.add(item);
+
+	    }
+	   
+
+	   // v2.1 : WORKSPACES
+	    protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+
+	        if (cmsCtx.getRequest().getRemoteUser() == null)
+	            return;
+
+	        
+	        CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+	        
+		        if( pubInfos.isEditableByUser())    {
+	            if( pubInfos.isLiveSpace())    {
+	            
+	                String url = null;
+	            
+	                Document doc = (Document) cmsCtx.getDoc();
+	                
+                    
+                    DocTypeDefinition docTypeDef =  customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+                    
+                    if( docTypeDef != null && docTypeDef.isSupportingPortalForm())  {
+
+                        // Force to reload portlet
+                        PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
+                        portletURL.setParameter("reloadDatas", ""+ System.currentTimeMillis());
+                        
+                        String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");
+	                    
+                        String onClick = "setCallbackParams('"+divId+"', '"+portletURL.toString()+"')";
+                        
+	                    url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath() + "@toutatice_edit";
+	                    addEditLinkItem(menuBar,onClick, url);	                
+	                } 	
+	            }
+	        }
+	    }
+	    	   
+
+	
 
 	protected void addContextualizationLinkItem(List<MenubarItem> menuBar, String displayName, String url) throws Exception {
 		

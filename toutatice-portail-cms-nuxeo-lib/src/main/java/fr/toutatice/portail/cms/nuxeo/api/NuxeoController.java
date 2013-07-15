@@ -58,6 +58,7 @@ import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 public class NuxeoController {
 
@@ -903,12 +904,28 @@ public class NuxeoController {
             nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         }
 
-
         List<MenubarItem> menuBar = (List<MenubarItem>) this.request.getAttribute("osivia.menuBar");
 
         nuxeoService.getCMSCustomizer().formatContentMenuBar(this.getCMSCtx());
-
     }
+    
+    
+     public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
+
+        // Adaptation via le CMSCustomizer
+
+        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
+        if( nuxeoService == null) {
+            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        }
+
+  
+        return nuxeoService.getCMSCustomizer().getDocTypeDefinitions(this.getCMSCtx());
+    }
+    
+     
+    
+    
 
     public Document fetchDocument(String path, boolean reload) throws Exception {
 

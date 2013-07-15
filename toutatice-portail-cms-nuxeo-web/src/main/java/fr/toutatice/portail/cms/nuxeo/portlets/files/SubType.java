@@ -6,8 +6,6 @@ public class SubType {
     private String url;
     private String name;
     private String docType;
-
-    
     
     public String getDocType() {
         return docType;

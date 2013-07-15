@@ -214,8 +214,7 @@ public class CMSService implements ICMSService {
 					haveToGetLive = true;
 			
 
-
-			cmsCtx.setScope("superuser_context");
+		    cmsCtx.setScope("superuser_context");
 
 			if (haveToGetLive) {
 

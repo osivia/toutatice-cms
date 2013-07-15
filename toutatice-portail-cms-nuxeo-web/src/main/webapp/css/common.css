@@ -198,6 +198,49 @@ div.nuxeo-file-browser div.file-detail dl dd	{
 }
 
 
+div.nuxeo-file-browser div.file-actions 	{
+ 	background-image: url("../img/dropdown.gif");
+    background-repeat: no-repeat;
+    height: 18px;
+    visibility: hidden;
+}
+
+div.file-actions-menu	{
+	position: absolute;
+	visibility: hidden;
+    z-index: 100;	
+    background-color: #F4F4FC;
+ 	background-image: url("../img/dropdown.gif");
+    background-repeat: no-repeat;  
+    border: 1px solid #333333;   
+    padding-top: 20px;
+    padding-bottom: 5px;
+    padding-left: 15px;  
+    width: 90px; 
+}
+
+div.file-actions-menu .ajax-waiting {
+    background-image: url("../img/waiting24.gif");
+    border: 0px;
+    display: block;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -12px;
+    width: 24px;
+    height: 24px;
+}
+
+
+#portal-container div.file-actions-menu a	{
+	color: #020202;
+    font-weight: 300;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;	
+}
+
 /* Template contenus */
 
 div.nuxeo-docview-short-view	{
@@ -284,6 +327,7 @@ div.document-types div.doc-type-detail div.vignette	{
 	float:left;
 	width: 100px;
 	margin-right:10px;
+	margin-top: 2px;
 }
 
 

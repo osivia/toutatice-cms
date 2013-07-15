@@ -30,8 +30,50 @@ function showDiv(id1) {
 
 	var el1 = document.getElementById(id1);
 
-	
-
 	el1.style.visibility = "visible";
-
 } 
+
+/* 2.1 Gestion des workspaces */
+
+
+
+
+function getFileActions ( url, idToRefresh)
+{
+  var el1 = document.getElementById(idToRefresh);
+  el1.style.visibility = "visible";	
+  
+
+  new Ajax.Request(url, {
+	  method: 'get',
+	  onSuccess: successActions (idToRefresh),
+	  onFailure:  failureActions
+  });
+ 
+}
+
+
+function successActions(idToRefresh){
+	return function(response){
+   
+     if (200 == response.status){
+    	 var container = $(idToRefresh);
+    	 var content = response.responseText;
+    	 
+    	 // Jboss connexion
+    	 if( response.responseText.search( "j_security_check") == -1)
+    		 container.update(content);
+    	 else
+       		 container.update("");
+   		 
+     }
+
+     
+	}
+}
+
+function failureActions(response){
+}
+
+
+

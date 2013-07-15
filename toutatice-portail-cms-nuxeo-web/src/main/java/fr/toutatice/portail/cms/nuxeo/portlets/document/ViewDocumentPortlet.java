@@ -211,11 +211,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 				showMetadatas = "0";
 		req.setAttribute("showMetadatas", showMetadatas);		
 
-		/*
-		String scope = window.getProperty("osivia.cms.scope");
-		req.setAttribute("scope", scope);
-		*/
-		
+
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 		
@@ -263,26 +259,17 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 						nuxeoPath = ctx.getComputedPath(nuxeoPath);
 							
 						
-						
-						//TODO : 
-						// gestion des erreurs
-						//gestion du no-uri-proxy_conversion : a quoi sert-il ?
-	
+						// v2.1 : WORKSPACES
+						// Force to reload content
+						boolean reload = false;
+						if( request.getParameter("reloadDatas") != null)
+						    reload = true;
 
-						Document doc = ctx.fetchDocument(nuxeoPath);
-						
+						Document doc = ctx.fetchDocument(nuxeoPath, reload);
 
-						/*
-						if( "1".equals(window.getProperty("osivia.cms.no_uri_proxy_conversion")) || ctx.isDisplayingLiveVersion() )
-							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(nuxeoPath));
-						else
-							doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx.executeNuxeoCommand(new DocumentFetchPublishedCommand(nuxeoPath));
-							*/
 		
 						if (doc.getTitle() != null)
 							response.setTitle(doc.getTitle());
-						
-
 						
 						
 						request.setAttribute("doc", doc);
@@ -298,7 +285,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 							{
 							Transformer transformer =  WysiwygParser.getInstance().getTemplate().newTransformer();
 
-							//v 1.0.11 : pb. des pices jointes dans le proxy
+
 							ctx.setCurrentDoc(doc);
 							
 							

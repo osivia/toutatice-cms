@@ -3,6 +3,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.core.cms.CMSItem;
+
 public class NavigationDisplayItem {
 	/** The display title of the  link. */
 	private String title;
@@ -42,16 +45,17 @@ public class NavigationDisplayItem {
 
 	/** Default constructor. */
 	public NavigationDisplayItem() {
-		this(null, "/", false, false);
+		this(null, "/", false, false, null);
 	}
 	
 	/** Canonical constructor.*/
-	public NavigationDisplayItem(String aTitle, String anUrl, boolean anExternal, boolean anSelected) {
+	public NavigationDisplayItem(String aTitle, String anUrl, boolean anExternal, boolean anSelected, CMSItem anNavItem) {
 		super();
 		title = aTitle;
 		url = anUrl;
 		external = anExternal;
 		selected = anSelected;
+		navItem = anNavItem;
 	}
 
 	public String getTitle() {
@@ -70,6 +74,17 @@ public class NavigationDisplayItem {
 		this.url = anUrl;
 	}
 	
+	public CMSItem navItem;
+	
+
+	public CMSItem getNavItem() {
+		return navItem;
+	}
+
+	public void setNavItem(CMSItem navItem) {
+		this.navItem = navItem;
+	}
+
 	public String toString() {
 		return super.toString() + " {" + title + ": " + url + "}";
 	}		
