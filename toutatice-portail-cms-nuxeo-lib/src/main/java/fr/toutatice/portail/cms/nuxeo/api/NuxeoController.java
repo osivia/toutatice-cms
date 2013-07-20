@@ -375,34 +375,12 @@ public class NuxeoController {
 
             Window jbpWindow = (Window) request.getAttribute("osivia.window");
             Page page = (Page) jbpWindow.getParent();
-            Portal portal = page.getPortal();
 
 
 
-            if( "cms".equals(page.getProperty("osivia.navigationMode")))	{
-
-                // En navigation CMS, on descend d'un niveau par rapport à l'espace pour déterminer le path de la page
-                this.basePath = request.getParameter("osivia.cms.path");
-                if( this.basePath != null)	{
-                    CMSObjectPath parent = CMSObjectPath.parse(this.basePath).getParent();
-                    String parentPath= parent.toString();
-
-                    while ( parentPath.contains(this.spacePath) && !(parentPath.equals(this.spacePath)))	{
-
-                        this.basePath = parentPath.toString();
-
-                        parent = CMSObjectPath.parse(this.basePath).getParent();
-                        parentPath= parent.toString();
-
-                    }
-                }
-            } else {
-                this.basePath = window.getPageProperty("osivia.cms.basePath");
-            }
-
+            this.basePath = window.getPageProperty("osivia.cms.basePath");
 
             this.navigationPath =  request.getParameter("osivia.cms.path");
-
 
             if	((this.spacePath != null) && (request.getParameter("osivia.cms.itemRelPath") != null)) {
                 this.itemNavigationPath = this.spacePath + request.getParameter("osivia.cms.itemRelPath");
