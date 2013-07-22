@@ -1,0 +1,377 @@
+package fr.toutatice.portail.cms.nuxeo.core;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import javax.portlet.GenericPortlet;
+import javax.portlet.PortletConfig;
+import javax.portlet.PortletException;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.core.cms.CMSBinaryContent;
+
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.core.nuxeo.INuxeoService;
+
+
+/**
+ * Portlet d'affichage d'un document Nuxeo
+ */
+
+public class CMSPortlet extends GenericPortlet {
+
+	protected static Log logger = LogFactory.getLog(CMSPortlet.class);
+
+	INuxeoService nuxeoNavigationService;
+
+	public INuxeoService getNuxeoNavigationService() throws Exception {
+
+		if (this.nuxeoNavigationService == null) {
+            this.nuxeoNavigationService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
+        }
+
+		return this.nuxeoNavigationService;
+
+	}
+
+
+	public void init(PortletConfig config) throws PortletException {
+
+		super.init(config);
+
+
+		try	{
+			new NuxeoController(this.getPortletContext()).startNuxeoService();
+
+		} catch( Exception e)	{
+			throw new PortletException( e);
+		}
+
+
+	}
+
+	@Override
+	public void destroy() {
+
+		try {
+			// Destruction des threads éventuels
+			new NuxeoController(this.getPortletContext()).stopNuxeoService();
+
+		} catch (Exception e) {
+			logger.error(e);
+		}
+
+		super.destroy();
+	}
+
+	public String formatResourceLastModified() {
+
+		SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+		inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return inputFormater.format(new Date(System.currentTimeMillis()));
+	}
+
+	public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse) {
+
+		boolean isExpired = true;
+
+		if (sOriginalDate != null) {
+
+			SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+			inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
+			try {
+				Date originalDate = inputFormater.parse(sOriginalDate);
+				if (System.currentTimeMillis() < (originalDate.getTime()
+						+ (resourceResponse.getCacheControl().getExpirationTime() * 1000))) {
+                    isExpired = false;
+                }
+			} catch (Exception e) {
+
+			}
+		}
+
+		return isExpired;
+	}
+
+	public boolean serveResourceByCache(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+			throws PortletException, IOException {
+
+		String sOriginalDate = resourceRequest.getProperty("if-modified-since");
+		if (sOriginalDate == null) {
+            sOriginalDate = resourceRequest.getProperty("If-Modified-Since");
+        }
+
+		if (!this.isResourceExpired(sOriginalDate, resourceResponse)) { // validation
+																	// request
+
+			// resourceResponse.setContentLength(0);
+			resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+					String.valueOf(HttpServletResponse.SC_NOT_MODIFIED));
+			resourceResponse.setProperty("Last-Modified", sOriginalDate);
+
+			// au moins un caractère
+			// resourceResponse.getPortletOutputStream().write(' ');
+			resourceResponse.getPortletOutputStream().close();
+
+			return true;
+		}
+
+		return false;
+	}
+
+
+
+	protected void serveResourceException(ResourceRequest resourceRequest, ResourceResponse resourceResponse,
+			NuxeoException e) throws PortletException, IOException {
+
+		if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+
+            URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(), System.getProperty("error.defaultPageUri"));
+            String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_NOT_FOUND;
+
+			resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+					String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+			resourceResponse.setProperty("Location", sUrl);
+			resourceResponse.getPortletOutputStream().close();
+
+			String message = "Resource CMSPortlet " + resourceRequest.getParameterMap() + " not found (error 404).";
+
+			logger.error(message);
+		}
+
+		else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
+
+            URL url = new URL("http", resourceRequest.getServerName(), resourceRequest.getServerPort(), System.getProperty("error.defaultPageUri"));
+            String sUrl = url.toString() + "?httpCode=" + HttpServletResponse.SC_FORBIDDEN;
+
+			resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+					String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+			resourceResponse.setProperty("Location", sUrl);
+			resourceResponse.getPortletOutputStream().close();
+
+		} else {
+            throw e;
+        }
+	}
+
+	public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+			throws PortletException, IOException {
+
+
+
+		try {
+
+			if (this.serveResourceByCache(resourceRequest, resourceResponse)) {
+                return;
+            }
+
+
+
+
+
+
+			// Redirection
+			if ("link".equals(resourceRequest.getParameter("type"))) {
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+
+				String id = resourceRequest.getResourceID();
+
+				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+						.executeNuxeoCommand(new DocumentFetchCommand(id));
+
+
+				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+				resourceResponse.setProperty("Location", doc.getString("clink:link"));
+				resourceResponse.getPortletOutputStream().close();
+
+
+			}
+
+			// Téléchargement d'un fichier présent dans un document externe
+			/* Fichier, image "contenue dans un document - propriété spécifique du document (ex: annonce:image) */
+			if ("file".equals(resourceRequest.getParameter("type"))) {
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String fieldName = resourceRequest.getParameter("fieldName");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+				// V 1.0.19
+				// V2 suppression a valider
+				/*
+				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
+					Document doc = fetchLinkedDocument(ctx, docPath);
+					docPath = doc.getPath();
+				}
+				*/
+
+				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+
+
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+
+				resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
+
+
+
+			}
+
+			if ("attachedFile".equals(resourceRequest.getParameter("type"))) {
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String fileIndex = resourceRequest.getParameter("fileIndex");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+
+				CMSBinaryContent content = ResourceUtil.getCMSBinaryContent(ctx, docPath, fileIndex);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+
+
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
+			}
+
+
+			// v.0.27 : ajout blob
+			if ("blob".equals(resourceRequest.getParameter("type"))) {
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String blobIndex = resourceRequest.getParameter("blobIndex");
+
+
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+                // v2.1 : fetch direct (pour l'instant, on ne remonte pas en 2.0)
+				// On traite comme s'il s'agissait d'un hyper-lien
+
+//				Document doc = fetchLinkedDocument(ctx, docPath);
+//				docPath = doc.getPath();
+//
+
+
+				CMSBinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
+
+
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+
+
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
+			}
+
+			/* Image "contenue" dans le document - propriété ttc:images */
+			if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {
+
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String pictureIndex = resourceRequest.getParameter("pictureIndex");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+				CMSBinaryContent content = ctx.fetchAttachedPicture(docPath, pictureIndex);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(content.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+
+
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
+			}
+
+			/* Image externe au document - "objet nuxeo */
+			if ("picture".equals(resourceRequest.getParameter("type"))) {
+
+
+				// Gestion d'un cache global
+
+				String docPath = resourceRequest.getParameter("docPath");
+				String content = resourceRequest.getParameter("content");
+
+				NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+
+
+
+				// V 1.0.19
+				/* TOCHECK si on peut mettre en commentaire */
+				// V2 suppression a valider
+				/*
+				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
+					Document doc = fetchLinkedDocument(ctx, docPath);
+					docPath = doc.getPath();
+				}
+				*/
+				CMSBinaryContent picture = ctx.fetchPicture(docPath, content);
+
+				// Les headers doivent être positionnées avant la réponse
+				resourceResponse.setContentType(picture.getMimeType());
+				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + picture.getName() + "\"");
+
+				ResourceUtil.copy(new FileInputStream(picture.getFile()), resourceResponse.getPortletOutputStream(),
+						4096);
+
+
+				resourceResponse.setProperty("Cache-Control", "max-age="
+						+ resourceResponse.getCacheControl().getExpirationTime());
+				resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
+			}
+
+
+		} catch( NuxeoException e){
+			this.serveResourceException(  resourceRequest,  resourceResponse, e);
+
+		}
+
+	    catch (Exception e) {
+			throw new PortletException(e);
+
+		}
+	}
+
+}
