@@ -545,20 +545,7 @@ public class NuxeoController {
 
     public String transformHTMLContent(String htmlContent) throws Exception {
         
-        
-        /*
 
-        Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
-
-        transformer.setParameter("bridge", new XSLFunctions(this));
-        OutputStream output = new ByteArrayOutputStream();
-        XMLReader parser = WysiwygParser.getInstance().getParser();
-        transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(
-                output));
-
-        return output.toString();
-        */
-        
         // Adaptation via le CMSCustomizer
 
         INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
@@ -719,29 +706,7 @@ public class NuxeoController {
         return resourceURL.toString();
     }
 
-    /*
-	public String createRedirectDocumentLink(String path) {
-
-		// On ne peut se permettre de lire tous les docs référencés en lien hyper-texte
-		// Il est préférable de faire une redirection
-
-		ResourceURL resourceURL = createResourceURL();
-		resourceURL.setResourceID(path );
-
-
-		resourceURL.setParameter("type", "documentLink");
-		resourceURL.setParameter("docPath", path);
-		if( pageMarker != null)
-			resourceURL.setParameter("pageMarker", pageMarker);
-
-		// ne marche pas : bug JBP
-		// resourceURL.setCacheability(ResourceURL.PORTLET);
-		resourceURL.setCacheability(ResourceURL.PAGE);
-
-		return resourceURL.toString();
-	}
-     */
-
+  
     public String createPermalink(String path) throws Exception {
 
         String permaLinkURL = this.getPortalUrlFactory().getPermaLink(this.getPortalCtx(), null, null,
