@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.core;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;

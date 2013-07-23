@@ -26,6 +26,7 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
+import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -51,12 +52,12 @@ import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+
+import fr.toutatice.portail.core.nuxeo.INuxeoCommandService;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
@@ -216,7 +217,7 @@ public class NuxeoController {
         this.scopeProfil = scopeProfil;
     }
 
-    INuxeoCommandService nuxeoService;
+    INuxeoCommandService nuxeoCommandService;
     private long cacheTimeOut = -1;
 
     public boolean asynchronousUpdates = false;
@@ -436,11 +437,11 @@ public class NuxeoController {
         return this.urlFactory;
     }
 
-    public INuxeoCommandService getNuxeoService() throws Exception {
-        if (this.nuxeoService == null) {
-            this.nuxeoService = NuxeoCommandServiceFactory.getNuxeoCommandService(this.getPortletCtx());
+    public INuxeoCommandService getNuxeoCommandService() throws Exception {
+        if (this.nuxeoCommandService == null) {
+            nuxeoCommandService = NuxeoCommandServiceFactory.getNuxeoCommandService(portletCtx);
         }
-        return this.nuxeoService;
+        return this.nuxeoCommandService;
     }
 
     public IProfilManager getProfilManager() throws Exception {
@@ -543,6 +544,9 @@ public class NuxeoController {
 
 
     public String transformHTMLContent(String htmlContent) throws Exception {
+        
+        
+        /*
 
         Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
@@ -553,6 +557,19 @@ public class NuxeoController {
                 output));
 
         return output.toString();
+        */
+        
+        // Adaptation via le CMSCustomizer
+
+        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
+        if( nuxeoService == null) {
+            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        }
+
+
+       return  nuxeoService.getCMSCustomizer().transformHTMLContent(this.getCMSCtx(), htmlContent);
+  
+        
 
     }
 
@@ -746,7 +763,7 @@ public class NuxeoController {
         }
     }
 
-    public Object executeNuxeoCommand(INuxeoCommand command) throws Exception {
+    public Object executeNuxeoCommand(final INuxeoCommand command) throws Exception {
 
         NuxeoCommandContext ctx = new NuxeoCommandContext(this.portletCtx, this.request);
 
@@ -755,8 +772,31 @@ public class NuxeoController {
         ctx.setCacheTimeOut(this.cacheTimeOut);
         ctx.setCacheType(this.cacheType);
         ctx.setAsynchronousUpdates(this.asynchronousUpdates);
+        
+        try {
 
-        return this.getNuxeoService().executeCommand(ctx, command);
+       return  this.getNuxeoCommandService().executeCommand(ctx, new INuxeoServiceCommand() {
+            
+            public String getId() {
+                return command.getId();
+            }
+            
+            public Object execute(Session nuxeoSession) throws Exception {
+                return command.execute(nuxeoSession);
+            }
+        }); }
+
+            catch( CMSException e){
+                if( e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+                    throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+                }
+                if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+                    throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+                }
+                throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+
+            }
+
     }
 
 

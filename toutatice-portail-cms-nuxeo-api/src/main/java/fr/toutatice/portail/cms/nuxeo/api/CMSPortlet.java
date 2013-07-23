@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.core;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -180,7 +180,6 @@ public class CMSPortlet extends GenericPortlet {
 
 
 
-
 			// Redirection
 			if ("link".equals(resourceRequest.getParameter("type"))) {
 
@@ -189,17 +188,14 @@ public class CMSPortlet extends GenericPortlet {
 
 				String id = resourceRequest.getResourceID();
 
-				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
-						.executeNuxeoCommand(new DocumentFetchCommand(id));
-
+				Document doc = ctx.fetchDocument(id);
 
 				resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
 						String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
 				resourceResponse.setProperty("Location", doc.getString("clink:link"));
 				resourceResponse.getPortletOutputStream().close();
-
-
 			}
+
 
 			// Téléchargement d'un fichier présent dans un document externe
 			/* Fichier, image "contenue dans un document - propriété spécifique du document (ex: annonce:image) */

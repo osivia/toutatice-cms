@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.vocabulary;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

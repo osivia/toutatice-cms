@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.core;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 import javax.portlet.PortletException;
 import javax.portlet.PortletResponse;

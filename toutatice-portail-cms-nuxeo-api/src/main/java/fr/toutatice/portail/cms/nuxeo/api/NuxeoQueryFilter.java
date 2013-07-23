@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.core;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.util.List;
 import java.util.regex.Matcher;
