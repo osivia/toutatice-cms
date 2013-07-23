@@ -1,5 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -10,8 +13,19 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.DynamicMBean;
+import javax.management.InvalidAttributeValueException;
+import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.ReflectionException;
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +50,9 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.tracker.RequestContextUtil;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
@@ -46,6 +63,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPict
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
@@ -53,7 +71,7 @@ import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
-public class DefaultCMSCustomizer implements INuxeoCustomizer {
+public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
 	PortletContext portletCtx;
 	protected IPortalUrlFactory portalUrlFactory;
@@ -62,6 +80,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	NavigationItemAdapter navigationItemAdapter;
 	CMSItemAdapter cmsItemAdapter;
 	NuxeoConnectionProperties nuxeoConnection;
+	XMLReader parser;
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 	
@@ -99,6 +118,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		super();
 		this.portletCtx = ctx;
 		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
+		
+		try   {
+		 // Initialisé ici pour résoudre problème de classloader
+		    
+         parser = WysiwygParser.getInstance().getParser();
+		} catch(Exception e){
+		    throw new RuntimeException(e);
+		}
+		
 	}
 	
 	
@@ -782,7 +810,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         
     }
 
+    public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
+        Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
+        transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
+        OutputStream output = new ByteArrayOutputStream();
+        //XMLReader parser = WysiwygParser.getInstance().getParser();
+        transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(
+                output));
 
+        return output.toString();
+        
+    }
+
+ 
 	
 }

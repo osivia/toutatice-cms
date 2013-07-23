@@ -29,20 +29,24 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
+import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
+
+
+
+
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
 
 /**
  * Portlet de selection de liste par vocabulaire
  */
 
-public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMSPortlet {
+public class VocabSelectorPortlet extends CMSPortlet {
 
 	private static Log logger = LogFactory.getLog(VocabSelectorPortlet.class);
 
@@ -334,6 +338,8 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			}
 			
+			List<String> vocabs = new ArrayList<String>();
+			
 			String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
 			request.setAttribute("selectorMonoValued", selectorMonoValued);			
 
@@ -345,17 +351,17 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			}
 			
-			String vocabsName = vocabName1;
+			vocabs.add(vocabName1);
 			
 
 			String vocabName2 = window.getProperty("osivia.vocabName2");
 			if( vocabName2 != null){
-				vocabsName += ";" + vocabName2;
+			    vocabs.add(vocabName2);
 			}
 			
 			String vocabName3 = window.getProperty("osivia.vocabName3");
 			if( vocabName3 != null){
-				vocabsName += ";" + vocabName3;
+			    vocabs.add(vocabName3);
 			}
 			
 			
@@ -384,17 +390,10 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 			
-			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-			ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-			//1.0.27 : rechargement par l'administration
-			ctx.setCacheTimeOut(3600 * 1000L);
-			//ctx.setAsynchronousUpdates(true);
+			
 
 
-			VocabularyIdentifier vocabIdentifier = new VocabularyIdentifier( vocabsName, vocabsName);
-
-			VocabularyEntry vocab = (VocabularyEntry) ctx.executeNuxeoCommand(new VocabularyLoaderCommand(
-					vocabIdentifier));
+			VocabularyEntry vocab = VocabularyHelper.getVocabularyEntry(ctx, vocabs);
 			request.setAttribute("vocab1", vocab);
 
 			getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/view.jsp")

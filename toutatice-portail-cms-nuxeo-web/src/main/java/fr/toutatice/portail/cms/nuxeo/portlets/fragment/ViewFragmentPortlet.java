@@ -21,9 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 
@@ -31,7 +32,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
  * Portlet d'affichage d'un document Nuxeo
  */
 
-public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMSPortlet {
+public class ViewFragmentPortlet extends CMSPortlet {
 
 	private static Log logger = LogFactory.getLog(ViewFragmentPortlet.class);
 

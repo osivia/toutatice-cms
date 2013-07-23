@@ -45,14 +45,14 @@ import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
+import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+
+
+
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 
@@ -64,7 +64,7 @@ import fr.toutatice.portail.core.nuxeo.INuxeoService;
  * Portlet d'affichage d'un document Nuxeo
  */
 
-public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMSPortlet {
+public class ViewDocumentPortlet extends CMSPortlet {
 
 	private static Log logger = LogFactory.getLog(ViewDocumentPortlet.class);
 	
@@ -283,7 +283,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 							
 //							synchronized (WysiwygParser.getInstance())
 							{
-							Transformer transformer =  WysiwygParser.getInstance().getTemplate().newTransformer();
+//							Transformer transformer =  WysiwygParser.getInstance().getTemplate().newTransformer();
 
 
 							ctx.setCurrentDoc(doc);
@@ -292,15 +292,15 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 							// Insert standard menu bar for content item
 							ctx.insertContentMenuBarItems();
 							
-
+/*
 							transformer.setParameter("bridge", new XSLFunctions(ctx));
 							OutputStream output = new ByteArrayOutputStream();
 							XMLReader parser = WysiwygParser.getInstance().getParser();
 							transformer.transform(new SAXSource(parser, new InputSource(new StringReader(note))),
 									new StreamResult(output));
+*/
 
-
-							String noteTransformee = output.toString();
+							String noteTransformee = ctx.transformHTMLContent(note);
 							request.setAttribute("note", noteTransformee);
 							}				
 							

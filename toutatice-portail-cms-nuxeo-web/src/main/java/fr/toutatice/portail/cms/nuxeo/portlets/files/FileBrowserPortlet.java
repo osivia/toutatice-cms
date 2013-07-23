@@ -12,7 +12,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.PortletURL;
@@ -22,31 +21,19 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletResponse;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Constants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
-import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
-import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetChildrenCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.FolderGetParentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
+import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 /**

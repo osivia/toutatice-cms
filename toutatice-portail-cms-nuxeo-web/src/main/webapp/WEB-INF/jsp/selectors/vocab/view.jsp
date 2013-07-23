@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="org.apache.commons.lang.StringUtils"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet"%>
@@ -6,7 +7,7 @@
 <%@page import="java.util.Collection"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.PageSelectors"%>
 <%@page import="org.osivia.portal.api.windows.PortalWindow"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry"%>
+
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.KeywordsSelectorPortlet"%>
 <%@page import="org.apache.jasper.tagplugins.jstl.core.ForEach"%>

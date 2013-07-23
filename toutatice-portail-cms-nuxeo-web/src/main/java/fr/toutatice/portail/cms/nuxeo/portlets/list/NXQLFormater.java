@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -9,13 +10,14 @@ import javax.portlet.PortletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cache.services.CacheInfo;
 
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyEntry;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyIdentifier;
-import fr.toutatice.portail.cms.nuxeo.vocabulary.VocabularyLoaderCommand;
+
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
 
 public class NXQLFormater {
 	
@@ -109,8 +111,14 @@ public class NXQLFormater {
 				int selectedLevel = selectedEntry.split("/").length;
 
 				/* Récupération de l'arbre des vocabulaires */
-				VocabularyEntry vocabEntry = getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"),
-						vocabsNames);
+				List<String> vocabNames = new ArrayList<String>();
+				for( Object vocab: vocabsNames)  {
+				    vocabNames.add(vocab.toString());
+				}
+				
+				VocabularyEntry vocabEntry = VocabularyHelper.getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"), vocabNames);
+				    
+				    
 
 				/*
 				 * Récupération du dernier vocabulaire sélectionné avant
@@ -204,28 +212,7 @@ public class NXQLFormater {
 		return resultClause;
 	}
 	
-	/* TODO: à externaliser dans VocabularyHelper */
-	private VocabularyEntry getVocabularyEntry(NuxeoController nuxeoCtrl, List vocabsNames) throws Exception {
-		
-		nuxeoCtrl.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-		nuxeoCtrl.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-		nuxeoCtrl.setCacheTimeOut(3600 * 1000L);
-		//ctx.setAsynchronousUpdates(true);
 
-		/* identifierVocabsNames doit être sous la forme voca1;voca2;voca3 */
-		StringBuffer identifierVocabsNames = new StringBuffer();
-		for(Object vocabName : vocabsNames){
-			identifierVocabsNames.append(vocabName);
-			identifierVocabsNames.append(";");
-		}
-		
-		VocabularyIdentifier vocabIdentifier = new VocabularyIdentifier(identifierVocabsNames.toString(), identifierVocabsNames.toString());
-
-		VocabularyEntry vocabEntry = (VocabularyEntry) nuxeoCtrl.executeNuxeoCommand(new VocabularyLoaderCommand(
-				vocabIdentifier));
-		return vocabEntry;
-	}
-	
 	public String formatDateSearch( String fieldName, List<String> searchValue)
 	{	
 		StringBuffer request = new StringBuffer();

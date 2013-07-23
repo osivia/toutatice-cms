@@ -15,7 +15,8 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.NavigationItem;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+
 
 
 /**

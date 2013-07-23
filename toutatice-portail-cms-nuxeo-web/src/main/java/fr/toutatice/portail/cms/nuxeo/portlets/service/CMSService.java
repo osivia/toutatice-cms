@@ -11,6 +11,7 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -30,12 +31,10 @@ import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
@@ -45,7 +44,12 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowService;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowTypeEnum;
+import fr.toutatice.portail.core.nuxeo.INuxeoCommandService;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.core.nuxeo.NuxeoCommandServiceFactory;
+
 
 public class CMSService implements ICMSService {
 
@@ -57,6 +61,7 @@ public class CMSService implements ICMSService {
 	IProfilManager profilManager;
 	ICacheService serviceCache;
 	DefaultCMSCustomizer customizer;
+	
 
 	public CMSService(PortletContext portletCtx) {
 		super();
@@ -136,7 +141,7 @@ public class CMSService implements ICMSService {
 		return nuxeoCommandService;
 	}
 
-	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, INuxeoCommand command) throws Exception {
+	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
 		NuxeoCommandContext commandCtx = new NuxeoCommandContext(portletCtx, cmsCtx.getServerInvocation());
 		/* Transmission du mode asynchrone ou non de la mise en cache 
@@ -188,7 +193,18 @@ public class CMSService implements ICMSService {
 			}
 		}
 
-		return getNuxeoCommandService().executeCommand(commandCtx, command);
+	           return  this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
+	               
+	               public String getId() {
+	                   return command.getId();
+	               }
+	               
+	               public Object execute(Session nuxeoSession) throws Exception {
+	                   return command.execute(nuxeoSession);
+	               }
+	           }); 
+
+
 	}
 
 	private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {

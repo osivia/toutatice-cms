@@ -7,7 +7,8 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 public class SearchCommand implements INuxeoCommand{
