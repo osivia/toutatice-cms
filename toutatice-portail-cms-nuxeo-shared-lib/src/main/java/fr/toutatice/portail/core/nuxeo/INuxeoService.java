@@ -2,6 +2,8 @@ package fr.toutatice.portail.core.nuxeo;
 
 import java.util.List;
 
+import javax.portlet.PortletContext;
+
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.core.cms.ICMSService;
@@ -15,5 +17,7 @@ public interface INuxeoService extends ICMSIntegration {
 	public void registerCMSCustomizer( INuxeoCustomizer linkManager);
 
 	public INuxeoCustomizer getCMSCustomizer();
+	
+	public INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx)  throws Exception ;
 
 }

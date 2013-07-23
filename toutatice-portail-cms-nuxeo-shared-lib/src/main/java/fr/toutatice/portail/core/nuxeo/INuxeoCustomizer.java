@@ -32,7 +32,6 @@ public interface INuxeoCustomizer {
 	
 	
 	/* renvoie un lien si le contenu est affiché directement par le portlet (contextual link, download filecontent) ... 
-
 	et non par une CMSCommand
     */	
 
@@ -44,6 +43,12 @@ public interface INuxeoCustomizer {
 
 	
 	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception ;
+	
+   
+	/* Affichage d'un contenu wysiwyg */
+    
+    public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception ;
+    
 	
 	
 	/* Adaptation des items CMS */
