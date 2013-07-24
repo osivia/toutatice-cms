@@ -197,6 +197,9 @@ div.nuxeo-file-browser div.file-detail dl dd	{
 	display:block;
 }
 
+div.nuxeo-file-browser .file-item-selected {
+	background-color: #E4E4EC;
+}
 
 div.nuxeo-file-browser div.file-actions 	{
  	background-image: url("../img/dropdown.gif");

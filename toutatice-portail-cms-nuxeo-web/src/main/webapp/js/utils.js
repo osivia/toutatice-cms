@@ -38,18 +38,20 @@ function showDiv(id1) {
 
 
 
-function getFileActions ( url, idToRefresh)
-{
-  var el1 = document.getElementById(idToRefresh);
-  el1.style.visibility = "visible";	
-  
+function getFileActions(url, idToRefresh) {
+	var el1 = document.getElementById(idToRefresh);
 
-  new Ajax.Request(url, {
-	  method: 'get',
-	  onSuccess: successActions (idToRefresh),
-	  onFailure:  failureActions
-  });
- 
+	if (el1.style.visibility == "visible") {
+		el1.style.visibility = "hidden";
+	} else {
+		el1.style.visibility = "visible";
+
+		new Ajax.Request(url, {
+			method : 'get',
+			onSuccess : successActions(idToRefresh),
+			onFailure : failureActions
+		});
+	}
 }
 
 

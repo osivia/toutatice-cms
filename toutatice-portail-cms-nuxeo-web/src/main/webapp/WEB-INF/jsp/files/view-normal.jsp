@@ -161,35 +161,25 @@ while( it.hasNext())	{
 	var $JQry = jQuery.noConflict();
 
 	$JQry(document).ready(function() {
-		$JQry(".file-item").hover(
-  			function () {
+		$JQry(".file-item").hover(function () {
+   			 $JQry(this).addClass("file-item-selected");
 
-   			 $JQry(this).css("background","#E4E4EC");
+             $JQry(".file-actions-menu").css("visibility", "hidden");
 
-   			 var file = Element.down(this, "div.file-actions");
-     		 $JQry(file).css("visibility","visible"); 
- 			 
-   		}, 
-  			function () {
-  			 $JQry(this).css("background","#FFFFFF");
-  			
+   			 var file = Element.down(this, "div.file-actions");             
+     		 $JQry(file).css("visibility","visible"); 			 
+   		}, function() {
+  			 $JQry(this).removeClass("file-item-selected");
+             
   			 var file = Element.down(this, "div.file-actions");
-     		 $JQry(file).css("visibility","hidden"); 		
+     		 $JQry(file).css("visibility", "hidden"); 		
  			 }
  		);
  		
- 	  $JQry(".file-actions-menu").hover(
-  			function () {
- 			 
-   		}, 
-  			function () {
-     		 $JQry(this).css("visibility","hidden"); 		
- 			 }
- 		);
- 		
- 		
+        $JQry(".file-actions-menu").mouseleave(function() {
+            $JQry(this).css("visibility","hidden");
+        });
 	});
-
 </script>
 	
 
