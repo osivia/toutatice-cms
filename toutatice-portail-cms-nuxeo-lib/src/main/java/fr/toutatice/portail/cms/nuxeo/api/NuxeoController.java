@@ -21,10 +21,11 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
@@ -52,6 +53,7 @@ import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
@@ -845,25 +847,53 @@ public class NuxeoController {
 		nuxeoService.getCMSCustomizer().formatContentMenuBar(getCMSCtx());
 		
 	}
-	
-	public Document fetchDocument 	( String path) throws Exception	{
 
-		try	{
-		
-			
-		
-		CMSItem cmsItem = getCMSService().getContent(getCMSCtx(), path);
-		return (Document) cmsItem.getNativeItem();
-		
-		} catch( CMSException e){
-			if( e.getErrorCode() == CMSException.ERROR_NOTFOUND)
-				throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
-			if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN)
-				throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
-			throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
-			
-		}
-	}
+    
+     public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
+
+        // Adaptation via le CMSCustomizer
+
+        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
+        if( nuxeoService == null) {
+            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        }
+
+  
+        return nuxeoService.getCMSCustomizer().getDocTypeDefinitions(this.getCMSCtx());
+    }
+	
+	
+    public Document fetchDocument(String path, boolean reload) throws Exception {
+
+
+
+        try	{
+            CMSServiceCtx cmsCtx = this.getCMSCtx();
+ 
+            if (reload) {
+                cmsCtx.setForceReload(true);
+            }
+
+
+            CMSItem cmsItem = getCMSService().getContent(cmsCtx, path);
+            return (Document) cmsItem.getNativeItem();
+
+        } catch( CMSException e){
+            if( e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+                throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+            }
+            if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+                throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+            }
+            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+
+        }
+    }
+
+
+    public Document fetchDocument(String path) throws Exception {
+        return this.fetchDocument(path, false);
+    }
 	
 	public String fetchLiveId 	( String path) throws Exception	{
 

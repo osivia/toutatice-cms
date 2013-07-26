@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +11,8 @@ import javax.portlet.ResourceURL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -35,6 +36,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
@@ -636,6 +638,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	}
 
 
+private Map<String, DocTypeDefinition> docTypes = null;
+	
+	protected DocTypeDefinition createDocType( String docTypeName, String displayName){
+	    
+	    DocTypeDefinition portalDocType = new DocTypeDefinition();
+	    portalDocType.setName(docTypeName);
+	    portalDocType.setDisplayName(displayName);
+	    portalDocType.setSupportingPortalForm(true);
+    	    
+	    return portalDocType;
+	}
+	
+    public Map<String, DocTypeDefinition> getDocTypeDefinitions(CMSServiceCtx ctx) throws Exception {
+ 
+        if( docTypes == null)   {
+            
+            docTypes = new LinkedHashMap<String,DocTypeDefinition>();
+            
+            docTypes.put("Folder", createDocType("Folder", "Dossier"));            
+            docTypes.put("File", createDocType("File", "Fichier"));
+            docTypes.put("Note", createDocType("Note", "Note"));
+             
+        }
+        return docTypes;
+        
+    }
 
 	
 

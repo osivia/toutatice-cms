@@ -1,7 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.portalsite;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 
 public class PortalSiteBean {
 	

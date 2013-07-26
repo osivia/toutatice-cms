@@ -5,6 +5,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,9 +19,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.common.utils.FileUtils;
-import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
+import org.nuxeo.ecm.automation.client.OperationRequest;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Blob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -45,39 +46,52 @@ public class PublishInfosCommand implements INuxeoCommand {
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
 			
-			String content = FileUtils.read(binariesInfos.getStream());
+			String pubInfosContent = FileUtils.read(binariesInfos.getStream());
 			
-			JSONArray row = JSONArray.fromObject(content);
-			Iterator it = row.iterator();
+			JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
+			Iterator it = infosContent.iterator();
 			while (it.hasNext()) {
-				JSONObject obj = (JSONObject) it.next();
-				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
-				publiInfos.setDocumentPath( decode((String) obj.get("documentPath")));
-				publiInfos.setLiveId((String) obj.get("liveId"));
-				publiInfos.setEditableByUser(convertBoolean(obj.get("editableByUser")));
-				publiInfos.setPublished(convertBoolean(obj.get("published")));
-				publiInfos.setAnonymouslyReadable(convertBoolean(obj.get("anonymouslyReadable")));
-	
-				// Commenté par JSS pour l'instant (fonctionnalité non active)
-//				publiInfos.setSubTypes(decodeSubTypes((JSONObject) obj.get("subTypes")));
+				JSONObject infos = (JSONObject) it.next();
+				// Modif-RETOUR-begin
+				publiInfos.setErrorCodes(adaptList((List<Integer>) infos.get("errorCodes")));
+				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
+				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
+				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
+				// Modif-FILEBROWSER-begin
+				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
+				// Modif-FILEBROWSER-end
+				publiInfos.setPublished(adaptBoolean(infos.get("published")));
+				// Modif-COMMENTS-begin
+				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
+				// Modif-COMMENTS-end
+				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
+				// Modif SUBTYPES-begin
+				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
+				// Modif SUBTYPES-end
+				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
-				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
-
-				String publishSpacePath = decode((String) obj.get("publishSpacePath"));
+				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
-					publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("publishSpaceDisplayName")));
+					publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
 					publiInfos.setLiveSpace(false);
 				} else {
-					String workspacePath = decode((String) obj.get("workspacePath"));
+					String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
-						publiInfos.setPublishSpaceDisplayName(decode((String) obj.get("workspaceDisplayName")));
+						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
 						publiInfos.setLiveSpace(true);
+						// Modif-SPACEID-begin
+						/*
+						 * les spaceId ne sont appliqués qu'aux ws pour le moment.
+						 */
+						publiInfos.setSpaceID(adaptType(String.class, infos.getString("spaceID")));
+						publiInfos.setParentSpaceID(adaptType(String.class, infos.getString("parentSpaceID")));
+						// Modif-SPACEID-end
 					}
 				}
 			}
-
+			// Modif-RETOUR-end
 		}
 		return publiInfos;
 	}
@@ -116,12 +130,28 @@ public class PublishInfosCommand implements INuxeoCommand {
 		return value;
 	}
 	
-	private Boolean convertBoolean(Object value) {
+	private List<Integer> adaptList(List<Integer> list) {
+		List<Integer> returnedList = list;
+		if(list == null){
+			returnedList = new ArrayList<Integer>();
+		}
+		return returnedList;
+	}
+	
+	private Boolean adaptBoolean(Object value) {
 		if (value != null) {
 			return (Boolean) value;
 		} else {
 			return Boolean.FALSE;
 		}
+	}
+	
+	private <T> T adaptType(Class<T> clazz, Object object) throws InstantiationException, IllegalAccessException{
+		T returnedObject = (T) object;
+		if(object == null){
+			returnedObject = clazz.newInstance();
+		}
+		return returnedObject;
 	}
 
 }

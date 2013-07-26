@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -29,7 +29,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -132,6 +131,10 @@ public class CMSService implements ICMSService {
 		 * du résultat de la commande.
 		 */
 		commandCtx.setAsyncCacheRefreshing(cmsCtx.isAsyncCacheRefreshing());
+		
+		if( cmsCtx.isForceReload())	{
+			commandCtx.setForceReload(true);
+		}
 
 		// pour debug
 		// commandCtx.setCacheTimeOut(0);
@@ -558,19 +561,32 @@ public class CMSService implements ICMSService {
 			superUserCtx.setControllerContext(cmsCtx.getControllerContext());
 			cmsCtx.setScope("superuser_context");
 			
+			//Modif-BUG-begin
+			//DCH : A REPORTER (BUG DANS CHARGEMENT PARTIEL)			
 			do {
 				NavigationItem navItem = navItems.get(pathToCheck);
-				if (navItem == null || (fetchSubItems && navItem.isUnfetchedChildren() )) {
+				
+				if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren() )) {
 					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
-					idsToFetch.add(doc.getId());
+					if( ! idsToFetch.contains(doc.getId()))
+						idsToFetch.add(doc.getId());
 				}
 
 				CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
 				pathToCheck = parentPath.toString();
+				
+				if (navItem == null) {
+					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+					if( ! idsToFetch.contains(doc.getId()))
+						idsToFetch.add(doc.getId());
+				}
+			
+				
+				
 
 			} while (pathToCheck.contains(publishSpaceConfig.getPath()));
-
+			//Modif-BUG-end
 
 
 			

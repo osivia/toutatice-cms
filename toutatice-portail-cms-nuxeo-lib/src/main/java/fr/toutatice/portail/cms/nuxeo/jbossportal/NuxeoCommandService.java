@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -17,23 +16,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
-import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.RemoteException;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
-import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.statut.IStatutService;
 import org.osivia.portal.api.statut.ServeurIndisponible;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
-
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 /**
@@ -184,14 +181,40 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		}
 		
 		
-		// Cache user non géré -> Appel direct
-		if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
-			return nuxeoInvoker.invoke();
-
-		// Cache invalidé -> Appel direct
-		if (ctx.getCacheTimeOut() == 0)
-			return nuxeoInvoker.invoke();
+		if (serverInvoc != null) {
+			portalRequest = serverInvoc.getServerContext()
+					.getClientRequest();
+		}		
 		
+		// LOIC BILLON : cas de la modification/ suppression de fragment
+		// On force l'invocation pour recharger le fragment dans tous les cas
+		// Meme si présent dans la requete
+		if (!ctx.isForceReload())	{
+
+			if (portalRequest != null) {
+				Object value = portalRequest.getAttribute(requestKey);
+				if (value != null)  {
+				    // Has been reloaded since PageResfresh
+		            if(  PageProperties.getProperties().isRefreshingPage())  {
+		                if( portalRequest.getAttribute(requestKey + ".resfreshed") == null) {
+		                    portalRequest.setAttribute(requestKey + ".resfreshed", "1");
+                            value = null;
+                        }
+		            }
+		            if( value != null)
+		                return value;
+				}
+			}
+
+			// Cache user non géré -> Appel direct
+			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_NONE)
+				return nuxeoInvoker.invoke();
+
+			// Cache invalidé -> Appel direct
+			if (ctx.getCacheTimeOut() == 0)
+				return nuxeoInvoker.invoke();
+
+		}	
 
 		String cacheId = getCacheId(ctx, command);
 	
@@ -201,22 +224,30 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				nuxeoInvoker, ctx.getRequest(), ctx.getPortletContext(), 
 				ctx.isAsyncCacheRefreshing());
 		
-		if( ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION)	{
-			// 2 minutes de cache de session
-			// (PublishInfos & Navigation)
-			cacheInfos.setDelaiExpiration( 120000);
-		}	else	{
+		// LOIC BILLON : cas de la modification/ suppression de fragment
+		if (!ctx.isForceReload())	{
+		
+			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION) {
+				// 2 minutes de cache de session
+				// (PublishInfos & Navigation)
+				cacheInfos.setDelaiExpiration(120000);
+			} else {
 
-			if (ctx.getCacheTimeOut() == -1) {
-				// Traitement par défaut de cache (valeur dans variable système
-				// nuxeo.cacheTimeOut
+				if (ctx.getCacheTimeOut() == -1) {
+					// Traitement par défaut de cache (valeur dans variable
+					// système
+					// nuxeo.cacheTimeOut
 
-				if (System.getProperty("nuxeo.cacheTimeout") != null)
-					cacheInfos.setDelaiExpiration(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
-				else
-					cacheInfos.setDelaiExpiration(0L);
-			} else
-				cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+					if (System.getProperty("nuxeo.cacheTimeout") != null)
+						cacheInfos.setDelaiExpiration(Long.parseLong(System
+								.getProperty("nuxeo.cacheTimeout")) * 1000);
+					else
+						cacheInfos.setDelaiExpiration(0L);
+				} else
+					cacheInfos.setDelaiExpiration(ctx.getCacheTimeOut());
+			}
+		} 	else {
+			cacheInfos.setForceReload(true);
 		}
 
 		Object response =  getServiceCache(ctx).getCache(cacheInfos);

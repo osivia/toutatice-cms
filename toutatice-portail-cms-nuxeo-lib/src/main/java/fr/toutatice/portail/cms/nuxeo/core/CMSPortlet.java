@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -76,8 +76,10 @@ public class CMSPortlet extends GenericPortlet {
 	}
 
 	public String formatResourceLastModified() {
-
-		SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+		// Modif-MIGRATION-begin
+		/*SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);*/
+		SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
+		// Modif-MIGRATION-end
 		inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return inputFormater.format(new Date(System.currentTimeMillis()));
 	}
@@ -87,8 +89,10 @@ public class CMSPortlet extends GenericPortlet {
 		boolean isExpired = true;
 
 		if (sOriginalDate != null) {
-
-			SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+			// Modif-MIGRATION-begin
+			/*SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);*/
+			SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
+			// Modif-MIGRATION-begin
 			inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				Date originalDate = inputFormater.parse(sOriginalDate);
@@ -138,7 +142,7 @@ public class CMSPortlet extends GenericPortlet {
 		
 		try	{
 			
-			doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+			doc = (org.nuxeo.ecm.automation.client.model.Document) ctx
 			.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));			
 		} catch( NuxeoException e){
 			 if( e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN)	{
@@ -150,7 +154,7 @@ public class CMSPortlet extends GenericPortlet {
 				 
 					ctx.setScope(null);	
 
-					doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+					doc = (org.nuxeo.ecm.automation.client.model.Document) ctx
 								.executeNuxeoCommand(new DocumentFetchPublishedCommand(decodedPath));
 				 }
 
@@ -289,7 +293,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				String id = resourceRequest.getResourceID();
 
-				Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) ctx
+				Document doc = (org.nuxeo.ecm.automation.client.model.Document) ctx
 						.executeNuxeoCommand(new DocumentFetchCommand(id));
 				
 

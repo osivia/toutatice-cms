@@ -14,20 +14,20 @@
 <%@page import="javax.portlet.WindowState"%>
 
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Documents"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Documents"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 
 
 
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
 
 
 <portlet:defineObjects />
 
 <%
-Documents docs = (Documents) renderRequest.getAttribute("docs")	;
+List<Document> docs = (List<Document>) renderRequest.getAttribute("docs")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 String basePath = (String) request.getAttribute("basePath");
 String folderPath = (String) request.getAttribute("folderPath");

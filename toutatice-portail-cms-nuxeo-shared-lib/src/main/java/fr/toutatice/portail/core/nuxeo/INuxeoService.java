@@ -1,10 +1,6 @@
 package fr.toutatice.portail.core.nuxeo;
 
-import java.util.List;
-
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.osivia.portal.core.cms.ICMSService;
+import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 

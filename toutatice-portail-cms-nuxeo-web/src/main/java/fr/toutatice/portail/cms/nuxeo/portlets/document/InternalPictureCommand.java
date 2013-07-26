@@ -5,10 +5,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Constants;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Blob;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;

@@ -1,7 +1,7 @@
 
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 <%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
 <%@page import="java.util.List"%>
 <%@ page contentType="text/plain; charset=UTF-8"%>

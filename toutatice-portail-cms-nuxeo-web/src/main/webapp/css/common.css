@@ -197,6 +197,52 @@ div.nuxeo-file-browser div.file-detail dl dd	{
 	display:block;
 }
 
+div.nuxeo-file-browser .file-item-selected {
+	background-color: #E4E4EC;
+}
+
+div.nuxeo-file-browser div.file-actions 	{
+ 	background-image: url("../img/dropdown.gif");
+    background-repeat: no-repeat;
+    height: 18px;
+    visibility: hidden;
+}
+
+div.file-actions-menu	{
+	position: absolute;
+	visibility: hidden;
+    z-index: 100;	
+    background-color: #F4F4FC;
+ 	background-image: url("../img/dropdown.gif");
+    background-repeat: no-repeat;  
+    border: 1px solid #333333;   
+    padding-top: 20px;
+    padding-bottom: 5px;
+    padding-left: 15px;  
+    width: 90px; 
+}
+
+div.file-actions-menu .ajax-waiting {
+    background-image: url("../img/waiting24.gif");
+    border: 0px;
+    display: block;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -12px;
+    width: 24px;
+    height: 24px;
+}
+
+
+#portal-container div.file-actions-menu a	{
+	color: #020202;
+    font-weight: 300;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;	
+}
 
 /* Template contenus */
 
@@ -269,5 +315,139 @@ div.nuxeo-publish-navigation ul a {
 }
 
 
+/* Vues de création de document */
 
+div.document-types	 .separateur {
+	background: #CECECE;
+	height: 1px;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+div.document-types div.doc-type-detail div.vignette	{
+	float:left;
+	width: 100px;
+	margin-right:10px;
+	margin-top: 2px;
+}
+
+
+div.document-types div.doc-type-detail div.vignette img	{
+	max-width: 100px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+
+div.document-types div.doc-type-detail .main	{
+	float:left;
+	width: 300px;
+	margin-left:10px;	
+}
+
+div.document-types .more-document-types	{
+	visibility: hidden;
+}
+
+/* Modif-COMMENTS-begin */
+/* Commentaires */
+
+.commentsTitle {
+	
+}
+
+.commentsTree {
+	
+}
+
+.commentsTree ul {
+	list-style-type: none;
+}
+
+.commentsTree li:hover {
+	background-color: #abd4fb;
+}
+
+.commentsTree li {
+    padding: 10px 10px 20px 10px;
+}
+
+.commentsTree .authorDate {
+	background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
+	margin-bottom: 2px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+}
+
+.commentsTree .author {
+	display: inline;
+	font-weight: bold;
+	color: #444444;
+}
+
+.commentsTree .creationDate {
+	display: inline;
+	padding-left: 10px;
+}
+
+.commentsTree .content {
+	white-space:normal;
+}
+
+.add-comment-link {
+	background: url("../img/icons/toggle_plus.png") no-repeat scroll left -2px transparent;
+	font-size: 12px;
+	padding-left:17px;
+}
+
+.child_comment {
+	display: inline;
+	float: right;
+	padding-right: 10px;
+}
+
+#content .child_comment a {
+	font-weight: normal;
+}
+
+#content .delete_comment a {
+	font-weight: normal;
+}
+
+.delete_comment {
+	display: inline;
+	padding-left: 10px;
+	font-weight: normal;
+	float: right;
+	border-left: 1px solid;
+}
+
+.add-comment,.add-child-comment,.delete-comment {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.add-comment textarea,.add-child-comment textarea,.delete-comment textarea {
+	margin-bottom: 11px;
+}
+
+.errorDateFormat,.contentError {
+	font-weight: bold;
+	color: red;
+}
+/* Modif-COMMENTS-end */
+
+/* Modif-FILEBROWSER-begin */
+.delete-file-item {
+	text-align: center;
+    vertical-align: middle;
+}
+
+.portlet-menuitem-nuxeo-add {
+	background:#FFFFF4 url(../img/add.gif) 1px 2px no-repeat;
+}
+/* Modif-FILEBROWSER-end */
 	

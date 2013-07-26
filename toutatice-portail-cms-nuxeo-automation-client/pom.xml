@@ -97,7 +97,7 @@
                  <artifactItem>
                    <groupId>org.nuxeo.ecm.automation</groupId>
                    <artifactId>nuxeo-automation-client</artifactId>
-                   <version>5.4.2</version>
+                   <version>${nuxeo.automation.version}</version>
                    <type>jar</type>
                  </artifactItem>
                </artifactItems>

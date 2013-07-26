@@ -9,7 +9,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;

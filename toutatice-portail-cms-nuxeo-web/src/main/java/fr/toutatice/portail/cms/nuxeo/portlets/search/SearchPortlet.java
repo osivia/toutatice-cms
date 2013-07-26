@@ -17,11 +17,10 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;

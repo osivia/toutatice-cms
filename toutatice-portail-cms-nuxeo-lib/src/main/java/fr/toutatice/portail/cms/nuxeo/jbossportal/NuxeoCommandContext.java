@@ -45,6 +45,23 @@ public class NuxeoCommandContext {
 	public boolean asynchronousUpdates = false;
 	
 	private boolean administrator = false;
+	
+	// Force le rechargement
+	private boolean forceReload = false;
+	
+	/**
+	 * @return the forceReload
+	 */
+	public boolean isForceReload() {
+		return forceReload;
+	}
+
+	/**
+	 * @param forceReload the forceReload to set
+	 */
+	public void setForceReload(boolean forceReload) {
+		this.forceReload = forceReload;
+	}
 
 	public boolean isAdministrator() {
 		return administrator;
