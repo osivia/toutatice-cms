@@ -86,7 +86,12 @@ public class NuxeoController {
     String contentPath;
     String spacePath;
 
+    String menuRootPath;
 
+    
+    public String getMenuRootPath() {
+        return menuRootPath;
+    }
 
     String hideMetaDatas;
     String displayContext;
@@ -373,10 +378,13 @@ public class NuxeoController {
             this.setPageMarker((String) request.getAttribute("osivia.pageMarker"));
 
 
-
+            /* Calcul du root path */
             Window jbpWindow = (Window) request.getAttribute("osivia.window");
             Page page = (Page) jbpWindow.getParent();
-
+            Portal portal = page.getPortal();
+            if( InternalConstants.PORTAL_TYPE_SPACE.equals(portal.getDeclaredProperty("osivia.portal.portalType")))   {
+                menuRootPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
+            }
 
 
             this.basePath = window.getPageProperty("osivia.cms.basePath");
@@ -395,6 +403,7 @@ public class NuxeoController {
     }
 
 
+    
 
 
     public CMSItem getNavigationItem()	throws Exception {

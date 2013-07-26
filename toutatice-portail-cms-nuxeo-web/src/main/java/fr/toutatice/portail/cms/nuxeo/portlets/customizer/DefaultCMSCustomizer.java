@@ -48,6 +48,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.tracker.RequestContextUtil;
 import org.xml.sax.InputSource;
@@ -257,15 +258,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		}
 		
 		if( navItems != null)	{
+		    
+		    // On exclut les folderish, car ils sont présentés dans le menu en mode contextualisé
 
-			
-				
 		
 			nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
-			
-			//v2.0.9 : ordre par date de modif par défaut
+
 			else
 				nuxeoRequest += " order by dc:modified desc";
 			
@@ -277,7 +277,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 			if( ordered)
 				nuxeoRequest += " order by ecm:pos";
 			else
-				//v2.0.9 : ordre par date de modif par défaut				
+			
 				nuxeoRequest += " order by dc:modified desc";
 		}
 	
@@ -711,12 +711,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 				policyFilter = requestFilteringPolicy;
 			else {
 				// Get portal policy filter
-				String sitePolicy = po.getProperty("osivia.portal.publishingPolicy");
-				if ("satellite".equals(sitePolicy))
-					policyFilter = "local";
+				String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
+				if( sitePolicy != null) {
+				    if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy))
+				        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
+				}   else    {
+				    String portalType =  po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
+				    if( InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
+				        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
+				    }
+				}
 			}
 
-			if ("local".equals(policyFilter)) {
+			if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
 				// Parcours des pages pour appliquer le filtre sur les paths
 
 				String pathFilter = "";

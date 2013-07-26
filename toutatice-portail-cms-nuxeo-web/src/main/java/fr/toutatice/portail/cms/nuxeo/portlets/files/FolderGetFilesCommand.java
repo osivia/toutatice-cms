@@ -5,6 +5,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -42,7 +43,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 			
 			
 			// Insertion du filtre sur les élements publiés
-			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, "global");
+			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NONE);
 
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);

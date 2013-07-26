@@ -40,6 +40,7 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.Interpreter;
@@ -248,9 +249,9 @@ public class ViewListPortlet extends CMSPortlet {
 	
 			
 			if (req.getParameter("requestFilteringPolicy") != null && req.getParameter("requestFilteringPolicy").length() > 0)
-				window.setProperty("osivia.cms.requestFilteringPolicy", req.getParameter("requestFilteringPolicy"));
-			else if (window.getProperty("osivia.cms.requestFilteringPolicy") != null)
-				window.setProperty("osivia.cms.requestFilteringPolicy", null);
+				window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, req.getParameter("requestFilteringPolicy"));
+			else if (window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY) != null)
+				window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, null);
 
 			
 		
@@ -380,7 +381,7 @@ public class ViewListPortlet extends CMSPortlet {
 			req.setAttribute("displayLiveVersion", displayLiveVersion);
 			
 			
-			String requestFilteringPolicy = window.getProperty("osivia.cms.requestFilteringPolicy");
+			String requestFilteringPolicy = window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
 			req.setAttribute("requestFilteringPolicy", requestFilteringPolicy);
 			
 			
@@ -616,7 +617,7 @@ public class ViewListPortlet extends CMSPortlet {
 
 	
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
-						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,window.getProperty("osivia.cms.requestFilteringPolicy")));
+						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY)));
 
 				
 				// En mode fil, on trie les documents suivant l'ordre défini par l'utilisateur

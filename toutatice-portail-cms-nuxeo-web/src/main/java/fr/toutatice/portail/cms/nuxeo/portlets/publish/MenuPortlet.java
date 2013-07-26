@@ -282,8 +282,6 @@ public class MenuPortlet extends CMSPortlet {
 			String nuxeoPath = null;
 			
 
-
-
 			// logger.debug("doView "+ uid);
 			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 			
@@ -292,19 +290,24 @@ public class MenuPortlet extends CMSPortlet {
 			// (toutes les pages non contextualisées)
 			String basePath = ctx.getBasePath();
 			String spacePath = ctx.getSpacePath();
-			String menuRootPath = window.getPageProperty("osivia.navigation.menuRootPath");
+			
+			
+		    String menuRootPath = ctx.getMenuRootPath();
+
+////			
+////			String menuRootPath = window.getPageProperty("osivia.navigation.menuRootPath");
+////			
+////			
 			if( menuRootPath != null)	{
 				basePath = menuRootPath;
 				spacePath = menuRootPath;
 			}
 	
+			    
+			    
 			if (basePath != null) {
 
 
-				
-				
-				
-				
 				
 				// rafraichir en asynchrone
 				ctx.setAsynchronousUpdates(true);
