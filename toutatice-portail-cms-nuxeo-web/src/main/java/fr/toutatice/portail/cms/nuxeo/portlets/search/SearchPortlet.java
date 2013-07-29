@@ -62,7 +62,7 @@ public class SearchPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
 
 			
 			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
@@ -91,7 +91,7 @@ public class SearchPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.cms.uri");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
@@ -116,7 +116,7 @@ public class SearchPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(request);
 
-		String	nuxeoPath =  window.getProperty("osivia.nuxeoPath");
+		String	nuxeoPath =  window.getProperty("osivia.cms.uri");
 
 			
 		String keywords = request.getParameter("keywords");
@@ -176,7 +176,7 @@ public class SearchPortlet extends CMSPortlet {
 				// Url d'appel de la recherche
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
-				windowProperties.put("osivia.nuxeoPath", ctx.getComputedPath(nuxeoPath));
+				windowProperties.put("osivia.cms.uri", ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				windowProperties.put("osivia.hideSearchSubForm", "1");
 				

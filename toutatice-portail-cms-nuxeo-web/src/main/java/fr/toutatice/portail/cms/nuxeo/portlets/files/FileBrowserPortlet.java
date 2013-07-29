@@ -180,7 +180,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
             PortalWindow window = WindowFactory.getWindow(req);
-            window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
+            window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
 
             if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
                 window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
@@ -232,7 +232,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         PortalWindow window = WindowFactory.getWindow(req);
 
-        String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+        String nuxeoPath = window.getProperty("osivia.cms.uri");
         if (nuxeoPath == null)
             nuxeoPath = "";
         req.setAttribute("nuxeoPath", nuxeoPath);
@@ -297,10 +297,6 @@ public class FileBrowserPortlet extends CMSPortlet {
             // portal window parameter (appels dynamiques depuis le portail)
             nuxeoPath = window.getProperty("osivia.cms.uri");
 
-            // logger.debug("doView "+ uid);
-            if (nuxeoPath == null) {
-                nuxeoPath = window.getProperty("osivia.nuxeoPath");
-            }
 
             String displayMode = request.getParameter("displayMode");
 

@@ -42,7 +42,7 @@ public class NavigationPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
+			window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
 				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
@@ -73,7 +73,7 @@ public class NavigationPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.cms.uri");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
@@ -110,12 +110,7 @@ public class NavigationPortlet extends CMSPortlet {
 			// portal window parameter (appels dynamiques depuis le portail)
 			nuxeoPath = window.getProperty("osivia.cms.uri");
 
-			// logger.debug("doView "+ uid);
 
-			if (nuxeoPath == null) {
-				// WIndow parameter (back-office)
-				nuxeoPath = window.getProperty("osivia.nuxeoPath");
-			}
 
 			if (nuxeoPath != null) {
 

@@ -83,7 +83,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live,  InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NONE);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live,  InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
 	
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
 		

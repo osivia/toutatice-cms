@@ -24,7 +24,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 		String nuxeoPath = null;
 		boolean emptyContent = true;
 
-		nuxeoPath = window.getProperty("osivia.nuxeoPath");
+		nuxeoPath = window.getProperty("osivia.cms.uri");
 
 		if (StringUtils.isNotEmpty(nuxeoPath)) {
 
@@ -68,7 +68,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
 			throws Exception {
 
-		String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+		String nuxeoPath = window.getProperty("osivia.cms.uri");
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		request.setAttribute("nuxeoPath", nuxeoPath);
@@ -90,7 +90,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 			throws Exception {
 
 		if (request.getParameter("nuxeoPath") != null)
-			window.setProperty("osivia.nuxeoPath", request.getParameter("nuxeoPath"));
+			window.setProperty("osivia.cms.uri", request.getParameter("nuxeoPath"));
 
 		if (request.getParameter("propertyName") != null) {
 			if (request.getParameter("propertyName").length() > 0)

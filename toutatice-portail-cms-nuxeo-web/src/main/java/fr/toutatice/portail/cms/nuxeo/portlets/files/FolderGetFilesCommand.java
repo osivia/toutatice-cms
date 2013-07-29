@@ -43,7 +43,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 			
 			
 			// Insertion du filtre sur les élements publiés
-			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NONE);
+			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
 
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
