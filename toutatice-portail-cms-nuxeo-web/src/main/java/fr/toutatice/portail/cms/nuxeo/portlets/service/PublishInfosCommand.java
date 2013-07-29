@@ -5,6 +5,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,35 +45,43 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
-
-			String content = FileUtils.read(binariesInfos.getStream());
-
-			JSONArray row = JSONArray.fromObject(content);
-			Iterator it = row.iterator();
+			
+			String pubInfosContent = FileUtils.read(binariesInfos.getStream());
+			
+			JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
+			Iterator it = infosContent.iterator();
 			while (it.hasNext()) {
-				JSONObject obj = (JSONObject) it.next();
-				publiInfos.setErrorCodes((List<Integer>) obj.get("errorCodes"));
-				publiInfos.setDocumentPath( this.decode((String) obj.get("documentPath")));
-				publiInfos.setLiveId((String) obj.get("liveId"));
-				publiInfos.setEditableByUser(this.convertBoolean(obj.get("editableByUser")));
-				publiInfos.setPublished(this.convertBoolean(obj.get("published")));
-				publiInfos.setAnonymouslyReadable(this.convertBoolean(obj.get("anonymouslyReadable")));
+				JSONObject infos = (JSONObject) it.next();
 
-				publiInfos.setSubTypes(this.decodeSubTypes((JSONObject) obj.get("subTypes")));
+				publiInfos.setErrorCodes(adaptList((List<Integer>) infos.get("errorCodes")));
+				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
+				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
+				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
+				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
+				publiInfos.setPublished(adaptBoolean(infos.get("published")));
+				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
+				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
+				
+				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
 
-				publiInfos.setPublishSpaceType((String) obj.get("publishSpaceType"));
+				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
-				String publishSpacePath = this.decode((String) obj.get("publishSpacePath"));
+				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
-					publiInfos.setPublishSpaceDisplayName(this.decode((String) obj.get("publishSpaceDisplayName")));
+					publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
 					publiInfos.setLiveSpace(false);
 				} else {
-					String workspacePath = this.decode((String) obj.get("workspacePath"));
+					String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
-						publiInfos.setPublishSpaceDisplayName(this.decode((String) obj.get("workspaceDisplayName")));
+						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
 						publiInfos.setLiveSpace(true);
+						/*
+						 * les spaceId ne sont appliqués qu'aux ws pour le moment.
+						 */
+						publiInfos.setSpaceID(adaptType(String.class, infos.getString("spaceID")));
+						publiInfos.setParentSpaceID(adaptType(String.class, infos.getString("parentSpaceID")));
 					}
 				}
 			}
@@ -81,25 +90,20 @@ public class PublishInfosCommand implements INuxeoCommand {
 		return publiInfos;
 	}
 
-    /**
-     * Décode en UTF-8 les labels de la Map des sous-types permis.
-     *
-     * @param map
-     * @return
-     * @throws UnsupportedEncodingException
-     */
-    private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
-        if (subTypes != null) {
-            Map<String, String> decodedSubTypes = new HashMap<String, String>();
-            for (Entry<String, String> subType : subTypes.entrySet()) {
-                String decodedLabel = this.decode(subType.getValue());
-                decodedSubTypes.put(subType.getKey(), decodedLabel);
-            }
-            return decodedSubTypes;
-        } else {
-            return null;
-        }
-    }
+	/**
+	 * Décode en UTF-8 les labels de la Map des sous-types permis.
+	 * @param map
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
+		Map<String, String> decodedSubTypes = new HashMap<String, String>();
+		for(Entry<String, String> subType : subTypes.entrySet()){
+			String decodedLabel = decode(subType.getValue());
+			decodedSubTypes.put(subType.getKey(), decodedLabel);
+		}
+		return decodedSubTypes;
+	}
 
 	public String getId() {
 		return "PublishInfosCommand" + this.path;
@@ -119,13 +123,29 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return value;
 	}
-
-	private Boolean convertBoolean(Object value) {
+	
+	private List<Integer> adaptList(List<Integer> list) {
+		List<Integer> returnedList = list;
+		if(list == null){
+			returnedList = new ArrayList<Integer>();
+		}
+		return returnedList;
+	}
+	
+	private Boolean adaptBoolean(Object value) {
 		if (value != null) {
 			return (Boolean) value;
 		} else {
 			return Boolean.FALSE;
 		}
+	}
+	
+	private <T> T adaptType(Class<T> clazz, Object object) throws InstantiationException, IllegalAccessException{
+		T returnedObject = (T) object;
+		if(object == null){
+			returnedObject = clazz.newInstance();
+		}
+		return returnedObject;
 	}
 
 }

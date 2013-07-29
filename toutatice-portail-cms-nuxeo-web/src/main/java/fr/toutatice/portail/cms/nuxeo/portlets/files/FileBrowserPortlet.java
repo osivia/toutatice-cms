@@ -34,6 +34,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.DeleteDocumentCommand;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 /**
@@ -152,8 +153,18 @@ public class FileBrowserPortlet extends CMSPortlet {
                      nbItems++;
                 }
                 
+				if (pubInfos.isDeletableByUser()) {
+					sb.append("<br/>");
+					sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
+					sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
+					sb.append(id);
+					sb.append("';\">Supprimer</a>");
+					nbItems++;
+				}
+               
+                
                 if( nbItems ==0)
-                    sb.append("&nbsp;");
+                    sb.append("<b>Aucune action<br/>disponible</b>");
                     
                 sb.append("<div>");
                 resourceResponse.getPortletOutputStream().write(sb.toString().getBytes());
@@ -219,6 +230,18 @@ public class FileBrowserPortlet extends CMSPortlet {
             res.setPortletMode(PortletMode.VIEW);
             res.setWindowState(WindowState.NORMAL);
         }
+        
+        if(req.getParameter("deleteFileItem") != null){
+        	String itemId = (String) req.getParameter("fileItemId");
+        	NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
+        	try {
+				ctrl.executeNuxeoCommand(new DeleteDocumentCommand(itemId));
+			} catch (Exception e) {
+				if (!(e instanceof PortletException))
+					throw new PortletException(e);
+			}
+        }
+
     }
 
     @RenderMode(name = "admin")

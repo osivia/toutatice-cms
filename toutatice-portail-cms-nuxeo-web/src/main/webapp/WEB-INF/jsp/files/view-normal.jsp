@@ -185,6 +185,12 @@ while( it.hasNext())	{
 
 </div>
 
+<!-- Modif-FILEBROWSER-begin -->
+<div id="div_delete_file-item" style="display: none">
+	<jsp:include page="confirm-delete-item.jsp"></jsp:include>
+</div>
+<!-- Modif-FILEBROWSER-end -->
+
 <!--
 <p align="center">
 		scope	<%=  ctx.getScope()  %> <br/>
