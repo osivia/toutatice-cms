@@ -162,8 +162,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 					nbItems++;
 				}
                
-                
-                if( nbItems ==0)
+                if( nbItems ==0)               
                     sb.append("<b>Aucune action<br/>disponible</b>");
                     
                 sb.append("<div>");
@@ -200,9 +199,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             // v2.0.5
             if (req.getParameter("forceContextualization") != null && req.getParameter("forceContextualization").length() > 0)
-                window.setProperty("osivia.cms.forceContextualization", req.getParameter("forceContextualization"));
-            else if (window.getProperty("osivia.cms.forceContextualization") != null)
-                window.setProperty("osivia.cms.forceContextualization", null);
+                window.setProperty("osivia.cms.contextualization", req.getParameter("forceContextualization"));
+            else if (window.getProperty("osivia.cms.contextualization") != null)
+                window.setProperty("osivia.cms.contextualization", null);
 
             if (req.getParameter("changeDisplayMode") != null && req.getParameter("changeDisplayMode").length() > 0)
                 window.setProperty("osivia.cms.changeDisplayMode", req.getParameter("changeDisplayMode"));
@@ -216,10 +215,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                 window.setProperty("osivia.cms.displayLiveVersion", null);
 
 
-            if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-                window.setProperty("osivia.cms.scope", req.getParameter("scope"));
-            else if (window.getProperty("osivia.cms.scope") != null)
-                window.setProperty("osivia.cms.scope", null);
 
             res.setPortletMode(PortletMode.VIEW);
             res.setWindowState(WindowState.NORMAL);
@@ -231,17 +226,18 @@ public class FileBrowserPortlet extends CMSPortlet {
             res.setWindowState(WindowState.NORMAL);
         }
         
+        
         if(req.getParameter("deleteFileItem") != null){
-        	String itemId = (String) req.getParameter("fileItemId");
-        	NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
-        	try {
-				ctrl.executeNuxeoCommand(new DeleteDocumentCommand(itemId));
-			} catch (Exception e) {
-				if (!(e instanceof PortletException))
-					throw new PortletException(e);
-			}
+            String itemId = (String) req.getParameter("fileItemId");
+            NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
+            try {
+                ctrl.executeNuxeoCommand(new DeleteDocumentCommand(itemId));
+            } catch (Exception e) {
+                if (!(e instanceof PortletException))
+                    throw new PortletException(e);
+            }
         }
-
+        
     }
 
     @RenderMode(name = "admin")
@@ -266,11 +262,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // v2.0.5
         req.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
-        req.setAttribute("forceContextualization", window.getProperty("osivia.cms.forceContextualization"));
+        req.setAttribute("forceContextualization", window.getProperty("osivia.cms.contextualization"));
 
-   
-        String scope = window.getProperty("osivia.cms.scope");
-        req.setAttribute("scope", scope);
 
         req.setAttribute("ctx", ctx);
 
@@ -313,12 +306,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             PortalWindow window = WindowFactory.getWindow(request);
 
 
-            /* On détermine l'uid et le scope */
-
-            String nuxeoPath = null;
-
-            // portal window parameter (appels dynamiques depuis le portail)
-            nuxeoPath = window.getProperty("osivia.cms.uri");
+            String nuxeoPath = window.getProperty("osivia.cms.uri");
 
 
             String displayMode = request.getParameter("displayMode");
@@ -349,11 +337,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 /* Récupération des fils */
 
 
-                // v2.0.5 : liens contextualisés par paramétrage
-                // On rend la vue cohérente avec le menu de navigation, en filtrant les folders non 'show in menu'
-                //20130627 : Supprimé par JSS (vu avec Olivier)
-				boolean filterByNav = false;
-              if ("1".equals(window.getProperty("osivia.portletContextualizedInPage")) || "1".equals(window.getProperty("osivia.cms.forceContextualization"))) {
+               if ("1".equals(window.getProperty("osivia.cms.contextualization"))) {
                     request.setAttribute("cmsLink", "1");
               }
 

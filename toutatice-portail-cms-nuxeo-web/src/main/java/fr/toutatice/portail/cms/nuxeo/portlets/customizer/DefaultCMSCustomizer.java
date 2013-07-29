@@ -484,29 +484,29 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		} 		
 
 		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
-			 if (ctx.getContextualizationBasePath() != null) {
-					
-				 	CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
-					
-				 	// v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
-				 	// v2.0.5 : file explorer également sur userworkspace
-				 	String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
-					if( "Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType))	{
-				 	
-//					if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType()))	{
-						// Pas de filtre sur les versions publiées
-						ctx.setDisplayLiveVersion("1");
-						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
-						props.getWindowProperties().put("osivia.title", "Liste des documents");
-						return props;
-					}
-			 }	else	{
-				 //v2.0.9 : ordre par date de modif par défaut				 
-				 if ("Folder".equals(doc.getType()))
-					 return getCMSFolderPlayer(ctx);
-				 else
-					 getCMSOrderedFolderPlayer(ctx);
-			 }
+            if (ctx.getContextualizationBasePath() != null) {
+
+                CMSItem spaceConfig = CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
+
+                // v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
+                // v2.0.5 : file explorer également sur userworkspace
+                String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
+                if ("Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType)) {
+
+                    // if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType())) {
+                    // Pas de filtre sur les versions publiées
+                    ctx.setDisplayLiveVersion("1");
+                    CMSHandlerProperties props = createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+                    props.getWindowProperties().put("osivia.title", "Liste des documents");
+                    return props;
+                }
+            }
+            // v2.0.9 : ordre par date de modif par défaut
+            if ("Folder".equals(doc.getType()))
+                return getCMSFolderPlayer(ctx);
+            else
+                getCMSOrderedFolderPlayer(ctx);
+
 		} 
 		
 		if ("PortalVirtualPage".equals(doc.getType())) {
