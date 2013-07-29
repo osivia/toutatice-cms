@@ -458,13 +458,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 						props.getWindowProperties().put("osivia.title", "Liste des documents");
 						return props;
 					}
-			 }	else	{
-				 //v2.0.9 : ordre par date de modif par défaut				 
-				 if ("Folder".equals(doc.getType()))
-					 return getCMSFolderPlayer(ctx);
-				 else
-					 getCMSOrderedFolderPlayer(ctx);
-			 }
+			 }	
+			 //v2.0.9 : ordre par date de modif par défaut				 
+			 if ("Folder".equals(doc.getType()))
+				 return getCMSFolderPlayer(ctx);
+			 else
+				 getCMSOrderedFolderPlayer(ctx);
+
 		} 
 		
 		if ("PortalVirtualPage".equals(doc.getType())) {
