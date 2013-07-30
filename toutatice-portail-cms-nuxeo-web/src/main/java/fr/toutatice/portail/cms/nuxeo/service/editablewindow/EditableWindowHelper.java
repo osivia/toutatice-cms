@@ -9,44 +9,43 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
-import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
 
 /**
- * Classe générique de manipulation des schémas complexes nuxeo côté portail
+ * Classe utilitaire de manipulation des schémas complexes
+ * 
+ * @author loic
  * 
  */
-public abstract class EditableWindowService {
-
-    /** logger */
-    protected static final Log logger = LogFactory.getLog(EditableWindowService.class);
+public class EditableWindowHelper {
 
     /** Identifiant schéma générique des fragments Nuxeo */
     public static String SCHEMA = "fgts:fragments";
 
+    /** URI */
     public static String FGT_URI = "uri";
 
+    /** type de fragment (html, liste...) */
     public static String FGT_TYPE = "fragmentCategory";
 
+    /** ordre d'apparition dans la page */
     public static String FGT_ORDER = "order";
 
+    /** region CMS où se rattache le fragment */
     public static String FGT_REGION = "regionId";
 
-    /** Référence du type de window */
-    protected EditableWindowTypeEnum type;
 
     /** Comparateur de fragments */
-    private static FragmentComparator comparator = new FragmentComparator();
+    private static EditableWindowComparator comparator = new EditableWindowComparator();
 
-    /**
-     * Définit le type référent à la classe de service
-     */
-    public void setType(EditableWindowTypeEnum type) {
-        this.type = type;
+    /** logger */
+    protected static final Log logger = LogFactory.getLog(EditableWindowHelper.class);
+
+    private EditableWindowHelper() {
+
     }
 
     /**
@@ -134,98 +133,6 @@ public abstract class EditableWindowService {
         return null;
     }
 
-    /**
-     * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo et
-     * retourne ces propriétés pour créer chaque ViewFragmentPortlet.
-     * 
-     * @param doc
-     *            simplesite ou simplepage (conteneur des fragments)
-     * @param fragment
-     *            les props du fragment
-     * @param modeEditionPage
-     *            page en cours d'édition
-     * @return les props de la window
-     */
-    public abstract Map<String, String> fillProps(Document doc, PropertyMap fragment, Boolean modeEditionPage);
-
-    /**
-     * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo et
-     * retourne ces propriétés pour créer chaque ViewFragmentPortlet.
-     * 
-     * @param doc
-     *            simplesite ou simplepage (conteneur des fragments)
-     * @param fragment
-     *            les props du fragment
-     * @param modeEditionPage
-     *            page en cours d'édition
-     * @return les props de la window
-     */
-    protected Map<String, String> fillGenericProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
-
-        // Propriétés génériques
-        Map<String, String> propsFilled = new HashMap<String, String>();
-        propsFilled.put("osivia.fragmentTypeId", "html_property");
-        propsFilled.put("osivia.cms.uri", doc.getPath());
-        propsFilled.put("osivia.propertyName", "htmlfgt:htmlFragment");
-
-        propsFilled.put("osivia.refURI", fragment.getString(FGT_URI));
-
-        propsFilled.put("osivia.title", fragment.getString("title"));
-
-        if (fragment.getBoolean("hideTitle").equals(Boolean.TRUE)) {
-            propsFilled.put("osivia.hideTitle", "1");
-        } else {
-            propsFilled.put("osivia.hideTitle", "0");
-        }
-
-        if (modeEditionPage)
-            propsFilled.put("osivia.cms.displayLiveVersion", "1");
-
-        propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
-        propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, fragment.getString("order"));
-
-        return propsFilled;
-    }
-
-    /**
-     * Prépare la commande pour supprimer une entrée du schéma générique
-     * 
-     * @param propertiesToRemove
-     * @param doc
-     * @param refURI
-     */
-    protected void prepareDeleteGeneric(List<String> propertiesToRemove, Document doc, String refURI) {
-
-        Integer indexToRemove = findIndexByURI(doc, refURI);
-
-        propertiesToRemove.add(SCHEMA.concat("/").concat(indexToRemove.toString()));
-    }
-
-    /**
-     * Prépare la commande pour supprimer un fragment
-     * 
-     * @param doc
-     * @param refURI
-     * @return
-     */
-    public abstract List<String> prepareDelete(Document doc, String refURI);
-
-    /**
-     * Retourner un nouveau porlet en fonction du type de fragment souhaité
-     * 
-     * @param id
-     *            identifiant de la portlet dans la page
-     * @param fp
-     *            le type de portlet
-     * @param portletProps
-     *            ses propriétés
-     * @return la fenetre éditable avec le portlet instancié
-     */
-    public CMSEditableWindow createNewEditabletWindow(int id, Map<String, String> portletProps) {
-        String windowId = type.getPrefixeIdFrag().concat(Integer.toString(id));
-
-        return new CMSEditableWindow(windowId, type.getPorletInstance(), portletProps);
-    }
 
     /**
      * Vérification de la cohérence des n° d'ordre dans les fragments
@@ -283,7 +190,7 @@ public abstract class EditableWindowService {
     }
 
     /**
-     * Prepare the list of nuxeo update commands to move the fragment
+     * Préparation du déplacement d'un fragment
      * 
      * @param doc
      * @param fromRegion the identifier of the region from the fragment is moved

@@ -34,7 +34,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
@@ -42,8 +42,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowService;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowTypeEnum;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
 import fr.toutatice.portail.core.nuxeo.INuxeoCommandService;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
@@ -134,6 +134,7 @@ public class CMSService implements ICMSService {
 
 		return serviceCache;
 	}
+
 
 	public INuxeoCommandService getNuxeoCommandService() throws Exception {
 		if (nuxeoCommandService == null)
@@ -928,29 +929,33 @@ public class CMSService implements ICMSService {
 
 			// Propriétés générales des fragments
 			PropertyList pmFragmentsValues = doc.getProperties().getList(
-					EditableWindowService.SCHEMA);
+EditableWindowHelper.SCHEMA);
 
 			if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
+
+                EditableWindowAdapter adapter = customizer.getEditableWindowAdapter();
 
 				// Pour chaque fragment
 				for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
 
 					// Test de la catégorie
-					String fragmentCategory = (String) pmFragmentsValues.getMap(fragmentIndex).get("fragmentCategory");
-					String uri = (String) pmFragmentsValues.getMap(fragmentIndex).get("uri");
+                    String fragmentCategory = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
+                    String uri = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_URI);
 
-					EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(fragmentCategory);
+                    EditableWindow ew = adapter.getType(fragmentCategory);
 
-					if (type != null) {
+                    // EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(fragmentCategory);
+
+					if (ew != null) {
 						
 						// Récupération d'une classe utilitaire se chargeant des traitements spécifiques à chaque fgt
-						EditableWindowService ewService = type.getService();
+                        // EditableWindowService ewService = type.getService();
 						
 						// Valorisation des propriétés 
-						Map<String, String> props = ewService.fillProps(doc, pmFragmentsValues.getMap(fragmentIndex), editionMode);
+                        Map<String, String> props = ew.fillProps(doc, pmFragmentsValues.getMap(fragmentIndex), editionMode);
 
 						// Construction de la window
-						windows.add(ewService.createNewEditabletWindow(fragmentIndex, props));
+                        windows.add(ew.createNewEditabletWindow(fragmentIndex, props));
 						
 					}
 					// Si type de portlet non trouvé, erreur.
@@ -972,76 +977,74 @@ public class CMSService implements ICMSService {
 		}
 		
 	}
-	
-	
-	public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI)  throws CMSException {
 
-		cmsCtx.setDisplayLiveVersion("1");
-		
-		CMSItem cmsItem = getContent(cmsCtx, pagePath);
-		Document doc = (Document) cmsItem.getNativeItem();
-		
-		// Propriétés générales des fragments
-		PropertyList fragments = doc.getProperties().getList(
-				EditableWindowService.SCHEMA);
 
-		List<String> propertiesToRemove = null;
-		if (fragments != null && !fragments.isEmpty()) {
+    public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {
 
-			// Recherche du fragment
-			for (int fragmentIndex = 0; fragmentIndex < fragments.size(); fragmentIndex++) {
-				if(refURI.equals(fragments.getMap(fragmentIndex).get(EditableWindowService.FGT_URI))) {
-					
-					String typeStr = (String) fragments.getMap(fragmentIndex).get(EditableWindowService.FGT_TYPE);
+        cmsCtx.setDisplayLiveVersion("1");
 
-					EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(typeStr);
-					
-					if(type != null) {
-						EditableWindowService service = type.getService();
-						propertiesToRemove = service.prepareDelete(doc, refURI);
-					}
-				}
-			}
-		}
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
 
-		
+        // Propriétés générales des fragments
+        PropertyList fragments = doc.getProperties().getList(EditableWindowHelper.SCHEMA);
+
+        List<String> propertiesToRemove = null;
+        if (fragments != null && !fragments.isEmpty()) {
+
+            // Recherche du fragment
+            for (int fragmentIndex = 0; fragmentIndex < fragments.size(); fragmentIndex++) {
+                if (refURI.equals(fragments.getMap(fragmentIndex).get(EditableWindowHelper.FGT_URI))) {
+
+                    String fragmentCategory = (String) fragments.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
+
+                    EditableWindowAdapter adapter = customizer.getEditableWindowAdapter();
+                    EditableWindow ew = adapter.getType(fragmentCategory);
+
+                    if (ew != null) {
+
+                        propertiesToRemove = ew.prepareDelete(doc, refURI);
+                    }
+                }
+            }
+        }
+
+
         try {
-			if(propertiesToRemove != null) {
-				
-				Document docSaved = (Document) executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
-				
-				// On force le rechargement du cache
-				cmsCtx.setForceReload(true);
-				getContent(cmsCtx, pagePath);
-				cmsCtx.setForceReload(false);
-			}
+            if (propertiesToRemove != null) {
+
+                Document docSaved = (Document) executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
+
+                // On force le rechargement du cache
+                cmsCtx.setForceReload(true);
+                getContent(cmsCtx, pagePath);
+                cmsCtx.setForceReload(false);
+            }
         } catch (Exception e) {
             throw new CMSException(e);
         }
 
 
-	}
+    }
 
 
-	
-	public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path,
-			Map<String, String> requestParameters) throws CMSException {
-		
-		String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");
-		String nuxeoPublicPort = System.getProperty("nuxeo.publicPort");
-		String nuxeoCtx = "/nuxeo";
+    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
 
-		URI uri = null;
+        String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");
+        String nuxeoPublicPort = System.getProperty("nuxeo.publicPort");
+        String nuxeoCtx = "/nuxeo";
 
-		try {
-			uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort + nuxeoCtx);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+        URI uri = null;
+
+        try {
+            uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort + nuxeoCtx);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
 
-		String url = "";
-		
+        String url = "";
+
         if (command == EcmCommand.createPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_document?";
             requestParameters.put("type", "SimplePage");
@@ -1049,22 +1052,20 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmCommand.createFgtInRegion) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
-		}
-		else if(command == EcmCommand.createFgtBelowWindow) {
+        } else if (command == EcmCommand.createFgtBelowWindow) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
-		}
-		else if(command == EcmCommand.editFgt) {
+        } else if (command == EcmCommand.editFgt) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         }
 
-		for(Map.Entry<String, String> param : requestParameters.entrySet()) {
-			url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
-		}
-		
-		return url;
-	}
+        for (Map.Entry<String, String> param : requestParameters.entrySet()) {
+            url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
+        }
+
+        return url;
+    }
 
     public void moveFragment(CMSServiceCtx cmsCtx, String pagePath, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri)
             throws CMSException {
@@ -1078,7 +1079,7 @@ public class CMSService implements ICMSService {
 
         try {
 
-            List<String> propertiesToUpdate = EditableWindowService.checkBeforeMove(doc, fromRegion, fromPos, refUri);
+            List<String> propertiesToUpdate = EditableWindowHelper.checkBeforeMove(doc, fromRegion, fromPos, refUri);
             if (propertiesToUpdate.size() > 0) {
                 executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
 
@@ -1088,7 +1089,7 @@ public class CMSService implements ICMSService {
             }
 
 
-            propertiesToUpdate = EditableWindowService.prepareMove(doc, fromRegion, fromPos, toRegion, toPos, refUri);
+            propertiesToUpdate = EditableWindowHelper.prepareMove(doc, fromRegion, fromPos, toRegion, toPos, refUri);
 
             if (propertiesToUpdate.size() > 0) {
 

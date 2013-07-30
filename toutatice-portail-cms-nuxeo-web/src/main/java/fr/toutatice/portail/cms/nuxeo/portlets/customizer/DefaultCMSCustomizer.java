@@ -6,21 +6,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.AttributeNotFoundException;
-import javax.management.DynamicMBean;
-import javax.management.InvalidAttributeValueException;
-import javax.management.MBeanException;
-import javax.management.MBeanInfo;
-import javax.management.ReflectionException;
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
 import javax.xml.transform.Transformer;
@@ -50,27 +40,24 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
-import org.osivia.portal.core.tracker.RequestContextUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
@@ -82,6 +69,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	CMSItemAdapter cmsItemAdapter;
 	NuxeoConnectionProperties nuxeoConnection;
 	XMLReader parser;
+    EditableWindowAdapter editableWindowAdapter;
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 	
@@ -165,6 +153,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		return cmsItemAdapter;
 	}
 
+    /**
+     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables
+     * 
+     * @return Instance du EditableWindowAdapter
+     */
+    public EditableWindowAdapter getEditableWindowAdapter() {
+        if (editableWindowAdapter == null) {
+            editableWindowAdapter = new EditableWindowAdapter();
+        }
+
+        return editableWindowAdapter;
+    }
 
 	public static List<ListTemplate> getListTemplates() {
 

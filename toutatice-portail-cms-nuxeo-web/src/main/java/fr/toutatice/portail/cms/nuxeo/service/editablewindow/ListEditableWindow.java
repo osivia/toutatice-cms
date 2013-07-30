@@ -13,30 +13,25 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
  * Service spécifique fragments Liste
  * 
  */
-public class ListEWService extends EditableWindowService {
+public class ListEditableWindow extends EditableWindow {
 
-	private static final String LISTSCHEMA = "listfgt:listFragment";
+
+    private static final String LISTSCHEMA = "listfgt:listFragment";
 	
 	private static final String NEWSSCHEMA = "nwslk:links";
 	
-	private static ListEWService instance;
-	
-	public static ListEWService getInstance() {
-		if(instance == null) {
-			instance = new ListEWService();
-		}
-		return instance;
-	}
-	
-	private ListEWService() {
-	}
-	
+    public ListEditableWindow(String instancePortlet, String prefixWindow) {
+        super(instancePortlet, prefixWindow);
+
+    }
+
+
 	@Override
 	public Map<String, String> fillProps(Document doc, PropertyMap fragment,
 			Boolean modeEditionPage) {
 		Map<String, String> props = super.fillGenericProps(doc, fragment, modeEditionPage);
 		
-		PropertyMap mapListe = findSchemaByRefURI(doc, LISTSCHEMA, fragment.getString("uri"));
+        PropertyMap mapListe = EditableWindowHelper.findSchemaByRefURI(doc, LISTSCHEMA, fragment.getString("uri"));
 		
 		props.put("osivia.nuxeoRequest", mapListe.getString("request"));
 		props.put("osivia.requestInterpretor", "beanShell");
@@ -99,7 +94,7 @@ public class ListEWService extends EditableWindowService {
 		
 		prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 		
-		Integer indexToRemove = findIndexByRefURI(doc, LISTSCHEMA, refURI);
+        Integer indexToRemove = EditableWindowHelper.findIndexByRefURI(doc, LISTSCHEMA, refURI);
 		
 		propertiesToRemove.add(LISTSCHEMA.concat("/").concat(indexToRemove.toString()));
 		

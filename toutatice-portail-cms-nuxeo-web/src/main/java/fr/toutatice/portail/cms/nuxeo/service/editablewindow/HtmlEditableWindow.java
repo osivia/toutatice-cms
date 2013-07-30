@@ -12,21 +12,15 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
  * Service spécifique fragments HTML
  * 
  */
-public class HtmlEWService extends EditableWindowService {
+public class HtmlEditableWindow extends EditableWindow {
 
-	public static final String HTMLSCHEMA = "htmlfgt:htmlFragment";
+
+    public static final String HTMLSCHEMA = "htmlfgt:htmlFragment";
 	
-	private static HtmlEWService instance;
-	
-	public static HtmlEWService getInstance() {
-		if(instance == null) {
-			instance = new HtmlEWService();
-		}
-		return instance;
-	}
-	
-	private HtmlEWService() {
-	}
+    public HtmlEditableWindow(String instancePortlet, String prefixWindow) {
+        super(instancePortlet, prefixWindow);
+
+    }
 	
 	@Override
 	public Map<String, String> fillProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
@@ -41,7 +35,7 @@ public class HtmlEWService extends EditableWindowService {
 		
 		prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 		
-		Integer indexToRemove = findIndexByRefURI(doc, HTMLSCHEMA, refURI);
+        Integer indexToRemove = EditableWindowHelper.findIndexByRefURI(doc, HTMLSCHEMA, refURI);
 		
 		propertiesToRemove.add(HTMLSCHEMA.concat("/").concat(indexToRemove.toString()));
 		
