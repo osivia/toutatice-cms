@@ -7,6 +7,7 @@ public class DocTypeDefinition extends Object {
     private String name;
     private String displayName;
     private boolean supportsPortalForms;
+    private boolean webPage;
      
     
     public boolean isSupportingPortalForm() {
@@ -17,6 +18,22 @@ public class DocTypeDefinition extends Object {
     public void setSupportingPortalForm(boolean supportsPortalForms) {
         this.supportsPortalForms = supportsPortalForms;
     }
+
+
+    /**
+     * @return the webPage
+     */
+    public boolean isWebPage() {
+        return webPage;
+    }
+
+    /**
+     * @param webPage the webPage to set
+     */
+    public void setWebPage(boolean webPage) {
+        this.webPage = webPage;
+    }
+
 
     public String getDisplayName() {
         return displayName;

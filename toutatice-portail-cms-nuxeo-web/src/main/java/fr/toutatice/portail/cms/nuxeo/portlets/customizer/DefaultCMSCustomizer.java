@@ -6,13 +6,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
@@ -43,10 +40,8 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
-import org.osivia.portal.core.tracker.RequestContextUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-
 
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -58,11 +53,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentMo
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 
@@ -799,12 +792,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	
 	private Map<String, DocTypeDefinition> docTypes = null;
 	
-	protected DocTypeDefinition createDocType( String docTypeName, String displayName){
+    protected DocTypeDefinition createDocType(String docTypeName, String displayName, boolean supportingPortalForm, boolean webPage) {
 	    
 	    DocTypeDefinition portalDocType = new DocTypeDefinition();
 	    portalDocType.setName(docTypeName);
 	    portalDocType.setDisplayName(displayName);
-	    portalDocType.setSupportingPortalForm(true);
+        portalDocType.setSupportingPortalForm(supportingPortalForm);
+        portalDocType.setWebPage(webPage);
     	    
 	    return portalDocType;
 	}
@@ -815,10 +809,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
             
             docTypes = new LinkedHashMap<String,DocTypeDefinition>();
             
-            docTypes.put("Folder", createDocType("Folder", "Dossier"));            
-            docTypes.put("File", createDocType("File", "Fichier"));
-            docTypes.put("Note", createDocType("Note", "Note"));
-             
+            docTypes.put("Folder", createDocType("Folder", "Dossier", true, false));
+            docTypes.put("File", createDocType("File", "Fichier", true, false));
+            docTypes.put("Note", createDocType("Note", "Note", true, false));
+
+            docTypes.put("SimplePage", createDocType("Note", "Note", false, true));
+            docTypes.put("SimpleSite", createDocType("Note", "Note", false, true));
         }
         return docTypes;
         
@@ -837,6 +833,4 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
         
     }
 
- 
-	
 }

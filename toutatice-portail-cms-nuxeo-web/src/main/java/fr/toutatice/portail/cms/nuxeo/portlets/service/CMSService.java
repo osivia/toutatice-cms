@@ -32,6 +32,7 @@ import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -49,6 +50,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 
 
 public class CMSService implements ICMSService {
@@ -1103,6 +1105,46 @@ EditableWindowHelper.SCHEMA);
         } finally {
             cmsCtx.setForceReload(false);
         }
+    }
+
+    public boolean isTypeAllowedForWebPages(CMSServiceCtx cmsCtx, String type) throws CMSException {
+
+        Map<String, DocTypeDefinition> docTypeDefinitions;
+        try {
+            docTypeDefinitions = customizer.getDocTypeDefinitions(cmsCtx);
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        DocTypeDefinition definition = docTypeDefinitions.get(type);
+        if (definition != null)
+            return definition.isWebPage();
+        else
+            return false;
+
+    }
+
+    public void publishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            executeNuxeoCommand(cmsCtx, new SetOnLineCommand(doc));
+
+            // On force le rechargement du cache de la page
+            cmsCtx.setDisplayLiveVersion("0");
+            cmsCtx.setForceReload(true);
+            getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
     }
 
 }
