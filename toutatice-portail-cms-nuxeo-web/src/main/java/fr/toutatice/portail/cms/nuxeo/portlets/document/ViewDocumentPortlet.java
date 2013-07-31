@@ -49,6 +49,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
 
@@ -58,7 +59,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 /**
  * Portlet d'affichage d'un document Nuxeo

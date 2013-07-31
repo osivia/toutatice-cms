@@ -22,7 +22,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
 /**

@@ -14,10 +14,10 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
 
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
 
 public class NXQLFormater {
 	

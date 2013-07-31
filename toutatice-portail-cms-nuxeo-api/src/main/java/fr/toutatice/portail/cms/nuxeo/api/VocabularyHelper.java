@@ -17,7 +17,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Blob;
 import org.osivia.portal.api.cache.services.CacheInfo;
 
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 public class VocabularyHelper {
 

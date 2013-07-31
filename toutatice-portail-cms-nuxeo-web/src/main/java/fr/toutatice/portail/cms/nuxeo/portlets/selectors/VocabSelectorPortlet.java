@@ -36,11 +36,11 @@ import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
 
 
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
 
 /**
  * Portlet de selection de liste par vocabulaire

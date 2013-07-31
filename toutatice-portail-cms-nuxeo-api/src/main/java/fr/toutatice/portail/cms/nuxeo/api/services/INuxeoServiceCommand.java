@@ -1,4 +1,4 @@
-package fr.toutatice.portail.core.nuxeo;
+package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 

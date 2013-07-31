@@ -14,6 +14,7 @@
 	<packaging>jar</packaging>
 	<name>Portal Nuxeo API</name>
 
+<!-- 
 	<dependencies>
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
@@ -22,7 +23,7 @@
 			<scope>provided</scope>
  		</dependency>
 	</dependencies>
-
+-->
 <profiles>	 
    <profile>
      <id>deploy-toutatice-modules</id>

@@ -32,6 +32,11 @@ import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
@@ -44,11 +49,6 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
-import fr.toutatice.portail.core.nuxeo.INuxeoCommandService;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandServiceFactory;
 
 
 public class CMSService implements ICMSService {
@@ -134,7 +134,6 @@ public class CMSService implements ICMSService {
 
 		return serviceCache;
 	}
-
 
 	public INuxeoCommandService getNuxeoCommandService() throws Exception {
 		if (nuxeoCommandService == null)
@@ -910,35 +909,34 @@ public class CMSService implements ICMSService {
 			}
 		}
 	}
-	
-	/**
-	 * Création des fragments dans la page
-	 */
-	public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
-		try {
+    /**
+     * Création des fragments dans la page
+     */
+    public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        try {
 
-			CMSItem pageItem = fetchContent(cmsCtx, pagePath);
+            CMSItem pageItem = fetchContent(cmsCtx, pagePath);
 
-			List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
-			
-			boolean editionMode = false;
-			if( "1".equals(cmsCtx.getDisplayLiveVersion()))
-				editionMode = true;
+            List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
+            
+            boolean editionMode = false;
+            if( "1".equals(cmsCtx.getDisplayLiveVersion()))
+                editionMode = true;
 
-			Document doc = (Document) pageItem.getNativeItem();
+            Document doc = (Document) pageItem.getNativeItem();
 
-			// Propriétés générales des fragments
-			PropertyList pmFragmentsValues = doc.getProperties().getList(
+            // Propriétés générales des fragments
+            PropertyList pmFragmentsValues = doc.getProperties().getList(
 EditableWindowHelper.SCHEMA);
 
-			if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
+            if (pmFragmentsValues != null && !pmFragmentsValues.isEmpty()) {
 
                 EditableWindowAdapter adapter = customizer.getEditableWindowAdapter();
 
-				// Pour chaque fragment
-				for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
+                // Pour chaque fragment
+                for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
 
-					// Test de la catégorie
+                    // Test de la catégorie
                     String fragmentCategory = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
                     String uri = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_URI);
 
@@ -946,37 +944,37 @@ EditableWindowHelper.SCHEMA);
 
                     // EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(fragmentCategory);
 
-					if (ew != null) {
-						
-						// Récupération d'une classe utilitaire se chargeant des traitements spécifiques à chaque fgt
+                    if (ew != null) {
+                        
+                        // Récupération d'une classe utilitaire se chargeant des traitements spécifiques à chaque fgt
                         // EditableWindowService ewService = type.getService();
-						
-						// Valorisation des propriétés 
+                        
+                        // Valorisation des propriétés 
                         Map<String, String> props = ew.fillProps(doc, pmFragmentsValues.getMap(fragmentIndex), editionMode);
 
-						// Construction de la window
+                        // Construction de la window
                         windows.add(ew.createNewEditabletWindow(fragmentIndex, props));
-						
-					}
-					// Si type de portlet non trouvé, erreur.
-					else {
-						logger.warn("Type de fragment "+fragmentCategory+" non géré");
-					}
-				}
-			}
-			
+                        
+                    }
+                    // Si type de portlet non trouvé, erreur.
+                    else {
+                        logger.warn("Type de fragment "+fragmentCategory+" non géré");
+                    }
+                }
+            }
+            
 
-			return windows;
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
-				throw new CMSException(e);
-			} else {
+            return windows;
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
+                throw new CMSException(e);
+            } else {
 
-				throw (CMSException) e;
-			}
-		}
-		
-	}
+                throw (CMSException) e;
+            }
+        }
+        
+    }
 
 
     public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {

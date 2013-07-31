@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -22,11 +20,6 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.PortalObject;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
-import org.jboss.portal.core.model.portal.PortalObjectPath.Format;
-import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -40,12 +33,9 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
-import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 /**
  * Portlet d'affichage d'un document Nuxeo

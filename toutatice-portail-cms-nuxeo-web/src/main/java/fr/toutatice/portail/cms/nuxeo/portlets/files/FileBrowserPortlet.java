@@ -34,8 +34,8 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DeleteDocumentCommand;
-import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 /**
  * Portlet d'affichage d'un document Nuxeo

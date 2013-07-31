@@ -19,9 +19,9 @@ import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
 
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
-import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 

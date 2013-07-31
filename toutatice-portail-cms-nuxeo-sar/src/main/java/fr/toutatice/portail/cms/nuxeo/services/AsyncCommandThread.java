@@ -9,7 +9,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.core.error.Debug;
 
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
 

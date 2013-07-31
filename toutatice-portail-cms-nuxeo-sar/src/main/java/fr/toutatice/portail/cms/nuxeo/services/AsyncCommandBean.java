@@ -1,7 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.services;
 
-import fr.toutatice.portail.core.nuxeo.INuxeoServiceCommand;
-import fr.toutatice.portail.core.nuxeo.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
 

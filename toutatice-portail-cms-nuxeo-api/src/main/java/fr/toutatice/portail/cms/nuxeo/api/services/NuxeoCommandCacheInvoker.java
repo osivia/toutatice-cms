@@ -1,4 +1,4 @@
-package fr.toutatice.portail.core.nuxeo;
+package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
 
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 

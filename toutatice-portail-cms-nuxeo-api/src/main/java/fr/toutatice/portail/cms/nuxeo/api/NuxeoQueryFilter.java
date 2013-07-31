@@ -21,7 +21,7 @@ import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.tracker.ITracker;
 import org.osivia.portal.core.tracker.RequestContextUtil;
 
-import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 public class NuxeoQueryFilter {
 
