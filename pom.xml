@@ -156,7 +156,7 @@
 	</dependencies>
 
 	<modules>
-	   <module>toutatice-portail-cms-nuxeo-shared-lib</module>
+
 	   <module>toutatice-portail-cms-nuxeo-api</module>
 	   <module>toutatice-portail-cms-nuxeo-web</module>
 	   <module>toutatice-portail-cms-nuxeo-sar</module>
