@@ -304,11 +304,14 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if (e instanceof RemoteException) {
 
 			RemoteException re = (RemoteException) e;
+			
 
 			if (re.getStatus() == 404) {
 				throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
 			}
-			if (re.getStatus() == 401) {
+			// DCH : Bug CAS ??? (nouveau code erreur 403 à gérer)
+			
+			if (re.getStatus() == 401 || re.getStatus() == 403) {
 				throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
 			} else if (re.getStatus() == 500) {
 				// On ne notifie pas le statut sur les erreurs 500

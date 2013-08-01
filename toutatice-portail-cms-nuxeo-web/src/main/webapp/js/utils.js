@@ -57,18 +57,28 @@ function getFileActions(url, idToRefresh) {
 
 function successActions(idToRefresh){
 	return function(response){
+	
+	 var ok = false;
+	 
+	 var container = $(idToRefresh);
    
      if (200 == response.status){
-    	 var container = $(idToRefresh);
+    	 
     	 var content = response.responseText;
     	 
-    	 // Jboss connexion
-    	 if( response.responseText.search( "j_security_check") == -1)
+    	 // Exclude Jboss connexion
+    	 if( response.responseText.search( "j_security_check") == -1)	{
     		 container.update(content);
-    	 else
-       		 container.update("");
-   		 
+    		 ok = true;
+    	 }
+  		 
      }
+     
+     // Default message if response incorrect
+     if (ok == false){
+     	container.update("Non disponible");
+     }
+     
 
      
 	}

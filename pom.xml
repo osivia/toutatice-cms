@@ -27,7 +27,7 @@
 		<jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
 		<jboss.version>4.2.3.GA</jboss.version>
 
-		<osivia-portal.version>2.0.13</osivia-portal.version>
+		<osivia-portal.version>2.0.14</osivia-portal.version>
 
 
 	</properties>
@@ -143,12 +143,12 @@
       			<scope>provided</scope>			
  		</dependency>
 		
-		<!-- Ajout (temporaire?) car non définis dans pom de nuxeo-automation-clien -->
-		<dependency>
+		<!-- Ajout (temporaire?) car non définis dans pom de nuxeo-automation-client -->
+		<!--<dependency>
 			<groupId>org.nuxeo.common</groupId>
 			<artifactId>nuxeo-common</artifactId>
 			<version>${nuxeo.automation.version}</version>
-		</dependency>
+		</dependency>-->
 		
 		<dependency>
 			<groupId>org.apache.commons</groupId>

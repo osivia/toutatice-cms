@@ -203,6 +203,7 @@ public class ViewListPortlet extends CMSPortlet {
 				super.serveResource(resourceRequest, resourceResponse);
 
 		} catch (Exception e) {
+
 			throw new PortletException(e);
 
 		}

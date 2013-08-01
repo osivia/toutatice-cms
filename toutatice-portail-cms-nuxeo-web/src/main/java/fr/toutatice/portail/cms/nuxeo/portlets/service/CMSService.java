@@ -8,6 +8,8 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
@@ -25,6 +27,7 @@ import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
@@ -38,6 +41,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.Acc
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
 
 public class CMSService implements ICMSService {
+	
+	private static Log log = LogFactory.getLog(CMSService.class);
 
 	private final PortletContext portletCtx;
 	INuxeoCommandService nuxeoCommandService;
@@ -398,6 +403,7 @@ public class CMSService implements ICMSService {
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
 
 			return pubInfos.isAnonymouslyReadable();
+			
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -464,7 +470,6 @@ public class CMSService implements ICMSService {
 
 				} catch (CMSException e) {
 					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-
 						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.FORBIDDEN));
 						getCacheService().getCache(cacheInfos);
 
@@ -780,22 +785,16 @@ public class CMSService implements ICMSService {
 				}
 
 				pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
-				
-				
-				
-
-				
-				
-				
-				
 
 				if (pubInfos != null) {
 					List<Integer> errors = pubInfos.getErrorCodes();
 					if (errors != null) {
 						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+
 							throw new CMSException(CMSException.ERROR_FORBIDDEN);
 						}
 						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+
 							throw new CMSException(CMSException.ERROR_NOTFOUND);
 						}
 					}
@@ -806,7 +805,11 @@ public class CMSService implements ICMSService {
 
 			}
 
+		} catch (NuxeoException e) {
+
+			e.rethrowCMSException();
 		} catch (Exception e) {
+
 			if (!(e instanceof CMSException))
 				throw new CMSException(e);
 			else
