@@ -233,7 +233,7 @@
 	</build>
 
  	<scm>
-    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/2.0</developerConnection>
+    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/2.0.14</developerConnection>
   	</scm>
 
 
