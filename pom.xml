@@ -144,11 +144,17 @@
  		</dependency>
 		
 		<!-- Ajout (temporaire?) car non définis dans pom de nuxeo-automation-client -->
-		<!--<dependency>
+		<dependency>
 			<groupId>org.nuxeo.common</groupId>
 			<artifactId>nuxeo-common</artifactId>
 			<version>${nuxeo.automation.version}</version>
-		</dependency>-->
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
