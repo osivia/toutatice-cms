@@ -45,43 +45,49 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
-			
+
 			String pubInfosContent = FileUtils.read(binariesInfos.getStream());
-			
+
 			JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
 			Iterator it = infosContent.iterator();
 			while (it.hasNext()) {
 				JSONObject infos = (JSONObject) it.next();
 
-				publiInfos.setErrorCodes(adaptList((List<Integer>) infos.get("errorCodes")));
-				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
-				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
-				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
-				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
-				publiInfos.setPublished(adaptBoolean(infos.get("published")));
-				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
-				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
-				
-				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
+				publiInfos.setErrorCodes(this.adaptList((List<Integer>) infos.get("errorCodes")));
+				publiInfos.setDocumentPath(this.decode(this.adaptType(String.class, infos.get("documentPath"))));
+				publiInfos.setLiveId(this.adaptType(String.class, infos.get("liveId")));
+				publiInfos.setEditableByUser(this.adaptBoolean(infos.get("editableByUser")));
+				publiInfos.setDeletableByUser(this.adaptBoolean(infos.get("isDeletableByUser")));
+				publiInfos.setPublished(this.adaptBoolean(infos.get("published")));
+				publiInfos.setCommentableByUser(this.adaptBoolean(infos.get("isCommentableByUser")));
+				publiInfos.setAnonymouslyReadable(this.adaptBoolean(infos.get("anonymouslyReadable")));
 
-				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
+				publiInfos.setSubTypes(this.decodeSubTypes(this.adaptType(JSONObject.class, infos.get("subTypes"))));
 
-				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
+				publiInfos.setPublishSpaceType(this.adaptType(String.class, infos.get("publishSpaceType")));
+
+				String publishSpacePath = this.decode(this.adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
-					publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
+					publiInfos.setPublishSpaceDisplayName(this.decode(this.adaptType(String.class, infos.get("publishSpaceDisplayName"))));
 					publiInfos.setLiveSpace(false);
 				} else {
-					String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
+					String workspacePath = this.decode(this.adaptType(String.class, infos.get("workspacePath")));
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
-						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
+						publiInfos.setPublishSpaceDisplayName(this.decode(this.adaptType(String.class, infos.get("workspaceDisplayName"))));
 						publiInfos.setLiveSpace(true);
+
 						/*
-						 * les spaceId ne sont appliqués qu'aux ws pour le moment.
-						 */
-						publiInfos.setSpaceID(adaptType(String.class, infos.getString("spaceID")));
-						publiInfos.setParentSpaceID(adaptType(String.class, infos.getString("parentSpaceID")));
+                         * les spaceId ne sont appliqués qu'aux ws pour le moment.
+                         * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
+                         */
+                        if (infos.containsKey("spaceID")) {
+                            publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                        }
+                        if (infos.containsKey("parentSpaceID")) {
+                            publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
+                        }
 					}
 				}
 			}
@@ -94,12 +100,12 @@ public class PublishInfosCommand implements INuxeoCommand {
 	 * Décode en UTF-8 les labels de la Map des sous-types permis.
 	 * @param map
 	 * @return
-	 * @throws UnsupportedEncodingException 
+	 * @throws UnsupportedEncodingException
 	 */
 	private Map<String, String> decodeSubTypes(Map<String, String> subTypes) throws UnsupportedEncodingException {
 		Map<String, String> decodedSubTypes = new HashMap<String, String>();
 		for(Entry<String, String> subType : subTypes.entrySet()){
-			String decodedLabel = decode(subType.getValue());
+			String decodedLabel = this.decode(subType.getValue());
 			decodedSubTypes.put(subType.getKey(), decodedLabel);
 		}
 		return decodedSubTypes;
@@ -123,7 +129,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return value;
 	}
-	
+
 	private List<Integer> adaptList(List<Integer> list) {
 		List<Integer> returnedList = list;
 		if(list == null){
@@ -131,7 +137,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return returnedList;
 	}
-	
+
 	private Boolean adaptBoolean(Object value) {
 		if (value != null) {
 			return (Boolean) value;
@@ -139,7 +145,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 			return Boolean.FALSE;
 		}
 	}
-	
+
 	private <T> T adaptType(Class<T> clazz, Object object) throws InstantiationException, IllegalAccessException{
 		T returnedObject = (T) object;
 		if(object == null){
