@@ -16,6 +16,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
@@ -63,6 +64,7 @@ public class CMSService implements ICMSService {
 	IProfilManager profilManager;
 	ICacheService serviceCache;
 	DefaultCMSCustomizer customizer;
+    private IPortalUrlFactory urlFactory;
 	
 
 	public CMSService(PortletContext portletCtx) {
@@ -142,6 +144,14 @@ public class CMSService implements ICMSService {
 			nuxeoCommandService = NuxeoCommandServiceFactory.getNuxeoCommandService(portletCtx);
 		return nuxeoCommandService;
 	}
+
+    public IPortalUrlFactory getPortalUrlFactory() {
+        if (this.urlFactory == null) {
+            this.urlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
+        }
+        return this.urlFactory;
+    }
+
 
 	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
@@ -1027,21 +1037,26 @@ EditableWindowHelper.SCHEMA);
 
     }
 
-
-    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
-
+    public String getEcmDomain(CMSServiceCtx cmsCtx) {
         String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");
         String nuxeoPublicPort = System.getProperty("nuxeo.publicPort");
-        String nuxeoCtx = "/nuxeo";
 
         URI uri = null;
 
         try {
-            uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort + nuxeoCtx);
+            uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+        return uri.toString();
+    }
+
+    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
+
+        // get the défault domain and app name
+        // TODO variabiliser le nom de l'app nuxeo
+        String uri = getEcmDomain(cmsCtx).concat("/nuxeo");
 
         String url = "";
 
@@ -1060,6 +1075,10 @@ EditableWindowHelper.SCHEMA);
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         }
 
+
+        String portalUrl = getPortalUrlFactory().getBasePortalUrl(cmsCtx.getServerInvocation());
+
+        requestParameters.put("fromUrl", portalUrl);
         for (Map.Entry<String, String> param : requestParameters.entrySet()) {
             url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
         }
