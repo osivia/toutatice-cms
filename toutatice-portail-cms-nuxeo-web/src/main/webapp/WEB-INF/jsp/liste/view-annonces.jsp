@@ -5,8 +5,8 @@
 <%@page import="java.text.Format"%>
 <%@page import="javax.portlet.PortletURL"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
 
 <%@ page contentType="text/plain; charset=UTF-8"%>
 
