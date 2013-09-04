@@ -6,7 +6,7 @@
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 
 
 <portlet:defineObjects />

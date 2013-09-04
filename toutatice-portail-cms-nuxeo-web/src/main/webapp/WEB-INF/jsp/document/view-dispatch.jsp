@@ -14,18 +14,18 @@
 
 
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Blob"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Blob"%>
 
 
 <%@page import="javax.portlet.ResourceURL"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyList"%>
 
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%><portlet:defineObjects />
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%><portlet:defineObjects />
 
 <%
 Document doc = (Document) renderRequest.getAttribute("doc");

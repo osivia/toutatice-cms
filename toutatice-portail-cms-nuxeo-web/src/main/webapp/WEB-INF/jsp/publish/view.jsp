@@ -17,9 +17,9 @@
 
 
 <%@page import="javax.portlet.ResourceURL"%>
-<%@page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 <%@page
-	import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList"%>
+	import="org.nuxeo.ecm.automation.client.model.PropertyList"%>
 
 
 
@@ -50,7 +50,7 @@
 					cssClass += " osivia-link-external";
 				} 
 
-				cssClass = "";
+				
 	
 				if (child.isSelected()) {
 						cssClass += " current";

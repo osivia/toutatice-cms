@@ -17,11 +17,10 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -52,7 +51,7 @@ public class SearchPortlet extends CMSPortlet {
 	
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
-		logger.debug("processAction ");
+        // logger.debug("processAction ");
 		
 		if( PortletMode.VIEW.equals(req.getPortletMode()) && req.getParameter("searchAction") != null){
 			res.setRenderParameter("keywords", req.getParameter("keywords"));
@@ -110,7 +109,8 @@ public class SearchPortlet extends CMSPortlet {
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
 			PortletSecurityException, IOException {
 
-		logger.debug("doView");
+        // LBI - pb LinkageException, voir #67
+        // logger.debug("doView");
 		
 		NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 
@@ -209,7 +209,7 @@ public class SearchPortlet extends CMSPortlet {
 				throw new PortletException(e);
 		}
 
-		logger.debug("doView end");
+        // logger.debug("doView end");
 
 	}
 

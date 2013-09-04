@@ -22,8 +22,8 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -61,61 +61,61 @@ public class FileBrowserPortlet extends CMSPortlet {
 
     }
 
-   public static boolean isFolderish (Document doc)	{
-		return "PictureBook".equals(doc.getType()) || "DocumentUrlContainer".equals(doc.getType()) || isNavigable(doc);
-	
-	}
+   public static boolean isFolderish (Document doc) {
+        return "PictureBook".equals(doc.getType()) || "DocumentUrlContainer".equals(doc.getType()) || isNavigable(doc);
+    
+    }
 
-	
-	
-	//2.0.9 : Ajout tri sur folder / libelle 
-	// Doit être mis à jour en parallele avec le MenuPortlet.createComparator
-	
-	public static Comparator<Document> createComparator( final Document parentDoc){
-	
-		Comparator<Document> comparator = new Comparator<Document>() {
+    
+    
+    //2.0.9 : Ajout tri sur folder / libelle 
+    // Doit être mis à jour en parallele avec le MenuPortlet.createComparator
+    
+    public static Comparator<Document> createComparator( final Document parentDoc){
+    
+        Comparator<Document> comparator = new Comparator<Document>() {
 
-			public int compare(Document e1, Document e2) {
-				
-				//2.0.9 : ecm:pos jamais renseigné
+            public int compare(Document e1, Document e2) {
+                
+                //2.0.9 : ecm:pos jamais renseigné
 
-//				if (isOrdered(parentDoc)) {
+//              if (isOrdered(parentDoc)) {
 //
-//					long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
-//					long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+//                  long pos1 = e1.getProperties().getLong("ecm:pos", new Long(1000));
+//                  long pos2 = e1.getProperties().getLong("ecm:pos", new Long(1000));
 //
-//					return pos1 > pos2 ? 1 : -1;
+//                  return pos1 > pos2 ? 1 : -1;
 //
-//				} else {
-					if (isFolderish(e1)) {
-						if (isFolderish(e2)) {
-							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
-						} else
-							return -1;
+//              } else {
+                    if (isFolderish(e1)) {
+                        if (isFolderish(e2)) {
+                            return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+                        } else
+                            return -1;
 
-					} else {
-						if (isFolderish(e2)) {
-							return 1;
-						} else {
-							return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
-						}
+                    } else {
+                        if (isFolderish(e2)) {
+                            return 1;
+                        } else {
+                            return e1.getTitle().toUpperCase().compareTo(e2.getTitle().toUpperCase());
+                        }
 
-					}
-				//}
-			}
-	 };
-		
-		return comparator;
-	};
-	
-	// v2.1 WORKSPACE
-	   public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
-	    throws PortletException, IOException {
+                    }
+                //}
+            }
+     };
+        
+        return comparator;
+    };
+    
+    // v2.1 WORKSPACE
+       public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+        throws PortletException, IOException {
 
-	        try {
-	            // Redirection sur lien contextuel
-	            
-	            if ("fileActions".equals(resourceRequest.getParameter("type"))) {
+            try {
+                // Redirection sur lien contextuel
+                
+                if ("fileActions".equals(resourceRequest.getParameter("type"))) {
 
                 NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
@@ -153,36 +153,39 @@ public class FileBrowserPortlet extends CMSPortlet {
                      nbItems++;
                 }
                 
-				if (pubInfos.isDeletableByUser()) {
-					sb.append("<br/>");
-					sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
-					sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
-					sb.append(id);
-					sb.append("';\">Supprimer</a>");
-					nbItems++;
-				}
+                // Modif-FILEBROWSER-begin
+                if (pubInfos.isDeletableByUser()) {
+                    sb.append("<br/>");
+                    sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
+                    sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
+                    sb.append(id);
+                    sb.append("';\">Supprimer</a>");
+                    nbItems++;
+                }
                
-                if( nbItems ==0)               
+
+                if (nbItems == 0)
                     sb.append("<b>Aucune action<br/>disponible</b>");
+                // Modif-FILEBROWSER-end
                     
                 sb.append("<div>");
                 resourceResponse.getPortletOutputStream().write(sb.toString().getBytes());
                 resourceResponse.getPortletOutputStream().close();
 
-	            }   else
-	                super.serveResource(resourceRequest, resourceResponse);
+                }   else
+                    super.serveResource(resourceRequest, resourceResponse);
 
-	        } catch (NuxeoException e) {
-	            serveResourceException(resourceRequest, resourceResponse, e);
-	        } catch (Exception e) {
-	            throw new PortletException(e);
+            } catch (NuxeoException e) {
+                serveResourceException(resourceRequest, resourceResponse, e);
+            } catch (Exception e) {
+                throw new PortletException(e);
 
-	        }
-	    }
+            }
+        }
 
-	
-	
-	
+    
+    
+    
     public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
         logger.debug("processAction ");
@@ -227,6 +230,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         }
         
         
+        // Modif-FILEBROWSER-begin
         if(req.getParameter("deleteFileItem") != null){
             String itemId = (String) req.getParameter("fileItemId");
             NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
@@ -237,6 +241,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     throw new PortletException(e);
             }
         }
+        // Modif-FILEBROWSER-end
         
     }
 
@@ -349,7 +354,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Tri pour affichage
-                List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
+                List<Document> sortedDocs = (ArrayList<Document>) docs.list();
                 Collections.sort(sortedDocs, createComparator(doc));
                 request.setAttribute("docs", sortedDocs);
 
@@ -511,5 +516,4 @@ public class FileBrowserPortlet extends CMSPortlet {
         logger.debug("doView end");
 
     }
-
 }

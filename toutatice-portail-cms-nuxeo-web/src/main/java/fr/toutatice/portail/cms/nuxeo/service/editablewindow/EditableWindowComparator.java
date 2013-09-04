@@ -2,7 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
 
 import java.util.Comparator;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 
 /**
  * Comparateur de fragments selon l'ordre défini dans le schéma,

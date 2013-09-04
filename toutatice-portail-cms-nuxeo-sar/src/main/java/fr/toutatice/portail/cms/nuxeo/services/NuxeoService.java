@@ -2,8 +2,6 @@ package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpSessionEvent;
@@ -11,28 +9,14 @@ import javax.servlet.http.HttpSessionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.system.ServiceMBeanSupport;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
+import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 import org.osivia.portal.api.profiler.IProfilerService;
-import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.core.cms.CMSBinaryContent;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSPage;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.dynamic.DynamicPageBean;
-import org.osivia.portal.core.profils.IProfilManager;
-
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
@@ -87,7 +71,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 			if (userId != null)
 				client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
-			session = client.getSession();
+			session = (Session) client.getSession();
 
 		} catch (Exception e) {
 			error = true;

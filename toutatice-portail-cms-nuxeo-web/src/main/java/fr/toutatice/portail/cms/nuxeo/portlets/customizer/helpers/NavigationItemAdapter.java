@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -218,7 +218,8 @@ public class NavigationItemAdapter {
 		if("Workspace".equals(doc.getType()))	{
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
-			properties.put("pageTemplate", "/default/templates/workspace");
+			if(StringUtils.isEmpty(pageTemplate))
+				properties.put("pageTemplate", "/default/templates/workspace");
 			properties.put("displayLiveVersion", "1");
 		}
 		
