@@ -1,8 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -15,9 +12,6 @@ import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +22,7 @@ import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.jaxrs.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
@@ -49,9 +44,6 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-
 
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
@@ -88,9 +80,9 @@ public class NuxeoController {
 
     String menuRootPath;
 
-    
+
     public String getMenuRootPath() {
-        return menuRootPath;
+        return this.menuRootPath;
     }
 
     String hideMetaDatas;
@@ -383,7 +375,7 @@ public class NuxeoController {
             Page page = (Page) jbpWindow.getParent();
             Portal portal = page.getPortal();
             if( InternalConstants.PORTAL_TYPE_SPACE.equals(portal.getDeclaredProperty("osivia.portal.portalType")))   {
-                menuRootPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
+                this.menuRootPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
             }
 
 
@@ -403,7 +395,7 @@ public class NuxeoController {
     }
 
 
-    
+
 
 
     public CMSItem getNavigationItem()	throws Exception {
@@ -448,14 +440,14 @@ public class NuxeoController {
 
     public INuxeoCommandService getNuxeoCommandService() throws Exception {
         if (this.nuxeoCommandService == null) {
-            nuxeoCommandService = NuxeoCommandServiceFactory.getNuxeoCommandService(portletCtx);
+            this.nuxeoCommandService = NuxeoCommandServiceFactory.getNuxeoCommandService(this.portletCtx);
         }
         return this.nuxeoCommandService;
     }
 
     public IProfilManager getProfilManager() throws Exception {
         if (this.profilManager == null) {
-            this.profilManager = (IProfilManager) this.portletCtx.getAttribute("ProfilService");
+            this.profilManager = (IProfilManager) this.portletCtx.getAttribute(Constants.PROFILE_SERVICE_NAME);
         }
 
 
@@ -553,7 +545,7 @@ public class NuxeoController {
 
 
     public String transformHTMLContent(String htmlContent) throws Exception {
-        
+
 
         // Adaptation via le CMSCustomizer
 
@@ -564,8 +556,8 @@ public class NuxeoController {
 
 
        return  nuxeoService.getCMSCustomizer().transformHTMLContent(this.getCMSCtx(), htmlContent);
-  
-        
+
+
 
     }
 
@@ -715,7 +707,7 @@ public class NuxeoController {
         return resourceURL.toString();
     }
 
-  
+
     public String createPermalink(String path) throws Exception {
 
         String permaLinkURL = this.getPortalUrlFactory().getPermaLink(this.getPortalCtx(), null, null,
@@ -746,15 +738,15 @@ public class NuxeoController {
         ctx.setCacheTimeOut(this.cacheTimeOut);
         ctx.setCacheType(this.cacheType);
         ctx.setAsynchronousUpdates(this.asynchronousUpdates);
-        
+
         try {
 
        return  this.getNuxeoCommandService().executeCommand(ctx, new INuxeoServiceCommand() {
-            
+
             public String getId() {
                 return command.getId();
             }
-            
+
             public Object execute(Session nuxeoSession) throws Exception {
                 return command.execute(nuxeoSession);
             }
@@ -900,8 +892,8 @@ public class NuxeoController {
 
         nuxeoService.getCMSCustomizer().formatContentMenuBar(this.getCMSCtx());
     }
-    
-    
+
+
      public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
 
         // Adaptation via le CMSCustomizer
@@ -911,13 +903,13 @@ public class NuxeoController {
             nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         }
 
-  
+
         return nuxeoService.getCMSCustomizer().getDocTypeDefinitions(this.getCMSCtx());
     }
-    
-     
-    
-    
+
+
+
+
 
     public Document fetchDocument(String path, boolean reload) throws Exception {
 
@@ -926,8 +918,8 @@ public class NuxeoController {
         try	{
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(getNavigationPath())) {
-                if (InternalConstants.CMS_VERSION_PREVIEW.equals(ControllerContextAdapter.getControllerContext(getPortalCtx()).getAttribute(ControllerCommand.SESSION_SCOPE,
+            if (path.equals(this.getNavigationPath())) {
+                if (InternalConstants.CMS_VERSION_PREVIEW.equals(ControllerContextAdapter.getControllerContext(this.getPortalCtx()).getAttribute(ControllerCommand.SESSION_SCOPE,
                         InternalConstants.ATTR_TOOLBAR_CMS_VERSION))) {
 
                     cmsCtx.setDisplayLiveVersion("1");
