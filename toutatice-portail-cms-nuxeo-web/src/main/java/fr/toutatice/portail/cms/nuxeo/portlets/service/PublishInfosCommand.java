@@ -94,12 +94,16 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 						// Modif-SPACEID-begin
 						/*
-						 * les spaceId ne sont appliqués qu'aux ws pour le moment.
-						 */
-						publiInfos.setSpaceID(adaptType(String.class, infos.getString("spaceID")));
-						publiInfos.setParentSpaceID(adaptType(String.class, infos.getString("parentSpaceID")));
-						// Modif-SPACEID-end
-
+                         * les spaceId ne sont appliqués qu'aux ws pour le moment.
+                         * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
+                         */
+                        if (infos.containsKey("spaceID")) {
+                            publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                        }
+                        if (infos.containsKey("parentSpaceID")) {
+                            publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
+                        }
+                        // Modif-SPACEID-end
 					}
 				}
 			}
