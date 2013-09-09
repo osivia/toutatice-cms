@@ -2,32 +2,63 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ page isELIgnored="false"%>
 
-<%@ page import="net.sf.json.JSONArray"%>
-<%@ page import="net.sf.json.JSONObject"%>
-<%@ page import="java.util.Iterator"%>
+<%@ page import="java.util.List"%>
+
+<%@ page import="fr.toutatice.portail.cms.nuxeo.portlets.document.comments.HTMLCommentsTreeBuilder"%>
 
 <portlet:defineObjects />
 
-<% String commentsTree = (String) renderRequest.getAttribute("comments"); 
-   if (commentsTree != null) {%>
+<script type="text/javascript">
+	var msg = "Le commentaire n'est pas renseigné";
+	function showCommentField(id){
+		var commentField = document.getElementById(id);
+		commentField.style.display = "block";
+	}
+	function hideCommentField(id){
+		var commentDiv = document.getElementById(id);
+		commentDiv.style.display = 'none';
+	}
+</script>
+<% 
+	String commentsTree = (String) renderRequest.getAttribute("comments"); 
+  	if (commentsTree != null) {
+%>
     <div class="commentsTitle"><h2>Commentaires</h2></div>
     
     <div class="add-comment-link">
-		<a class="fancybox_comment" href="#div_add_comment">Ajouter un commentaire</a>
-	</div>
-   
-	<div class="commentsTree"><%= commentsTree %></div> 
-	
-	<div id="div_add_comment" style="display: none">
-		<jsp:include page="add-comment.jsp"></jsp:include>
+    	<span class="add-comment-span" onclick="showCommentField('div_add_comment');" >Ajouter un commentaire</span> 
+    	<div id="div_add_comment" style="display: none">
+			<jsp:include page="add-comment.jsp"></jsp:include>
+		</div>
 	</div>
 	
-	<div id="div_add_child_comment" style="display: none">
-		<jsp:include page="add-child-comment.jsp"></jsp:include>
-	</div>
+	<!-- Inclusion de la jsp des réponses aux commentaires -->
+<%
+	String[] commentsTreeSplit = commentsTree.split(HTMLCommentsTreeBuilder.ADD_COM_CHILD_JSP_TAG); 
+	int index = 1;
+	int treeSize = commentsTreeSplit.length;
+%>
+	<div class="commentsTree">
+	<%  String commentId = "";
+		for(String commentsTreePart : commentsTreeSplit){ 
+		    commentsTreePart = commentsTreePart.replace(HTMLCommentsTreeBuilder.DIV_COM_ID_TAG, commentId);
+	%>
+		<%= commentsTreePart %>
+		<% if(index < treeSize){ 
+			commentId = "com-" + String.valueOf(Math.round(Math.random() * 10000));
+			renderRequest.setAttribute("commentDivId", commentId);
+		%>
+			<jsp:include page="add-child-comment.jsp"></jsp:include>		
+	<% 	   }
+		  index++;
+	   }
+	%>
+	</div> 
 	
 	<div id="div_delete_comment" style="display: none">
 		<jsp:include page="delete-comment.jsp"></jsp:include>
 	</div>
 
-<% } %>
+<% 
+	} 
+%>

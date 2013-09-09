@@ -5,24 +5,17 @@
 <portlet:defineObjects/>
 
 <%
-String commentId = renderResponse.getNamespace() + "add-comment";
+String commentId = "add-comment" + String.valueOf(System.currentTimeMillis());
 String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 %>
 
-<script type="text/javascript">
-	var msg = "Le commentaire n'est pas renseigné";	
-</script>
+<portlet:actionURL var="valid"><portlet:param name="comments" value="toAdd"/></portlet:actionURL>
 
 <div id="<%=commentId%>" class="add-comment">
-	<form method="post" action="<portlet:actionURL><portlet:param name="comments" value="toAdd"/></portlet:actionURL>">	
+	<form id="add-com-form" method="post" action="${valid}" class="ajax-form">	
 		<textarea id="addedContent" name="content" rows="6" cols="60"></textarea><br/>
-		<div id="errorAddCom" class="contentError"></div><br/>
-		<input type="submit" name="addComment"  value="Ajouter" onClick="if(!isEmptyField('addedContent','errorAddCom', msg)){fancyContainerDivId='<%=containerId%>';}else{return false;}">
-		<input type="reset" name="noAddComment"  value="Annuler" onclick="closeFancyBox();">
+		<div id="errorAddCom" class="contentError"></div>
+		<input type="submit" name="addComment"  value="Ajouter" class="ajax-link">
+		<input type="reset" name="noAddComment"  value="Annuler" onclick="hideCommentField('div_add_comment');">
 	</form>
 </div>
-
-<script type="text/javascript">
-	var addDiv = document.getElementById('<%=commentId%>');
-	Event.observe(addDiv, "click", bilto);
-</script>

@@ -24,6 +24,7 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
@@ -31,6 +32,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormate
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
@@ -145,6 +147,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
 		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
 		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
+		fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "spaceMenubar", "spaceMenubar"));
 		return fragmentTypes;
 	}
 
@@ -168,8 +171,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		windowProperties.put("osivia.cms.uri", doc.getPath());
 		windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
 		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-
+//		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);

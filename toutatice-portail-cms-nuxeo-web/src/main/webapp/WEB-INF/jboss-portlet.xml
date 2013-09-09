@@ -10,11 +10,12 @@
 <portlet-app>
    <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
-      
+ 
+ <!--     
       <ajax>
       		<partial-refresh>false</partial-refresh>
    		</ajax>
-      
+ -->     
      	<transaction>
             <trans-attribute>Required</trans-attribute>            
         </transaction>

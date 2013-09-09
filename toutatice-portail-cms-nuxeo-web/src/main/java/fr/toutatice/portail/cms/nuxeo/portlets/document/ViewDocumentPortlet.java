@@ -167,10 +167,15 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		// Modif-COMMENTS-begin
 		String commentAction = req.getParameter("comments");
 		if (commentAction != null) {
-
+			
 			NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
 			PortalWindow window = WindowFactory.getWindow(req);
 			String nuxeoPath = window.getProperty("osivia.cms.uri");
+			if (nuxeoPath == null) {
+				// WIndow parameter (back-office)
+				nuxeoPath = window.getProperty("osivia.nuxeoPath");
+			}
+
 			if (nuxeoPath != null) {
 				nuxeoPath = ctrl.getComputedPath(nuxeoPath);
 				try {
@@ -334,7 +339,7 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 					boolean docIsInLiveSpace = publiInfos.isLiveSpace();
 					boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
 					
-					if(docIsInLiveSpace && docCanBeCommentedByUser){ 
+					if(docIsInLiveSpace && docCanBeCommentedByUser){
 						String user = request.getRemoteUser();
 						int authType = ctx.getAuthType();
 						JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));

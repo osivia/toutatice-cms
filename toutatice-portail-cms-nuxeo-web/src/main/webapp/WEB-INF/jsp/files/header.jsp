@@ -129,7 +129,9 @@ if( portalDocsToCreate != null) {
 <div class="fancybox-content">
 	<div id="<%=renderResponse.getNamespace()%>_PORTAL_CREATE" class="document-types">
 		<div class="main-doc-types" id="<%=renderResponse.getNamespace()%>_MAIN">
-<%
+<%	
+	int index = 1;
+	int nbSubDocs = portalDocsToCreate.size();
 	for (SubType subDoc: portalDocsToCreate) {
 %>
 		
@@ -145,10 +147,12 @@ if( portalDocsToCreate != null) {
 						
 	 		 </div>
 
-	
-		<div class="separateur"></div>	
+	<% if(index < nbSubDocs){ %>
+		<div class="vertical-separator"></div>
+	<% } %>
 		
-<%    
+<%   
+		index++;
 	}
 %>
 

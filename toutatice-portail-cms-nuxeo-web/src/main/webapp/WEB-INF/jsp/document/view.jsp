@@ -54,7 +54,7 @@ if( map != null && map.getString("data") != null)
 
 %>
 
-<div class="nuxeo-docview-<%= doc.getType().toLowerCase()%>">
+<div class="nuxeo-docview-<%= doc.getType().toLowerCase()%> no-ajax-link">
 
 <% if( "1".equals(onlyDescription) && !renderRequest.getWindowState().equals(WindowState.MAXIMIZED))	{	%>
 	<div class="nuxeo-docview-short-view">

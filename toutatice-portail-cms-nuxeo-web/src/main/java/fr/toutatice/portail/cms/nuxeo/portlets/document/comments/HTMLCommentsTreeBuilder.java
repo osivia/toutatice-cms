@@ -5,18 +5,23 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.portlet.PortletRequest;
-
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * Classe permettant de construire l'arbre HTML des commentaires.
+ * @author david
+ *
+ */
 public class HTMLCommentsTreeBuilder {
-
+	
+	/** Décalage des réponses aux commentaires */
 	public static final int DEPTH_STEP = 12;
 	public static final String NEW_LINE = "<br/>";
+	/** Tag indiquant qu'une jsp devra être insérée dans view-comments.jsp */
+	public static final String ADD_COM_CHILD_JSP_TAG = "§§§";
+	/** Tag pour insérer les id des div de commenatires */
+	public static final String DIV_COM_ID_TAG = "###";
 
 	public static String buildHtmlTree(StringBuffer htmlTree, JSONArray comments, int level, int authType, String user) {
 
@@ -25,24 +30,21 @@ public class HTMLCommentsTreeBuilder {
 		htmlTree.append(depth);
 		htmlTree.append(";\">");
 
-		Iterator itComments = comments.iterator();
+		Iterator<JSONObject> itComments = comments.iterator();
 		while (itComments.hasNext()) {
 			JSONObject comment = (JSONObject) itComments.next();
 
 			htmlTree.append("<li>");
 
 			htmlTree.append("<div class=\"authorDate\">");
-
 			String creator = (String) comment.get("author");
 			htmlTree.append("<div class=\"author\">");
 			htmlTree.append(creator);
 			htmlTree.append("</div>");
-
 			htmlTree.append("<div class=\"creationDate\">");
 			String creationDate = convertDateToString((JSONObject) comment.get("creationDate"));
 			htmlTree.append(creationDate);
 			htmlTree.append("</div>");
-
 			htmlTree.append("</div>");
 
 			String content = (String) comment.get("content");
@@ -51,12 +53,13 @@ public class HTMLCommentsTreeBuilder {
 			htmlTree.append(100 - depth);
 			htmlTree.append("%\">");
 			htmlTree.append(content);
+			htmlTree.append(ADD_COM_CHILD_JSP_TAG);
 			htmlTree.append("</div>");
 			
 			Boolean canDelete = (Boolean) comment.get("canDelete");
 			if (canDelete) {
 				htmlTree.append("<div class=\"delete_comment\">");
-				htmlTree.append("<a class=\"fancybox_comment\" href=\"#div_delete_comment\" ");
+				htmlTree.append("<a class=\"fancybox_inline\" href=\"#div_delete_comment\" ");
 				htmlTree.append("onclick=\"document.getElementById('currentCommentId').value='");
 				htmlTree.append(comment.get("id"));
 				htmlTree.append("'\">Supprimer</a>");
@@ -64,10 +67,12 @@ public class HTMLCommentsTreeBuilder {
 			}
 
 			htmlTree.append("<div class=\"child_comment\">");
-			htmlTree.append("<a class=\"fancybox_comment\" href=\"#div_add_child_comment\" ");
-			htmlTree.append("onclick=\"document.getElementById('commentParentId').value='");
+			htmlTree.append("<a  href=\"#com-" + DIV_COM_ID_TAG + "\" ");
+			htmlTree.append("onclick=\"showCommentField(\'" + DIV_COM_ID_TAG + "\');");
+			htmlTree.append("document.getElementById('commentParentId" + DIV_COM_ID_TAG +"').value='");
 			htmlTree.append(comment.get("id"));
-			htmlTree.append("'\">Répondre</a>");
+			htmlTree.append("'\">Répondre");
+			htmlTree.append("</a>");
 			htmlTree.append("</div>");
 
 			htmlTree.append("</li>");

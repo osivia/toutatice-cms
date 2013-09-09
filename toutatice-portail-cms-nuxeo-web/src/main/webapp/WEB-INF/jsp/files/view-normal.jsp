@@ -23,6 +23,7 @@
 
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
+
 <portlet:defineObjects />
 
 <%
@@ -49,19 +50,19 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 
 <tr align="left">
 	<th width="3%">&nbsp;</th>
-	<th width="25%">Nom</th>
-	<th width="15%">Date</th>	
-	<th width="5%">Actions</th>		
-	<th width="45%">&nbsp;</th>	
+	<th width="55%">Nom</th>
+	<th width="15%">Date</th>			
+	<th width="20%">Dernier contributeur</th>	
 </tr>	
-
 
 <%
 
 Iterator it = docs.iterator();
 while( it.hasNext())	{
 	Document doc = (Document) it.next();
-
+	
+	String lastContributor = doc.getProperties().getString("dc:lastContributor");
+	lastContributor = lastContributor != null ? lastContributor : "";
 	String url = null;
 	String downloadFileUrl = null;
 	Link link = null;
@@ -119,7 +120,7 @@ while( it.hasNext())	{
 						
 			<td>
 <% if (noAjax)		{ %> 
-	 <div class="no-ajax-link file-name"> 
+	 <span class="no-ajax-link file-name"> 
 <% }	%>			
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
 <% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
@@ -132,19 +133,17 @@ while( it.hasNext())	{
 
 <%
    if (noAjax){ %> 
-	 </div> 
-<% }	%>					
+	 </span> 
+<% }	%>	
+				<div class="file-actions" onclick="getFileActions('<%= actionsMenuURL %>', '<%= actionId %>');">   <div class="file-actions-menu" id="<%= actionId %>">  <div class="ajax-waiting" > </div> </div> </div>				
 			</td>
 			
 			<td>
 				<%= Formater.formatDateAndTime(doc) %>
 			</td>
-
-			<td>
-				 <div class="file-actions" onclick="getFileActions('<%= actionsMenuURL %>', '<%= actionId %>');">   <div class="file-actions-menu" id="<%= actionId %>">  <div class="ajax-waiting" > </div> </div> </div>
-			</td>
 			
 			<td>
+				<div class="doc-lastContributor"><%= lastContributor %></div>
 			</td>
 
 		

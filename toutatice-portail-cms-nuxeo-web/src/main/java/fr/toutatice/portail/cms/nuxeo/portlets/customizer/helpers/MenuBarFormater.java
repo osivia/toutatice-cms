@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,6 +24,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
@@ -294,7 +296,29 @@ public class MenuBarFormater {
 
 	}
 	
+	/** Identifiant MenuBar */
+	public static final String MENU_BAR = "osivia.menuBar";
 	
+	/**
+	 * Méthode utilitaire permettant de récupérer un item par son "type".
+	 * @param type (permalien, ...)
+	 * @param request requête permettant d'accéder à la MenuBar
+	 * @return l'item de "type" donné
+	 */
+	public static MenubarItem getItemByType(String type, PortletRequest request){
+		MenubarItem searchItem = null;
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(MENU_BAR);
+		boolean itemFound = false;
+		Iterator<MenubarItem> items = menuBar.iterator();
+		while(items.hasNext() && !itemFound){
+			MenubarItem item = items.next();
+			if(type.equalsIgnoreCase(item.getId())){
+				itemFound = true;
+				searchItem = item;
+			}
+		}
+		return searchItem;
+	}
 	
 	
 }
