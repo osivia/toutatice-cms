@@ -53,7 +53,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 			while (it.hasNext()) {
 				JSONObject infos = (JSONObject) it.next();
 				// Modif-RETOUR-begin
-				publiInfos.setErrorCodes(adaptList((List<Integer>) infos.get("errorCodes")));
+				publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
 				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
@@ -135,10 +135,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 		return value;
 	}
 	
-	private List<Integer> adaptList(List<Integer> list) {
-		List<Integer> returnedList = list;
-		if(list == null){
-			returnedList = new ArrayList<Integer>();
+	private List<Integer> adaptList(JSONArray list) {
+		List<Integer> returnedList = new ArrayList<Integer>();
+		List<Integer> jsonList = (List<Integer>) JSONArray.toCollection(list);
+		if(jsonList != null){
+			returnedList.addAll(jsonList);
 		}
 		return returnedList;
 	}
