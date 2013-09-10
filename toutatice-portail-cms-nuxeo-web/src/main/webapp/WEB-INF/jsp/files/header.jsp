@@ -137,8 +137,11 @@ if( portalDocsToCreate != null) {
 		
 			<div class="doc-type-detail">
 	
-						<div class="vignette"> <img src="/toutatice-portail-cms-nuxeo/img/icons/<%= subDoc.getDocType().toLowerCase()%>_100.png"> </div> 	
-					
+						<div class="vignette"> 
+							<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>">
+								<img src="/toutatice-portail-cms-nuxeo/img/icons/<%= subDoc.getDocType().toLowerCase()%>_100.png"> 
+							</a>	
+						</div> 
 						<div class="main">
 							<div class="title">
 								<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>"><%= subDoc.getName() %></a>

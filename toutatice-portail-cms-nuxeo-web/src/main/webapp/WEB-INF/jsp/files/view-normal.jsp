@@ -37,7 +37,7 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 
 %>
 
-<div class="nuxeo-file-browser">
+<div class="nuxeo-file-browser no-ajax-link">
 
 
 <%@ include file="header.jsp" %>

@@ -45,7 +45,7 @@
 	%>
 		<%= commentsTreePart %>
 		<% if(index < treeSize){ 
-			commentId = "com-" + String.valueOf(Math.round(Math.random() * 10000));
+			commentId = "com-" + String.valueOf(index);
 			renderRequest.setAttribute("commentDivId", commentId);
 		%>
 			<jsp:include page="add-child-comment.jsp"></jsp:include>		

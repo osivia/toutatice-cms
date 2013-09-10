@@ -34,17 +34,33 @@ public class HTMLCommentsTreeBuilder {
 		while (itComments.hasNext()) {
 			JSONObject comment = (JSONObject) itComments.next();
 
-			htmlTree.append("<li>");
+			htmlTree.append("<script>");
+			htmlTree.append("function toggleactions(obj, b){");
+			htmlTree.append("    if(b){");
+			htmlTree.append("        obj.getElementsByClassName('child_comment')[0].style.display=\"block\";");
+			htmlTree.append("        obj.getElementsByClassName('delete_comment')[0].style.display=\"block\";");
+			htmlTree.append("    }else{");
+			htmlTree.append("        obj.getElementsByClassName('child_comment')[0].style.display=\"none\";");
+			htmlTree.append("        obj.getElementsByClassName('delete_comment')[0].style.display=\"none\";");
+			htmlTree.append("    }   }");
+			htmlTree.append("</script>");
+			
+			htmlTree.append("<li onmouseover=\"javascript:toggleactions(this, true);\" onmouseout=\"javascript:toggleactions(this, false);\">");
+			
+			htmlTree.append("<div class=\"avatar\"></div>");
 
 			htmlTree.append("<div class=\"authorDate\">");
+
 			String creator = (String) comment.get("author");
 			htmlTree.append("<div class=\"author\">");
 			htmlTree.append(creator);
 			htmlTree.append("</div>");
+
 			htmlTree.append("<div class=\"creationDate\">");
 			String creationDate = convertDateToString((JSONObject) comment.get("creationDate"));
 			htmlTree.append(creationDate);
 			htmlTree.append("</div>");
+
 			htmlTree.append("</div>");
 
 			String content = (String) comment.get("content");
@@ -67,12 +83,12 @@ public class HTMLCommentsTreeBuilder {
 			}
 
 			htmlTree.append("<div class=\"child_comment\">");
-			htmlTree.append("<a  href=\"#com-" + DIV_COM_ID_TAG + "\" ");
+			htmlTree.append("<span  class=\"add-child-comment-span\" ");
 			htmlTree.append("onclick=\"showCommentField(\'" + DIV_COM_ID_TAG + "\');");
 			htmlTree.append("document.getElementById('commentParentId" + DIV_COM_ID_TAG +"').value='");
 			htmlTree.append(comment.get("id"));
 			htmlTree.append("'\">Répondre");
-			htmlTree.append("</a>");
+			htmlTree.append("</span>");
 			htmlTree.append("</div>");
 
 			htmlTree.append("</li>");
