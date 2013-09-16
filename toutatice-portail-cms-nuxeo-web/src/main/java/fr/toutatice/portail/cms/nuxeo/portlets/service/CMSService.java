@@ -1063,7 +1063,11 @@ EditableWindowHelper.SCHEMA);
         URI uri = null;
 
         try {
-            uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
+            if (nuxeoPublicPort.equals("80")) {
+                uri = new URI("http://" + nuxeoPublicHost);
+            } else
+                uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
