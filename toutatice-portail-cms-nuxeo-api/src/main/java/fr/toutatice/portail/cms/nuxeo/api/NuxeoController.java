@@ -15,7 +15,6 @@ import javax.portlet.ResourceURL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -43,6 +42,8 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
+import org.osivia.portal.core.security.CmsPermissionHelper;
+import org.osivia.portal.core.security.CmsPermissionHelper.Level;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
@@ -918,8 +919,7 @@ public class NuxeoController {
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
             if (path.equals(getNavigationPath())) {
-                if (InternalConstants.CMS_VERSION_PREVIEW.equals(ControllerContextAdapter.getControllerContext(getPortalCtx()).getAttribute(ControllerCommand.SESSION_SCOPE,
-                        InternalConstants.ATTR_TOOLBAR_CMS_VERSION))) {
+                if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
 
                     cmsCtx.setDisplayLiveVersion("1");
                 }
