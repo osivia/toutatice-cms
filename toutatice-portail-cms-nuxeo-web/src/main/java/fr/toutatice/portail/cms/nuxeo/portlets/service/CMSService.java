@@ -51,6 +51,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 
 
@@ -1185,4 +1186,20 @@ EditableWindowHelper.SCHEMA);
 
     }
 
+
+    public void unpublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            executeNuxeoCommand(cmsCtx, new SetOffLineCommand(doc));
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
 }
