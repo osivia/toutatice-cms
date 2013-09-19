@@ -3,10 +3,10 @@
 <%@ page import="org.osivia.portal.api.urls.Link"%>
 <%@ page import="org.osivia.portal.api.urls.IPortalUrlFactory"%>
 <%@ page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page import="org.nuxeo.ecm.automation.client.jaxrs.model.PropertyMap"%>
+<%@ page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
 <%@ page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 <%@ page import="javax.portlet.PortletURL"%>
-<%@ page import="org.nuxeo.ecm.automation.client.jaxrs.model.Document"%>
+<%@ page import="org.nuxeo.ecm.automation.client.model.Document"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer"%>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 

@@ -11,9 +11,9 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PropertyList;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -51,10 +51,13 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 
 
 public class CMSService implements ICMSService {
+	
+	private static Log log = LogFactory.getLog(CMSService.class);
 
 	protected static final Log logger = LogFactory.getLog(CMSService.class);
 	
@@ -437,6 +440,7 @@ public class CMSService implements ICMSService {
 			CMSPublicationInfos pubInfos = getPublicationInfos(cmsCtx, path);
 
 			return pubInfos.isAnonymouslyReadable();
+			
 		} catch (NuxeoException e) {
 			e.rethrowCMSException();
 		} catch (Exception e) {
@@ -503,7 +507,6 @@ public class CMSService implements ICMSService {
 
 				} catch (CMSException e) {
 					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-
 						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.FORBIDDEN));
 						getCacheService().getCache(cacheInfos);
 
@@ -600,19 +603,32 @@ public class CMSService implements ICMSService {
 			superUserCtx.setControllerContext(cmsCtx.getControllerContext());
 			cmsCtx.setScope("superuser_context");
 			
+			//Modif-BUG-begin
+			//DCH : A REPORTER (BUG DANS CHARGEMENT PARTIEL)			
 			do {
 				NavigationItem navItem = navItems.get(pathToCheck);
-				if (navItem == null || (fetchSubItems && navItem.isUnfetchedChildren() )) {
+				
+				if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren() )) {
 					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
-					idsToFetch.add(doc.getId());
+					if( ! idsToFetch.contains(doc.getId()))
+						idsToFetch.add(doc.getId());
 				}
 
 				CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
 				pathToCheck = parentPath.toString();
+				
+				if (navItem == null) {
+					Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+					if( ! idsToFetch.contains(doc.getId()))
+						idsToFetch.add(doc.getId());
+				}
+			
+				
+				
 
 			} while (pathToCheck.contains(publishSpaceConfig.getPath()));
-
+			//Modif-BUG-end
 
 
 			
@@ -816,15 +832,15 @@ public class CMSService implements ICMSService {
 
 				pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
-				
-
 				if (pubInfos != null) {
 					List<Integer> errors = pubInfos.getErrorCodes();
 					if (errors != null) {
 						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+
 							throw new CMSException(CMSException.ERROR_FORBIDDEN);
 						}
 						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+
 							throw new CMSException(CMSException.ERROR_NOTFOUND);
 						}
 					}
@@ -835,7 +851,11 @@ public class CMSService implements ICMSService {
 
 			}
 
+		} catch (NuxeoException e) {
+
+			e.rethrowCMSException();
 		} catch (Exception e) {
+
 			if (!(e instanceof CMSException))
 				throw new CMSException(e);
 			else
@@ -868,17 +888,13 @@ public class CMSService implements ICMSService {
 				cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
 			}
 
+		} catch (NuxeoException e) {
+			e.rethrowCMSException();
 		} catch (Exception e) {
-			if (!(e instanceof CMSException))	{
-				if( e instanceof NuxeoException && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
-					return null;
-				else
-					throw new CMSException(e);
-			}
-			else	{
-				
-					throw (CMSException) e;
-			}
+			if (!(e instanceof CMSException))
+				throw new CMSException(e);
+			else
+				throw (CMSException) e;
 		}
 		return configItem;
 	}
@@ -1044,7 +1060,11 @@ EditableWindowHelper.SCHEMA);
         URI uri = null;
 
         try {
-            uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
+            if (nuxeoPublicPort.equals("80")) {
+                uri = new URI("http://" + nuxeoPublicHost);
+            } else
+                uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1159,6 +1179,23 @@ EditableWindowHelper.SCHEMA);
             getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
 
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
+
+
+    public void unpublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            executeNuxeoCommand(cmsCtx, new SetOffLineCommand(doc));
 
         } catch (Exception e) {
             throw new CMSException(e);

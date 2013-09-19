@@ -15,13 +15,12 @@ import javax.portlet.ResourceURL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -44,6 +43,8 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
+import org.osivia.portal.core.security.CmsPermissionHelper;
+import org.osivia.portal.core.security.CmsPermissionHelper.Level;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
@@ -918,10 +919,8 @@ public class NuxeoController {
         try	{
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(this.getNavigationPath())) {
-                if (InternalConstants.CMS_VERSION_PREVIEW.equals(ControllerContextAdapter.getControllerContext(this.getPortalCtx()).getAttribute(ControllerCommand.SESSION_SCOPE,
-                        InternalConstants.ATTR_TOOLBAR_CMS_VERSION))) {
-
+            if (path.equals(getNavigationPath())) {
+                if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
                     cmsCtx.setDisplayLiveVersion("1");
                 }
 

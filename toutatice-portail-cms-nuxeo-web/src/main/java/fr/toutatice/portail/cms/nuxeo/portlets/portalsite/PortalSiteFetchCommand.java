@@ -1,10 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.portalsite;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Constants;
-import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.nuxeo.ecm.automation.client.Constants;
+import org.nuxeo.ecm.automation.client.OperationRequest;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -24,7 +24,7 @@ public class PortalSiteFetchCommand implements INuxeoCommand {
 	
 	public Object execute( Session session)	throws Exception {
 		
-		Document doc = (org.nuxeo.ecm.automation.client.jaxrs.model.Document) session
+		Document doc = (org.nuxeo.ecm.automation.client.model.Document) session
 		  .newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path)
 		  .execute();
 		

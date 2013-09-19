@@ -1,25 +1,12 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
-import java.util.List;
+
 import java.util.Map;
-import java.util.Set;
 
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.portlet.RenderResponse;
-
-import org.jboss.portal.core.model.portal.Page;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.menubar.MenubarItem;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSPage;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.dynamic.DynamicPageBean;
 
 
 

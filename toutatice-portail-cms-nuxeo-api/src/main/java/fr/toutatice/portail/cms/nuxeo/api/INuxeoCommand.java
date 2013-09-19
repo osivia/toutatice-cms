@@ -1,6 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
+import org.nuxeo.ecm.automation.client.Session;
 
 public interface INuxeoCommand {
 	

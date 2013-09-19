@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -31,8 +30,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -50,9 +49,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 
 /**
@@ -212,6 +209,7 @@ public class ViewListPortlet extends CMSPortlet {
 				super.serveResource(resourceRequest, resourceResponse);
 
 		} catch (Exception e) {
+
 			throw new PortletException(e);
 
 		}
@@ -519,18 +517,15 @@ public class ViewListPortlet extends CMSPortlet {
 				 * de la construction d'une requête avec cette variable.
 				 */
 				i.set("navigationPubInfos",  null);
-				if( ctx.getNavigationPath() != null)	{
-					CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
-					i.set("navigationPubInfos",  navigationPubInfos);
-				}
-				
-				i.set("spaceId", null);
-				if(ctx.getSpacePath() != null){
-					CMSPublicationInfos spacePubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getSpacePath());
-					if(spacePubInfos != null)
-						i.set("spaceId", spacePubInfos.getLiveId()); 
-				}					
-				
+                // Modif-SPACEID-begin
+                i.set("spaceId", null);
+                if (ctx.getNavigationPath() != null) {
+                    CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
+                    i.set("navigationPubInfos", navigationPubInfos);
+                    i.set("spaceId", navigationPubInfos.getSpaceID());
+                }
+                // Modif-SPACEID-end
+
 				i.set("contentPath",  ctx.getContentPath());
 				i.set("request", request);
 				i.set("NXQLFormater", new NXQLFormater());
@@ -609,20 +604,22 @@ public class ViewListPortlet extends CMSPortlet {
 					requestPageSize = Math.min(requestPageSize, maxItems);
 				}
 
+
 				// v2.0.8 : ajout custom
 				ListTemplate template = getCurrentTemplate( window);
 	
 
 				String schemas = template.getSchemas();
 
+
 	
 				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest,
 						ctx.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY)));
 
-				
+				List<Document> docsList = docs.list();
 				// En mode fil, on trie les documents suivant l'ordre défini par l'utilisateur
 				if("true".equals(window.getProperty("osivia.cms.feed"))) {
-					Collections.sort(docs, new DocumentComparator(documentOrder));
+                    Collections.sort(docsList, new DocumentComparator(documentOrder));
 				}
 				
 				int nbPages = 0;
@@ -641,13 +638,13 @@ public class ViewListPortlet extends CMSPortlet {
 							int pageLimit = Math.max(0, maxItems - currentPage * requestPageSize);
 
 							while (docs.size() > pageLimit)
-								docs.remove(docs.size() - 1);
+								docsList.remove(docs.size() - 1);
 						}
 
 					}
 				}
 
-				request.setAttribute("docs", docs);
+				request.setAttribute("docs", new PaginableDocuments(docsList, docs.getTotalSize(), docs.getPageSize(), docs.getPageCount(), docs.getPageCount()));
 
 				request.setAttribute("currentPage", currentPage);
 

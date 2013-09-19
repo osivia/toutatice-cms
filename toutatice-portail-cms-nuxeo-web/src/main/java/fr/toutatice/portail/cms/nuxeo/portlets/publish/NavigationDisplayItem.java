@@ -3,8 +3,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
+
 
 public class NavigationDisplayItem {
 	/** The display title of the  link. */

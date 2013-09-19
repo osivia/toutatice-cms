@@ -315,6 +315,7 @@ div.nuxeo-publish-navigation ul a {
 }
 
 
+
 /* Vues de création de document */
 
 div.document-types	 .separateur {
@@ -352,5 +353,103 @@ div.document-types .more-document-types	{
 	visibility: hidden;
 }
 
+/* Modif-COMMENTS-begin */
+/* Commentaires */
 
+.commentsTitle {
+	
+}
+
+.commentsTree {
+	
+}
+
+.commentsTree ul {
+	list-style-type: none;
+}
+
+.commentsTree li:hover {
+	background-color: #abd4fb;
+}
+
+.commentsTree li {
+    padding: 10px 10px 20px 10px;
+}
+
+.commentsTree .authorDate {
+	background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
+	margin-bottom: 2px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+}
+
+.commentsTree .author {
+	display: inline;
+	font-weight: bold;
+	color: #444444;
+}
+
+.commentsTree .creationDate {
+	display: inline;
+	padding-left: 10px;
+}
+
+.commentsTree .content {
+	white-space:normal;
+}
+
+.add-comment-link {
+	background: url("../img/icons/toggle_plus.png") no-repeat scroll left -2px transparent;
+	font-size: 12px;
+	padding-left:17px;
+}
+
+.child_comment {
+	display: inline;
+	float: right;
+	padding-right: 10px;
+}
+
+#content .child_comment a {
+	font-weight: normal;
+}
+
+#content .delete_comment a {
+	font-weight: normal;
+}
+
+.delete_comment {
+	display: inline;
+	padding-left: 10px;
+	font-weight: normal;
+	float: right;
+	border-left: 1px solid;
+}
+
+.add-comment,.add-child-comment,.delete-comment {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.add-comment textarea,.add-child-comment textarea,.delete-comment textarea {
+	margin-bottom: 11px;
+}
+
+.errorDateFormat,.contentError {
+	font-weight: bold;
+	color: red;
+}
+/* Modif-COMMENTS-end */
+
+
+/* Modif-FILEBROWSER-begin */
+.delete-file-item {
+	text-align: center;
+    vertical-align: middle;
+}
+
+.portlet-menuitem-nuxeo-add {
+	background:#FFFFF4 url(../img/add.gif) 1px 2px no-repeat;
+}
+/* Modif-FILEBROWSER-end */
 	

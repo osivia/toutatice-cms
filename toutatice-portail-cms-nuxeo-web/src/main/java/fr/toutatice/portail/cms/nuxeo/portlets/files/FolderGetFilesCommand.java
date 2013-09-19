@@ -1,10 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
-import org.nuxeo.ecm.automation.client.jaxrs.Constants;
-import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
-import org.nuxeo.ecm.automation.client.jaxrs.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Documents;
+import org.nuxeo.ecm.automation.client.Constants;
+import org.nuxeo.ecm.automation.client.OperationRequest;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -39,6 +38,13 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 			request =  session.newRequest("Document.Query");
 
 			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ORDER BY ecm:pos ";
+
+// v2.0.9 : On reaffiche tous les folders			
+//			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ";
+//			if( navigationFilter){
+//				nuxeoRequest += " AND  (ecm:mixinType != 'Folderish' OR ttc:showInMenu = 1) ";
+//			}
+//			nuxeoRequest += " ORDER BY ecm:pos ";
 			
 			
 			

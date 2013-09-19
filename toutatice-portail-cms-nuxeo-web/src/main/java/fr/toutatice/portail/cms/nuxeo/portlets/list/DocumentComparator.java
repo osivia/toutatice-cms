@@ -3,7 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 import java.util.Comparator;
 import java.util.Map;
 
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 
 /**
  * Comparateur de documents Nuxeo en fnoction d'un ordre passé en paramètre

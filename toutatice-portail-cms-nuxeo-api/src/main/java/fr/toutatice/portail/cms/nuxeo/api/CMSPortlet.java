@@ -17,11 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
@@ -77,10 +75,13 @@ public class CMSPortlet extends GenericPortlet {
 
 	public String formatResourceLastModified() {
 
-		SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-		inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
-		return inputFormater.format(new Date(System.currentTimeMillis()));
-	}
+        // Modif-MIGRATION-begin
+        /* SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH); */
+        SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
+        // Modif-MIGRATION-end
+        inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return inputFormater.format(new Date(System.currentTimeMillis()));
+    }
 
 	public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse) {
 
@@ -88,7 +89,10 @@ public class CMSPortlet extends GenericPortlet {
 
 		if (sOriginalDate != null) {
 
-			SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+            // Modif-MIGRATION-begin
+            /* SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH); */
+            SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
+            // Modif-MIGRATION-begin
 			inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				Date originalDate = inputFormater.parse(sOriginalDate);

@@ -9,7 +9,7 @@
  * Contributors:
  *     bstefanescu
  */
-package org.nuxeo.ecm.automation.client.jaxrs.impl;
+package org.nuxeo.ecm.automation.client.jaxrs.spi;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,13 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.nuxeo.ecm.automation.client.jaxrs.AsyncCallback;
-import org.nuxeo.ecm.automation.client.jaxrs.OperationRequest;
-import org.nuxeo.ecm.automation.client.jaxrs.model.DateUtils;
-import org.nuxeo.ecm.automation.client.jaxrs.model.OperationDocumentation;
-import org.nuxeo.ecm.automation.client.jaxrs.model.OperationInput;
-import org.nuxeo.ecm.automation.client.jaxrs.model.OperationDocumentation.Param;
-import org.nuxeo.ecm.automation.client.jaxrs.spi.DefaultSession;
+import org.nuxeo.ecm.automation.client.AsyncCallback;
+import org.nuxeo.ecm.automation.client.OperationRequest;
+import org.nuxeo.ecm.automation.client.model.DateUtils;
+import org.nuxeo.ecm.automation.client.model.OperationDocumentation;
+import org.nuxeo.ecm.automation.client.model.OperationInput;
+import org.nuxeo.ecm.automation.client.model.OperationDocumentation.Param;
 
 /**
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
@@ -34,9 +33,9 @@ public class DefaultOperationRequest implements OperationRequest {
 
     protected final DefaultSession session;
 
-    protected final Map<String, String> params;
+    protected final Map<String, Object> params;
 
-    protected final Map<String, String> ctx;
+    protected final Map<String, Object> ctx;
 
     protected final Map<String, String> headers;
 
@@ -44,14 +43,14 @@ public class DefaultOperationRequest implements OperationRequest {
 
     public DefaultOperationRequest(DefaultSession session,
             OperationDocumentation op) {
-        this(session, op, new HashMap<String, String>());
+        this(session, op, new HashMap<String, Object>());
     }
 
     public DefaultOperationRequest(DefaultSession session,
-            OperationDocumentation op, Map<String, String> ctx) {
+            OperationDocumentation op, Map<String, Object> ctx) {
         this.session = session;
         this.op = op;
-        params = new HashMap<String, String>();
+        params = new HashMap<String, Object>();
         headers = new HashMap<String, String>();
         this.ctx = ctx;
     }
@@ -139,16 +138,16 @@ public class DefaultOperationRequest implements OperationRequest {
         return this;
     }
 
-    public OperationRequest setContextProperty(String key, String value) {
-        ctx.put(key, value);
+    public OperationRequest setContextProperty(String key, Object value) {
+        ctx.put(key, value != null ? value.toString() : null);
         return this;
     }
 
-    public Map<String, String> getContextParameters() {
+    public Map<String, Object> getContextParameters() {
         return ctx;
     }
 
-    public Map<String, String> getParameters() {
+    public Map<String, Object> getParameters() {
         return params;
     }
 
@@ -172,4 +171,7 @@ public class DefaultOperationRequest implements OperationRequest {
         return headers;
     }
 
+    public OperationDocumentation getOperation() {
+        return op;
+    }
 }

@@ -16,8 +16,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
-import org.nuxeo.ecm.automation.client.jaxrs.RemoteException;
-import org.nuxeo.ecm.automation.client.jaxrs.model.Document;
+import org.nuxeo.ecm.automation.client.RemoteException;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
@@ -318,7 +318,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			if (re.getStatus() == 404) {
 				throw new CMSException(CMSException.ERROR_NOTFOUND);
 			}
-			if (re.getStatus() == 401) {
+                // DCH : Bug CAS ??? (nouveau code erreur 403 à gérer)
+
+                if (re.getStatus() == 401 || re.getStatus() == 403) {
 				throw new CMSException(CMSException.ERROR_FORBIDDEN);
 			} else if (re.getStatus() == 500) {
 				// On ne notifie pas le statut sur les erreurs 500

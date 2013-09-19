@@ -23,6 +23,5 @@
 		<url-pattern>/thumbnail/*</url-pattern>
 	</servlet-mapping>
 	
-
-
 </web-app>
+
