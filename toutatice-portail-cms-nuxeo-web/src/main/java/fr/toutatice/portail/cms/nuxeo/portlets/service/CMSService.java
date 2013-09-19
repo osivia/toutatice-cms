@@ -47,6 +47,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
@@ -1196,6 +1197,22 @@ EditableWindowHelper.SCHEMA);
 
         try {
             executeNuxeoCommand(cmsCtx, new SetOffLineCommand(doc));
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
+
+    public void deleteDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            executeNuxeoCommand(cmsCtx, new DocumentDeleteCommand(doc));
 
         } catch (Exception e) {
             throw new CMSException(e);
