@@ -889,13 +889,16 @@ public class CMSService implements ICMSService {
 				cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
 			}
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
 		} catch (Exception e) {
-			if (!(e instanceof CMSException))
-				throw new CMSException(e);
-			else
+			if (!(e instanceof CMSException)) {
+				if (e instanceof NuxeoException
+						&& (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+					return null;
+				else
+					throw new CMSException(e);
+			} else {
 				throw (CMSException) e;
+			}
 		}
 		return configItem;
 	}
