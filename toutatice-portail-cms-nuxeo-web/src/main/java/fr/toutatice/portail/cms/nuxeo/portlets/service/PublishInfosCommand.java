@@ -53,46 +53,32 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 			while (it.hasNext()) {
 				JSONObject infos = (JSONObject) it.next();
-				// Modif-RETOUR-begin
-				publiInfos.setErrorCodes(adaptList((List<Integer>) infos.get("errorCodes")));
+				publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
+
 				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
-				// Modif-FILEBROWSER-begin
 				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
-				// Modif-FILEBROWSER-end
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
-				// Modif-COMMENTS-begin
 				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
-				// Modif-COMMENTS-end
 				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
-				// Modif SUBTYPES-begin
+
 				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
-				// Modif SUBTYPES-end
 				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
 
 
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
-
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
-
 					publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
-
 					publiInfos.setLiveSpace(false);
 				} else {
-
 					String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
-
 					if (StringUtils.isNotEmpty(workspacePath)) {
 						publiInfos.setPublishSpacePath(workspacePath);
-
 						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
-
 						publiInfos.setLiveSpace(true);
-
-						// Modif-SPACEID-begin
 						/*
                          * les spaceId ne sont appliqués qu'aux ws pour le moment.
                          * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
@@ -103,7 +89,6 @@ public class PublishInfosCommand implements INuxeoCommand {
                         if (infos.containsKey("parentSpaceID")) {
                             publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
                         }
-                        // Modif-SPACEID-end
 					}
 				}
 			}
@@ -111,7 +96,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return publiInfos;
 	}
-
 
 	/**
 	 * Décode en UTF-8 les labels de la Map des sous-types permis.
@@ -148,10 +132,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 	}
 
 	
-	private List<Integer> adaptList(List<Integer> list) {
-		List<Integer> returnedList = list;
-		if(list == null){
-			returnedList = new ArrayList<Integer>();
+	private List<Integer> adaptList(JSONArray list) {
+		List<Integer> returnedList = new ArrayList<Integer>();
+		List<Integer> jsonList = (List<Integer>) JSONArray.toCollection(list);
+		if(jsonList != null){
+			returnedList.addAll(jsonList);
 		}
 		return returnedList;
 	}
