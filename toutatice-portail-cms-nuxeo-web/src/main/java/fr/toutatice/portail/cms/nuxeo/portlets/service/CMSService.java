@@ -33,7 +33,6 @@ import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -1086,7 +1085,7 @@ EditableWindowHelper.SCHEMA);
 
         if (command == EcmCommand.createPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_document?";
-            requestParameters.put("type", "SimplePage");
+            requestParameters.put("type", "PortalPage");
         } else if (command == EcmCommand.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmCommand.createFgtInRegion) {
@@ -1150,20 +1149,18 @@ EditableWindowHelper.SCHEMA);
         }
     }
 
-    public boolean isTypeAllowedForWebPages(CMSServiceCtx cmsCtx, String type) throws CMSException {
+    public boolean isCmsWebPage(CMSServiceCtx cmsCtx, String cmsPath) throws CMSException {
 
-        Map<String, DocTypeDefinition> docTypeDefinitions;
-        try {
-            docTypeDefinitions = customizer.getDocTypeDefinitions(cmsCtx);
-        } catch (Exception e) {
-            throw new CMSException(e);
-        }
+        // Une webpage CMS est porteuse du schéma fragment sous Nuxeo
+        CMSItem content = getContent(cmsCtx, cmsPath);
+        Document nativeItem = (Document) content.getNativeItem();
+        PropertyList list = nativeItem.getProperties().getList(EditableWindowHelper.SCHEMA);
 
-        DocTypeDefinition definition = docTypeDefinitions.get(type);
-        if (definition != null)
-            return definition.isWebPage();
-        else
+        if (list != null) {
+            return true;
+        } else
             return false;
+
 
     }
 
