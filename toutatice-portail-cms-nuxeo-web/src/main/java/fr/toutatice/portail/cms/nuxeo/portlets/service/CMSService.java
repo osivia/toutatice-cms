@@ -11,6 +11,10 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.aspects.server.UserInterceptor;
+import org.jboss.portal.identity.User;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -827,7 +831,14 @@ public class CMSService implements ICMSService {
 				if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
 					ctx.setScope(ctx.getForcePublicationInfosScope());
 				}else{
-					ctx.setScope("user_session");
+				    // In anonymous mode, publicationsInfos are shared
+				    
+                    ServerInvocation invocation = ctx.getServerInvocation();
+                    User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
+                    if (user == null) {
+		                 ctx.setScope("anonymous");
+		            } else
+	                    ctx.setScope("user_session");
 				}
 
 				pubInfos = (CMSPublicationInfos) executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));

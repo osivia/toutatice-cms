@@ -14,7 +14,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
+import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.RemoteException;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -151,6 +154,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	}
 
+	
+
+	
 
 	private Object invokeViaCache(NuxeoCommandContext ctx, INuxeoServiceCommand command) throws Exception {
 

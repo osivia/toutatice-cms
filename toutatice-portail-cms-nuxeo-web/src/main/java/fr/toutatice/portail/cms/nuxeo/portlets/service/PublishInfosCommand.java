@@ -15,10 +15,10 @@ import java.util.Map.Entry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
@@ -46,7 +46,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
 		
-			String pubInfosContent = FileUtils.read(binariesInfos.getStream());
+			String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8"); 
 			
 			JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
 			Iterator it = infosContent.iterator();

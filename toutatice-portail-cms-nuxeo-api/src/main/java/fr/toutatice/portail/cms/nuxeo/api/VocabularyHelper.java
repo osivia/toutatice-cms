@@ -11,7 +11,7 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.nuxeo.common.utils.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
@@ -196,7 +196,7 @@ public class VocabularyHelper {
 
             Blob blob = (Blob) nuxeoSession.newRequest("Document.GetVocabularies").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
                     .set("vocabularies", stringVocabNames).set("locale", Locale.FRANCE.toString()).execute();
-            String content = FileUtils.read(blob.getStream());
+            String content = IOUtils.toString(blob.getStream(), "UTF-8");
 
             JSONObject rootObject = new JSONObject();
             rootObject.element("key", "key_root");
