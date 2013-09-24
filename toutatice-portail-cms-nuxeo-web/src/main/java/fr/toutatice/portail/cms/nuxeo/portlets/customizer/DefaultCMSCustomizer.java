@@ -820,7 +820,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
         
     }
 
-    public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
+    public synchronized String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
         Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
         transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
