@@ -450,7 +450,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 					// Modif-FILEBROWSER-begin
 					MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
 							"#" + response.getNamespace() + fancyID, onClick,
-							"fancybox_inline portlet-menuitem-nuxeo-add", "nuxeo");
+							"fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
 					// Modif-FILEBROWSER-begin
 					item.setAjaxDisabled(true);
 

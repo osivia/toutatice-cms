@@ -33,17 +33,6 @@ public class HTMLCommentsTreeBuilder {
 		Iterator<JSONObject> itComments = comments.iterator();
 		while (itComments.hasNext()) {
 			JSONObject comment = (JSONObject) itComments.next();
-
-			htmlTree.append("<script>");
-			htmlTree.append("function toggleactions(obj, b){");
-			htmlTree.append("    if(b){");
-			htmlTree.append("        obj.getElementsByClassName('child_comment')[0].style.display=\"block\";");
-			htmlTree.append("        obj.getElementsByClassName('delete_comment')[0].style.display=\"block\";");
-			htmlTree.append("    }else{");
-			htmlTree.append("        obj.getElementsByClassName('child_comment')[0].style.display=\"none\";");
-			htmlTree.append("        obj.getElementsByClassName('delete_comment')[0].style.display=\"none\";");
-			htmlTree.append("    }   }");
-			htmlTree.append("</script>");
 			
 			htmlTree.append("<li onmouseover=\"javascript:toggleactions(this, true);\" onmouseout=\"javascript:toggleactions(this, false);\">");
 			

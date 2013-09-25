@@ -493,5 +493,73 @@ div.document-types .more-document-types	{
 .portlet-menuitem-nuxeo-add {
 	background:#FFFFF4 url(../img/add.gif) 1px 2px no-repeat;
 }
+
+.doc-type-title {
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    text-align: center;
+}
 /* Modif-FILEBROWSER-end */
+
+/* Tableaux dans RichTextEditor du champ note:note */
+.nuxeo-docview-note table.toutatice-gris {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid gray;
+}
+.nuxeo-docview-note table.toutatice-gris td {
+	border: thin solid gray;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-gris thead td,table.toutatice-gris tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: gray;
+	font-variant:small-caps;
+	font-size:12px;
+}
+
+.nuxeo-docview-note table.toutatice-bleu-fonce {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid #2f4456;
+}
+.nuxeo-docview-note table.toutatice-bleu-fonce td {
+	border: thin solid #2f4456;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-bleu-fonce thead td,table.toutatice-bleu-fonce tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: #2f4456;
+	font-variant:small-caps;
+	font-size:12px;
+}
+
+.nuxeo-docview-note table.toutatice-bleu-clair {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid #659fb2;
+}
+.nuxeo-docview-note table.toutatice-bleu-clair td {
+	border: thin solid #659fb2;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-bleu-clair thead td,table.toutatice-bleu-clair tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: #659fb2;
+	font-variant:small-caps;
+	font-size:12px;
+}
 	

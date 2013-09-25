@@ -106,4 +106,15 @@ function isEmptyField(inputId, errorElementId, msg){
 	return isEmpty;
 }
 
+/* Affichage des actions répondre/supprimer au survol */
+function toggleactions(obj, show){    
+	if(show){       
+		obj.getElementsByClassName('child_comment')[0].style.display="block";     
+		obj.getElementsByClassName('delete_comment')[0].style.display="block";  
+	}else{      
+		obj.getElementsByClassName('child_comment')[0].style.display="none";       
+		obj.getElementsByClassName('delete_comment')[0].style.display="none";  
+	}  
+}
+
 //Modif-COMMENTS-end

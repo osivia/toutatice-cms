@@ -129,6 +129,7 @@ if( portalDocsToCreate != null) {
 <div class="fancybox-content">
 	<div id="<%=renderResponse.getNamespace()%>_PORTAL_CREATE" class="document-types">
 		<div class="main-doc-types" id="<%=renderResponse.getNamespace()%>_MAIN">
+			<div class="doc-type-title">Ajouter un contenu</div>
 <%	
 	int index = 1;
 	int nbSubDocs = portalDocsToCreate.size();
@@ -136,17 +137,16 @@ if( portalDocsToCreate != null) {
 %>
 		
 			<div class="doc-type-detail">
-	
-						<div class="vignette"> 
-							<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>">
-								<img src="/toutatice-portail-cms-nuxeo/img/icons/<%= subDoc.getDocType().toLowerCase()%>_100.png"> 
-							</a>	
-						</div> 
-						<div class="main">
-							<div class="title">
-								<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>"><%= subDoc.getName() %></a>
-							</div>
-						</div>
+				<div class="vignette"> 
+					<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>">
+						<img src="/toutatice-portail-cms-nuxeo/img/icons/<%= subDoc.getDocType().toLowerCase()%>_100.png"> 
+					</a>	
+				</div> 
+				<div class="main">
+					<div class="title">
+						<a class="fancyframe_refresh" href="<%= subDoc.getUrl() %>"><%= subDoc.getName() %></a>
+					</div>
+				</div>
 						
 	 		 </div>
 
