@@ -482,6 +482,13 @@ div.document-types .more-document-types	{
 	font-weight: bold;
 	color: red;
 }
+
+.commentsTree .delete_comment {
+    display: none;
+}
+.commentsTree .child_comment {
+    display: none;
+}
 /* Modif-COMMENTS-end */
 
 /* Modif-FILEBROWSER-begin */
