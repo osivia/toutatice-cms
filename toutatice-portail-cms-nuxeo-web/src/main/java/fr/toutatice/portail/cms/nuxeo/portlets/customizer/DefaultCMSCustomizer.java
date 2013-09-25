@@ -792,13 +792,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	
 	private Map<String, DocTypeDefinition> docTypes = null;
 	
-    protected DocTypeDefinition createDocType(String docTypeName, String displayName, boolean supportingPortalForm, boolean webPage) {
+    protected DocTypeDefinition createDocType(String docTypeName, String displayName, boolean supportingPortalForm) {
 	    
 	    DocTypeDefinition portalDocType = new DocTypeDefinition();
 	    portalDocType.setName(docTypeName);
 	    portalDocType.setDisplayName(displayName);
         portalDocType.setSupportingPortalForm(supportingPortalForm);
-        portalDocType.setWebPage(webPage);
     	    
 	    return portalDocType;
 	}
@@ -809,12 +808,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
             
             docTypes = new LinkedHashMap<String,DocTypeDefinition>();
             
-            docTypes.put("Folder", createDocType("Folder", "Dossier", true, false));
-            docTypes.put("File", createDocType("File", "Fichier", true, false));
-            docTypes.put("Note", createDocType("Note", "Note", true, false));
+            docTypes.put("Folder", createDocType("Folder", "Dossier", true));
+            docTypes.put("File", createDocType("File", "Fichier", true));
+            docTypes.put("Note", createDocType("Note", "Note", true));
 
-            docTypes.put("SimplePage", createDocType("Note", "Note", false, true));
-            docTypes.put("SimpleSite", createDocType("Note", "Note", false, true));
         }
         return docTypes;
         

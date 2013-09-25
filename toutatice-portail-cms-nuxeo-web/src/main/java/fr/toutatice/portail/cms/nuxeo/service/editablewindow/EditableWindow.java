@@ -61,7 +61,7 @@ public abstract class EditableWindow {
      * retourne ces propriétés pour créer chaque portlet.
      * 
      * @param doc
-     *            simplesite ou simplepage (conteneur des fragments)
+     *            conteneur des fragments
      * @param fragment
      *            les props du fragment
      * @param modeEditionPage
@@ -75,7 +75,7 @@ public abstract class EditableWindow {
      * retourne ces propriétés pour créer chaque portlet.
      * 
      * @param doc
-     *            simplesite ou simplepage (conteneur des fragments)
+     *            conteneur des fragments
      * @param fragment
      *            les props du fragment
      * @param modeEditionPage
