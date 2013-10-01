@@ -20,6 +20,7 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -29,6 +30,7 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.context.ControllerContextAdapter;
+import org.osivia.portal.core.security.CmsPermissionHelper;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -318,9 +320,13 @@ public class MenuPortlet extends CMSPortlet {
 				
 				// Navigation context
 				CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-				cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(ctx.getPortalCtx()));
+                ControllerContext context = ControllerContextAdapter.getControllerContext(ctx.getPortalCtx());
+                cmsReadNavContext.setControllerContext(context);
 				cmsReadNavContext.setScope(ctx.getNavigationScope());				
 
+                if (CmsPermissionHelper.getCurrentCmsVersion(context).equals(CmsPermissionHelper.CMS_VERSION_PREVIEW)) {
+                    cmsReadNavContext.setDisplayLiveVersion("1");
+                }
 				
 				int partialOpenLevels = -1;
 				CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, basePath, basePath);
