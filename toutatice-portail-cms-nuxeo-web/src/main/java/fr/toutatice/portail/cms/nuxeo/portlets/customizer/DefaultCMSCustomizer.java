@@ -47,6 +47,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSToWebPathAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
@@ -70,6 +71,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	NuxeoConnectionProperties nuxeoConnection;
 	XMLReader parser;
     EditableWindowAdapter editableWindowAdapter;
+    CMSToWebPathAdapter cmsToWebAdapter;    
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 	
@@ -165,6 +167,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
         return editableWindowAdapter;
     }
+    
+    public CMSToWebPathAdapter getCMSToWebPathAdapter() {
+        if (cmsToWebAdapter == null) {
+            cmsToWebAdapter = new CMSToWebPathAdapter();
+        }
+
+        return cmsToWebAdapter;
+    }
+    
+    
 
 	public static List<ListTemplate> getListTemplates() {
 
@@ -674,7 +686,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		
 		return null;
 	}
-
+	
+	public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
+	    return getCMSToWebPathAdapter().adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
+	}
+	
+	
 	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
 		return getCMSItemAdapter().adaptDocument( ctx,  doc);
 	}

@@ -932,7 +932,29 @@ public class CMSService implements ICMSService {
 				}
 			}			
 	}
-
+	
+	
+	
+    public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
+        try {
+            
+            return customizer.adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
+        }
+            catch (Exception e) {
+                if (!(e instanceof CMSException))   {
+                    if( e instanceof NuxeoException && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+                        return null;
+                    else
+                        throw new CMSException(e);
+                }
+                else    {
+                    
+                        throw (CMSException) e;
+                }
+            }           
+    }
+    
+    
 	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws CMSException {
 		try {		
 
@@ -1230,5 +1252,7 @@ EditableWindowHelper.SCHEMA);
         }
 
     }
+
+
 
 }
