@@ -226,8 +226,9 @@ div.file-actions-menu	{
     padding-top: 20px;
     padding-bottom: 5px;
     padding-left: 15px; 
+    padding-right: 10px; 
     margin-left: 10px; 
-    width: 90px; 
+    width: auto; 
 }
 
 div.file-actions-menu .ajax-waiting {

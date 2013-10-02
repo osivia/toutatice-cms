@@ -150,20 +150,20 @@ public class FileBrowserPortlet extends CMSPortlet {
                     if( nbItems > 0)
                         sb.append("<br/>");
                     
-                     sb.append("<a target=\"nuxeo\" href=\"" + ctx.getNuxeoPublicBaseUri() + "/nxdoc/default/"  +  pubInfos.getLiveId() + "/view_documents\">Gérer</a>");
+                     sb.append("<a target=\"nuxeo\" href=\"" + ctx.getNuxeoPublicBaseUri() + "/nxdoc/default/"  +  pubInfos.getLiveId() + "/view_documents\">Editer dans Nuxeo</a>");
                      nbItems++;
                      
                 }
                 
                 //Modif-FILEBROWSER-begin
-				if (pubInfos.isDeletableByUser()) {
-					sb.append("<br/>");
-					sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
-					sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
-					sb.append(id);
-					sb.append("';\">Supprimer</a>");
-					nbItems++;
-				}
+//				if (pubInfos.isDeletableByUser()) {
+//					sb.append("<br/>");
+//					sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
+//					sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
+//					sb.append(id);
+//					sb.append("';\">Supprimer</a>");
+//					nbItems++;
+//				}
                
                 
                 if( nbItems ==0)
