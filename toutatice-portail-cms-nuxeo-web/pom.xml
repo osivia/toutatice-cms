@@ -18,9 +18,9 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>toutatice-portail.cms</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
-			<version>3.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
