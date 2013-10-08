@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.portlet.PortletContext;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
@@ -14,7 +16,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 public class CMSItemAdapter {
 	
-	protected CMSService CMSService;
+    private static final String NX_DC_TITLE = "dc:title";
+    private static final String NX_DC_DESCRIPTION = "dc:description";
+    private static final String NX_DC_CREATOR = "dc:creator";
+
+    protected CMSService CMSService;
 	protected DefaultCMSCustomizer customizer;
 	protected PortletContext portletCtx;
 	
@@ -48,6 +54,7 @@ public class CMSItemAdapter {
 		Map<String, String> properties = item.getProperties();
 
 		adaptDoc(ctx, doc, properties);
+        adaptSEOProperties(ctx, doc, item.getMetaProperties());
 	}
 	
 	public  Map<String, String> adaptDocument(CMSServiceCtx ctx, Document doc) throws Exception {
@@ -77,6 +84,22 @@ public class CMSItemAdapter {
 
 	}
 	
+    private void adaptSEOProperties(CMSServiceCtx ctx, Document doc, Map<String, String> properties) {
+        PropertyMap nxProperties = doc.getProperties();
+        if (nxProperties.getString(NX_DC_TITLE) != null) {
+            properties.put(Constants.HEADER_TITLE, nxProperties.getString(NX_DC_TITLE));
+        }
+        
+        if (nxProperties.getString(NX_DC_DESCRIPTION) != null) {
+            properties.put(Constants.HEADER_META.concat(".description"), nxProperties.getString(NX_DC_DESCRIPTION));
+        }
+
+        if (nxProperties.getString(NX_DC_CREATOR) != null) {
+            properties.put(Constants.HEADER_META.concat(".author"), nxProperties.getString(NX_DC_CREATOR));
+        }
+
+    }
+
 	public void adaptDoc(CMSServiceCtx ctx, Document doc, Map<String, String> properties) throws Exception {
 
 		
@@ -86,9 +109,10 @@ public class CMSItemAdapter {
 		
 		adaptNavigationProperties(ctx, doc, properties);
 
-		
 
-	}
+    }
+
+
 
 
 }
