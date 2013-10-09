@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.NamingException;
@@ -11,6 +12,8 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
@@ -28,6 +31,9 @@ public class InjectionTestPortlet extends CMSPortlet {
 
     /** View page path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/injection/view.jsp";
+
+    /** Number of probabilities. */
+    private static final int PROBABILITIES_COUNT = 5;
 
     /** Injection service. */
     private final InjectionService service;
@@ -48,27 +54,114 @@ public class InjectionTestPortlet extends CMSPortlet {
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
         // Create groups
-        List<LdapName> ldapNames = null;
-        InjectionData groupsInjectionData = new InjectionData();
-        groupsInjectionData.setCount(5);
-        groupsInjectionData.setDepth(3);
-        try {
-            ldapNames = this.service.createGroups(groupsInjectionData);
-        } catch (NamingException e) {
-            throw new PortletException(e);
-        }
+        List<LdapName> ldapGroupNames = this.createGroups(request);
+
+        // Create users
+        this.createUsers(request, ldapGroupNames);
 
         // Create documents
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-        InjectionData documentsInjectionData = new InjectionData();
-        documentsInjectionData.setParentPath("/default-domain/Diffusion");
-        documentsInjectionData.setWorkspacePath("/default-domain/workspaces/workspace");
-        documentsInjectionData.setCount(2);
-        documentsInjectionData.setNotesCount(4);
-        documentsInjectionData.setDepth(3);
-        documentsInjectionData.setProbabilities(new float[]{0.2f, 0.05f, 0.01f});
+        this.createDocuments(request, nuxeoController, ldapGroupNames);
+    }
+
+
+    /**
+     * Utility method used to create groups.
+     *
+     * @param request action request
+     * @return LDAP names of groups
+     * @throws PortletException
+     */
+    private List<LdapName> createGroups(ActionRequest request) throws PortletException {
+        List<LdapName> ldapNames = null;
+
+        // Request parameters
+        int count = Integer.valueOf(request.getParameter("groups-count"));
+        int depth = Integer.valueOf(request.getParameter("groups-depth"));
+
+        // Data
+        InjectionData data = new InjectionData();
+        data.setCount(count);
+        data.setDepth(depth);
+
         try {
-            this.service.createDocuments(nuxeoController, ldapNames, documentsInjectionData);
+            ldapNames = this.service.createGroups(data);
+        } catch (NamingException e) {
+            throw new PortletException(e);
+        }
+        return ldapNames;
+    }
+
+
+    /**
+     * Utility method used to create users.
+     *
+     * @param request action request
+     * @param ldapGroupNames LDAP names of groups
+     * @throws PortletException
+     */
+    private void createUsers(ActionRequest request, List<LdapName> ldapGroupNames) throws PortletException {
+        // Request parameters
+        int count = Integer.valueOf(request.getParameter("users-count"));
+        List<Float> list = new ArrayList<Float>();
+        for (int i = 1; i <= PROBABILITIES_COUNT; i++) {
+            String parameterName = "users-probability-" + i;
+            String probability = request.getParameter(parameterName);
+            if (StringUtils.isNotBlank(probability)) {
+                list.add(Float.valueOf(probability));
+            }
+        }
+        float[] probabilities = ArrayUtils.toPrimitive(list.toArray(new Float[list.size()]));
+
+        // Data
+        InjectionData data = new InjectionData();
+        data.setCount(count);
+        data.setProbabilities(probabilities);
+
+        try {
+            this.service.createUsers(data, ldapGroupNames);
+        } catch (NamingException e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    /**
+     * Utility method used to create Nuxeo documents.
+     *
+     * @param request action request
+     * @param nuxeoController Nuxeo controller
+     * @param ldapGroupNames LDAP names of groups
+     * @throws PortletException
+     */
+    private void createDocuments(ActionRequest request, NuxeoController nuxeoController, List<LdapName> ldapGroupNames) throws PortletException {
+        // Request parameters
+        String parentPath = request.getParameter("documents-parent");
+        String workspacePath = request.getParameter("documents-workspace");
+        int count = Integer.valueOf(request.getParameter("documents-count"));
+        int notesCount = Integer.valueOf(request.getParameter("documents-notes-count"));
+        int depth = Integer.valueOf(request.getParameter("documents-depth"));
+        List<Float> list = new ArrayList<Float>();
+        for (int i = 1; i <= PROBABILITIES_COUNT; i++) {
+            String parameterName = "documents-probability-" + i;
+            String probability = request.getParameter(parameterName);
+            if (StringUtils.isNotBlank(probability)) {
+                list.add(Float.valueOf(probability));
+            }
+        }
+        float[] probabilities = ArrayUtils.toPrimitive(list.toArray(new Float[list.size()]));
+
+        // Data
+        InjectionData data = new InjectionData();
+        data.setParentPath(parentPath);
+        data.setWorkspacePath(workspacePath);
+        data.setCount(count);
+        data.setNotesCount(notesCount);
+        data.setDepth(depth);
+        data.setProbabilities(probabilities);
+
+        try {
+            this.service.createDocuments(nuxeoController, ldapGroupNames, data);
         } catch (CMSException e) {
             throw new PortletException(e);
         }

@@ -1,10 +1,11 @@
 package fr.toutatice.portail.cms.nuxeo.commands;
 
 import java.util.List;
-import java.util.Random;
 
 import javax.naming.ldap.LdapName;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -16,6 +17,7 @@ import org.osivia.portal.core.cms.ICMSService;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.services.InjectionData;
+import fr.toutatice.portail.cms.nuxeo.services.InjectionService;
 
 /**
  * Create Nuxeo documents command.
@@ -25,8 +27,12 @@ import fr.toutatice.portail.cms.nuxeo.services.InjectionData;
  */
 public class CreateDocumentsCommand implements INuxeoCommand {
 
-    /** Nuxeo permission. */
-    private static final String PERMISSION = "Read";
+    /** Default Nuxeo user. */
+    private static final String USER_NUXEO_DEFAULT = "nuxeoDefault";
+    /** Nuxeo read permission. */
+    private static final String PERMISSION_READ = "Read";
+    /** Nuxeo everything permission. */
+    private static final String PERMISSION_EVERYTHING = "Everything";
     /** Note Nuxeo type. */
     private static final String TYPE_PORTAL_SITE = "PortalSite";
     /** Note Nuxeo type. */
@@ -41,8 +47,6 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     private static final String PROPERTY_SHOW_IN_MENU = "ttc:showInMenu";
 
 
-    /** Random number generator. */
-    private final Random random;
     /** CMS context. */
     private final CMSServiceCtx cmsContext;
     /** Names of LDAP groups. */
@@ -55,13 +59,18 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     private final InjectionData data;
 
 
+    /**
+     * Constructor.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param ldapNames LDAP names for permission setting
+     * @param data injection data
+     * @throws CMSException
+     */
     public CreateDocumentsCommand(NuxeoController nuxeoController, List<LdapName> ldapNames, InjectionData data) throws CMSException {
         super();
 
         ICMSService cmsService = NuxeoController.getCMSService();
-
-        // Random number generator
-        this.random = new Random();
 
         // CMS context
         this.cmsContext = nuxeoController.getCMSCtx();
@@ -91,6 +100,13 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     }
 
 
+    /**
+     * Utility method used to create portal sites.
+     *
+     * @param service document service
+     * @param parent Nuxeo parent document
+     * @throws CMSException
+     */
     private void createPortalSites(DocumentService service, Document parent) throws CMSException {
         int level = 1;
 
@@ -105,6 +121,7 @@ public class CreateDocumentsCommand implements INuxeoCommand {
 
                 // Create portal site in parent
                 Document document = service.createDocument(this.parent, TYPE_PORTAL_SITE, name, properties);
+                // service.setPermission(document, "Everyone", PERMISSION);
 
                 // Create notes
                 this.createNotes(service, document, number);
@@ -122,6 +139,15 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     }
 
 
+    /**
+     * Utility method used to create portal pages.
+     *
+     * @param service document service
+     * @param parent Nuxeo parent document
+     * @param level current level of depth
+     * @param parentNumber parent number
+     * @throws CMSException
+     */
     private void createPortalPages(DocumentService service, Document parent, int level, String parentNumber) throws CMSException {
         try {
             for (int i = 1; i <= this.data.getCount(); i++) {
@@ -151,11 +177,32 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     }
 
 
+    /**
+     * Utility method used to create notes.
+     *
+     * @param service document service
+     * @param parent Nuxeo parent document
+     * @param parentNumber parent number
+     * @throws CMSException
+     */
     private void createNotes(DocumentService service, Document parent, String parentNumber) throws CMSException {
         try {
             for (int i = 1; i <= this.data.getNotesCount(); i++) {
-                String number = parentNumber + i;
-                String name = TYPE_NOTE + "-" + number;
+                List<LdapName> randomLdapNames = InjectionService.randomPicking(this.ldapNames, this.data.getProbabilities());
+
+                // Note name
+                StringBuffer buffer = new StringBuffer();
+                buffer.append(TYPE_NOTE);
+                buffer.append("-(");
+                buffer.append(parentNumber);
+                buffer.append(i);
+                buffer.append(")");
+                for (LdapName randomLdapName : randomLdapNames) {
+                    String groupName = (String) randomLdapName.getRdn(randomLdapName.size() - 1).getValue();
+                    buffer.append("-");
+                    buffer.append(StringUtils.removeStart(groupName, InjectionService.GROUP_NAME_PREFIX));
+                }
+                String name = buffer.toString();
 
                 PropertyMap properties = new PropertyMap(1);
                 properties.set(PROPERTY_TITLE, name);
@@ -168,7 +215,7 @@ public class CreateDocumentsCommand implements INuxeoCommand {
                 service.remove(document);
 
                 // ACL
-                // this.addPermissions(service, publishedDocument);
+                this.addPermissions(service, publishedDocument, randomLdapNames);
             }
         } catch (CMSException e) {
             throw e;
@@ -178,16 +225,27 @@ public class CreateDocumentsCommand implements INuxeoCommand {
     }
 
 
-    private void addPermissions(DocumentService service, Document document) {
-        for (float probability : this.data.getProbabilities()) {
-            if (this.random.nextFloat() < probability) {
-                // Add permission
-                int index = this.random.nextInt(this.ldapNames.size());
-                LdapName ldapName = this.ldapNames.get(index);
-                String groupName = (String) ldapName.getRdn(this.ldapNames.size() - 1).getValue();
+    /**
+     * Utility method used to add permissions.
+     *
+     * @param service document service
+     * @param document current Nuxeo document
+     * @param ldapNames LDAP names
+     */
+    private void addPermissions(DocumentService service, Document document, List<LdapName> ldapNames) {
+        if (CollectionUtils.isNotEmpty(ldapNames)) {
+            // Block inheritance
+            try {
+                service.setPermission(document, USER_NUXEO_DEFAULT, PERMISSION_EVERYTHING, false);
+            } catch (Exception e) {
+                // Do nothing
+            }
 
+            // Local permissions
+            for (LdapName ldapName : ldapNames) {
+                String groupName = (String) ldapName.getRdn(ldapName.size() - 1).getValue();
                 try {
-                    service.setPermission(document, groupName, PERMISSION);
+                    service.setPermission(document, groupName, PERMISSION_READ);
                 } catch (Exception e) {
                     // Do nothing
                 }

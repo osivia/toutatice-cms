@@ -2,16 +2,22 @@ package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
+import javax.naming.directory.AttributeInUseException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapName;
 
@@ -23,11 +29,17 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.commands.CreateDocumentsCommand;
 
-
-public class InjectionService {
+/**
+ * Injection service.
+ *
+ * @author Cédric Krommenhoek
+ */
+public final class InjectionService {
 
     /** Group name prefix. */
-    private static final String GROUP_NAME_PREFIX = "groupe-";
+    public static final String GROUP_NAME_PREFIX = "groupe-";
+    /** User name prefix. */
+    public static final String USER_NAME_PREFIX = "utilisateur-";
 
 
     /** Singleton instance. */
@@ -65,7 +77,7 @@ public class InjectionService {
      *
      * @return singleton instance
      */
-    public static final synchronized InjectionService getInstance() {
+    public static synchronized InjectionService getInstance() {
         if (instance == null) {
             try {
                 instance = new InjectionService();
@@ -145,6 +157,108 @@ public class InjectionService {
 
 
     /**
+     * Create LDAP users.
+     *
+     * @param data injection data
+     * @param ldapGroupNames names of LDAP groups
+     * @throws NamingException
+     */
+    public void createUsers(InjectionData data, List<LdapName> ldapGroupNames) throws NamingException {
+        String usersBaseDN = System.getProperty(InternalConstants.ENV_LDAP_USERS_BASE_DN);
+
+        // Standard users
+        for (LdapName ldapGroupName : ldapGroupNames) {
+            String groupName = (String) ldapGroupName.getRdn(ldapGroupName.size() - 1).getValue();
+            String userName = USER_NAME_PREFIX + StringUtils.removeStart(groupName, GROUP_NAME_PREFIX);
+            LdapName ldapUserName = this.createUser(usersBaseDN, userName);
+
+            // Add user to group
+            this.addUserToGroup(ldapUserName, ldapGroupName);
+        }
+
+        // Random users
+        for (int i = 0; i < (data.getCount() - ldapGroupNames.size()); i++) {
+            List<LdapName> randomLdapGroupNames = randomPicking(ldapGroupNames, data.getProbabilities());
+
+            // User name
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(USER_NAME_PREFIX);
+            for (LdapName randomLdapGroupName : randomLdapGroupNames) {
+                String groupName = (String) randomLdapGroupName.getRdn(randomLdapGroupName.size() - 1).getValue();
+                buffer.append(StringUtils.removeStart(groupName, GROUP_NAME_PREFIX));
+                buffer.append("-");
+            }
+            String userName = buffer.toString();
+            LdapName ldapUserName = this.createUser(usersBaseDN, userName);
+
+            // Add user to groups
+            for (LdapName randomLdapGroupName : randomLdapGroupNames) {
+                this.addUserToGroup(ldapUserName, randomLdapGroupName);
+            }
+        }
+    }
+
+
+    /**
+     * Utility method used to create user.
+     *
+     * @param usersBaseDN users base DN
+     * @param userName user name
+     * @return user LDAP name
+     * @throws NamingException
+     */
+    private LdapName createUser(String usersBaseDN, String userName) throws NamingException {
+        String dn = "uid=" + userName;
+
+        // User name
+        LdapName ldapUserName = new LdapName(usersBaseDN);
+        ldapUserName.add(dn);
+
+        // User attributes
+        Attributes attributes = new BasicAttributes();
+
+        // Group object class
+        Attribute objectClass = new BasicAttribute("objectclass");
+        objectClass.add("person");
+        objectClass.add("inetOrgPerson");
+        objectClass.add("organizationalPerson");
+        objectClass.add("top");
+        attributes.put(objectClass);
+
+        // Other attributes
+        attributes.put("cn", userName);
+        attributes.put("sn", userName);
+        attributes.put("userPassword", "secret");
+
+        // Creation
+        try {
+            this.ldapContext.createSubcontext(ldapUserName, attributes);
+        } catch (NameAlreadyBoundException e) {
+            // Do nothing
+        }
+        return ldapUserName;
+    }
+
+
+    /**
+     * Utility method used to add user to group.
+     *
+     * @param ldapUserName LDAP user name
+     * @param ldapGroupName LDAP group name
+     * @throws NamingException
+     */
+    private void addUserToGroup(LdapName ldapUserName, LdapName ldapGroupName) throws NamingException {
+        Attribute uniqueMember = new BasicAttribute("uniqueMember", ldapUserName.toString());
+        ModificationItem[] mods = new ModificationItem[]{new ModificationItem(DirContext.ADD_ATTRIBUTE, uniqueMember)};
+        try {
+            this.ldapContext.modifyAttributes(ldapGroupName, mods);
+        } catch (AttributeInUseException e) {
+            // Do nothing
+        }
+    }
+
+
+    /**
      * Create Nuxeo documents.
      *
      * @param nuxeoController Nuxeo controller
@@ -166,6 +280,29 @@ public class InjectionService {
         } finally {
             nuxeoController.setAuthType(authType);
         }
+    }
+
+
+    /**
+     * Get a random LDAP names picking from a LDAP name list and probabilities.
+     *
+     * @param ldapNames LDAP names
+     * @param probabilities probabilities
+     * @return random LDAP names picking
+     */
+    public static List<LdapName> randomPicking(List<LdapName> ldapNames, float[] probabilities) {
+        Random random = new Random();
+        Set<LdapName> result = new HashSet<LdapName>();
+
+        for (float probability : probabilities) {
+            if (random.nextFloat() < probability) {
+                int index = random.nextInt(ldapNames.size());
+                LdapName ldapName = ldapNames.get(index);
+                result.add(ldapName);
+            }
+        }
+
+        return new ArrayList<LdapName>(result);
     }
 
 }
