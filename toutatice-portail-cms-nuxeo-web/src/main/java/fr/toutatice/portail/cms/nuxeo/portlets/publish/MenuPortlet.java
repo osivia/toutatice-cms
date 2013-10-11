@@ -35,6 +35,7 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.page.PageProperties;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -182,7 +183,6 @@ public class MenuPortlet extends CMSPortlet {
 		
 		
 		//TODO : factoriser dans NuxeoController
-		
 
 		INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
 		

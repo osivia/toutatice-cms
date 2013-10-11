@@ -6,9 +6,7 @@ import java.util.Locale;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
@@ -24,7 +22,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
@@ -112,12 +110,10 @@ public class MenuBarFormater {
 
 		if (cmsCtx.getRequest().getRemoteUser() == null)
 			return;
-
 		
 		CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 		
-		
-		if( pubInfos.isEditableByUser())	{
+		if( pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx))	{
 			String url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxdoc/default/"
 					+  pubInfos.getLiveId() + "/view_documents";
 			
@@ -147,7 +143,7 @@ public class MenuBarFormater {
 	        CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 	        
 		        if( pubInfos.isEditableByUser())    {
-	            if( pubInfos.isLiveSpace())    {
+	            if( pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx))    {
 	            
 	                String url = null;
 	            
@@ -319,6 +315,5 @@ public class MenuBarFormater {
 		}
 		return searchItem;
 	}
-	
 	
 }

@@ -16,6 +16,7 @@ import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.contexte.PortalControllerContext;
+import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -50,6 +52,8 @@ import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.PublishInfosCommand;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -316,6 +320,17 @@ public class ViewListPortlet extends CMSPortlet {
 			else if (window.getProperty("osivia.rssTitle") != null)
 				window.setProperty("osivia.rssTitle", null);
 			
+			/* Paramètres de création de documents */
+			if (req.getParameter("createParentPath") != null && req.getParameter("createParentPath").length() > 0)
+				window.setProperty("osivia.createParentPath", req.getParameter("createParentPath"));
+			else if (window.getProperty("osivia.createParentPath") != null)
+				window.setProperty("osivia.createParentPath", null);
+			
+			if (req.getParameter("createDocType") != null && req.getParameter("createDocType").length() > 0)
+				window.setProperty("osivia.createDocType", req.getParameter("createDocType"));
+			else if (window.getProperty("osivia.createDocType") != null)
+				window.setProperty("osivia.createDocType", null);
+			
 
 
 			res.setPortletMode(PortletMode.VIEW);
@@ -419,6 +434,16 @@ public class ViewListPortlet extends CMSPortlet {
 		if (rssTitle == null )
 			rssTitle = "";
 		req.setAttribute("rssTitle", rssTitle);
+		
+		String createParentPath = window.getProperty("osivia.createParentPath");
+		if (createParentPath == null )
+			createParentPath = "";
+		req.setAttribute("createParentPath", createParentPath);
+		
+		String createDocType = window.getProperty("osivia.createDocType");
+		if (createDocType == null )
+			createDocType = "";
+		req.setAttribute("createDocType", createDocType);
 
 
 			req.setAttribute("ctx", ctx);
@@ -657,6 +682,30 @@ public class ViewListPortlet extends CMSPortlet {
 							}
 							//}
 						}
+						
+						/* Ajout d'un item de création si les paramètres sont renseignés */
+						String docContainerPath = window.getProperty("osivia.createParentPath");
+						String docTypeToCreate = window.getProperty("osivia.createDocType");
+						if(StringUtils.isNotEmpty(docContainerPath) && StringUtils.isNotEmpty(docTypeToCreate)){
+							CMSServiceCtx cmsCtx = ctx.getCMSCtx();
+							CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, docContainerPath);
+							if(pubInfos.isEditableByUser()){
+								List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+								
+								PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
+		                        portletURL.setParameter("reloadDatas", ""+ System.currentTimeMillis());                        
+		                        String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");		                    
+		                        String onClick = "setCallbackParams('"+divId+"', '"+portletURL.toString()+"')";  
+			                    String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" 
+			                    		+ docContainerPath + "@toutatice_create?type=" + docTypeToCreate;
+								
+								MenubarItem add = new MenubarItem("CREATE", "Ajouter",
+										MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick, "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
+								menuBar.add(add);
+							}
+						}
+						
+						
 						
 						// Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
 						if( currentPage == 0 && docs.size() == 0)

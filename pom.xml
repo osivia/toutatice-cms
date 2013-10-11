@@ -27,7 +27,7 @@
 		<jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
 		<jboss.version>4.2.3.GA</jboss.version>
 
-		<osivia-portal.version>2.0.19</osivia-portal.version>
+		<osivia-portal.version>2.0.20</osivia-portal.version>
 
 
 	</properties>
@@ -135,6 +135,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.jboss.portal</groupId> 
+			<artifactId>portal-jems-lib</artifactId>
+			<version>${jboss.portal.version}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.nuxeo.ecm.automation</groupId>

@@ -11,6 +11,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.page.PageProperties;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoQueryFilter;
@@ -54,13 +55,11 @@ public class PartialNavigationCommand implements INuxeoCommand {
 		request = session.newRequest("Document.Query");
 
 		
-		String itemRequest = "";
+		String itemRequest = "";		
 		
-		if( fetchRoot)
+		if(fetchRoot){
 			itemRequest = "ecm:uuid ='"+ ((Document) publishSpaceConfig.getNativeItem()).getId()+"'";
-		
-		
-	
+		}
 		
 		for(String docId : docIds){
 			if( itemRequest.length() >  0)
@@ -91,8 +90,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 		//request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
 		// Build navItems
 
-		Documents children = (Documents) request.execute();
-		
+		Documents children = (Documents) request.execute();		
 		
 		
 		// Iterate over childrens to update hierarchy

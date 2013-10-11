@@ -57,7 +57,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     public static boolean isOrdered(Document doc) {
 
         return "Workspace".equals(doc.getType()) || "WorkspaceRoot".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())
-                || "PortalSite".equals(doc.getType());
+                || "PortalSite".equals(doc.getType()) || "PortalPage".equals(doc.getType());
 
     }
 

@@ -29,7 +29,9 @@
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
 
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%><portlet:defineObjects />
+<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
+
+<portlet:defineObjects />
 
 <%
 Document doc = (Document) renderRequest.getAttribute("doc");
@@ -109,6 +111,11 @@ if( map != null && map.getString("data") != null)
 	</div>
 
 
+</div>
+
+<!-- Boîte de confirmation de suppression du document courant -->
+<div id="div_delete_doc" style="display: none">
+	<jsp:include page="confirm-delete-doc.jsp"></jsp:include>
 </div>
 
 <%	} %>

@@ -4,8 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.security.Principal;
-import java.util.Enumeration;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -29,14 +28,20 @@ import net.sf.json.JSONArray;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.controller.ControllerContext;
+import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
-import org.osivia.portal.core.profils.IProfilManager;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -46,7 +51,7 @@ import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.core.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.core.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.jbossportal.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
@@ -204,6 +209,29 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 			}
 		}
 		// Modif-COMMENTS-end
+		
+		/* Action de suppression d'un document contextualisé dans un WorkSpace */
+		if(req.getParameter("deleteDoc") != null){
+        	String docId = (String) req.getParameter("docId");
+        	NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
+        	try {
+				ctrl.executeNuxeoCommand(new DeleteDocumentCommand(docId));
+				
+				/* Redirection vers le parent du document supprimé */
+				String docPath = (String) req.getParameter("docPath");
+				String parentPath = CMSObjectPath.parse(docPath).getParent().toString();
+				
+				String scheme = req.getScheme();
+				ControllerContext ctrlContext = (ControllerContext) req.getAttribute("osivia.controller");
+				String context = ctrlContext.getServerInvocation().getServerContext().getPortalContextPath();
+				
+				String url = scheme + "://" + req.getServerName() + ":" + req.getServerPort() + context + "/cms" + parentPath;
+				res.sendRedirect(url);
+			} catch (Exception e) {
+				if (!(e instanceof PortletException))
+					throw new PortletException(e);
+			}
+        }
 
 	}
 
@@ -339,14 +367,26 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 					boolean docIsInLiveSpace = publiInfos.isLiveSpace();
 					boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
 					
-					if(docIsInLiveSpace && docCanBeCommentedByUser){
+					if(docIsInLiveSpace && docCanBeCommentedByUser){// TODO: ajouter cdt de contextualisation
 						String user = request.getRemoteUser();
 						int authType = ctx.getAuthType();
 						JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
-						String comments = HTMLCommentsTreeBuilder.buildHtmlTree(new StringBuffer(), jsonComments, 0, authType, user);
+						CMSServiceCtx cmsCtx = ctx.getCMSCtx();
+						String comments = HTMLCommentsTreeBuilder.buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
 						request.setAttribute("comments", comments);
 					}
 					//Modif COMMENTS-end
+					
+					/* Ajout de l'action de suppression en mode contextualisé */
+					// TODO: trp de conditions??? (i.e. les deux dernières)
+					CMSServiceCtx cmsCtx = ctx.getCMSCtx();
+					if (PortletHelper.isInContextualizedMode(cmsCtx) && publiInfos.isDeletableByUser() && docIsInLiveSpace
+							&& request.getWindowState().equals(WindowState.MAXIMIZED)) {
+						List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+						MenubarItem delete = new MenubarItem("DELETE", "Supprimer",
+								MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, "#div_delete_doc", null, "fancybox_inline portlet-menuitem-nuxeo-delete", null);
+						menuBar.add(delete);
+					}
 
 				}
 

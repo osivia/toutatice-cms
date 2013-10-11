@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -14,7 +15,6 @@ import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
-import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
@@ -28,11 +28,11 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommandService;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.core.NuxeoCommandServiceFactory;
@@ -545,22 +545,26 @@ public class CMSService implements ICMSService {
 
 			String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
 			Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
-			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, portletCtx,
+            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
+            PartialNavigationInvoker partialNavInvoker = null;
+            if (refreshing) {
+                partialNavInvoker = (PartialNavigationInvoker) ((HttpServletRequest) request).getAttribute("partialNavInvoker");
+            }
+            CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, partialNavInvoker, request, portletCtx,
 					false);
 			// délai d'une session
 			cacheInfos.setDelaiExpiration(200000);
 
-
-			navItems = (Map<String, NavigationItem>) getCacheService().getCache(cacheInfos);
-
+            navItems = (Map<String, NavigationItem>) getCacheService().getCache(cacheInfos);
 
 
-			if (navItems == null) {
+            if (navItems == null) {
 
-				navItems = new HashMap<String, NavigationItem>();
-				fetchRoot = true;
-			}
+                navItems = new HashMap<String, NavigationItem>();
+                fetchRoot = true;
 
+            }
+			
 			/* Boucle sur l'arbo pour recuperer les ids à fetcher
 			 * (doc absents de l'arbre)
 			 * */
@@ -600,24 +604,25 @@ public class CMSService implements ICMSService {
 
 
 			
-			if( idsToFetch.size() > 0 || fetchRoot)
+            if (idsToFetch.size() > 0 || fetchRoot) {
+                cmsCtx.setScope("__nocache");
 
-			{
-				cmsCtx.setScope("__nocache");
+                /* appel de la commande */
 
-				/* appel de la commande */
+                navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig, navItems, idsToFetch,
+                        fetchRoot, path)));
 
-				navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig,
-						navItems, idsToFetch, fetchRoot, path)));
+                /* Stockage de l'arbre partiel */
 
-				/* Stockage de l'arbre partiel */
-
-				cacheInfos.setForceReload(true);
-				cacheInfos.setForceNOTReload(false);
-				cacheInfos.setInvoker(new PartialNavigationInvoker(navItems));
-				getCacheService().getCache(cacheInfos);
-
-			}
+                cacheInfos.setForceReload(true);
+                cacheInfos.setForceNOTReload(false);
+                partialNavInvoker = new PartialNavigationInvoker(navItems);
+                if (refreshing) {
+                    ((HttpServletRequest) request).setAttribute("partialNavInvoker", partialNavInvoker);
+                }
+                cacheInfos.setInvoker(partialNavInvoker);
+                getCacheService().getCache(cacheInfos);
+            }
 
 			return navItems;
 		} catch (Exception e) {
