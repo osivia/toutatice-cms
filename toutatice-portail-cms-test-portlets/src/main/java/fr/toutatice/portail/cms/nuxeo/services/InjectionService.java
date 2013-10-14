@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NameAlreadyBoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.AttributeInUseException;
@@ -18,6 +19,8 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapName;
 
@@ -97,11 +100,14 @@ public final class InjectionService {
      * @throws NamingException
      */
     public List<LdapName> createGroups(InjectionData data) throws NamingException {
+        String groupsBaseDN = System.getProperty(InternalConstants.ENV_LDAP_GROUPS_BASE_DN);
+
+        this.deletePreviousGroups(groupsBaseDN);
+
         int count = data.getCount();
         int depth = data.getDepth();
 
         List<LdapName> ldapNames = new ArrayList<LdapName>(new Double(Math.pow(count, depth + 1)).intValue());
-        String groupsBaseDN = System.getProperty(InternalConstants.ENV_LDAP_GROUPS_BASE_DN);
         LdapName ldapName = new LdapName(groupsBaseDN);
 
         this.createGroupsRecursivity(data, ldapNames, 1, ldapName, StringUtils.EMPTY);
@@ -157,6 +163,29 @@ public final class InjectionService {
 
 
     /**
+     * Utility method used to delete previous groups.
+     *
+     * @param parentName parent name
+     * @throws NamingException
+     */
+    private void deletePreviousGroups(String parentName) throws NamingException {
+        String filter = "cn=" + GROUP_NAME_PREFIX + "*";
+        SearchControls controls = new SearchControls();
+        controls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+
+        NamingEnumeration<SearchResult> searchResults = this.ldapContext.search(parentName, filter, controls);
+        while (searchResults.hasMore()) {
+            SearchResult searchResult = searchResults.next();
+            String name = searchResult.getNameInNamespace();
+
+            this.deletePreviousGroups(name);
+
+            this.ldapContext.unbind(name);
+        }
+    }
+
+
+    /**
      * Create LDAP users.
      *
      * @param data injection data
@@ -165,6 +194,7 @@ public final class InjectionService {
      */
     public void createUsers(InjectionData data, List<LdapName> ldapGroupNames) throws NamingException {
         String usersBaseDN = System.getProperty(InternalConstants.ENV_LDAP_USERS_BASE_DN);
+        this.deletePreviousUsers(usersBaseDN);
 
         // Standard users
         for (LdapName ldapGroupName : ldapGroupNames) {
@@ -183,10 +213,15 @@ public final class InjectionService {
             // User name
             StringBuffer buffer = new StringBuffer();
             buffer.append(USER_NAME_PREFIX);
+            boolean firstGroup = true;
             for (LdapName randomLdapGroupName : randomLdapGroupNames) {
                 String groupName = (String) randomLdapGroupName.getRdn(randomLdapGroupName.size() - 1).getValue();
+                if (firstGroup) {
+                    firstGroup = false;
+                } else {
+                    buffer.append("-");
+                }
                 buffer.append(StringUtils.removeStart(groupName, GROUP_NAME_PREFIX));
-                buffer.append("-");
             }
             String userName = buffer.toString();
             LdapName ldapUserName = this.createUser(usersBaseDN, userName);
@@ -229,6 +264,8 @@ public final class InjectionService {
         attributes.put("cn", userName);
         attributes.put("sn", userName);
         attributes.put("userPassword", "secret");
+        attributes.put("title", "M.");
+        attributes.put("mail", userName + "@example.com");
 
         // Creation
         try {
@@ -254,6 +291,26 @@ public final class InjectionService {
             this.ldapContext.modifyAttributes(ldapGroupName, mods);
         } catch (AttributeInUseException e) {
             // Do nothing
+        }
+    }
+
+
+    /**
+     * Utility method used to delete previous users.
+     *
+     * @param usersBaseDN users LDAP base DN
+     * @throws NamingException
+     */
+    private void deletePreviousUsers(String usersBaseDN) throws NamingException {
+        String filter = "uid=" + USER_NAME_PREFIX + "*";
+        SearchControls controls = new SearchControls();
+        controls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+
+        NamingEnumeration<SearchResult> searchResults = this.ldapContext.search(usersBaseDN, filter, controls);
+        while (searchResults.hasMore()) {
+            SearchResult searchResult = searchResults.next();
+            String name = searchResult.getNameInNamespace();
+            this.ldapContext.unbind(name);
         }
     }
 

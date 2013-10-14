@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -27,6 +28,8 @@ import fr.toutatice.portail.cms.nuxeo.services.InjectionService;
  */
 public class CreateDocumentsCommand implements INuxeoCommand {
 
+    /** Everyone Nuxeo user. */
+    private static final String USER_NUXEO_EVERYONE = "Everyone";
     /** Default Nuxeo user. */
     private static final String USER_NUXEO_DEFAULT = "nuxeoDefault";
     /** Nuxeo read permission. */
@@ -95,6 +98,7 @@ public class CreateDocumentsCommand implements INuxeoCommand {
      */
     public Object execute(Session nuxeoSession) throws CMSException {
         DocumentService service = nuxeoSession.getAdapter(DocumentService.class);
+        this.deletePreviousDocuments(service, this.parent);
         this.createPortalSites(service, this.parent);
         return null;
     }
@@ -121,7 +125,8 @@ public class CreateDocumentsCommand implements INuxeoCommand {
 
                 // Create portal site in parent
                 Document document = service.createDocument(this.parent, TYPE_PORTAL_SITE, name, properties);
-                // service.setPermission(document, "Everyone", PERMISSION);
+                service.setPermission(document, USER_NUXEO_DEFAULT, PERMISSION_READ);
+                service.setPermission(document, USER_NUXEO_EVERYONE, PERMISSION_EVERYTHING, false);
 
                 // Create notes
                 this.createNotes(service, document, number);
@@ -234,13 +239,6 @@ public class CreateDocumentsCommand implements INuxeoCommand {
      */
     private void addPermissions(DocumentService service, Document document, List<LdapName> ldapNames) {
         if (CollectionUtils.isNotEmpty(ldapNames)) {
-            // Block inheritance
-            try {
-                service.setPermission(document, USER_NUXEO_DEFAULT, PERMISSION_EVERYTHING, false);
-            } catch (Exception e) {
-                // Do nothing
-            }
-
             // Local permissions
             for (LdapName ldapName : ldapNames) {
                 String groupName = (String) ldapName.getRdn(ldapName.size() - 1).getValue();
@@ -250,6 +248,36 @@ public class CreateDocumentsCommand implements INuxeoCommand {
                     // Do nothing
                 }
             }
+
+            // Block inheritance
+            try {
+                service.setPermission(document, USER_NUXEO_EVERYONE, PERMISSION_EVERYTHING, false);
+            } catch (Exception e) {
+                // Do nothing
+            }
+        }
+    }
+
+
+    /**
+     * Utility method used to delete previous documents.
+     *
+     * @param service document service
+     * @param parent parent Nuxeo document
+     * @throws CMSException
+     */
+    private void deletePreviousDocuments(DocumentService service, Document parent) throws CMSException {
+        try {
+            Documents children = service.getChildren(parent);
+            for (Document child : children.list()) {
+                if (StringUtils.startsWith(child.getTitle(), TYPE_PORTAL_SITE)) {
+                    service.remove(child);
+                }
+            }
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
         }
     }
 
