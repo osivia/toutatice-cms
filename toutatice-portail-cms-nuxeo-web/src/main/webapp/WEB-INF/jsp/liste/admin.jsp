@@ -82,17 +82,14 @@ if (params.get("datesId") != null) {
 requete += " AND " + NXQLFormater.formatDateSearch("dc:created",params.get("datesId")) ;
 }
 
-// format search by discipline with OTHERs values
-if (params.get("discipline") != null) {
-List vocabsNames = Arrays.asList(new String[]{"disciplines_parent","disciplines"});
-requete += " AND " +
-NXQLFormater.formatOthersVocabularyEntriesSearch(request,vocabsNames,"acrp:disciplines",params.get("discipline")) ;
+// format search by nature
 
+if (params.get("nature") != null) {
+requete += " AND " + NXQLFormater.formatVocabularySearch("dc:nature",params.get("nature")) ;
 }
 
 // get childrens
 requete =  "AND ecm:parentId =  '"+navigationPubInfos.getLiveId()+"'";
-
 }
 
 requete += " ORDER BY dc:modified DESC";
