@@ -67,9 +67,6 @@ implicits variables :
    - spaceId : space's (workspace or published space) live id
 */
 
-import java.util.List;
-import java.util.Arrays;		
-
 String requete =  "ecm:path STARTSWITH '"+navigationPath+"'";
 
 // format search by title
@@ -89,8 +86,7 @@ requete += " AND " + NXQLFormater.formatVocabularySearch("dc:nature",params.get(
 }
 
 // get childrens
-requete =  "AND ecm:parentId =  '"+navigationPubInfos.getLiveId()+"'";
-}
+requete +=  "AND ecm:parentId =  '"+navigationPubInfos.getLiveId()+"'";
 
 requete += " ORDER BY dc:modified DESC";
 
