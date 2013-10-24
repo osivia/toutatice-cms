@@ -1231,6 +1231,11 @@ EditableWindowHelper.SCHEMA);
         try {
             executeNuxeoCommand(cmsCtx, new SetOffLineCommand(doc));
 
+            // On force le rechargement du cache de la page
+            cmsCtx.setForceReload(true);
+            getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
         } catch (Exception e) {
             throw new CMSException(e);
         }
