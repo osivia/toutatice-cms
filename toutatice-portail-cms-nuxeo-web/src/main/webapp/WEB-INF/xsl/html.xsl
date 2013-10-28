@@ -2,7 +2,7 @@
 
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-	xmlns:bridge="java:fr.toutatice.portail.cms.nuxeo.core.XSLFunctions" 
+	xmlns:bridge="java:fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions" 
 	extension-element-prefixes="bridge">
 	
 	<xsl:param name="bridge" />
@@ -40,6 +40,16 @@
       </xsl:attribute>
 	</xsl:template>
 	
+    <xsl:template match="OBJECT/@data">
+        <xsl:attribute name="data">
+            <xsl:value-of select="bridge:link($bridge,  .)" />
+      </xsl:attribute>
+    </xsl:template>
+    <xsl:template match="OBJECT/PARAM/@value">
+        <xsl:attribute name="value">
+            <xsl:value-of select="bridge:link($bridge,  .)" />
+      </xsl:attribute>
+    </xsl:template>        
 <!-- 	
 	
 	

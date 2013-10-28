@@ -1,10 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.io.File;
 import java.io.InputStream;
 
 import javax.xml.transform.Templates;
-
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
@@ -16,7 +14,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class WysiwygParser {
 
-	public static java.net.URL xslfilepath = WysiwygParser.class.getClassLoader().getResource("html.xsl");
+    public static java.net.URL xslfilepath = WysiwygParser.class.getClassLoader().getResource("xsl/html.xsl");
 	private static Log log = LogFactory.getLog(WysiwygParser.class);
 
 
@@ -50,7 +48,7 @@ public class WysiwygParser {
 		try {
 			TransformerFactory fabriqueT = TransformerFactory.newInstance();
 			
-			InputStream is = WysiwygParser.class.getResourceAsStream("/html.xsl");
+            InputStream is = WysiwygParser.class.getResourceAsStream("/WEB-INF/xsl/html.xsl");
 
 			// Use the factory to create a template containing the xsl file
 			StreamSource stylesource = new StreamSource(is);
