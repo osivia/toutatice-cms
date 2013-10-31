@@ -538,6 +538,17 @@ public class NuxeoController {
 
                 computedPath = computedPath.replaceAll("\\$\\{contentPath\\}", path);
             }
+
+            if (computedPath.contains("${sitePath}")) {
+                String path = this.getMenuRootPath();
+                if (path == null) {
+                    path = "";
+                }
+
+                computedPath = computedPath.replaceAll("\\$\\{sitePath\\}", path);
+            }
+
+
         }
 
         return computedPath;
