@@ -29,12 +29,9 @@ import net.sf.json.JSONArray;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.controller.ControllerContext;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.contexte.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSObjectPath;
@@ -210,12 +207,12 @@ public class ViewDocumentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 		}
 		// Modif-COMMENTS-end
 		
-		/* Action de suppression d'un document contextualisé dans un WorkSpace */
+        /* Action de mise à la poubelle d'un document contextualisé dans un WorkSpace */
 		if(req.getParameter("deleteDoc") != null){
         	String docId = (String) req.getParameter("docId");
         	NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
         	try {
-				ctrl.executeNuxeoCommand(new DeleteDocumentCommand(docId));
+                ctrl.executeNuxeoCommand(new PutInTrashDocumentCommand(docId));
 				
 				/* Redirection vers le parent du document supprimé */
 				String docPath = (String) req.getParameter("docPath");
