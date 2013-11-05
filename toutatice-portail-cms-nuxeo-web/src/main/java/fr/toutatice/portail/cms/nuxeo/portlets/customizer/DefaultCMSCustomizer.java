@@ -24,7 +24,6 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
@@ -36,9 +35,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFr
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 import fr.toutatice.portail.core.nuxeo.INuxeoCustomizer;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
-import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
@@ -465,7 +464,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 			 if ("Folder".equals(doc.getType()))
 				 return getCMSFolderPlayer(ctx);
 			 else
-				 getCMSOrderedFolderPlayer(ctx);
+                return getCMSOrderedFolderPlayer(ctx);
 
 		} 
 		
