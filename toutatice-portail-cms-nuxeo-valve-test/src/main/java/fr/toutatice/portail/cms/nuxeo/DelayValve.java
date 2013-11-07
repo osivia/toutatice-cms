@@ -54,9 +54,20 @@ public class DelayValve extends ValveBase {
 			// Print the content on the console
 
 			long delai = Long.parseLong(strLine);
+			
+			String requestString = "";
+			
+			while( request.getParameterNames().hasMoreElements())	{
+				String name = (String) request.getParameterNames().nextElement();
+				
+				requestString += "["+name+"," +request.getParameter(name)+"]";
+			}
 
-			logger.info("Waiting " + delai + " seconds");
-			Thread.sleep(delai * 1000);
+//			if( request.getRequestURI().startsWith("/nuxeo/site/automation/Document.PageProvider"))	{
+			logger.info("--> " + request.getRequestURI());
+//			logger.info("Waiting " + delai + " seconds");
+//			Thread.sleep(delai * 1000);
+//			}
 
 			// Close the input stream
 			in.close();
