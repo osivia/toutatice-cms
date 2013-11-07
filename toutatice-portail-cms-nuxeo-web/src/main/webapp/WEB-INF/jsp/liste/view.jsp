@@ -19,6 +19,8 @@
 
 <%@page import="org.nuxeo.ecm.automation.client.model.PaginableDocuments"%><portlet:defineObjects />
 
+<jsp:include page="../files/add-content.jsp"></jsp:include>
+
 <%
 PaginableDocuments docs = (PaginableDocuments) renderRequest.getAttribute("docs")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;

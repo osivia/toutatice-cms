@@ -8,6 +8,7 @@ import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
@@ -27,6 +28,13 @@ public class GetCommentsCommand implements INuxeoCommand {
 		if(commentsBlob != null){
 			String fileContent = FileUtils.read(commentsBlob.getStream());
 			JSONArray jsonComments = JSONArray.fromObject(fileContent);
+			
+			
+			// v2.0.21 : suppression des files
+			if( commentsBlob instanceof FileBlob){
+				((FileBlob) commentsBlob).getFile().delete();
+			}
+			
 			return jsonComments;
 			
 		}else{

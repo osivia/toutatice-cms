@@ -1,5 +1,7 @@
 package fr.toutatice.portail.core.nuxeo;
 
+import java.util.List;
+
 
 public class DocTypeDefinition extends Object {
     
@@ -7,9 +9,21 @@ public class DocTypeDefinition extends Object {
     private String name;
     private String displayName;
     private boolean supportsPortalForms;
-     
     
-    public boolean isSupportingPortalForm() {
+    // v2.0.21 : ajout sous-types
+    private List<String> portalFormSubTypes;
+    
+    public List<String> getPortalFormSubTypes() {
+		return portalFormSubTypes;
+	}
+
+
+	public void setPortalFormSubTypes(List<String> portalFormSubTypes) {
+		this.portalFormSubTypes = portalFormSubTypes;
+	}
+
+
+	public boolean isSupportingPortalForm() {
         return supportsPortalForms;
     }
 

@@ -12,6 +12,7 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.PortletURL;
@@ -29,13 +30,16 @@ import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.core.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DeleteDocumentCommand;
 import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -185,6 +189,103 @@ public class FileBrowserPortlet extends CMSPortlet {
 	        }
 	    }
 
+	   public static void addCreateLink(NuxeoController ctx, Document folder, RenderRequest request, RenderResponse response) throws Exception	{
+		   
+		   
+		   
+	    	
+		List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+
+		CMSServiceCtx cmsCtx = ctx.getCMSCtx();
+		CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, folder.getPath());
+		
+        if( !pubInfos.isLiveSpace() ||  !PortletHelper.isInContextualizedMode(cmsCtx))    
+        	return;
+        	
+
+		// v2.1 WORKSPACE
+
+		Map<String, String> subTypes = pubInfos.getSubTypes();
+
+		List<SubType> portalDocsToCreate = new ArrayList<SubType>();
+		Map<String, DocTypeDefinition> managedTypes = ctx.getDocTypeDefinitions();
+
+		DocTypeDefinition containerDocType = managedTypes.get(folder.getType());
+		
+		if( containerDocType != null)	{
+
+		for (String docType : subTypes.keySet()) {
+
+			// is this type managed at portal level ?
+
+			if (containerDocType.getPortalFormSubTypes() .contains(docType)) {
+
+				DocTypeDefinition docTypeDef = managedTypes.get(docType);
+
+				if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+					
+
+					SubType subType = new SubType();
+
+					subType.setDocType(docType);
+					subType.setName(subTypes.get(docType));
+					subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + folder.getPath() + "@toutatice_create?type=" + docType);
+					portalDocsToCreate.add(subType);
+				}
+			}
+
+		}
+		}
+		
+		if (portalDocsToCreate.size() == 1)	{
+			// Pas de fancybox
+			
+			PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
+            portletURL.setParameter("reloadDatas", ""+ System.currentTimeMillis());                        
+            String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");		                    
+            String onClick = "setCallbackParams('"+divId+"', '"+portletURL.toString()+"')";  
+            String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" 
+            		+ folder.getPath() + "@toutatice_create?type=" + portalDocsToCreate.get(0).getDocType();
+			
+			MenubarItem add = new MenubarItem("CREATE", "Ajouter",
+					MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick, "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
+			menuBar.add(add);
+			
+			return;
+
+		}
+		
+
+		/* Lien de création */
+
+		String fancyID = null;
+		if (portalDocsToCreate.size() > 0)
+			fancyID = "_PORTAL_CREATE";
+
+		if (fancyID != null) {
+
+			// Force to reload portlet
+			PortletURL portletURL = response.createRenderURL();
+			portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
+
+			String divId = (String) request.getAttribute("osivia.window.ID");
+
+			String onClick = "setCallbackParams('" + divId + "', '" + portletURL.toString() + "')";
+
+			// Modif-FILEBROWSER-begin
+			MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + response.getNamespace() + fancyID, onClick,
+					"fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+			// Modif-FILEBROWSER-begin
+			item.setAjaxDisabled(true);
+
+			menuBar.add(item);
+
+		}
+
+		if (portalDocsToCreate.size() > 0)
+			request.setAttribute("portalDocsToCreate", portalDocsToCreate);
+
+}
 	
 	
 	
@@ -379,7 +480,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 //List<Document> sortedDocs = (ArrayList<Document>) docs.clone();
                 
                 List<Document> sortedDocs = (ArrayList<Document>) docs.list();
-                Collections.sort(sortedDocs, createComparator(doc));
+                
+                // Ajout JSS 20131022 : on ne trie que sur les containers ordered
+                // (a reporter en v3)
+                if( !isOrdered(doc))
+                	Collections.sort(sortedDocs, createComparator(doc));
                 request.setAttribute("docs", sortedDocs);
 
                 /* Récupération des parents (pour le path) */
@@ -408,26 +513,38 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                         // v2.1 WORKSPACE
+                        
+                        
                         Map<String, String> subTypes = pubInfos.getSubTypes();
                         
                         List<SubType> portalDocsToCreate = new ArrayList<SubType>();
                         Map<String, DocTypeDefinition> managedTypes = ctx.getDocTypeDefinitions();
-                        for (String docType : subTypes.keySet()) {
-                            
-                            // is this type managed at portal level ?
-                            
-                            DocTypeDefinition docTypeDef =  managedTypes.get(docType);
-                            
-                            if( docTypeDef != null && docTypeDef.isSupportingPortalForm())  {
-                            
-                                SubType subType = new SubType();
-                            
-                                subType.setDocType(docType);
-                                subType.setName(subTypes.get(docType));
-                                subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@toutatice_create?type=" + docType);
-                                portalDocsToCreate.add(subType);
-                             }
-                            
+                        
+                        
+                        DocTypeDefinition containerDocType =  managedTypes.get(doc.getType());
+                        
+                        if( containerDocType != null)	{
+                        
+							for (String docType : subTypes.keySet()) {
+		
+								// is this type managed at portal level ?
+		
+								if (containerDocType.getPortalFormSubTypes().contains(docType)) {
+		
+									DocTypeDefinition docTypeDef = managedTypes.get(docType);
+		
+									if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+		
+										SubType subType = new SubType();
+		
+										subType.setDocType(docType);
+										subType.setName(subTypes.get(docType));
+										subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + curPath + "@toutatice_create?type=" + docType);
+										portalDocsToCreate.add(subType);
+									}
+								}
+		
+							}
                         }
 
                        

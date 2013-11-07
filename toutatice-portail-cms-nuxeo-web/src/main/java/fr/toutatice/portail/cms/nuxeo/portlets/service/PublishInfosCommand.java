@@ -22,6 +22,7 @@ import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -94,6 +95,11 @@ public class PublishInfosCommand implements INuxeoCommand {
                         }
 						// Modif-SPACEID-end
 					}
+				}
+				
+				// v2.0.21 : suppression des files
+				if( binariesInfos instanceof FileBlob){
+					((FileBlob) binariesInfos).getFile().delete();
 				}
 			}
 			// Modif-RETOUR-end

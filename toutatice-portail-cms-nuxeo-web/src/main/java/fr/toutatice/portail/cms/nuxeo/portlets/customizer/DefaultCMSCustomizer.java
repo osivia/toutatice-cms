@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,7 +24,6 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
@@ -250,7 +250,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		
+		// v2.0.21 : le player annonce trie par ordre ante-chronologique
+		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, false));
+//		windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, true));
+		
 		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -456,7 +460,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 						// Pas de filtre sur les versions publiées
 						ctx.setDisplayLiveVersion("1");
 						CMSHandlerProperties props =  createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
-						props.getWindowProperties().put("osivia.title", "Liste des documents");
+						props.getWindowProperties().put("osivia.title", doc.getTitle());
 						return props;
 					}
 			 }	
@@ -639,31 +643,38 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	}
 
 
-private Map<String, DocTypeDefinition> docTypes = null;
+protected Map<String, DocTypeDefinition> docTypes = null;
 	
-	protected DocTypeDefinition createDocType( String docTypeName, String displayName){
+	protected DocTypeDefinition createDocType( String docTypeName, String displayName, boolean supportsPortalForm, List<String> portalFormSubTypes){
 	    
 	    DocTypeDefinition portalDocType = new DocTypeDefinition();
 	    portalDocType.setName(docTypeName);
 	    portalDocType.setDisplayName(displayName);
-	    portalDocType.setSupportingPortalForm(true);
+	    portalDocType.setSupportingPortalForm(supportsPortalForm);
+	    portalDocType.setPortalFormSubTypes(portalFormSubTypes);
     	    
 	    return portalDocType;
 	}
 	
+
+	
     public Map<String, DocTypeDefinition> getDocTypeDefinitions(CMSServiceCtx ctx) throws Exception {
  
-        if( docTypes == null)   {
-            
-            docTypes = new LinkedHashMap<String,DocTypeDefinition>();
-            
-            docTypes.put("Folder", createDocType("Folder", "Dossier"));            
-            docTypes.put("File", createDocType("File", "Fichier"));
-            docTypes.put("Note", createDocType("Note", "Note"));
-             
-        }
-        return docTypes;
-        
+		if (docTypes == null) {
+
+			docTypes = new LinkedHashMap<String, DocTypeDefinition>();
+			docTypes.put("Workspace", createDocType("Workspace", "Workspace", false, Arrays.asList("File", "Folder", "Note")));
+			docTypes.put("Folder", createDocType("Folder", "Dossier", true, Arrays.asList("File", "Folder", "Note")));
+			docTypes.put("File", createDocType("File", "Fichier", true, new ArrayList<String>()));
+			docTypes.put("Note", createDocType("Note", "Note", true,  new ArrayList<String>()));
+			docTypes.put("Annonce", createDocType("Annonce", "Annonce", true,  new ArrayList<String>()));
+			docTypes.put("AnnonceFolder", createDocType("AnnonceFolder", "AnnonceFolder", false, Arrays.asList("Annonce")));
+			docTypes.put("ContextualLink", createDocType("ContextualLink", "Lien", true,  new ArrayList<String>()));
+			docTypes.put("DocumentUrlContainer", createDocType("DocumentUrlContainer", "Container de liens", false,  Arrays.asList("ContextualLink")));
+
+		}
+		return docTypes;
+
     }
 
 	

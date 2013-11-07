@@ -52,7 +52,10 @@ import fr.toutatice.portail.cms.nuxeo.core.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.PublishInfosCommand;
+import fr.toutatice.portail.core.nuxeo.DocTypeDefinition;
 import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 /**
@@ -683,10 +686,36 @@ public class ViewListPortlet extends CMSPortlet {
 							//}
 						}
 						
+						
+						//TODO : si mode contextualisé ...
+						
+						
 						/* Ajout d'un item de création si les paramètres sont renseignés */
 						String docContainerPath = window.getProperty("osivia.createParentPath");
 						String docTypeToCreate = window.getProperty("osivia.createDocType");
+						
+						
+						// v2.0.21  ajout variabilisation
+						if( docContainerPath != null)
+							docContainerPath = ctx.getComputedPath(docContainerPath);
+						
+						// v2.0.21 : lien add sur contextualisation dynamique
+			           if( docTypeToCreate == null ) {
+			        	   if( docContainerPath == null)	{
+			        		   String dynamicPath = window.getProperty("osivia.cms.uri");
+			        		   if( dynamicPath != null)
+			        			   docContainerPath = ctx.getLivePath(dynamicPath);
+			        	   }
+			            	
+			            	if( docContainerPath != null)	{
+			            		Document folder = ctx.fetchDocument(docContainerPath);
+			            		FileBrowserPortlet.addCreateLink(ctx, folder, request, response);
+			            	}
+			            }
+						
+						// lien add posé en dur sur la liste
 						if(StringUtils.isNotEmpty(docContainerPath) && StringUtils.isNotEmpty(docTypeToCreate)){
+								
 							CMSServiceCtx cmsCtx = ctx.getCMSCtx();
 							CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, docContainerPath);
 							if(pubInfos.isEditableByUser()){

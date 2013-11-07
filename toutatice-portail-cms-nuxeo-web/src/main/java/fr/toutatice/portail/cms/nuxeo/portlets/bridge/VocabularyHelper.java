@@ -14,8 +14,11 @@ public class VocabularyHelper {
 
 		NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
 
-		//1.0.27 : rechargement par l'administration
-		ctx.setCacheTimeOut(3600 * 1000L);
+		
+		// v2.0.21 : le contexte n'était pas le bon !!!
+		//ctx.setCacheTimeOut(3600 * 1000L);
+
+		vocabCtx.setCacheTimeOut(3600 * 1000L);
 		//ctx.setAsynchronousUpdates(true);
 		
 		vocabCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
