@@ -327,8 +327,13 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			Throwable cause = e.getCause();
 			
 			if( cause instanceof HttpHostConnectException || cause instanceof SocketTimeoutException)
+// v2.0.21 : on notifie la cause				
+				
 				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
-						new ServeurIndisponible(e.getMessage()));
+						new ServeurIndisponible(cause.getMessage()));
+				
+//				getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
+//						new ServeurIndisponible(e.getMessage()));
 			
 		} 
 		// Par défaut les exceptions sont propagées

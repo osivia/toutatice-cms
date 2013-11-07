@@ -61,8 +61,11 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		String profilerUser = null;
 
 		List<Session> sessionsProfils = null;
+		ServerInvocation userSessionInvocation = null;
 
 		Session nuxeoSession = null;
+		
+		boolean recyclableSession = true;
 
 
 		try {
@@ -85,6 +88,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					userName = user.getUserName();
 
 				profilerUser = userName;
+				if( profilerUser == null)
+					profilerUser = "unlogged user";
 
 				// On regarde s'il existe déjà une session pour cet utilisateur
 				try {
@@ -137,73 +142,12 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 								invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSessionUser",
 										user.getUserName());
 						}
+						
+						userSessionInvocation = invocation;
 					}
 				}				
 
-				/*
-				ControllerContext controllerCtx = ctx.getControlerContext();
-
-
-				User user = (User) controllerCtx.getServerInvocation().getAttribute(Scope.PRINCIPAL_SCOPE,
-						UserInterceptor.USER_KEY);
-
-				String userName = null;
-				if (user != null)
-					userName = user.getUserName();
-
-				profilerUser = userName;
-
-				// On regarde s'il existe déjà une session pour cet utilisateur
-				try {
-					nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-							"osivia.nuxeoSession");
-				} catch (ClassCastException e) {
-					// Peut arriver si rechargement des classes de Nuxeo
-				}
-
-				String sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-						"osivia.nuxeoSessionUser");
-
-				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(
-						ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer");
-
-				if (sessionCreationSynchronizer == null) {
-					sessionCreationSynchronizer = "sessionCreationSynchronizer";
-					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer",
-							sessionCreationSynchronizer);
-				}
-
-				if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
-					// Création d'une nouvelle session
-
-					synchronized (sessionCreationSynchronizer) {
-
-						// On refait les controles pour la synchronisation
-
-						nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"osivia.nuxeoSession");
-
-						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"osivia.nuxeoSessionUser");
-
-						if (nuxeoSession == null
-								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
-
-							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
-									"osivia:service=NuxeoService");
-
-							nuxeoSession = nuxeoService.createUserSession(userName);
-
-							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSession",
-									nuxeoSession);
-
-							if (user != null)
-								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSessionUser",
-										user.getUserName());
-						}
-					}
-				}
-				*/
+	
 			}
 
 			else {
@@ -266,8 +210,12 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					
 					res = command.execute(nuxeoSession);
 				}
-			} catch (Exception e) {
-
+			} 
+			
+			catch (Exception e) {
+				
+				if( e.getCause() instanceof IllegalStateException)
+					recyclableSession = false;
 				error = true;
 				throw e;
 			} finally {
@@ -290,11 +238,13 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		} finally {
 
 			// recycle the session
-			if (sessionsProfils != null)
+			// v2.0.21 : ajout test session recyclable
+			
+			if (sessionsProfils != null && recyclableSession == true)
 				sessionsProfils.add(nuxeoSession);
 
-
-
+			if( userSessionInvocation != null && recyclableSession == false)
+				userSessionInvocation.removeAttribute(Scope.SESSION_SCOPE,	"osivia.nuxeoSession");
 		}
 
 		return res;
