@@ -16,7 +16,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -45,29 +44,32 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(req);
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("modifierPrefs") != null)) {
 
-			if( req.getParameter("selectorId").length() > 0)
-				window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
-			else if (window.getProperty("osivia.selectorId") != null)
-				window.setProperty("osivia.selectorId", null);	
-			
+			if( req.getParameter("selectorId").length() > 0) {
+                window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
+            } else if (window.getProperty("osivia.selectorId") != null) {
+                window.setProperty("osivia.selectorId", null);
+            }
 
-			if( req.getParameter("libelle").length() > 0)
-				window.setProperty("osivia.libelle", req.getParameter("libelle"));
-			else if (window.getProperty("osivia.libelle") != null)
-				window.setProperty("osivia.libelle", null);
-			
-			if("1".equals(req.getParameter("keywordMonoValued")))
-				window.setProperty("osivia.keywordMonoValued", "1");
-			else if (window.getProperty("osivia.keywordMonoValued") != null)
-				window.setProperty("osivia.keywordMonoValued", null);
-			
+
+			if( req.getParameter("libelle").length() > 0) {
+                window.setProperty("osivia.libelle", req.getParameter("libelle"));
+            } else if (window.getProperty("osivia.libelle") != null) {
+                window.setProperty("osivia.libelle", null);
+            }
+
+			if("1".equals(req.getParameter("keywordMonoValued"))) {
+                window.setProperty("osivia.keywordMonoValued", "1");
+            } else if (window.getProperty("osivia.keywordMonoValued") != null) {
+                window.setProperty("osivia.keywordMonoValued", null);
+            }
+
 			/* Initialisation des mots-clés suite à configuration. */
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			if(selectors != null){ 
+			if(selectors != null){
 				List<String> keywords = selectors.get(req.getParameter("selectorId"));
-				if(keywords != null && keywords.size() > 0){
+				if((keywords != null) && (keywords.size() > 0)){
 					keywords.clear();
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				}
@@ -77,16 +79,16 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 			res.setWindowState(WindowState.NORMAL);
 		}
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
+		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("annuler") != null)) {
 
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
 		}
 
 		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-		boolean isAddAction = req.getParameter("add.x") != null || req.getParameter("add") != null;
-		boolean isMonoValuedAddAction = req.getParameter("monoAdd.x") != null || req.getParameter("monoAdd") != null;
-		
+		boolean isAddAction = (req.getParameter("add.x") != null) || (req.getParameter("add") != null);
+		boolean isMonoValuedAddAction = (req.getParameter("monoAdd.x") != null) || (req.getParameter("monoAdd") != null);
+
 		if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction)) {
 
 			// Set public parameter
@@ -96,7 +98,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 				String keyword = req.getParameter("keyword");
 
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-				
+
 				List<String> keywords = selectors.get(selectorId);
 				if (keywords == null) {
 					keywords = new ArrayList<String>();
@@ -111,11 +113,11 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 					keywords.clear();
 				}
 
-				if (keyword != null && keyword.length() > 0) {
-					keywords.add(keyword);							
+				if ((keyword != null) && (keyword.length() > 0)) {
+					keywords.add(keyword);
 				}
 
-				
+
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
 				// Réinitialisation des fenetres en mode NORMAL
@@ -135,13 +137,13 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> keywords = selectors.get(selectorId);
-			if (keywords != null && keywords.size() > occ) {
+			if ((keywords != null) && (keywords.size() > occ)) {
 
 				keywords.remove(occ);
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-				
-				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("osivia.initPageState", "true");
+
+                // Réinitialisation des fenetres en mode NORMAL
+                req.setAttribute("osivia.unsetMaxMode", "true");
 			}
 		}
 
@@ -156,21 +158,24 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 		PortalWindow window = WindowFactory.getWindow(req);
 
 		String selectorId = window.getProperty("osivia.selectorId");
-		if (selectorId == null)
-			selectorId = "";
+		if (selectorId == null) {
+            selectorId = "";
+        }
 		req.setAttribute("selectorId", selectorId);
-		
+
 		String libelle = window.getProperty("osivia.libelle");
-		if (libelle == null)
-			libelle = "";
+		if (libelle == null) {
+            libelle = "";
+        }
 		req.setAttribute("libelle", libelle);
-		
+
 		String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
-		if(keywordMonoValued == null)
-			keywordMonoValued = "0";
+		if(keywordMonoValued == null) {
+            keywordMonoValued = "0";
+        }
 		req.setAttribute("keywordMonoValued", keywordMonoValued);
 
-		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
+		rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
 		rd.include(req, res);
 
 	}
@@ -188,13 +193,13 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 			PortalWindow window = WindowFactory.getWindow(request);
 
 			String selectorId = window.getProperty("osivia.selectorId");
-			
+
 			String libelle = window.getProperty("osivia.libelle");
 			request.setAttribute("libelle", libelle);
-			
+
 			String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
 			request.setAttribute("keywordMonoValued", keywordMonoValued);
-			
+
 			String keyword = request.getParameter("keyword");
 
 			if (selectorId != null) {
@@ -202,15 +207,16 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 
 				Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
 
-				if (selectors.get(selectorId) != null)
-					request.setAttribute("keywords", selectors.get(selectorId));
-				else
-					request.setAttribute("keywords", new ArrayList<String>());
+				if (selectors.get(selectorId) != null) {
+                    request.setAttribute("keywords", selectors.get(selectorId));
+                } else {
+                    request.setAttribute("keywords", new ArrayList<String>());
+                }
 
 				request.setAttribute("keyword", keyword);
 
-	
-				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/view.jsp").include(request,
+
+				this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/view.jsp").include(request,
 						response);
 
 			} else {
@@ -224,8 +230,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 			}
 
 		catch (Exception e) {
-			if (!(e instanceof PortletException))
-				throw new PortletException(e);
+			if (!(e instanceof PortletException)) {
+                throw new PortletException(e);
+            }
 		}
 
 		logger.debug("doView end");

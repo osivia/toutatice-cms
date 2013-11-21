@@ -141,8 +141,8 @@ public class DateSelectorPortlet extends CMSPortlet {
 				dates.remove(occ);
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-				//Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("osivia.initPageState", "true");
+                // Réinitialisation des fenetres en mode NORMAL
+                req.setAttribute("osivia.unsetMaxMode", "true");
 			}
 		}
 
