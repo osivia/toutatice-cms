@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,12 +60,25 @@ public class PortletEditableWindow extends EditableWindow {
 		
 		prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 		
-        Integer indexToRemove = EditableWindowHelper.findIndexByRefURI(doc, PORTLETSCHEMA, refURI);
+        Integer indexFgtToRemove = EditableWindowHelper.findIndexByRefURI(doc, PORTLETSCHEMA, refURI);
 		
-        propertiesToRemove.add(PORTLETSCHEMA.concat("/").concat(indexToRemove.toString()));
+        propertiesToRemove.add(PORTLETSCHEMA.concat("/").concat(indexFgtToRemove.toString()));
 		
-		// TODO supprimer les feed
-		
+        PropertyList props = doc.getProperties().getList(PORTLETPROPS);
+        Integer index = 0;
+
+        for (Object o : props.list()) {
+            if (o instanceof PropertyMap) {
+                PropertyMap map = (PropertyMap) o;
+                if (refURI.equals(map.get("refURI"))) {
+                    propertiesToRemove.add(PORTLETPROPS.concat("/").concat(index.toString()));
+                }
+            }
+            index++;
+        }
+        // Bug automation, supprimer la liste de propriétés par son dernier élément, puis l'avant dernier, etc.
+        // sinon décalage des n° d'index dans les propriétés
+        Collections.reverse(propertiesToRemove);
 		return propertiesToRemove;
 	}
 

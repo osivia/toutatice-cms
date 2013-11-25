@@ -24,7 +24,11 @@ public class HtmlEditableWindow extends EditableWindow {
 	
 	@Override
 	public Map<String, String> fillProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
-		return super.fillGenericProps(doc, fragment, modeEditionPage);
+
+        Map<String, String> propsFilled = super.fillGenericProps(doc, fragment, modeEditionPage);
+        propsFilled.put("osivia.cms.uri", doc.getPath());
+
+        return propsFilled;
 	}
 
 
@@ -35,6 +39,7 @@ public class HtmlEditableWindow extends EditableWindow {
 		
 		prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 		
+
         Integer indexToRemove = EditableWindowHelper.findIndexByRefURI(doc, HTMLSCHEMA, refURI);
 		
 		propertiesToRemove.add(HTMLSCHEMA.concat("/").concat(indexToRemove.toString()));

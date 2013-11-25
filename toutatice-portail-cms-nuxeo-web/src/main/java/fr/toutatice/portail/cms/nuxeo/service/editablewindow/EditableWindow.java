@@ -95,7 +95,7 @@ public abstract class EditableWindow {
         // Propriétés génériques
         Map<String, String> propsFilled = new HashMap<String, String>();
         propsFilled.put("osivia.fragmentTypeId", "html_property");
-        propsFilled.put("osivia.cms.uri", doc.getPath());
+
         propsFilled.put("osivia.propertyName", "htmlfgt:htmlFragment");
 
         propsFilled.put("osivia.refURI", fragment.getString(EditableWindowHelper.FGT_URI));

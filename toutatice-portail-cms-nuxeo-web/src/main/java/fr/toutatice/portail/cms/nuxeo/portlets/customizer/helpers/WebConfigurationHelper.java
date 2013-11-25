@@ -24,7 +24,7 @@ public class WebConfigurationHelper {
     /** clé du paramnètre. */
     public static final String OPTION_KEY = "propertyName";
     /** valeur du paramètre. */
-    public static final String OPTION_VALUE = "propertyValue";
+    public static final String OPTION_VALUE = "propertyDefaultValue";
 
     /**
      * Retourne le domain Nuxeo à partir de la page courante.
