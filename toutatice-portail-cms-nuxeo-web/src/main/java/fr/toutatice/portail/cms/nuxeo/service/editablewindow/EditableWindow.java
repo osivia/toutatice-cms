@@ -49,6 +49,14 @@ public abstract class EditableWindow {
 
 
     /**
+     * @param instancePortlet the instancePortlet to set
+     */
+    public void setInstancePortlet(String instancePortlet) {
+        this.instancePortlet = instancePortlet;
+    }
+
+
+    /**
      * @return the prefixWindow
      */
     public String getPrefixWindow() {

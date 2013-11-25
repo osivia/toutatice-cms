@@ -6,6 +6,7 @@ import java.util.Map;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HtmlEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
 
 /**
  * Permet de gérer et ajouter les types de Window affichables dans le portail
@@ -23,6 +24,8 @@ public class EditableWindowAdapter {
         addType("fgt.html", new HtmlEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
 
         addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+
+        addType("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
     }
 
     /**
