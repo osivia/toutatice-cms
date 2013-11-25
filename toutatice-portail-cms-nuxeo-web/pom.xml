@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>toutatice-portail.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.0.1-RC6</version>
 	</parent>
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
-	<version>3.0.1-SNAPSHOT</version>
+	<version>3.0.1-RC6</version>
 	<packaging>war</packaging>
 	<name>Nuxeo cms portlets</name>
 
