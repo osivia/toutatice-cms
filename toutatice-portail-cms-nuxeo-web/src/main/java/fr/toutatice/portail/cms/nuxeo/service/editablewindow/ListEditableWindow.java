@@ -7,6 +7,7 @@ import java.util.Map;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.core.constants.InternalConstants;
 
 /**
  * 
@@ -35,13 +36,19 @@ public class ListEditableWindow extends EditableWindow {
 		
 		props.put("osivia.nuxeoRequest", mapListe.getString("request"));
 		props.put("osivia.requestInterpretor", "beanShell");
-		
+        props.put("osivia.cms.scope", null);
 		props.put("osivia.displayNuxeoRequest", null);
-		props.put("osivia.cms.displayLiveVersion", null);
 		props.put("osivia.cms.requestFilteringPolicy", null);
 		props.put("osivia.cms.hideMetaDatas", null);
-		props.put("osivia.cms.scope", null);
 		
+        if (mapListe.getBoolean("allContents")) {
+            props.put(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_GLOBAL);
+            props.put("osivia.cms.displayLiveVersion", "1");
+        } else {
+            props.put(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, null);
+            props.put("osivia.cms.displayLiveVersion", null);
+        }
+
 		props.put("osivia.cms.style", mapListe.getString("view"));
 		props.put("osivia.cms.pageSize", mapListe.getString("pageSize"));
 		props.put("osivia.cms.pageSizeMax", mapListe.getString("pageSizeMax"));
