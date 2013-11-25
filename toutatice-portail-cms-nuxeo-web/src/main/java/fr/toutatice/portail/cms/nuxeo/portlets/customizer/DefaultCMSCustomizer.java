@@ -27,6 +27,8 @@ import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
@@ -48,19 +50,25 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSToWebPathAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.IPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 
 public class DefaultCMSCustomizer implements INuxeoCustomizer{
+
 
 	PortletContext portletCtx;
 	protected IPortalUrlFactory portalUrlFactory;
@@ -75,7 +83,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 	
-	
+    /** CMS Players. */
+    protected Map<String, IPlayer> players = new HashMap<String, IPlayer>();
+
 	/* Default style for lists */
 
 
@@ -110,6 +120,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		this.portletCtx = ctx;
 		this.portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
 		
+        // initialise le player view document par défaut
+        this.players.put("defaultPlayer", new DefaultPlayer());
+
 		try   {
 		 // Initialisé ici pour résoudre problème de classloader
 		    
@@ -170,7 +183,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
     
     public CMSToWebPathAdapter getCMSToWebPathAdapter() {
         if (cmsToWebAdapter == null) {
-            cmsToWebAdapter = new CMSToWebPathAdapter();
+            cmsToWebAdapter = new CMSToWebPathAdapter(CMSService);
         }
 
         return cmsToWebAdapter;
@@ -212,27 +225,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
 	
 
-	public CMSHandlerProperties getCMSDefaultPlayer(CMSServiceCtx ctx) throws Exception {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-
-		/*windowProperties.put("osivia.cms.scope", ctx.getScope());*/
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.cms.uri", doc.getPath());
-		windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewDocumentPortletInstance");
-
-		return linkProps;
-	}
+    public CMSHandlerProperties getCMSDefaultPlayer(CMSServiceCtx ctx) throws Exception {
+        Document doc = (Document) ctx.getDoc();
+        return players.get("defaultPlayer").play(ctx, doc);
+    }
 
 	/**
 	 * Gére les folders 'hiddenInNavigation'
@@ -474,10 +470,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	
 	
 
-	/*
-	 * On détermine le player associé à chaque item
-	 */
-
+    /**
+     * On détermine le player associé à chaque item.
+     * 
+     * @param ctx cms context
+     * @return portlet & properties
+     */
 	public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
 
 		Document doc = (Document) ctx.getDoc();
@@ -525,7 +523,49 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 			return getCMSVirtualPagePlayer(ctx);
 		}
 		
-		return getCMSDefaultPlayer(ctx);
+
+        // ========== Try to get external config for players
+        // compute domain path
+        String domainPath = WebConfigurationHelper.getDomainPath(ctx);
+
+        if (domainPath != null) {
+            // get configs installed in nuxeo
+            WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSPlayer);
+            Documents configs = null;
+            try {
+                configs = (Documents) CMSService.executeNuxeoCommand(ctx, command);
+            } catch (Exception e) {
+                // Can't get confs
+            }
+
+            if (configs != null && configs.size() > 0) {
+                int i = 0;
+                for (Document config : configs) {
+                    String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
+                    String playerInstance = config.getProperties().getString(WebConfigurationHelper.CODECOMP);
+
+                    if (doc.getType().equals(documentType) && players.containsKey(playerInstance)) {
+
+                        Map<String, String> windowProperties = new HashMap<String, String>();
+                        PropertyList list = config.getProperties().getList(WebConfigurationHelper.OPTIONS);
+
+                        // Inject defined values in conf in the player properties map
+                        for (Object o : list.list()) {
+                            if (o instanceof PropertyMap) {
+                                PropertyMap map = (PropertyMap) o;
+                                windowProperties.put(map.get(WebConfigurationHelper.OPTION_KEY).toString(), map.get(WebConfigurationHelper.OPTION_VALUE)
+                                        .toString());
+
+                            }
+                        }
+
+                        return players.get(playerInstance).play(ctx, doc, windowProperties);
+                    }
+                }
+            }
+
+        }
+        return players.get("defaultPlayer").play(ctx, doc);
 
 	}
 	
@@ -801,8 +841,46 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	}
 
 
+    /**
+     * Etendre la recherche à d'autres path.
+     * 
+     * @param ctx cms context
+     * @param requestFilteringPolicy policy de filtrage
+     * @return code NXQL
+     * @throws Exception
+     */
 	public String getExtraRequestFilter(CMSServiceCtx ctx, String requestFilteringPolicy) throws Exception {
-		return null;
+        String extraRequetFilter = null;
+
+        // compute domain path
+        String domainPath = WebConfigurationHelper.getDomainPath(ctx);
+
+        if (domainPath != null) {
+            // get configs installed in nuxeo
+            WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.extraRequestFilter);
+            Documents configs = (Documents) CMSService.executeNuxeoCommand(ctx, command);
+
+
+            if (configs.size() > 0) {
+                extraRequetFilter = "";
+                int i = 0;
+                for (Document config : configs) {
+                    String nxqlCode = config.getProperties().getString(WebConfigurationHelper.CODE);
+                    if (nxqlCode != null) {
+
+                        // build the request
+                        if (i > 0) {
+                            extraRequetFilter = extraRequetFilter.concat("OR");
+                        }
+                        extraRequetFilter = extraRequetFilter.concat(" ").concat(nxqlCode);
+                        i++;
+                    }
+                }
+            }
+        }
+        // return the request
+        return extraRequetFilter;
+
 	}
 
 	   // V2.1 : workspace
