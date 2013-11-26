@@ -15,6 +15,7 @@
 	<packaging>war</packaging>
 	<name>Nuxeo cms portlets</name>
 
+
 	<dependencies>
 
 		<dependency>
@@ -23,8 +24,6 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
-	
 
 		<dependency>
 			<groupId>commons-httpclient</groupId>
@@ -58,6 +57,16 @@
 
 	</dependencies>
 
-  
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>true</attachClasses>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
