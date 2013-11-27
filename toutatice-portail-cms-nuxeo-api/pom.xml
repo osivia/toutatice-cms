@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>toutatice-portail.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>3.0.2-SNAPSHOT</version>
+		<version>3.0.2-RC1</version>
 	</parent>
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
-	<version>3.0.2-SNAPSHOT</version>
+	<version>3.0.2-RC1</version>
 	<packaging>jar</packaging>
 	<name>Portal Nuxeo API</name>
 
