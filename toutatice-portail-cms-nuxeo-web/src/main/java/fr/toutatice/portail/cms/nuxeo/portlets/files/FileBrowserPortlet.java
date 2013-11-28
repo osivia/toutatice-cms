@@ -628,6 +628,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("changeDisplayMode", window.getProperty("osivia.cms.changeDisplayMode"));
 
 
+                // Ajout 2.0.22 : pour affichage description
+                request.setAttribute("doc", doc);
+
+                
                 request.setAttribute("ctx", ctx);
 
 

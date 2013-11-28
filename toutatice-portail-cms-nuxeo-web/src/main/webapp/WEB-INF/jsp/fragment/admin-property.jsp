@@ -30,6 +30,8 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 			<label>Nom de la propriété (ex: 'dc:title')</label><br/>
 			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
 		
+			<label>Scope</label><br/>
+			<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/><br/>
 
 			
 		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>

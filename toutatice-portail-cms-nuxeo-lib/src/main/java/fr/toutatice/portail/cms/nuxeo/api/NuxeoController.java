@@ -80,6 +80,9 @@ public class NuxeoController {
 	String contentPath;
 	String spacePath;
 	
+	//2.0.22 : pour fragments
+	String forcePublicationInfosScope;
+	
 
 	String hideMetaDatas;
 	String displayContext;
@@ -170,7 +173,14 @@ public class NuxeoController {
 	return fDisplayLiveVersion;
 	}
 
-	
+	public String getForcePublicationInfosScope() {
+		return forcePublicationInfosScope;
+	}
+
+	public void setForcePublicationInfosScope(String forcePublicationInfosScope) {
+		this.forcePublicationInfosScope = forcePublicationInfosScope;
+	}
+
 
 	public String getScope() {
 		return scope;
@@ -310,6 +320,26 @@ public class NuxeoController {
 				scope = window.getPageProperty("osivia.cms.scope");
 		}
 		
+		// Pour les fragments, le cache doit également concerner les PublicationInfos
+		// D'où l'utilisattoin du forcePublicationScope
+			String forcePublicationScope = window.getProperty("osivia.cms.forcePublicationScope");
+			if (forcePublicationScope != null) {
+				// Fragments
+
+				if ("__inherited".equals(forcePublicationScope)) {
+					forcePublicationScope = request.getParameter("osivia.cms.pageScope");
+					if (forcePublicationScope == null)
+						forcePublicationScope = window.getPageProperty("osivia.cms.scope");
+				}
+
+				if (forcePublicationScope != null) {
+
+					scope = forcePublicationScope;
+					setForcePublicationInfosScope(forcePublicationScope);
+				}
+			}
+			
+		
 		navigationScope = window.getPageProperty("osivia.cms.navigationScope");
 		
 		
@@ -374,6 +404,9 @@ public class NuxeoController {
 		navigationPath =  request.getParameter("osivia.cms.path");
 		if	(spacePath != null && request.getParameter("osivia.cms.itemRelPath") != null)
 			contentPath = spacePath + request.getParameter("osivia.cms.itemRelPath");
+		
+		
+		
 		
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
@@ -1009,6 +1042,7 @@ public class NuxeoController {
 		if( response instanceof RenderResponse)
 			cmsCtx.setResponse( (RenderResponse)response);
 		cmsCtx.setScope(getScope());
+		cmsCtx.setForcePublicationInfosScope(getForcePublicationInfosScope());
 		cmsCtx.setDisplayLiveVersion(getDisplayLiveVersion());
 		cmsCtx.setPageId(getPageId());
 		cmsCtx.setDoc(getCurrentDoc());

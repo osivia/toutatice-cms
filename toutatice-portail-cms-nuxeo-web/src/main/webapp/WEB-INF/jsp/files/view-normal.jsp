@@ -34,6 +34,7 @@ String folderPath = (String) request.getAttribute("folderPath");
 String displayMode = (String) request.getAttribute("displayMode");
 //v2.0-SP1 : lien contextualisés
 String cmsLink = (String) request.getAttribute("cmsLink");
+Document folderDoc = (Document) request.getAttribute("doc");
 
 %>
 
@@ -41,9 +42,10 @@ String cmsLink = (String) request.getAttribute("cmsLink");
 
 
 <%@ include file="header.jsp" %>
-
 	
 <div class="separateur"></div>	
+
+<p class="nuxeo-file-browser-description"><%=Formater.formatDescription(folderDoc)%></p>
 
 <table class="nuxeo-file-browser-table"  cellspacing="0" width="100%">
 

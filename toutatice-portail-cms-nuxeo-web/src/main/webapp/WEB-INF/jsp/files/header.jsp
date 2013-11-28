@@ -110,9 +110,12 @@ String detailedURL = detailedModeURL.toString();
 
 <%	} %>
 
+
 </div>
 
 
 <jsp:include page="add-content.jsp"></jsp:include>
+
+
 
 

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequestDispatcher;
@@ -46,6 +47,8 @@ public class ViewFragmentPortlet extends fr.toutatice.portail.cms.nuxeo.core.CMS
 
 		return fragmentsMap;
 	}
+	
+
 
 	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 

@@ -330,7 +330,7 @@ public class CMSService implements ICMSService {
 	}
 	
 	
-	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
+	private CMSBinaryContent fetchPictureOld(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
 		CMSBinaryContent pictureContent = null;
 		String savedScope = cmsCtx.getScope();
 		try {
@@ -339,7 +339,7 @@ public class CMSService implements ICMSService {
 			 * getAnonymousContent retourne null sil'image n'est pas accessible
 			 * en mode anonyme, i.e. si elle n'est pas publique.
 			 */
-			CMSItem picture = getAnonymousContent(cmsCtx, docPath);
+			CMSItem picture = getAnonymousContentOld(cmsCtx, docPath);
 
 			if (picture == null) {
 				/* On tente alors de récupérer l'image avec les droits de l'utilisateur. */
@@ -357,6 +357,61 @@ public class CMSService implements ICMSService {
 		}
 		return pictureContent;
 	}
+	
+	/* V2 : reecriture pour éviter les 401 Nuxeo */
+	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
+	
+		CMSBinaryContent pictureContent = null;
+
+		String savedScope = cmsCtx.getScope();
+		String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
+		try {
+			CMSItem picture ;
+
+			/* Lecture du document picture */
+			
+			// Accès en super-user pour voir si la picture est accessible en mode anonyme
+			cmsCtx.setForcePublicationInfosScope("superuser_context");
+			CMSPublicationInfos publiInfos = getPublicationInfos(cmsCtx, docPath);
+			cmsCtx.setForcePublicationInfosScope(null);
+
+			if (publiInfos.isAnonymouslyReadable()) {
+				cmsCtx.setForcePublicationInfosScope("anonymous");
+			}
+			
+			picture = fetchContent(cmsCtx, docPath);
+			
+			
+			/* Lecture de la ressources binaire */
+			
+			// On a les droits, on accède à la ressource binaire en mode super user
+			cmsCtx.setScope("superuser_context");
+			
+			pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
+					(Document) picture.getNativeItem(), content)));
+
+
+		} catch (Exception e) {
+			if (!(e instanceof CMSException)) {
+				if (e instanceof NuxeoException && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+					return null;
+				else
+					throw new CMSException(e);
+			} else {
+
+				throw (CMSException) e;
+			}
+		} finally {
+			cmsCtx.setScope(savedScope);
+			cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
+		}
+		return pictureContent;
+	
+}
+	
+	
+	
+	
 	
 	public CMSBinaryContent getFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws CMSException{
 		CMSBinaryContent cmsContent = null;
@@ -422,7 +477,7 @@ public class CMSService implements ICMSService {
 		return false;
 	}
 	
-	public CMSItem getAnonymousContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+	public CMSItem getAnonymousContentOld(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
 		CMSItem anonymousContent = null;
 		String savedScope = cmsCtx.getScope();
