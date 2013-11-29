@@ -5,6 +5,7 @@ import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectContainer;
 import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
@@ -34,7 +35,7 @@ public class WebConfigurationHelper {
      */
     public static String getDomainPath(CMSServiceCtx ctx) {
         String domainPath = null;
-        String portalName = PageProperties.getProperties().getPagePropertiesMap().get("portalName");
+        String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
         // Dans certaines cas, le nom du portail n'est pas connu
         // cas des stacks server (par exemple, le pre-cahrgement des pages)

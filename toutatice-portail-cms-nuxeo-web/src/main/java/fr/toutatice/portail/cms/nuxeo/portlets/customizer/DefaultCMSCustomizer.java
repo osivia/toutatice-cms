@@ -30,6 +30,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -763,7 +764,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		String policyFilter = null;
 
 		ServerInvocation invocation = ctx.getServerInvocation();
-		String portalName = PageProperties.getProperties().getPagePropertiesMap().get("portalName");
+        String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
 		// Dans certaines cas, le nom du portail n'est pas connu
 		// cas des stacks server (par exemple, le pre-cahrgement des pages)
