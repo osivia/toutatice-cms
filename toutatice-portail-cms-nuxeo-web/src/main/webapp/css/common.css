@@ -453,3 +453,43 @@ div.document-types .more-document-types	{
 }
 /* Modif-FILEBROWSER-end */
 	
+
+
+/* Keywords selector */
+
+.nuxeo-keywords-selector .table {
+    display: table;
+    border-spacing: 0 2px;
+}
+
+.nuxeo-keywords-selector .table-row {
+    display: table-row;
+}
+
+.nuxeo-keywords-selector .table-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.nuxeo-keywords-selector .table-cell.input-text {
+	padding-right: 8px;
+}
+
+.nuxeo-keywords-selector .table-cell input[type="text"] {
+	width: 100%;
+}
+
+.nuxeo-keywords-selector .table-cell input[type="image"] {
+	width: 16px;
+	padding-left: 5px;
+}
+
+.nuxeo-keywords-selector .table-cell a.delete {
+	display: block;
+	background-image: url("../img/delete.gif");
+	background-repeat: no-repeat;
+	background-position: right;
+	height: 16px;
+	width: 16px;
+	padding-left: 5px;
+}

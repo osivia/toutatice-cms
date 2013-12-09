@@ -119,3 +119,12 @@ $JQry(document).ready(function() {
 		});
 	});
 //Modif-COMMENTS-end
+
+
+function clearText(div) {
+    var formulaire = $JQry(div).parents("form");
+    var input = formulaire.find("input[type='text']")[0];
+    if (input != null) {
+    	input.value = "";
+    }
+}
