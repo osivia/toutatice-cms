@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>toutatice-portail.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>3.0.2-RC4</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>toutatice-portail-cms-nuxeo-sar</artifactId>
-	<version>3.0.2-RC4</version>
+	<version>3.0.2-SNAPSHOT</version>
 	<packaging>jboss-sar</packaging>
 	<name>Portal Nuxeo Services</name>
 
@@ -19,14 +19,14 @@
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
-			<version>3.0.2-RC4</version>
+			<version>3.0.2-SNAPSHOT</version>
  		</dependency>
 
  		
  		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
-			<version>3.0.2-RC4</version>
+			<version>3.0.2-SNAPSHOT</version>
 			<scope>provided</scope>
  		</dependency>
  		
