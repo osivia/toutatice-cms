@@ -71,6 +71,19 @@ public class PublishInfosCommand implements INuxeoCommand {
 				// Modif SUBTYPES-end
 				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
+                // Modif-SPACEID-begin
+                /*
+                 * les spaceId ne sont appliqués qu'aux ws pour le moment.
+                 * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
+                 */
+                if (infos.containsKey("spaceID")) {
+                    publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                }
+                if (infos.containsKey("parentSpaceID")) {
+                    publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
+                }
+                // Modif-SPACEID-end
+
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
@@ -82,18 +95,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 						publiInfos.setPublishSpacePath(workspacePath);
 						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
 						publiInfos.setLiveSpace(true);
-						// Modif-SPACEID-begin
-						/*
-                         * les spaceId ne sont appliqués qu'aux ws pour le moment.
-                         * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
-                         */
-                        if (infos.containsKey("spaceID")) {
-                            publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
-                        }
-                        if (infos.containsKey("parentSpaceID")) {
-                            publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
-                        }
-						// Modif-SPACEID-end
 					}
 				}
 				
