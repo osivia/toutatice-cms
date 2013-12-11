@@ -42,6 +42,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
 		request.set("path", path);
+		
+		
 		Blob binariesInfos = (Blob) request.execute();
 
 		if (binariesInfos != null) {

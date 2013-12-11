@@ -18,9 +18,12 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.api.statut.IStatutService;
+import org.osivia.portal.api.statut.ServeurIndisponible;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
+import fr.toutatice.portail.core.nuxeo.NuxeoConnectionProperties;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
@@ -52,6 +55,18 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		return sessionCreationSynchronizers.get(key);
 	}
 
+	
+	private static List<Integer> AVERAGE_LIST  = new ArrayList<Integer>();
+	private static final int AVERAGE_SIZE = 20;
+	
+	
+	public IStatutService getServiceStatut(NuxeoCommandContext ctx ) throws Exception {
+		IStatutService serviceStatut = (IStatutService) ctx.getPortletContext().getAttribute("StatutService");
+		return serviceStatut;
+	}
+	
+	
+	
 	public Object invoke() throws Exception {
 
 		Object res = null;
@@ -89,7 +104,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				profilerUser = userName;
 				if( profilerUser == null)
-					profilerUser = "unlogged user";
+					profilerUser = "unlogged-user";
 
 				// On regarde s'il existe déjà une session pour cet utilisateur
 				try {
@@ -173,6 +188,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				}
 
 				profilerUser = virtualUser;
+				if( profilerUser == null)
+					profilerUser = "vu-anonymous";
+
 
 				// Profils session list creation
 				synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey)) {
@@ -191,7 +209,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				}
 
 				if (nuxeoSession == null) {
-					logger.info("Creating nuxeo session for virtual user" + virtualUser);
+					// v2.0.22 : code inutile
+					//logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
 					INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 					nuxeoSession = nuxeoService.createUserSession(virtualUser);
@@ -230,6 +249,46 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				name +=", nuxeoSession=" +nuxeoSession.hashCode();
 
 				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
+				
+				
+				
+					// Moyenne flottante sur les publishInfosCommands
+				
+					String statusErrorMsg = null;
+
+					if (!error && command.getId().startsWith("PublishInfosCommand")) {
+						synchronized (AVERAGE_LIST) {
+
+							while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
+								AVERAGE_LIST.remove(0);
+							}
+
+							AVERAGE_LIST.add((int) elapsedTime);
+
+							if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
+
+								long total = 0l;
+								for (int i = 0; i < AVERAGE_LIST.size(); i++) {
+									total += AVERAGE_LIST.get(i);
+								}
+
+								long moyenne = total / AVERAGE_LIST.size();
+
+								if (moyenne > 150) {
+									statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
+
+									AVERAGE_LIST.clear();
+								}
+							}
+						}
+					}
+					
+					if( statusErrorMsg != null)	{
+						// On force le DOWN pour laisser Nuxeo souffler
+						getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(), new ServeurIndisponible("[DOWN]" + statusErrorMsg));
+					}
+
+
 
 
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				
