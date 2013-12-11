@@ -90,7 +90,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
 			// Pas de maj asychrone en mode USER
-			log.warn("asynchronous mode not supported for scope USER");
+			//v2.0.22 : warn non pertinent
+			//log.warn("asynchronous mode not supported for scope USER");
 			return;
 		}
 		
