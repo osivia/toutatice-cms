@@ -266,7 +266,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 							// On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
 							// Le but est de determiner des mini-pics
 							
-							if( elapsedTime < 2000)
+							if( elapsedTime < 1000)
 								AVERAGE_LIST.add((int) elapsedTime);
 
 							if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
