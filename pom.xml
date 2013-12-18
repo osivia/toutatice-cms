@@ -144,18 +144,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Ajout (temporaire?) car non définis dans pom de nuxeo-automation-client -->
-        <dependency>
-            <groupId>org.nuxeo.common</groupId>
-            <artifactId>nuxeo-common</artifactId>
-            <version>${nuxeo.automation.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -168,6 +156,12 @@
             <artifactId>json-lib</artifactId>
             <version>2.4</version>
             <classifier>jdk15</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
         </dependency>
 
     </dependencies>
