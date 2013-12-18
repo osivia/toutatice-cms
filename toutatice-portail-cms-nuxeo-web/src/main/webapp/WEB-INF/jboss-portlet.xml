@@ -11,15 +11,17 @@
    <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
       
-      <ajax>
+ <!--      <ajax>
       		<partial-refresh>false</partial-refresh>
    		</ajax>
+   		-->
       
      	<transaction>
             <trans-attribute>Required</trans-attribute>            
         </transaction>
                <header-content>
 		<link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+		<script type="text/javascript" src="/js/utils.js" />
 	  </header-content>
          
     </portlet>

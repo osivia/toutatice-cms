@@ -3,11 +3,13 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document.comments;
 import net.sf.json.JSONArray;
 
 import org.apache.commons.io.IOUtils;
+
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
@@ -25,8 +27,15 @@ public class GetCommentsCommand implements INuxeoCommand {
 		request.set("commentableDoc", document.getId());
 		Blob commentsBlob = (Blob) request.execute();
 		if(commentsBlob != null){
-			String fileContent = IOUtils.toString(commentsBlob.getStream(), "UTF-8"); 
+			String fileContent = IOUtils.toString(commentsBlob.getStream(), "UTF-8");
 			JSONArray jsonComments = JSONArray.fromObject(fileContent);
+			
+			
+			// v2.0.21 : suppression des files
+			if( commentsBlob instanceof FileBlob){
+				((FileBlob) commentsBlob).getFile().delete();
+			}
+			
 			return jsonComments;
 			
 		}else{

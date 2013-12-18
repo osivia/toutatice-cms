@@ -153,6 +153,12 @@ return requete;
 
 
 		<label>Titre RSS :</label> <input type="text" name="rssTitle" value="${rssTitle}" size="40"> <br/><br/>
+		
+				
+		<b>Création de contenus</b><br/>
+		<label>Chemin du conteneur :</label><input type="text" name="createParentPath" value="${createParentPath}" size="40"> <br/>
+		<label>Type de contenu :</label><input type="text" name="createDocType" value="${createDocType}" size="40"> <br/><br/>
+		
 			
 			<input type="submit" name="modifierPrefs"  value="Valider">
 			<input type="submit" name="annuler"  value="Annuler">

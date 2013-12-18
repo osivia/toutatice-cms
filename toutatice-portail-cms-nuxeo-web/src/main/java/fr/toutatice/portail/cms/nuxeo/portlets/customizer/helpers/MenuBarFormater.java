@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -22,6 +23,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
@@ -113,7 +115,7 @@ public class MenuBarFormater {
 		CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
 		
 		
-		if( pubInfos.isEditableByUser())	{
+        if( pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx))  {
 		    
 		    String url = null;
 		    
@@ -137,41 +139,43 @@ public class MenuBarFormater {
 	    }
 	   
 
-	   // v2.1 : WORKSPACES
-	    protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+       protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
-	        if (cmsCtx.getRequest().getRemoteUser() == null)
-	            return;
+           if (cmsCtx.getRequest().getRemoteUser() == null)
+               return;
 
-	        
-	        CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
-	        
-		        if( pubInfos.isEditableByUser())    {
-	            if( pubInfos.isLiveSpace())    {
-	            
-	                String url = null;
-	            
-	                Document doc = (Document) cmsCtx.getDoc();
-	                
-                    
-                    DocTypeDefinition docTypeDef =  customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
-                    
-                    if( docTypeDef != null && docTypeDef.isSupportingPortalForm())  {
+           
+           CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath())  ) ;
+           
+               if( pubInfos.isEditableByUser())    {
+               if( pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx))    {
+               
+                   String url = null;
+               
+                   Document doc = (Document) cmsCtx.getDoc();
+                   
+                   
+                   DocTypeDefinition docTypeDef =  customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+                   
+                   if( docTypeDef != null && docTypeDef.isSupportingPortalForm())  {
 
-                        // Force to reload portlet
-                        PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
-                        portletURL.setParameter("reloadDatas", ""+ System.currentTimeMillis());
-                        
-                        String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");
-	                    
-                        String onClick = "setCallbackParams('"+divId+"', '"+portletURL.toString()+"')";
-                        
-	                    url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath() + "@toutatice_edit";
-	                    addEditLinkItem(menuBar,onClick, url);	                
-	                } 	
-	            }
-	        }
-	    }
+                       // Force to reload portlet
+                       PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
+                       portletURL.setParameter("reloadDatas", ""+ System.currentTimeMillis());
+                       
+                       String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");
+                       
+                       String onClick = "setCallbackParams('"+divId+"', '"+portletURL.toString()+"')";
+                       
+                       url = customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath() + "@toutatice_edit";
+                       addEditLinkItem(menuBar,onClick, url);                  
+                   }   
+               }
+           }
+       }
+              
+
+   
 	    	   
 
 	
@@ -283,8 +287,6 @@ public class MenuBarFormater {
 		if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState()))
 			return;
 		
-//		if( "1".equals(cmsCtx.getDisplayLiveVersion()))
-//			return;
 
 		String permaLinkURL = getPortalUrlFactory().getPermaLink(
 				new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
@@ -296,7 +298,29 @@ public class MenuBarFormater {
 
 	}
 	
-	
+	   /** Identifiant MenuBar */
+    public static final String MENU_BAR = "osivia.menuBar";
+    
+    /**
+     * Méthode utilitaire permettant de récupérer un item par son "type".
+     * @param type (permalien, ...)
+     * @param request requête permettant d'accéder à la MenuBar
+     * @return l'item de "type" donné
+     */
+    public static MenubarItem getItemByType(String type, PortletRequest request){
+        MenubarItem searchItem = null;
+        List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(MENU_BAR);
+        boolean itemFound = false;
+        Iterator<MenubarItem> items = menuBar.iterator();
+        while(items.hasNext() && !itemFound){
+            MenubarItem item = items.next();
+            if(type.equalsIgnoreCase(item.getId())){
+                itemFound = true;
+                searchItem = item;
+            }
+        }
+        return searchItem;
+    }
 	
 	
 }

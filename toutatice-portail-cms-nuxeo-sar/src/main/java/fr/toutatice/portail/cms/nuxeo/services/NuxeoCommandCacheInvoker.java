@@ -18,10 +18,13 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.api.status.IStatusService;
+import org.osivia.portal.api.status.UnavailableServer;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
@@ -52,6 +55,19 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 		return sessionCreationSynchronizers.get(key);
 	}
+	
+	   
+    private static List<Integer> AVERAGE_LIST  = new ArrayList<Integer>();
+    private static final int AVERAGE_SIZE = 20;
+    
+    
+    public IStatusService getServiceStatut(NuxeoCommandContext ctx ) throws Exception {
+        IStatusService serviceStatut = (IStatusService) ctx.getPortletContext().getAttribute("StatusService");
+        return serviceStatut;
+    }
+    
+    
+
 
 	public Object invoke() throws Exception {
 
@@ -62,9 +78,11 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		String profilerUser = null;
 
 		List<Session> sessionsProfils = null;
+		
+	    ServerInvocation userSessionInvocation = null;
 
 		Session nuxeoSession = null;
-
+        boolean recyclableSession = true;
 
 		try {
 
@@ -86,6 +104,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					userName = user.getUserName();
 
 				profilerUser = userName;
+                if( profilerUser == null)
+                    profilerUser = "unlogged-user";				
 
 				// On regarde s'il existe déjà une session pour cet utilisateur
 				try {
@@ -138,73 +158,13 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 								invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSessionUser",
 										user.getUserName());
 						}
+						
+	                      
+                        userSessionInvocation = invocation;
 					}
 				}				
 
-				/*
-				ControllerContext controllerCtx = ctx.getControlerContext();
 
-
-				User user = (User) controllerCtx.getServerInvocation().getAttribute(Scope.PRINCIPAL_SCOPE,
-						UserInterceptor.USER_KEY);
-
-				String userName = null;
-				if (user != null)
-					userName = user.getUserName();
-
-				profilerUser = userName;
-
-				// On regarde s'il existe déjà une session pour cet utilisateur
-				try {
-					nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-							"osivia.nuxeoSession");
-				} catch (ClassCastException e) {
-					// Peut arriver si rechargement des classes de Nuxeo
-				}
-
-				String sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-						"osivia.nuxeoSessionUser");
-
-				String sessionCreationSynchronizer = (String) controllerCtx.getAttribute(
-						ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer");
-
-				if (sessionCreationSynchronizer == null) {
-					sessionCreationSynchronizer = "sessionCreationSynchronizer";
-					controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.sessionCreationSynchronizer",
-							sessionCreationSynchronizer);
-				}
-
-				if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
-					// Création d'une nouvelle session
-
-					synchronized (sessionCreationSynchronizer) {
-
-						// On refait les controles pour la synchronisation
-
-						nuxeoSession = (Session) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"osivia.nuxeoSession");
-
-						sessionUserName = (String) controllerCtx.getAttribute(ControllerCommand.SESSION_SCOPE,
-								"osivia.nuxeoSessionUser");
-
-						if (nuxeoSession == null
-								|| (nuxeoSession != null && userName != null && sessionUserName == null)) {
-
-							INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class,
-									"osivia:service=NuxeoService");
-
-							nuxeoSession = nuxeoService.createUserSession(userName);
-
-							controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSession",
-									nuxeoSession);
-
-							if (user != null)
-								controllerCtx.setAttribute(ControllerCommand.SESSION_SCOPE, "osivia.nuxeoSessionUser",
-										user.getUserName());
-						}
-					}
-				}
-				*/
 			}
 
 			else {
@@ -230,6 +190,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				}
 
 				profilerUser = virtualUser;
+                if( profilerUser == null)
+                    profilerUser = "vu-anonymous";
+				
 
 				// Profils session list creation
 				synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey)) {
@@ -248,7 +211,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				}
 
 				if (nuxeoSession == null) {
-					logger.info("Creating nuxeo session for virtual user" + virtualUser);
+//					logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
 					INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 					nuxeoSession = nuxeoService.createUserSession(virtualUser);
@@ -268,6 +231,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					res = command.execute(nuxeoSession);
 				}
 			} catch (Exception e) {
+                
+                if( e.getCause() instanceof IllegalStateException)
+                    recyclableSession = false;			    
 
 				error = true;
 				throw e;
@@ -284,6 +250,47 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
 
+				
+                // Moyenne flottante sur les publishInfosCommands
+                
+                String statusErrorMsg = null;
+
+                if (!error && command.getId().startsWith("PublishInfosCommand")) {
+                    synchronized (AVERAGE_LIST) {
+
+                        while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
+                            AVERAGE_LIST.remove(0);
+                        }
+                        
+                        // On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
+                        // Le but est de determiner des mini-pics
+                        
+                        if( elapsedTime < 1000)
+                            AVERAGE_LIST.add((int) elapsedTime);
+
+                        if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
+
+                            long total = 0l;
+                            for (int i = 0; i < AVERAGE_LIST.size(); i++) {
+                                total += AVERAGE_LIST.get(i);
+                            }
+
+                            long moyenne = total / AVERAGE_LIST.size();
+
+                            if (moyenne > 150) {
+                                statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
+
+                                AVERAGE_LIST.clear();
+                            }
+                        }
+                    }
+                }
+                
+                if( statusErrorMsg != null) {
+                    // On force le DOWN pour laisser Nuxeo souffler
+                    getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(), new UnavailableServer("[DOWN]" + statusErrorMsg));
+                }
+
 
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				
 			}
@@ -291,8 +298,11 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		} finally {
 
 			// recycle the session
-			if (sessionsProfils != null)
-				sessionsProfils.add(nuxeoSession);
+            if (sessionsProfils != null && recyclableSession == true)
+                sessionsProfils.add(nuxeoSession);
+
+            if( userSessionInvocation != null && recyclableSession == false)
+                userSessionInvocation.removeAttribute(Scope.SESSION_SCOPE,  "osivia.nuxeoSession");
 
 
 

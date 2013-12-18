@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormate
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand.WebConfigurationType;
@@ -216,6 +218,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
 		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
 		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
+        fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "spaceMenubar", "spaceMenubar"));
+		
 		return fragmentTypes;
 	}
 
@@ -301,8 +305,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		Document doc = (Document) ctx.getDoc();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, false));		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
 		windowProperties.put("osivia.hideDecorators", "1");
 		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
@@ -510,15 +513,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
                     // Pas de filtre sur les versions publiées
                     ctx.setDisplayLiveVersion("1");
                     CMSHandlerProperties props = this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
-                    props.getWindowProperties().put("osivia.title", "Liste des documents");
+                    props.getWindowProperties().put("osivia.title", doc.getTitle());
                     return props;
                 }
             }
-            // v2.0.9 : ordre par date de modif par défaut
+            //  ordre par date de modif par défaut
             if ("Folder".equals(doc.getType())) {
                 return this.getCMSFolderPlayer(ctx);
             } else {
-                this.getCMSOrderedFolderPlayer(ctx);
+                return this.getCMSOrderedFolderPlayer(ctx);
             }
 
 		}
@@ -894,32 +897,37 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
 	}
 
-	   // V2.1 : workspace
+protected Map<String, DocTypeDefinition> docTypes = null;
+    
+    protected DocTypeDefinition createDocType( String docTypeName, String displayName, boolean supportsPortalForm, List<String> portalFormSubTypes){
+        
+        DocTypeDefinition portalDocType = new DocTypeDefinition();
+        portalDocType.setName(docTypeName);
+        portalDocType.setDisplayName(displayName);
+        portalDocType.setSupportingPortalForm(supportsPortalForm);
+        portalDocType.setPortalFormSubTypes(portalFormSubTypes);
+            
+        return portalDocType;
+    }
+    
 
-	private Map<String, DocTypeDefinition> docTypes = null;
-
-    protected DocTypeDefinition createDocType(String docTypeName, String displayName, boolean supportingPortalForm) {
-
-	    DocTypeDefinition portalDocType = new DocTypeDefinition();
-	    portalDocType.setName(docTypeName);
-	    portalDocType.setDisplayName(displayName);
-        portalDocType.setSupportingPortalForm(supportingPortalForm);
-
-	    return portalDocType;
-	}
-
+    
     public Map<String, DocTypeDefinition> getDocTypeDefinitions(CMSServiceCtx ctx) throws Exception {
+ 
+        if (docTypes == null) {
 
-        if( this.docTypes == null)   {
-
-            this.docTypes = new LinkedHashMap<String,DocTypeDefinition>();
-
-            this.docTypes.put("Folder", this.createDocType("Folder", "Dossier", true));
-            this.docTypes.put("File", this.createDocType("File", "Fichier", true));
-            this.docTypes.put("Note", this.createDocType("Note", "Note", true));
+            docTypes = new LinkedHashMap<String, DocTypeDefinition>();
+            docTypes.put("Workspace", createDocType("Workspace", "Workspace", false, Arrays.asList("File", "Folder", "Note")));
+            docTypes.put("Folder", createDocType("Folder", "Dossier", true, Arrays.asList("File", "Folder", "Note")));
+            docTypes.put("File", createDocType("File", "Fichier", true, new ArrayList<String>()));
+            docTypes.put("Note", createDocType("Note", "Note", true,  new ArrayList<String>()));
+            docTypes.put("Annonce", createDocType("Annonce", "Annonce", true,  new ArrayList<String>()));
+            docTypes.put("AnnonceFolder", createDocType("AnnonceFolder", "AnnonceFolder", false, Arrays.asList("Annonce")));
+            docTypes.put("ContextualLink", createDocType("ContextualLink", "Lien", true,  new ArrayList<String>()));
+            docTypes.put("DocumentUrlContainer", createDocType("DocumentUrlContainer", "Container de liens", false,  Arrays.asList("ContextualLink")));
 
         }
-        return this.docTypes;
+        return docTypes;
 
     }
 

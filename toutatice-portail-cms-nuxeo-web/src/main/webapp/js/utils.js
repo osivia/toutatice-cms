@@ -87,11 +87,6 @@ function successActions(idToRefresh){
 function failureActions(response){
 }
 
-//Modif-COMMENTS-begin
-function closeFancyBox(){
-	parent.jQuery.fancybox.close();
-}
-
 function isEmptyField(inputId, errorElementId, msg){
 	var isEmpty = true;
 	var field = document.getElementById(inputId);
@@ -106,19 +101,17 @@ function isEmptyField(inputId, errorElementId, msg){
 	return isEmpty;
 }
 
-var $JQry = jQuery.noConflict();
-$JQry(document).ready(function() {
-		$JQry(".fancybox_comment").fancybox({
-	 		'height': 500,	 
-	 		'beforeClose'	:	function(){
-				var errorElement = document.getElementById('errorAddCom');
-				errorElement.innerHTML = "";
-				var errorElement = document.getElementById('errorAddChildCom');
-				errorElement.innerHTML = ""
-			}
-		});
-	});
-//Modif-COMMENTS-end
+/* Affichage des actions répondre/supprimer au survol */
+function toggleactions(obj, show){    
+	if(show){       
+		obj.getElementsByClassName('child_comment')[0].style.display="block";     
+		obj.getElementsByClassName('delete_comment')[0].style.display="block";  
+	}else{      
+		obj.getElementsByClassName('child_comment')[0].style.display="none";       
+		obj.getElementsByClassName('delete_comment')[0].style.display="none";  
+	}  
+}
+
 
 
 function clearText(div) {

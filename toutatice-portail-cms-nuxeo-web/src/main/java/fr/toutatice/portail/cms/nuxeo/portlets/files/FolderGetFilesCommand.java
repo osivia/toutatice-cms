@@ -26,10 +26,6 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 	}
 	
 	public Object execute( Session session)	throws Exception {
-		/*
-		Documents children = (Documents) session.newRequest("Document.GetChildren").setHeader(
-                Constants.HEADER_NX_SCHEMAS, "*").setInput(folder).execute();
-		*/
 	
 	     
 			OperationRequest request;
@@ -37,16 +33,11 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 
 			request =  session.newRequest("Document.Query");
 
-			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ORDER BY ecm:pos ";
-
-// v2.0.9 : On reaffiche tous les folders			
-//			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ";
-//			if( navigationFilter){
-//				nuxeoRequest += " AND  (ecm:mixinType != 'Folderish' OR ttc:showInMenu = 1) ";
-//			}
-//			nuxeoRequest += " ORDER BY ecm:pos ";
-			
-			
+		     // TODO: déporter le filtre sur les types dans le Customizer
+            String nuxeoRequest = "ecm:parentId = '" + folderId + "' ";
+            nuxeoRequest += " AND  (ecm:primaryType != 'Workspace' AND ecm:primaryType != 'PortalSite') ";
+            nuxeoRequest += " ORDER BY ecm:pos ";
+ 			
 			
 			// Insertion du filtre sur les élements publiés
 			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);

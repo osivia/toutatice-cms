@@ -58,21 +58,21 @@ public class PartialNavigationCommand implements INuxeoCommand {
 		
 		String itemRequest = "";
 		
-		if( fetchRoot)
-			itemRequest = "ecm:uuid ='"+ ((Document) publishSpaceConfig.getNativeItem()).getId()+"'";
-		
-		
+	    if(fetchRoot){
+            itemRequest = "ecm:uuid ='"+ ((Document) publishSpaceConfig.getNativeItem()).getId()+"'";
+        }
+        		
 	
 		
-		for(String docId : docIds){
-			if( itemRequest.length() >  0)
-				itemRequest += " OR";
-			// Modif-PictureBook-begin
-			itemRequest += " ecm:parentId = '" + docId + "'";
-			//itemRequest += " ecm:uuid = '" + docId + "'";
-			// Modif-PictureBook-end
-		}
-		
+        for(String docId : docIds){
+            if( itemRequest.length() >  0)
+                itemRequest += " OR";
+            // Modif-PictureBook-begin
+            itemRequest += " ecm:parentId = '" + docId + "'";
+            //itemRequest += " ecm:uuid = '" + docId + "'";
+            // Modif-PictureBook-end
+        }
+        
 		String nuxeoRequest = "( " + itemRequest + ")  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1) ";
 		
 		// Insertion du filtre sur les élements publiés

@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -40,21 +41,21 @@ public class PublishInfosCommand implements INuxeoCommand {
 		CMSPublicationInfos publiInfos = null;
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
-		request.set("path", this.path);
+		request.set("path", path);
+		
+		
 		Blob binariesInfos = (Blob) request.execute();
 
 		if (binariesInfos != null) {
 			publiInfos = new CMSPublicationInfos();
-		
+			
 			String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8"); 
 			
 			JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
 			Iterator it = infosContent.iterator();
-
 			while (it.hasNext()) {
 				JSONObject infos = (JSONObject) it.next();
 				publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
-
 				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
@@ -62,12 +63,16 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
 				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
 				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
-
 				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
 				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
-
-
+                 if (infos.containsKey("spaceID")) {
+                    publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                }
+                if (infos.containsKey("parentSpaceID")) {
+                    publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
+                }
+ 
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);
@@ -79,20 +84,16 @@ public class PublishInfosCommand implements INuxeoCommand {
 						publiInfos.setPublishSpacePath(workspacePath);
 						publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
 						publiInfos.setLiveSpace(true);
-						/*
-                         * les spaceId ne sont appliqués qu'aux ws pour le moment.
-                         * CKR (27/08/13) : le spaceId n'est pas obligatoirement renseigné.
-                         */
-                        if (infos.containsKey("spaceID")) {
-                            publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
-                        }
-                        if (infos.containsKey("parentSpaceID")) {
-                            publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
-                        }
 					}
 				}
+				
+
 			}
-			// Modif-RETOUR-end
+            // suppression des files
+            if( binariesInfos instanceof FileBlob){
+                ((FileBlob) binariesInfos).getFile().delete();
+            }			
+
 		}
 		return publiInfos;
 	}
@@ -113,12 +114,12 @@ public class PublishInfosCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PublishInfosCommand" + this.path;
+		return "PublishInfosCommand" + path;
 	}
 
 	/**
 	 * Décode une chaîne de caractères en UTF-8
-	 *
+	 * 
 	 * @param value
 	 *            chaîne de caractères à décoder
 	 * @return la chaîne de caractères décodée
@@ -130,7 +131,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 		}
 		return value;
 	}
-
 	
 	private List<Integer> adaptList(JSONArray list) {
 		List<Integer> returnedList = new ArrayList<Integer>();
@@ -142,7 +142,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 	}
 	
 	private Boolean adaptBoolean(Object value) {
-
 		if (value != null) {
 			return (Boolean) value;
 		} else {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.EcmCommand;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -376,33 +378,55 @@ public class CMSService implements ICMSService {
 	}
 
 
-	private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
-		CMSBinaryContent pictureContent = null;
-		String savedScope = cmsCtx.getScope();
-		try {
-			/*
-			 * On tente de récupérer l'image "Nuxeo" en mode anonyme;
-			 * getAnonymousContent retourne null sil'image n'est pas accessible
-			 * en mode anonyme, i.e. si elle n'est pas publique.
-			 */
-			CMSItem picture = this.getAnonymousContent(cmsCtx, docPath);
+    private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
+        
+        CMSBinaryContent pictureContent = null;
 
-			if (picture == null) {
-				/* On tente alors de récupérer l'image avec les droits de l'utilisateur. */
-				picture = this.fetchContent(cmsCtx, docPath);
-			}
-			if (picture != null) {
-				cmsCtx.setScope("superuser_context");
+        String savedScope = cmsCtx.getScope();
+        String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
+        try {
+            CMSItem picture ;
 
-				pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
-						(Document) picture.getNativeItem(), content)));
-			}
+            /* Lecture du document picture */
+            
+            // Accès en super-user pour voir si la picture est accessible en mode anonyme
+            cmsCtx.setForcePublicationInfosScope("superuser_context");
+            CMSPublicationInfos publiInfos = getPublicationInfos(cmsCtx, docPath);
+            cmsCtx.setForcePublicationInfosScope(null);
 
-		} finally {
-			cmsCtx.setScope(savedScope);
-		}
-		return pictureContent;
-	}
+            if (publiInfos.isAnonymouslyReadable()) {
+                cmsCtx.setForcePublicationInfosScope("anonymous");
+            }
+            
+            picture = fetchContent(cmsCtx, docPath);
+            
+            
+            /* Lecture de la ressources binaire */
+            
+            // On a les droits, on accède à la ressource binaire en mode super user
+            cmsCtx.setScope("superuser_context");
+            
+            pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
+                    (Document) picture.getNativeItem(), content)));
+
+
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
+                if (e instanceof NuxeoException && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+                    return null;
+                else
+                    throw new CMSException(e);
+            } else {
+
+                throw (CMSException) e;
+            }
+        } finally {
+            cmsCtx.setScope(savedScope);
+            cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
+        }
+        return pictureContent;
+    
+}
 
 	public CMSBinaryContent getFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws CMSException{
 		CMSBinaryContent cmsContent = null;
@@ -470,90 +494,7 @@ public class CMSService implements ICMSService {
 		return false;
 	}
 
-	public CMSItem getAnonymousContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
-		CMSItem anonymousContent = null;
-		String savedScope = cmsCtx.getScope();
-		String cacheId = "anonymous_content/" + path;
-
-		/* Informations du cache pour l'accès en mode anonyme" */
-		CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT, null, cmsCtx.getRequest(),
-				this.portletCtx, cmsCtx.isAsyncCacheRefreshing());
-		CMSServiceCtx checkAnonymousAccess = new CMSServiceCtx();
-		checkAnonymousAccess.setControllerContext(cmsCtx.getControllerContext());
-		checkAnonymousAccess.setForcePublicationInfosScope("anonymous");
-
-		/* Affectation du délai d'expiration des caches. */
-		NuxeoCommandContext commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
-		if (commandCtx.getCacheTimeOut() == -1) {
-			if (System.getProperty("nuxeo.cacheTimeout") != null) {
-                cacheInfos.setExpirationDelay(Long.parseLong(System.getProperty("nuxeo.cacheTimeout")) * 1000);
-            } else {
-                cacheInfos.setExpirationDelay(0L);
-            }
-		} else {
-            cacheInfos.setExpirationDelay(commandCtx.getCacheTimeOut());
-        }
-
-		try {
-
-			Object anonymousCheck = this.getCacheService().getCache(cacheInfos);
-
-			if (anonymousCheck != null) {
-
-				AccesStatus anonymousCheckStatus = (AccesStatus) anonymousCheck;
-
-				if (!anonymousCheckStatus.isAccess()) {
-
-					if (anonymousCheckStatus.getStatus() == AnonymousAccesInvoker.NOT_FOUND) {
-
-						throw new CMSException(CMSException.ERROR_NOTFOUND);
-					}
-				}else{
-					/* Le contenu est accessible: aucune erreur n'est possible. */
-					anonymousContent = this.getContent(checkAnonymousAccess, path);
-				}
-			} else {/* Mise en cache. */
-
-				try {
-					cacheInfos.setForceReload(true);
-
-					anonymousContent = this.getContent(checkAnonymousAccess, path);
-
-					cacheInfos.setInvoker(new AnonymousAccesInvoker(true, AnonymousAccesInvoker.AUTHORIZED));
-					this.getCacheService().getCache(cacheInfos);
-
-				} catch (CMSException e) {
-					if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.FORBIDDEN));
-						this.getCacheService().getCache(cacheInfos);
-
-					} else if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-
-						cacheInfos.setInvoker(new AnonymousAccesInvoker(false, AnonymousAccesInvoker.NOT_FOUND));
-						this.getCacheService().getCache(cacheInfos);
-						throw new CMSException(CMSException.ERROR_NOTFOUND);
-
-					} else {
-                        throw e;
-                    }
-				}
-
-			}
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
-            } else {
-                throw (CMSException) e;
-            }
-		} finally {
-			cmsCtx.setScope(savedScope);
-			cmsCtx.setForcePublicationInfosScope(null);
-		}
-
-		return anonymousContent;
-
-	}
 
 	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
 		// Document doc = ctx.g
@@ -599,6 +540,11 @@ public class CMSService implements ICMSService {
 
 			String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
 			Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
+            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
+            PartialNavigationInvoker partialNavInvoker = null;
+            if (refreshing) {
+                partialNavInvoker = (PartialNavigationInvoker) ((HttpServletRequest) request).getAttribute("partialNavInvoker");
+            }
 			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, this.portletCtx,
 					false);
 			// délai d'une session
@@ -625,53 +571,53 @@ public class CMSService implements ICMSService {
 			superUserCtx.setControllerContext(cmsCtx.getControllerContext());
 			cmsCtx.setScope("superuser_context");
 
-			//Modif-BUG-begin
-			//DCH : A REPORTER (BUG DANS CHARGEMENT PARTIEL)
-			do {
-				NavigationItem navItem = navItems.get(pathToCheck);
+        
+            do {
+                NavigationItem navItem = navItems.get(pathToCheck);
+                
+                if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren() )) {
+                    Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
-				if ((navItem != null) && (fetchSubItems && navItem.isUnfetchedChildren() )) {
-					Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
-
-					if( ! idsToFetch.contains(doc.getId())) {
+                    if( ! idsToFetch.contains(doc.getId()))
                         idsToFetch.add(doc.getId());
-                    }
-				}
+                }
 
-				CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-				pathToCheck = parentPath.toString();
-
-				if (navItem == null) {
-					Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
-					if( ! idsToFetch.contains(doc.getId())) {
+                CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+                pathToCheck = parentPath.toString();
+                
+                if (navItem == null) {
+                    Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+                    if( ! idsToFetch.contains(doc.getId()))
                         idsToFetch.add(doc.getId());
-                    }
-				}
+                }
+            
+                
+                
 
-
-
-
-			} while (pathToCheck.contains(publishSpaceConfig.getPath()));
-			//Modif-BUG-end
+            } while (pathToCheck.contains(publishSpaceConfig.getPath()));
 
 
 
 			if( (idsToFetch.size() > 0) || fetchRoot)
 
 			{
-				cmsCtx.setScope("__nocache");
+	              cmsCtx.setScope("__nocache");
 
-				/* appel de la commande */
+	                /* appel de la commande */
 
-				navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig,
-						navItems, idsToFetch, fetchRoot, path)));
+	                navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig, navItems, idsToFetch,
+	                        fetchRoot, path)));
 
-				/* Stockage de l'arbre partiel */
+	                /* Stockage de l'arbre partiel */
 
-				cacheInfos.setForceReload(true);
-				cacheInfos.setForceNOTReload(false);
-				cacheInfos.setInvoker(new PartialNavigationInvoker(navItems));
-				this.getCacheService().getCache(cacheInfos);
+	                cacheInfos.setForceReload(true);
+	                cacheInfos.setForceNOTReload(false);
+	                partialNavInvoker = new PartialNavigationInvoker(navItems);
+	                if (refreshing) {
+	                    ((HttpServletRequest) request).setAttribute("partialNavInvoker", partialNavInvoker);
+	                }
+	                cacheInfos.setInvoker(partialNavInvoker);
+	                getCacheService().getCache(cacheInfos);
 
 			}
 

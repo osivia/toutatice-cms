@@ -54,7 +54,7 @@ if( map != null && map.getString("data") != null)
 
 %>
 
-<div class="nuxeo-docview-<%= doc.getType().toLowerCase()%>">
+<div class="nuxeo-docview-<%= doc.getType().toLowerCase()%> no-ajax-link">
 
 <% if( "1".equals(onlyDescription) && !renderRequest.getWindowState().equals(WindowState.MAXIMIZED))	{	%>
 	<div class="nuxeo-docview-short-view">
@@ -107,7 +107,11 @@ if( map != null && map.getString("data") != null)
 <%	} %>	
 		 <jsp:include page="../comments/view-comments.jsp"></jsp:include>
 	</div>
+</div>
 
+<!-- Boîte de confirmation de suppression du document courant -->
+<div id="div_delete_doc" style="display: none">
+	<jsp:include page="confirm-delete-doc.jsp"></jsp:include>
 
 </div>
 

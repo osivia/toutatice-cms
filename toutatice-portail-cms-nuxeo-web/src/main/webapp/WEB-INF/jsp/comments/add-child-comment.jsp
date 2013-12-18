@@ -1,29 +1,23 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ page isELIgnored="false" %>
+<%@ page import="fr.toutatice.portail.cms.nuxeo.portlets.document.comments.HTMLCommentsTreeBuilder"%>
 
 <portlet:defineObjects/>
 
 <%
-String commentId = renderResponse.getNamespace() + "add-child-comment";
+String commentId = (String) renderRequest.getAttribute("commentDivId");
 String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 %>
 
-<script type="text/javascript">
-	var msg = "Le commentaire n'est pas renseigné";
-</script>
+<portlet:actionURL var="valid_child" ><portlet:param name="comments" value="addChild"/></portlet:actionURL>
 
-<div id="<%=commentId%>" class="add-child-comment">
-	<form method="post" action="<portlet:actionURL><portlet:param name="comments" value="addChild"/></portlet:actionURL>">
-		<textarea id="addedChildComment" name="childCommentContent" rows="6" cols="60"></textarea><br/>
-		<div id="errorAddChildCom" class="contentError"></div><br/>
-		<input id="commentParentId" type="hidden" name="commentId" value=""/>
-		<input type="submit" name="addComment"  value="Répondre" onClick="if(!isEmptyField('addedChildComment','errorAddChildCom',msg)){fancyContainerDivId='<%=containerId%>';}else{return false;}">
-		<input type="reset" name="noAddComment"  value="Annuler" onclick="closeFancyBox();">
+<div id="<%= commentId %>" class="add-child-comment" style="display: none">
+	<form method="post" action="${valid_child}" class="ajax-form">
+		<textarea id="addedChildComment<%= commentId %>" name="childCommentContent" rows="6" cols="60"></textarea><br/>
+		<div id="errorAddChildCom<%= commentId %>" class="contentError"></div>
+		<input id="commentParentId<%= commentId %>" type="hidden" name="commentId" value=""/>	
+		<input type="submit" name="addComment"  value="Répondre" class="ajax-link">		
+		<input type="reset" name="noAddComment"  value="Annuler" onclick="hideCommentField('<%= commentId %>');">
 	</form>
 </div>
-
-<script>
-	var addChildDiv = document.getElementById('<%=commentId%>');
-	Event.observe(addChildDiv, "click", bilto);
-</script>
