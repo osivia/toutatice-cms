@@ -63,6 +63,10 @@
 					if( iChild == size - 1)
 						cssClass += " last";					
 				}
+                
+                if ((child.getChildrens().size() > 0) && (!child.isSelected()) && (level + 1 >= openLevels)) {
+                    cssClass += " more";
+                }
 				
 				String li = "<li class=\"" + cssClass + "\"";
 				li += ">";
