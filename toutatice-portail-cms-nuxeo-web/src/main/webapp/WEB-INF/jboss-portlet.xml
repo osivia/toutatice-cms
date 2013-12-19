@@ -11,11 +11,7 @@
    <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
       
- <!--      <ajax>
-      		<partial-refresh>false</partial-refresh>
-   		</ajax>
-   		-->
-      
+
      	<transaction>
             <trans-attribute>Required</trans-attribute>            
         </transaction>
@@ -29,11 +25,7 @@
  <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>
       
-      <!-- 
-      <ajax>
-      		<partial-refresh>false</partial-refresh>
-   		</ajax>
-   		-->
+
       
      	<transaction>
             <trans-attribute>Required</trans-attribute>            
@@ -83,11 +75,7 @@
  <portlet>
       <portlet-name>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-name>
 
-<!-- 
-      <ajax>
-      		<partial-refresh>false</partial-refresh>
-   	  </ajax>
--->
+
    	    <transaction>
             <trans-attribute>Required</trans-attribute>            
         </transaction>
