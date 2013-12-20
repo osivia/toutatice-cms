@@ -1,113 +1,107 @@
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="javax.portlet.PortletURL"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <%@ page isELIgnored="false" %>
 
+
 <portlet:defineObjects />
 
-<script>
-	var $JQry = jQuery.noConflict();
+<portlet:actionURL var="addAction">
+    <portlet:param name="action" value="add"/>
+</portlet:actionURL>
 
-	$JQry(function() {
-		var dates = $JQry( "#datefrom, #dateto" ).datepicker({
-			defaultDate: "+1w",
-			changeMonth: true,
-			numberOfMonths: 1,
-			dateFormat: 'dd/mm/yy',
-			onSelect: function( selectedDate ) {
-				var option = this.id == "datefrom" ? "minDate" : "maxDate",
-					instance = $JQry( this ).data( "datepicker" ),
-					date = $JQry.datepicker.parseDate(
-						instance.settings.dateFormat ||
-						$JQry.datepicker._defaults.dateFormat,
-						selectedDate, instance.settings );
-				dates.not( this ).datepicker( "option", option, date );
-			}
-		});
-	});
+<c:set var="contextPath" value="${pageContext.request.contextPath}" />
+
+<c:set var="namespace"><portlet:namespace /></c:set>
+
+<c:set var="idDateFrom" value="${namespace}-date-from" />
+<c:set var="idDateTo" value="${namespace}-date-to" />
+
+
+
+<script>
+    var $JQry = jQuery.noConflict();
+
+    $JQry(function() {
+        var dates = $JQry("#${idDateFrom}, #${idDateTo}").datepicker({
+            defaultDate: "+1w",
+            changeMonth: true,
+            numberOfMonths: 1,
+            dateFormat: 'dd/mm/yy',
+            onSelect: function( selectedDate ) {
+                var option = (this.id.indexOf("-date-from", this.id.length - 10) !== -1) ? "minDate" : "maxDate",
+                    instance = $JQry( this ).data( "datepicker" ),
+                    date = $JQry.datepicker.parseDate(
+                        instance.settings.dateFormat ||
+                        $JQry.datepicker._defaults.dateFormat,
+                        selectedDate, instance.settings );
+                dates.not( this ).datepicker( "option", option, date );
+            }
+        });
+    });
 </script>
 
-<%
 
-String libelle = (String) request.getAttribute("libelle");
-
-if( libelle != null)	{
-%><span class="selector-libelle"><%= libelle %></span> <%	
-}
-
-List<String> dates = (List<String>) renderRequest.getAttribute("dates");
-
-if(! "1".equals(renderRequest.getAttribute("datesMonoValued"))){
-	
-	if( dates != null && dates.size() > 0) 	
-	{ %>
-		<table class="nuxeo-keywords-selector-table"  cellspacing="5" width="95%">
-	<%
-		int occ = 0;
-		for(String interval : dates){
-			String sOcc = Integer.toString(occ++);
-			
-			String[] decomposedInterval = interval.split(DateSelectorPortlet.DATES_SEPARATOR);
-			
-			String dateFrom = decomposedInterval[0];
-			String dateTo = decomposedInterval[1];		
-			%>
-				<tr>
-					<td width="90%">Du <%=dateFrom%> au <%=dateTo%> </td> 
-					<td  width="10%">
-					<a href="<portlet:actionURL>
-			         		<portlet:param name="action" value="delete"/>
-			         		<portlet:param name="occ" value="<%= sOcc %>"/>
-			         </portlet:actionURL>"><img src="<%= renderRequest.getContextPath() %>/img/delete.gif" border="0"/></a>
-					</td>
-				</tr>
-		
-			<%	
-		}%>
-		</table>
-	<%
-	} 
-	%>
-	
-	<div class="nuxeo-keywords-selector">
-		<form method="post" action="<portlet:actionURL/>">
-			<input type="text" id="datefrom" name="datefrom" value="${dateFrom}" size="10">	
-			<input type="text" id="dateto" name="dateto" value="${dateTo}" size="10">	
-			<input border=0 src="<%= renderRequest.getContextPath() %>/img/add.gif" name="add" type="image" value="submit" align="middle" > 
-		</form>				
-	</div>
-
-<% } else { 
+<c:if test="${not empty libelle}">
+    <span class="selector-libelle">${libelle}</span>
+</c:if>
 
 
-	String dateFrom = "";
-	String dateTo = "";	
-	if(dates != null && dates.size() == 1){
-		String[] interval = dates.get(0).split(DateSelectorPortlet.DATES_SEPARATOR);
-		dateFrom = interval[0];
-		dateTo = interval[1];	
-	}
-	
-%>
-
-	<div class="nuxeo-keywords-selector">
-		<form method="post" action="<portlet:actionURL/>">
-			<input type="text" id="datefrom" name="datefrom" value="<%= dateFrom %>" size="10">	
-			<input type="text" id="dateto" name="dateto" value="<%= dateTo %>" size="10">	
-			<input border=0 width="16px" height="16px" src="<%= renderRequest.getContextPath() %>/img/submit.jpg" name="monoAdd" type="image" value="submit" align="middle" > 
-			<a style="vertical-align:bottom;" href="<portlet:actionURL>
-			 		<portlet:param name="action" value="delete"/>
-			 		<portlet:param name="occ" value="0"/>
-			     </portlet:actionURL>"><img src="<%= renderRequest.getContextPath() %>/img/delete.gif" border="0"/>
-			</a>	
-		</form>			
-	</div>
-
-<% } %>
-	
+<div class="nuxeo-keywords-selector">
+    <form method="post" action="${addAction}">
+        <div class="table">
+            <c:choose>
+                <c:when test='${datesMonoValued == "1"}'>
+                    <!-- Mono-valued -->
+                    <c:set var="interval" value="${fn:split(dates[0], '%')}" />
+                    <c:set var="dateFrom" value="${interval[0]}" />
+                    <c:set var="dateTo" value="${interval[1]}" />
+                    <c:set var="imageSource" value="${contextPath}/img/submit.gif" />
+                    <c:set var="imageTitle" value="Valider" />
+                </c:when>
+                
+                <c:otherwise>
+                    <!-- Multi-valued -->
+                    <c:set var="imageSource" value="${contextPath}/img/add.gif" />
+                    <c:set var="imageTitle" value="Ajouter" />
+                        
+                    <c:forEach var="item" items="${dates}" varStatus="status">
+                        <c:set var="interval" value="${fn:split(item, '%')}" />
+                        <portlet:actionURL var="deleteAction">
+                            <portlet:param name="action" value="delete"/>
+                            <portlet:param name="occ" value="${status.count}"/>
+                        </portlet:actionURL>
+                        
+                        <div class="table-row">
+                            <div class="table-cell">Du ${interval[0]} au ${interval[1]}</div>
+                            <div class="table-cell">                                
+                                <a href="${deleteAction}" class="delete" title="Supprimer"></a>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
+            
+            <div class="table-row">
+                <div class="table-cell input-date">
+                    <input type="text" id="${idDateFrom}" name="${idDateFrom}" value="${dateFrom}" />
+                    <input type="text" id="${idDateTo}" name="${idDateTo}" value="${dateTo}" />
+                </div>
+                <div class="table-cell">
+                    <portlet:actionURL var="addAction">
+                        <portlet:param name="action" value="add"/>
+                    </portlet:actionURL>
+                        
+                    <input type="image" src="${imageSource}" title="${imageTitle}" />
+                </div>
+                
+                <c:if test='${datesMonoValued == "1"}'>
+                    <div class="table-cell">
+                        <input type="image" src="${contextPath}/img/delete.gif" onclick="clearText(this)" title="Effacer" />
+                    </div>
+                </c:if>
+            </div>
+        </div>
+    </form>
+</div>

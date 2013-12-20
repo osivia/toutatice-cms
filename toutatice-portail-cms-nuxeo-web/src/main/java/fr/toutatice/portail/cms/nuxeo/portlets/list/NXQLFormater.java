@@ -1,13 +1,16 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.portlet.PortletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang.time.DateUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -20,6 +23,12 @@ import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
  * NXQL formatter.
  */
 public class NXQLFormater {
+
+    /** Frontend date pattern. */
+    private static final String FRONTEND_DATE_PATTERN = "dd/MM/yyyy";
+    /** Backend date pattern. */
+    private static final String BACKEND_DATE_PATTERN = "yyyy-MM-dd";
+
 
     /**
      * Default constructor.
@@ -217,42 +226,38 @@ public class NXQLFormater {
     public String formatDateSearch(String fieldName, List<String> searchValue) {
         StringBuffer request = new StringBuffer();
 
-        String delimFrontend = "/";
-        String delimBackend = "-";
-
         if ((searchValue != null) && (searchValue.size() > 0)) {
             request.append("(");
 
             int index = 0;
-
             for (String datesInterval : searchValue) {
+                String[] interval = datesInterval.split(DateSelectorPortlet.DATES_SEPARATOR);
+                try {
+                    // Dates
+                    String[] frontPattern = new String[]{FRONTEND_DATE_PATTERN};
+                    Date beginDate = DateUtils.parseDate(interval[0], frontPattern);
+                    Date endDate = DateUtils.parseDate(interval[1], frontPattern);
+                    // Add one day to end date
+                    endDate = DateUtils.addDays(endDate, 1);
 
-                String jj = "";
-                String mm = "";
-                String aaaa = "";
+                    // Backend dates format
+                    String from = DateFormatUtils.format(beginDate, BACKEND_DATE_PATTERN);
+                    String to = DateFormatUtils.format(endDate, BACKEND_DATE_PATTERN);
 
-                if (index > 0) {
-                    request.append(" OR ");
+                    // Request generation
+                    if (index > 0) {
+                        request.append(" OR ");
+                    }
+                    request.append("(");
+                    request.append(fieldName);
+                    request.append(" BETWEEN DATE '");
+                    request.append(from);
+                    request.append("' AND DATE '");
+                    request.append(to);
+                    request.append("')");
+                } catch (ParseException e) {
+                    continue;
                 }
-
-                String[] decomposedInterval = datesInterval.split(DateSelectorPortlet.DATES_SEPARATOR);
-
-                StringTokenizer st = new StringTokenizer(decomposedInterval[0], delimFrontend);
-                jj = st.nextToken();
-                mm = st.nextToken();
-                aaaa = st.nextToken();
-                String paramFrom = aaaa + delimBackend + mm + delimBackend + jj;
-
-                st = new StringTokenizer(decomposedInterval[1], delimFrontend);
-                jj = st.nextToken();
-                mm = st.nextToken();
-                aaaa = st.nextToken();
-                String paramTo = aaaa + delimBackend + mm + delimBackend + jj;
-
-                request.append("(");
-                request.append(fieldName + " BETWEEN DATE '" + paramFrom + "' AND DATE '" + paramTo + "' ");
-                request.append(")");
-
                 index++;
             }
             request.append(")");
@@ -264,7 +269,7 @@ public class NXQLFormater {
 
     /**
      * Format advanced search.
-     * 
+     *
      * @param searchValues search values
      * @return formatted advanced search
      */
