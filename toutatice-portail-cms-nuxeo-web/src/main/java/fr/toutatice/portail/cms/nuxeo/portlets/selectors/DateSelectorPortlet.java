@@ -28,214 +28,256 @@ import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 
 
-
-
 /**
- * Portlet de selection de liste par mot cle
+ * Portlet de sélection par dates.
+ *
+ * @see CMSPortlet
  */
-
 public class DateSelectorPortlet extends CMSPortlet {
 
-	private static Log logger = LogFactory.getLog(DateSelectorPortlet.class);
+    /** Dates separator. */
+    public static String DATES_SEPARATOR = "%";
 
-	public static String DATES_SEPARATOR = "%";
+    /** Date from attribute name suffix. */
+    private static final String DATE_FROM_SUFFIX = "-date-from";
+    /** Date to attribute name suffix. */
+    private static final String DATE_TO_SUFFIX = "-date-to";
 
-	//public static String DELETE_PREFIX = "delete_";
 
-	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    /** Logger. */
+    private static Log logger = LogFactory.getLog(DateSelectorPortlet.class);
 
-		logger.debug("processAction ");
 
-		PortalWindow window = WindowFactory.getWindow(req);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        logger.debug("processAction ");
 
-		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("modifierPrefs") != null)) {
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-			if( req.getParameter("selectorId").length() > 0) {
-                window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
+
+        if ("admin".equals(request.getPortletMode().toString()) && (request.getParameter("modifierPrefs") != null)) {
+            if (request.getParameter("selectorId").length() > 0) {
+                window.setProperty("osivia.selectorId", request.getParameter("selectorId"));
             } else if (window.getProperty("osivia.selectorId") != null) {
                 window.setProperty("osivia.selectorId", null);
             }
 
-			if( req.getParameter("libelle").length() > 0) {
-                window.setProperty("osivia.libelle", req.getParameter("libelle"));
+            if (request.getParameter("libelle").length() > 0) {
+                window.setProperty("osivia.libelle", request.getParameter("libelle"));
             } else if (window.getProperty("osivia.libelle") != null) {
                 window.setProperty("osivia.libelle", null);
             }
 
-			if("1".equals(req.getParameter("datesMonoValued"))) {
+            if ("1".equals(request.getParameter("datesMonoValued"))) {
                 window.setProperty("osivia.datesMonoValued", "1");
             } else if (window.getProperty("osivia.datesMonoValued") != null) {
                 window.setProperty("osivia.datesMonoValued", null);
             }
 
-			/* Initialisation des dates suite à configuration. */
-			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			if(selectors != null){
-				List<String> dates = selectors.get(req.getParameter("selectorId"));
-				if((dates != null) && (dates.size() > 0)){
-					dates.clear();
-					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-				}
-			}
+            /* Initialisation des dates suite à configuration. */
+            Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+            if (selectors != null) {
+                List<String> dates = selectors.get(request.getParameter("selectorId"));
+                if ((dates != null) && (dates.size() > 0)) {
+                    dates.clear();
+                    response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                }
+            }
+
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        }
 
 
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
+        if ("admin".equals(request.getPortletMode().toString()) && (request.getParameter("annuler") != null)) {
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        }
 
-		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("annuler") != null)) {
 
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
+        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View mode
 
-		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-		boolean isAddAction = (req.getParameter("add.x") != null) || (req.getParameter("add") != null);
-		boolean isMonoValuedAddAction = (req.getParameter("monoAdd.x") != null) || (req.getParameter("monoAdd") != null);
+            // Action parameter
+            String action = request.getParameter("action");
+            // Selector identifier
+            String selectorId = window.getProperty("osivia.selectorId");
+            // Mono valued selector indicator
+            boolean monoValued = "1".equals(window.getProperty("osivia.datesMonoValued"));
 
-		if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction))
-		{
-			String selectorId = window.getProperty("osivia.selectorId");
-			if (selectorId != null)
-			{
-                if (StringUtils.isNotEmpty(req.getParameter("datefrom")) && StringUtils.isNotEmpty(req.getParameter("dateto")))
-				{
-					Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+            if ("add".equalsIgnoreCase(action)) {
+                // Add action
+                this.add(request, response, selectorId, monoValued);
+            } else if ("delete".equalsIgnoreCase(action)) {
+                // Delete action
+                this.delete(request, response, selectorId);
+            }
 
-					if ((req.getParameter("datefrom") != null) && (req.getParameter("datefrom").length() > 0)) {/* TO ASK: utilité du test? */
+        }
+    }
 
-						List<String> dates = selectors.get(selectorId);
-						if (dates == null) {
-							dates = new ArrayList<String>();
-							selectors.put(selectorId, dates);
-						}
-						if("1".equals(window.getProperty("osivia.datesMonoValued"))) {
-                            dates.clear();
-                        }
 
-						dates.add(req.getParameter("datefrom") + DATES_SEPARATOR + req.getParameter("dateto"));
+    /**
+     * Utility method used to add dates.
+     *
+     * @param request action request
+     * @param response action response
+     * @param selectorId selector identifier
+     * @param monoValued mono valued selector indicator
+     */
+    private void add(ActionRequest request, ActionResponse response, String selectorId, boolean monoValued) {
+        // Selectors
+        Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+        List<String> datesSelector = selectors.get(selectorId);
+        if (datesSelector == null) {
+            datesSelector = new ArrayList<String>();
+            selectors.put(selectorId, datesSelector);
+        }
+        if (monoValued) {
+            datesSelector.clear();
+        }
 
-					}
+        // Dates
+        String dateFrom = request.getParameter(response.getNamespace() + DATE_FROM_SUFFIX);
+        String dateTo = request.getParameter(response.getNamespace() + DATE_TO_SUFFIX);
+        boolean validation = true;
+        if (StringUtils.isBlank(dateFrom)) {
+            if (StringUtils.isBlank(dateTo)) {
+                validation = false;
+            } else {
+                dateFrom = dateTo;
+            }
+        } else if (StringUtils.isBlank(dateTo)) {
+            dateTo = dateFrom;
+        }
 
-					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+        if (validation) {
+            datesSelector.add(dateFrom + DATES_SEPARATOR + dateTo);
+        }
 
-					//Réinitialisation des fenetres en mode NORMAL
-					req.setAttribute("osivia.unsetMaxMode", "true");
-				}
-			}
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
+        response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-		// Delete
-		if ("view".equals(req.getPortletMode().toString()) && "delete".equals(req.getParameter("action")) )
-		{
-			int occ = new Integer(req.getParameter("occ"));
+        // Reset window mode to normal
+        request.setAttribute("osivia.unsetMaxMode", "true");
+    }
 
-			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			String selectorId = window.getProperty("osivia.selectorId");
 
-			List<String> dates = selectors.get(selectorId);
-			if ((dates != null) && (dates.size() > 0))
-			{
-				dates.remove(occ);
-				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+    /**
+     * Utility method used to delete dates.
+     *
+     * @param request action request
+     * @param response action response
+     * @param selectorId selector identifier
+     */
+    private void delete(ActionRequest request, ActionResponse response, String selectorId) {
+        // Deletion index
+        int occ = Integer.valueOf(request.getParameter("occ")) - 1;
 
-                // Réinitialisation des fenetres en mode NORMAL
-                req.setAttribute("osivia.unsetMaxMode", "true");
-			}
-		}
+        // Selectors
+        Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+        List<String> dateSelectors = selectors.get(selectorId);
+        if (dateSelectors != null) {
+            dateSelectors.remove(occ);
+        }
 
-	}
+        response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-	@RenderMode(name = "admin")
-	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+        // Reset window mode to normal
+        request.setAttribute("osivia.unsetMaxMode", "true");
+    }
 
-		res.setContentType("text/html");
-		PortletRequestDispatcher rd = null;
 
-		PortalWindow window = WindowFactory.getWindow(req);
+    /**
+     * Admin view display.
+     *
+     * @param req request
+     * @param res response
+     * @throws PortletException
+     * @throws IOException
+     */
+    @RenderMode(name = "admin")
+    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+        res.setContentType("text/html");
+        PortletRequestDispatcher rd = null;
 
-		String selectorId = window.getProperty("osivia.selectorId");
-		if (selectorId == null) {
+        PortalWindow window = WindowFactory.getWindow(req);
+
+        String selectorId = window.getProperty("osivia.selectorId");
+        if (selectorId == null) {
             selectorId = "";
         }
-		req.setAttribute("selectorId", selectorId);
+        req.setAttribute("selectorId", selectorId);
 
 
-		String libelle = window.getProperty("osivia.libelle");
-		if (libelle == null) {
+        String libelle = window.getProperty("osivia.libelle");
+        if (libelle == null) {
             libelle = "";
         }
-		req.setAttribute("libelle", libelle);
+        req.setAttribute("libelle", libelle);
 
-		String datesMonoValued = window.getProperty("osivia.datesMonoValued");
-		if(datesMonoValued == null) {
+        String datesMonoValued = window.getProperty("osivia.datesMonoValued");
+        if (datesMonoValued == null) {
             datesMonoValued = "0";
         }
-		req.setAttribute("datesMonoValued", datesMonoValued);
+        req.setAttribute("datesMonoValued", datesMonoValued);
 
-		rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/date/admin.jsp");
-		rd.include(req, res);
+        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/date/admin.jsp");
+        rd.include(req, res);
+    }
 
-	}
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        logger.debug("doView");
 
-	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-			PortletSecurityException, IOException {
+        try {
+            response.setContentType("text/html");
 
-		logger.debug("doView");
+            PortalWindow window = WindowFactory.getWindow(request);
 
-		try {
+            String selectorId = window.getProperty("osivia.selectorId");
+            String libelle = window.getProperty("osivia.libelle");
+            request.setAttribute("libelle", libelle);
+            String datesMonoValued = window.getProperty("osivia.datesMonoValued");
+            request.setAttribute("datesMonoValued", datesMonoValued);
 
-			response.setContentType("text/html");
+            String idDateFrom = response.getNamespace() + DATE_FROM_SUFFIX;
+            String dateFrom = request.getParameter(idDateFrom);
+            String idDateTo = response.getNamespace() + DATE_TO_SUFFIX;
+            String dateTo = request.getParameter(idDateTo);
 
-			PortalWindow window = WindowFactory.getWindow(request);
-
-			String selectorId = window.getProperty("osivia.selectorId");
-			String libelle = window.getProperty("osivia.libelle");
-			request.setAttribute("libelle", libelle);
-			String datesMonoValued = window.getProperty("osivia.datesMonoValued");
-			request.setAttribute("datesMonoValued", datesMonoValued);
-			String dateFrom = request.getParameter("datefrom");
-			String dateTo = request.getParameter("dateto");
-
-			if (selectorId != null)
-			{
-				// Get public parameter
-
-				Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-
-				if (selectors.get(selectorId) != null) {
+            if (selectorId != null) {
+                // Get public parameter
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                if (selectors.get(selectorId) != null) {
                     request.setAttribute("dates", selectors.get(selectorId));
                 } else {
                     request.setAttribute("dates", new ArrayList<String>());
                 }
 
-				request.setAttribute("datefrom", dateFrom);
-				request.setAttribute("dateto", dateTo);
+                request.setAttribute(idDateFrom, dateFrom);
+                request.setAttribute(idDateTo, dateTo);
 
-
-				this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/date/view.jsp").include(request,
-						response);
-
-			} else {
-				response.getWriter().print("<h2>Identifiant non défini</h2>");
-				response.getWriter().close();
-			}
-
-		}
-			catch (NuxeoException e) {
-				PortletErrorHandler.handleGenericErrors(response, e);
-			}
-
-		catch (Exception e) {
-			if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
+                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/date/view.jsp").include(request, response);
+            } else {
+                response.getWriter().print("<h2>Identifiant non défini</h2>");
+                response.getWriter().close();
             }
-		}
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
 
-		logger.debug("doView end");
-	}
-
+        logger.debug("doView end");
+    }
 }

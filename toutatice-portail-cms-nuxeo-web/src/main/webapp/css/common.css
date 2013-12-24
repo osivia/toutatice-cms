@@ -621,6 +621,10 @@ div.document-types .more-document-types	{
 	width: 100%;
 }
 
+.nuxeo-keywords-selector .table-cell.input-date input[type="text"] {
+    width: 44%;
+}
+
 .nuxeo-keywords-selector .table-cell input[type="image"] {
 	width: 16px;
 	padding-left: 5px;
