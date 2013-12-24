@@ -242,9 +242,15 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				long end = System.currentTimeMillis();
 				long elapsedTime = end - begin;
 				
+                // LBI si la commande n'a pas d'ID, on lui propose l'instance java
+                String cmdId = command.getId();
+                if (command.getId() == null) {
+                    cmdId = command.toString();
+                }
+
 				// log into profiler
 
-				String name = "id='" + command.getId() + "',user='" + profilerUser + "'";
+                String name = "id='" + cmdId + "',user='" + profilerUser + "'";
 				
 				name +=", nuxeoSession=" +nuxeoSession.hashCode();
 
@@ -255,7 +261,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                 
                 String statusErrorMsg = null;
 
-                if (!error && command.getId().startsWith("PublishInfosCommand")) {
+                if (!error && cmdId.startsWith("PublishInfosCommand")) {
                     synchronized (AVERAGE_LIST) {
 
                         while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
