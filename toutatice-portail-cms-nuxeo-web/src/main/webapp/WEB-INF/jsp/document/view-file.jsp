@@ -28,7 +28,7 @@ Document doc = (Document) renderRequest.getAttribute("doc");
 String lien = ctx.getLink(doc, CMSCustomizer.TEMPLATE_DOWNLOAD).getUrl();
 
 List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-menuBar.add(new MenubarItem("DOWNLOAD", "Télécharger...", 20, lien, null, "portlet-menuitem portlet-menuitem-download", ""));
+menuBar.add(new MenubarItem("DOWNLOAD", "Télécharger...", 20, lien, null, "portlet-menuitem download", ""));
 
 PropertyMap map = doc.getProperties().getMap("file:content");
 if(map != null && !map.isEmpty()){

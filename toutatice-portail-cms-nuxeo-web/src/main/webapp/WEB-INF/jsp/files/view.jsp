@@ -1,4 +1,5 @@
 
+<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet"%>
 <%@page import="javax.portlet.ResourceURL"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
@@ -28,19 +29,17 @@
 <%
 List<Document> docs = (List<Document>) renderRequest.getAttribute("docs")	;
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-String basePath = (String) request.getAttribute("basePath");
-String folderPath = (String) request.getAttribute("folderPath");
-String displayMode = (String) request.getAttribute("displayMode");
-//v2.0-SP1 : lien contextualisés
-String cmsLink = (String) request.getAttribute("cmsLink");
+
+
 Document folderDoc = (Document) request.getAttribute("doc");
 
 %>
 
 <div class="nuxeo-file-browser no-ajax-link">
 
+<jsp:include page="add-content.jsp"></jsp:include>
 
-<%@ include file="header.jsp" %>
+
 	
 <div class="separateur"></div>	
 
@@ -71,7 +70,6 @@ while( it.hasNext())	{
 	String icon = Formater.formatNuxeoIcon(doc);
 	String target = "";	
 	String downloadFileTarget = "";
-	boolean noAjax = true;
 	
 
 	ResourceURL actionsURL = renderResponse.createResourceURL();
@@ -82,32 +80,16 @@ while( it.hasNext())	{
 	String actionId = "actions"+ renderResponse.getNamespace() + doc.getId();
 
 	
+	link = ctx.getLink(doc,"fileExplorer");
+	url = link.getUrl();
+	target = Formater.formatTarget(link);
 	
-	 if(  ! "1".equals(cmsLink) && 	 FileBrowserPortlet.isNavigable( doc) )	{
-		PortletURL folderURL = renderResponse.createRenderURL();
-		folderURL.setParameter("folderPath", doc.getPath());
-		if( displayMode != null)
-			folderURL.setParameter("displayMode", displayMode);
-	
-		url = folderURL.toString();
-		link = new Link(url, false);
-		
-		// le mode ajax n'est autorise que pour les folders en mode NORMAL
-		if( WindowState.NORMAL.equals(renderRequest.getWindowState()))
-			noAjax = false;
-			
-
-	}	else {
-		link = ctx.getLink(doc,"fileExplorer");
-		url = link.getUrl();
-		target = Formater.formatTarget(link);
-		
-		if("File".equals(doc.getType())){
-			downloadFileLink = ctx.getLink(doc,"downloableFile");
-			downloadFileUrl = downloadFileLink.getUrl();
-			downloadFileTarget = Formater.formatTarget(downloadFileLink);
-		}
+	if("File".equals(doc.getType())){
+		downloadFileLink = ctx.getLink(doc,"download");
+		downloadFileUrl = downloadFileLink.getUrl();
+		downloadFileTarget = Formater.formatTarget(downloadFileLink);
 	}
+
 	 
 	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+icon+"\">";					
 %>
@@ -120,9 +102,7 @@ while( it.hasNext())	{
 			
 						
 			<td>
-<% if (noAjax)		{ %> 
-	 <span class="no-ajax-link file-name"> 
-<% }	%>			
+	
 				<a <%=target%> href="<%=url%>">  <%=doc.getTitle()%> </a>
 <% if(!"".equalsIgnoreCase(Formater.formatSize(doc))){ %>
 				&nbsp;(<%= Formater.formatSize(doc) %>)
@@ -131,11 +111,6 @@ while( it.hasNext())	{
 				<a <%=downloadFileTarget%> href="<%=downloadFileUrl%>"><img src="<%=renderRequest.getContextPath()%>/img/download-vert-small.png" border="0"></a>
 <% } %>
 
-
-<%
-   if (noAjax){ %> 
-	 </span> 
-<% }	%>	
 				<div class="file-actions" onclick="getFileActions('<%= actionsMenuURL %>', '<%= actionId %>');">   <div class="file-actions-menu" id="<%= actionId %>">  <div class="ajax-waiting" > </div> </div> </div>				
 			</td>
 			
@@ -191,8 +166,3 @@ while( it.hasNext())	{
 </div>
 
 
-<!--
-<p align="center">
-		scope	<%=  ctx.getScope()  %> <br/>
-</p>
--->

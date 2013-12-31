@@ -654,8 +654,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		boolean externalLink = false;
 		boolean downloadable = false;
 
-		if (!"detailedView".equals(ctx.getDisplayContext()) && !"fileExplorer".equals(ctx.getDisplayContext())) {
-			if ("File".equals(doc.getType())) {
+		if (  (!"detailedView".equals(ctx.getDisplayContext()) ))
+			{
+			// Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
+			if ("File".equals(doc.getType()) && ("download".equals(ctx.getDisplayContext()))) {
 				PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
 				if((attachedFileProperties != null) && !attachedFileProperties.isEmpty()){
 					url = this.createPortletDelegatedFileContentLink(ctx);

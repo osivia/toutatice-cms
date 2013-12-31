@@ -14,14 +14,14 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 	
 	String folderId;
 	String folderPath;
-	boolean displayLiveVersion;	
+
 
 	
-	public FolderGetFilesCommand(String folderPath, String folderId,  boolean displayLiveVersion) {
+	public FolderGetFilesCommand(String folderPath, String folderId) {
 		super();
 		this.folderId = folderId;
 		this.folderPath = folderPath;
-		this.displayLiveVersion = displayLiveVersion;
+
 		
 	}
 	
@@ -40,7 +40,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
  			
 			
 			// Insertion du filtre sur les élements publiés
-			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
 
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
@@ -54,7 +54,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "FolderGetFilesCommand/" + displayLiveVersion + "/" +folderPath;
+		return "FolderGetFilesCommand/" +folderPath;
 	};		
 
 }

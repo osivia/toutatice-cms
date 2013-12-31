@@ -132,7 +132,7 @@ public class MenuBarFormater {
 	   protected void addEditLinkItem(List<MenubarItem> menuBar, String onClick, String url ) throws Exception {
 
 	        MenubarItem item = new MenubarItem("EDIT", "Modifier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
-	                url, onClick, "fancyframe_refresh portlet-menuitem-nuxeo-edit", "nuxeo");
+	                url, onClick, "fancyframe_refresh edition", "nuxeo");
 	        item.setAjaxDisabled(true);
 	        menuBar.add(item);
 
