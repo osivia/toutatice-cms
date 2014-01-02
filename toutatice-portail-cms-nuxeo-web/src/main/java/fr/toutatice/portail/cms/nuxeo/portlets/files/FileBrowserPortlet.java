@@ -363,8 +363,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                 nuxeoPath = window.getProperty("osivia.nuxeoPath");
             }
 
-            String displayMode = request.getParameter("displayMode");
-
 
             if (nuxeoPath != null) {
                 NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
@@ -376,15 +374,15 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 /* Folder courant */
 
-                Document doc = ctx.fetchDocument(nuxeoPath);
+                boolean reload = false;
+                if (request.getParameter("reloadDatas") != null)
+                    reload = true;
+
+                Document doc = ctx.fetchDocument(nuxeoPath, reload);
+                
 
 
                 /* Récupération des fils */
-
-
-                // liens contextualisés par paramétrage
-                // TODO : A supprimer pour simplifier le concept
-                request.setAttribute("cmsLink", "1");
 
 
                 CMSPublicationInfos pubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
@@ -486,6 +484,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("doc", doc);
                 request.setAttribute("ctx", ctx);
 
+                
+                response.setTitle(doc.getTitle());
 
                 getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view.jsp").include(request, response);
 
