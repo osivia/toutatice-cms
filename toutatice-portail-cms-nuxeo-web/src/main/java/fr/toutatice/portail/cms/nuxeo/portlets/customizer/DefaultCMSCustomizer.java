@@ -83,6 +83,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 	XMLReader parser;
     EditableWindowAdapter editableWindowAdapter;
     CMSToWebPathAdapter cmsToWebAdapter;
+    ClassLoader cl;
 
 	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 
@@ -129,6 +130,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
 		try   {
 		 // Initialisé ici pour résoudre problème de classloader
+		    
+		  cl = Thread.currentThread().getContextClassLoader();
 
          this.parser = WysiwygParser.getInstance().getParser();
 		} catch(Exception e){
@@ -933,16 +936,27 @@ protected Map<String, DocTypeDefinition> docTypes = null;
 
     }
 
-    public synchronized String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
+    public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
+        ClassLoader originalCL = Thread.currentThread().getContextClassLoader();
+        
+        // L'instanciation du parser Neko nécessite de passer dans le classloader du CMSCustomizer
+        // (Sinon, on n'arrive pas à trouver la classe du parser)
+        Thread.currentThread().setContextClassLoader(cl);
+        
+        try {
+        
         Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
         transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
         OutputStream output = new ByteArrayOutputStream();
-        //XMLReader parser = WysiwygParser.getInstance().getParser();
-        transformer.transform(new SAXSource(this.parser, new InputSource(new StringReader(htmlContent))), new StreamResult(
+        XMLReader parser = WysiwygParser.getInstance().getParser();
+        transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(
                 output));
 
         return output.toString();
+        } finally   {
+            Thread.currentThread().setContextClassLoader(originalCL);
+        }
 
     }
 

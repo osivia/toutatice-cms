@@ -149,43 +149,31 @@ public class MenuBarFormater {
 
             if (pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx)) {
 
-                String onClick = null;
 
                 Document doc = (Document) cmsCtx.getDoc();
 
-                if (PortletHelper.isContentInNavigation(cmsCtx, doc.getPath())) {
-                    // Refresh all page
-
-                    String callBackURL = getPortalUrlFactory().getCMSUrl(
-                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
-                            PortletHelper.getCurrentPage(cmsCtx).getId().toString(PortalObjectPath.CANONICAL_FORMAT),
-                            (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, IPortalUrlFactory.DISPLAYCTX_REFRESH, null,
-                            null, null, null);
-
-                    onClick = "setCallbackParams(null, '" + callBackURL + "')";
-
-                } else {
-
+  
                     DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
                     if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
+                        // Refresh all page
 
-                        // Force to reload portlet
-                        PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
-                        portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
+                        String callBackURL = getPortalUrlFactory().getCMSUrl(
+                                new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
+                                PortletHelper.getCurrentPage(cmsCtx).getId().toString(PortalObjectPath.CANONICAL_FORMAT),
+                                (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, IPortalUrlFactory.DISPLAYCTX_REFRESH, null,
+                                null, null, null);
 
-                        String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");
-
-                        onClick = "setCallbackParams('" + divId + "', '" + portletURL.toString() + "')";
+                        String onClick = "setCallbackParams(null, '" + callBackURL + "')";
+                        
+                        addEditLinkItem(menuBar, onClick, customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
+                                + "@toutatice_edit");
 
 
                     }
-                }
 
-                if (onClick != null)
-                    addEditLinkItem(menuBar, onClick, customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
-                            + "@toutatice_edit");
+
             }
         }
     }
