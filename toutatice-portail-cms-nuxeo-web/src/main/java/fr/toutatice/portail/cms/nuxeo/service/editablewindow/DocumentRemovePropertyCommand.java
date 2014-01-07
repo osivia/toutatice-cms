@@ -39,8 +39,7 @@ public class DocumentRemovePropertyCommand implements INuxeoCommand {
     }
 
     public String getId() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.getClass().getSimpleName().concat(" : ").concat(inputDoc.getPath());
     }
 
 
