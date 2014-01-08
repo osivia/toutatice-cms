@@ -1,8 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -10,6 +12,7 @@ import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
@@ -22,9 +25,12 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 
@@ -67,7 +73,7 @@ public class MenuBarFormater {
 
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
-        if (cmsCtx.getDoc() == null)
+        if (cmsCtx.getDoc() == null && cmsCtx.getCreationPath() == null)
             return;
 
         PortletRequest request = cmsCtx.getRequest();
@@ -77,14 +83,20 @@ public class MenuBarFormater {
         // Menu bar
 
         try {
+            if (cmsCtx.getDoc() != null)
+                getPermaLinkLink(cmsCtx, menuBar);
+            if (cmsCtx.getDoc() != null)
+                getContextualizationLink(cmsCtx, menuBar);
+            if (cmsCtx.getDoc() != null)
+                getEditLink(cmsCtx, menuBar);
 
-            getPermaLinkLink(cmsCtx, menuBar);
+            getCreateLink(cmsCtx, menuBar);
+            if (cmsCtx.getDoc() != null)
+                getDeleteLink(cmsCtx, menuBar);
 
-            getContextualizationLink(cmsCtx, menuBar);
 
-            getEditLink(cmsCtx, menuBar);
-
-            getAdministrationLink(cmsCtx, menuBar);
+            if (cmsCtx.getDoc() != null)
+                getAdministrationLink(cmsCtx, menuBar);
         } catch (CMSException e) {
             if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN || e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas
@@ -152,30 +164,253 @@ public class MenuBarFormater {
 
                 Document doc = (Document) cmsCtx.getDoc();
 
-  
-                    DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
-                    if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+                DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
-                        // Refresh all page
+                if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
-                        String callBackURL = getPortalUrlFactory().getCMSUrl(
-                                new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
-                                PortletHelper.getCurrentPage(cmsCtx).getId().toString(PortalObjectPath.CANONICAL_FORMAT),
-                                (((Document) (cmsCtx.getDoc())).getPath()), null, IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, IPortalUrlFactory.DISPLAYCTX_REFRESH, null,
-                                null, null, null);
+                    // Refresh all page
 
-                        String onClick = "setCallbackParams(null, '" + callBackURL + "')";
-                        
-                        addEditLinkItem(menuBar, onClick, customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
-                                + "@toutatice_edit");
+                    String callBackURL = getPortalUrlFactory().getRefreshPageUrl(
+                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
+
+                    String onClick = "setCallbackParams(null, '" + callBackURL + "')";
+
+                    addEditLinkItem(menuBar, onClick, customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
+                            + "@toutatice_edit");
 
 
-                    }
+                }
 
 
             }
         }
+    }
+
+
+    protected void addCreateLinkItem(List<MenubarItem> menuBar, String onClick, String url) throws Exception {
+
+        // MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + response.getNamespace() + fancyID,
+        // onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+
+
+        MenubarItem item = new MenubarItem("ADD", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick,
+                "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+        item.setAjaxDisabled(true);
+        menuBar.add(item);
+
+    }
+
+
+    protected void getCreateLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+
+        if (cmsCtx.getRequest().getRemoteUser() == null)
+            return;
+
+
+        String creationType = cmsCtx.getCreationType();
+        String creationPath = cmsCtx.getCreationPath();
+
+        Document parentDoc = (Document) cmsCtx.getDoc();
+
+        if (parentDoc == null)
+            parentDoc = (Document) CMSService.getContent(cmsCtx, creationPath).getNativeItem();
+
+        /* Contextualisation */
+
+
+        CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, parentDoc.getPath());
+
+
+        if (pubInfos.isLiveSpace()) {
+
+
+            Map<String, String> subTypes = pubInfos.getSubTypes();
+
+            List<SubType> portalDocsToCreate = new ArrayList<SubType>();
+            Map<String, DocTypeDefinition> managedTypes = customizer.getDocTypeDefinitions(cmsCtx);
+
+
+            DocTypeDefinition containerDocType = managedTypes.get(parentDoc.getType());
+
+            if (containerDocType != null) {
+
+                for (String docType : subTypes.keySet()) {
+
+                    // is this type managed at portal level ?
+
+                    if (containerDocType.getPortalFormSubTypes().contains(docType) && (creationType == null || creationType.equals(docType))) {
+
+                        DocTypeDefinition docTypeDef = managedTypes.get(docType);
+
+                        if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+
+                            SubType subType = new SubType();
+
+                            subType.setDocType(docType);
+                            subType.setName(subTypes.get(docType));
+                            subType.setUrl(customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + parentDoc.getPath()
+                                    + "@toutatice_create?type=" + docType);
+                            portalDocsToCreate.add(subType);
+                        }
+                    }
+
+                }
+            }
+
+
+            // Refresh all page
+
+            String callBackURL = getPortalUrlFactory().getRefreshPageUrl(
+                    new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
+
+
+            String onClick = "setCallbackParams(null, '" + callBackURL + "')";
+
+
+            if (portalDocsToCreate.size() == 1) {
+                // Pas de fancybox
+
+                String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + parentDoc.getPath() + "@toutatice_create?type="
+                        + portalDocsToCreate.get(0).getDocType();
+
+                MenubarItem add = new MenubarItem("CREATE", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick,
+                        "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
+                menuBar.add(add);
+
+                return;
+
+            }
+
+
+            /* Lien de création */
+
+            String fancyID = null;
+            if (portalDocsToCreate.size() > 0)
+                fancyID = "_PORTAL_CREATE";
+
+            if (fancyID != null) {
+
+
+                // fancybox div
+
+                StringBuffer fancyContent = new StringBuffer();
+
+                fancyContent.append("<div class=\"fancybox-content\">");
+                fancyContent.append("   <div id=\"" + cmsCtx.getResponse().getNamespace() + "_PORTAL_CREATE\" class=\"document-types\">");
+                fancyContent.append("       <div class=\"main-doc-types\" id=\"" + cmsCtx.getResponse().getNamespace() + "_MAIN\">");
+                fancyContent.append("           <div class=\"doc-type-title\">Ajouter un contenu</div>");
+
+                int index = 1;
+                int nbSubDocs = portalDocsToCreate.size();
+                for (SubType subDoc : portalDocsToCreate) {
+
+                    fancyContent.append("<div class=\"doc-type-detail\">");
+                    fancyContent.append("   <div class=\"vignette\">");
+                    fancyContent.append("       <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\">");
+                    fancyContent.append("           <img src=\"/toutatice-portail-cms-nuxeo/img/icons/" + subDoc.getDocType().toLowerCase() + "_100.png\"> ");
+                    fancyContent.append("       </a>");
+                    fancyContent.append("   </div>");
+                    fancyContent.append("   <div class=\"main\">");
+                    fancyContent.append("       <div class=\"title\">");
+                    fancyContent.append("           <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\">" + subDoc.getName() + "</a>");
+                    fancyContent.append("       </div>");
+                    fancyContent.append("   </div>");
+                    fancyContent.append("</div>");
+
+                    if (index < nbSubDocs) {
+                        fancyContent.append("<div class=\"vertical-separator\"></div>");
+                    }
+                    index++;
+                }
+
+                fancyContent.append("           </div>");
+                fancyContent.append("        </div>");
+                fancyContent.append("   </div>");
+                fancyContent.append("</div>");
+
+
+                MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + cmsCtx.getResponse().getNamespace()
+                        + fancyID, onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+
+                item.setAjaxDisabled(true);
+                item.setAssociatedHtml(fancyContent.toString());
+
+                menuBar.add(item);
+
+            }
+        }
+
+    }
+
+
+    protected void addDeleteLinkItem(List<MenubarItem> menuBar, String onClick, String url, String fancyContent) throws Exception {
+
+        MenubarItem delete = new MenubarItem("DELETE", "Supprimer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, url, null,
+                "fancybox_inline portlet-menuitem-nuxeo-delete", null);
+        delete.setAjaxDisabled(true);
+        delete.setAssociatedHtml(fancyContent);
+        menuBar.add(delete);
+
+    }
+
+
+    protected void getDeleteLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+
+        if (cmsCtx.getRequest().getRemoteUser() == null)
+            return;
+
+
+        Document doc = (Document) cmsCtx.getDoc();
+
+
+        /* Contextualisation */
+
+
+        CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, doc.getPath());
+
+
+        if (pubInfos.isLiveSpace() && pubInfos.isDeletableByUser()) {
+
+
+            DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+
+            if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+
+
+                /* Lien de création */
+
+                String fancyID = "_PORTAL_DELETE";
+
+
+                // fancybox div
+
+                StringBuffer fancyContent = new StringBuffer();
+
+
+                fancyContent.append(" <div id=\"" + cmsCtx.getResponse().getNamespace() + fancyID + "\" class=\"fancybox-content\">");
+
+                String putInTrashUrl = getPortalUrlFactory().getPutDocumentInTrashUrl(
+                        new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), doc.getId(), doc.getPath());
+
+
+                fancyContent.append("   <form method=\"post\" action=\"" + putInTrashUrl + "\">");
+                fancyContent.append("       <div>Confirmez-vous la suppression de l'élément ?</div><br/>");
+                fancyContent.append("       <input id=\"currentDocId\" type=\"hidden\" name=\"docId\" value=\"" + doc.getId() + "\"/>");
+                fancyContent.append("       <input id=\"currentDocPath\" type=\"hidden\" name=\"docPath\" value=\"" + doc.getPath() + "\"/>");
+                fancyContent.append("       <input type=\"submit\" name=\"deleteDoc\"  value=\"Confirmer\">");
+                fancyContent.append("       <input type=\"reset\" name=\"noDeleteDoc\"  value=\"Annuler\" onclick=\"closeFancyBox();\">");
+                fancyContent.append("   </form>");
+                fancyContent.append(" </div>");
+
+
+                addDeleteLinkItem(menuBar, null, "#" + cmsCtx.getResponse().getNamespace() + fancyID, fancyContent.toString());
+
+            }
+
+        }
+
+
     }
 
 

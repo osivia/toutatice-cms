@@ -6,20 +6,15 @@
 
 <%
 String deleteDivId = renderResponse.getNamespace() + "delete-file-item";
-String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
+String deleteFormId = renderResponse.getNamespace() + "delete-file-form";
 %>
 
 
 <div id="<%=deleteDivId%>" class="delete-file-item">
-	<form method="post" action="<portlet:actionURL></portlet:actionURL>">
+	<form method="post" id="<%=deleteFormId%>" action="">
 		<div>Confirmez-vous la suppression de l'élément ?</div><br/>
-		<input id="currentFileItemId" type="hidden" name="fileItemId" value=""/>
-		<input type="submit" name="deleteFileItem"  value="Confirmer" onClick="fancyContainerDivId='<%=containerId%>';">
-		<input type="reset" name="noDeleteFileItem"  value="Annuler" onclick="closeFancyBox();">
+		<input type="submit" name="deleteFileItem"  value="Confirmer">
+		<input type="reset" name="noDeleteFileItem"  value="Annuler" onclick="alert(coucou);closeFancyBox();">
 	</form>
 </div>
 
-<script>
-	var deleteDiv = document.getElementById('<%=deleteDivId%>');
-	Event.observe(deleteDiv, "click", bilto);
-</script>

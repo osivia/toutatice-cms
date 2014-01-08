@@ -109,11 +109,6 @@ if( map != null && map.getString("data") != null)
 	</div>
 </div>
 
-<!-- Boîte de confirmation de suppression du document courant -->
-<div id="div_delete_doc" style="display: none">
-	<jsp:include page="confirm-delete-doc.jsp"></jsp:include>
-
-</div>
 
 <%	} %>
 			

@@ -37,7 +37,6 @@ Document folderDoc = (Document) request.getAttribute("doc");
 
 <div class="nuxeo-file-browser no-ajax-link">
 
-<jsp:include page="add-content.jsp"></jsp:include>
 
 
 	

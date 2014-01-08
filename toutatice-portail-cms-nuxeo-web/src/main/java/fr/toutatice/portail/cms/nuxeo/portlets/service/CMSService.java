@@ -52,6 +52,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
@@ -1240,6 +1241,18 @@ EditableWindowHelper.SCHEMA);
             throw new CMSException(e);
         }
 
+    }
+
+    public void putDocumentInTrash(CMSServiceCtx cmsCtx, String docId) throws CMSException {
+
+
+        try {
+            this.executeNuxeoCommand(cmsCtx, new PutInTrashDocumentCommand(docId));
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+       
     }
 
 

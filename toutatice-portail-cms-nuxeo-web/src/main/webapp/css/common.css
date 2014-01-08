@@ -400,8 +400,6 @@ div.nuxeo-publish-navigation ul a {
 
 /* Vues de création de document */
 
-/* Vues de création de document */
-
 .doc-type-detail {
     display: inline-block;
 }
@@ -443,6 +441,10 @@ div.document-types div.doc-type-detail .main .title a {
 	color: black;
 	font-weight: bold;
 	text-decoration: none;
+}
+
+div.document-types .more-document-types	{
+	visibility: hidden;
 }
 
 div.document-types .more-document-types	{

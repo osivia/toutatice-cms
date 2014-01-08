@@ -75,6 +75,16 @@ public class NuxeoController {
     String basePath;
     String navigationPath;
     String itemNavigationPath;
+    String docTypeToCreate;      
+    String parentPathToCreate;
+    
+    public String getParentPathToCreate() {
+        return parentPathToCreate;
+    }
+    
+    public void setParentPathToCreate(String parentPathToCreate) {
+        this.parentPathToCreate = parentPathToCreate;
+    }
 
     String contentPath;
     String spacePath;
@@ -395,6 +405,12 @@ public class NuxeoController {
             this.setScope(scope);
             this.setDisplayLiveVersion(displayLiveVersion);
             this.setHideMetaDatas(hideMetadatas);
+            
+            this.setDocTypeToCreate(window.getProperty("osivia.createDocType"));  
+            String parentPathToCreate = window.getProperty("osivia.createParentPath");
+            this.setParentPathToCreate(parentPathToCreate);
+
+
 
             this.setPageMarker((String) request.getAttribute("osivia.pageMarker"));
 
@@ -427,6 +443,10 @@ public class NuxeoController {
 
 
 
+    public void setDocTypeToCreate(String property) {
+        this.docTypeToCreate = property;
+    }
+    
     public CMSItem getNavigationItem()	throws Exception {
         if( this.navItem == null){
             if( this.getNavigationPath() != null){
@@ -928,8 +948,7 @@ public class NuxeoController {
             nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         }
 
-        List<MenubarItem> menuBar = (List<MenubarItem>) this.request.getAttribute("osivia.menuBar");
-
+                  
         nuxeoService.getCMSCustomizer().formatContentMenuBar(this.getCMSCtx());
     }
 
@@ -1124,6 +1143,10 @@ public class NuxeoController {
         this.cmsCtx.setDoc(this.getCurrentDoc());
         this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
         this.cmsCtx.setDisplayContext(this.displayContext);
+        
+        this.cmsCtx.setCreationType(docTypeToCreate);
+        if( parentPathToCreate != null)
+            this.cmsCtx.setCreationPath(getComputedPath(parentPathToCreate));
 
 
         return this.cmsCtx;

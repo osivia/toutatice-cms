@@ -25,6 +25,7 @@ import javax.portlet.WindowState;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.path.PortletPathItem;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -130,13 +131,11 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
-                        String divId = (String) resourceRequest.getAttribute("osivia.window.ID");
 
-                        // Force to reload portlet
-                        PortletURL portletURL = resourceResponse.createRenderURL();
-                        portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
+                        String refreshUrl =  ctx.getPortalUrlFactory().getRefreshPageUrl(new PortalControllerContext(getPortletContext(), resourceRequest,
+                                resourceResponse));
 
-                        sb.append("<a class=\"fancyframe_refresh\" onClick=\"setCallbackParams('" + divId + "', '" + portletURL.toString() + "')\" href=\""
+                        sb.append("<a class=\"fancyframe_refresh\" onClick=\"setCallbackParams(null, '" + refreshUrl + "')\" href=\""
                                 + ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + pubInfos.getDocumentPath() + "@toutatice_edit\">Modifier</a>");
                         nbItems++;
 
@@ -152,12 +151,18 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                  if (pubInfos.isDeletableByUser()) {
-                 sb.append("<br/>");
-                 sb.append("<a class=\"fancybox_inline\" href=\"#div_delete_file-item\"");
-                 sb.append("onclick=\"document.getElementById('currentFileItemId').value='");
-                 sb.append(id);
-                 sb.append("';\">Supprimer</a>");
-                 nbItems++;
+                     String deleteDivId = resourceResponse.getNamespace() + "delete-file-item";
+                     String deleteFormId = resourceResponse.getNamespace() + "delete-file-form";
+                     
+                     String deleteURL =  ctx.getPortalUrlFactory().getPutDocumentInTrashUrl(new PortalControllerContext(getPortletContext(), resourceRequest,
+                             resourceResponse), pubInfos.getLiveId(), pubInfos.getDocumentPath());
+
+                     
+                    sb.append("<br/>");
+                    sb.append("<a class=\"fancybox_inline\" href=\"#"+deleteDivId+"\"");
+                    sb.append("onclick=\"document.getElementById('"+deleteFormId+"').action ='"+deleteURL+"';\">");
+                    sb.append("Supprimer</a>");
+                    nbItems++;
                  }
 
 
@@ -180,102 +185,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         }
     }
 
-    public static void addCreateLink(NuxeoController ctx, Document folder, RenderRequest request, RenderResponse response) throws Exception {
-
-
-        List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-
-        CMSServiceCtx cmsCtx = ctx.getCMSCtx();
-        CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, folder.getPath());
-
-        if (!pubInfos.isLiveSpace() || !PortletHelper.isInContextualizedMode(cmsCtx))
-            return;
-
-
-        // v2.1 WORKSPACE
-
-        Map<String, String> subTypes = pubInfos.getSubTypes();
-
-        List<SubType> portalDocsToCreate = new ArrayList<SubType>();
-        Map<String, DocTypeDefinition> managedTypes = ctx.getDocTypeDefinitions();
-
-        DocTypeDefinition containerDocType = managedTypes.get(folder.getType());
-
-        if (containerDocType != null) {
-
-            for (String docType : subTypes.keySet()) {
-
-                // is this type managed at portal level ?
-
-                if (containerDocType.getPortalFormSubTypes().contains(docType)) {
-
-                    DocTypeDefinition docTypeDef = managedTypes.get(docType);
-
-                    if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
-
-
-                        SubType subType = new SubType();
-
-                        subType.setDocType(docType);
-                        subType.setName(subTypes.get(docType));
-                        subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + folder.getPath() + "@toutatice_create?type=" + docType);
-                        portalDocsToCreate.add(subType);
-                    }
-                }
-
-            }
-        }
-
-        if (portalDocsToCreate.size() == 1) {
-            // Pas de fancybox
-
-            PortletURL portletURL = ((RenderResponse) cmsCtx.getResponse()).createRenderURL();
-            portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
-            String divId = (String) ((PortletRequest) cmsCtx.getRequest()).getAttribute("osivia.window.ID");
-            String onClick = "setCallbackParams('" + divId + "', '" + portletURL.toString() + "')";
-            String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + folder.getPath() + "@toutatice_create?type="
-                    + portalDocsToCreate.get(0).getDocType();
-
-            MenubarItem add = new MenubarItem("CREATE", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick,
-                    "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
-            menuBar.add(add);
-
-            return;
-
-        }
-
-
-        /* Lien de création */
-
-        String fancyID = null;
-        if (portalDocsToCreate.size() > 0)
-            fancyID = "_PORTAL_CREATE";
-
-        if (fancyID != null) {
-
-            // Force to reload portlet
-            PortletURL portletURL = response.createRenderURL();
-            portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
-
-            String divId = (String) request.getAttribute("osivia.window.ID");
-
-            String onClick = "setCallbackParams('" + divId + "', '" + portletURL.toString() + "')";
-
-
-            MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + response.getNamespace() + fancyID,
-                    onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
-            item.setAjaxDisabled(true);
-
-            menuBar.add(item);
-
-        }
-
-        if (portalDocsToCreate.size() > 0)
-            request.setAttribute("portalDocsToCreate", portalDocsToCreate);
-
-    }
-
-
+   
     public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
         logger.debug("processAction ");
@@ -370,15 +280,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 nuxeoPath = ctx.getComputedPath(nuxeoPath);
                 
-     
-
-                /* Folder courant */
-
-                boolean reload = false;
-                if (request.getParameter("reloadDatas") != null)
-                    reload = true;
-
-                Document doc = ctx.fetchDocument(nuxeoPath, reload);
+  
+                Document doc = ctx.fetchDocument(nuxeoPath);
                 
 
 
@@ -399,77 +302,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                     Collections.sort(sortedDocs, createComparator(doc));
                 request.setAttribute("docs", sortedDocs);
 
-
-
-                List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-
-
-                // v2.1 WORKSPACE
-
-
-                Map<String, String> subTypes = pubInfos.getSubTypes();
-
-                List<SubType> portalDocsToCreate = new ArrayList<SubType>();
-                Map<String, DocTypeDefinition> managedTypes = ctx.getDocTypeDefinitions();
-
-
-                DocTypeDefinition containerDocType = managedTypes.get(doc.getType());
-
-                if (containerDocType != null) {
-
-                    for (String docType : subTypes.keySet()) {
-
-                        // is this type managed at portal level ?
-
-                        if (containerDocType.getPortalFormSubTypes().contains(docType)) {
-
-                            DocTypeDefinition docTypeDef = managedTypes.get(docType);
-
-                            if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
-
-                                SubType subType = new SubType();
-
-                                subType.setDocType(docType);
-                                subType.setName(subTypes.get(docType));
-                                subType.setUrl(ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + doc.getPath() + "@toutatice_create?type=" + docType);
-                                portalDocsToCreate.add(subType);
-                            }
-                        }
-
-                    }
-                }
-
-
-                /* Lien de création */
-
-                String fancyID = null;
-                if (portalDocsToCreate.size() > 0)
-                    fancyID = "_PORTAL_CREATE";
-
-                if (fancyID != null) {
-
-                    // Force to reload portlet
-                    PortletURL portletURL = response.createRenderURL();
-                    portletURL.setParameter("reloadDatas", "" + System.currentTimeMillis());
-
-                    String divId = (String) request.getAttribute("osivia.window.ID");
-
-                    String onClick = "setCallbackParams('" + divId + "', '" + portletURL.toString() + "')";
-
-
-                    MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + response.getNamespace() + fancyID,
-                            onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
-
-                    item.setAjaxDisabled(true);
-
-                    menuBar.add(item);
-
-                }
-
-                if (portalDocsToCreate.size() > 0)
-                    request.setAttribute("portalDocsToCreate", portalDocsToCreate);
-
-
+ 
+  
                 // Insert standard menu bar for content item
                 ctx.setCurrentDoc(doc);
                 ctx.insertContentMenuBarItems();

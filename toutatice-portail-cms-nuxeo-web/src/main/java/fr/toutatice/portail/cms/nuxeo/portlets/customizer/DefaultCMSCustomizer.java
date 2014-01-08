@@ -314,7 +314,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
 		windowProperties.put("osivia.cms.displayLiveVersion",ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", "1");
-		windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
+
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -336,7 +336,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
 		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", "1");
-		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
 		windowProperties.put("osivia.cms.pageSizeMax", "10");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
@@ -365,7 +364,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
 		windowProperties.put("osivia.cms.pageSizeMax", "10");
-		windowProperties.put("osivia.title", "Liste de liens");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
 		linkProps.setWindowProperties(windowProperties);
@@ -386,7 +384,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
 		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
 		windowProperties.put("osivia.cms.pageSizeMax", "10");
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -411,7 +408,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
 		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
 		windowProperties.put("osivia.cms.pageSizeMax", "10");
 
 		CMSHandlerProperties linkProps = new CMSHandlerProperties();
@@ -436,7 +432,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		windowProperties.put("osivia.cms.scope", ctx.getScope());
 		//windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
 		windowProperties.put("osivia.cms.pageSizeMax", "10");
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -503,7 +498,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		}
 
 		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
-            if (ctx.getContextualizationBasePath() != null) {
+//            if (ctx.getContextualizationBasePath() != null)
+		    
+// Test JSS a virer (tant que pas d'objet affichable en liste)		  
+         if (ctx.getContextualizationBasePath() != null && !doc.getTitle().startsWith("list")) {
 
                 CMSItem spaceConfig = this.CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
 
@@ -516,7 +514,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
                     // Pas de filtre sur les versions publiées
                     ctx.setDisplayLiveVersion("1");
                     CMSHandlerProperties props = this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
-                    props.getWindowProperties().put("osivia.title", doc.getTitle());
                     return props;
                 }
             }
