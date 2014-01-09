@@ -171,8 +171,10 @@ public class MenuBarFormater {
 
                     // Refresh all page
 
-                    String callBackURL = getPortalUrlFactory().getRefreshPageUrl(
-                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
+                    
+                    String callBackURL = getPortalUrlFactory()
+                            .getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, doc.getPath(), null, null, IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
+
 
                     String onClick = "setCallbackParams(null, '" + callBackURL + "')";
 

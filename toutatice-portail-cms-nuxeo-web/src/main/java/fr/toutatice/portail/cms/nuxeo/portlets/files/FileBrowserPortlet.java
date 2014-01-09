@@ -131,7 +131,6 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
-
                         String refreshUrl =  ctx.getPortalUrlFactory().getRefreshPageUrl(new PortalControllerContext(getPortletContext(), resourceRequest,
                                 resourceResponse));
 
@@ -207,17 +206,6 @@ public class FileBrowserPortlet extends CMSPortlet {
             res.setWindowState(WindowState.NORMAL);
         }
 
-
-        if (req.getParameter("deleteFileItem") != null) {
-            String itemId = (String) req.getParameter("fileItemId");
-            NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
-            try {
-                ctrl.executeNuxeoCommand(new DeleteDocumentCommand(itemId));
-            } catch (Exception e) {
-                if (!(e instanceof PortletException))
-                    throw new PortletException(e);
-            }
-        }
 
     }
 
