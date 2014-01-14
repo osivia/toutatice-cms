@@ -221,14 +221,14 @@ span.file-name {
 	float: left;
 }
 
-div.nuxeo-file-browser div.file-actions 	{
- 	background-image: url("../img/dropdown.png");
+div.nuxeo-file-browser div.file-actions {
+    background-image: url("../img/dropdown.png");
     background-repeat: no-repeat;
-    background-position: 10px 0;
+    background-position: 8px 0;
     height: 18px;
     visibility: hidden;
-    float:	left;
-    width: 5%;
+    float: left;
+    width: 40px;
 }
 
 div.file-actions-menu	{
