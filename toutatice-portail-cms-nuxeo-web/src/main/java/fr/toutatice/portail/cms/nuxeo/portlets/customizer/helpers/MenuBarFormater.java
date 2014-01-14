@@ -171,9 +171,10 @@ public class MenuBarFormater {
 
                     // Refresh all page
 
-                    
-                    String callBackURL = getPortalUrlFactory()
-                            .getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, doc.getPath(), null, null, IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
+
+                    String callBackURL = getPortalUrlFactory().getCMSUrl(
+                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, doc.getPath(), null, null,
+                            IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
 
 
                     String onClick = "setCallbackParams(null, '" + callBackURL + "')";
@@ -215,7 +216,7 @@ public class MenuBarFormater {
 
         Document parentDoc = (Document) cmsCtx.getDoc();
 
-        if (parentDoc == null)
+        if (creationPath != null)
             parentDoc = (Document) CMSService.getContent(cmsCtx, creationPath).getNativeItem();
 
         /* Contextualisation */
@@ -224,7 +225,7 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, parentDoc.getPath());
 
 
-        if (pubInfos.isLiveSpace()) {
+        if (pubInfos.isLiveSpace() && (creationPath != null || PortletHelper.isInContextualizedMode(cmsCtx))) {
 
 
             Map<String, String> subTypes = pubInfos.getSubTypes();
@@ -372,42 +373,45 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = (CMSPublicationInfos) CMSService.getPublicationInfos(cmsCtx, doc.getPath());
 
 
-        if (pubInfos.isLiveSpace() && pubInfos.isDeletableByUser()) {
+        if (pubInfos.isDeletableByUser()) {
+
+            if (pubInfos.isLiveSpace() && PortletHelper.isInContextualizedMode(cmsCtx)) {
 
 
-            DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+                DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
-            if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
-
-
-                /* Lien de création */
-
-                String fancyID = "_PORTAL_DELETE";
+                if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
 
-                // fancybox div
+                    /* Lien de création */
 
-                StringBuffer fancyContent = new StringBuffer();
-
-
-                fancyContent.append(" <div id=\"" + cmsCtx.getResponse().getNamespace() + fancyID + "\" class=\"fancybox-content\">");
-
-                String putInTrashUrl = getPortalUrlFactory().getPutDocumentInTrashUrl(
-                        new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), doc.getId(), doc.getPath());
+                    String fancyID = "_PORTAL_DELETE";
 
 
-                fancyContent.append("   <form method=\"post\" action=\"" + putInTrashUrl + "\">");
-                fancyContent.append("       <div>Confirmez-vous la suppression de l'élément ?</div><br/>");
-                fancyContent.append("       <input id=\"currentDocId\" type=\"hidden\" name=\"docId\" value=\"" + doc.getId() + "\"/>");
-                fancyContent.append("       <input id=\"currentDocPath\" type=\"hidden\" name=\"docPath\" value=\"" + doc.getPath() + "\"/>");
-                fancyContent.append("       <input type=\"submit\" name=\"deleteDoc\"  value=\"Confirmer\">");
-                fancyContent.append("       <input type=\"reset\" name=\"noDeleteDoc\"  value=\"Annuler\" onclick=\"closeFancyBox();\">");
-                fancyContent.append("   </form>");
-                fancyContent.append(" </div>");
+                    // fancybox div
+
+                    StringBuffer fancyContent = new StringBuffer();
 
 
-                addDeleteLinkItem(menuBar, null, "#" + cmsCtx.getResponse().getNamespace() + fancyID, fancyContent.toString());
+                    fancyContent.append(" <div id=\"" + cmsCtx.getResponse().getNamespace() + fancyID + "\" class=\"fancybox-content\">");
 
+                    String putInTrashUrl = getPortalUrlFactory().getPutDocumentInTrashUrl(
+                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), doc.getId(), doc.getPath());
+
+
+                    fancyContent.append("   <form method=\"post\" action=\"" + putInTrashUrl + "\">");
+                    fancyContent.append("       <div>Confirmez-vous la suppression de l'élément ?</div><br/>");
+                    fancyContent.append("       <input id=\"currentDocId\" type=\"hidden\" name=\"docId\" value=\"" + doc.getId() + "\"/>");
+                    fancyContent.append("       <input id=\"currentDocPath\" type=\"hidden\" name=\"docPath\" value=\"" + doc.getPath() + "\"/>");
+                    fancyContent.append("       <input type=\"submit\" name=\"deleteDoc\"  value=\"Confirmer\">");
+                    fancyContent.append("       <input type=\"reset\" name=\"noDeleteDoc\"  value=\"Annuler\" onclick=\"closeFancyBox();\">");
+                    fancyContent.append("   </form>");
+                    fancyContent.append(" </div>");
+
+
+                    addDeleteLinkItem(menuBar, null, "#" + cmsCtx.getResponse().getNamespace() + fancyID, fancyContent.toString());
+
+                }
             }
 
         }
