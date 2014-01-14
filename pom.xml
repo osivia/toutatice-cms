@@ -242,4 +242,13 @@
         </snapshotRepository>
     </distributionManagement>
 
+
+    <profiles>
+        <profile>
+            <id>integrateur</id>
+            <properties>
+                <osivia-portal.version>3.1.0-RC4</osivia-portal.version>
+            </properties>
+        </profile>
+    </profiles>
 </project>
