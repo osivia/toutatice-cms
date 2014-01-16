@@ -30,6 +30,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 	private static final long serialVersionUID = 1L;
 
 	private static Log logger = LogFactory.getLog(NuxeoCommandCacheInvoker.class);
+	
 
 	NuxeoCommandContext ctx;
 	INuxeoCommand command;
@@ -255,36 +256,44 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					// Moyenne flottante sur les publishInfosCommands
 				
 					String statusErrorMsg = null;
+					
+					//V2.0.22 : variabilisation
+					
+					String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
+					
+					if( maxAverageDelay != null){
+					    long maxDelay = Long.parseLong(maxAverageDelay);
 
-					if (!error && command.getId().startsWith("PublishInfosCommand")) {
-						synchronized (AVERAGE_LIST) {
-
-							while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
-								AVERAGE_LIST.remove(0);
-							}
-							
-							// On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
-							// Le but est de determiner des mini-pics
-							
-							if( elapsedTime < 1000)
-								AVERAGE_LIST.add((int) elapsedTime);
-
-							if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
-
-								long total = 0l;
-								for (int i = 0; i < AVERAGE_LIST.size(); i++) {
-									total += AVERAGE_LIST.get(i);
-								}
-
-								long moyenne = total / AVERAGE_LIST.size();
-
-								if (moyenne > 150) {
-									statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
-
-									AVERAGE_LIST.clear();
-								}
-							}
-						}
+    					if (!error && command.getId().startsWith("PublishInfosCommand")) {
+    						synchronized (AVERAGE_LIST) {
+    
+    							while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
+    								AVERAGE_LIST.remove(0);
+    							}
+    							
+    							// On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
+    							// Le but est de determiner des mini-pics
+    							
+    							if( elapsedTime < 1000)
+    								AVERAGE_LIST.add((int) elapsedTime);
+    
+    							if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
+    
+    								long total = 0l;
+    								for (int i = 0; i < AVERAGE_LIST.size(); i++) {
+    									total += AVERAGE_LIST.get(i);
+    								}
+    
+    								long moyenne = total / AVERAGE_LIST.size();
+    
+    								if (moyenne > maxDelay) {
+    									statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
+    
+    									AVERAGE_LIST.clear();
+    								}
+    							}
+    						}
+    					}
 					}
 					
 					if( statusErrorMsg != null)	{
