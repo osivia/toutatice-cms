@@ -79,6 +79,11 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 		request.setAttribute("propertyName", propertyName);
 
 
+	      // 2.0.22 : ajout scope 
+        String scope = window.getProperty("osivia.cms.forcePublicationScope");
+        request.setAttribute("scope", scope);
+
+		
 		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
 		if (displayLiveVersion == null)
 			displayLiveVersion = "";
@@ -98,6 +103,14 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 			else if (window.getProperty("osivia.propertyName") != null)
 				window.setProperty("osivia.propertyName", null);
 		}
+		
+	      // 2.0.22 : ajout scope 
+        if (request.getParameter("scope") != null && request.getParameter("scope").length() > 0)    {
+            window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
+        }
+        else if (window.getProperty("osivia.cms.forcePublicationScope") != null)
+            window.setProperty("osivia.cms.forcePublicationScope", null);
+
 
 		if (request.getParameter("displayLiveVersion") != null) {
 
