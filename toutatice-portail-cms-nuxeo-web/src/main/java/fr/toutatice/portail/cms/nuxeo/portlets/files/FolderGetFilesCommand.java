@@ -30,7 +30,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
         // v2.0.9 : On reaffiche tous les folders
         // TODO: déporter le filtre sur les types dans le Customizer
 			String nuxeoRequest = "ecm:parentId = '" + folderId + "' ";
-			nuxeoRequest += " AND  (ecm:primaryType != 'Workspace' AND ecm:primaryType != 'PortalSite') ";
+			nuxeoRequest += " AND  (ecm:primaryType != 'Workspace' AND ecm:primaryType != 'WorkspaceRoot' AND ecm:primaryType != 'PortalSite') ";
 			nuxeoRequest += " ORDER BY ecm:pos ";
 						
 			// Insertion du filtre sur les élements publiés
