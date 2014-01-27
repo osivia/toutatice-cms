@@ -53,7 +53,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.AnonymousAccesInvoker.AccesStatus;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
@@ -1113,12 +1112,30 @@ EditableWindowHelper.SCHEMA);
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
+        } else if (command == EcmCommand.gotoMediaLibrary) {
+
+            Document mediaLibrary;
+            try {
+
+                String baseDomainPath = "/".concat(path.split("/")[1]);
+                mediaLibrary = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentGetMediaLibraryCommand(baseDomainPath)));
+
+
+            } catch (Exception e) {
+                throw new CMSException(e);
+            }
+            if (mediaLibrary != null)
+                url = uri.toString() + "/nxpath/default" + mediaLibrary.getPath() + "@view_documents?";
+            else
+                url = "";
         }
 
+        // fromUrl is used only with fancyboxes
+        if (command != EcmCommand.gotoMediaLibrary) {
+            String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(cmsCtx.getServerInvocation());
+            requestParameters.put("fromUrl", portalUrl);
+        }
 
-        String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(cmsCtx.getServerInvocation());
-
-        requestParameters.put("fromUrl", portalUrl);
         for (Map.Entry<String, String> param : requestParameters.entrySet()) {
             url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
         }
