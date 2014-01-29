@@ -27,7 +27,7 @@
         <jboss.modules.identity.version>1.0.8.GA</jboss.modules.identity.version>
         <jboss.version>4.2.3.GA</jboss.version>
 
-        <osivia-portal.version>3.0.3-RC2</osivia-portal.version>
+        <osivia-portal.version>3.0.3-SNAPSHOT</osivia-portal.version>
     </properties>
 
 
