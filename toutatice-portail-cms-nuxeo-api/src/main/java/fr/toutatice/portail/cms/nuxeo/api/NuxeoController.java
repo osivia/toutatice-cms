@@ -3,7 +3,6 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
@@ -25,7 +24,6 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -75,13 +73,13 @@ public class NuxeoController {
     String basePath;
     String navigationPath;
     String itemNavigationPath;
-    String docTypeToCreate;      
+    String docTypeToCreate;
     String parentPathToCreate;
-    
+
     public String getParentPathToCreate() {
-        return parentPathToCreate;
+        return this.parentPathToCreate;
     }
-    
+
     public void setParentPathToCreate(String parentPathToCreate) {
         this.parentPathToCreate = parentPathToCreate;
     }
@@ -199,7 +197,7 @@ public class NuxeoController {
     }
 
     public String getForcePublicationInfosScope() {
-        return forcePublicationInfosScope;
+        return this.forcePublicationInfosScope;
     }
 
     public void setForcePublicationInfosScope(String forcePublicationInfosScope) {
@@ -353,23 +351,24 @@ public class NuxeoController {
 
             // Pour les fragments, le cache doit également concerner les PublicationInfos
             // D'où l'utilisattoin du forcePublicationScope
-                String forcePublicationScope = window.getProperty("osivia.cms.forcePublicationScope");
-                if (forcePublicationScope != null) {
-                    // Fragments
+            String forcePublicationScope = window.getProperty("osivia.cms.forcePublicationScope");
+            if (forcePublicationScope != null) {
+                // Fragments
 
-                    if ("__inherited".equals(forcePublicationScope)) {
-                        forcePublicationScope = request.getParameter("osivia.cms.pageScope");
-                        if (forcePublicationScope == null)
-                            forcePublicationScope = window.getPageProperty("osivia.cms.scope");
-                    }
-
-                    if (forcePublicationScope != null) {
-
-                        scope = forcePublicationScope;
-                        setForcePublicationInfosScope(forcePublicationScope);
+                if ("__inherited".equals(forcePublicationScope)) {
+                    forcePublicationScope = request.getParameter("osivia.cms.pageScope");
+                    if (forcePublicationScope == null) {
+                        forcePublicationScope = window.getPageProperty("osivia.cms.scope");
                     }
                 }
-            
+
+                if (forcePublicationScope != null) {
+
+                    scope = forcePublicationScope;
+                    this.setForcePublicationInfosScope(forcePublicationScope);
+                }
+            }
+
             this.navigationScope = window.getPageProperty("osivia.cms.navigationScope");
 
 
@@ -405,8 +404,8 @@ public class NuxeoController {
             this.setScope(scope);
             this.setDisplayLiveVersion(displayLiveVersion);
             this.setHideMetaDatas(hideMetadatas);
-            
-            this.setDocTypeToCreate(window.getProperty("osivia.createDocType"));  
+
+            this.setDocTypeToCreate(window.getProperty("osivia.createDocType"));
             String parentPathToCreate = window.getProperty("osivia.createParentPath");
             this.setParentPathToCreate(parentPathToCreate);
 
@@ -446,7 +445,7 @@ public class NuxeoController {
     public void setDocTypeToCreate(String property) {
         this.docTypeToCreate = property;
     }
-    
+
     public CMSItem getNavigationItem()	throws Exception {
         if( this.navItem == null){
             if( this.getNavigationPath() != null){
@@ -479,7 +478,7 @@ public class NuxeoController {
 
 
 
-    public IPortalUrlFactory getPortalUrlFactory( ) throws Exception{
+    public IPortalUrlFactory getPortalUrlFactory() {
         if (this.urlFactory == null) {
             this.urlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
         }
@@ -615,7 +614,7 @@ public class NuxeoController {
         }
 
 
-       return  nuxeoService.getCMSCustomizer().transformHTMLContent(this.getCMSCtx(), htmlContent);
+        return  nuxeoService.getCMSCustomizer().transformHTMLContent(this.getCMSCtx(), htmlContent);
 
 
 
@@ -801,27 +800,27 @@ public class NuxeoController {
 
         try {
 
-       return  this.getNuxeoCommandService().executeCommand(ctx, new INuxeoServiceCommand() {
+            return  this.getNuxeoCommandService().executeCommand(ctx, new INuxeoServiceCommand() {
 
-            public String getId() {
-                return command.getId();
-            }
-
-            public Object execute(Session nuxeoSession) throws Exception {
-                return command.execute(nuxeoSession);
-            }
-        }); }
-
-            catch( CMSException e){
-                if( e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                    throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
+                public String getId() {
+                    return command.getId();
                 }
-                if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                    throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
-                }
-                throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
 
+                public Object execute(Session nuxeoSession) throws Exception {
+                    return command.execute(nuxeoSession);
+                }
+            }); }
+
+        catch( CMSException e){
+            if( e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+                throw new NuxeoException( NuxeoException.ERROR_NOTFOUND);
             }
+            if( e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+                throw new NuxeoException( NuxeoException.ERROR_FORBIDDEN);
+            }
+            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+
+        }
 
     }
 
@@ -948,12 +947,12 @@ public class NuxeoController {
             nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         }
 
-                  
+
         nuxeoService.getCMSCustomizer().formatContentMenuBar(this.getCMSCtx());
     }
 
 
-     public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
+    public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
 
         // Adaptation via le CMSCustomizer
 
@@ -968,7 +967,7 @@ public class NuxeoController {
 
 
 
-     
+
 
 
 
@@ -980,7 +979,7 @@ public class NuxeoController {
         try	{
             CMSServiceCtx cmsCtx = this.getCMSCtx();
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(getNavigationPath())) {
+            if (path.equals(this.getNavigationPath())) {
                 if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
                     cmsCtx.setDisplayLiveVersion("1");
                 }
@@ -1136,17 +1135,18 @@ public class NuxeoController {
             this.cmsCtx.setResponse( (RenderResponse)this.response);
         }
         this.cmsCtx.setScope(this.getScope());
-        this.cmsCtx.setForcePublicationInfosScope(getForcePublicationInfosScope());
-        
+        this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
+
         this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
         this.cmsCtx.setPageId(this.getPageId());
         this.cmsCtx.setDoc(this.getCurrentDoc());
         this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
         this.cmsCtx.setDisplayContext(this.displayContext);
-        
-        this.cmsCtx.setCreationType(docTypeToCreate);
-        if( parentPathToCreate != null)
-            this.cmsCtx.setCreationPath(getComputedPath(parentPathToCreate));
+
+        this.cmsCtx.setCreationType(this.docTypeToCreate);
+        if( this.parentPathToCreate != null) {
+            this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
+        }
 
 
         return this.cmsCtx;

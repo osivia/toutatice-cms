@@ -22,6 +22,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSEditableWindow;
@@ -64,100 +65,100 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 
 public class CMSService implements ICMSService {
 
-	private static Log log = LogFactory.getLog(CMSService.class);
+    private static Log log = LogFactory.getLog(CMSService.class);
 
-	protected static final Log logger = LogFactory.getLog(CMSService.class);
+    protected static final Log logger = LogFactory.getLog(CMSService.class);
 
-	private final PortletContext portletCtx;
-	INuxeoCommandService nuxeoCommandService;
-	INuxeoService nuxeoService;
-	IProfilManager profilManager;
-	ICacheService serviceCache;
-	DefaultCMSCustomizer customizer;
+    private final PortletContext portletCtx;
+    INuxeoCommandService nuxeoCommandService;
+    INuxeoService nuxeoService;
+    IProfilManager profilManager;
+    ICacheService serviceCache;
+    DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
 
-	public CMSService(PortletContext portletCtx) {
-		super();
-		this.portletCtx = portletCtx;
-	}
+    public CMSService(PortletContext portletCtx) {
+        super();
+        this.portletCtx = portletCtx;
+    }
 
-	public DefaultCMSCustomizer getCustomizer() {
-		return this.customizer;
-	}
+    public DefaultCMSCustomizer getCustomizer() {
+        return this.customizer;
+    }
 
-	public void setCustomizer(DefaultCMSCustomizer customizer) {
-		this.customizer = customizer;
-	}
+    public void setCustomizer(DefaultCMSCustomizer customizer) {
+        this.customizer = customizer;
+    }
 
-	public CMSItem createItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc) throws CMSException {
+    public CMSItem createItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc) throws CMSException {
 
-		Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<String, String>();
 
-		properties.put("displayName", displayName);
-		properties.put("type", doc.getType());
+        properties.put("displayName", displayName);
+        properties.put("type", doc.getType());
 
-		CMSItem cmsItem = new CMSItem(path, properties, doc);
+        CMSItem cmsItem = new CMSItem(path, properties, doc);
 
-		return cmsItem;
-	}
+        return cmsItem;
+    }
 
-	public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc,
-			String publishSpacePath) throws CMSException {
+    public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc,
+            String publishSpacePath) throws CMSException {
 
-		CMSItem cmsItem = this.createItem(cmsCtx, path, displayName, doc);
+        CMSItem cmsItem = this.createItem(cmsCtx, path, displayName, doc);
 
-		CMSItem publishSpaceItem = null;
+        CMSItem publishSpaceItem = null;
 
-		if ((publishSpacePath != null) && !path.equals(publishSpacePath)) {
+        if ((publishSpacePath != null) && !path.equals(publishSpacePath)) {
             publishSpaceItem = this.getPortalNavigationItem(cmsCtx, publishSpacePath, publishSpacePath);
         } else {
             publishSpaceItem = cmsItem;
         }
 
-		this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
+        this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
 
-		return cmsItem;
-	}
+        return cmsItem;
+    }
 
-	public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
+    public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
 
-		return new ArrayList<CMSItem>();
-	}
+        return new ArrayList<CMSItem>();
+    }
 
-	public IProfilManager getProfilManager() throws Exception {
-		if (this.profilManager == null) {
+    public IProfilManager getProfilManager() throws Exception {
+        if (this.profilManager == null) {
             this.profilManager = (IProfilManager) this.portletCtx.getAttribute(Constants.PROFILE_SERVICE_NAME);
         }
 
-		return this.profilManager;
-	}
+        return this.profilManager;
+    }
 
-	public INuxeoService getNuxeoService() throws Exception {
+    public INuxeoService getNuxeoService() throws Exception {
 
-		if (this.nuxeoService == null) {
+        if (this.nuxeoService == null) {
             this.nuxeoService = (INuxeoService) this.portletCtx.getAttribute("NuxeoService");
         }
 
-		return this.nuxeoService;
+        return this.nuxeoService;
 
-	}
+    }
 
-	public ICacheService getCacheService() throws Exception {
+    public ICacheService getCacheService() throws Exception {
 
-		if (this.serviceCache == null) {
+        if (this.serviceCache == null) {
             this.serviceCache = (ICacheService) this.portletCtx.getAttribute("CacheService");
         }
 
-		return this.serviceCache;
-	}
+        return this.serviceCache;
+    }
 
-	public INuxeoCommandService getNuxeoCommandService() throws Exception {
-		if (this.nuxeoCommandService == null) {
+    public INuxeoCommandService getNuxeoCommandService() throws Exception {
+        if (this.nuxeoCommandService == null) {
             this.nuxeoCommandService = NuxeoCommandServiceFactory.getNuxeoCommandService(this.portletCtx);
         }
-		return this.nuxeoCommandService;
-	}
+        return this.nuxeoCommandService;
+    }
 
     public IPortalUrlFactory getPortalUrlFactory() {
         if (this.urlFactory == null) {
@@ -167,219 +168,219 @@ public class CMSService implements ICMSService {
     }
 
 
-	public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
+    public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
-		NuxeoCommandContext commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
-		/* Transmission du mode asynchrone ou non de la mise en cache
-		 * du résultat de la commande.
-		 */
-		commandCtx.setAsyncCacheRefreshing(cmsCtx.isAsyncCacheRefreshing());
+        NuxeoCommandContext commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
+        /* Transmission du mode asynchrone ou non de la mise en cache
+         * du résultat de la commande.
+         */
+        commandCtx.setAsyncCacheRefreshing(cmsCtx.isAsyncCacheRefreshing());
 
-		if( cmsCtx.isForceReload())	{
-			commandCtx.setForceReload(true);
-		}
+        if( cmsCtx.isForceReload())	{
+            commandCtx.setForceReload(true);
+        }
 
-		// pour debug
-		// commandCtx.setCacheTimeOut(0);
+        // pour debug
+        // commandCtx.setCacheTimeOut(0);
 
-		/*
-		 * ctx.setAuthType(getAuthType()); ctx.setAuthProfil(getScopeProfil());
-		 * ctx.setCacheTimeOut(cacheTimeOut); ctx.setCacheType(cacheType);
-		 * ctx.setAsynchronousUpdates(asynchronousUpdates);
-		 */
+        /*
+         * ctx.setAuthType(getAuthType()); ctx.setAuthProfil(getScopeProfil());
+         * ctx.setCacheTimeOut(cacheTimeOut); ctx.setCacheType(cacheType);
+         * ctx.setAsynchronousUpdates(asynchronousUpdates);
+         */
 
-		String scope = cmsCtx.getScope();
+        String scope = cmsCtx.getScope();
 
-		// Par défaut
-		commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
-		commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+        // Par défaut
+        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
+        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
-		if (scope != null) {
-			if (!"__nocache".equals(scope)) {
+        if (scope != null) {
+            if (!"__nocache".equals(scope)) {
 
-				// commandCtx.setAsynchronousUpdates(true);
-
-
-				if ("user_session".equals(scope))	{
-					commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
-					commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
-				} else {
-					if ("anonymous".equals(scope)) {
-						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
-						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-					} else if("superuser_context".equals(scope)){
-						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-					}else{
-						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
-						commandCtx.setAuthProfil(this.getProfilManager().getProfil(scope));
-						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-					}
-				}
-			}
-		}
-
-	           return  this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
-
-	               public String getId() {
-	                   return command.getId();
-	               }
-
-	               public Object execute(Session nuxeoSession) throws Exception {
-	                   return command.execute(nuxeoSession);
-	               }
-	           });
+                // commandCtx.setAsynchronousUpdates(true);
 
 
-	}
+                if ("user_session".equals(scope))	{
+                    commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
+                    commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
+                } else {
+                    if ("anonymous".equals(scope)) {
+                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                    } else if("superuser_context".equals(scope)){
+                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                    }else{
+                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
+                        commandCtx.setAuthProfil(this.getProfilManager().getProfil(scope));
+                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                    }
+                }
+            }
+        }
 
-	private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {
+        return  this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 
-		String savedScope = cmsCtx.getScope();
-		try {
-			boolean saveAsync = cmsCtx.isAsyncCacheRefreshing();
+            public String getId() {
+                return command.getId();
+            }
 
-			cmsCtx.setAsyncCacheRefreshing(false);
-			CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
-			cmsCtx.setAsyncCacheRefreshing(saveAsync);
+            public Object execute(Session nuxeoSession) throws Exception {
+                return command.execute(nuxeoSession);
+            }
+        });
 
-			boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
 
-			// Document non publié et rattaché à un workspace
-			if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
-							.isLiveSpace())) {
+    }
+
+    private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {
+
+        String savedScope = cmsCtx.getScope();
+        try {
+            boolean saveAsync = cmsCtx.isAsyncCacheRefreshing();
+
+            cmsCtx.setAsyncCacheRefreshing(false);
+            CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
+            cmsCtx.setAsyncCacheRefreshing(saveAsync);
+
+            boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
+
+            // Document non publié et rattaché à un workspace
+            if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
+                    .isLiveSpace())) {
                 haveToGetLive = true;
             }
 
-			//Ajout JSS 20130122
-			//Document non publié et non rattaché à un espace : usage collaboratif
-			if( !pubInfos.isPublished() && (pubInfos.getPublishSpacePath() == null)) {
+            //Ajout JSS 20130122
+            //Document non publié et non rattaché à un espace : usage collaboratif
+            if( !pubInfos.isPublished() && (pubInfos.getPublishSpacePath() == null)) {
                 haveToGetLive = true;
             }
 
 
-		    cmsCtx.setScope("superuser_context");
+            cmsCtx.setScope("superuser_context");
 
-			if (haveToGetLive) {
+            if (haveToGetLive) {
 
-				Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(path, "Read")));
-				return this.createItem(cmsCtx, path, doc.getTitle(), doc);
+                Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(path, "Read")));
+                return this.createItem(cmsCtx, path, doc.getTitle(), doc);
 
-			} else {
+            } else {
 
-				Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
-
-
-
-				return this.createItem(cmsCtx, path, doc.getTitle(), doc);
-
-			}
-		} finally {
-			cmsCtx.setScope(savedScope);
-		}
-
-	}
+                Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
 
 
 
-	public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+                return this.createItem(cmsCtx, path, doc.getTitle(), doc);
+
+            }
+        } finally {
+            cmsCtx.setScope(savedScope);
+        }
+
+    }
 
 
-		CMSItem content = null;
-		try {
 
-			content =  this.fetchContent(cmsCtx, path);
+    public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
-			this.getCustomizer().getCMSItemAdapter().adaptItem(cmsCtx, content);
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        CMSItem content = null;
+        try {
+
+            content =  this.fetchContent(cmsCtx, path);
+
+            this.getCustomizer().getCMSItemAdapter().adaptItem(cmsCtx, content);
+
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
-		return content;
-	}
+        }
+        return content;
+    }
 
-	public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {
-		CMSBinaryContent content = new CMSBinaryContent();
+    public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {
+        CMSBinaryContent content = new CMSBinaryContent();
 
-		if("file".equals(type)){
-			content = this.getFileContent(cmsCtx, docPath, parameter);
-		}else if("attachedPicture".equals(type)){
-			content = this.getAttachedPicture(cmsCtx, docPath, parameter);
-		}else if("picture".equals(type)){
-			content = this.getPicture(cmsCtx, docPath, parameter);
-		}
+        if("file".equals(type)){
+            content = this.getFileContent(cmsCtx, docPath, parameter);
+        }else if("attachedPicture".equals(type)){
+            content = this.getAttachedPicture(cmsCtx, docPath, parameter);
+        }else if("picture".equals(type)){
+            content = this.getPicture(cmsCtx, docPath, parameter);
+        }
 
-		return content;
-	}
+        return content;
+    }
 
-	public CMSBinaryContent getAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws CMSException{
-		CMSBinaryContent cmsContent = null;
-		try {
+    public CMSBinaryContent getAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws CMSException{
+        CMSBinaryContent cmsContent = null;
+        try {
 
-			cmsContent = this.fetchAttachedPicture(cmsCtx, docPath, pictureIndex);
+            cmsContent = this.fetchAttachedPicture(cmsCtx, docPath, pictureIndex);
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		return cmsContent;
-	}
+        return cmsContent;
+    }
 
-	private CMSBinaryContent fetchAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws Exception {
-		CMSBinaryContent pictureContent = null;
-		String savedScope = cmsCtx.getScope();
-		try {
+    private CMSBinaryContent fetchAttachedPicture(CMSServiceCtx cmsCtx, String docPath, String pictureIndex) throws Exception {
+        CMSBinaryContent pictureContent = null;
+        String savedScope = cmsCtx.getScope();
+        try {
 
-			CMSItem containerDoc = this.fetchContent(cmsCtx, docPath);
+            CMSItem containerDoc = this.fetchContent(cmsCtx, docPath);
 
-			if (containerDoc != null) {
-				cmsCtx.setScope("superuser_context");
+            if (containerDoc != null) {
+                cmsCtx.setScope("superuser_context");
 
-				pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand(
-						(Document) containerDoc.getNativeItem(), pictureIndex)));
-			}
+                pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand(
+                        (Document) containerDoc.getNativeItem(), pictureIndex)));
+            }
 
-		} finally {
-			cmsCtx.setScope(savedScope);
-		}
-		return pictureContent;
-	}
+        } finally {
+            cmsCtx.setScope(savedScope);
+        }
+        return pictureContent;
+    }
 
-	public CMSBinaryContent getPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws CMSException{
-		CMSBinaryContent cmsContent = null;
+    public CMSBinaryContent getPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws CMSException{
+        CMSBinaryContent cmsContent = null;
 
-		try {
+        try {
 
-			cmsContent = this.fetchPicture(cmsCtx, docPath, content);
+            cmsContent = this.fetchPicture(cmsCtx, docPath, content);
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		return cmsContent;
-	}
+        return cmsContent;
+    }
 
 
     private CMSBinaryContent fetchPicture(CMSServiceCtx cmsCtx, String docPath, String content) throws Exception {
-        
+
         CMSBinaryContent pictureContent = null;
 
         String savedScope = cmsCtx.getScope();
@@ -388,34 +389,35 @@ public class CMSService implements ICMSService {
             CMSItem picture ;
 
             /* Lecture du document picture */
-            
+
             // Accès en super-user pour voir si la picture est accessible en mode anonyme
             cmsCtx.setForcePublicationInfosScope("superuser_context");
-            CMSPublicationInfos publiInfos = getPublicationInfos(cmsCtx, docPath);
+            CMSPublicationInfos publiInfos = this.getPublicationInfos(cmsCtx, docPath);
             cmsCtx.setForcePublicationInfosScope(null);
 
             if (publiInfos.isAnonymouslyReadable()) {
                 cmsCtx.setForcePublicationInfosScope("anonymous");
             }
-            
-            picture = fetchContent(cmsCtx, docPath);
-            
-            
+
+            picture = this.fetchContent(cmsCtx, docPath);
+
+
             /* Lecture de la ressources binaire */
-            
+
             // On a les droits, on accède à la ressource binaire en mode super user
             cmsCtx.setScope("superuser_context");
-            
-            pictureContent = (CMSBinaryContent) executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
+
+            pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new PictureContentCommand(
                     (Document) picture.getNativeItem(), content)));
 
 
         } catch (Exception e) {
             if (!(e instanceof CMSException)) {
-                if (e instanceof NuxeoException && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND))
+                if (e instanceof NuxeoException && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
                     return null;
-                else
+                } else {
                     throw new CMSException(e);
+                }
             } else {
 
                 throw (CMSException) e;
@@ -425,305 +427,307 @@ public class CMSService implements ICMSService {
             cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
         }
         return pictureContent;
-    
-}
 
-	public CMSBinaryContent getFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws CMSException{
-		CMSBinaryContent cmsContent = null;
-		try {
+    }
 
-			cmsContent = this.fetchFileContent(cmsCtx, docPath, fieldName);
+    public CMSBinaryContent getFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws CMSException{
+        CMSBinaryContent cmsContent = null;
+        try {
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+            cmsContent = this.fetchFileContent(cmsCtx, docPath, fieldName);
+
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		return cmsContent;
-	}
+        return cmsContent;
+    }
 
-	private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
-		CMSBinaryContent content = null;
-		String savedScope = cmsCtx.getScope();
-		try {
-			/* Si un scope a été posé dans la portlet appelant la resource,
-			 * on applique celui-ci.
-			 */
-			if(StringUtils.isNotEmpty(savedScope)){
-				cmsCtx.setForcePublicationInfosScope(savedScope);
-			}
-			CMSItem	document = this.fetchContent(cmsCtx, docPath);
+    private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
+        CMSBinaryContent content = null;
+        String savedScope = cmsCtx.getScope();
+        try {
+            /* Si un scope a été posé dans la portlet appelant la resource,
+             * on applique celui-ci.
+             */
+            if(StringUtils.isNotEmpty(savedScope)){
+                cmsCtx.setForcePublicationInfosScope(savedScope);
+            }
+            CMSItem	document = this.fetchContent(cmsCtx, docPath);
 
-			if (document != null) {
+            if (document != null) {
 
-				cmsCtx.setScope("superuser_context");
+                cmsCtx.setScope("superuser_context");
 
-				content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx,
-						(new FileContentCommand((Document) document.getNativeItem(), fieldName)));
-			}
-		} finally {
-			cmsCtx.setScope(savedScope);
-		}
-		return content;
-	}
+                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx,
+                        (new FileContentCommand((Document) document.getNativeItem(), fieldName)));
+            }
+        } finally {
+            cmsCtx.setScope(savedScope);
+        }
+        return content;
+    }
 
 
-	public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
+    public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
-		try {
-			CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
+        try {
+            CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
 
-			return pubInfos.isAnonymouslyReadable();
+            return pubInfos.isAnonymouslyReadable();
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		// Ne passe jamamis
-		return false;
-	}
+        // Ne passe jamamis
+        return false;
+    }
 
 
 
-	public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
-		// Document doc = ctx.g
-		try {
-			if( !"detailedView".equals(ctx.getDisplayContext())) {
+    public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
+        // Document doc = ctx.g
+        try {
+            if( !"detailedView".equals(ctx.getDisplayContext())) {
                 return this.getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
             } else {
                 return ((DefaultCMSCustomizer) this.getNuxeoService().getCMSCustomizer()).getCMSDefaultPlayer(ctx);
             }
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		// Not possible
-		return null;
-	}
-
-
+        // Not possible
+        return null;
+    }
 
 
 
 
-	public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path, boolean fetchSubItems) throws CMSException{
-
-		String savedScope = cmsCtx.getScope();
-
-		try {
 
 
-			Map<String, NavigationItem> navItems = null;
+    public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path, boolean fetchSubItems) throws CMSException{
 
-			List<String> idsToFetch = new ArrayList<String>();
-			boolean fetchRoot = false;
+        String savedScope = cmsCtx.getScope();
 
-			/* On récupère le dernier arbre de publication partiel */
+        try {
 
 
-			String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
-			Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
+            Map<String, NavigationItem> navItems = null;
+
+            List<String> idsToFetch = new ArrayList<String>();
+            boolean fetchRoot = false;
+
+            /* On récupère le dernier arbre de publication partiel */
+
+
+            String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
+            Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
             boolean refreshing = PageProperties.getProperties().isRefreshingPage();
             PartialNavigationInvoker partialNavInvoker = null;
             if (refreshing) {
                 partialNavInvoker = (PartialNavigationInvoker) ((HttpServletRequest) request).getAttribute("partialNavInvoker");
             }
-			CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, this.portletCtx,
-					false);
-			// délai d'une session
-			cacheInfos.setExpirationDelay(200000);
+            CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, this.portletCtx,
+                    false);
+            // délai d'une session
+            cacheInfos.setExpirationDelay(200000);
 
 
-			navItems = (Map<String, NavigationItem>) this.getCacheService().getCache(cacheInfos);
+            navItems = (Map<String, NavigationItem>) this.getCacheService().getCache(cacheInfos);
 
 
 
-			if (navItems == null) {
+            if (navItems == null) {
 
-				navItems = new HashMap<String, NavigationItem>();
-				fetchRoot = true;
-			}
+                navItems = new HashMap<String, NavigationItem>();
+                fetchRoot = true;
+            }
 
-			/* Boucle sur l'arbo pour recuperer les ids à fetcher
-			 * (doc absents de l'arbre)
-			 * */
+            /* Boucle sur l'arbo pour recuperer les ids à fetcher
+             * (doc absents de l'arbre)
+             * */
 
-			String pathToCheck = path;
+            String pathToCheck = path;
 
-			CMSServiceCtx superUserCtx = new CMSServiceCtx();
-			superUserCtx.setControllerContext(cmsCtx.getControllerContext());
-			cmsCtx.setScope("superuser_context");
+            CMSServiceCtx superUserCtx = new CMSServiceCtx();
+            superUserCtx.setControllerContext(cmsCtx.getControllerContext());
+            cmsCtx.setScope("superuser_context");
 
-        
+
             do {
                 NavigationItem navItem = navItems.get(pathToCheck);
-                
-                if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren() )) {
-                    Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
-                    if( ! idsToFetch.contains(doc.getId()))
+                if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren() )) {
+                    Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+
+                    if( ! idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
+                    }
                 }
 
                 CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
                 pathToCheck = parentPath.toString();
-                
+
                 if (navItem == null) {
-                    Document doc = (Document) executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
-                    if( ! idsToFetch.contains(doc.getId()))
+                    Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
+                    if( ! idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
+                    }
                 }
-            
-                
-                
+
+
+
 
             } while (pathToCheck.contains(publishSpaceConfig.getPath()));
 
 
 
-			if( (idsToFetch.size() > 0) || fetchRoot)
+            if( (idsToFetch.size() > 0) || fetchRoot)
 
-			{
-	              cmsCtx.setScope("__nocache");
+            {
+                cmsCtx.setScope("__nocache");
 
-	                /* appel de la commande */
+                /* appel de la commande */
 
-	                navItems = (Map<String, NavigationItem>) executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig, navItems, idsToFetch,
-	                        fetchRoot, path)));
+                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig, navItems, idsToFetch,
+                        fetchRoot, path)));
 
-	                /* Stockage de l'arbre partiel */
+                /* Stockage de l'arbre partiel */
 
-	                cacheInfos.setForceReload(true);
-	                cacheInfos.setForceNOTReload(false);
-	                partialNavInvoker = new PartialNavigationInvoker(navItems);
-	                if (refreshing) {
-	                    ((HttpServletRequest) request).setAttribute("partialNavInvoker", partialNavInvoker);
-	                }
-	                cacheInfos.setInvoker(partialNavInvoker);
-	                getCacheService().getCache(cacheInfos);
+                cacheInfos.setForceReload(true);
+                cacheInfos.setForceNOTReload(false);
+                partialNavInvoker = new PartialNavigationInvoker(navItems);
+                if (refreshing) {
+                    ((HttpServletRequest) request).setAttribute("partialNavInvoker", partialNavInvoker);
+                }
+                cacheInfos.setInvoker(partialNavInvoker);
+                this.getCacheService().getCache(cacheInfos);
 
-			}
+            }
 
-			return navItems;
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+            return navItems;
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}		finally	{
-			cmsCtx.setScope(savedScope);
-		}
-	}
+        }		finally	{
+            cmsCtx.setScope(savedScope);
+        }
+    }
 
 
-	public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
-			throws CMSException {
+    public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
+            throws CMSException {
 
-		String savedScope = cmsCtx.getScope();
+        String savedScope = cmsCtx.getScope();
 
-		if( (cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope()) )	{
-			cmsCtx.setScope("user_session");
-		}
+        if( (cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope()) )	{
+            cmsCtx.setScope("user_session");
+        }
 
-		try {
+        try {
 
-			String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
+            String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
 
-			CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
+            CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
 
-			if( publishSpaceConfig == null) {
+            if( publishSpaceConfig == null) {
                 throw new CMSException(CMSException.ERROR_NOTFOUND);
             }
 
 
 
-			Map<String, NavigationItem> navItems = null;
+            Map<String, NavigationItem> navItems = null;
 
-			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	{
-				navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
-			}	else   {
-			    boolean forceLiveVersion = false;
+            if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading")))	{
+                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
+            }	else   {
+                boolean forceLiveVersion = false;
                 if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
                     forceLiveVersion = true;
                 }
-				navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx,
-					(new DocumentPublishSpaceNavigationCommand(publishSpaceConfig, forceLiveVersion)));
-			}
+                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx,
+                        (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig, forceLiveVersion)));
+            }
 
-			if (navItems != null) {
-				NavigationItem navItem = navItems.get(livePath);
-				if (navItem != null) {
+            if (navItems != null) {
+                NavigationItem navItem = navItems.get(livePath);
+                if (navItem != null) {
 
-					CMSItem item = navItem.getAdaptedCMSItem();
-					if (item == null) {
-						if (navItem.getMainDoc() != null) {
+                    CMSItem item = navItem.getAdaptedCMSItem();
+                    if (item == null) {
+                        if (navItem.getMainDoc() != null) {
                             navItem.setAdaptedCMSItem(this.createNavigationItem(cmsCtx, livePath, ((Document) navItem.getMainDoc())
-									.getTitle(), (Document) navItem.getMainDoc(), publishSpacePath));
+                                    .getTitle(), (Document) navItem.getMainDoc(), publishSpacePath));
                         } else {
                             return null;
                         }
-					}
+                    }
 
-					return navItem.getAdaptedCMSItem();
-				}
+                    return navItem.getAdaptedCMSItem();
+                }
 
-			}
+            }
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
-		finally	{
-			cmsCtx.setScope(savedScope);
-		}
+        }
+        finally	{
+            cmsCtx.setScope(savedScope);
+        }
 
-		// Not possible
-		return null;
-	}
+        // Not possible
+        return null;
+    }
 
-	public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
-			throws CMSException {
+    public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path)
+            throws CMSException {
 
-		String savedScope = cmsCtx.getScope();
+        String savedScope = cmsCtx.getScope();
 
-		if( (cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope()) )	{
-			cmsCtx.setScope("user_session");
-		}
-		try {
+        if( (cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope()) )	{
+            cmsCtx.setScope("user_session");
+        }
+        try {
 
-			CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
+            CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
 
-			if( publishSpaceConfig == null) {
+            if( publishSpaceConfig == null) {
                 throw new CMSException(CMSException.ERROR_NOTFOUND);
             }
 
 
-			Map<String, NavigationItem> navItems = null;
+            Map<String, NavigationItem> navItems = null;
 
-			if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+            if( "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
             } else {
                 boolean forceLiveVersion = false;
@@ -731,186 +735,186 @@ public class CMSService implements ICMSService {
                     forceLiveVersion = true;
                 }
 
-				navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx,
- (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
-                        forceLiveVersion)));
+                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx,
+                        (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
+                                forceLiveVersion)));
             }
 
-			if (navItems != null) {
-				NavigationItem navItem = navItems.get(path);
-				if (navItem != null) {
-					List<CMSItem> childrens = new ArrayList<CMSItem>();
+            if (navItems != null) {
+                NavigationItem navItem = navItems.get(path);
+                if (navItem != null) {
+                    List<CMSItem> childrens = new ArrayList<CMSItem>();
 
 
-					for (Object child : navItem.getChildren()) {
+                    for (Object child : navItem.getChildren()) {
 
-						Document docChild = (Document) child;
+                        Document docChild = (Document) child;
 
-						String childNavPath = DocumentPublishSpaceNavigationCommand.computeNavPath(docChild.getPath());
+                        String childNavPath = DocumentPublishSpaceNavigationCommand.computeNavPath(docChild.getPath());
 
-						NavigationItem navChild =  navItems.get( childNavPath);
+                        NavigationItem navChild =  navItems.get( childNavPath);
 
-						CMSItem item = navChild.getAdaptedCMSItem();
-						if (item == null) {
-							if (navChild.getMainDoc() != null) {
+                        CMSItem item = navChild.getAdaptedCMSItem();
+                        if (item == null) {
+                            if (navChild.getMainDoc() != null) {
                                 navChild.setAdaptedCMSItem(this.createNavigationItem(cmsCtx, childNavPath, ((Document) navChild.getMainDoc())
-										.getTitle(), (Document) navChild.getMainDoc(), publishSpacePath));
+                                        .getTitle(), (Document) navChild.getMainDoc(), publishSpacePath));
                             }
-						}
+                        }
 
-						childrens.add(navChild.getAdaptedCMSItem());
+                        childrens.add(navChild.getAdaptedCMSItem());
 
-					}
-					return childrens;
-				}
-			}
+                    }
+                    return childrens;
+                }
+            }
 
-		} catch (NuxeoException e) {
-			e.rethrowCMSException();
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
-		finally	{
-			cmsCtx.setScope(savedScope);
-		}
+        }
+        finally	{
+            cmsCtx.setScope(savedScope);
+        }
 
 
-		// Not possible
-		return null;
-	}
+        // Not possible
+        return null;
+    }
 
 
-	/* (non-Javadoc)
-	 * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
-	 */
-	public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
-		/* Instanciation pour que la méthode soit techniquement "null safe" */
-		CMSPublicationInfos pubInfos = new CMSPublicationInfos();
+    /* (non-Javadoc)
+     * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
+     */
+    public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
+        /* Instanciation pour que la méthode soit techniquement "null safe" */
+        CMSPublicationInfos pubInfos = new CMSPublicationInfos();
 
-		try {
+        try {
 
-			String savedScope = ctx.getScope();
+            String savedScope = ctx.getScope();
 
-			try {/*
-				 * getPublicationInfos est toujours utilisé avec les droits de
-				 * l'utilisateur (il remplit en ce sens un testeur de droits car
-				 * les informations retournées sont faites selon ces derniers).
-				 * Cependant, il est possible de forcer son exécution avec
-				 * un autre modepar l'intermédiaire d'une vairiable du CMS Service
-				 * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
-				 */
-				if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
-					ctx.setScope(ctx.getForcePublicationInfosScope());
-				}else{
-				    // In anonymous mode, publicationsInfos are shared
+            try {/*
+             * getPublicationInfos est toujours utilisé avec les droits de
+             * l'utilisateur (il remplit en ce sens un testeur de droits car
+             * les informations retournées sont faites selon ces derniers).
+             * Cependant, il est possible de forcer son exécution avec
+             * un autre modepar l'intermédiaire d'une vairiable du CMS Service
+             * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
+             */
+                if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
+                    ctx.setScope(ctx.getForcePublicationInfosScope());
+                }else{
+                    // In anonymous mode, publicationsInfos are shared
 
                     ServerInvocation invocation = ctx.getServerInvocation();
                     User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
                     if (user == null) {
-		                 ctx.setScope("anonymous");
-		            } else {
+                        ctx.setScope("anonymous");
+                    } else {
                         ctx.setScope("user_session");
                     }
-				}
+                }
 
-				pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
-				if (pubInfos != null) {
-					List<Integer> errors = pubInfos.getErrorCodes();
-					if (errors != null) {
-						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
+                if (pubInfos != null) {
+                    List<Integer> errors = pubInfos.getErrorCodes();
+                    if (errors != null) {
+                        if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN)) {
 
-							throw new CMSException(CMSException.ERROR_FORBIDDEN);
-						}
-						if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+                            throw new CMSException(CMSException.ERROR_FORBIDDEN);
+                        }
+                        if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
 
-							throw new CMSException(CMSException.ERROR_NOTFOUND);
-						}
-					}
+                            throw new CMSException(CMSException.ERROR_NOTFOUND);
+                        }
+                    }
 
-				}
-			} finally {
-				ctx.setScope(savedScope);
+                }
+            } finally {
+                ctx.setScope(savedScope);
 
-			}
+            }
 
-		} catch (NuxeoException e) {
+        } catch (NuxeoException e) {
 
-			e.rethrowCMSException();
-		} catch (Exception e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
 
-			if (!(e instanceof CMSException)) {
+            if (!(e instanceof CMSException)) {
                 throw new CMSException(e);
             } else {
                 throw (CMSException) e;
             }
-		}
+        }
 
-		return pubInfos;
+        return pubInfos;
 
-	}
+    }
 
-	public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
-		CMSItem configItem = null;
-		try {
-			String savedScope = cmsCtx.getScope();
-			String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
-			try {
-				/* La mise en cache du résultat de cette méthode
-				 * s'effectue de manière asynchrone.
-				 */
-				cmsCtx.setAsyncCacheRefreshing(true);
-				cmsCtx.setForcePublicationInfosScope("superuser_context");
+    public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
+        CMSItem configItem = null;
+        try {
+            String savedScope = cmsCtx.getScope();
+            String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
+            try {
+                /* La mise en cache du résultat de cette méthode
+                 * s'effectue de manière asynchrone.
+                 */
+                cmsCtx.setAsyncCacheRefreshing(true);
+                cmsCtx.setForcePublicationInfosScope("superuser_context");
 
-				configItem = this.fetchContent(cmsCtx, publishSpacePath);
+                configItem = this.fetchContent(cmsCtx, publishSpacePath);
 
-				this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
-			}
-			finally {
-				cmsCtx.setScope(savedScope);
-				cmsCtx.setAsyncCacheRefreshing(false);
-				cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
-			}
+                this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
+            }
+            finally {
+                cmsCtx.setScope(savedScope);
+                cmsCtx.setAsyncCacheRefreshing(false);
+                cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
+            }
 
-		} catch (Exception e) {
-			if (!(e instanceof CMSException)) {
-				if ((e instanceof NuxeoException)
-						&& (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
+        } catch (Exception e) {
+            if (!(e instanceof CMSException)) {
+                if ((e instanceof NuxeoException)
+                        && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
                     return null;
                 } else {
                     throw new CMSException(e);
                 }
-			} else {
-				throw (CMSException) e;
-			}
-		}
-		return configItem;
-	}
+            } else {
+                throw (CMSException) e;
+            }
+        }
+        return configItem;
+    }
 
-	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
-			throws CMSException  {
-		try {
+    public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
+            throws CMSException  {
+        try {
 
-			return this.customizer.parseCMSURL(cmsCtx, requestPath, requestParameters);
-		}
-			catch (Exception e) {
-				if (!(e instanceof CMSException))	{
-					if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
-                        return null;
-                    } else {
-                        throw new CMSException(e);
-                    }
-				}
-				else	{
+            return this.customizer.parseCMSURL(cmsCtx, requestPath, requestParameters);
+        }
+        catch (Exception e) {
+            if (!(e instanceof CMSException))	{
+                if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
+                    return null;
+                } else {
+                    throw new CMSException(e);
+                }
+            }
+            else	{
 
-						throw (CMSException) e;
-				}
-			}
-	}
+                throw (CMSException) e;
+            }
+        }
+    }
 
 
 
@@ -919,41 +923,41 @@ public class CMSService implements ICMSService {
 
             return this.customizer.adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
         }
-            catch (Exception e) {
-                if (!(e instanceof CMSException))   {
-                    if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
-                        return null;
-                    } else {
-                        throw new CMSException(e);
-                    }
-                }
-                else    {
-
-                        throw (CMSException) e;
-                }
-            }
-    }
-
-
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws CMSException {
-		try {
-
-		return this.customizer.computeUserPreloadedPages(cmsCtx);
-		}
-		catch (Exception e) {
-			if (!(e instanceof CMSException))	{
-				if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
+        catch (Exception e) {
+            if (!(e instanceof CMSException))   {
+                if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
                     return null;
                 } else {
                     throw new CMSException(e);
                 }
-			}
-			else	{
+            }
+            else    {
 
-					throw (CMSException) e;
-			}
-		}
-	}
+                throw (CMSException) e;
+            }
+        }
+    }
+
+
+    public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws CMSException {
+        try {
+
+            return this.customizer.computeUserPreloadedPages(cmsCtx);
+        }
+        catch (Exception e) {
+            if (!(e instanceof CMSException))	{
+                if( (e instanceof NuxeoException) && ( ( (NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
+                    return null;
+                } else {
+                    throw new CMSException(e);
+                }
+            }
+            else	{
+
+                throw (CMSException) e;
+            }
+        }
+    }
     /**
      * Création des fragments dans la page
      */
@@ -973,7 +977,7 @@ public class CMSService implements ICMSService {
 
             // Propriétés générales des fragments
             PropertyList pmFragmentsValues = doc.getProperties().getList(
-EditableWindowHelper.SCHEMA);
+                    EditableWindowHelper.SCHEMA);
 
             if ((pmFragmentsValues != null) && !pmFragmentsValues.isEmpty()) {
 
@@ -1124,15 +1128,17 @@ EditableWindowHelper.SCHEMA);
             } catch (Exception e) {
                 throw new CMSException(e);
             }
-            if (mediaLibrary != null)
+            if (mediaLibrary != null) {
                 url = uri.toString() + "/nxpath/default" + mediaLibrary.getPath() + "@view_documents?";
-            else
+            } else {
                 url = "";
+            }
         }
 
         // fromUrl is used only with fancyboxes
         if (command != EcmCommand.gotoMediaLibrary) {
-            String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(cmsCtx.getServerInvocation());
+            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
+            String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
         }
 
@@ -1235,7 +1241,7 @@ EditableWindowHelper.SCHEMA);
 
             // On force le rechargement du cache de la page
             cmsCtx.setForceReload(true);
-            getContent(cmsCtx, pagePath);
+            this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
 
         } catch (Exception e) {
@@ -1269,7 +1275,7 @@ EditableWindowHelper.SCHEMA);
         } catch (Exception e) {
             throw new CMSException(e);
         }
-       
+
     }
 
 
