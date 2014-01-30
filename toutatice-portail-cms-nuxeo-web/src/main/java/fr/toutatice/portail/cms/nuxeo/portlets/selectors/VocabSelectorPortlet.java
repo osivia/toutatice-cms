@@ -59,7 +59,7 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 	 * @param vocab
 	 * @return
 	 */
-	public static String getLabel(String othersLabel, String id, VocabularyEntry vocab) {
+	public static String getLabel(String othersLabel, String id, VocabularyEntry vocab, String preselect1) {
 		String res = "";
 
 		if (id.contains(OTHER_ENTRIES_CHOICE)
@@ -71,15 +71,18 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 
 			String[] tokens = id.split("/", 2);
 
-			if (tokens.length > 0) {
+			if (tokens.length > 0 && preselect1==null) {
 				VocabularyEntry child = vocab.getChild(tokens[0]);
 				res += child.getLabel();
 			}
 
 			if (tokens.length > 1) {
 				VocabularyEntry childVocab = vocab.getChild(tokens[0]);
-				if (childVocab != null)
-					res += "/" + getLabel(res, tokens[1], childVocab);
+				if (childVocab != null) {
+				    if(res.length() > 0)
+				        res += "/" ;
+				    res += getLabel(res, tokens[1], childVocab, null);
+				}
 			}
 		}
 
@@ -116,6 +119,13 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 					window.setProperty("osivia.vocabName" + String.valueOf(niveau), null);
 				
 			}
+			
+			
+            if( req.getParameter("preselect1").length() > 0)
+                window.setProperty("osivia.preselect1", req.getParameter("preselect1"));
+            else if (window.getProperty("osivia.preselect1") != null)
+                window.setProperty("osivia.preselect1", null);
+			
 			
 			if("1".equals(req.getParameter("selectorMonoValued")))
 				window.setProperty("osivia.selectorMonoValued", "1");
@@ -176,6 +186,22 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 				String separator = "";
 				int index = 0;
 				String selectedEntries = "";
+				
+
+				
+                String preselect = window.getProperty("osivia.preselect1");
+                if( preselect != null)  {
+                    
+                    // If preselection is set, controls if 2nd item is selected
+                    if(StringUtils.isNotEmpty(req.getParameter("vocab2Id")))    {
+                        selectedVocabsEntries = new String[] { preselect, req.getParameter("vocab2Id"),
+                                req.getParameter("vocab3Id") };
+                    }   else
+                        // If no item selected, remove selection
+                        selectedVocabsEntries = new String[0];
+
+                }
+				
 				for (String selectedVocabEntry : selectedVocabsEntries) {
 
 					if (index > 0)
@@ -290,6 +316,11 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			
 		}
 		
+        String preselect = window.getProperty("osivia.preselect1");
+        if (preselect == null)
+            preselect = "";
+        req.setAttribute("preselect1" , preselect);
+		
 		String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
 		if(selectorMonoValued == null)
 			selectorMonoValued = "0";
@@ -361,9 +392,11 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			
 
 			String vocab1Id = request.getParameter("vocab1Id");
+	        String preselect1 = window.getProperty("osivia.preselect1");
+	        if( StringUtils.isNotEmpty(preselect1))
+	            vocab1Id= preselect1;
 			String vocab2Id = request.getParameter("vocab2Id");
-			String vocab3Id = request.getParameter("vocab3Id");			
-		
+			String vocab3Id = request.getParameter("vocab3Id");		
 			
 
 			// Get public parameter
@@ -377,6 +410,9 @@ public class VocabSelectorPortlet extends fr.toutatice.portail.cms.nuxeo.core.CM
 			request.setAttribute("vocab1Id", vocab1Id);
 			request.setAttribute("vocab2Id", vocab2Id);
 			request.setAttribute("vocab3Id", vocab3Id);
+
+
+            request.setAttribute("preselect1", preselect1);		
 			
 			request.setAttribute("vocabName2", vocabName2);
 			request.setAttribute("vocabName3", vocabName3);			

@@ -33,8 +33,11 @@ String vocab1Id = (String) request.getAttribute("vocab1Id");
 String vocab2Id = (String) request.getAttribute("vocab2Id");
 String vocab3Id = (String) request.getAttribute("vocab3Id");
 VocabularyEntry vocab1  = ((VocabularyEntry) renderRequest.getAttribute("vocab1"));
+
 String vocabName2 = (String) request.getAttribute("vocabName2");
 String vocabName3 = (String) request.getAttribute("vocabName3");
+
+String preselect1 = (String) request.getAttribute("preselect1");
 
 String othersLabel = (String) window.getProperty("osivia.othersLabel");
 
@@ -66,7 +69,7 @@ if(!selectorMonoValued){
 			
 		%>
 			<tr>
-				<td width="90%"><%= VocabSelectorPortlet.getLabel(othersLabel, vocabId, vocab1 )%> </td> <td>
+				<td width="90%"><%= VocabSelectorPortlet.getLabel(othersLabel, vocabId, vocab1, preselect1 )%> </td> <td>
 				
 				<a href="<portlet:actionURL>
 		         		<portlet:param name="action" value="delete"/>
@@ -91,7 +94,7 @@ if(!selectorMonoValued){
 } 
 
 String onChangeEvent1 = "";
-if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) { 
+if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId()) ) { 
 	
 	
 	/* Pour faire apparaître le deuxième sélecteur (si il existe)
@@ -125,6 +128,8 @@ if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) {
 	
 <div class="nuxeo-keywords-selector">
 		<form id="<portlet:namespace />vocabsForm" method="post" action="<portlet:actionURL/>">
+		
+<% if( preselect1 == null){	%>
 				
 						<select id="<portlet:namespace />Topic" name="vocab1Id" <%= onChangeEvent1 %> >
 							<option value="">Tous</option>					
@@ -148,6 +153,7 @@ if(vocab1 != null && StringUtils.isNotEmpty(vocab1.getId())) {
 							<option <%= other1Selected %> value="<%= VocabSelectorPortlet.OTHER_ENTRIES_CHOICE %>"><%= othersLabel %></option>
 			<%          } %>
 						</select> 
+<%	}	%>
 			
 <% } 
 
