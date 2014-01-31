@@ -1,6 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +45,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
@@ -1075,31 +1075,15 @@ public class CMSService implements ICMSService {
 
     }
 
+
     public String getEcmDomain(CMSServiceCtx cmsCtx) {
-        String nuxeoPublicHost = System.getProperty("nuxeo.publicHost");
-        String nuxeoPublicPort = System.getProperty("nuxeo.publicPort");
-
-        URI uri = null;
-
-        try {
-            if (nuxeoPublicPort.equals("80")) {
-                uri = new URI("http://" + nuxeoPublicHost);
-            } else {
-                uri = new URI("http://" + nuxeoPublicHost + ":" + nuxeoPublicPort);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return uri.toString();
+        return NuxeoConnectionProperties.getPublicDomainUri().toString();
     }
 
-    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
 
+    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
         // get the défault domain and app name
-        // TODO variabiliser le nom de l'app nuxeo
-        String uri = this.getEcmDomain(cmsCtx).concat("/nuxeo");
+        String uri = NuxeoConnectionProperties.getPublicBaseUri().toString();
 
         String url = "";
 
