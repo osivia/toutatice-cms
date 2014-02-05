@@ -54,7 +54,7 @@ public class FileContentCommand implements INuxeoCommand {
 
 			InputStream in = new FileInputStream(blob.getFile());
 
-			File tempFile = File.createTempFile("tempFile1", ".tmp");
+			File tempFile = File.createTempFile("tempFile", ".tmp");
             tempFile.deleteOnExit();
 			
 			OutputStream out = new FileOutputStream(tempFile);
@@ -69,6 +69,7 @@ public class FileContentCommand implements INuxeoCommand {
 				out.flush();
 			} finally {
 				in.close();
+				out.close();
 			}
 
 			blob.getFile().delete();
