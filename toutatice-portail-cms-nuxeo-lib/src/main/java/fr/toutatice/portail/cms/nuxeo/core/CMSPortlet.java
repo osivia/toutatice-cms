@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -324,10 +325,26 @@ public class CMSPortlet extends GenericPortlet {
 				*/
 
 				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
-
+				
+				// Si SUP 10 Mo, redirection servlet pour streaming
+                if( content.getFile().length() > 10000000L)  {
+                    
+                    resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+                            String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+                    String idLargeFile = "" + System.currentTimeMillis();
+                    
+                    CMSBinaryContent.largeFile.put(idLargeFile, content);
+                    
+                    resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);
+                    resourceResponse.getPortletOutputStream().close();  
+                    
+                    return;
+                 }
+				
 				// Les headers doivent être positionnées avant la réponse
 				resourceResponse.setContentType(content.getMimeType());
 				resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+			
 
 				ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
 						4096);

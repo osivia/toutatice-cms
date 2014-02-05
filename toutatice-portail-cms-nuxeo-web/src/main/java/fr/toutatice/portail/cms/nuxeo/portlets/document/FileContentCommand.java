@@ -55,10 +55,13 @@ public class FileContentCommand implements INuxeoCommand {
 			InputStream in = new FileInputStream(blob.getFile());
 
 			File tempFile = File.createTempFile("tempFile1", ".tmp");
+            tempFile.deleteOnExit();
+			
 			OutputStream out = new FileOutputStream(tempFile);
+			
 
 			try {
-				byte[] b = new byte[4096];
+				byte[] b = new byte[1000000];
 				int i = -1;
 				while ((i = in.read(b)) != -1) {
 					out.write(b, 0, i);
