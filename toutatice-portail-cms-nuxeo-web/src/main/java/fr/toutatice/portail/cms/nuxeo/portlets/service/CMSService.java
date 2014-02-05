@@ -1119,15 +1119,15 @@ public class CMSService implements ICMSService {
             }
         }
 
-        // fromUrl is used only with fancyboxes
+        // params are used with fancyboxes
         if (command != EcmCommand.gotoMediaLibrary) {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
-        }
 
-        for (Map.Entry<String, String> param : requestParameters.entrySet()) {
-            url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
+            for (Map.Entry<String, String> param : requestParameters.entrySet()) {
+                url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
+            }
         }
 
         return url;
