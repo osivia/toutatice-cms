@@ -41,7 +41,13 @@ public class NuxeoConnectionProperties {
         }
 
         try {
-            return new URI(scheme + "://" + NUXEO_PUBLIC_HOST + ":" + NUXEO_PUBLIC_PORT);
+            URI uri;
+            if ("80".equals(NUXEO_PUBLIC_PORT) || "443".equals(NUXEO_PUBLIC_PORT)) {
+                uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST);
+            } else {
+                uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST + ":" + NUXEO_PUBLIC_PORT);
+            }
+            return uri;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
