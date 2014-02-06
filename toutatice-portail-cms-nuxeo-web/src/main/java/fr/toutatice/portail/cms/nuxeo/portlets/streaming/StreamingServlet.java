@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
+import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
+
 
 public class StreamingServlet extends HttpServlet {
 
@@ -53,7 +55,8 @@ public class StreamingServlet extends HttpServlet {
             String idLargeFile = theRequest.getParameter("idLargeFile");
             if (idLargeFile != null) {
 
-                CMSBinaryContent content = CMSBinaryContent.largeFile.get(idLargeFile);
+                //CMSBinaryContent content = CMSBinaryContent.largeFile.get(idLargeFile);
+                CMSBinaryContent content = CMSPortlet.largeFile.get(idLargeFile);
 
                 if (content != null) {
 
@@ -65,7 +68,9 @@ public class StreamingServlet extends HttpServlet {
 
                     streamBigFile(new FileInputStream(content.getFile()), output, 8192);
                     
-                    CMSBinaryContent.largeFile.remove(idLargeFile);
+                    //CMSBinaryContent.largeFile.remove(idLargeFile);
+                    CMSPortlet.largeFile.remove(idLargeFile);
+                    
                 }
             }
 

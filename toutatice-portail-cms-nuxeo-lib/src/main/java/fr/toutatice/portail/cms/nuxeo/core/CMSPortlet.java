@@ -7,7 +7,9 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.portlet.GenericPortlet;
@@ -46,6 +48,9 @@ public class CMSPortlet extends GenericPortlet {
 
 	}
 	
+	
+	   // 2.0.22 : to stream big files
+    public static final Map<String, CMSBinaryContent> largeFile = new Hashtable<String, CMSBinaryContent>();
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -333,7 +338,9 @@ public class CMSPortlet extends GenericPortlet {
                             String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
                     String idLargeFile = "" + System.currentTimeMillis();
                     
-                    CMSBinaryContent.largeFile.put(idLargeFile, content);
+                    
+                    largeFile.put(idLargeFile, content);
+                    //CMSBinaryContent.largeFile.put(idLargeFile, content);
                     
                     resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);
                     resourceResponse.getPortletOutputStream().close();  
