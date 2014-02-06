@@ -55,8 +55,9 @@ public class StreamingServlet extends HttpServlet {
             String idLargeFile = theRequest.getParameter("idLargeFile");
             if (idLargeFile != null) {
 
-                //CMSBinaryContent content = CMSBinaryContent.largeFile.get(idLargeFile);
-                CMSBinaryContent content = CMSPortlet.largeFile.get(idLargeFile);
+                CMSBinaryContent content = CMSBinaryContent.largeFile.get(idLargeFile);
+                //Compatibilité RC5
+                //CMSBinaryContent content = CMSPortlet.largeFile.get(idLargeFile);
 
                 if (content != null) {
 
@@ -68,8 +69,9 @@ public class StreamingServlet extends HttpServlet {
 
                     streamBigFile(new FileInputStream(content.getFile()), output, 8192);
                     
-                    //CMSBinaryContent.largeFile.remove(idLargeFile);
-                    CMSPortlet.largeFile.remove(idLargeFile);
+                    CMSBinaryContent.largeFile.remove(idLargeFile);
+                    //Compatibilité RC5
+                    //CMSPortlet.largeFile.remove(idLargeFile);
                     
                 }
             }

@@ -90,7 +90,7 @@ public class CMSPortlet extends GenericPortlet {
 		return inputFormater.format(new Date(System.currentTimeMillis()));
 	}
 
-	public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse) {
+	public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse, String refreshMs) {
 
 		boolean isExpired = true;
 
@@ -103,8 +103,11 @@ public class CMSPortlet extends GenericPortlet {
 			try {
 				Date originalDate = inputFormater.parse(sOriginalDate);
 				if (System.currentTimeMillis() < originalDate.getTime()
-						+ resourceResponse.getCacheControl().getExpirationTime() * 1000)
-					isExpired = false;
+						+ resourceResponse.getCacheControl().getExpirationTime() * 1000)  {
+				    
+				    if( refreshMs == null || Long.parseLong(refreshMs) < originalDate.getTime())
+				        isExpired = false;
+				}
 			} catch (Exception e) {
 
 			}
@@ -115,12 +118,13 @@ public class CMSPortlet extends GenericPortlet {
 
 	public boolean serveResourceByCache(ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 			throws PortletException, IOException {
-
+	    
+	
 		String sOriginalDate = resourceRequest.getProperty("if-modified-since");
 		if (sOriginalDate == null)
 			sOriginalDate = resourceRequest.getProperty("If-Modified-Since");
 
-		if (!isResourceExpired(sOriginalDate, resourceResponse)) { // validation
+		if (!isResourceExpired(sOriginalDate, resourceResponse, resourceRequest.getParameter("refresh"))) { // validation
 																	// request
 
 			// resourceResponse.setContentLength(0);
@@ -338,9 +342,9 @@ public class CMSPortlet extends GenericPortlet {
                             String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
                     String idLargeFile = "" + System.currentTimeMillis();
                     
-                    
-                    largeFile.put(idLargeFile, content);
-                    //CMSBinaryContent.largeFile.put(idLargeFile, content);
+                    //Compatibilité RC5
+                    //largeFile.put(idLargeFile, content);
+                    CMSBinaryContent.largeFile.put(idLargeFile, content);
                     
                     resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);
                     resourceResponse.getPortletOutputStream().close();  

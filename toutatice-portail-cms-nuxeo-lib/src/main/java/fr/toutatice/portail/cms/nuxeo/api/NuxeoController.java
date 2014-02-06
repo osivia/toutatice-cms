@@ -13,6 +13,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.xml.transform.Transformer;
@@ -43,6 +44,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.formatters.IFormatter;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.xml.sax.InputSource;
@@ -89,6 +91,8 @@ public class NuxeoController {
 	String navigationScope = null;
 	CMSItem navItem;
 	CMSServiceCtx cmsCtx;
+	
+	boolean reloadResource = false;
 	
 
 	
@@ -411,6 +415,14 @@ public class NuxeoController {
 		} catch( Exception e)	{
 			throw new RuntimeException( e);
 		}
+		
+		
+		
+		if( request instanceof ResourceRequest){
+		    if( request.getParameter("refresh") != null){
+		        reloadResource = true;
+		    }
+		}
 	}
 	
 	
@@ -611,6 +623,13 @@ public class NuxeoController {
 
 		}
 		
+		// v2.0.22-RC6 Force to reload resources
+	    if( PageProperties.getProperties().isRefreshingPage())  {
+	            resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+	    }
+
+		
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
@@ -638,6 +657,12 @@ public class NuxeoController {
 		resourceURL.setParameter("type", "attachedFile");
 		resourceURL.setParameter("fileIndex", fileIndex);
 		resourceURL.setParameter("docPath", path);
+		
+		
+        // v2.0.22-RC6 Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
 
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
@@ -656,6 +681,12 @@ public class NuxeoController {
 		resourceURL.setParameter("blobIndex", blobIndex);
 		resourceURL.setParameter("docPath", path);
 
+		
+	      // v2.0.22-RC6 Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
@@ -676,6 +707,12 @@ public class NuxeoController {
 			resourceURL.setParameter("displayLiveVersion", "1");
 		}
 
+		
+	      // v2.0.22-RC6 Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+		
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
 		resourceURL.setCacheability(ResourceURL.PAGE);
@@ -691,6 +728,11 @@ public class NuxeoController {
 		resourceURL.setParameter("type", "picture");
 		resourceURL.setParameter("content", content);
 		resourceURL.setParameter("docPath", path);
+		
+	      // v2.0.22-RC6 Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
 
 		// ne marche pas : bug JBP
 		// resourceURL.setCacheability(ResourceURL.PORTLET);
@@ -1048,6 +1090,10 @@ public class NuxeoController {
 		cmsCtx.setDoc(getCurrentDoc());
 		cmsCtx.setHideMetaDatas(getHideMetaDatas());
 		cmsCtx.setDisplayContext(displayContext);
+		
+        // v2.0.22-RC6 Force to reload resources
+		if( reloadResource)
+		    cmsCtx.setForceReload(true);
 
 		
 		return cmsCtx;
