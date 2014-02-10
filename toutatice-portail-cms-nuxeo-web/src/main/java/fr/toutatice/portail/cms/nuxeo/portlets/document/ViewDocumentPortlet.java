@@ -39,9 +39,9 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
@@ -307,16 +307,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         request.setAttribute("comments", comments);
                     }
 
-                    /* Ajout de l'action de suppression en mode contextualisé */
-                    // TODO: trp de conditions??? (i.e. les deux dernières)
-//                    CMSServiceCtx cmsCtx = ctx.getCMSCtx();
-//                    if (PortletHelper.isInContextualizedMode(cmsCtx) && publiInfos.isDeletableByUser() && docIsInLiveSpace
-//                            && request.getWindowState().equals(WindowState.MAXIMIZED)) {
-//                        List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-//                        MenubarItem delete = new MenubarItem("DELETE", "Supprimer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, "#div_delete_doc", null,
-//                                "fancybox_inline portlet-menuitem-nuxeo-delete", null);
-//                        menuBar.add(delete);
-//                    }
 
                 }
 

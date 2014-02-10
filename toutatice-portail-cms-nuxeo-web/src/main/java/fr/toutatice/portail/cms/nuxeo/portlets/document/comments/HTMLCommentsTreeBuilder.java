@@ -8,7 +8,7 @@ import java.util.Iterator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -66,7 +66,7 @@ public class HTMLCommentsTreeBuilder {
 			htmlTree.append(ADD_COM_CHILD_JSP_TAG);
 			htmlTree.append("</div>");
 			
-			if(PortletHelper.isInContextualizedMode(cmsCtx)){
+			if(ContextualizationHelper.isCurrentDocContextualized(cmsCtx)){
 				Boolean canDelete = (Boolean) comment.get("canDelete");
 				if (canDelete) {
 					htmlTree.append("<div class=\"delete_comment\">");

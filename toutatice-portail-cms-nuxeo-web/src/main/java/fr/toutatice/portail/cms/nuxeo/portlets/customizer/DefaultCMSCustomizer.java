@@ -927,6 +927,7 @@ protected Map<String, DocTypeDefinition> docTypes = null;
 
             docTypes = new LinkedHashMap<String, DocTypeDefinition>();
             docTypes.put("Workspace", createDocType("Workspace", "Workspace", false, Arrays.asList("File", "Folder", "Note")));
+            docTypes.put("PortalSite", createDocType("PortalSite", "PortalSite", false, Arrays.asList("File", "Folder", "Note")));
             docTypes.put("Folder", createDocType("Folder", "Dossier", true, Arrays.asList("File", "Folder", "Note")));
             docTypes.put("File", createDocType("File", "Fichier", true, new ArrayList<String>()));
             docTypes.put("Note", createDocType("Note", "Note", true,  new ArrayList<String>()));

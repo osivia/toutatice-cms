@@ -23,6 +23,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -390,12 +391,13 @@ public class NuxeoController {
                     displayLiveVersion = window.getPageProperty("osivia.cms.displayLiveVersion");
                 }
             }
-
+            
 
             String displayLiveVersionParam = request.getParameter("displayLiveVersion");
             if (displayLiveVersionParam != null) {
                 displayLiveVersion = displayLiveVersionParam;
             }
+
 
 
 
@@ -445,7 +447,7 @@ public class NuxeoController {
     public void setDocTypeToCreate(String property) {
         this.docTypeToCreate = property;
     }
-
+    
     public CMSItem getNavigationItem()	throws Exception {
         if( this.navItem == null){
             if( this.getNavigationPath() != null){
@@ -822,6 +824,7 @@ public class NuxeoController {
 
         }
 
+
     }
 
 
@@ -967,6 +970,7 @@ public class NuxeoController {
 
 
 
+     
 
 
 
@@ -1136,17 +1140,22 @@ public class NuxeoController {
         }
         this.cmsCtx.setScope(this.getScope());
         this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
-
         this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
+        
+
+        // Preview mode
+        EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");  
+        if (editionState != null && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode()))
+            this.cmsCtx.setPreviewVersion("1");
+         
         this.cmsCtx.setPageId(this.getPageId());
         this.cmsCtx.setDoc(this.getCurrentDoc());
         this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
         this.cmsCtx.setDisplayContext(this.displayContext);
-
-        this.cmsCtx.setCreationType(this.docTypeToCreate);
-        if( this.parentPathToCreate != null) {
-            this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
-        }
+        
+        this.cmsCtx.setCreationType(docTypeToCreate);
+        if( parentPathToCreate != null)
+            this.cmsCtx.setCreationPath(getComputedPath(parentPathToCreate));
 
 
         return this.cmsCtx;

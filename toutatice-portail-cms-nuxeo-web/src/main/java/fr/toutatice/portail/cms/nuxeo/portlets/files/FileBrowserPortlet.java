@@ -40,7 +40,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.PortletHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DeleteDocumentCommand;
 
 

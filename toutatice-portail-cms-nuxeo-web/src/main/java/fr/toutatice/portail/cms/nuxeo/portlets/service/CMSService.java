@@ -245,6 +245,9 @@ public class CMSService implements ICMSService {
             cmsCtx.setAsyncCacheRefreshing(saveAsync);
 
             boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
+            
+            if ("1".equals(cmsCtx.getPreviewVersion()))
+                haveToGetLive = true;
 
             // Document non publié et rattaché à un workspace
             if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
