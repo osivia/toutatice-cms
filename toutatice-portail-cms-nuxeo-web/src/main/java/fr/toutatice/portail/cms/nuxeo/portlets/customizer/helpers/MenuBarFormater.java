@@ -8,11 +8,8 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
@@ -22,14 +19,12 @@ import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -67,14 +62,15 @@ public class MenuBarFormater {
 
         return this.urlFactory;
     }
-    
-    
+
+
 
     public IContributionService getContributionService() throws Exception {
-        if (contributionService == null)
-            contributionService = Locator.findMBean(IContributionService.class, IContributionService.MBEAN_NAME);
+        if (this.contributionService == null) {
+            this.contributionService = Locator.findMBean(IContributionService.class, IContributionService.MBEAN_NAME);
+        }
 
-        return contributionService;
+        return this.contributionService;
     }
 
     public MenuBarFormater(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
@@ -84,8 +80,8 @@ public class MenuBarFormater {
         this.customizer = customizer;
 
     };
-    
-    
+
+
     public String  getLivePath(String path){
         String result = path;
         if( path.endsWith(".proxy")) {
@@ -93,12 +89,13 @@ public class MenuBarFormater {
         }
         return result;
     }
-    
+
 
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
-        if (cmsCtx.getDoc() == null && cmsCtx.getCreationPath() == null)
+        if (cmsCtx.getDoc() == null && cmsCtx.getCreationPath() == null) {
             return;
+        }
 
         PortletRequest request = cmsCtx.getRequest();
 
@@ -107,31 +104,37 @@ public class MenuBarFormater {
         // Menu bar
 
         try {
-            
-             
-            if (cmsCtx.getDoc() != null)
+
+
+            if (cmsCtx.getDoc() != null) {
                 this.getPermaLinkLink(cmsCtx, menuBar);
-            
-            if (cmsCtx.getDoc() != null)
+            }
+
+            if (cmsCtx.getDoc() != null) {
                 this.getContextualizationLink(cmsCtx, menuBar);
-            
-            if (cmsCtx.getDoc() != null)
+            }
+
+            if (cmsCtx.getDoc() != null) {
                 this.getChangeModeLink(cmsCtx, menuBar);
-            
-            if (cmsCtx.getDoc() != null)
+            }
+
+            if (cmsCtx.getDoc() != null) {
                 this.getEditLink(cmsCtx, menuBar);
+            }
 
             this.getCreateLink(cmsCtx, menuBar);
-            
-            if (cmsCtx.getDoc() != null)
+
+            if (cmsCtx.getDoc() != null) {
                 this.getDeleteLink(cmsCtx, menuBar);
+            }
 
 
-            if (cmsCtx.getDoc() != null)
+            if (cmsCtx.getDoc() != null) {
                 this.getAdministrationLink(cmsCtx, menuBar);
-            
-               
-            
+            }
+
+
+
         } catch (CMSException e) {
             if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN || e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas
@@ -141,9 +144,9 @@ public class MenuBarFormater {
             }
         }
     }
-    
-    
-    
+
+
+
     /**
      * Controls if live mode is associated with the current document
      * 
@@ -151,20 +154,21 @@ public class MenuBarFormater {
      * @return
      */
     protected boolean isInLiveMode(CMSServiceCtx cmsCtx){
-        
+
         boolean liveMode = false;
-        
-        EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");  
-        
+
+        EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
+
         if( curState != null && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION))  {
-            
-           String docPath = (((Document) (cmsCtx.getDoc())).getPath());
-           
-           if( curState.getDocPath().equals(docPath))
-               liveMode = true;
+
+            String docPath = (((Document) (cmsCtx.getDoc())).getPath());
+
+            if( curState.getDocPath().equals(docPath)) {
+                liveMode = true;
+            }
         }
-           
-        
+
+
         return liveMode;
     }
 
@@ -193,8 +197,9 @@ public class MenuBarFormater {
      */
     protected void getAdministrationLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
-        if (cmsCtx.getRequest().getRemoteUser() == null)
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
+        }
 
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
@@ -204,67 +209,64 @@ public class MenuBarFormater {
 
         }
     }
-    
-    
-    
+
+
+
 
     protected void addChangeModeLinkItem(List<MenubarItem> menuBar, String url, EditionState newState, String publishUrl) throws Exception {
-
-        String label =  "Voir la version publiée";
         if(EditionState.CONTRIBUTION_MODE_EDITION.equals(newState.getContributionMode()))   {
-            
-        
-            label = "Version de travail";
+            MenubarItem liveView = new MenubarItem(null, "Voir la version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "live", "");
+            liveView.setAjaxDisabled(true);
+            liveView.setDropdownItem(true);
+            menuBar.add(liveView);
         }   else    {
-            MenubarItem item = new MenubarItem("LIVE_VIEW", "Version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, "portlet-menuitem-edition live", null);
-            item.setStateItem(true);
-            menuBar.add(item);
-            
-            MenubarItem publish = new MenubarItem("PUBLISH", "Publier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishUrl, null, "portlet-menuitem-nuxeo-manage", "");
-            publish.setAjaxDisabled(true);
-            publish.setDropdownItem(true);
-            menuBar.add(publish);
-            
+            MenubarItem liveIndicator = new MenubarItem(null, "Version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null,
+                    "portlet-menuitem-edition live", null);
+            liveIndicator.setStateItem(true);
+            menuBar.add(liveIndicator);
+
+            MenubarItem publishAction = new MenubarItem(null, "Publier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishUrl, null, "publish-action", "");
+            publishAction.setAjaxDisabled(true);
+            publishAction.setDropdownItem(true);
+            menuBar.add(publishAction);
+
+            MenubarItem publishedView = new MenubarItem(null, "Voir la version publiée", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "published", "");
+            publishedView.setAjaxDisabled(true);
+            publishedView.setDropdownItem(true);
+            menuBar.add(publishedView);
         }
-
-
-        
-        MenubarItem item = new MenubarItem("LIVE", label, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-nuxeo-manage", "");
-        item.setAjaxDisabled(true);
-        item.setDropdownItem(true);
-        menuBar.add(item);
-
     }
 
 
     protected void getChangeModeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
-        if (cmsCtx.getRequest().getRemoteUser() == null)
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
+        }
 
 
-        CMSPublicationInfos pubInfos = (CMSPublicationInfos) this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
-        
-  
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+
+
 
         if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
-            
+
             EditionState newState = new EditionState( EditionState.CONTRIBUTION_MODE_EDITION, (((Document) (cmsCtx.getDoc())).getPath()));
-            
-            
-          
-            if( isInLiveMode(cmsCtx))  {
+
+
+
+            if( this.isInLiveMode(cmsCtx))  {
                 newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, (((Document) (cmsCtx.getDoc())).getPath()));
             }
-            
-            PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
-            
 
-            String url = getContributionService().getChangeEditionStateUrl( portalCtx, newState);
-            
-            String publishUrl = getContributionService().getPublishContributionUrl(portalCtx, pubInfos.getDocumentPath());
-   
-            addChangeModeLinkItem(menuBar, url, newState, publishUrl);
+            PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+
+
+            String url = this.getContributionService().getChangeEditionStateUrl( portalCtx, newState);
+
+            String publishUrl = this.getContributionService().getPublishContributionUrl(portalCtx, pubInfos.getDocumentPath());
+
+            this.addChangeModeLinkItem(menuBar, url, newState, publishUrl);
 
         }
     }
@@ -282,28 +284,29 @@ public class MenuBarFormater {
 
     protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
-        if (cmsCtx.getRequest().getRemoteUser() == null)
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
+        }
 
 
-        CMSPublicationInfos pubInfos = (CMSPublicationInfos) this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
 
         if (pubInfos.isEditableByUser()) {
-            
-            
-            if( ( pubInfos.isLiveSpace() || ( isInLiveMode(cmsCtx))  )
+
+
+            if( ( pubInfos.isLiveSpace() || ( this.isInLiveMode(cmsCtx))  )
                     && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)
                     ){
-                
+
 
                 Document doc = (Document) cmsCtx.getDoc();
 
 
-                DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+                DocTypeDefinition docTypeDef = this.customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
                 if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
-                  
+
                     String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(  new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
 
                     String onClick = "setCallbackParams(null, '" + callBackURL + "')";
@@ -352,7 +355,7 @@ public class MenuBarFormater {
         /* Contextualisation */
 
 
-        CMSPublicationInfos pubInfos = (CMSPublicationInfos) this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
 
         if (creationPath != null || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
 
@@ -378,7 +381,7 @@ public class MenuBarFormater {
 
                             SubType subType = new SubType();
 
-                            
+
                             subType.setDocType(docType);
                             subType.setName(subTypes.get(docType));
                             subType.setUrl(this.customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
@@ -408,7 +411,7 @@ public class MenuBarFormater {
 
                 MenubarItem add = new MenubarItem("CREATE", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick,
                         "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
-                
+
                 add.setDropdownItem(true);
                 add.setAjaxDisabled(true);
                 menuBar.add(add);
@@ -506,14 +509,14 @@ public class MenuBarFormater {
         /* Contextualisation */
 
 
-        CMSPublicationInfos pubInfos = (CMSPublicationInfos) this.cmsService.getPublicationInfos(cmsCtx, doc.getPath());
- 
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, doc.getPath());
+
         if (pubInfos.isDeletableByUser()) {
 
             if ( ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
 
 
-                DocTypeDefinition docTypeDef = customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
+                DocTypeDefinition docTypeDef = this.customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
 
                 if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
 
@@ -610,21 +613,22 @@ public class MenuBarFormater {
                 }
             } else {
                 // Soit le nom de l'espace de publication
-                CMSPublicationInfos pubInfos = (CMSPublicationInfos) this.cmsService.getPublicationInfos(cmsCtx, ((Document) (cmsCtx.getDoc())).getPath());
+                CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, ((Document) (cmsCtx.getDoc())).getPath());
 
                 if (pubInfos.getPublishSpacePath() != null) {
                     CMSItem pubConfig = this.cmsService.getSpaceConfig(cmsCtx, pubInfos.getPublishSpacePath());
-                    if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents")))
+                    if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents"))) {
                         spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
+                    }
 
                 } /*
-                   * TOCHECK:
-                   * else {
-                   * if (pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization()) {
-                   * spaceDisplayName = pubInfos.getWorkspaceDisplayName();
-                   * }
-                   * }
-                   */
+                 * TOCHECK:
+                 * else {
+                 * if (pubInfos.getWorkspacePath() != null && pubInfos.isWorkspaceInContextualization()) {
+                 * spaceDisplayName = pubInfos.getWorkspaceDisplayName();
+                 * }
+                 * }
+                 */
             }
 
             if (spaceDisplayName != null) {
