@@ -144,7 +144,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
 		fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
-		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
+		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "document-picture"));
 		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
 		fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "spaceMenubar", "spaceMenubar"));
 		return fragmentTypes;
@@ -563,9 +563,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 				PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
 				if(attachedFileProperties != null && !attachedFileProperties.isEmpty()){
 					url = createPortletDelegatedFileContentLink(ctx);
+					// 2.0.22-RC6 Gestion du back sur téléchargement
+					url = this.portalUrlFactory.adaptPortalUrlToNavigation(ctx.getRequest(), url);
 					downloadable = true;
 				}
 			}
+
+			
 
 			if ("ContextualLink".equals(doc.getType())) {
 				url = createPortletDelegatedExternalLink(ctx);

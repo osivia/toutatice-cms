@@ -19,6 +19,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 Document pictureDocument = (Document) renderRequest.getAttribute("pictureDocument");
 String propertyName = (String) renderRequest.getAttribute("propertyName");
+String targetPath = (String) renderRequest.getAttribute("targetPath");
 
 %>
 
@@ -27,9 +28,14 @@ String propertyName = (String) renderRequest.getAttribute("propertyName");
 <% if( pictureDocument != null) { 
 	
  	String src = ctx.createFileLink(pictureDocument,propertyName); %>
-
-	<img src="<%= src %>">
-
+ 	
+<% 	if( targetPath != null)	{ %> 	
+		<a href="<%= ctx.getCMSLinkByPath(targetPath,null).getUrl()%>">
+<%	} %>
+		<img src="<%= src %>">
+<% 	if( targetPath != null)	{ %> 	
+		</a>
+<%	} %>
 
 <%	} %>
 
