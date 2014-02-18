@@ -17,6 +17,7 @@ import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -28,6 +29,7 @@ import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
@@ -48,6 +50,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemTypeHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -62,22 +65,30 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelpe
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 
-
+/**
+ * CMS service Toutatice implementation.
+ * 
+ * @see ICMSService
+ */
 public class CMSService implements ICMSService {
 
-    private static Log log = LogFactory.getLog(CMSService.class);
-
+    /** Logger. */
     protected static final Log logger = LogFactory.getLog(CMSService.class);
 
+    /** Portlet context. */
     private final PortletContext portletCtx;
-    INuxeoCommandService nuxeoCommandService;
-    INuxeoService nuxeoService;
-    IProfilManager profilManager;
-    ICacheService serviceCache;
-    DefaultCMSCustomizer customizer;
+    private INuxeoCommandService nuxeoCommandService;
+    private INuxeoService nuxeoService;
+    private IProfilManager profilManager;
+    private ICacheService serviceCache;
+    private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
-
+    /**
+     * Constructor.
+     * 
+     * @param portletCtx portlet context
+     */
     public CMSService(PortletContext portletCtx) {
         super();
         this.portletCtx = portletCtx;
@@ -91,23 +102,47 @@ public class CMSService implements ICMSService {
         this.customizer = customizer;
     }
 
+
+    /**
+     * Create CMS item.
+     * 
+     * @param cmsCtx CMS context
+     * @param path CMS path
+     * @param displayName display name
+     * @param doc Nuxeo document
+     * @return CMS item
+     * @throws CMSException
+     */
     public CMSItem createItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc) throws CMSException {
-
+        // CMS item properties
         Map<String, String> properties = new HashMap<String, String>();
-
         properties.put("displayName", displayName);
         properties.put("type", doc.getType());
 
         CMSItem cmsItem = new CMSItem(path, properties, doc);
 
+        // CMS item type
+        CMSItemType type = CMSItemTypeHelper.getCMSItemType(doc);
+        cmsItem.setType(type);
+
         return cmsItem;
     }
 
+
+    /**
+     * Create CMS navigation item.
+     * 
+     * @param cmsCtx CMS context
+     * @param path CMS path
+     * @param displayName display name
+     * @param doc Nuxeo document
+     * @param publishSpacePath publish space path
+     * @return CMS navigation item
+     * @throws CMSException
+     */
     public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc,
             String publishSpacePath) throws CMSException {
-
         CMSItem cmsItem = this.createItem(cmsCtx, path, displayName, doc);
-
         CMSItem publishSpaceItem = null;
 
         if ((publishSpacePath != null) && !path.equals(publishSpacePath)) {
@@ -120,6 +155,7 @@ public class CMSService implements ICMSService {
 
         return cmsItem;
     }
+
 
     public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
 
@@ -245,9 +281,10 @@ public class CMSService implements ICMSService {
             cmsCtx.setAsyncCacheRefreshing(saveAsync);
 
             boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
-            
-            if ("1".equals(cmsCtx.getPreviewVersion()))
+
+            if ("1".equals(cmsCtx.getPreviewVersion())) {
                 haveToGetLive = true;
+            }
 
             // Document non publié et rattaché à un workspace
             if( (!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos
@@ -791,6 +828,38 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    public List<CMSItem> getPortalSubitems(CMSServiceCtx cmsContext, String path) throws CMSException {
+        try {
+            // Parent identifier
+            Document parent = (Document) this.fetchContent(cmsContext, path).getNativeItem();
+            String parentId = parent.getId();
+
+            // Nuxeo command execution
+            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(parentId, true);
+            Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+
+            // CMS items
+            List<CMSItem> cmsItems = new ArrayList<CMSItem>(documents.size());
+            for (Document document : documents) {
+                CMSItem cmsItem = this.createItem(cmsContext, document.getPath(), document.getTitle(), document);
+
+                boolean container = document.getFacets().list().contains("Folderish");
+                cmsItem.getProperties().put("container", String.valueOf(container));
+
+                cmsItems.add(cmsItem);
+            }
+            return cmsItems;
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+
+
     /* (non-Javadoc)
      * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
      */
@@ -1264,7 +1333,5 @@ public class CMSService implements ICMSService {
         }
 
     }
-
-
 
 }

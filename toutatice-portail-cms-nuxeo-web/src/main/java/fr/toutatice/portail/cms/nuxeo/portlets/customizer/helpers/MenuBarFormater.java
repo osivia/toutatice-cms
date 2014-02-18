@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -245,18 +246,18 @@ public class MenuBarFormater {
         }
 
 
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
-
+        String path = ((Document) (cmsCtx.getDoc())).getPath();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 
 
         if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
 
-            EditionState newState = new EditionState( EditionState.CONTRIBUTION_MODE_EDITION, (((Document) (cmsCtx.getDoc())).getPath()));
+            EditionState newState = new EditionState( EditionState.CONTRIBUTION_MODE_EDITION, path);
 
 
 
             if( this.isInLiveMode(cmsCtx))  {
-                newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, (((Document) (cmsCtx.getDoc())).getPath()));
+                newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, path);
             }
 
             PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
@@ -268,6 +269,18 @@ public class MenuBarFormater {
 
             this.addChangeModeLinkItem(menuBar, url, newState, publishUrl);
 
+
+
+            // Live content browser popup link
+            Map<String, String> properties = new HashMap<String, String>(1);
+            properties.put("osivia.browser.path", pubInfos.getDocumentPath());
+            Map<String, String> parameters = new HashMap<String, String>(0);
+            String browserUrl = this.urlFactory.getStartPortletUrl(portalCtx, "osivia-portal-browser-portlet-instance", properties, parameters, true);
+            MenubarItem browserItem = new MenubarItem(null, "Parcourir les versions de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, browserUrl, null,
+                    "browser live fancyframe_refresh", "");
+            browserItem.setAjaxDisabled(true);
+            browserItem.setDropdownItem(true);
+            menuBar.add(browserItem);
         }
     }
 
@@ -321,19 +334,6 @@ public class MenuBarFormater {
     }
 
 
-    protected void addCreateLinkItem(List<MenubarItem> menuBar, String onClick, String url) throws Exception {
-
-        // MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + response.getNamespace() + fancyID,
-        // onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
-
-
-        MenubarItem item = new MenubarItem("ADD", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick,
-                "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
-        item.setAjaxDisabled(true);
-        item.setDropdownItem(true);
-        menuBar.add(item);
-
-    }
 
 
     protected void getCreateLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
