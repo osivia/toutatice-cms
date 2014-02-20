@@ -32,6 +32,7 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -45,7 +46,6 @@ import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.security.CmsPermissionHelper;
 import org.osivia.portal.core.security.CmsPermissionHelper.Level;
 
-import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -391,7 +391,7 @@ public class NuxeoController {
                     displayLiveVersion = window.getPageProperty("osivia.cms.displayLiveVersion");
                 }
             }
-            
+
 
             String displayLiveVersionParam = request.getParameter("displayLiveVersion");
             if (displayLiveVersionParam != null) {
@@ -447,7 +447,7 @@ public class NuxeoController {
     public void setDocTypeToCreate(String property) {
         this.docTypeToCreate = property;
     }
-    
+
     public CMSItem getNavigationItem()	throws Exception {
         if( this.navItem == null){
             if( this.getNavigationPath() != null){
@@ -955,25 +955,19 @@ public class NuxeoController {
     }
 
 
-    public Map<String, DocTypeDefinition> getDocTypeDefinitions  () throws Exception {
-
-        // Adaptation via le CMSCustomizer
-
-        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if( nuxeoService == null) {
+    /**
+     * Get CMS item types.
+     * 
+     * @return CMS item types
+     */
+    public Map<String, CMSItemType> getCMSItemTypes() {
+        INuxeoService nuxeoService = (INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
+        if (nuxeoService == null) {
             nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         }
-
-
-        return nuxeoService.getCMSCustomizer().getDocTypeDefinitions(this.getCMSCtx());
+        // Invoke via CMS customizer
+        return nuxeoService.getCMSCustomizer().getCMSItemTypes();
     }
-
-
-
-     
-
-
-
 
 
     public Document fetchDocument(String path, boolean reload) throws Exception {
@@ -1141,21 +1135,23 @@ public class NuxeoController {
         this.cmsCtx.setScope(this.getScope());
         this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
         this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
-        
+
 
         // Preview mode
-        EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");  
-        if (editionState != null && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode()))
+        EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
+        if (editionState != null && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
             this.cmsCtx.setPreviewVersion("1");
-         
+        }
+
         this.cmsCtx.setPageId(this.getPageId());
         this.cmsCtx.setDoc(this.getCurrentDoc());
         this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
         this.cmsCtx.setDisplayContext(this.displayContext);
-        
-        this.cmsCtx.setCreationType(docTypeToCreate);
-        if( parentPathToCreate != null)
-            this.cmsCtx.setCreationPath(getComputedPath(parentPathToCreate));
+
+        this.cmsCtx.setCreationType(this.docTypeToCreate);
+        if( this.parentPathToCreate != null) {
+            this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
+        }
 
 
         return this.cmsCtx;

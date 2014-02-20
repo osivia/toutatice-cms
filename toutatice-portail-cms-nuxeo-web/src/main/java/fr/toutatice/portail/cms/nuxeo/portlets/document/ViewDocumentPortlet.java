@@ -1,7 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -22,13 +21,10 @@ import net.sf.json.JSONArray;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
@@ -41,7 +37,6 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
@@ -60,6 +55,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     private INuxeoService nuxeoService;
 
+    @Override
     public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
 
         try {
@@ -67,7 +63,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             if ("link".equals(resourceRequest.getParameter("type"))) {
 
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
+                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
 
                 String id = resourceRequest.getResourceID();
 
@@ -77,11 +73,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 resourceResponse.setProperty("Location", doc.getString("clink:link"));
                 resourceResponse.getPortletOutputStream().close();
 
-            } else
+            } else {
                 super.serveResource(resourceRequest, resourceResponse);
+            }
 
         } catch (NuxeoException e) {
-            serveResourceException(resourceRequest, resourceResponse, e);
+            this.serveResourceException(resourceRequest, resourceResponse, e);
         } catch (Exception e) {
             throw new PortletException(e);
 
@@ -89,6 +86,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
     }
 
 
+    @Override
     public void init(PortletConfig config) throws PortletException {
 
         super.init(config);
@@ -97,24 +95,25 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Enregistremennt des gestionnaires de liens et de template
 
-            nuxeoService = (INuxeoService) getPortletContext().getAttribute("NuxeoService");
-            if (nuxeoService == null)
+            this.nuxeoService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
+            if (this.nuxeoService == null) {
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
+            }
 
-            CMSCustomizer customizer = new CMSCustomizer(getPortletContext());
-            nuxeoService.registerCMSCustomizer(customizer);
+            CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
+            this.nuxeoService.registerCMSCustomizer(customizer);
 
-            CMSService CMSservice = new CMSService(getPortletContext());
+            CMSService CMSservice = new CMSService(this.getPortletContext());
             ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
             cmsLocator.register(CMSservice);
 
 
-            customizer.setCMSService(CMSservice);
+            customizer.setCmsService(CMSservice);
             CMSservice.setCustomizer(customizer);
 
 
             // v1.0.16
-            ThumbnailServlet.setPortletContext(getPortletContext());
+            ThumbnailServlet.setPortletContext(this.getPortletContext());
 
 
         } catch (Exception e) {
@@ -125,6 +124,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
     }
 
 
+    @Override
     public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
         logger.debug("processAction ");
@@ -135,21 +135,24 @@ public class ViewDocumentPortlet extends CMSPortlet {
             window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
 
 
-            if ("1".equals(req.getParameter("onlyDescription")))
+            if ("1".equals(req.getParameter("onlyDescription"))) {
                 window.setProperty("osivia.document.onlyDescription", "1");
-            else if (window.getProperty("osivia.document.onlyDescription") != null)
+            } else if (window.getProperty("osivia.document.onlyDescription") != null) {
                 window.setProperty("osivia.document.onlyDescription", null);
+            }
 
-            if (!"1".equals(req.getParameter("showMetadatas")))
+            if (!"1".equals(req.getParameter("showMetadatas"))) {
                 window.setProperty("osivia.cms.hideMetaDatas", "1");
-            else if (window.getProperty("osivia.cms.hideMetaDatas") != null)
+            } else if (window.getProperty("osivia.cms.hideMetaDatas") != null) {
                 window.setProperty("osivia.cms.hideMetaDatas", null);
+            }
 
 
-            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
+            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0) {
                 window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+            } else if (window.getProperty("osivia.cms.displayLiveVersion") != null) {
                 window.setProperty("osivia.cms.displayLiveVersion", null);
+            }
 
 
             res.setPortletMode(PortletMode.VIEW);
@@ -165,7 +168,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         String commentAction = req.getParameter("comments");
         if (commentAction != null) {
 
-            NuxeoController ctrl = new NuxeoController(req, res, getPortletContext());
+            NuxeoController ctrl = new NuxeoController(req, res, this.getPortletContext());
             PortalWindow window = WindowFactory.getWindow(req);
             String nuxeoPath = window.getProperty("osivia.cms.uri");
             if (nuxeoPath == null) {
@@ -194,8 +197,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         ctrl.executeNuxeoCommand(new DeleteCommentCommand(commentableDoc, commentId));
                     }
                 } catch (Exception e) {
-                    if (!(e instanceof PortletException))
+                    if (!(e instanceof PortletException)) {
                         throw new PortletException(e);
+                    }
                 }
             }
         }
@@ -208,22 +212,24 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
         res.setContentType("text/html");
-        NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
+        NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
 
         PortletRequestDispatcher rd = null;
 
         PortalWindow window = WindowFactory.getWindow(req);
         String nuxeoPath = window.getProperty("osivia.cms.uri");
-        if (nuxeoPath == null)
+        if (nuxeoPath == null) {
             nuxeoPath = "";
+        }
         req.setAttribute("nuxeoPath", nuxeoPath);
 
         String onlyDescription = window.getProperty("osivia.document.onlyDescription");
         req.setAttribute("onlyDescription", onlyDescription);
 
         String showMetadatas = "1";
-        if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
+        if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas"))) {
             showMetadatas = "0";
+        }
         req.setAttribute("showMetadatas", showMetadatas);
 
 
@@ -232,12 +238,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         req.setAttribute("ctx", ctx);
 
-        rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/admin.jsp");
+        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/admin.jsp");
         rd.include(req, res);
 
 
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
 
@@ -260,15 +267,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             if (nuxeoPath != null) {
 
-                NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+                NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
 
                 nuxeoPath = ctx.getComputedPath(nuxeoPath);
 
                 Document doc = ctx.fetchDocument(nuxeoPath);
 
 
-                if (doc.getTitle() != null)
+                if (doc.getTitle() != null) {
                     response.setTitle(doc.getTitle());
+                }
 
 
                 request.setAttribute("doc", doc);
@@ -319,12 +327,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
                 String showMetadatas = "1";
-                if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
+                if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas"))) {
                     showMetadatas = "0";
+                }
                 request.setAttribute("showMetadatas", showMetadatas);
 
 
-                getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request, response);
+                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request, response);
             } else {
                 response.setContentType("text/html");
                 response.getWriter().print("<h2>Document non défini</h2>");
@@ -335,8 +344,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
         catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (Exception e) {
-            if (!(e instanceof PortletException))
+            if (!(e instanceof PortletException)) {
                 throw new PortletException(e);
+            }
         }
 
         logger.debug("doView end");

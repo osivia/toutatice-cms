@@ -18,8 +18,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
@@ -39,6 +37,7 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -47,7 +46,6 @@ import org.osivia.portal.core.page.PageProperties;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
@@ -70,446 +68,505 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 
-public class DefaultCMSCustomizer implements INuxeoCustomizer{
+/**
+ * Default CMS customizer.
+ * 
+ * @see INuxeoCustomizer
+ */
+public class DefaultCMSCustomizer implements INuxeoCustomizer {
+
+    /* Default style for lists */
+    /** Style "mini". */
+    public static final String STYLE_MINI = "mini";
+    /** Style "normal". */
+    public static final String STYLE_NORMAL = "normal";
+    /** Style "detailed". */
+    public static final String STYLE_DETAILED = "detailed";
+    /** Style "editorial". */
+    public static final String STYLE_EDITORIAL = "editorial";
+
+    /** Default schemas. */
+    public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice, file";
+    /** Template "download". */
+    public static final String TEMPLATE_DOWNLOAD = "download";
 
 
-	PortletContext portletCtx;
-	protected IPortalUrlFactory portalUrlFactory;
-	UserPagesLoader userPagesLoader;
-	MenuBarFormater menuBarFormater;
-	NavigationItemAdapter navigationItemAdapter;
-	CMSItemAdapter cmsItemAdapter;
-	NuxeoConnectionProperties nuxeoConnection;
-	XMLReader parser;
-    EditableWindowAdapter editableWindowAdapter;
-    CMSToWebPathAdapter cmsToWebAdapter;
-    ClassLoader cl;
+    /** Portlet context. */
+    private PortletContext portletCtx;
+    /** Portal URL factory. */
+    private IPortalUrlFactory portalUrlFactory;
+    /** User pages loader. */
+    private UserPagesLoader userPagesLoader;
+    /** Menu bar formatter. */
+    private MenuBarFormater menuBarFormater;
+    /** Navigation item adapter. */
+    private NavigationItemAdapter navigationItemAdapter;
+    /** CMS item adapter. */
+    private CMSItemAdapter cmsItemAdapter;
+    /** Nuxeo connection properties. */
+    private NuxeoConnectionProperties nuxeoConnection;
+    /** XML parser. */
+    private XMLReader parser;
+    /** Editable window adapter. */
+    private EditableWindowAdapter editableWindowAdapter;
+    /** CMS to web adapter. */
+    private CMSToWebPathAdapter cmsToWebAdapter;
+    /** Class loader. */
+    private ClassLoader cl;
 
-	protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
+    /** CMS item types. */
+    private Map<String, CMSItemType> cmsItemTypes;
 
     /** CMS Players. */
-    protected Map<String, IPlayer> players = new HashMap<String, IPlayer>();
+    private final Map<String, IPlayer> players;
 
-	/* Default style for lists */
+    /** CMS service. */
+    private CMSService cmsService;
 
-
-	public static final String STYLE_MINI = "mini";
-	public static final String STYLE_NORMAL = "normal";
-	public static final String STYLE_DETAILED = "detailed";
-	public static final String STYLE_EDITORIAL = "editorial";
-
-	public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice, file";
-
-	public static String TEMPLATE_DOWNLOAD = "download";
-
-
-	CMSService CMSService;
-
-	CMSService getCMSService() {
-		return this.CMSService;
-	}
-
-	public void  setCMSService(CMSService CMSService) {
-		this.CMSService = CMSService;
-	}
-
-	public NuxeoConnectionProperties getNuxeoConnectionProps() {
-		if (this.nuxeoConnection == null) {
-            this.nuxeoConnection = new NuxeoConnectionProperties();
-        }
-		return this.nuxeoConnection;
-	}
-
-	public DefaultCMSCustomizer(PortletContext ctx) {
-		super();
-		this.portletCtx = ctx;
-		this.portalUrlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
-
-        // initialise le player view document par défaut
-        this.players.put("defaultPlayer", new DefaultPlayer());
-
-		try   {
-		 // Initialisé ici pour résoudre problème de classloader
-		    
-		  cl = Thread.currentThread().getContextClassLoader();
-
-         this.parser = WysiwygParser.getInstance().getParser();
-		} catch(Exception e){
-		    throw new RuntimeException(e);
-		}
-
-	}
-
-
-
-
-	public UserPagesLoader getUserPagesLoader()	{
-		if( this.userPagesLoader == null){
-			this.userPagesLoader = new UserPagesLoader(this.portletCtx, this, this.getCMSService());
-		}
-
-		return this.userPagesLoader;
-	}
-
-	public MenuBarFormater getMenuBarFormater()	{
-		if( this.menuBarFormater == null){
-			this.menuBarFormater = new MenuBarFormater(this.portletCtx, this, this.getCMSService());
-		}
-
-		return this.menuBarFormater;
-	}
-
-	public NavigationItemAdapter getNavigationItemAdapter()	{
-		if( this.navigationItemAdapter == null){
-			this.navigationItemAdapter = new NavigationItemAdapter(this.portletCtx, this, this.getCMSService());
-		}
-
-		return this.navigationItemAdapter;
-	}
-
-	public CMSItemAdapter getCMSItemAdapter()	{
-		if( this.cmsItemAdapter == null){
-			this.cmsItemAdapter = new CMSItemAdapter(this.portletCtx, this, this.getCMSService());
-		}
-
-		return this.cmsItemAdapter;
-	}
 
     /**
-     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables
-     *
+     * Constructor.
+     * 
+     * @param ctx portlet context
+     */
+    public DefaultCMSCustomizer(PortletContext ctx) {
+        super();
+        this.portletCtx = ctx;
+        this.portalUrlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
+
+        // initialise le player view document par défaut
+        this.players = new HashMap<String, IPlayer>();
+        this.players.put("defaultPlayer", new DefaultPlayer());
+
+        try {
+            // Initialisé ici pour résoudre problème de classloader
+            this.cl = Thread.currentThread().getContextClassLoader();
+
+            this.parser = WysiwygParser.getInstance().getParser();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
+     * Get Nuxeo connection properties.
+     * 
+     * @return Nuxeo connection properties
+     */
+    public NuxeoConnectionProperties getNuxeoConnectionProps() {
+        if (this.nuxeoConnection == null) {
+            this.nuxeoConnection = new NuxeoConnectionProperties();
+        }
+        return this.nuxeoConnection;
+    }
+
+
+    /**
+     * Get user pages loader.
+     * 
+     * @return user pages loader
+     */
+    public UserPagesLoader getUserPagesLoader()	{
+        if (this.userPagesLoader == null) {
+            this.userPagesLoader = new UserPagesLoader(this.portletCtx, this, this.cmsService);
+        }
+        return this.userPagesLoader;
+    }
+
+
+    /**
+     * Get menu bar formatter.
+     * 
+     * @return menu bar formatter
+     */
+    public MenuBarFormater getMenuBarFormater() {
+        if (this.menuBarFormater == null) {
+            this.menuBarFormater = new MenuBarFormater(this.portletCtx, this, this.cmsService);
+        }
+        return this.menuBarFormater;
+    }
+
+
+    /**
+     * Get navigation item adapter.
+     * 
+     * @return navigation item adapter
+     */
+    public NavigationItemAdapter getNavigationItemAdapter() {
+        if (this.navigationItemAdapter == null) {
+            this.navigationItemAdapter = new NavigationItemAdapter(this.portletCtx, this, this.cmsService);
+        }
+        return this.navigationItemAdapter;
+    }
+
+
+    /**
+     * Get CMS item adapter.
+     * 
+     * @return CMS item adapter
+     */
+    public CMSItemAdapter getCMSItemAdapter() {
+        if (this.cmsItemAdapter == null) {
+            this.cmsItemAdapter = new CMSItemAdapter(this.portletCtx, this, this.cmsService);
+        }
+        return this.cmsItemAdapter;
+    }
+
+
+    /**
+     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables.
+     * 
      * @return Instance du EditableWindowAdapter
      */
     public EditableWindowAdapter getEditableWindowAdapter() {
         if (this.editableWindowAdapter == null) {
             this.editableWindowAdapter = new EditableWindowAdapter();
         }
-
         return this.editableWindowAdapter;
     }
 
+
+    /**
+     * Get CMS to web path adapter.
+     * 
+     * @return CMS to web path adapter
+     */
     public CMSToWebPathAdapter getCMSToWebPathAdapter() {
         if (this.cmsToWebAdapter == null) {
-            this.cmsToWebAdapter = new CMSToWebPathAdapter(this.CMSService);
+            this.cmsToWebAdapter = new CMSToWebPathAdapter(this.cmsService);
         }
-
         return this.cmsToWebAdapter;
     }
 
 
-
-	public static List<ListTemplate> getListTemplates() {
-
-		List<ListTemplate> templates = new ArrayList<ListTemplate>();
-		templates.add(new ListTemplate(STYLE_MINI, "Minimal [titre]", DEFAULT_SCHEMAS));
-		templates.add(new ListTemplate(STYLE_NORMAL, "Normal [titre, date]", DEFAULT_SCHEMAS));
-		templates.add(new ListTemplate(STYLE_DETAILED, "Détaillé [titre, description, date, ...]", DEFAULT_SCHEMAS));
-		templates.add(new ListTemplate(STYLE_EDITORIAL, "Editorial [vignette, titre, description]", DEFAULT_SCHEMAS));
-
-		return templates;
-	}
-
-
-
-	public static List<FragmentType> getFragmentTypes() {
+    /**
+     * Get templates list.
+     * 
+     * @return template list
+     */
+    public static List<ListTemplate> getListTemplates() {
+        List<ListTemplate> templates = new ArrayList<ListTemplate>();
+        templates.add(new ListTemplate(STYLE_MINI, "Minimal [titre]", DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(STYLE_NORMAL, "Normal [titre, date]", DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(STYLE_DETAILED, "Détaillé [titre, description, date, ...]", DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(STYLE_EDITORIAL, "Editorial [vignette, titre, description]", DEFAULT_SCHEMAS));
+        return templates;
+    }
 
 
-		List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
-
-		fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
-		fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
-		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
-		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
-		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
+    /**
+     * Get fragments list.
+     * 
+     * @return fragments list
+     */
+    public static List<FragmentType> getFragmentTypes() {
+        List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
+        fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
+        fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
+        fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
+        fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
+        fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
         fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "spaceMenubar", "spaceMenubar"));
-		
-		return fragmentTypes;
-	}
-
-	public static String getSearchSchema() {
-
-		return "dublincore,common,file";
-
-	}
+        return fragmentTypes;
+    }
 
 
+    /**
+     * Get search schema.
+     * 
+     * @return search schema
+     */
+    public static String getSearchSchema() {
+        return "dublincore,common,file";
+    }
 
+
+    /**
+     * Get CMS default player.
+     * 
+     * @param ctx CMS context
+     * @return CMS default player
+     * @throws Exception
+     */
     public CMSHandlerProperties getCMSDefaultPlayer(CMSServiceCtx ctx) throws Exception {
         Document doc = (Document) ctx.getDoc();
         return this.players.get("defaultPlayer").play(ctx, doc);
     }
 
-	/**
-	 * Gére les folders 'hiddenInNavigation'
-	 *
-	 * Les fils d'un folder 'hiddenInNavigation' sont directement rattachés au
-	 * parent
-	 *
-	 * @param ctx
-	 * @return
-	 * @throws CMSException
-	 */
 
-	protected String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException {
+    /**
+     * Gére les folders 'hiddenInNavigation'.
+     * Les fils d'un folder 'hiddenInNavigation' sont directement rattachés au parent.
+     * 
+     * @param ctx CMS context
+     * @param ordered ordered indicator
+     * @return Nuxeo request
+     * @throws CMSException
+     */
+    protected String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException {
+        String nuxeoRequest = null;
 
-		String nuxeoRequest = null;
+        Document doc = (Document) ctx.getDoc();
 
-		Document doc = (Document) ctx.getDoc();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
 
-		CMSPublicationInfos pubInfos = this.getCMSService().getPublicationInfos(ctx, doc.getPath());
+        List<CMSItem> navItems = null;
 
+        if (ctx.getContextualizationBasePath() != null) {
+            // Publication dans un environnement contextualisé
+            // On se sert du menu de navigation et on décompose chaque niveau
+            navItems = this.cmsService.getPortalNavigationSubitems(ctx, ctx.getContextualizationBasePath(),
+                    DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
+        }
 
-
-
-		List<CMSItem> navItems = null;
-
-
-
-		if (ctx.getContextualizationBasePath() != null) {
-			// Publication dans un environnement contextualisé
-			// On se sert du menu de navigation et on décompose chaque niveau
-
-
-			 navItems = this.getCMSService().getPortalNavigationSubitems(ctx,
-					ctx.getContextualizationBasePath(), DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
-		}
-
-		if( navItems != null)	{
-
-		    // On exclut les folderish, car ils sont présentés dans le menu en mode contextualisé
-
-
-			nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
-			if( ordered) {
+        if (navItems != null) {
+            // On exclut les folderish, car ils sont présentés dans le menu en mode contextualisé
+            nuxeoRequest = "ecm:parentId = '" + pubInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
+            if (ordered) {
                 nuxeoRequest += " order by ecm:pos";
             } else {
                 nuxeoRequest += " order by dc:modified desc";
             }
+        } else {
+            nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath())
+                    + "' AND ecm:mixinType != 'Folderish' ";
 
-
-
-		} else {
-			nuxeoRequest = "ecm:path STARTSWITH '" + DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
-
-			if( ordered) {
+            if (ordered) {
                 nuxeoRequest += " order by ecm:pos";
             } else {
                 nuxeoRequest += " order by dc:modified desc";
             }
-		}
+        }
 
-
-		return nuxeoRequest;
-
-	}
-
-	public CMSHandlerProperties getCMSAnnonceFolderPlayer(CMSServiceCtx ctx) throws Exception {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-        windowProperties.put("osivia.nuxeoRequest", createFolderRequest(ctx, false));		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion",ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", "1");
-		windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-
-	}
-
-	public CMSHandlerProperties getCMSOrderedFolderPlayer(CMSServiceCtx ctx) throws Exception {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", "1");
-		windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("osivia.cms.pageSizeMax", "10");
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-
-	}
-
-
-
-
-
-
-	public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws Exception {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.cms.pageSizeMax", "10");
-	      // JSS V3.1 : incompatible avec refresh CMS de type portlets                
-        // windowProperties.put("osivia.title", "Liste de liens");
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-	}
-
-	public CMSHandlerProperties getCMSFolderPlayer(CMSServiceCtx ctx) throws CMSException {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, false));
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-	    windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("osivia.cms.pageSizeMax", "10");
-		Map<String, String> params = new HashMap<String, String>();
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-
-	}
-
-
-	public CMSHandlerProperties getCMSSectionPlayer(CMSServiceCtx ctx) throws Exception {
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-
-		windowProperties.put("osivia.nuxeoRequest", "ecm:path STARTSWITH '"+ doc.getPath()+"' AND ecm:mixinType != 'Folderish'   ORDER BY dc:modified DESC");
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-	    windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("osivia.cms.pageSizeMax", "10");
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-
-
-	}
-
-
-	public CMSHandlerProperties getCMSVirtualPagePlayer(CMSServiceCtx ctx) throws CMSException {
-
-		Document doc = (Document) ctx.getDoc();
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.nuxeoRequest", doc.getString("ttc:queryPart"));
-		windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		//windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-	    windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
-		windowProperties.put("osivia.cms.pageSizeMax", "10");
-		Map<String, String> params = new HashMap<String, String>();
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-		return linkProps;
-
-	}
-
-
-
-	public CMSHandlerProperties createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid)
-			throws Exception {
-
-		Map<String, String> windowProperties = new HashMap<String, String>();
-		windowProperties.put("osivia.cms.scope", ctx.getScope());
-		windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
-		windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-		windowProperties.put("osivia.cms.uri", uid);
-		windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
-		windowProperties.put("osivia.hideDecorators", "1");
-		windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-
-		Map<String, String> params = new HashMap<String, String>();
-
-		String url = this.portalUrlFactory.getStartPortletInRegionUrl(new PortalControllerContext(ctx.getControllerContext()),
-				ctx.getPageId(), portletInstance, "virtual", "cms", windowProperties, params);
-
-		CMSHandlerProperties linkProps = new CMSHandlerProperties();
-		linkProps.setWindowProperties(windowProperties);
-		linkProps.setPortletInstance(portletInstance);
-
-		return linkProps;
-	}
-
-
-
+        return nuxeoRequest;
+    }
 
 
     /**
-     * On détermine le player associé à chaque item.
-     *
-     * @param ctx cms context
-     * @return portlet & properties
+     * Get CMS annonce folder player.
+     * 
+     * @param ctx CMS context
+     * @return CMS annonce folder player
+     * @throws CMSException
      */
-	public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
+    public CMSHandlerProperties getCMSAnnonceFolderPlayer(CMSServiceCtx ctx) throws CMSException {
+        Document doc = (Document) ctx.getDoc();
 
-		Document doc = (Document) ctx.getDoc();
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, false));
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", "1");
+        windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
 
-		if ("UserWorkspace".equals(doc.getType())) {
-			// Pas de filtre sur les versions publiées
-			ctx.setDisplayLiveVersion("1");
-			return this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
-		}
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
 
-		if ( ("DocumentUrlContainer".equals(doc.getType()))  ) {
+        return linkProps;
+    }
+
+
+    /**
+     * Get CMS ordered folder player.
+     * 
+     * @param ctx CMS context
+     * @return CMS ordered folder player
+     * @throws CMSException
+     */
+    public CMSHandlerProperties getCMSOrderedFolderPlayer(CMSServiceCtx ctx) throws CMSException {
+        Document doc = (Document) ctx.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", "1");
+        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.cms.pageSizeMax", "10");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+        return linkProps;
+    }
+
+
+    /**
+     * Get CMS URL container player.
+     * 
+     * @param ctx CMS context
+     * @return CMS URL container player
+     * @throws CMSException
+     */
+    public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws CMSException {
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+        windowProperties.put("osivia.cms.pageSizeMax", "10");
+        // JSS V3.1 : incompatible avec refresh CMS de type portlets
+        // windowProperties.put("osivia.title", "Liste de liens");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+        return linkProps;
+    }
+
+
+    /**
+     * Get CMS folder player.
+     * 
+     * @param ctx CMS context
+     * @return CMS folder player
+     * @throws CMSException
+     */
+    public CMSHandlerProperties getCMSFolderPlayer(CMSServiceCtx ctx) throws CMSException {
+        Document doc = (Document) ctx.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, false));
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.cms.pageSizeMax", "10");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+        return linkProps;
+    }
+
+
+    /**
+     * Get CMS section player.
+     * 
+     * @param ctx CMS context
+     * @return CMS section player
+     */
+    public CMSHandlerProperties getCMSSectionPlayer(CMSServiceCtx ctx) {
+        Document doc = (Document) ctx.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<String, String>();
+
+        windowProperties.put("osivia.nuxeoRequest", "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ORDER BY dc:modified DESC");
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.cms.pageSizeMax", "10");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+        return linkProps;
+    }
+
+
+    /**
+     * Get CMS virtual page player.
+     * 
+     * @param ctx CMS context
+     * @return CMS virtual page player
+     */
+    public CMSHandlerProperties getCMSVirtualPagePlayer(CMSServiceCtx ctx) {
+        Document doc = (Document) ctx.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.nuxeoRequest", doc.getString("ttc:queryPart"));
+        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        //windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.cms.pageSizeMax", "10");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
+
+        return linkProps;
+    }
+
+
+    /**
+     * Create portlet link.
+     * 
+     * @param ctx CMS context
+     * @param portletInstance portlet instance
+     * @param uid UID
+     * @return portlet link
+     */
+    public CMSHandlerProperties createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid) {
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put("osivia.cms.scope", ctx.getScope());
+        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
+        windowProperties.put("osivia.cms.uri", uid);
+        windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance(portletInstance);
+
+        return linkProps;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
+        Document doc = (Document) ctx.getDoc();
+
+        if ("UserWorkspace".equals(doc.getType())) {
+            // Pas de filtre sur les versions publiées
+            ctx.setDisplayLiveVersion("1");
+            return this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+        }
+
+        if (("DocumentUrlContainer".equals(doc.getType()))) {
             return this.getCMSUrlContainerPlayer(ctx);
         }
 
-		if ("AnnonceFolder".equals(doc.getType()) ) {
-			return this.getCMSAnnonceFolderPlayer(ctx);
-		}
+        if ("AnnonceFolder".equals(doc.getType())) {
+            return this.getCMSAnnonceFolderPlayer(ctx);
+        }
 
-		if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
-//            if (ctx.getContextualizationBasePath() != null)
-		    
-// Test JSS (tant que pas d'objet affichable en liste dans les workspace open-toutatice)		  
-         if (ctx.getContextualizationBasePath() != null && !doc.getTitle().startsWith("test-list")) {
+        if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
+            // if (ctx.getContextualizationBasePath() != null)
 
-                CMSItem spaceConfig = this.CMSService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
+            // Test JSS (tant que pas d'objet affichable en liste dans les workspace open-toutatice)
+            if (ctx.getContextualizationBasePath() != null && !doc.getTitle().startsWith("test-list")) {
+
+                CMSItem spaceConfig = this.cmsService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
 
                 // v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
                 // v2.0.5 : file explorer également sur userworkspace
@@ -524,18 +581,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
                     return props;
                 }
             }
-            //  ordre par date de modif par défaut
+            // ordre par date de modif par défaut
             if ("Folder".equals(doc.getType())) {
                 return this.getCMSFolderPlayer(ctx);
             } else {
                 return this.getCMSOrderedFolderPlayer(ctx);
             }
 
-		}
+        }
 
-		if ("PortalVirtualPage".equals(doc.getType())) {
-			return this.getCMSVirtualPagePlayer(ctx);
-		}
+        if ("PortalVirtualPage".equals(doc.getType())) {
+            return this.getCMSVirtualPagePlayer(ctx);
+        }
 
 
         // ========== Try to get external config for players
@@ -547,13 +604,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSPlayer);
             Documents configs = null;
             try {
-                configs = (Documents) this.CMSService.executeNuxeoCommand(ctx, command);
+                configs = (Documents) this.cmsService.executeNuxeoCommand(ctx, command);
             } catch (Exception e) {
                 // Can't get confs
             }
 
             if ((configs != null) && (configs.size() > 0)) {
-                int i = 0;
                 for (Document config : configs) {
                     String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
                     String playerInstance = config.getProperties().getString(WebConfigurationHelper.CODECOMP);
@@ -580,288 +636,298 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 
         }
         return this.players.get("defaultPlayer").play(ctx, doc);
+    }
 
-	}
 
+    /**
+     * Get default external viewer.
+     * 
+     * @param ctx CMS context
+     * @return default external viewer
+     */
+    public String getDefaultExternalViewer(CMSServiceCtx ctx) {
+        Document doc = (Document) ctx.getDoc();
 
-	public String getDefaultExternalViewer(CMSServiceCtx ctx) {
-
-		Document doc = (Document) ctx.getDoc();
-
-		this.getNuxeoConnectionProps();
+        this.getNuxeoConnectionProps();
         String externalUrl =  NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/"
-				+ doc.getId() + "/view_documents";
+                + doc.getId() + "/view_documents";
 
-		// Par défaut, lien direct sur Nuxeo
-
-		return externalUrl;
-
-	}
-
-	public String createPortletDelegatedExternalLink(CMSServiceCtx ctx) {
-
-		Document doc = (Document) ctx.getDoc();
-
-		ResourceURL resourceURL = ctx.getResponse().createResourceURL();
-		resourceURL.setResourceID(doc.getId());
-		resourceURL.setParameter("type", "link");
-		// ne marche pas : bug JBP
-		// resourceURL.setCacheability(ResourceURL.PORTLET);
-
-		return resourceURL.toString();
-	}
-
-	public String createPortletDelegatedFileContentLink(CMSServiceCtx ctx) {
-
-		Document doc = (Document) ctx.getDoc();
-
-		ResourceURL resourceURL = ctx.getResponse().createResourceURL();
-		resourceURL.setResourceID(doc.getId() + "/" + "file:content");
-		resourceURL.setParameter("type", "file");
-		resourceURL.setParameter("docPath", doc.getPath());
-		resourceURL.setParameter("fieldName", "file:content");
-		// ne marche pas : bug JBP
-		// resourceURL.setCacheability(ResourceURL.PORTLET);
-		resourceURL.setCacheability(ResourceURL.PAGE);
-
-		return resourceURL.toString();
-	}
+        // Par défaut, lien direct sur Nuxeo
+        return externalUrl;
+    }
 
 
-	public String getNuxeoNativeViewerUrl (CMSServiceCtx ctx)	{
-		if(("file-browser-menu-workspace".equals(ctx.getDisplayContext()))) {
+    /**
+     * Create portlet delegated external link.
+     * 
+     * @param ctx CMS context
+     * @return portlet delegated external link
+     */
+    public String createPortletDelegatedExternalLink(CMSServiceCtx ctx) {
+        Document doc = (Document) ctx.getDoc();
+
+        ResourceURL resourceURL = ctx.getResponse().createResourceURL();
+        resourceURL.setResourceID(doc.getId());
+        resourceURL.setParameter("type", "link");
+        // ne marche pas : bug JBP
+        // resourceURL.setCacheability(ResourceURL.PORTLET);
+
+        return resourceURL.toString();
+    }
+
+
+    /**
+     * Create portlet delegated file content link.
+     * 
+     * @param ctx CMS context
+     * @return portlet delegated file content link
+     */
+    public String createPortletDelegatedFileContentLink(CMSServiceCtx ctx) {
+        Document doc = (Document) ctx.getDoc();
+
+        ResourceURL resourceURL = ctx.getResponse().createResourceURL();
+        resourceURL.setResourceID(doc.getId() + "/" + "file:content");
+        resourceURL.setParameter("type", "file");
+        resourceURL.setParameter("docPath", doc.getPath());
+        resourceURL.setParameter("fieldName", "file:content");
+        // ne marche pas : bug JBP
+        // resourceURL.setCacheability(ResourceURL.PORTLET);
+        resourceURL.setCacheability(ResourceURL.PAGE);
+
+        return resourceURL.toString();
+    }
+
+
+    /**
+     * Get Nuxeo native viewer URL.
+     * 
+     * @param ctx CMS context
+     * @return Nuxeo native viewer URL
+     */
+    public String getNuxeoNativeViewerUrl(CMSServiceCtx ctx) {
+        if (("file-browser-menu-workspace".equals(ctx.getDisplayContext()))) {
             return this.getDefaultExternalViewer(ctx);
         }
+        return null;
+    }
 
-		return null;
 
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Link createCustomLink(CMSServiceCtx ctx) throws Exception {
+        Document doc = (Document) ctx.getDoc();
 
-	/*
-	 *
-	 * Ici, on intercepte le traitement CMS lors de la génération du lien
-	 *
-	 * C'est le cas pour :
-	 *    - des traitements directements pris en charge par le portlet (ex : download d'un document)
-	 *    - des liens s'ouvrant dans des fenetres externes
-	 *
-	 * Si le lien n'est pas pris en charge ici, il sera intégré au traitement CMS
-	 * standard, cad
-	 *    - lien de type /cms/
-	 *    - passage par la couche player au moment du click sur le lien
-	 *
-	 *
-	 * displayContext : menu, download, fileExplorer, permlink ...
-	 */
-	public Link createCustomLink(CMSServiceCtx ctx) throws Exception {
+        String url = null;
+        boolean externalLink = false;
+        boolean downloadable = false;
 
-		Document doc = (Document) ctx.getDoc();
-
-		String url = null;
-		boolean externalLink = false;
-		boolean downloadable = false;
-
-		if (  (!"detailedView".equals(ctx.getDisplayContext()) ))
-			{
-			// Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-			if ("File".equals(doc.getType()) && ("download".equals(ctx.getDisplayContext()))) {
-				PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
-				if((attachedFileProperties != null) && !attachedFileProperties.isEmpty()){
-					url = this.createPortletDelegatedFileContentLink(ctx);
+        if (!"detailedView".equals(ctx.getDisplayContext())) {
+            // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
+            if ("File".equals(doc.getType()) && ("download".equals(ctx.getDisplayContext()))) {
+                PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
+                if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
+                    url = this.createPortletDelegatedFileContentLink(ctx);
 
                     // Gestion du back sur lien téléchargeable
                     url = this.portalUrlFactory.adaptPortalUrlToNavigation(new PortalControllerContext(ctx.getControllerContext()), url);
 
-					downloadable = true;
-				}
-			}
+                    downloadable = true;
+                }
+            }
 
-			if ("ContextualLink".equals(doc.getType())) {
-				url = this.createPortletDelegatedExternalLink(ctx);
-				externalLink = true;
-			}
+            if ("ContextualLink".equals(doc.getType())) {
+                url = this.createPortletDelegatedExternalLink(ctx);
+                externalLink = true;
+            }
 
-			// Gestion des vues externes
-			// Nécessaire pour poser une ancre au moment de la génération du
-			// lien
+            // Gestion des vues externes
+            // Nécessaire pour poser une ancre au moment de la génération du lien
+            if (url == null) {
+                url = this.getNuxeoNativeViewerUrl(ctx);
+                externalLink = true;
+            }
+        }
 
-			if (url == null) {
-
-				url = this.getNuxeoNativeViewerUrl(ctx);
-				externalLink = true;
-
-			}
-		}
-
-		if (url != null) {
-			Link link = new Link(url, externalLink);
-			link.setDownloadable(downloadable);
-			return link;
-
-		}
-		return null;
-	}
+        if (url != null) {
+            Link link = new Link(url, externalLink);
+            link.setDownloadable(downloadable);
+            return link;
+        }
+        return null;
+    }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
+        this.getMenuBarFormater().formatContentMenuBar(ctx);
+        List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("osivia.menuBar");
+        this.adaptContentMenuBar(ctx, menuBar);
+    }
 
 
-
-	/*
-	 * Barre de menu des portlets d'affichage de contenu
-	 */
-
-	public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
-
-		this.getMenuBarFormater().formatContentMenuBar(ctx);
-
-		List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("osivia.menuBar");
-
-		this.adaptContentMenuBar(ctx, menuBar);
-
-	}
-
-	/*
-	 * Personnalisation des items de la menubar
-	 */
-
-	protected void adaptContentMenuBar(CMSServiceCtx ctx, List<MenubarItem> menuBar) throws Exception {
-	}
-
-	/*
-	 * Préchargement des pages au login
-	 */
+    /**
+     * Customize menu bar items.
+     * 
+     * @param ctx CMS context
+     * @param menuBar menu bar
+     */
+    protected void adaptContentMenuBar(CMSServiceCtx ctx, List<MenubarItem> menuBar) {
+    }
 
 
-
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception	{
-		return this.getUserPagesLoader().computeUserPreloadedPages(cmsCtx);
-	}
-
-	/*
-	 * Parsing CMS spécifiques
-	 */
-
-	public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters)
-			throws Exception {
-
-		return null;
-	}
-
-	public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
-	    return this.getCMSToWebPathAdapter().adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
-	}
+    /**
+     * Compute preloading pages when user log in.
+     * 
+     * @param cmsCtx CMS context
+     * @return preloaded pages
+     * @throws Exception
+     */
+    public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
+        return this.getUserPagesLoader().computeUserPreloadedPages(cmsCtx);
+    }
 
 
-	public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
-		return this.getCMSItemAdapter().adaptDocument( ctx,  doc);
-	}
+    /**
+     * Parse specified CMS URL.
+     * 
+     * @param cmsCtx CMS context
+     * @param requestPath request path
+     * @param requestParameters request parameters
+     * @return CMS URL
+     * @throws Exception
+     */
+    public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters) throws Exception {
+        return null;
+    }
 
-	public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
-	/* Filtre pour sélectionner uniquement les version publiées */
+    /**
+     * Adapt CMS path to web.
+     * 
+     * @param cmsCtx CMS context
+     * @param basePath CMS base path
+     * @param requestPath request path
+     * @param webPath web path indicator
+     * @return adapted CMS path to web
+     * @throws CMSException
+     */
+    public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
+        return this.getCMSToWebPathAdapter().adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
+    }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
+        return this.getCMSItemAdapter().adaptDocument(ctx, doc);
+    }
 
-		String requestFilter = "";
 
-		if ("1".equals(ctx.getDisplayLiveVersion())) {
-			// selection des versions lives : il faut exclure les proxys
-			requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
-		} else {
-			// sélection des folders et des documents publiés
+    /**
+     * {@inheritDoc}
+     */
+    public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
+        /* Filtre pour sélectionner uniquement les version publiées */
+        String requestFilter = "";
 
-			//requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 1  AND ecm:currentLifeCycleState <> 'deleted' ";
-			requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
-		}
+        if ("1".equals(ctx.getDisplayLiveVersion())) {
+            // selection des versions lives : il faut exclure les proxys
+            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
+        } else {
+            // sélection des folders et des documents publiés
 
-		String policyFilter = null;
+            // requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 1  AND ecm:currentLifeCycleState <> 'deleted' ";
+            requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
+        }
 
-		ServerInvocation invocation = ctx.getServerInvocation();
+        String policyFilter = null;
+
+        ServerInvocation invocation = ctx.getServerInvocation();
         String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
-		// Dans certaines cas, le nom du portail n'est pas connu
-		// cas des stacks server (par exemple, le pre-cahrgement des pages)
-		if( portalName != null) {
-			PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
-			PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+        // Dans certaines cas, le nom du portail n'est pas connu
+        // cas des stacks server (par exemple, le pre-cahrgement des pages)
+        if (portalName != null) {
+            PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
+            PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
-			if (requestFilteringPolicy != null) {
+            if (requestFilteringPolicy != null) {
                 policyFilter = requestFilteringPolicy;
             } else {
-				// Get portal policy filter
-				String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
-				if( sitePolicy != null) {
-				    if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
+                // Get portal policy filter
+                String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
+                if (sitePolicy != null) {
+                    if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
                         policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
                     }
-				}   else    {
-				    String portalType =  po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
-				    if( InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
-				        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
-				    }
-				}
-			}
+                } else {
+                    String portalType = po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
+                    if (InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
+                        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
+                    }
+                }
+            }
 
-			if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
-				// Parcours des pages pour appliquer le filtre sur les paths
+            if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
+                // Parcours des pages pour appliquer le filtre sur les paths
+                String pathFilter = "";
 
-				String pathFilter = "";
-
-				for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
-					String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
-					if ((cmsPath != null) && (cmsPath.length() > 0)) {
-						if (pathFilter.length() > 0) {
+                for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
+                    String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
+                    if ((cmsPath != null) && (cmsPath.length() > 0)) {
+                        if (pathFilter.length() > 0) {
                             pathFilter += " OR ";
                         }
-						pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
-					}
-				}
+                        pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+                    }
+                }
 
-				if (pathFilter.length() > 0) {
-					requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
-				}
-			}
+                if (pathFilter.length() > 0) {
+                    requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
+                }
+            }
+        }
 
-		}
+        String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
+        if (extraFilter != null) {
+            requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+        }
 
+        // Insertion du filtre avant le order
+        String beforeOrderBy = "";
+        String orderBy = "";
 
-		String extraFilter =  this.getExtraRequestFilter( ctx,  requestFilteringPolicy);
-		if( extraFilter != null){
-			requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
-		}
+        String editedNuxeoRequest = nuxeoRequest;
+        try {
+            Pattern ressourceExp = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
 
+            Matcher m = ressourceExp.matcher(editedNuxeoRequest.toUpperCase());
+            m.matches();
 
-		// Insertion du filtre avant le order
+            if (m.groupCount() == 3) {
+                beforeOrderBy = editedNuxeoRequest.substring(0, m.group(1).length());
+                orderBy = editedNuxeoRequest.substring(m.group(1).length());
+            }
+        } catch (IllegalStateException e) {
+            beforeOrderBy = editedNuxeoRequest;
+        }
 
-		String beforeOrderBy = "";
-		String orderBy = "";
+        String finalRequest = beforeOrderBy;
 
-		try {
-			Pattern ressourceExp = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
-
-			Matcher m = ressourceExp.matcher(nuxeoRequest.toUpperCase());
-			m.matches();
-
-			if (m.groupCount() == 3) {
-				beforeOrderBy = nuxeoRequest.substring(0, m.group(1).length());
-				orderBy = nuxeoRequest.substring(m.group(1).length());
-			}
-		} catch (IllegalStateException e) {
-			beforeOrderBy = nuxeoRequest;
-		}
-
-		String finalRequest = beforeOrderBy;
-
-		if (finalRequest.length() > 0) {
+        if (finalRequest.length() > 0) {
             finalRequest += " AND ";
         }
-		finalRequest += "(" + requestFilter + ") ";
+        finalRequest += "(" + requestFilter + ") ";
 
-		finalRequest += " " + orderBy;
-		nuxeoRequest = finalRequest;
+        finalRequest += " " + orderBy;
+        editedNuxeoRequest = finalRequest;
 
-		return nuxeoRequest;
-
-	}
+        return editedNuxeoRequest;
+    }
 
 
     /**
@@ -872,7 +938,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
      * @return code NXQL
      * @throws Exception
      */
-	public String getExtraRequestFilter(CMSServiceCtx ctx, String requestFilteringPolicy) throws Exception {
+    public String getExtraRequestFilter(CMSServiceCtx ctx, String requestFilteringPolicy) throws Exception {
         String extraRequetFilter = null;
 
         // compute domain path
@@ -881,7 +947,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
         if (domainPath != null) {
             // get configs installed in nuxeo
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.extraRequestFilter);
-            Documents configs = (Documents) this.CMSService.executeNuxeoCommand(ctx, command);
+            Documents configs = (Documents) this.cmsService.executeNuxeoCommand(ctx, command);
 
 
             if (configs.size() > 0) {
@@ -903,66 +969,141 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
         }
         // return the request
         return extraRequetFilter;
-
-	}
-
-protected Map<String, DocTypeDefinition> docTypes = null;
-    
-    protected DocTypeDefinition createDocType( String docTypeName, String displayName, boolean supportsPortalForm, List<String> portalFormSubTypes){
-        
-        DocTypeDefinition portalDocType = new DocTypeDefinition();
-        portalDocType.setName(docTypeName);
-        portalDocType.setDisplayName(displayName);
-        portalDocType.setSupportingPortalForm(supportsPortalForm);
-        portalDocType.setPortalFormSubTypes(portalFormSubTypes);
-            
-        return portalDocType;
-    }
-    
-
-    
-    public Map<String, DocTypeDefinition> getDocTypeDefinitions(CMSServiceCtx ctx) throws Exception {
- 
-        if (docTypes == null) {
-
-            docTypes = new LinkedHashMap<String, DocTypeDefinition>();
-            docTypes.put("Workspace", createDocType("Workspace", "Workspace", false, Arrays.asList("File", "Folder", "Note")));
-            docTypes.put("PortalSite", createDocType("PortalSite", "PortalSite", false, Arrays.asList("File", "Folder", "Note")));
-            docTypes.put("Folder", createDocType("Folder", "Dossier", true, Arrays.asList("File", "Folder", "Note")));
-            docTypes.put("File", createDocType("File", "Fichier", true, new ArrayList<String>()));
-            docTypes.put("Note", createDocType("Note", "Note", true,  new ArrayList<String>()));
-            docTypes.put("Annonce", createDocType("Annonce", "Annonce", true,  new ArrayList<String>()));
-            docTypes.put("AnnonceFolder", createDocType("AnnonceFolder", "AnnonceFolder", false, Arrays.asList("Annonce")));
-            docTypes.put("ContextualLink", createDocType("ContextualLink", "Lien", true,  new ArrayList<String>()));
-            docTypes.put("DocumentUrlContainer", createDocType("DocumentUrlContainer", "Container de liens", false,  Arrays.asList("ContextualLink")));
-
-        }
-        return docTypes;
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
         ClassLoader originalCL = Thread.currentThread().getContextClassLoader();
-        
+
         // L'instanciation du parser Neko nécessite de passer dans le classloader du CMSCustomizer
         // (Sinon, on n'arrive pas à trouver la classe du parser)
-        Thread.currentThread().setContextClassLoader(cl);
-        
+        Thread.currentThread().setContextClassLoader(this.cl);
+
         try {
-        
-        Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
+            Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
-        transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
-        OutputStream output = new ByteArrayOutputStream();
-        XMLReader parser = WysiwygParser.getInstance().getParser();
-        transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(
-                output));
+            transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
+            OutputStream output = new ByteArrayOutputStream();
+            XMLReader parser = WysiwygParser.getInstance().getParser();
+            transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(output));
 
-        return output.toString();
-        } finally   {
+            return output.toString();
+        } finally {
             Thread.currentThread().setContextClassLoader(originalCL);
         }
+    }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, CMSItemType> getCMSItemTypes() {
+        if (this.cmsItemTypes == null) {
+            List<CMSItemType> defaultTypes = this.getDefaultCMSItemTypes();
+            this.cmsItemTypes = new LinkedHashMap<String, CMSItemType>(defaultTypes.size());
+            for (CMSItemType defaultType : defaultTypes) {
+                this.cmsItemTypes.put(defaultType.getName(), defaultType);
+            }
+        }
+        return this.cmsItemTypes;
+    }
+
+
+    /**
+     * Get default CMS item types.
+     * 
+     * @return default CMS item types
+     */
+    private List<CMSItemType> getDefaultCMSItemTypes() {
+        List<CMSItemType> defaultTypes = new ArrayList<CMSItemType>();
+
+        // Workspace
+        defaultTypes.add(new CMSItemType("Workspace", true, true, false, Arrays.asList("File", "Folder", "Note")));
+        // Portal site
+        defaultTypes.add(new CMSItemType("PortalSite", true, true, false, Arrays.asList("File", "Folder", "Note")));
+        // Folder
+        defaultTypes.add(new CMSItemType("Folder", true, false, true, Arrays.asList("File", "Folder", "Note")));
+        // File
+        defaultTypes.add(new CMSItemType("File", false, false, true, new ArrayList<String>(0)));
+        // Note
+        defaultTypes.add(new CMSItemType("Note", false, false, false, new ArrayList<String>(0)));
+        // Annonce
+        defaultTypes.add(new CMSItemType("Annonce", false, false, true, new ArrayList<String>(0)));
+        // Annonce folder
+        defaultTypes.add(new CMSItemType("AnnonceFolder", true, false, false, Arrays.asList("Annonce")));
+        // Contextual link
+        defaultTypes.add(new CMSItemType("ContextualLink", false, false, true, new ArrayList<String>(0)));
+        // Document URL container
+        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, false, false, Arrays.asList("ContextualLink")));
+
+        return defaultTypes;
+    }
+
+
+    /**
+     * Getter for cmsService.
+     * 
+     * @return the cmsService
+     */
+    public CMSService getCmsService() {
+        return this.cmsService;
+    }
+
+    /**
+     * Setter for cmsService.
+     * 
+     * @param cmsService the cmsService to set
+     */
+    public void setCmsService(CMSService cmsService) {
+        this.cmsService = cmsService;
+    }
+
+    /**
+     * Getter for portletCtx.
+     * 
+     * @return the portletCtx
+     */
+    public PortletContext getPortletCtx() {
+        return this.portletCtx;
+    }
+
+    /**
+     * Setter for portletCtx.
+     * 
+     * @param portletCtx the portletCtx to set
+     */
+    public void setPortletCtx(PortletContext portletCtx) {
+        this.portletCtx = portletCtx;
+    }
+
+    /**
+     * Setter for navigationItemAdapter.
+     * 
+     * @param navigationItemAdapter the navigationItemAdapter to set
+     */
+    public void setNavigationItemAdapter(NavigationItemAdapter navigationItemAdapter) {
+        this.navigationItemAdapter = navigationItemAdapter;
+    }
+
+    /**
+     * Getter for parser.
+     * 
+     * @return the parser
+     */
+    public XMLReader getParser() {
+        return this.parser;
+    }
+
+    /**
+     * Setter for parser.
+     * 
+     * @param parser the parser to set
+     */
+    public void setParser(XMLReader parser) {
+        this.parser = parser;
     }
 
 }

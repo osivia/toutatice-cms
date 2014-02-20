@@ -23,10 +23,10 @@ import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.api.services.DocTypeDefinition;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
@@ -305,29 +305,18 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
 
         if (pubInfos.isEditableByUser()) {
-
-
-            if( ( pubInfos.isLiveSpace() || ( this.isInLiveMode(cmsCtx))  )
-                    && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)
-                    ){
-
-
+            if ((pubInfos.isLiveSpace() || (this.isInLiveMode(cmsCtx))) && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 Document doc = (Document) cmsCtx.getDoc();
 
-
-                DocTypeDefinition docTypeDef = this.customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
-
-                if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
-
-
-                    String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(  new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
+                CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+                if (cmsItemType != null && cmsItemType.isSupportsPortalForms()) {
+                    String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(
+                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
 
                     String onClick = "setCallbackParams(null, '" + callBackURL + "')";
 
-                    this.addEditLinkItem(menuBar, onClick,  this.customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
+                    this.addEditLinkItem(menuBar, onClick, NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
                             + "@toutatice_edit");
-
-
                 }
             }
         }
@@ -362,11 +351,8 @@ public class MenuBarFormater {
             Map<String, String> subTypes = pubInfos.getSubTypes();
 
             List<SubType> portalDocsToCreate = new ArrayList<SubType>();
-            Map<String, DocTypeDefinition> managedTypes = this.customizer.getDocTypeDefinitions(cmsCtx);
-
-
-            DocTypeDefinition containerDocType = managedTypes.get(parentDoc.getType());
-
+            Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
+            CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
 
                 for (String docType : subTypes.keySet()) {
@@ -375,21 +361,20 @@ public class MenuBarFormater {
 
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && (creationType == null || creationType.equals(docType))) {
 
-                        DocTypeDefinition docTypeDef = managedTypes.get(docType);
+                        CMSItemType docTypeDef = managedTypes.get(docType);
 
-                        if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
+                        if (docTypeDef != null && docTypeDef.isSupportsPortalForms()) {
 
                             SubType subType = new SubType();
 
 
                             subType.setDocType(docType);
                             subType.setName(subTypes.get(docType));
-                            subType.setUrl(this.customizer.getNuxeoConnectionProps().getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
+                            subType.setUrl(NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
                                     + "@toutatice_create?type=" + docType);
                             portalDocsToCreate.add(subType);
                         }
                     }
-
                 }
             }
 
@@ -512,30 +497,20 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, doc.getPath());
 
         if (pubInfos.isDeletableByUser()) {
-
-            if ( ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
-
-
-                DocTypeDefinition docTypeDef = this.customizer.getDocTypeDefinitions(cmsCtx).get(doc.getType());
-
-                if (docTypeDef != null && docTypeDef.isSupportingPortalForm()) {
-
-
-                    /* Lien de création */
-
+            if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+                CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(doc.getType());
+                if (docTypeDef != null && docTypeDef.isSupportsPortalForms()) {
+                    // Lien de création
                     String fancyID = "_PORTAL_DELETE";
 
-
                     // fancybox div
-
                     StringBuffer fancyContent = new StringBuffer();
-
 
                     fancyContent.append(" <div id=\"" + cmsCtx.getResponse().getNamespace() + fancyID + "\" class=\"fancybox-content\">");
 
                     String putInTrashUrl = this.getPortalUrlFactory().getPutDocumentInTrashUrl(
-                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),pubInfos.getLiveId(), pubInfos.getDocumentPath());
-
+                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), pubInfos.getLiveId(),
+                            pubInfos.getDocumentPath());
 
                     fancyContent.append("   <form method=\"post\" action=\"" + putInTrashUrl + "\">");
                     fancyContent.append("       <div>Confirmez-vous la suppression de l'élément ?</div><br/>");
@@ -546,12 +521,9 @@ public class MenuBarFormater {
                     fancyContent.append("   </form>");
                     fancyContent.append(" </div>");
 
-
                     this.addDeleteLinkItem(menuBar, null, "#" + cmsCtx.getResponse().getNamespace() + fancyID, fancyContent.toString());
-
                 }
             }
-
         }
 
 

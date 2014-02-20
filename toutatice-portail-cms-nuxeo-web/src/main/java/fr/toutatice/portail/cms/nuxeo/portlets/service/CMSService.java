@@ -50,7 +50,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemTypeHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -122,7 +121,7 @@ public class CMSService implements ICMSService {
         CMSItem cmsItem = new CMSItem(path, properties, doc);
 
         // CMS item type
-        CMSItemType type = CMSItemTypeHelper.getCMSItemType(doc);
+        CMSItemType type = this.customizer.getCMSItemTypes().get(doc.getType());
         cmsItem.setType(type);
 
         return cmsItem;
