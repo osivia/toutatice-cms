@@ -43,14 +43,14 @@ public class MenuComparator implements Comparator<NavigationDisplayItem> {
         CMSItemType type1 = managedTypes.get(doc1.getPath());
         CMSItemType type2 = managedTypes.get(doc2.getPath());
 
-        if (type1.isFolderish()) {
-            if (type2.isFolderish()) {
+        if ((type1 != null) && type1.isFolderish()) {
+            if ((type2 != null) && type2.isFolderish()) {
                 return doc1.getTitle().toUpperCase().compareTo(doc2.getTitle().toUpperCase());
             } else {
                 return -1;
             }
         } else {
-            if (type2.isFolderish()) {
+            if ((type2 != null) && type2.isFolderish()) {
                 return 1;
             } else {
                 return doc1.getTitle().toUpperCase().compareTo(doc2.getTitle().toUpperCase());
