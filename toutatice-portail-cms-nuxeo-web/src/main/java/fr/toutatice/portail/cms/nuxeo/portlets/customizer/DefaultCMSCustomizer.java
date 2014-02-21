@@ -267,7 +267,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
         fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
         fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
-        fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "spaceMenubar", "spaceMenubar"));
+        fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "space-menubar", "empty"));
         return fragmentTypes;
     }
 
@@ -1023,7 +1023,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace
         defaultTypes.add(new CMSItemType("Workspace", true, true, false, Arrays.asList("File", "Folder", "Note")));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, true, false, Arrays.asList("File", "Folder", "Note")));
+        defaultTypes.add(new CMSItemType("PortalSite", true, true, true, Arrays.asList("File", "Folder", "Note")));
         // Portal page
         defaultTypes.add(new CMSItemType("PortalPage", true, true, true, Arrays.asList("File", "Folder", "Note")));
         // Folder
@@ -1031,7 +1031,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // File
         defaultTypes.add(new CMSItemType("File", false, false, true, new ArrayList<String>(0)));
         // Note
-        defaultTypes.add(new CMSItemType("Note", false, false, false, new ArrayList<String>(0)));
+        defaultTypes.add(new CMSItemType("Note", false, false, true, new ArrayList<String>(0)));
         // Annonce
         defaultTypes.add(new CMSItemType("Annonce", false, false, true, new ArrayList<String>(0)));
         // Annonce folder

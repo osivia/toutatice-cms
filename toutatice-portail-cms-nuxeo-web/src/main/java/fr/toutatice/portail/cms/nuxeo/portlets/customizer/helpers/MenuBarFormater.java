@@ -83,14 +83,6 @@ public class MenuBarFormater {
     };
 
 
-    public String  getLivePath(String path){
-        String result = path;
-        if( path.endsWith(".proxy")) {
-            result = result.substring(0, result.length() - 6);
-        }
-        return result;
-    }
-
 
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
@@ -204,7 +196,7 @@ public class MenuBarFormater {
 
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
-        if (pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+        if (pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
             String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + pubInfos.getLiveId() + "/view_documents";
             this.addAdministrationLinkItem(menuBar, url);
 
@@ -246,7 +238,8 @@ public class MenuBarFormater {
         }
 
 
-        String path = ((Document) (cmsCtx.getDoc())).getPath();
+        Document document = (Document) (cmsCtx.getDoc());
+        String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 
 
@@ -255,12 +248,16 @@ public class MenuBarFormater {
             EditionState newState = new EditionState( EditionState.CONTRIBUTION_MODE_EDITION, path);
 
 
-
+            PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+            
             if( this.isInLiveMode(cmsCtx))  {
                 newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, path);
+            }   else    {
+                // Forget old state
+                this.getContributionService().removeWindowEditionState(portalCtx) ;
             }
 
-            PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+
 
 
             String url = this.getContributionService().getChangeEditionStateUrl( portalCtx, newState);
@@ -269,18 +266,21 @@ public class MenuBarFormater {
 
             this.addChangeModeLinkItem(menuBar, url, newState, publishUrl);
 
+            CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            
+            if( cmsItemType != null && cmsItemType.isFolderish()){
 
-
-            // Live content browser popup link
-            Map<String, String> properties = new HashMap<String, String>(1);
-            properties.put("osivia.browser.path", pubInfos.getDocumentPath());
-            Map<String, String> parameters = new HashMap<String, String>(0);
-            String browserUrl = this.urlFactory.getStartPortletUrl(portalCtx, "osivia-portal-browser-portlet-instance", properties, parameters, true);
-            MenubarItem browserItem = new MenubarItem(null, "Parcourir les versions de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, browserUrl, null,
-                    "browser live fancyframe_refresh", "");
-            browserItem.setAjaxDisabled(true);
-            browserItem.setDropdownItem(true);
-            menuBar.add(browserItem);
+                // Live content browser popup link
+                Map<String, String> properties = new HashMap<String, String>(1);
+                properties.put("osivia.browser.path", pubInfos.getDocumentPath());
+                Map<String, String> parameters = new HashMap<String, String>(0);
+                String browserUrl = this.getPortalUrlFactory().getStartPortletUrl(portalCtx, "osivia-portal-browser-portlet-instance", properties, parameters, true);
+                MenubarItem browserItem = new MenubarItem(null, "Parcourir les versions de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, browserUrl, null,
+                        "browser live fancyframe_refresh", "");
+                browserItem.setAjaxDisabled(true);
+                browserItem.setDropdownItem(true);
+                menuBar.add(browserItem);
+            }
         }
     }
 

@@ -21,6 +21,15 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  * 
  */
 public abstract class ContextualizationHelper {
+    
+    
+    public static String  getLivePath(String path){
+        String result = path;
+        if( path.endsWith(".proxy")) {
+            result = result.substring(0, result.length() - 6);
+        }
+        return result;
+    }
 
     /**
      * Méthode permettant de déterminer si une portlet s'affiche
@@ -31,12 +40,40 @@ public abstract class ContextualizationHelper {
      * @throws CMSException
      */
     public static boolean isCurrentDocContextualized(CMSServiceCtx cmsCtx) throws CMSException {
-        boolean isInContextualizedMode = false;
-        Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
+  //      boolean isInContextualizedMode = false;
+        
+       Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
+       
+       if (window != null) {
+           
+           //Maximized windows
+           if( "1".equals(window.getDeclaredProperty("osivia.cms.contextualization")))
+               return true;
+       
+           // Non player items
+           String basePath = window.getPage().getProperty("osivia.cms.basePath");
+           boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
+
+       
+           if( isPluggedOnSpace && cmsCtx.getDoc() != null)    {
+               String path = ((Document) cmsCtx.getDoc()).getPath();
+               String navigationPath =  cmsCtx.getRequest().getParameter("osivia.cms.path");
+               
+               if( navigationPath != null && path != null && navigationPath.equals(getLivePath(path)))
+                   return true;
+               }
+           }
+     
+
+        
+        return false;
+        
+              /*
         if (window != null) {
             Page currentPage = window.getPage();
             String basePath = currentPage.getProperty("osivia.cms.basePath");
             boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
+            
             
             if (isPluggedOnSpace) {
                 if( cmsCtx.getDoc() != null)    {
@@ -50,6 +87,7 @@ public abstract class ContextualizationHelper {
             }
         }
         return isInContextualizedMode;
+        */
     }
 
    
