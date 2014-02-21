@@ -44,20 +44,19 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
     public void injectViewAttributes(NuxeoController ctrl, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
 
-        String spacePath = window.getPageProperty("osivia.cms.basePath");
-        CMSItem publishSpaceConfig = null;
-        if (spacePath != null) {
-            publishSpaceConfig = ctrl.getCMSService().getSpaceConfig(ctrl.getCMSCtx(), spacePath);
-            Document doc = (Document) publishSpaceConfig.getNativeItem();
+        String navigationPath = ctrl.getNavigationPath();
+
+        if (navigationPath != null) {
+            
+            Document doc = ctrl.fetchDocument(navigationPath);
 
             ctrl.setCurrentDoc(doc);
             ctrl.insertContentMenuBarItems();
 
+            String url = this.getPortalUrlFactory(ctrl.getPortletCtx()).getPermaLink(new PortalControllerContext(ctrl.getPortletCtx(), request, response),
+                    null, null, navigationPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
             List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-
-            String url = this.getPortalUrlFactory(ctrl.getPortletCtx()).getPermaLink(new PortalControllerContext(ctrl.getPortletCtx(), request, response),
-                    null, null, publishSpaceConfig.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
             MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-permalink", null);
 

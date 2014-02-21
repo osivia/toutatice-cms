@@ -21,11 +21,11 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  * 
  */
 public abstract class ContextualizationHelper {
-    
-    
-    public static String  getLivePath(String path){
+
+
+    public static String getLivePath(String path) {
         String result = path;
-        if( path.endsWith(".proxy")) {
+        if (path.endsWith(".proxy")) {
             result = result.substring(0, result.length() - 6);
         }
         return result;
@@ -40,58 +40,37 @@ public abstract class ContextualizationHelper {
      * @throws CMSException
      */
     public static boolean isCurrentDocContextualized(CMSServiceCtx cmsCtx) throws CMSException {
-  //      boolean isInContextualizedMode = false;
-        
-       Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
-       
-       if (window != null) {
-           
-           //Maximized windows
-           if( "1".equals(window.getDeclaredProperty("osivia.cms.contextualization")))
-               return true;
-       
-           // Non player items
-           String basePath = window.getPage().getProperty("osivia.cms.basePath");
-           boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
+        // boolean isInContextualizedMode = false;
 
-       
-           if( isPluggedOnSpace && cmsCtx.getDoc() != null)    {
-               String path = ((Document) cmsCtx.getDoc()).getPath();
-               String navigationPath =  cmsCtx.getRequest().getParameter("osivia.cms.path");
-               
-               if( navigationPath != null && path != null && navigationPath.equals(getLivePath(path)))
-                   return true;
-               }
-           }
-     
+        Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
 
-        
-        return false;
-        
-              /*
         if (window != null) {
-            Page currentPage = window.getPage();
-            String basePath = currentPage.getProperty("osivia.cms.basePath");
+
+            // Maximized windows
+            if ("1".equals(window.getDeclaredProperty("osivia.cms.contextualization")))
+                return true;
+
+            // Non player items
+            String basePath = window.getPage().getProperty("osivia.cms.basePath");
             boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
-            
-            
-            if (isPluggedOnSpace) {
-                if( cmsCtx.getDoc() != null)    {
-                if( ((Document) cmsCtx.getDoc()).getPath().startsWith(basePath)) {
-                    ICMSService cmsService = NuxeoController.getCMSService();
-                    CMSItem infosConfig = cmsService.getSpaceConfig(cmsCtx, basePath);
-                    String spaceContextualizeStatus = infosConfig.getProperties().get("contextualizeInternalContents");
-                    isInContextualizedMode = "1".equals(spaceContextualizeStatus);
-                    }
+
+
+            if (isPluggedOnSpace && cmsCtx.getDoc() != null) {
+                String path = ((Document) cmsCtx.getDoc()).getPath();
+                String navigationPath = cmsCtx.getRequest().getParameter("osivia.cms.path");
+
+                if (StringUtils.startsWith(getLivePath(path), navigationPath))  {
+                    return true;
                 }
             }
         }
-        return isInContextualizedMode;
-        */
+
+
+        return false;
+
     }
 
-   
-    
+
     /**
      * Détermine si le path courant impacte la navigation
      * 
@@ -100,7 +79,7 @@ public abstract class ContextualizationHelper {
      * @return
      * @throws CMSException
      */
-    public static Page  getCurrentPage(CMSServiceCtx cmsCtx) throws CMSException {
+    public static Page getCurrentPage(CMSServiceCtx cmsCtx) throws CMSException {
 
 
         Window window = (Window) cmsCtx.getRequest().getAttribute("osivia.window");
@@ -108,7 +87,7 @@ public abstract class ContextualizationHelper {
             return window.getPage();
         }
         return null;
-        
+
     }
 
 }
