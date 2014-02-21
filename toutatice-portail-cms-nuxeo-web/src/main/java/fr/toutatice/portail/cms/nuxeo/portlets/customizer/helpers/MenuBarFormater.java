@@ -448,7 +448,7 @@ public class MenuBarFormater {
                     index++;
                 }
 
-                fancyContent.append("           </div>");
+
                 fancyContent.append("        </div>");
                 fancyContent.append("   </div>");
                 fancyContent.append("</div>");
