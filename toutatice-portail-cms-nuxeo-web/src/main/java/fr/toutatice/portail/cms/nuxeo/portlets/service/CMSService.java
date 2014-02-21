@@ -836,8 +836,11 @@ public class CMSService implements ICMSService {
             Document parent = (Document) this.fetchContent(cmsContext, path).getNativeItem();
             String parentId = parent.getId();
 
+            // Live content
+            boolean liveContent = "1".equals(cmsContext.getDisplayLiveVersion());
+
             // Nuxeo command execution
-            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(parentId, true);
+            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(parentId, liveContent);
             Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
             // CMS items
