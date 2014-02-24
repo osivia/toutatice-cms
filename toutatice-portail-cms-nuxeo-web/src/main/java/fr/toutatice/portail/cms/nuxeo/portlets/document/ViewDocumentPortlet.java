@@ -55,36 +55,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     private INuxeoService nuxeoService;
 
-    @Override
-    public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
-
-        try {
-            // Redirection sur lien contextuel
-
-            if ("link".equals(resourceRequest.getParameter("type"))) {
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
-
-                String id = resourceRequest.getResourceID();
-
-                Document doc = (Document) ctx.executeNuxeoCommand(new DocumentFetchCommand(id));
-
-                resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-                resourceResponse.setProperty("Location", doc.getString("clink:link"));
-                resourceResponse.getPortletOutputStream().close();
-
-            } else {
-                super.serveResource(resourceRequest, resourceResponse);
-            }
-
-        } catch (NuxeoException e) {
-            this.serveResourceException(resourceRequest, resourceResponse, e);
-        } catch (Exception e) {
-            throw new PortletException(e);
-
-        }
-    }
-
 
     @Override
     public void init(PortletConfig config) throws PortletException {

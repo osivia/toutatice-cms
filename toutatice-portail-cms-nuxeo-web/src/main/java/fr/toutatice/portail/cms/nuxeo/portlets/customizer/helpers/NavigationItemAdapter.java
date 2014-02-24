@@ -7,6 +7,7 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -49,13 +50,8 @@ public class NavigationItemAdapter {
 	 */
 
 	protected boolean isNavigable(Document doc)	{
-
-		if (doc.getType().equals("PortalPage") || (doc.getType().equals("Folder"))	|| ((doc.getType().equals("OrderedFolder")))  || ((doc.getType().equals("DocumentUrlContainer")))  || ((doc.getType().equals("AnnonceFolder"))) || ((doc.getType().equals("PortalVirtualPage")))
-				||(doc.getType().equals("SimplePage"))) {
-            return true;
-        }
-
-		return false;
+		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+		return ((cmsItemType != null) && (cmsItemType.isNavigable()));
 	}
 
 
@@ -103,7 +99,8 @@ public class NavigationItemAdapter {
 	public void adaptPublishSpaceNavigationItem(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem) {
 
 		Document doc = (Document) publishSpaceNavigationItem.getNativeItem();
-
+		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+		
 		Map<String, String> properties = publishSpaceNavigationItem.getProperties();
 
         /* titre */
@@ -115,31 +112,26 @@ public class NavigationItemAdapter {
 		/* Template */
 
 		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
-		boolean defaultTemplate = false;
 
-		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
-
-			// template par défaut pour le publishspace
-
-			if( (pageTemplate == null) || (pageTemplate.length() == 0))	{
-				pageTemplate =  this.getDefaultPageTemplate(doc);
-				defaultTemplate = true;
-			}
-
-
-			properties.put("navigationElement", "1");
-            properties.put("pageDisplayMode", "1");
-
-
+		if (StringUtils.isBlank(pageTemplate)) {
+			if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getDefaultTemplate())) {
+				pageTemplate = cmsItemType.getDefaultTemplate();
+			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
+				pageTemplate = this.getDefaultPageTemplate(doc);
+				properties.put("defaultTemplate", "1");
+			}			
 		}
-
-		if( (pageTemplate != null) && (pageTemplate.length() > 0))	{
-			if( defaultTemplate) {
-                properties.put("defaultTemplate", "1");
-            }
-
+		
+		if (StringUtils.isNotBlank(pageTemplate)) {
 			properties.put("pageTemplate", pageTemplate);
 		}
+		
+		
+		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
+			properties.put("navigationElement", "1");
+            properties.put("pageDisplayMode", "1");
+		}
+
 
 		/* Template des sous-espaces de navigation de "publishSpaceNavigationItem" */
 		String childrenPageTemplate =  (String) doc.getProperties().get("ttc:childrenPageTemplate");
@@ -209,45 +201,27 @@ public class NavigationItemAdapter {
 		 * Contextualisation
 		 *
 		 */
-
-		String contextualizeInternalContents =  (String) doc.getProperties().get("ttc:contextualizeInternalContents");
-		if( (contextualizeInternalContents != null) && "true".equals(contextualizeInternalContents) ) {
-            properties.put("contextualizeInternalContents", "1");
-        }
-
-		String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
-		if( (contextualizeExternalContents != null) && "true".equals(contextualizeExternalContents) ) {
-            properties.put("contextualizeExternalContents", "1");
-        }
-
-
-	/* Workspace et UserWorkspaces*/
-
-		if("Workspace".equals(doc.getType()))	{
+		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath()) && !"PortalSite".equals(doc.getType())) {
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
-            if (StringUtils.isEmpty((String) doc.getProperties().get("ttc:pageTemplate"))) {
-                properties.put("pageTemplate", "/default/templates/workspace");
-            }
-			properties.put("displayLiveVersion", "1");
+		} else {
+			String contextualizeInternalContents =  (String) doc.getProperties().get("ttc:contextualizeInternalContents");
+			if( (contextualizeInternalContents != null) && "true".equals(contextualizeInternalContents) ) {
+	            properties.put("contextualizeInternalContents", "1");
+	        }
+	
+			String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
+			if( (contextualizeExternalContents != null) && "true".equals(contextualizeExternalContents) ) {
+	            properties.put("contextualizeExternalContents", "1");
+	        }
 		}
+		
 
-		if("UserWorkspace".equals(doc.getType()))	{
-			properties.put("contextualizeInternalContents", "1");
-			properties.put("contextualizeExternalContents", "1");
-			properties.put("pageTemplate", "/default/templates/userworkspace");
-			properties.put("displayLiveVersion", "1");
-		}
-
+		/* Workspace et UserWorkspaces*/
 
 		if("Workspace".equals(doc.getType()))	{
+			properties.put("displayLiveVersion", "1");
 			properties.put("partialLoading", "1");
-		}
-
-
-		if(("WebSite".equals(doc.getType())) || ("BlogSite".equals(doc.getType()))){
-			properties.put("contextualizeInternalContents", "1");
-			properties.put("contextualizeExternalContents", "1");
 		}
 
 

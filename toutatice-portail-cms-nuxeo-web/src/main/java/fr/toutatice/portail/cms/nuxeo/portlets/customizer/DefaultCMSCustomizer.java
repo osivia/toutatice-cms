@@ -1021,25 +1021,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<CMSItemType> defaultTypes = new ArrayList<CMSItemType>();
 
         // Workspace
-        defaultTypes.add(new CMSItemType("Workspace", true, true, false, Arrays.asList("File", "Folder", "Note")));
+        defaultTypes.add(new CMSItemType("Workspace", true, false, true, false, false, Arrays.asList("File", "Folder", "Note"), "/default/templates/workspace"));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, true, true, Arrays.asList("File", "Folder", "Note")));
+        defaultTypes.add(new CMSItemType("PortalSite", true, false, true, true, true, Arrays.asList("File", "Folder", "Note"), null));
         // Portal page
-        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, Arrays.asList("File", "Folder", "Note")));
+        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, Arrays.asList("File", "Folder", "Note"), null));
         // Folder
-        defaultTypes.add(new CMSItemType("Folder", true, false, true, Arrays.asList("File", "Folder", "Note")));
+        defaultTypes.add(new CMSItemType("Folder", true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null));
         // File
-        defaultTypes.add(new CMSItemType("File", false, false, true, new ArrayList<String>(0)));
+        defaultTypes.add(new CMSItemType("File", false, false, false, false, true, new ArrayList<String>(0), null));
         // Note
-        defaultTypes.add(new CMSItemType("Note", false, false, true, new ArrayList<String>(0)));
+        defaultTypes.add(new CMSItemType("Note", false, false, false, false, true, new ArrayList<String>(0), null));
         // Annonce
-        defaultTypes.add(new CMSItemType("Annonce", false, false, true, new ArrayList<String>(0)));
+        defaultTypes.add(new CMSItemType("Annonce", false, false, false, false, true, new ArrayList<String>(0), null));
         // Annonce folder
-        defaultTypes.add(new CMSItemType("AnnonceFolder", true, false, false, Arrays.asList("Annonce")));
+        defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, Arrays.asList("Annonce"), null));
         // Contextual link
-        defaultTypes.add(new CMSItemType("ContextualLink", false, false, true, new ArrayList<String>(0)));
+        defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, true, new ArrayList<String>(0), null));
         // Document URL container
-        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, false, false, Arrays.asList("ContextualLink")));
+        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, Arrays.asList("ContextualLink"), null));
 
         return defaultTypes;
     }
