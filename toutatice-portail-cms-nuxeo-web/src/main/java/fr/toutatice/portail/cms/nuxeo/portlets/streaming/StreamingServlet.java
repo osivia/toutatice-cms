@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.core.CMSPortlet;
@@ -35,7 +36,6 @@ public class StreamingServlet extends HttpServlet {
                 bytesBuffered += bytesread;
                 if (bytesBuffered > 1024 * 1024) { // flush after 1MB
                     bytesBuffered = 0;
-
                 }
             }
             outputStream.flush();
@@ -49,30 +49,25 @@ public class StreamingServlet extends HttpServlet {
     public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
 
         OutputStream output = theResponse.getOutputStream();
+        
+        CMSBinaryContent content = null;
         try {
 
 
             String idLargeFile = theRequest.getParameter("idLargeFile");
             if (idLargeFile != null) {
 
-                CMSBinaryContent content = CMSBinaryContent.largeFile.get(idLargeFile);
-                //Compatibilité RC5
-                //CMSBinaryContent content = CMSPortlet.largeFile.get(idLargeFile);
-
+                content = CMSBinaryContent.largeFile.get(idLargeFile);
+  
                 if (content != null) {
 
                     theResponse.setContentType(content.getMimeType());
                     theResponse.setHeader("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
-                    theResponse.setContentLength((int) content.getFile().length());
                     theResponse.setBufferSize(8192);
 
-
-                    streamBigFile(new FileInputStream(content.getFile()), output, 8192);
+                    streamBigFile(content.getStream(), output, 8192);
                     
                     CMSBinaryContent.largeFile.remove(idLargeFile);
-                    //Compatibilité RC5
-                    //CMSPortlet.largeFile.remove(idLargeFile);
-                    
                 }
             }
 
@@ -81,6 +76,9 @@ public class StreamingServlet extends HttpServlet {
             throw new ServletException(e);
         } finally {
             output.close();
+            
+            // Close Nuxeo Session
+            ((Session) content.getLongLiveSession()).close();
         }
 
     }

@@ -16,6 +16,7 @@ import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -177,7 +178,11 @@ public class CMSService implements ICMSService {
 					} else if("superuser_context".equals(scope)){
 						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
 						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-					}else{
+					}else if("superuser_no_cache".equals(scope)){
+                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+                    }
+					else{
 						commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
 						commandCtx.setAuthProfil(getProfilManager().getProfil(scope));
 						commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
@@ -446,9 +451,29 @@ public class CMSService implements ICMSService {
 			if (document != null) {
 
 				cmsCtx.setScope("superuser_context");
+				
+				FileContentCommand cmd = new FileContentCommand((Document) document.getNativeItem(), fieldName);
+				
+				if( cmsCtx.isStreamingSupport())    {
+				    PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
+				    if(map != null && !map.isEmpty()){
+				        String size = map.getString("length");
+
+				    
+				        if(size != null && Long.parseLong(size)> 1000000L) {
+				            //Activation du mode streaming
+				            cmd.setStreamingSupport(true);
+				            // Pas de cache en mode streaming				    
+				            cmsCtx.setScope("superuser_no_cache");
+				        }
+				    }
+				}
 
 				content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx,
-						(new FileContentCommand((Document) document.getNativeItem(), fieldName)));
+						(cmd));
+				
+				
+				
 			}
 		} finally {
 			cmsCtx.setScope(savedScope);
