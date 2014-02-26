@@ -20,6 +20,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.statut.IStatutService;
 import org.osivia.portal.api.statut.ServeurIndisponible;
+import org.osivia.portal.core.cms.ILongLiveSessionResult;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.core.nuxeo.INuxeoService;
@@ -311,9 +312,15 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 			// recycle the session
 			// v2.0.21 : ajout test session recyclable
-			
+		    
+            if( res instanceof ILongLiveSessionResult){
+                if(( ( ILongLiveSessionResult) res).getLongLiveSession() == nuxeoSession)
+                    recyclableSession = false;
+            }
+		    
 			if (sessionsProfils != null && recyclableSession == true)
 				sessionsProfils.add(nuxeoSession);
+
 
 			if( userSessionInvocation != null && recyclableSession == false)
 				userSessionInvocation.removeAttribute(Scope.SESSION_SCOPE,	"osivia.nuxeoSession");

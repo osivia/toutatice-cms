@@ -324,26 +324,18 @@ public class CMSPortlet extends GenericPortlet {
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
-				// V 1.0.19 
-				// V2 suppression a valider
-				/*
-				if( !"1".equals( resourceRequest.getParameter("displayLiveVersion")))	{
-					Document doc = fetchLinkedDocument(ctx, docPath);
-					docPath = doc.getPath();
-				}
-				*/
+				ctx.setStreamingSupport(true);
 
 				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
 				
-				// Si SUP 10 Mo, redirection servlet pour streaming
-                if( content.getFile().length() > 10000000L)  {
+				// Redirection vers portlet de streaming
+                if( content.getStream() != null)  {
                     
                     resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
                             String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
                     String idLargeFile = "" + System.currentTimeMillis();
                     
-                    //Compatibilité RC5
-                    //largeFile.put(idLargeFile, content);
+
                     CMSBinaryContent.largeFile.put(idLargeFile, content);
                     
                     resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);

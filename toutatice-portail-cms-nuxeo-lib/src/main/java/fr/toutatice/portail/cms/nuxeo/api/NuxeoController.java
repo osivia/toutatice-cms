@@ -94,9 +94,21 @@ public class NuxeoController {
 	
 	boolean reloadResource = false;
 	
+    // streaming support : Pour comptibilite portlets v1 : NE PAS REPORTER EN V2
+	boolean streamingSupport = false;
+	
 
 	
-	//v 1.0.11 : pb. des pices jointes dans le proxy
+	
+    public boolean isStreamingSupport() {
+        return streamingSupport;
+    }
+    
+    public void setStreamingSupport(boolean streamingSupport) {
+        this.streamingSupport = streamingSupport;
+    }
+
+    //v 1.0.11 : pb. des pices jointes dans le proxy
 	Document currentDoc;
 	PortalControllerContext portalCtx;		
 	
@@ -818,9 +830,7 @@ public class NuxeoController {
 	}
 	
 	
-	
-	
-	
+		
 	
 	public Link getCMSLinkByPath (String path, String displayContext) throws Exception  {
 		
@@ -1094,8 +1104,7 @@ public class NuxeoController {
         // v2.0.22-RC6 Force to reload resources
 		if( reloadResource)
 		    cmsCtx.setForceReload(true);
-
-		
+        cmsCtx.setStreamingSupport(streamingSupport);		
 		return cmsCtx;
 	}
 	

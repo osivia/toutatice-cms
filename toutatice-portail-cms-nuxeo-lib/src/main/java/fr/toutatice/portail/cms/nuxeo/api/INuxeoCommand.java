@@ -11,4 +11,6 @@ public interface INuxeoCommand {
 	// doit inclure les paramètres spécifiques à la commande
 	
 	public String getId();
+	
+
 }
