@@ -48,9 +48,6 @@ public class CMSPortlet extends GenericPortlet {
 
 	}
 	
-	
-	   // 2.0.22 : to stream big files
-    public static final Map<String, CMSBinaryContent> largeFile = new Hashtable<String, CMSBinaryContent>();
 
 	public void init(PortletConfig config) throws PortletException {
 
@@ -324,6 +321,7 @@ public class CMSPortlet extends GenericPortlet {
 
 				NuxeoController ctx = new NuxeoController(resourceRequest, null, getPortletContext());
 
+				//Compatibilité avec portlet v2 : A SUPPRIMER EN V3
 				ctx.setStreamingSupport(true);
 
 				CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
