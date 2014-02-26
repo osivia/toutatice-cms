@@ -5,6 +5,8 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * OSIVIA-2014 : Ajout fonctionnalités de streaming
  *
  * Contributors:
  *     bstefanescu
@@ -31,7 +33,7 @@ public class DefaultOperationRequest implements OperationRequest {
 
     protected final OperationDocumentation op;
 
-    protected final DefaultSession session;
+    protected final StreamedSession session;
 
     protected final Map<String, Object> params;
 
@@ -41,12 +43,12 @@ public class DefaultOperationRequest implements OperationRequest {
 
     protected OperationInput input;
 
-    public DefaultOperationRequest(DefaultSession session,
+    public DefaultOperationRequest(StreamedSession session,
             OperationDocumentation op) {
         this(session, op, new HashMap<String, Object>());
     }
 
-    public DefaultOperationRequest(DefaultSession session,
+    public DefaultOperationRequest(StreamedSession session,
             OperationDocumentation op, Map<String, Object> ctx) {
         this.session = session;
         this.op = op;
@@ -55,7 +57,7 @@ public class DefaultOperationRequest implements OperationRequest {
         this.ctx = ctx;
     }
 
-    public DefaultSession getSession() {
+    public StreamedSession getSession() {
         return session;
     }
 
