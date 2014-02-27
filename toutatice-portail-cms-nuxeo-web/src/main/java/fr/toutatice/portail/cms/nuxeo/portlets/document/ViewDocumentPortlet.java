@@ -272,10 +272,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                     ICMSService cmsService = NuxeoController.getCMSService();
                     CMSPublicationInfos publiInfos = cmsService.getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
-
+                    
+                    boolean docIsInLiveSpace = publiInfos.isLiveSpace();
                     boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
 
-                    if (docCanBeCommentedByUser) {// TODO: ajouter cdt de contextualisation
+                    if (docIsInLiveSpace && docCanBeCommentedByUser) {// TODO: ajouter cdt de contextualisation
                         String user = request.getRemoteUser();
                         int authType = ctx.getAuthType();
                         JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
