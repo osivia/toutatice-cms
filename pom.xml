@@ -4,7 +4,7 @@
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>cms-parent</artifactId>
-	<version>2.0.25-SNAPSHOT</version>
+	<version>2.0.25</version>
 	<packaging>pom</packaging>
 	<name>toutatice-portail-cms</name>
 
@@ -240,7 +240,7 @@
 	</build>
 
  	<scm>
-    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/2.0</developerConnection>
+    		<developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/2.0.25</developerConnection>
   	</scm>
 
 
