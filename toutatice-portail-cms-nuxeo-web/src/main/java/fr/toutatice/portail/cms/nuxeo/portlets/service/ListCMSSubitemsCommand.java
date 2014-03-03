@@ -1,8 +1,12 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import net.sf.json.JSONArray;
+
+import org.apache.commons.io.IOUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Blob;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -39,20 +43,15 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      * {@inheritDoc}
      */
     public Object execute(Session nuxeoSession) throws Exception {
-        // Query
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT * ");
-        query.append("FROM Document ");
-        query.append("WHERE ecm:parentId = '").append(this.parentId).append("' ");
-        query.append("ORDER BY ecm:pos ");
-        String filteredQuery = NuxeoQueryFilter.addPublicationFilter(query.toString(), this.liveContent,
-                InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
-
-        // Request
-        OperationRequest request = nuxeoSession.newRequest("Document.Query");
-        request.set("query", filteredQuery);
+        // Fetch live tree with publishing infos
+        OperationRequest request = nuxeoSession.newRequest("Fetch.PublishingStatusChildren");
+        request.set("documentId", this.parentId);
+        request.set("liveStatus", this.liveContent);
         request.setHeader(Constants.HEADER_NX_SCHEMAS, this.getSchemas());
-        return request.execute();
+        Blob binariesPublishingInfos = (Blob) request.execute();
+
+        String publishingInfos = IOUtils.toString(binariesPublishingInfos.getStream(), "UTF-8");
+        return JSONArray.fromObject(publishingInfos);
     }
 
 
