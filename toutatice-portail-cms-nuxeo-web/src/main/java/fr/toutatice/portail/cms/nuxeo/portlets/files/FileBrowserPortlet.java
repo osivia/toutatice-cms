@@ -223,6 +223,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             if (nuxeoPath != null) {
                 NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
+                
+                ctx.setDisplayLiveVersion("1");
 
 
                 nuxeoPath = ctx.getComputedPath(nuxeoPath);
