@@ -29,8 +29,7 @@ public class GetCommentsCommand implements INuxeoCommand {
 		if(commentsBlob != null){
 			String fileContent = IOUtils.toString(commentsBlob.getStream(), "UTF-8");
 			JSONArray jsonComments = JSONArray.fromObject(fileContent);
-			
-			
+						
 			// v2.0.21 : suppression des files
 			if( commentsBlob instanceof FileBlob){
 				((FileBlob) commentsBlob).getFile().delete();
