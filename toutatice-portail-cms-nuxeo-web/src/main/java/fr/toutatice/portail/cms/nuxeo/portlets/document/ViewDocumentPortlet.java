@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.portlet.ActionRequest;
@@ -12,10 +13,7 @@ import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONArray;
 
@@ -35,7 +33,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
@@ -150,16 +147,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 nuxeoPath = ctrl.getComputedPath(nuxeoPath);
                 try {
                     Document commentableDoc = ctrl.fetchDocument(nuxeoPath);
-
                     if ("toAdd".equals(commentAction)) {
-                        String commentContent = req.getParameter("content");
-                        ctrl.executeNuxeoCommand(new AddCommentCommand(commentableDoc, commentContent));
+                        String commentContent = req.getParameter("content");                   
+                        ctrl.executeNuxeoCommand(new AddCommentCommand(commentableDoc, commentContent, null, null));
                     }
 
                     if ("addChild".equals(req.getParameter("comments"))) {
                         String commentId = req.getParameter("commentId");
                         String childCommentContent = req.getParameter("childCommentContent");
-                        ctrl.executeNuxeoCommand(new CreateChildCommentCommand(commentableDoc, commentId, childCommentContent));
+                        ctrl.executeNuxeoCommand(new CreateChildCommentCommand(commentableDoc, commentId, childCommentContent, null, null));
                     }
 
                     if ("delete".equals(commentAction)) {
