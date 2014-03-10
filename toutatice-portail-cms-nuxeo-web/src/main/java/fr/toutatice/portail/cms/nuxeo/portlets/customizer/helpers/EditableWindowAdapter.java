@@ -7,6 +7,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HtmlEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
  * Permet de gérer et ajouter les types de Window affichables dans le portail
@@ -22,6 +23,8 @@ public class EditableWindowAdapter {
      */
     public EditableWindowAdapter() {
         addType("fgt.html", new HtmlEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
+
+        addType("fgt.zoom", new ZoomEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "zoom_Frag_"));
 
         addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
 

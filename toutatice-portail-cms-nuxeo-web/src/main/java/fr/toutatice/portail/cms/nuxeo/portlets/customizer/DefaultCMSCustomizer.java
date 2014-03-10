@@ -65,6 +65,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 
@@ -264,6 +265,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
         fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
         fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
+        fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, ZoomFragmentModule.DESC, new ZoomFragmentModule(), ZoomFragmentModule.JSP,
+                ZoomFragmentModule.ADMIN_JSP));
         fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
         fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
         fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));

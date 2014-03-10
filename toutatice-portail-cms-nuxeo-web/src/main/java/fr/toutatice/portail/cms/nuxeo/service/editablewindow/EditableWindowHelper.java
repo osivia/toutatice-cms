@@ -115,6 +115,37 @@ public class EditableWindowHelper {
      * @param refURI la clé de recherche
      * @return la map
      */
+    public static List<Integer> findIndexesByRefURI(Document doc, String schema, String refURI) {
+
+        List<Integer> indexes = new ArrayList<Integer>();
+
+        PropertyList list = doc.getProperties().getList(schema);
+        int index = 0;
+
+        for (Object o : list.list()) {
+            if (o instanceof PropertyMap) {
+                PropertyMap map = (PropertyMap) o;
+                if (refURI.equals(map.get(FGT_URI)) || refURI.equals(map.get("refURI"))) {
+
+                    indexes.add(new Integer(index));
+                }
+            }
+            index++;
+        }
+
+        logger.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
+        return indexes;
+    }
+
+    /**
+     * Méthode permettant d'extraire les propriétés complexes d'un objet par son
+     * RefURI
+     * 
+     * @param doc e doc
+     * @param schema le schéma a explorer
+     * @param refURI la clé de recherche
+     * @return la map
+     */
     public static PropertyMap findSchemaByRefURI(Document doc, String schema, String refURI) {
 
         PropertyList list = doc.getProperties().getList(schema);
