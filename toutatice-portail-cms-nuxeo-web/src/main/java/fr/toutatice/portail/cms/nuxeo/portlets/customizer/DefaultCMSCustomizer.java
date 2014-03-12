@@ -46,8 +46,12 @@ import org.osivia.portal.core.page.PageProperties;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSToWebPathAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
@@ -71,7 +75,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavig
 
 /**
  * Default CMS customizer.
- * 
+ *
  * @see INuxeoCustomizer
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
@@ -112,6 +116,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private EditableWindowAdapter editableWindowAdapter;
     /** CMS to web adapter. */
     private CMSToWebPathAdapter cmsToWebAdapter;
+    /** Nuxeo comments service. */
+    private INuxeoCommentsService commentsService;
     /** Class loader. */
     private ClassLoader cl;
 
@@ -127,7 +133,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Constructor.
-     * 
+     *
      * @param ctx portlet context
      */
     public DefaultCMSCustomizer(PortletContext ctx) {
@@ -152,7 +158,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get Nuxeo connection properties.
-     * 
+     *
      * @return Nuxeo connection properties
      */
     public NuxeoConnectionProperties getNuxeoConnectionProps() {
@@ -165,7 +171,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get user pages loader.
-     * 
+     *
      * @return user pages loader
      */
     public UserPagesLoader getUserPagesLoader()	{
@@ -178,7 +184,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get menu bar formatter.
-     * 
+     *
      * @return menu bar formatter
      */
     public MenuBarFormater getMenuBarFormater() {
@@ -191,7 +197,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get navigation item adapter.
-     * 
+     *
      * @return navigation item adapter
      */
     public NavigationItemAdapter getNavigationItemAdapter() {
@@ -204,7 +210,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS item adapter.
-     * 
+     *
      * @return CMS item adapter
      */
     public CMSItemAdapter getCMSItemAdapter() {
@@ -217,7 +223,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * EditableWindowAdapter permet de gérer les types de EditableWindow affichables.
-     * 
+     *
      * @return Instance du EditableWindowAdapter
      */
     public EditableWindowAdapter getEditableWindowAdapter() {
@@ -230,7 +236,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS to web path adapter.
-     * 
+     *
      * @return CMS to web path adapter
      */
     public CMSToWebPathAdapter getCMSToWebPathAdapter() {
@@ -242,8 +248,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public INuxeoCommentsService getNuxeoCommentsService() {
+        if (this.commentsService == null) {
+            this.commentsService = new NuxeoCommentsServiceImpl(this.cmsService);
+        }
+        return this.commentsService;
+    }
+
+
+    /**
      * Get templates list.
-     * 
+     *
      * @return template list
      */
     public static List<ListTemplate> getListTemplates() {
@@ -258,7 +276,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get fragments list.
-     * 
+     *
      * @return fragments list
      */
     public static List<FragmentType> getFragmentTypes() {
@@ -277,7 +295,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get search schema.
-     * 
+     *
      * @return search schema
      */
     public static String getSearchSchema() {
@@ -287,7 +305,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS default player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS default player
      * @throws Exception
@@ -301,7 +319,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Gére les folders 'hiddenInNavigation'.
      * Les fils d'un folder 'hiddenInNavigation' sont directement rattachés au parent.
-     * 
+     *
      * @param ctx CMS context
      * @param ordered ordered indicator
      * @return Nuxeo request
@@ -348,7 +366,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS annonce folder player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS annonce folder player
      * @throws CMSException
@@ -376,7 +394,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS ordered folder player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS ordered folder player
      * @throws CMSException
@@ -405,7 +423,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS URL container player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS URL container player
      * @throws CMSException
@@ -433,7 +451,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS folder player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS folder player
      * @throws CMSException
@@ -462,7 +480,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS section player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS section player
      */
@@ -491,7 +509,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get CMS virtual page player.
-     * 
+     *
      * @param ctx CMS context
      * @return CMS virtual page player
      */
@@ -519,7 +537,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Create portlet link.
-     * 
+     *
      * @param ctx CMS context
      * @param portletInstance portlet instance
      * @param uid UID
@@ -567,7 +585,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // if (ctx.getContextualizationBasePath() != null)
 
             // Test JSS (tant que pas d'objet affichable en liste dans les workspace open-toutatice)
-            if (ctx.getContextualizationBasePath() != null && !doc.getTitle().startsWith("test-list")) {
+            if ((ctx.getContextualizationBasePath() != null) && !doc.getTitle().startsWith("test-list")) {
 
                 CMSItem spaceConfig = this.cmsService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
 
@@ -644,7 +662,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get default external viewer.
-     * 
+     *
      * @param ctx CMS context
      * @return default external viewer
      */
@@ -662,7 +680,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Create portlet delegated external link.
-     * 
+     *
      * @param ctx CMS context
      * @return portlet delegated external link
      */
@@ -681,7 +699,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Create portlet delegated file content link.
-     * 
+     *
      * @param ctx CMS context
      * @return portlet delegated file content link
      */
@@ -703,7 +721,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get Nuxeo native viewer URL.
-     * 
+     *
      * @param ctx CMS context
      * @return Nuxeo native viewer URL
      */
@@ -774,7 +792,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Customize menu bar items.
-     * 
+     *
      * @param ctx CMS context
      * @param menuBar menu bar
      */
@@ -784,7 +802,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Compute preloading pages when user log in.
-     * 
+     *
      * @param cmsCtx CMS context
      * @return preloaded pages
      * @throws Exception
@@ -796,7 +814,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Parse specified CMS URL.
-     * 
+     *
      * @param cmsCtx CMS context
      * @param requestPath request path
      * @param requestParameters request parameters
@@ -809,7 +827,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Adapt CMS path to web.
-     * 
+     *
      * @param cmsCtx CMS context
      * @param basePath CMS base path
      * @param requestPath request path
@@ -1017,7 +1035,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get default CMS item types.
-     * 
+     *
      * @return default CMS item types
      */
     private List<CMSItemType> getDefaultCMSItemTypes() {
@@ -1049,8 +1067,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCommentsHTMLContent(CMSServiceCtx cmsContext, Document document) throws CMSException {
+        List<Comment> comments = this.getNuxeoCommentsService().getDocumentComments(cmsContext, document);
+        CommentsFormatter formatter = new CommentsFormatter(comments);
+        return formatter.generateHTMLContent();
+    }
+
+
+    /**
      * Getter for cmsService.
-     * 
+     *
      * @return the cmsService
      */
     public CMSService getCmsService() {
@@ -1059,7 +1088,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Setter for cmsService.
-     * 
+     *
      * @param cmsService the cmsService to set
      */
     public void setCmsService(CMSService cmsService) {
@@ -1068,7 +1097,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for portletCtx.
-     * 
+     *
      * @return the portletCtx
      */
     public PortletContext getPortletCtx() {
@@ -1077,7 +1106,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Setter for portletCtx.
-     * 
+     *
      * @param portletCtx the portletCtx to set
      */
     public void setPortletCtx(PortletContext portletCtx) {
@@ -1086,7 +1115,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Setter for navigationItemAdapter.
-     * 
+     *
      * @param navigationItemAdapter the navigationItemAdapter to set
      */
     public void setNavigationItemAdapter(NavigationItemAdapter navigationItemAdapter) {
@@ -1095,7 +1124,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for parser.
-     * 
+     *
      * @return the parser
      */
     public XMLReader getParser() {
@@ -1104,7 +1133,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Setter for parser.
-     * 
+     *
      * @param parser the parser to set
      */
     public void setParser(XMLReader parser) {

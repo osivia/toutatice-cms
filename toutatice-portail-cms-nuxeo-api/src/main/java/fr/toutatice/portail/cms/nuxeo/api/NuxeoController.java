@@ -12,8 +12,6 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -47,17 +45,17 @@ import org.osivia.portal.core.security.CmsPermissionHelper;
 import org.osivia.portal.core.security.CmsPermissionHelper.Level;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
+/**
+ * Nuxeo controller.
+ */
 public class NuxeoController {
-
-    private static Log log = LogFactory.getLog(NuxeoController.class);
-
-
 
     PortletRequest request;
     PortletResponse response;
@@ -458,7 +456,6 @@ public class NuxeoController {
 
                 //TODO : factoriser dans NuxeoController
 
-                INuxeoService nuxeoService = (INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
                 this.navItem = getCMSService().getPortalNavigationItem(cmsReadNavContext,  this.getSpacePath(), this.getNavigationPath());
             }
 
@@ -515,10 +512,17 @@ public class NuxeoController {
 
 
 
-
-    public INuxeoService getNuxeoCMSService()		{
-        if( this.nuxeoCMSService == null) {
+    /**
+     * Get Nuxeo CMS service instance.
+     *
+     * @return Nuxeo CMS service instance
+     */
+    public INuxeoService getNuxeoCMSService() {
+        if (this.nuxeoCMSService == null) {
             this.nuxeoCMSService = (INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
+            if (this.nuxeoCMSService == null) {
+                this.nuxeoCMSService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+            }
         }
         return this.nuxeoCMSService;
     }
@@ -606,21 +610,10 @@ public class NuxeoController {
 
 
     public String transformHTMLContent(String htmlContent) throws Exception {
-
-
-        // Adaptation via le CMSCustomizer
-
-        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if( nuxeoService == null) {
-            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        }
-
-
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
         return  nuxeoService.getCMSCustomizer().transformHTMLContent(this.getCMSCtx(), htmlContent);
-
-
-
     }
+
 
     public String formatScopeList(String selectedScope) throws Exception {
 
@@ -877,16 +870,9 @@ public class NuxeoController {
 
 
     public Link getLink(Document doc, String displayContext, String linkContextualization) throws Exception 	{
-
-
         String localContextualization = linkContextualization;
 
-
-        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if( nuxeoService == null) {
-            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        }
-
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
 
         CMSServiceCtx handlerCtx = new  CMSServiceCtx();
         handlerCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(),
@@ -940,32 +926,48 @@ public class NuxeoController {
     }
 
 
-    public void insertContentMenuBarItems 	() throws Exception	{
-
-
-        // Adaptation via le CMSCustomizer
-
-        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if( nuxeoService == null) {
-            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        }
-
-
+    /**
+     * Insert content menubar items.
+     *
+     * @throws Exception
+     */
+    public void insertContentMenuBarItems() throws Exception {
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
         nuxeoService.getCMSCustomizer().formatContentMenuBar(this.getCMSCtx());
     }
 
 
     /**
+     * Get Nuxeo comments service instance.
+     *
+     * @return Nuxeo comments service instance
+     */
+    public INuxeoCommentsService getNuxeoCommentsService() {
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
+        return nuxeoService.getCMSCustomizer().getNuxeoCommentsService();
+    }
+
+
+    /**
+     * Get Nuxeo document comments HTML formatted content.
+     *
+     * @return comments HTML formatted content
+     * @throws CMSException
+     */
+    public String getCommentsHTMLContent() throws CMSException {
+        CMSServiceCtx cmsContext = this.getCMSCtx();
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
+        return nuxeoService.getCMSCustomizer().getCommentsHTMLContent(cmsContext, this.currentDoc);
+    }
+
+
+    /**
      * Get CMS item types.
-     * 
+     *
      * @return CMS item types
      */
     public Map<String, CMSItemType> getCMSItemTypes() {
-        INuxeoService nuxeoService = (INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if (nuxeoService == null) {
-            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        }
-        // Invoke via CMS customizer
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
         return nuxeoService.getCMSCustomizer().getCMSItemTypes();
     }
 
@@ -1139,7 +1141,7 @@ public class NuxeoController {
 
         // Preview mode
         EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
-        if (editionState != null && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
+        if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
             this.cmsCtx.setPreviewVersion("1");
         }
 
@@ -1159,17 +1161,8 @@ public class NuxeoController {
 
 
     public Map<String, String> getDocumentConfiguration(Document doc) throws Exception{
-
-        // Adaptation via le CMSCustomizer
-
-        INuxeoService nuxeoService =(INuxeoService) this.getPortletCtx().getAttribute("NuxeoService");
-        if( nuxeoService == null) {
-            nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        }
-
-
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
         return nuxeoService.getCMSCustomizer().getDocumentConfiguration(this.getCMSCtx(), doc);
-
     }
 
     public String getDebugInfos()	{
