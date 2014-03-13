@@ -35,17 +35,17 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
  * Menu bar associée aux contenus
- * 
+ *
  * Techniquement cette classe est intéressante car elle montre comment on peut
  * déployer à chaud des fonctionnalités partagées entre les portlets
- * 
+ *
  * Les fonctions du NuxeoController pourront donc etre basculées petit à petit
  * dans le CMSCustomizer
- * 
+ *
  * A PACKAGER pour la suite
- * 
+ *
  * @author jeanseb
- * 
+ *
  */
 public class MenuBarFormater {
 
@@ -86,7 +86,7 @@ public class MenuBarFormater {
 
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
-        if (cmsCtx.getDoc() == null && cmsCtx.getCreationPath() == null) {
+        if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
             return;
         }
 
@@ -129,7 +129,7 @@ public class MenuBarFormater {
 
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN || e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+            if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas
                 // les droits
             } else  {
@@ -142,7 +142,7 @@ public class MenuBarFormater {
 
     /**
      * Controls if live mode is associated with the current document
-     * 
+     *
      * @param cmsCtx
      * @return
      */
@@ -152,7 +152,7 @@ public class MenuBarFormater {
 
         EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
 
-        if( curState != null && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION))  {
+        if( (curState != null) && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION))  {
 
             String docPath = (((Document) (cmsCtx.getDoc())).getPath());
 
@@ -167,7 +167,7 @@ public class MenuBarFormater {
 
     /**
      * Add Nuxeo administration link item.
-     * 
+     *
      * @param menuBar current menu bar to edit
      * @param url Nuxeo document URL
      * @throws Exception
@@ -183,7 +183,7 @@ public class MenuBarFormater {
 
     /**
      * Get optional Nuxeo administration link.
-     * 
+     *
      * @param cmsCtx CMS service context
      * @param menuBar current menu to edit
      * @throws Exception
@@ -249,7 +249,7 @@ public class MenuBarFormater {
 
 
             PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
-            
+
             if( this.isInLiveMode(cmsCtx))  {
                 newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, path);
             }   else    {
@@ -267,8 +267,8 @@ public class MenuBarFormater {
             this.addChangeModeLinkItem(menuBar, url, newState, publishUrl);
 
             CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
-            
-            if( cmsItemType != null && cmsItemType.isFolderish()){
+
+            if( (cmsItemType != null) && cmsItemType.isFolderish()){
 
                 // Live content browser popup link
                 Map<String, String> properties = new HashMap<String, String>(1);
@@ -309,7 +309,7 @@ public class MenuBarFormater {
                 Document doc = (Document) cmsCtx.getDoc();
 
                 CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
-                if (cmsItemType != null && cmsItemType.isSupportsPortalForms()) {
+                if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
                     String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(
                             new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
 
@@ -346,7 +346,7 @@ public class MenuBarFormater {
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
 
-        if (creationPath != null || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+        if ((creationPath != null) || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
 
             Map<String, String> subTypes = pubInfos.getSubTypes();
 
@@ -359,11 +359,11 @@ public class MenuBarFormater {
 
                     // is this type managed at portal level ?
 
-                    if (containerDocType.getPortalFormSubTypes().contains(docType) && (creationType == null || creationType.equals(docType))) {
+                    if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
 
                         CMSItemType docTypeDef = managedTypes.get(docType);
 
-                        if (docTypeDef != null && docTypeDef.isSupportsPortalForms()) {
+                        if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
 
                             SubType subType = new SubType();
 
@@ -499,7 +499,7 @@ public class MenuBarFormater {
         if (pubInfos.isDeletableByUser()) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(doc.getType());
-                if (docTypeDef != null && docTypeDef.isSupportsPortalForms()) {
+                if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
                     // Lien de création
                     String fancyID = "_PORTAL_DELETE";
 
@@ -545,7 +545,7 @@ public class MenuBarFormater {
     /**
      * Affiche un lien de recontextualisation explicite
      * (dans une page existante ou une nouvelle page)
-     * 
+     *
      * @param cmsCtx
      * @param menuBar
      * @throws Exception
@@ -570,7 +570,7 @@ public class MenuBarFormater {
         Page page = this.getPortalUrlFactory().getPortalCMSContextualizedPage(portalCtx, (((Document) (cmsCtx.getDoc())).getPath()));
 
         // Si la page correspond à la page courant on affiche pas le lien
-        if (page == null || !page.getId().equals(currentPage.getId())) {
+        if ((page == null) || !page.getId().equals(currentPage.getId())) {
 
             // On détermine le nom de l'espace
 
@@ -650,7 +650,7 @@ public class MenuBarFormater {
 
     /**
      * Méthode utilitaire permettant de récupérer un item par son "type".
-     * 
+     *
      * @param type (permalien, ...)
      * @param request requête permettant d'accéder à la MenuBar
      * @return l'item de "type" donné

@@ -16,6 +16,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -140,7 +141,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Serve ressource exception.
-     * 
+     *
      * @param resourceRequest resource request
      * @param resourceResponse resource response
      * @param e Nuxeo exception
@@ -212,6 +213,8 @@ public class CMSPortlet extends GenericPortlet {
 
                 String docPath = resourceRequest.getParameter("docPath");
                 String fieldName = resourceRequest.getParameter("fieldName");
+                String filename = resourceRequest.getParameter("filename");
+
 
                 NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
 
@@ -226,9 +229,13 @@ public class CMSPortlet extends GenericPortlet {
 
                 CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
 
+                if (StringUtils.isEmpty(filename)) {
+                    filename = content.getName();
+                }
+
                 // Les headers doivent être positionnées avant la réponse
                 resourceResponse.setContentType(content.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
                 ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(),
                         4096);
@@ -378,7 +385,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Create Nuxeo controller.
-     * 
+     *
      * @param portletRequest portlet request
      * @param portletResponse portlet response
      * @return Nuxeo controller

@@ -57,6 +57,9 @@ public class AddCommentCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
+        // Document service
+        DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
+        // Request
         OperationRequest request;
 
         // Thread post attributes
@@ -109,11 +112,13 @@ public class AddCommentCommand implements INuxeoCommand {
         // Thread post attachment
         if (attachment != null) {
             String commentId = IOUtils.toString(blob.getStream(), CharEncoding.UTF_8);
-            DocumentService rs = nuxeoSession.getAdapter(DocumentService.class);
             DocRef docRef = new DocRef(commentId);
             Blob fileBlob = new FileBlob(attachment);
-            rs.setBlob(docRef, fileBlob, "post:fileContent");
+            documentService.setBlob(docRef, fileBlob, "post:fileContent");
         }
+
+        // Update thread
+        documentService.setProperty(this.document, "dc:title", this.document.getTitle());
 
         return blob;
     }
