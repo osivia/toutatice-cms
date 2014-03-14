@@ -22,6 +22,11 @@ import javax.portlet.RenderResponse;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 
+/**
+ * The Class PortletErrorHandler.
+ * 
+ * Displays nuxeo user messages
+ */
 public  class PortletErrorHandler {
 	
 	public static void handleGenericErrors (RenderResponse response, NuxeoException e) throws PortletException	 {

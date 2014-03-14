@@ -34,7 +34,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Get CMS player
-     * On détermine le player associé à chaque item.
+     * the player is deduced from the current document but also from the context
      *
      * @param ctx CMS context
      * @return CMS player portlet with properties
@@ -46,17 +46,16 @@ public interface INuxeoCustomizer {
     /**
      * Create custom link.
      *
-     * Ici, on intercepte le traitement CMS lors de la génération du lien
+     * custom links are useful during the cms link generation when the cms controller phase
+     * is not adapted 
+     * 
+     *  Use cases :
+     * - the action for the link is powered directly by the portlet (for example, the download of an attached file)
+     * - the link opens an external application
      *
-     * C'est le cas pour :
-     * - des traitements directements pris en charge par le portlet (ex : download d'un document)
-     * - des liens s'ouvrant dans des fenetres externes
-     *
-     * Si le lien n'est pas pris en charge ici, il sera intégré au traitement CMS
-     * standard, cad
-     * - lien de type /cms/
-     * - passage par la couche player au moment du click sur le lien
-     *
+     * if this method returns null, then the standard cms pattern will be applied
+     * 
+     * 
      * displayContext : menu, download, fileExplorer, permlink ...
      *
      * @param ctx CMS context

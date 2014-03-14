@@ -18,30 +18,61 @@ package fr.toutatice.portail.cms.nuxeo.api;
 
 import org.osivia.portal.core.cms.CMSException;
 
+/**
+ * The Class NuxeoException.
+ * @author Jean-Sébastien Steux
+ */
 public class NuxeoException extends RuntimeException {
 	
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	
+	/** The error code. */
 	private int errorCode = -1;
 	
+	/**
+	 * Gets the error code.
+	 *
+	 * @return the error code
+	 */
 	public int getErrorCode() {
 		return errorCode;
 	}
 
+	/** The error forbidden. */
 	public static int ERROR_FORBIDDEN = 1;
+	
+	/** The error unavailaible. */
 	public static int ERROR_UNAVAILAIBLE = 2;
+	
+	/** The error notfound. */
 	public static int ERROR_NOTFOUND = 3;
 	
 
+	/**
+	 * Instantiates a new nuxeo exception.
+	 *
+	 * @param cause the cause
+	 */
 	public NuxeoException(Throwable cause) {
 	        super(cause);
 	    }
 	
+	/**
+	 * Instantiates a new nuxeo exception.
+	 *
+	 * @param errorCode the error code
+	 */
 	public NuxeoException(int errorCode) {
         this.errorCode = errorCode;
     }	
 	
+	/**
+	 * Rethrow cms exception.
+	 *
+	 * @throws CMSException the CMS exception
+	 */
 	public void rethrowCMSException () throws CMSException {
 		
 		if( getCause() != null)

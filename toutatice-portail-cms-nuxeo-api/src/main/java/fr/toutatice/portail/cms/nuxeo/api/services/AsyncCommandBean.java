@@ -18,12 +18,23 @@ package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
 
-
+/**
+ * The Class AsyncCommandBean.
+ */
 public class AsyncCommandBean {
 	
+	/** The ctx. */
 	private NuxeoCommandContext ctx;
+	
+	/** The command. */
 	private INuxeoServiceCommand command;
 	
+	/**
+	 * Instantiates a new async command bean.
+	 *
+	 * @param origCtx the orig ctx
+	 * @param cmd the cmd
+	 */
 	protected AsyncCommandBean( NuxeoCommandContext origCtx, INuxeoServiceCommand cmd){
 		
 		ctx = new NuxeoCommandContext(origCtx.getPortletContext());
@@ -34,23 +45,39 @@ public class AsyncCommandBean {
 	}
 	
 	
-	 public NuxeoCommandContext getCtx() {
+	 /**
+ 	 * Gets the ctx.
+ 	 *
+ 	 * @return the ctx
+ 	 */
+ 	public NuxeoCommandContext getCtx() {
 		return ctx;
 	}
 
 
+	/**
+	 * Gets the command.
+	 *
+	 * @return the command
+	 */
 	public INuxeoServiceCommand getCommand() {
 		return command;
 	}
 
 
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	 public int hashCode()	{
 		 int hc =  command.getId().hashCode();
 		 return hc;
 	 }
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	public boolean equals(Object obj) {
 		 if(this == obj) {
 		     return true;

@@ -23,32 +23,68 @@ import java.util.Map;
 import org.osivia.portal.api.cache.services.IGlobalParameters;
 
 
+/**
+ * The Class VocabularyEntry.
+ * 
+ * Bean designed for nuxeo vocabulary representation
+ */
 public class VocabularyEntry implements IGlobalParameters {
 	
+	/** The id. */
 	private String id;
+	
+	/** The label. */
 	private String label;
 	
+	/**
+	 * Gets the label.
+	 *
+	 * @return the label
+	 */
 	public String getLabel() {
 		return label;
 	}
 
+	/** The children. */
 	private Map<String, VocabularyEntry> children;
 	
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public String getId() {
 		return id;
 	}
 
 
+	/**
+	 * Gets the children.
+	 *
+	 * @return the children
+	 */
 	public Map<String, VocabularyEntry> getChildren() {
 		return children;
 	}
 
 	
+	/**
+	 * Gets the child.
+	 *
+	 * @param childId the child id
+	 * @return the child
+	 */
 	public  VocabularyEntry getChild( String childId) {
 		return getChildren().get(childId);
 	}
 
 
+	/**
+	 * Instantiates a new vocabulary entry.
+	 *
+	 * @param id the id
+	 * @param label the label
+	 */
 	public VocabularyEntry(String id, String label) {
 		super();
 		this.id = id;

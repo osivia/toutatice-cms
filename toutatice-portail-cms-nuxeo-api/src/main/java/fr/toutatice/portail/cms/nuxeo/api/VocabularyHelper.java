@@ -35,8 +35,22 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
+
+/**
+ * The Class VocabularyHelper.
+ * 
+ * Useful utilities for manipulating nuxeo vocabularies
+ */
 public class VocabularyHelper {
 
+    /**
+     * Call the vocabulary commands
+     *
+     * @param ctx the ctx
+     * @param vocabularyNames the vocabulary names
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
     private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames) throws Exception {
 
         NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
@@ -52,6 +66,15 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Gets the vocabulary label.
+     *
+     * @param ctx the ctx
+     * @param vocabularyName the vocabulary name
+     * @param key the key
+     * @return the vocabulary label
+     * @throws Exception the exception
+     */
     public static String getVocabularyLabel(NuxeoController ctx, String vocabularyName, String key) throws Exception {
 
         List<String> vocabs = new ArrayList<String>();
@@ -62,6 +85,15 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Gets the vocabulary label.
+     *
+     * @param ctx the ctx
+     * @param vocabs the vocabs
+     * @param key the key
+     * @return the vocabulary label
+     * @throws Exception the exception
+     */
     public static String getVocabularyLabel(NuxeoController ctx, List<String> vocabs, String key) throws Exception {
 
         VocabularyEntry vocab = callCommand(ctx, vocabs);
@@ -77,6 +109,15 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabularyName the vocabulary name
+     * @param key the key
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, String key) throws Exception {
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
@@ -84,6 +125,15 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabs the vocabs
+     * @param key the key
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, String key) throws Exception {
         VocabularyEntry vocab = callCommand(ctx, vocabs);
         return vocab;
@@ -92,6 +142,14 @@ public class VocabularyHelper {
     
     
     
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabularyName the vocabulary name
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName) throws Exception {
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
@@ -99,6 +157,14 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabs the vocabs
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs) throws Exception {
         VocabularyEntry vocab = callCommand(ctx, vocabs);
         return vocab;
@@ -107,14 +173,23 @@ public class VocabularyHelper {
     
     
 
+    /**
+     * The Class VocabularyLoaderCommand.
+     */
     private static class VocabularyLoaderCommand implements INuxeoCommand {
 
-        // private static Log logger = LogFactory.getLog(VocabularyLoader.class);
 
+        /** The vocab names. */
         List<String> vocabNames;
 
+        /** The string vocab names. */
         String stringVocabNames = null;
 
+        /**
+         * Instantiates a new vocabulary loader command.
+         *
+         * @param vocabNames the vocab names
+         */
         public VocabularyLoaderCommand(List<String> vocabNames) {
             super();
             this.vocabNames = vocabNames;
@@ -128,6 +203,14 @@ public class VocabularyHelper {
         }
 
 
+        /**
+         * Parses the vocabularies.
+         *
+         * @param parent the parent
+         * @param vocabulariesObj the vocabularies obj
+         * @return the vocabulary entry
+         * @throws UnsupportedEncodingException the unsupported encoding exception
+         */
         private VocabularyEntry parseVocabularies(VocabularyEntry parent, JSONArray vocabulariesObj) throws UnsupportedEncodingException {
             VocabularyEntry entry = null;
 
@@ -161,6 +244,13 @@ public class VocabularyHelper {
         }
 
 
+        /**
+         * Checks if is a child.
+         *
+         * @param id the id
+         * @param vocab the vocab
+         * @return true, if is a child
+         */
         public boolean isAChild(String id, VocabularyEntry vocab) {
             for (Map.Entry<String, VocabularyEntry> entry : vocab.getChildren().entrySet()) {
                 VocabularyEntry child = entry.getValue();
@@ -180,10 +270,8 @@ public class VocabularyHelper {
          * Permet de filtrer les élements qui sont également des enfants
          * 
          * (cas des hiérarchies décrites dans un seul vocabulaire . ex : niveaux d'enseignements)
-         * 
-         * @param id
-         * @param vocab
-         * @return
+         *
+         * @param vocab the vocab
          */
 
         public void removeDuplicatedChilds(VocabularyEntry vocab) {
@@ -205,6 +293,9 @@ public class VocabularyHelper {
         }
 
 
+        /* (non-Javadoc)
+         * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
+         */
         public Object execute(Session nuxeoSession) throws Exception {
 
 
@@ -225,6 +316,9 @@ public class VocabularyHelper {
         }
 
 
+        /* (non-Javadoc)
+         * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
+         */
         public String getId() {
             return stringVocabNames;
         }

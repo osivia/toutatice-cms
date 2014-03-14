@@ -22,14 +22,42 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 
+
+/**
+ * The Interface INuxeoService.
+ */
 public interface INuxeoService extends ICMSIntegration {
 	
+	/**
+	 * Creates the user session.
+	 *
+	 * @param userId the user id
+	 * @return the session
+	 * @throws Exception the exception
+	 */
 	public Session createUserSession(String userId) throws Exception ;
 	
+	/**
+	 * Register cms customizer.
+	 *
+	 * @param linkManager the link manager
+	 */
 	public void registerCMSCustomizer( INuxeoCustomizer linkManager);
 
+	/**
+	 * Gets the CMS customizer.
+	 *
+	 * @return the CMS customizer
+	 */
 	public INuxeoCustomizer getCMSCustomizer();
 	
+	/**
+	 * Start nuxeo command service.
+	 *
+	 * @param portletCtx the portlet ctx
+	 * @return the i nuxeo command service
+	 * @throws Exception the exception
+	 */
 	public INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx)  throws Exception ;
 
 }

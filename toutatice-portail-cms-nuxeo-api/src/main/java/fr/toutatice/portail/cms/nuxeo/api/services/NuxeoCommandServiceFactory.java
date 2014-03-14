@@ -21,17 +21,20 @@ import javax.portlet.PortletContext;
 
 
 /**
- * Permet d'executer les commandes Nuxeo
+ * Nuxeo portlet engine factory
  * 
- * Atention, dans le portlet la méthode destroy doit être surchargée pour nettoyer
- * les ressources du service (et notamment stopper les threads)
- * 
- * 
- * @author jeanseb
+ * Must be called during initialization dans destroy.
  *
+ * @author jeanseb
  */
 public class NuxeoCommandServiceFactory {
 	
+	/**
+	 * Start nuxeo command service.
+	 *
+	 * @param ctx the ctx
+	 * @throws Exception the exception
+	 */
 	public static void startNuxeoCommandService(PortletContext ctx) throws Exception	{
     	
     	INuxeoService nuxeoService = (INuxeoService)ctx.getAttribute("NuxeoService");
@@ -40,11 +43,24 @@ public class NuxeoCommandServiceFactory {
 	}
 	
 	
+	/**
+	 * Gets the nuxeo command service.
+	 *
+	 * @param ctx the ctx
+	 * @return the nuxeo command service
+	 * @throws Exception the exception
+	 */
 	public static INuxeoCommandService getNuxeoCommandService(PortletContext ctx) throws Exception	{
 		INuxeoCommandService nuxeoService =  (INuxeoCommandService) ctx.getAttribute("nuxeoCommandService");
 		return nuxeoService;
 	}
 	
+	/**
+	 * Stop nuxeo command service.
+	 *
+	 * @param ctx the ctx
+	 * @throws Exception the exception
+	 */
 	public static void stopNuxeoCommandService(PortletContext ctx) throws Exception	{
 		INuxeoCommandService nuxeoService =  (INuxeoCommandService) ctx.getAttribute("nuxeoCommandService");
 		

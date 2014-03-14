@@ -24,15 +24,30 @@ import org.osivia.portal.api.page.PageParametersEncoder;
 
 
 
-
-
+/**
+ * The Class PageSelectors.
+ * 
+ * Provides facilites to manipulates public selector parameters (advanced search)
+ */
 public class PageSelectors {
 	
+	/**
+	 * Encode properties.
+	 *
+	 * @param props the props
+	 * @return the string
+	 */
 	public static String encodeProperties( Map <String, List<String>> props)	{
 		
 		return PageParametersEncoder.encodeProperties(props);
 	}
 	
+	/**
+	 * Decode properties.
+	 *
+	 * @param urlParams the url params
+	 * @return the map
+	 */
 	public static Map<String,List<String>> decodeProperties( String urlParams)	{
 		return PageParametersEncoder.decodeProperties(urlParams);
 		

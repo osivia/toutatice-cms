@@ -18,13 +18,28 @@ package fr.toutatice.portail.cms.nuxeo.api;
 
 import org.nuxeo.ecm.automation.client.Session;
 
+
+/**
+ * The Interface INuxeoCommand.
+ */
+
 public interface INuxeoCommand {
 	
+	/**
+	 * Execute the current command
+	 *
+	 * @param nuxeoSession the nuxeo session
+	 * @return the object
+	 * @throws Exception the exception
+	 */
 	public Object execute( Session nuxeoSession) throws Exception;
 	
-	// Permet d'identifier de manière unique la commande
-	// notamment pour la gestion de cache
-	// doit inclure les paramètres spécifiques à la commande
 	
+	/**
+	 * Gets the id.
+	 * Id must be unique for cache purpose
+	 *
+	 * @return the id
+	 */
 	public String getId();
 }
