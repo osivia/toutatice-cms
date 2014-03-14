@@ -1177,7 +1177,7 @@ public class NuxeoController {
     }
 
     /**
-     * Execute nuxeo command.
+     * Execute a nuxeo command.
      *
      * @param command the command
      * @return the object returned by the command
