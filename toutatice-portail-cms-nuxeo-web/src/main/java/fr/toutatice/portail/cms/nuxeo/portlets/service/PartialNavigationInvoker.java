@@ -18,6 +18,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.Map;
 
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.core.cms.NavigationItem;
 
@@ -41,7 +42,7 @@ public class PartialNavigationInvoker implements IServiceInvoker {
 	}
 
 
-	public Object invoke() throws Exception {
+	public Object invoke() throws PortalException {
 		return navItems;
 	}
 

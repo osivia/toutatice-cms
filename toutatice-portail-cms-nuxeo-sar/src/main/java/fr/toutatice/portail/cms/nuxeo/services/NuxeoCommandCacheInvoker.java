@@ -31,6 +31,7 @@ import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
@@ -85,7 +86,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
     
 
 
-	public Object invoke() throws Exception {
+	public Object invoke() throws PortalException {
+	    
+	    try    {
 
 		Object res = null;
 
@@ -331,6 +334,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		}
 
 		return res;
+	    } catch( Exception e)  {
+	        throw PortalException.wrap(e);
+	    }
 	}
 
 }

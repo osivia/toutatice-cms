@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 
 /**
@@ -38,7 +39,7 @@ public class ResolvablePublishSpace implements IServiceInvoker {
 
 
 
-	public Object invoke() throws Exception {
+	public Object invoke() throws PortalException {
 		return new Boolean(resolvable);
 	}
 
