@@ -69,6 +69,16 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 					request.setAttribute("pictureDocument", doc);
 					request.setAttribute("ctx", ctx);
 					request.setAttribute("propertyName", window.getProperty("osivia.propertyName"));
+					
+	                   
+                    String targetPath =  window.getProperty("osivia.targetPath");
+                    
+                    if( targetPath != null)    {
+                        targetPath = ctx.getComputedPath(targetPath);
+                        request.setAttribute("targetPath", targetPath);
+                    }
+                    
+
 
 					emptyContent = false;
 				}
@@ -82,47 +92,81 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 	}
 
 	public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response)
-			throws Exception {
+            throws Exception {
 
-		String nuxeoPath = window.getProperty("osivia.cms.uri");
-		if (nuxeoPath == null)
-			nuxeoPath = "";
-		request.setAttribute("nuxeoPath", nuxeoPath);
+        String nuxeoPath = window.getProperty("osivia.nuxeoPath");
+        if (nuxeoPath == null)
+            nuxeoPath = "";
+        request.setAttribute("nuxeoPath", nuxeoPath);
 
-		String propertyName = window.getProperty("osivia.propertyName");
-		if (propertyName == null)
-			propertyName = "";
-		request.setAttribute("propertyName", propertyName);
+        String propertyName = window.getProperty("osivia.propertyName");
+        if (propertyName == null)
+            propertyName = "";
+        request.setAttribute("propertyName", propertyName);
 
 
-		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
-		if (displayLiveVersion == null)
-			displayLiveVersion = "";
-		request.setAttribute("displayLiveVersion", displayLiveVersion);
+          // 2.0.22 : ajout scope 
+        String scope = window.getProperty("osivia.cms.forcePublicationScope");
+        request.setAttribute("scope", scope);
 
-	}
+        
+        String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+        if (displayLiveVersion == null)
+            displayLiveVersion = "";
+        request.setAttribute("displayLiveVersion", displayLiveVersion);
+        
+        
+        String targetPath = window.getProperty("osivia.targetPath");
+        if (targetPath == null)
+            targetPath = "";
+        request.setAttribute("targetPath", targetPath);
 
-	public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res)
-			throws Exception {
 
-		if (request.getParameter("nuxeoPath") != null)
-			window.setProperty("osivia.cms.uri", request.getParameter("nuxeoPath"));
+    }
 
-		if (request.getParameter("propertyName") != null) {
-			if (request.getParameter("propertyName").length() > 0)
-				window.setProperty("osivia.propertyName", request.getParameter("propertyName"));
-			else if (window.getProperty("osivia.propertyName") != null)
-				window.setProperty("osivia.propertyName", null);
-		}
+    public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res)
+            throws Exception {
 
-		if (request.getParameter("displayLiveVersion") != null) {
 
-			if ("1".equals(request.getParameter("displayLiveVersion")))
-				window.setProperty("osivia.cms.displayLiveVersion", "1");
-			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);
-		}
+        if (request.getParameter("nuxeoPath") != null) {
+                if (request.getParameter("nuxeoPath").length() > 0)
+                    window.setProperty("osivia.nuxeoPath", request.getParameter("nuxeoPath"));
+                else if (window.getProperty("osivia.nuxeoPath") != null)
+                    window.setProperty("osivia.nuxeoPath", null);
+        }   
+        
+        
+        if (request.getParameter("propertyName") != null) {
+            if (request.getParameter("propertyName").length() > 0)
+                window.setProperty("osivia.propertyName", request.getParameter("propertyName"));
+            else if (window.getProperty("osivia.propertyName") != null)
+                window.setProperty("osivia.propertyName", null);
+        }
+        
+          // 2.0.22 : ajout scope 
+        if (request.getParameter("scope") != null && request.getParameter("scope").length() > 0)    {
+            window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
+        }
+        else if (window.getProperty("osivia.cms.forcePublicationScope") != null)
+            window.setProperty("osivia.cms.forcePublicationScope", null);
 
-	}
+
+        if (request.getParameter("displayLiveVersion") != null) {
+
+            if ("1".equals(request.getParameter("displayLiveVersion")))
+                window.setProperty("osivia.cms.displayLiveVersion", "1");
+            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
+                window.setProperty("osivia.cms.displayLiveVersion", null);
+        }
+
+        
+          if (request.getParameter("targetPath") != null) {
+              if (request.getParameter("targetPath").length() > 0)
+                  window.setProperty("osivia.targetPath", request.getParameter("targetPath"));
+              else if (window.getProperty("osivia.targetPath") != null)
+                  window.setProperty("osivia.targetPath", null);
+      }   
+
+    }
 
 }

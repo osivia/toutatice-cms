@@ -267,6 +267,9 @@ public class CMSService implements ICMSService {
                     } else if ("superuser_context".equals(scope)) {
                         commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                         commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                    } else if("superuser_no_cache".equals(scope)){
+                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
                     } else {
                         commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
                         commandCtx.setAuthProfil(this.getProfilManager().getProfil(scope));
@@ -505,24 +508,46 @@ public class CMSService implements ICMSService {
         return cmsContent;
     }
 
+
+
     private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
         CMSBinaryContent content = null;
         String savedScope = cmsCtx.getScope();
         try {
-            /*
-             * Si un scope a été posé dans la portlet appelant la resource,
+            /* Si un scope a été posé dans la portlet appelant la resource,
              * on applique celui-ci.
              */
-            if (StringUtils.isNotEmpty(savedScope)) {
+            if(StringUtils.isNotEmpty(savedScope)){
                 cmsCtx.setForcePublicationInfosScope(savedScope);
             }
-            CMSItem document = this.fetchContent(cmsCtx, docPath);
-
+            CMSItem document = fetchContent(cmsCtx, docPath);
+            
             if (document != null) {
 
                 cmsCtx.setScope("superuser_context");
+                
+                FileContentCommand cmd = new FileContentCommand((Document) document.getNativeItem(), fieldName);
+                
+                if( cmsCtx.isStreamingSupport())    {
+                    PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
+                    if(map != null && !map.isEmpty()){
+                        String size = map.getString("length");
 
-                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new FileContentCommand((Document) document.getNativeItem(), fieldName)));
+                    
+                        if(size != null && Long.parseLong(size)> 1000000L) {
+                            //Activation du mode streaming
+                            cmd.setStreamingSupport(true);
+                            // Pas de cache en mode streaming                   
+                            cmsCtx.setScope("superuser_no_cache");
+                        }
+                    }
+                }
+
+                content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx,
+                        (cmd));
+                
+                
+                
             }
         } finally {
             cmsCtx.setScope(savedScope);
@@ -530,7 +555,7 @@ public class CMSService implements ICMSService {
         return content;
     }
 
-
+    
     public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
         try {

@@ -60,6 +60,10 @@
 			
 			<label>Nom vocabulaire niveau 1</label><br/>
 			<input type="text" name="vocabName1" value="${vocabName1}" size="40"/><br/>
+			
+            
+            <label style="display: inline-block; padding-left: 20px;}">Préselection</label><input type="text" name="preselect1" value="${preselect1}" size="20"/><br/>
+			
 						
 			<label>Nom vocabulaire niveau 2 (facultatif)</label><br/>
 			<input id="vocab2" type="text" name="vocabName2" value="${vocabName2}" size="40"/><br/>

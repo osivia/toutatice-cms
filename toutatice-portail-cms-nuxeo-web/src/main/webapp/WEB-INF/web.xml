@@ -23,5 +23,16 @@
 		<url-pattern>/thumbnail/*</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+        <servlet-name>StreamingServlet</servlet-name>
+        <servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.streaming.StreamingServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>StreamingServlet</servlet-name>
+        <url-pattern>/streaming/*</url-pattern>
+    </servlet-mapping>
+	
+	
 </web-app>
 

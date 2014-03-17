@@ -22,6 +22,14 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+        <dependency>
+            <groupId>toutatice-portail.cms</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
+            <version>${project.version}</version>
+                <scope>provided</scope>         
+        </dependency>
+		
 
 
 		<dependency>

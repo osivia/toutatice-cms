@@ -19,8 +19,10 @@ package fr.toutatice.portail.cms.nuxeo.services;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,6 +48,7 @@ import org.osivia.portal.api.status.UnavailableServer;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
@@ -282,14 +285,26 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		Object response =  this.getServiceCache(ctx).getCache(cacheInfos);
 
 
-		if(portalRequest != null)	{
-			// v2.0.8 : dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos
-			// pour éviter les classcast exception  entre 2 webapps
-			if( (response instanceof Document) || (response instanceof CMSPublicationInfos)) {
-                portalRequest.setAttribute(requestKey, response);
+		if(portalRequest != null) {
+            
+            // prise en compte des éléments de navigation
+            boolean navigationItems = false;
+            
+            if (response instanceof HashMap) {
+                    navigationItems = true;
+                    for (Object item : ((Map) response).values()) {
+                        if (!(item instanceof NavigationItem))
+                            navigationItems = false;
+
+                    }
             }
-		}
-		return response;
+            
+            //  dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos 
+            // pour éviter les classcast exception  entre 2 webapps
+            if( response instanceof Document || response instanceof CMSPublicationInfos || navigationItems)
+                portalRequest.setAttribute(requestKey, response);
+        }
+        return response;
 
 	}
 

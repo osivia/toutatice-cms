@@ -68,6 +68,12 @@ public class NuxeoException extends RuntimeException {
         this.errorCode = errorCode;
     }	
 	
+    public NuxeoException(int errorCode, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
+	
+	
 	/**
 	 * Rethrow cms exception.
 	 *

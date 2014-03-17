@@ -22,6 +22,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 
@@ -52,6 +53,7 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.security.CmsPermissionHelper;
@@ -180,6 +182,22 @@ public class NuxeoController {
     /** The cms ctx. */
     CMSServiceCtx cmsCtx;
 
+    boolean reloadResource = false;
+    
+
+    boolean streamingSupport = false;
+    
+
+    
+    
+    public boolean isStreamingSupport() {
+        return streamingSupport;
+    }
+    
+    public void setStreamingSupport(boolean streamingSupport) {
+        this.streamingSupport = streamingSupport;
+    }
+    
 
     /** The current doc. */
     Document currentDoc;
@@ -684,12 +702,33 @@ public class NuxeoController {
             }
 
             this.contentPath = request.getParameter("osivia.cms.contentPath");
+            
+            
+            
+            if( request instanceof ResourceRequest){
+                if( request.getParameter("refresh") != null){
+                    reloadResource = true;
+                }
+            }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    
+    public NuxeoException adaptNuxeoException (CMSException e )    {
+
+        if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+            throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+        }
+        if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+            throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
+        }
+        throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
+
+    }
+    
 
     /**
      * Sets the doc type to create.
@@ -1005,10 +1044,15 @@ public class NuxeoController {
             resourceURL.setParameter("docPath", doc.getPath());
             resourceURL.setParameter("fieldName", fieldName);
 
-            // v1.0.19 :
+
             if (this.isDisplayingLiveVersion()) {
                 resourceURL.setParameter("displayLiveVersion", "1");
 
+            }
+            
+            // Force to reload resources
+            if( PageProperties.getProperties().isRefreshingPage())  {
+                    resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
             }
 
             // ne marche pas : bug JBP
@@ -1056,6 +1100,11 @@ public class NuxeoController {
             resourceURL.setParameter("displayLiveVersion", "1");
         }
 
+        //  Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+        
         // ne marche pas : bug JBP
         // resourceURL.setCacheability(ResourceURL.PORTLET);
         resourceURL.setCacheability(ResourceURL.PAGE);
@@ -1063,7 +1112,7 @@ public class NuxeoController {
         return resourceURL.toString();
     }
 
-    // v1.0.27
+
     /**
      * Creates the attached blob link.
      *
@@ -1079,6 +1128,12 @@ public class NuxeoController {
         resourceURL.setParameter("type", "blob");
         resourceURL.setParameter("blobIndex", blobIndex);
         resourceURL.setParameter("docPath", path);
+        
+        //  Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+
 
         // ne marche pas : bug JBP
         // resourceURL.setCacheability(ResourceURL.PORTLET);
@@ -1107,6 +1162,13 @@ public class NuxeoController {
             resourceURL.setParameter("displayLiveVersion", "1");
         }
 
+        
+        //  Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+
+        
         // ne marche pas : bug JBP
         // resourceURL.setCacheability(ResourceURL.PORTLET);
         resourceURL.setCacheability(ResourceURL.PAGE);
@@ -1129,6 +1191,12 @@ public class NuxeoController {
         resourceURL.setParameter("type", "picture");
         resourceURL.setParameter("content", content);
         resourceURL.setParameter("docPath", path);
+        
+        //  Force to reload resources
+        if( PageProperties.getProperties().isRefreshingPage())  {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+        }
+
 
         // ne marche pas : bug JBP
         // resourceURL.setCacheability(ResourceURL.PORTLET);
@@ -1440,14 +1508,7 @@ public class NuxeoController {
             return (Document) cmsItem.getNativeItem();
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-            }
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-            }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
-
+            throw adaptNuxeoException(e);
         }
     }
 
@@ -1478,14 +1539,7 @@ public class NuxeoController {
             return pubInfos.getLiveId();
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-            }
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-            }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
-
+            throw adaptNuxeoException(e);
         }
     }
 
@@ -1539,13 +1593,7 @@ public class NuxeoController {
             return getCMSService().getBinaryContent(this.getCMSCtx(), "attachedPicture", docPath, pictureIndex);
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-            }
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-            }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+            throw adaptNuxeoException(e);
 
         }
     }
@@ -1566,14 +1614,7 @@ public class NuxeoController {
             return getCMSService().getBinaryContent(this.getCMSCtx(), "picture", docPath, content);
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-            }
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-            }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
-
+            throw adaptNuxeoException(e);
         }
     }
 
@@ -1591,14 +1632,7 @@ public class NuxeoController {
             return getCMSService().getBinaryContent(this.getCMSCtx(), "file", docPath, fieldName);
 
         } catch (CMSException e) {
-            if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-            }
-            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-            }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
-
+            throw adaptNuxeoException(e);
         }
     }
 
@@ -1658,7 +1692,10 @@ public class NuxeoController {
             this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
         }
 
-
+        if( reloadResource)
+            cmsCtx.setForceReload(true);
+        cmsCtx.setStreamingSupport(streamingSupport);       
+        
         return this.cmsCtx;
     }
 

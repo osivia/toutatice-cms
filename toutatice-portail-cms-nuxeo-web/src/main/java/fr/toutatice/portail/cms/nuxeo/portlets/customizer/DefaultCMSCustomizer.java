@@ -302,7 +302,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, ZoomFragmentModule.DESC, new ZoomFragmentModule(), ZoomFragmentModule.JSP,
                 ZoomFragmentModule.ADMIN_JSP));
         fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
-        fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
+        fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "document-picture"));
         fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
         fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "space-menubar", "empty"));
         return fragmentTypes;

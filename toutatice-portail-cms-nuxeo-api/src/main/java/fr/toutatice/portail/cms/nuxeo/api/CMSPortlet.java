@@ -52,7 +52,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Gets the nuxeo navigation service.
-     *
+     * 
      * @return the nuxeo navigation service
      * @throws Exception the exception
      */
@@ -69,7 +69,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Performs nuxeo service initialization.
-     *
+     * 
      * @param config the config
      * @throws PortletException the portlet exception
      * @see javax.portlet.GenericPortlet#init(javax.portlet.PortletConfig)
@@ -92,7 +92,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Performs nuxeo service .
-     *
+     * 
      * @see javax.portlet.GenericPortlet#destroy()
      */
     @Override
@@ -111,7 +111,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Format resource last modified.
-     *
+     * 
      * @return the string
      */
     public String formatResourceLastModified() {
@@ -124,26 +124,27 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Checks if resource has expired.
-     *
-     * @param sOriginalDate the  original date
+     * 
+     * @param sOriginalDate the original date
      * @param resourceResponse the resource response
      * @return true, if is resource expired
      */
-    public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse) {
+
+    public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse, String refreshMs) {
 
         boolean isExpired = true;
 
         if (sOriginalDate != null) {
 
-            // Modif-MIGRATION-begin
-            /* SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH); */
             SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
-            // Modif-MIGRATION-begin
+
             inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
             try {
                 Date originalDate = inputFormater.parse(sOriginalDate);
-                if (System.currentTimeMillis() < (originalDate.getTime() + (resourceResponse.getCacheControl().getExpirationTime() * 1000))) {
-                    isExpired = false;
+                if (System.currentTimeMillis() < originalDate.getTime() + resourceResponse.getCacheControl().getExpirationTime() * 1000) {
+
+                    if (refreshMs == null || Long.parseLong(refreshMs) < originalDate.getTime())
+                        isExpired = false;
                 }
             } catch (Exception e) {
 
@@ -153,9 +154,10 @@ public class CMSPortlet extends GenericPortlet {
         return isExpired;
     }
 
+
     /**
      * Serve resource by cache.
-     *
+     * 
      * @param resourceRequest the resource request
      * @param resourceResponse the resource response
      * @return true, if successful
@@ -169,7 +171,7 @@ public class CMSPortlet extends GenericPortlet {
             sOriginalDate = resourceRequest.getProperty("If-Modified-Since");
         }
 
-        if (!this.isResourceExpired(sOriginalDate, resourceResponse)) { // validation
+        if (!isResourceExpired(sOriginalDate, resourceResponse, resourceRequest.getParameter("refresh"))) { // validation
             // request
 
             // resourceResponse.setContentLength(0);
@@ -189,7 +191,7 @@ public class CMSPortlet extends GenericPortlet {
 
     /**
      * Serve ressource exception.
-     *
+     * 
      * @param resourceRequest resource request
      * @param resourceResponse resource response
      * @param e Nuxeo exception
@@ -221,7 +223,9 @@ public class CMSPortlet extends GenericPortlet {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.portlet.GenericPortlet#serveResource(javax.portlet.ResourceRequest, javax.portlet.ResourceResponse)
      */
     @Override
@@ -262,16 +266,26 @@ public class CMSPortlet extends GenericPortlet {
 
                 NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
 
-                // V 1.0.19
-                // V2 suppression a valider
-                /*
-                 * if( !"1".equals( resourceRequest.getParameter("displayLiveVersion"))) {
-                 * Document doc = fetchLinkedDocument(ctx, docPath);
-                 * docPath = doc.getPath();
-                 * }
-                 */
+                ctx.setStreamingSupport(true);
+
 
                 CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
+                
+                // Redirection vers portlet de streaming
+                if( content.getStream() != null)  {
+                    
+                    resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
+                            String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+                    String idLargeFile = "" + System.currentTimeMillis();
+                    
+
+                    CMSBinaryContent.largeFile.put(idLargeFile, content);
+                    
+                    resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);
+                    resourceResponse.getPortletOutputStream().close();  
+                    
+                    return;
+                 }                
 
                 if (StringUtils.isEmpty(filename)) {
                     filename = content.getName();

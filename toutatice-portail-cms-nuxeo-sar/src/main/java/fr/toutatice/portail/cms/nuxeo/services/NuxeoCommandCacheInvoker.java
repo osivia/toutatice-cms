@@ -37,6 +37,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
+import org.osivia.portal.core.cms.ILongLiveSessionResult;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -276,36 +277,48 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 				IProfilerService profiler = Locator.findMBean(IProfilerService.class, "osivia:service=ProfilerService");
 
 				
-                // Moyenne flottante sur les publishInfosCommands
+				
+				
+	            
                 
+                // Moyenne flottante sur les publishInfosCommands
+            
                 String statusErrorMsg = null;
+                
 
-                if (!error && cmdId.startsWith("PublishInfosCommand")) {
-                    synchronized (AVERAGE_LIST) {
+                
+                String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
+                
+                if( maxAverageDelay != null){
+                    long maxDelay = Long.parseLong(maxAverageDelay);
 
-                        while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
-                            AVERAGE_LIST.remove(0);
-                        }
-                        
-                        // On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
-                        // Le but est de determiner des mini-pics
-                        
-                        if( elapsedTime < 1000)
-                            AVERAGE_LIST.add((int) elapsedTime);
+                    if (!error && command.getId().startsWith("PublishInfosCommand")) {
+                        synchronized (AVERAGE_LIST) {
 
-                        if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
-
-                            long total = 0l;
-                            for (int i = 0; i < AVERAGE_LIST.size(); i++) {
-                                total += AVERAGE_LIST.get(i);
+                            while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
+                                AVERAGE_LIST.remove(0);
                             }
+                            
+                            // On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
+                            // Le but est de determiner des mini-pics
+                            
+                            if( elapsedTime < 1000)
+                                AVERAGE_LIST.add((int) elapsedTime);
 
-                            long moyenne = total / AVERAGE_LIST.size();
+                            if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
 
-                            if (moyenne > 150) {
-                                statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
+                                long total = 0l;
+                                for (int i = 0; i < AVERAGE_LIST.size(); i++) {
+                                    total += AVERAGE_LIST.get(i);
+                                }
 
-                                AVERAGE_LIST.clear();
+                                long moyenne = total / AVERAGE_LIST.size();
+
+                                if (moyenne > maxDelay) {
+                                    statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
+
+                                    AVERAGE_LIST.clear();
+                                }
                             }
                         }
                     }
@@ -317,10 +330,19 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                 }
 
 
+
+			
+
 				profiler.logEvent("NUXEO", name, elapsedTime, error);				
 			}
 
 		} finally {
+		    
+	           if( res instanceof ILongLiveSessionResult){
+	                if(( ( ILongLiveSessionResult) res).getLongLiveSession() == nuxeoSession)
+	                    recyclableSession = false;
+	            }
+
 
 			// recycle the session
             if (sessionsProfils != null && recyclableSession == true)
