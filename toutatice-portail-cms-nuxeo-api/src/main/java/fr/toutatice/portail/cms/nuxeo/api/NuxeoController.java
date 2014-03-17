@@ -1283,7 +1283,7 @@ public class NuxeoController {
             if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
                 throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
             }
-            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
+            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e);
 
         }
 

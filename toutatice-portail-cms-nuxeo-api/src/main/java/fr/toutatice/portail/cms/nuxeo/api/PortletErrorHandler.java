@@ -42,6 +42,11 @@ public  class PortletErrorHandler {
 			response.getWriter().close();
 
 		} else if (e.getErrorCode() == NuxeoException.ERROR_UNAVAILAIBLE)	{
+		    
+		    if( e.getCause() != null){
+		        throw new PortletException( e);
+		    }
+		    
 			response.setContentType("text/html");
 			response.getWriter().print("<h2>Service indisponible</h2>");
 			response.getWriter().close();
