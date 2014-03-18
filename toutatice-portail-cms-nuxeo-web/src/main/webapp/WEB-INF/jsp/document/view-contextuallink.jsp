@@ -1,5 +1,6 @@
 
 
+<%@page import="org.osivia.portal.api.Constants"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
 <%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
@@ -27,7 +28,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 
 
-List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
 MenubarItem item = new MenubarItem("OPENLINK", "Ouvrir le lien", MenubarItem.ORDER_PORTLET_SPECIFIC, ctx.getLink(doc, "player").getUrl(), null, "portlet-menuitem-contextuallink", "_new");
 item.setAjaxDisabled(true);

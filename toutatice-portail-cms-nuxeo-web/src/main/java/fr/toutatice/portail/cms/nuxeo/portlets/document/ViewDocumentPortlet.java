@@ -36,6 +36,7 @@ import net.sf.json.JSONArray;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -115,7 +116,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
             PortalWindow window = WindowFactory.getWindow(req);
-            window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
+            window.setProperty(Constants.WINDOW_PROP_URI, req.getParameter("nuxeoPath"));
 
 
             if ("1".equals(req.getParameter("onlyDescription"))) {
@@ -153,7 +154,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             NuxeoController ctrl = new NuxeoController(req, res, this.getPortletContext());
             PortalWindow window = WindowFactory.getWindow(req);
-            String nuxeoPath = window.getProperty("osivia.cms.uri");
+            String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
             if (nuxeoPath == null) {
                 // WIndow parameter (back-office)
                 nuxeoPath = window.getProperty("osivia.nuxeoPath");
@@ -199,7 +200,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         PortletRequestDispatcher rd = null;
 
         PortalWindow window = WindowFactory.getWindow(req);
-        String nuxeoPath = window.getProperty("osivia.cms.uri");
+        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
         if (nuxeoPath == null) {
             nuxeoPath = "";
         }
@@ -244,7 +245,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
             // path parameter
-            nuxeoPath = window.getProperty("osivia.cms.uri");
+            nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
 
 
             if (nuxeoPath != null) {

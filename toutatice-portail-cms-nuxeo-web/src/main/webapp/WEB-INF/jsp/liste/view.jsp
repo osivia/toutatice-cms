@@ -1,3 +1,4 @@
+<%@page import="org.osivia.portal.api.Constants"%>
 <%@page import="org.apache.commons.lang.StringEscapeUtils"%>
 <%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
@@ -43,7 +44,7 @@ String selectors = (String) renderRequest.getAttribute("selectors")	;
 // Menu items can be customized
 // by jsp duplication
 
-List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
 if( permaLinkURL != null)	{
 	MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC, permaLinkURL, null, "portlet-menuitem-permalink", null);

@@ -35,6 +35,7 @@ import javax.portlet.WindowState;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
@@ -151,7 +152,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL
-                req.setAttribute("osivia.unsetMaxMode", "true");
+                req.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
+
 
             }
 

@@ -35,6 +35,7 @@ import javax.portlet.WindowState;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
@@ -178,7 +179,7 @@ public class DateSelectorPortlet extends CMSPortlet {
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
-        request.setAttribute("osivia.unsetMaxMode", "true");
+        request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
     }
 
 
@@ -203,7 +204,8 @@ public class DateSelectorPortlet extends CMSPortlet {
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
-        request.setAttribute("osivia.unsetMaxMode", "true");
+        request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
+
     }
 
 

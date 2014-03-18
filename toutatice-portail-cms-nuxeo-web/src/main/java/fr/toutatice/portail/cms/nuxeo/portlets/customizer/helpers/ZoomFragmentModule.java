@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -60,7 +61,7 @@ public class ZoomFragmentModule implements IFragmentModule {
 
     public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
-        String nuxeoPath = window.getProperty("osivia.cms.uri");
+        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
         ;
         boolean emptyContent = true;
 
@@ -135,7 +136,7 @@ public class ZoomFragmentModule implements IFragmentModule {
 
     public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
-        String nuxeoPath = window.getProperty("osivia.cms.uri");
+        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
         if (nuxeoPath == null)
             nuxeoPath = "";
         request.setAttribute("nuxeoPath", nuxeoPath);
@@ -159,7 +160,7 @@ public class ZoomFragmentModule implements IFragmentModule {
     public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
 
         if (request.getParameter("nuxeoPath") != null)
-            window.setProperty("osivia.cms.uri", request.getParameter("nuxeoPath"));
+            window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
 
         // if (request.getParameter("propertyName") != null) {
         // if (request.getParameter("propertyName").length() > 0)

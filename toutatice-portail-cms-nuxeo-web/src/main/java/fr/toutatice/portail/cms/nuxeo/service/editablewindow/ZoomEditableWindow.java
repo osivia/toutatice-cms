@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
 
@@ -48,7 +49,7 @@ public class ZoomEditableWindow extends EditableWindow {
 	public Map<String, String> fillProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
 
         Map<String, String> propsFilled = super.fillGenericProps(doc, fragment, modeEditionPage);
-        propsFilled.put("osivia.cms.uri", doc.getPath());
+        propsFilled.put(Constants.WINDOW_PROP_URI, doc.getPath());
 
         PropertyMap mapListe = EditableWindowHelper.findSchemaByRefURI(doc, ZOOM_SCHEMA, fragment.getString("uri"));
 

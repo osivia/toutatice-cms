@@ -37,6 +37,7 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -77,7 +78,7 @@ public class SearchPortlet extends CMSPortlet {
 		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
 			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty("osivia.cms.uri", req.getParameter("nuxeoPath"));
+			window.setProperty(Constants.WINDOW_PROP_URI, req.getParameter("nuxeoPath"));
 
 			
 			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
@@ -106,7 +107,7 @@ public class SearchPortlet extends CMSPortlet {
 		PortletRequestDispatcher rd = null;
 
 		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty("osivia.cms.uri");
+		String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
 		if (nuxeoPath == null)
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
@@ -132,7 +133,7 @@ public class SearchPortlet extends CMSPortlet {
 
 		PortalWindow window = WindowFactory.getWindow(request);
 
-		String	nuxeoPath =  window.getProperty("osivia.cms.uri");
+		String	nuxeoPath =  window.getProperty(Constants.WINDOW_PROP_URI);
 
 			
 		String keywords = request.getParameter("keywords");
@@ -192,7 +193,7 @@ public class SearchPortlet extends CMSPortlet {
 				// Url d'appel de la recherche
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
-				windowProperties.put("osivia.cms.uri", ctx.getComputedPath(nuxeoPath));
+				windowProperties.put(Constants.WINDOW_PROP_URI, ctx.getComputedPath(nuxeoPath));
 				windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
 				windowProperties.put("osivia.hideSearchSubForm", "1");
 				

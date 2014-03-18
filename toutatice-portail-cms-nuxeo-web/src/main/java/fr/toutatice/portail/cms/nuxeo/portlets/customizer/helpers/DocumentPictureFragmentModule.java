@@ -24,6 +24,7 @@ import javax.portlet.RenderResponse;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -40,7 +41,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
 		String nuxeoPath = null;
 		boolean emptyContent = true;
 
-		nuxeoPath = window.getProperty("osivia.cms.uri");
+		nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
 
 		if (StringUtils.isNotEmpty(nuxeoPath)) {
 

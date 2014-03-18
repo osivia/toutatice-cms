@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 
 /**
  * 
@@ -42,7 +43,7 @@ public class HtmlEditableWindow extends EditableWindow {
 	public Map<String, String> fillProps(Document doc, PropertyMap fragment, Boolean modeEditionPage) {
 
         Map<String, String> propsFilled = super.fillGenericProps(doc, fragment, modeEditionPage);
-        propsFilled.put("osivia.cms.uri", doc.getPath());
+        propsFilled.put(Constants.WINDOW_PROP_URI, doc.getPath());
 
         return propsFilled;
 	}

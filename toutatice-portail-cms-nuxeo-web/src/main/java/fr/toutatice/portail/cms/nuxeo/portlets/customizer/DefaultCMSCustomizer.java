@@ -564,7 +564,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.scope", ctx.getScope());
         windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-        windowProperties.put("osivia.cms.uri", uid);
+        windowProperties.put(Constants.WINDOW_PROP_URI, uid);
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
@@ -801,7 +801,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
         this.getMenuBarFormater().formatContentMenuBar(ctx);
-        List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute("osivia.menuBar");
+        List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
         this.adaptContentMenuBar(ctx, menuBar);
     }
 

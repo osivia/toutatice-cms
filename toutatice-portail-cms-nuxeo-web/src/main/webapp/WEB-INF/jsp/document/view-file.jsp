@@ -27,7 +27,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx");
 Document doc = (Document) renderRequest.getAttribute("doc");
 String lien = ctx.getLink(doc, CMSCustomizer.TEMPLATE_DOWNLOAD).getUrl();
 
-List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 menuBar.add(new MenubarItem("DOWNLOAD", "Télécharger...", 20, lien, null, "portlet-menuitem download", ""));
 
 PropertyMap map = doc.getProperties().getMap("file:content");

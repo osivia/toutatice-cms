@@ -35,6 +35,7 @@ import javax.portlet.WindowState;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -230,7 +231,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             String nuxeoPath = null;
 
             // portal window parameter (appels dynamiques depuis le portail)
-            nuxeoPath = window.getProperty("osivia.cms.uri");
+            nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
 
             if (nuxeoPath == null) {
                 nuxeoPath = window.getProperty("osivia.nuxeoPath");

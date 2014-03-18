@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
@@ -40,7 +41,7 @@ public class DefaultPlayer implements IPlayer {
     public CMSHandlerProperties play(CMSServiceCtx ctx, Document doc, Map<String, String> windowProperties) throws Exception {
         windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-        windowProperties.put("osivia.cms.uri", doc.getPath());
+        windowProperties.put(Constants.WINDOW_PROP_URI, doc.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
 //        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");

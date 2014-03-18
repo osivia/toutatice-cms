@@ -50,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -740,7 +741,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 /* Ajout d'un item de création si les paramètres sont renseignés */
 
-                String dynamicPath = window.getProperty("osivia.cms.uri");
+                String dynamicPath = window.getProperty(Constants.WINDOW_PROP_URI);
                 if (dynamicPath != null) {
                     dynamicPath = ctx.getLivePath(dynamicPath);
                     Document folder = ctx.fetchDocument(dynamicPath);
