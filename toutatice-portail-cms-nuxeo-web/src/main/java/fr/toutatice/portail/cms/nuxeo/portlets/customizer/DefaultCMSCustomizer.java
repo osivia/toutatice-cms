@@ -395,8 +395,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", "1");
         windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
 
@@ -423,8 +423,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", "1");
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
@@ -450,8 +450,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
         // JSS V3.1 : incompatible avec refresh CMS de type portlets
@@ -480,8 +480,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
@@ -509,8 +509,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
@@ -537,8 +537,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        //windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        //windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
@@ -561,8 +561,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public CMSHandlerProperties createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid) {
         Map<String, String> windowProperties = new HashMap<String, String>();
-        windowProperties.put("osivia.cms.scope", ctx.getScope());
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, uid);
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");

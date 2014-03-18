@@ -39,7 +39,7 @@ public class DefaultPlayer implements IPlayer {
     }
 
     public CMSHandlerProperties play(CMSServiceCtx ctx, Document doc, Map<String, String> windowProperties) throws Exception {
-        windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, doc.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");

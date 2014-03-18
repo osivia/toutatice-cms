@@ -111,7 +111,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
         request.setAttribute("scope", scope);
 
         
-        String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
         if (displayLiveVersion == null)
             displayLiveVersion = "";
         request.setAttribute("displayLiveVersion", displayLiveVersion);
@@ -155,9 +155,9 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
         if (request.getParameter("displayLiveVersion") != null) {
 
             if ("1".equals(request.getParameter("displayLiveVersion")))
-                window.setProperty("osivia.cms.displayLiveVersion", "1");
-            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-                window.setProperty("osivia.cms.displayLiveVersion", null);
+                window.setProperty(Constants.WINDOW_PROP_VERSION, "1");
+            else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
+                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
         }
 
         

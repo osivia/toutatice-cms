@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 
 /**
@@ -129,7 +130,7 @@ public abstract class EditableWindow {
         }
 
         if (modeEditionPage)
-            propsFilled.put("osivia.cms.displayLiveVersion", "1");
+            propsFilled.put(Constants.WINDOW_PROP_VERSION, "1");
 
         propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
         propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, fragment.getString("order"));

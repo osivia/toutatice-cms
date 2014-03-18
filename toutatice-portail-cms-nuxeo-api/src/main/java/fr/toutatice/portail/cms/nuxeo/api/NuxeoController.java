@@ -608,14 +608,14 @@ public class NuxeoController {
             this.portalCtx = new PortalControllerContext(portletCtx, request, response);
 
             // v2 : Ajout héritage
-            String scope = window.getProperty("osivia.cms.scope");
+            String scope = window.getProperty(Constants.WINDOW_PROP_SCOPE);
             if ("__inherited".equals(scope)) {
                 // scope de contextualisation
 
                 // TODO : ajouter sur le path
                 scope = request.getParameter("osivia.cms.pageScope");
                 if (scope == null) {
-                    scope = window.getPageProperty("osivia.cms.scope");
+                    scope = window.getPageProperty(Constants.WINDOW_PROP_SCOPE);
                 }
             }
 
@@ -628,7 +628,7 @@ public class NuxeoController {
                 if ("__inherited".equals(forcePublicationScope)) {
                     forcePublicationScope = request.getParameter("osivia.cms.pageScope");
                     if (forcePublicationScope == null) {
-                        forcePublicationScope = window.getPageProperty("osivia.cms.scope");
+                        forcePublicationScope = window.getPageProperty(Constants.WINDOW_PROP_SCOPE);
                     }
                 }
 
@@ -649,7 +649,7 @@ public class NuxeoController {
             }
 
 
-            String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+            String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
 
 
             if ("__inherited".equals(displayLiveVersion)) {
@@ -657,7 +657,7 @@ public class NuxeoController {
                 if (publishSpaceConfig != null) {
                     displayLiveVersion = publishSpaceConfig.getProperties().get("displayLiveVersion");
                 } else {
-                    displayLiveVersion = window.getPageProperty("osivia.cms.displayLiveVersion");
+                    displayLiveVersion = window.getPageProperty(Constants.WINDOW_PROP_VERSION);
                 }
             }
 

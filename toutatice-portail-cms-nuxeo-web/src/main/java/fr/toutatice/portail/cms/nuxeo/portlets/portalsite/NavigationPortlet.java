@@ -62,9 +62,9 @@ public class NavigationPortlet extends CMSPortlet {
 			window.setProperty(Constants.WINDOW_PROP_URI, req.getParameter("nuxeoPath"));
 
 			if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-				window.setProperty("osivia.cms.scope", req.getParameter("scope"));
-			else if (window.getProperty("osivia.cms.scope") != null)
-				window.setProperty("osivia.cms.scope", null);
+				window.setProperty(Constants.WINDOW_PROP_SCOPE, req.getParameter("scope"));
+			else if (window.getProperty(Constants.WINDOW_PROP_SCOPE) != null)
+				window.setProperty(Constants.WINDOW_PROP_SCOPE, null);
 			
 	
 				
@@ -96,7 +96,7 @@ public class NavigationPortlet extends CMSPortlet {
 		req.setAttribute("nuxeoPath", nuxeoPath);
 		
 		
-		String scope = window.getProperty("osivia.cms.scope");
+		String scope = window.getProperty(Constants.WINDOW_PROP_SCOPE);
 		req.setAttribute("scope", scope);
 		
 

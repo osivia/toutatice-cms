@@ -261,9 +261,9 @@ public class ViewListPortlet extends CMSPortlet {
 
 
             if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-                window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-            else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-                window.setProperty("osivia.cms.displayLiveVersion", null);
+                window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
+            else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
+                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
 
 
             if (req.getParameter("requestFilteringPolicy") != null && req.getParameter("requestFilteringPolicy").length() > 0)
@@ -278,9 +278,9 @@ public class ViewListPortlet extends CMSPortlet {
                 window.setProperty("osivia.cms.hideMetaDatas", null);
 
             if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-                window.setProperty("osivia.cms.scope", req.getParameter("scope"));
-            else if (window.getProperty("osivia.cms.scope") != null)
-                window.setProperty("osivia.cms.scope", null);
+                window.setProperty(Constants.WINDOW_PROP_SCOPE, req.getParameter("scope"));
+            else if (window.getProperty(Constants.WINDOW_PROP_SCOPE) != null)
+                window.setProperty(Constants.WINDOW_PROP_SCOPE, null);
 
             if (req.getParameter("style") != null && req.getParameter("style").length() > 0)
                 window.setProperty("osivia.cms.style", req.getParameter("style"));
@@ -401,7 +401,7 @@ public class ViewListPortlet extends CMSPortlet {
                 nuxeoRequest = "";
             req.setAttribute("nuxeoRequest", nuxeoRequest);
 
-            String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+            String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
             req.setAttribute("displayLiveVersion", displayLiveVersion);
 
 
@@ -426,7 +426,7 @@ public class ViewListPortlet extends CMSPortlet {
             req.setAttribute("changeDisplayMode", window.getProperty("osivia.changeDisplayMode"));
             req.setAttribute("forceContextualization", window.getProperty("osivia.forceContextualization"));
 
-            String scope = window.getProperty("osivia.cms.scope");
+            String scope = window.getProperty(Constants.WINDOW_PROP_SCOPE);
             req.setAttribute("scope", scope);
 
             /* Styles d'affichage */

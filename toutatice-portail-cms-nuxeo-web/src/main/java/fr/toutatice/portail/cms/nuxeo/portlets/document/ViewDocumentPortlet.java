@@ -133,9 +133,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
             if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0) {
-                window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-            } else if (window.getProperty("osivia.cms.displayLiveVersion") != null) {
-                window.setProperty("osivia.cms.displayLiveVersion", null);
+                window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
+            } else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null) {
+                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
             }
 
 
@@ -216,7 +216,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         req.setAttribute("showMetadatas", showMetadatas);
 
 
-        String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
         req.setAttribute("displayLiveVersion", displayLiveVersion);
 
         req.setAttribute("ctx", ctx);

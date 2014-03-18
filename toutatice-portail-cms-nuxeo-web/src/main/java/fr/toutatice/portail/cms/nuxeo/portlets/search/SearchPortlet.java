@@ -82,9 +82,9 @@ public class SearchPortlet extends CMSPortlet {
 
 			
 			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-				window.setProperty("osivia.cms.displayLiveVersion", req.getParameter("displayLiveVersion"));
-			else if (window.getProperty("osivia.cms.displayLiveVersion") != null)
-				window.setProperty("osivia.cms.displayLiveVersion", null);
+				window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
+			else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
+				window.setProperty(Constants.WINDOW_PROP_VERSION, null);
 			
 			res.setPortletMode(PortletMode.VIEW);
 			res.setWindowState(WindowState.NORMAL);
@@ -112,7 +112,7 @@ public class SearchPortlet extends CMSPortlet {
 			nuxeoPath = "";
 		req.setAttribute("nuxeoPath", nuxeoPath);
 		
-		String displayLiveVersion = window.getProperty("osivia.cms.displayLiveVersion");
+		String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
 		req.setAttribute("displayLiveVersion", displayLiveVersion);
 		
 		req.setAttribute("ctx", ctx);
@@ -194,7 +194,7 @@ public class SearchPortlet extends CMSPortlet {
 
 				Map<String, String> windowProperties = new HashMap<String, String>();
 				windowProperties.put(Constants.WINDOW_PROP_URI, ctx.getComputedPath(nuxeoPath));
-				windowProperties.put("osivia.cms.displayLiveVersion", ctx.getDisplayLiveVersion());
+				windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
 				windowProperties.put("osivia.hideSearchSubForm", "1");
 				
 				windowProperties.put("osivia.title", "Résultats de la recherche");
