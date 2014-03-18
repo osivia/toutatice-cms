@@ -1,4 +1,5 @@
 
+<%@page import="org.osivia.portal.api.Constants"%>
 <%@ page contentType="text/html; charset=UTF-8"%>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
@@ -23,8 +24,8 @@
 <portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx");
-Document doc = (Document) renderRequest.getAttribute("doc");
+NuxeoController ctx = (NuxeoController) request.getAttribute("ctx");
+Document doc = (Document) request.getAttribute("doc");
 String lien = ctx.getLink(doc, CMSCustomizer.TEMPLATE_DOWNLOAD).getUrl();
 
 List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
