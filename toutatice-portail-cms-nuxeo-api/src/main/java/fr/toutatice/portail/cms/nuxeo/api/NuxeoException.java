@@ -20,6 +20,9 @@ import org.osivia.portal.core.cms.CMSException;
 
 /**
  * The Class NuxeoException.
+ * 
+ * intended for portlet use
+ * 
  * @author Jean-Sébastien Steux
  */
 public class NuxeoException extends RuntimeException {

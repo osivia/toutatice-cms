@@ -51,7 +51,7 @@ public class VocabularyHelper {
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames) throws Exception {
+    private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames)  {
 
         NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
 
@@ -75,7 +75,7 @@ public class VocabularyHelper {
      * @return the vocabulary label
      * @throws Exception the exception
      */
-    public static String getVocabularyLabel(NuxeoController ctx, String vocabularyName, String key) throws Exception {
+    public static String getVocabularyLabel(NuxeoController ctx, String vocabularyName, String key)  {
 
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
@@ -94,7 +94,7 @@ public class VocabularyHelper {
      * @return the vocabulary label
      * @throws Exception the exception
      */
-    public static String getVocabularyLabel(NuxeoController ctx, List<String> vocabs, String key) throws Exception {
+    public static String getVocabularyLabel(NuxeoController ctx, List<String> vocabs, String key) {
 
         VocabularyEntry vocab = callCommand(ctx, vocabs);
 
@@ -118,7 +118,7 @@ public class VocabularyHelper {
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, String key) throws Exception {
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, String key)  {
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
         return getVocabularyEntry(ctx, vocabs, key);
@@ -134,7 +134,7 @@ public class VocabularyHelper {
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, String key) throws Exception {
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, String key)  {
         VocabularyEntry vocab = callCommand(ctx, vocabs);
         return vocab;
     }
@@ -150,7 +150,7 @@ public class VocabularyHelper {
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName) throws Exception {
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName)  {
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
         return getVocabularyEntry(ctx, vocabs);
@@ -165,7 +165,7 @@ public class VocabularyHelper {
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs) throws Exception {
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs)  {
         VocabularyEntry vocab = callCommand(ctx, vocabs);
         return vocab;
     }
