@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequestDispatcher;
@@ -37,10 +38,14 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.constants.InternationalizationConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -50,10 +55,14 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 
 /**
  * Portlet d'affichage d'un explorateur de fichiers.
- * 
+ *
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
+
 
     /**
      * Default constructor.
@@ -63,25 +72,41 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(PortletConfig config) throws PortletException {
+        super.init(config);
+
+        // Internationalization service initialization
+        IInternationalizationService internationalizationService = (IInternationalizationService) this.getPortletContext().getAttribute(
+                Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        if (internationalizationService == null) {
+            throw new PortletException("Internationalization service initialization error.");
+        }
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+    }
+
+
     // v2.1 WORKSPACE
     /**
      * {@inheritDoc}
      */
     @Override
     public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
-
         try {
+            // Bundle
+            Bundle bundle = this.bundleFactory.getBundle(resourceRequest.getLocale());
+
             // Redirection sur lien contextuel
-
             if ("fileActions".equals(resourceRequest.getParameter("type"))) {
-
                 NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
 
                 String id = resourceRequest.getResourceID();
 
                 CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(ctx.getCMSCtx(), id);
                 StringBuffer sb = new StringBuffer();
-
 
                 sb.append("<div>");
                 int nbItems = 0;
@@ -91,13 +116,14 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     CMSItemType cmsItemType = ctx.getCMSItemTypes().get(doc.getType());
 
-                    if (cmsItemType != null && cmsItemType.isSupportsPortalForms()) {
-
+                    if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
                         String refreshUrl = ctx.getPortalUrlFactory().getRefreshPageUrl(
                                 new PortalControllerContext(this.getPortletContext(), resourceRequest, resourceResponse));
 
-                        sb.append("<a class=\"fancyframe_refresh\" onClick=\"setCallbackParams(null, '" + refreshUrl + "')\" href=\""
-                                + ctx.getNuxeoPublicBaseUri() + "/nxpath/default" + pubInfos.getDocumentPath() + "@toutatice_edit\">Modifier</a>");
+                        String editLabel = bundle.getString(InternationalizationConstants.KEY_EDIT);
+                        sb.append("<a class=\"fancyframe_refresh\" onClick=\"setCallbackParams(null, '").append(refreshUrl).append("')\" href=\"")
+                                .append(ctx.getNuxeoPublicBaseUri()).append("/nxpath/default").append(pubInfos.getDocumentPath()).append("@toutatice_edit\">")
+                                .append(editLabel).append("</a>");
                         nbItems++;
 
                     }
@@ -105,8 +131,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                         sb.append("<br/>");
                     }
 
-                    sb.append("<a target=\"nuxeo\" href=\"" + ctx.getNuxeoPublicBaseUri() + "/nxdoc/default/" + pubInfos.getLiveId()
-                            + "/view_documents\">Editer dans Nuxeo</a>");
+                    String manageLabel = bundle.getString(InternationalizationConstants.KEY_MANAGE);
+                    sb.append("<a target=\"nuxeo\" href=\"").append(ctx.getNuxeoPublicBaseUri()).append("/nxdoc/default/").append(pubInfos.getLiveId())
+                            .append("/view_documents\">").append(manageLabel).append("</a>");
                     nbItems++;
 
                 }
@@ -120,11 +147,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                             new PortalControllerContext(this.getPortletContext(), resourceRequest, resourceResponse), pubInfos.getLiveId(),
                             pubInfos.getDocumentPath());
 
-
+                    String deleteLabel = bundle.getString(InternationalizationConstants.KEY_DELETE);
                     sb.append("<br/>");
-                    sb.append("<a class=\"fancybox_inline\" href=\"#" + deleteDivId + "\"");
-                    sb.append("onclick=\"document.getElementById('" + deleteFormId + "').action ='" + deleteURL + "';\">");
-                    sb.append("Supprimer</a>");
+                    sb.append("<a class=\"fancybox_inline\" href=\"#").append(deleteDivId).append("\" onclick=\"document.getElementById('")
+                            .append(deleteFormId).append("').action ='").append(deleteURL).append("';\">").append(deleteLabel).append("</a>");
                     nbItems++;
                 }
 
@@ -146,7 +172,6 @@ public class FileBrowserPortlet extends CMSPortlet {
             this.serveResourceException(resourceRequest, resourceResponse, e);
         } catch (Exception e) {
             throw new PortletException(e);
-
         }
     }
 
@@ -159,7 +184,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         logger.debug("processAction ");
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+        if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("modifierPrefs") != null)) {
 
             PortalWindow window = WindowFactory.getWindow(req);
             window.setProperty("osivia.nuxeoPath", req.getParameter("nuxeoPath"));
@@ -169,7 +194,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             res.setWindowState(WindowState.NORMAL);
         }
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
+        if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("annuler") != null)) {
 
             res.setPortletMode(PortletMode.VIEW);
             res.setWindowState(WindowState.NORMAL);
@@ -179,7 +204,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param req request
      * @param res response
      * @throws PortletException
@@ -240,7 +265,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             if (nuxeoPath != null) {
                 NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
-                
+
                 ctx.setDisplayLiveVersion("1");
 
 

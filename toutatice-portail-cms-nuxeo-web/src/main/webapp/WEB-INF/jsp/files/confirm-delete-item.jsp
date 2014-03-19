@@ -14,7 +14,7 @@ String deleteFormId = renderResponse.getNamespace() + "delete-file-form";
 	<form method="post" id="<%=deleteFormId%>" action="">
 		<div>Confirmez-vous la suppression de l'élément ?</div><br/>
 		<input type="submit" name="deleteFileItem"  value="Confirmer">
-		<input type="reset" name="noDeleteFileItem"  value="Annuler" onclick="alert(coucou);closeFancyBox();">
+		<input type="button" name="noDeleteFileItem"  value="Annuler" onclick="closeFancybox()">
 	</form>
 </div>
 
