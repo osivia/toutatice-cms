@@ -276,8 +276,7 @@ div.nuxeo-docview-short-view	{
 }
 
 div.nuxeo-docview-main {
-
-
+    overflow: hidden;
 }
 
 div.nuxeo-docview-metadata {
