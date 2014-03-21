@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.comments;
 
@@ -24,7 +24,10 @@ import java.util.Locale;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.HTMLConstants;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
@@ -149,7 +152,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
 
             // Content
             if (jsonObject.containsKey("content")) {
-                String content = jsonObject.getString("content");
+                String content = StringUtils.replace(jsonObject.getString("content"), SystemUtils.LINE_SEPARATOR, HTMLConstants.LINE_BREAK);
                 comment.setContent(content);
             }
 
