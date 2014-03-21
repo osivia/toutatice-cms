@@ -8,8 +8,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo display document</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo affichage document</display-name>
+            <display-name xml:lang="en">Nuxeo - Document display</display-name>
+            <display-name xml:lang="fr">Nuxeo - Affichage d'un document</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-viewDocumentPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-ref>
             <security-constraint>
@@ -28,8 +28,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo display fragment</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo affichage fragment</display-name>
+            <display-name xml:lang="en">Nuxeo - Fragment display</display-name>
+            <display-name xml:lang="fr">Nuxeo - Affichage d'un fragment</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-viewFragmentPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-ref>
             <security-constraint>
@@ -48,8 +48,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo display list</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo affichage liste</display-name>
+            <display-name xml:lang="en">Nuxeo - List display</display-name>
+            <display-name xml:lang="fr">Nuxeo - Affichage d'une liste</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-viewListPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-ref>
             <security-constraint>
@@ -68,8 +68,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo mini-portal navigation</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo navigation mini-portail</display-name>
+            <display-name xml:lang="en">Nuxeo - Mini-portal navigation</display-name>
+            <display-name xml:lang="fr">Nuxeo - Navigation mini-portail</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-portalSiteNavigationPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-portalSiteNavigationPortlet</portlet-ref>
             <security-constraint>
@@ -88,8 +88,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo publish menu</display-name>
-            <display-name xml:lang="fr">Toutatice - Nuxeo menu publication</display-name>
+            <display-name xml:lang="en">Nuxeo - Publication menu</display-name>
+            <display-name xml:lang="fr">Nuxeo - Menu de publication</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-publishMenuPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-ref>
             <security-constraint>
@@ -108,8 +108,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo file browser</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo navigateur fichiers</display-name>
+            <display-name xml:lang="en">Nuxeo - File browser</display-name>
+            <display-name xml:lang="fr">Nuxeo - Explorateur de fichiers</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-fileBrowserPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-ref>
             <security-constraint>
@@ -128,8 +128,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo search</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo recherche</display-name>
+            <display-name xml:lang="en">Nuxeo - Search</display-name>
+            <display-name xml:lang="fr">Nuxeo - Recherche</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-searchPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-searchPortlet</portlet-ref>
             <security-constraint>
@@ -148,8 +148,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo keyword selector</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo selecteur mots-cles</display-name>
+            <display-name xml:lang="en">Nuxeo - Keyword selector</display-name>
+            <display-name xml:lang="fr">Nuxeo - Sélecteur par mots clés</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-keywordsSelectorPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-keywordsSelectorPortlet</portlet-ref>
             <security-constraint>
@@ -168,8 +168,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo date selector</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo selecteur dates</display-name>
+            <display-name xml:lang="en">Nuxeo - Date selector</display-name>
+            <display-name xml:lang="fr">Nuxeo - Sélecteur par dates</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-dateSelectorPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-ref>
             <security-constraint>
@@ -188,8 +188,8 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">OpenToutatice - Nuxeo vocabulary selector</display-name>
-            <display-name xml:lang="fr">OpenToutatice - Nuxeo selecteur vocabulaire</display-name>
+            <display-name xml:lang="en">Nuxeo - Vocabulary selector</display-name>
+            <display-name xml:lang="fr">Nuxeo - Sélecteur par vocabulaires</display-name>
             <instance-id>toutatice-portail-cms-nuxeo-vocabSelectorPortletInstance</instance-id>
             <portlet-ref>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-ref>
             <security-constraint>
