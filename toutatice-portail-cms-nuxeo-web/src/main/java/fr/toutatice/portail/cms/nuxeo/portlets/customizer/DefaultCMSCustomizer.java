@@ -641,7 +641,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSPlayer);
             Documents configs = null;
             try {
-                configs = (Documents) this.cmsService.executeNuxeoCommand(ctx, command);
+                
+               configs = WebConfigurationHelper.executeWebConfigCmd(ctx, cmsService, command);
+                
             } catch (Exception e) {
                 // Can't get confs
             }
@@ -984,7 +986,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if (domainPath != null) {
             // get configs installed in nuxeo
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.extraRequestFilter);
-            Documents configs = (Documents) this.cmsService.executeNuxeoCommand(ctx, command);
+            Documents configs = null;
+            
+            configs = WebConfigurationHelper.executeWebConfigCmd(ctx, cmsService, command);
 
 
             if (configs.size() > 0) {
