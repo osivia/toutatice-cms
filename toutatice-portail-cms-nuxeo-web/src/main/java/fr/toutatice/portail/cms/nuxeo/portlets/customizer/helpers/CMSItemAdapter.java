@@ -104,8 +104,11 @@ public class CMSItemAdapter {
 
         if (domainPath != null) {
             // get configs installed in nuxeo
+
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSNavigationAdapter);
-            Documents configs = (Documents) CMSService.executeNuxeoCommand(ctx, command);
+            
+
+            Documents configs = WebConfigurationHelper.executeWebConfigCmd(ctx, CMSService, command);
 
             if (configs.size() > 0) {
                 for (Document config : configs) {

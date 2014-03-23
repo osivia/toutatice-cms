@@ -162,7 +162,7 @@ public class MenuBarFormater {
      * @param cmsCtx
      * @return
      */
-    protected boolean isInLiveMode(CMSServiceCtx cmsCtx){
+    protected boolean isInLiveMode(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
 
         boolean liveMode = false;
 
@@ -170,16 +170,34 @@ public class MenuBarFormater {
 
         if( (curState != null) && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION))  {
 
-            String docPath = (((Document) (cmsCtx.getDoc())).getPath());
 
-            if( curState.getDocPath().equals(docPath)) {
+            if( curState.getDocPath().equals(pubInfos.getDocumentPath())) {
                 liveMode = true;
             }
         }
-
-
         return liveMode;
     }
+    
+    
+    protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
+        
+        if( pubInfos.isPublished() && !isInLiveMode(cmsCtx, pubInfos)){
+            String docPath = (((Document) (cmsCtx.getDoc())).getPath());
+            
+            // Pour un proxy distant, le documentPath du pubInfos est égal au docPath
+            if( pubInfos.getDocumentPath().equals(docPath))
+                return true;
+        }
+   
+        
+        return false;
+    }
+  
+    
+    
+    
+    
+    
 
     /**
      * Add Nuxeo administration link item.
@@ -212,6 +230,13 @@ public class MenuBarFormater {
 
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+        
+        
+        // Do not delete remote proxy
+        if( isRemoteProxy(cmsCtx, pubInfos))
+            return;
+        
+        
         if (pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
             String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + pubInfos.getLiveId() + "/view_documents";
             this.addAdministrationLinkItem(menuBar, url);
@@ -222,22 +247,15 @@ public class MenuBarFormater {
 
 
 
-    protected void addChangeModeLinkItem(List<MenubarItem> menuBar, String url, EditionState newState, String publishUrl) throws Exception {
+    protected void addChangeModeLinkItem(List<MenubarItem> menuBar, String url, EditionState newState) throws Exception {
         if(EditionState.CONTRIBUTION_MODE_EDITION.equals(newState.getContributionMode()))   {
             MenubarItem liveView = new MenubarItem(null, "Voir la version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "live", "");
             liveView.setAjaxDisabled(true);
             liveView.setDropdownItem(true);
             menuBar.add(liveView);
         }   else    {
-            MenubarItem liveIndicator = new MenubarItem(null, "Version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null,
-                    "portlet-menuitem-edition live", null);
-            liveIndicator.setStateItem(true);
-            menuBar.add(liveIndicator);
 
-            MenubarItem publishAction = new MenubarItem(null, "Publier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishUrl, null, "publish-action", "");
-            publishAction.setAjaxDisabled(true);
-            publishAction.setDropdownItem(true);
-            menuBar.add(publishAction);
+
 
             MenubarItem publishedView = new MenubarItem(null, "Voir la version publiée", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "published", "");
             publishedView.setAjaxDisabled(true);
@@ -246,6 +264,8 @@ public class MenuBarFormater {
         }
     }
 
+    
+    
 
     protected void getChangeModeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
 
@@ -265,22 +285,46 @@ public class MenuBarFormater {
 
 
             PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+            
 
-            if( this.isInLiveMode(cmsCtx))  {
+
+            if( this.isInLiveMode(cmsCtx, pubInfos))  {
                 newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, path);
+                
+                MenubarItem liveIndicator = new MenubarItem(null, "Version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null,
+                        "portlet-menuitem-edition live", null);
+                liveIndicator.setStateItem(true);
+                menuBar.add(liveIndicator);                
             }   else    {
                 // Forget old state
                 this.getContributionService().removeWindowEditionState(portalCtx) ;
+
             }
 
 
-
-
+            // Do not insert any action for remote proxy
+            if( isRemoteProxy(cmsCtx, pubInfos))
+                return;
+           
+            /* Publish link */
             String url = this.getContributionService().getChangeEditionStateUrl( portalCtx, newState);
+            if(! EditionState.CONTRIBUTION_MODE_EDITION.equals(newState.getContributionMode()))   {
+                String publishUrl = this.getContributionService().getPublishContributionUrl(portalCtx, pubInfos.getDocumentPath());
+            
 
-            String publishUrl = this.getContributionService().getPublishContributionUrl(portalCtx, pubInfos.getDocumentPath());
+                MenubarItem publishAction = new MenubarItem(null, "Publier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishUrl, null, "publish-action", "");
+                publishAction.setAjaxDisabled(true);
+                publishAction.setDropdownItem(true);
+                menuBar.add(publishAction);
+            }
+            
+            // No publication yet ! can't change edition mode
+            if( this.isInLiveMode(cmsCtx, pubInfos) && !pubInfos.isPublished()) 
+                return;
 
-            this.addChangeModeLinkItem(menuBar, url, newState, publishUrl);
+            
+            /* Change mode link */
+            this.addChangeModeLinkItem(menuBar, url, newState);
 
             CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
@@ -321,7 +365,7 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
 
         if (pubInfos.isEditableByUser()) {
-            if ((pubInfos.isLiveSpace() || (this.isInLiveMode(cmsCtx))) && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            if ((pubInfos.isLiveSpace() || (this.isInLiveMode(cmsCtx, pubInfos))) && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 Document doc = (Document) cmsCtx.getDoc();
 
                 CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
@@ -331,7 +375,7 @@ public class MenuBarFormater {
 
                     String onClick = "setCallbackParams(null, '" + callBackURL + "')";
 
-                    this.addEditLinkItem(menuBar, onClick, NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + doc.getPath()
+                    this.addEditLinkItem(menuBar, onClick, NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
                             + "@toutatice_edit");
                 }
             }
@@ -511,8 +555,13 @@ public class MenuBarFormater {
 
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, doc.getPath());
+        
+        // Do not delete remote proxy
+        if( isRemoteProxy(cmsCtx, pubInfos))
+            return;
+        
 
-        if (pubInfos.isDeletableByUser()) {
+        if (pubInfos.isDeletableByUser() && !isRemoteProxy(cmsCtx, pubInfos)) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(doc.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {

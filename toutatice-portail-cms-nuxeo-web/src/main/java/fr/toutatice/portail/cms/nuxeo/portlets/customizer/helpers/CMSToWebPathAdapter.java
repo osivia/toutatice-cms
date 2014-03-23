@@ -41,13 +41,14 @@ public class CMSToWebPathAdapter {
         if (domainPath != null) {
             // get configs installed in nuxeo
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSToWebPathAdapter);
+             
             Documents configs = null;
             try {
-                configs = (Documents) cmsService.executeNuxeoCommand(cmsCtx, command);
-            } catch (Exception e) {
+                 configs = WebConfigurationHelper.executeWebConfigCmd(cmsCtx, cmsService, command);
+           } catch (Exception e) {
                 // Can't get confs
             }
-
+            
             // Try to translate virtual urls defined in Nuxeo
             if (configs != null && configs.size() > 0) {
                 int i = 0;

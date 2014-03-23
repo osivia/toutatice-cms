@@ -21,10 +21,13 @@ import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectContainer;
 import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
+
+import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
  * Assistant pour gestion des objets de conf.
@@ -73,4 +76,29 @@ public class WebConfigurationHelper {
 
         return domainPath;
     }
+    
+    /**
+     * Execute web config cmd (as superuser)
+     * 
+     * @param ctx
+     * @param cmsService
+     * @param cmd
+     * @return
+     * @throws Exception
+     */
+    public static Documents executeWebConfigCmd ( CMSServiceCtx ctx, CMSService cmsService, WebConfiguratinQueryCommand cmd) throws Exception{
+        String savedScope = ctx.getScope();
+        ctx.setScope("superuser_context");   
+        
+        Documents configs = null;
+
+        try {
+            configs = (Documents)  cmsService.executeNuxeoCommand(ctx, cmd);
+        } finally   {
+            ctx.setScope(savedScope);
+        }
+        
+        return configs;
+    }
+
 }
