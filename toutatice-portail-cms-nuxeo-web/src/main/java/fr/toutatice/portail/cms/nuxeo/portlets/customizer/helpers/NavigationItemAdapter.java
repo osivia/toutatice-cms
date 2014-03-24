@@ -132,6 +132,7 @@ public class NavigationItemAdapter {
 		if (StringUtils.isBlank(pageTemplate)) {
 			if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getDefaultTemplate())) {
 				pageTemplate = cmsItemType.getDefaultTemplate();
+				properties.put("defaultTemplate", "1");
 			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);
 				properties.put("defaultTemplate", "1");
