@@ -31,9 +31,13 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -70,6 +74,8 @@ public class MenuBarFormater {
     DefaultCMSCustomizer customizer;
     PortletContext portletCtx;
     IContributionService contributionService;
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
 
 
     public IPortalUrlFactory getPortalUrlFactory() throws Exception {
@@ -95,7 +101,10 @@ public class MenuBarFormater {
         this.cmsService = cmsService;
         this.portletCtx = portletCtx;
         this.customizer = customizer;
-
+        // Bundle factory
+        IInternationalizationService internationalizationService = (IInternationalizationService) portletCtx
+                .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     };
 
 
@@ -386,7 +395,8 @@ public class MenuBarFormater {
 
 
     protected void getCreateLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-
+    	Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+    	
         if (cmsCtx.getRequest().getRemoteUser() == null)    {
             return;
         }
@@ -429,7 +439,7 @@ public class MenuBarFormater {
 
 
                             subType.setDocType(docType);
-                            subType.setName(subTypes.get(docType));
+                            subType.setName(bundle.getString(subTypes.get(docType).toUpperCase()));
                             subType.setUrl(NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
                                     + "@toutatice_create?type=" + docType);
                             portalDocsToCreate.add(subType);
@@ -488,7 +498,6 @@ public class MenuBarFormater {
                 int index = 1;
                 int nbSubDocs = portalDocsToCreate.size();
                 for (SubType subDoc : portalDocsToCreate) {
-
                     fancyContent.append("<div class=\"doc-type-detail\">");
                     fancyContent.append("   <div class=\"vignette\">");
                     fancyContent.append("       <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\">");

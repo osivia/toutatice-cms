@@ -26,6 +26,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.HTMLConstants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -98,6 +99,10 @@ public class PropertyFragmentModule implements IFragmentModule {
 					request.setAttribute("dataContent", dataContent);
 
 					emptyContent = false;
+					
+					if ("1".equals(window.getProperty("osivia.cms.menu"))) {
+						ctx.insertContentMenuBarItems();
+					}
 				}
 			}
 		}
@@ -130,6 +135,11 @@ public class PropertyFragmentModule implements IFragmentModule {
 			displayLiveVersion = "";
 		request.setAttribute("displayLiveVersion", displayLiveVersion);
 
+		
+		String displayCMSMenu = window.getProperty("osivia.cms.menu");
+		if ("1".equals(displayCMSMenu)) {
+			request.setAttribute("displayCMSMenu", HTMLConstants.CHECKED);
+		}
 	}
 
 	public void processAdminAttributes(NuxeoController ctx,
@@ -155,14 +165,17 @@ public class PropertyFragmentModule implements IFragmentModule {
 	            window.setProperty("osivia.cms.forcePublicationScope", null);
 
 		
-		if (request.getParameter("displayLiveVersion") != null) {
-
-			if ("1".equals(request.getParameter("displayLiveVersion")))
-				window.setProperty(Constants.WINDOW_PROP_VERSION, "1");
-			else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
-				window.setProperty(Constants.WINDOW_PROP_VERSION, null);
+		if ("1".equals(request.getParameter("displayLiveVersion")))
+			window.setProperty(Constants.WINDOW_PROP_VERSION, "1");
+		else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
+			window.setProperty(Constants.WINDOW_PROP_VERSION, null);
+		
+		// Display CMS menu indicator
+		if ("1".equals(request.getParameter("displayCMSMenu"))) {
+			window.setProperty("osivia.cms.menu", "1");
+		} else if (window.getProperty("osivia.cms.menu") != null) {
+			window.setProperty("osivia.cms.menu", null);
 		}
-
 	}
 
 }

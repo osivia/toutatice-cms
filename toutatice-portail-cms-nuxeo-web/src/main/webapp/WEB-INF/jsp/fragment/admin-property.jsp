@@ -14,7 +14,7 @@
 
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) request.getAttribute("ctx")	;
 
 String displayLiveVersion = "";
 if( "1".equals( request.getAttribute("displayLiveVersion")))
@@ -30,11 +30,13 @@ if( "1".equals( request.getAttribute("displayLiveVersion")))
 			<label>Nom de la propriété (ex: 'dc:title')</label><br/>
 			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
 			<label>Scope</label><br/>
-			<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/><br/>
+			<%= ctx.formatScopeList( (String) request.getAttribute("scope")) %><br/><br/>
 		
 
 			
 		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
+		
+		<input type="checkbox" name="displayCMSMenu" value="1" ${displayCMSMenu} />Affichage du menu CMS<br />
 
 	</div>
 	
