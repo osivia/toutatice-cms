@@ -139,7 +139,14 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	
 	private String getCacheId(NuxeoCommandContext ctx, INuxeoCommand command)	{
 		String cacheId = command.getId();
-		
+	
+		// 2.0.26
+		// Les données en anonymous doivent être marquées tels quelles
+		// Sinon elles sont confondues avec les SUPERUSER
+	      if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS)  {
+              cacheId =  "anonymous" + "/"+ command.getId();
+      }
+	      
 		
 		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
 				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
