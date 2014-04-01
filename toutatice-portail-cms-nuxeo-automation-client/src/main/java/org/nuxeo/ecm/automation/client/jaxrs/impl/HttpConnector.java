@@ -18,6 +18,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +26,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -54,6 +56,9 @@ public class HttpConnector implements Connector {
     
     public int webServiceTimeOut = -1;
     
+    public String nuxeoProxyName = null;
+    int nuxeoProxyPort = 8080;
+    
 
     public HttpConnector(HttpClient http) {
         this(http, new BasicHttpContext());
@@ -66,6 +71,17 @@ public class HttpConnector implements Connector {
         String wsTimeOut =  System.getProperty("ws.webServiceTimeOut");
         if( wsTimeOut != null)
         	this.webServiceTimeOut = Integer.parseInt(wsTimeOut) * 1000;
+        
+        nuxeoProxyName = System.getProperty("nuxeo.privateHost.proxyName");
+        String sNuxeoProxyPort = System.getProperty("nuxeo.privateHost.proxyPort");
+        if( sNuxeoProxyPort != null)
+            try {
+                nuxeoProxyPort = Integer.parseInt(sNuxeoProxyPort);
+            } catch( Exception e){
+                System.err.println( e);
+            }
+        
+        
     }
 
     
@@ -79,7 +95,15 @@ public class HttpConnector implements Connector {
     			http.getParams().setParameter("http.connection-manager.timeout", webServiceTimeOut);
     			http.getParams().setParameter("http.connection.timeout", webServiceTimeOut);
     		}
-	
+    		
+    		// 2.0.26 : intégration proxy nuxeo
+    		if( nuxeoProxyName != null)   {
+    		    HttpHost proxy = new HttpHost(nuxeoProxyName, nuxeoProxyPort);
+
+    		    http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+    		}
+    		
+    		
 			return http.execute(httpReq, ctx);
 	}
     
