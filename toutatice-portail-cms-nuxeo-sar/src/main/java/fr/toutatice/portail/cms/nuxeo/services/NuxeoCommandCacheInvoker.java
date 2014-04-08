@@ -62,8 +62,11 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 		String profilerUser = null;
 
 		List<Session> sessionsProfils = null;
+		
+	    ServerInvocation userSessionInvocation = null;
 
 		Session nuxeoSession = null;
+        boolean recyclableSession = true;
 
 
 		try {
@@ -138,6 +141,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 								invocation.setAttribute(Scope.SESSION_SCOPE, "osivia.nuxeoSessionUser",
 										user.getUserName());
 						}
+						
+	                      
+                        userSessionInvocation = invocation;
 					}
 				}				
 
@@ -268,6 +274,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					res = command.execute(nuxeoSession);
 				}
 			} catch (Exception e) {
+                
+                if( e.getCause() instanceof IllegalStateException)
+                    recyclableSession = false;			    
 
 				error = true;
 				throw e;
@@ -290,9 +299,13 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 		} finally {
 
+
 			// recycle the session
-			if (sessionsProfils != null)
-				sessionsProfils.add(nuxeoSession);
+            if (sessionsProfils != null && recyclableSession == true)
+                sessionsProfils.add(nuxeoSession);
+
+            if( userSessionInvocation != null && recyclableSession == false)
+                userSessionInvocation.removeAttribute(Scope.SESSION_SCOPE,  "osivia.nuxeoSession");
 
 
 
