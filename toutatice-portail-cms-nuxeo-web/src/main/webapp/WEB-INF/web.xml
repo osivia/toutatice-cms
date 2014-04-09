@@ -6,22 +6,32 @@
 
 <web-app>
 
-    <display-name>Nuxeo Portlets</display-name>
-    
-       <description>
-    This application is a portlet. It can not be used outside a portal.
-    This web.xml file is mandatory in each .par archive file.
+	<display-name>Nuxeo Portlets</display-name>
+
+	<description>
+		This application is a portlet. It can not be used outside a portal.
+		This web.xml file is mandatory in each .par archive file.
 	</description>
-	
+
 	<servlet>
 		<servlet-name>ThumbnailServlet</servlet-name>
 		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet</servlet-class>
 	</servlet>
-	
+
 	<servlet-mapping>
 		<servlet-name>ThumbnailServlet</servlet-name>
 		<url-pattern>/thumbnail/*</url-pattern>
 	</servlet-mapping>
-	
+
+
+	<servlet>
+		<servlet-name>SitePictureServlet</servlet-name>
+		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SitePictureServlet</servlet-name>
+		<url-pattern>/sitepicture/*</url-pattern>
+	</servlet-mapping>
 </web-app>
 

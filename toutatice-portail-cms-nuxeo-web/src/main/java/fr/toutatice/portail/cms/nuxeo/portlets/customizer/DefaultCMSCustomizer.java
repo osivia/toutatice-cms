@@ -55,6 +55,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormate
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SitePictueFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -201,6 +202,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer{
 		fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
 		fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "property"));
 		fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
+		fragmentTypes.add(new FragmentType("site_picture", "Visuel site", new SitePictueFragmentModule(), "site-picture", "site-picture"));
+		
 		return fragmentTypes;
 	}
 

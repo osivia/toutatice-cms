@@ -27,8 +27,7 @@ String targetPath = (String) renderRequest.getAttribute("targetPath");
 
 <% if( nuxeoPath != null) { 
     String src = renderRequest.getContextPath() + "/sitepicture?" + "path=" + URLEncoder.encode(nuxeoPath, "UTF-8") ;
-
-    String src = ctx.createFileLink(pictureDocument,propertyName); %>
+%>
     
 <%  if( targetPath != null) { %>    
         <a href="<%= ctx.getCMSLinkByPath(targetPath,null).getUrl()%>">
