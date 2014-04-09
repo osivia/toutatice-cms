@@ -233,7 +233,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/3.0.1-RC5</developerConnection>
+        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/3.0.1</developerConnection>
     </scm>
 
 
