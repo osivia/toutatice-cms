@@ -121,6 +121,12 @@ public class NavigationItemAdapter {
 			
 			properties.put("navigationElement", "1");
 			
+			// Récupération du thème
+			
+		    String theme =  (String) doc.getProperties().get("ttc:theme");
+	        if(StringUtils.isNotEmpty(theme)){
+	            properties.put("theme", theme);
+	        }
 			
 			
 		}
