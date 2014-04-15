@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>toutatice-portail.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>2.0.26-SNAPSHOT</version>
+		<version>2.0.26</version>
 	</parent>
 
 	<groupId>toutatice-portail.cms</groupId>
 	<artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
-	<version>2.0.26-SNAPSHOT</version>
+	<version>2.0.26</version>
 	<packaging>war</packaging>
 	<name>Nuxeo cms portlets</name>
 
@@ -20,20 +20,20 @@
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-lib</artifactId>
-			<version>2.0.26-SNAPSHOT</version>
+			<version>2.0.26</version>
 		</dependency>
 
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-shared-lib</artifactId>
-			<version>2.0.26-SNAPSHOT</version>
+			<version>2.0.26</version>
 			<scope>provided</scope>
  		</dependency>
 
 		<dependency>
 			<groupId>toutatice-portail.cms</groupId>
 			<artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
-			<version>2.0.26-SNAPSHOT</version>
+			<version>2.0.26</version>
       			<scope>provided</scope>			
  		</dependency>
 
