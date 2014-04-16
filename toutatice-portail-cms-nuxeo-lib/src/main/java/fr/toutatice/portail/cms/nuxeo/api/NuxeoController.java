@@ -81,8 +81,14 @@ public class NuxeoController {
 	String navigationPath;	
 	String contentPath;
 	String spacePath;
+    String domainPath;
+    
 	
-	//2.0.22 : pour fragments
+    public String getDomainPath() {
+        return domainPath;
+    }
+
+    //2.0.22 : pour fragments
 	String forcePublicationInfosScope;
 	
 
@@ -416,6 +422,16 @@ public class NuxeoController {
 		else
 			basePath = window.getPageProperty("osivia.cms.basePath");
 		
+		// v2.0.27 : ajout domaine
+		if( basePath != null) {
+		    
+		    String[] parts = basePath.split("/");
+		    if( parts != null && parts.length > 0)
+		        domainPath = "/" + parts[ 1];
+		    
+		}
+		    
+		
 		
 		navigationPath =  request.getParameter("osivia.cms.path");
 		if	(spacePath != null && request.getParameter("osivia.cms.itemRelPath") != null)
@@ -570,6 +586,17 @@ public class NuxeoController {
 
 				computedPath = computedPath.replaceAll("\\$\\{contentPath\\}", path);
 			}
+			
+			
+	         if (computedPath.contains("${domainPath}")) {
+	                String path = getDomainPath();
+	                if (path == null)
+	                    path = "";
+
+	                computedPath = computedPath.replaceAll("\\$\\{domainPath\\}", path);
+	            }
+
+			
 		}
 
 		return computedPath;

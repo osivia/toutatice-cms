@@ -492,6 +492,7 @@ public class ViewListPortlet extends CMSPortlet {
 				Interpreter i = new Interpreter();
 				i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
 				i.set("basePath",  ctx.getBasePath());
+				i.set("domainPath",  ctx.getDomainPath());
 				i.set("navigationPath",  ctx.getNavigationPath());
 				/* Initialisation de navigationPubInfos pour éviter des erreurs 
 				 * de "non définition" lors 
