@@ -44,6 +44,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
@@ -61,7 +62,13 @@ public class PublishInfosCommand implements INuxeoCommand {
 		CMSPublicationInfos publiInfos = null;
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
-		request.set("path", path);
+		
+        if (path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
+            request.set("webid", path.replaceAll(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO, ""));
+        }
+		else {
+		    request.set("path", path);
+		}
 		
 		
 		Blob binariesInfos = (Blob) request.execute();

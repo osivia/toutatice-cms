@@ -69,7 +69,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSToWebPathAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
@@ -130,8 +129,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private XMLReader parser;
     /** Editable window adapter. */
     private EditableWindowAdapter editableWindowAdapter;
-    /** CMS to web adapter. */
-    private CMSToWebPathAdapter cmsToWebAdapter;
+
     /** Nuxeo comments service. */
     private INuxeoCommentsService commentsService;
     /** Class loader. */
@@ -251,19 +249,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Get CMS to web path adapter.
-     *
-     * @return CMS to web path adapter
-     */
-    public CMSToWebPathAdapter getCMSToWebPathAdapter() {
-        if (this.cmsToWebAdapter == null) {
-            this.cmsToWebAdapter = new CMSToWebPathAdapter(this.cmsService);
-        }
-        return this.cmsToWebAdapter;
-    }
-
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -315,7 +300,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return search schema
      */
     public static String getSearchSchema() {
-        return "dublincore,common,file";
+        return "dublincore,common,file,toutatice";
     }
 
 
@@ -841,20 +826,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters) throws Exception {
         return null;
-    }
-
-    /**
-     * Adapt CMS path to web.
-     *
-     * @param cmsCtx CMS context
-     * @param basePath CMS base path
-     * @param requestPath request path
-     * @param webPath web path indicator
-     * @return adapted CMS path to web
-     * @throws CMSException
-     */
-    public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
-        return this.getCMSToWebPathAdapter().adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
     }
 
 

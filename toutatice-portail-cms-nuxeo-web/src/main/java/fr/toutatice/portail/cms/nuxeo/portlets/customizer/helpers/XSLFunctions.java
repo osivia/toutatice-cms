@@ -40,6 +40,7 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -53,6 +54,7 @@ public class XSLFunctions {
     IPortalUrlFactory urlFactory;
     PortalControllerContext portalCtx;
     NuxeoController nuxeoCtx;
+    IWebIdService webIdService;
 
 
 	private final Pattern scope = Pattern.compile(".*");
@@ -67,6 +69,10 @@ public class XSLFunctions {
 
 	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
 	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
+
+
+    private final Pattern webIdExp = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]/]*)(.*)");
+
 
 	///nuxeo/nxfile/default/a1bbb41d-88f7-490c-8480-7772bb085a4c/ttc:images/0/file/banniere.jpg
 	private final Pattern internalPictureExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
@@ -113,6 +119,20 @@ public class XSLFunctions {
 
          return this.nuxeoCtx;
   }
+
+
+    /**
+     * WebId service used to transform urls
+     * 
+     * @return the service
+     */
+    public IWebIdService getWebIdService() {
+        if (this.webIdService == null) {
+            this.webIdService = (IWebIdService) this.ctx.getPortletCtx().getAttribute("webIdService");
+        }
+
+        return this.webIdService;
+    }
 
 	private static  List<URI> baseURIs = null;
 
@@ -508,6 +528,35 @@ public Matcher getPortalMatcherReference() throws Exception	{
 						}
 
 
+                        Matcher mWebId = this.webIdExp.matcher(query);
+
+                        if (mWebId.matches()) {
+
+                            if (mWebId.groupCount() > 0) {
+
+                                String webpath = mWebId.group(1);
+
+                                String params = url.getQuery();
+                                if (params != null) {
+                                    String[] split = params.split("&");
+                                    for (int i = 0; i < split.length; i++) {
+
+                                        // In case of resources url, serve the resource
+                                        if (split[i].startsWith("content")) {
+                                            String[] param = split[i].split("=");
+                                            
+                                            String webId = getWebIdService().webPathToFetchInfoService(webpath);
+
+                                            return this.getNuxeoController().createWebIdLink(webId, param[1]);
+                                        }
+                                    }
+                                }
+                                // In case of pages
+                                return this.getNuxeoController().getCMSLinkByPath(getWebIdService().webPathToPageUrl(webpath), null).getUrl();
+
+                            }
+
+                        }
 
 				return url.toString();
 

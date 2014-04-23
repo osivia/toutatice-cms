@@ -59,6 +59,7 @@ import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.security.CmsPermissionHelper;
 import org.osivia.portal.core.security.CmsPermissionHelper.Level;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
@@ -203,6 +204,21 @@ public class NuxeoController {
 
     /** The portal ctx. */
     PortalControllerContext portalCtx;
+
+    IWebIdService webIdService;
+
+    /**
+     * WebId service used to transform urls
+     * 
+     * @return the service
+     */
+    public IWebIdService getWebIdService() {
+        if (this.webIdService == null) {
+            this.webIdService = (IWebIdService) getPortalCtx().getPortletCtx().getAttribute("webIdService");
+        }
+
+        return this.webIdService;
+    }
 
     /** The cms service locator. */
     private static ICMSServiceLocator cmsServiceLocator;
@@ -1454,8 +1470,35 @@ public class NuxeoController {
             // String url = getPortalUrlFactory().getCMSUrl(portalCtx,
             // page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(),
             // getScope(), getDisplayLiveVersion(), null);
+            String path = doc.getPath();
 
-            String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(),
+            String webid = doc.getString("ttc:webid");
+
+            if (webid != null) {
+                
+                String domainId = doc.getString("ttc:domainID");
+                String explicitUrl = doc.getString("ttc:explicitUrl");
+                String extension = doc.getString("ttc:extensionUrl");
+                
+                
+                Map<String, String> properties = new HashMap<String, String>();
+                if (domainId != null) {
+                    properties.put(IWebIdService.DOMAIN_ID, domainId);
+                }
+                if (explicitUrl != null) {
+                    properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
+                }
+                if (extension != null) {
+                    properties.put(IWebIdService.EXTENSION_URL, extension);
+                }
+                CMSItem cmsItem = new CMSItem(path, webid, properties, doc);
+                
+                path = getWebIdService().itemToPageUrl(cmsItem);
+
+            }
+
+
+            String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path,
                     pageParams, localContextualization, displayContext, this.getHideMetaDatas(), null, this.getDisplayLiveVersion(), null);
 
 
@@ -1686,6 +1729,31 @@ public class NuxeoController {
         }
     }
 
+    /**
+     * Fetch web url.
+     * 
+     * @param webid the web id
+     * @param content some options
+     * @return the resource
+     */
+    public String createWebIdLink(String webid, String content) {
+
+        ResourceURL resourceURL = this.createResourceURL();
+
+        resourceURL.setResourceID(webid);
+        if (content != null) {
+            resourceURL.setParameter("type", "picture");
+            resourceURL.setParameter("docPath", webid);
+            resourceURL.setParameter("content", content);
+        }
+        //
+
+        // ne marche pas : bug JBP
+        // resourceURL.setCacheability(ResourceURL.PORTLET);
+        resourceURL.setCacheability(ResourceURL.PAGE);
+
+        return resourceURL.toString();
+    }
 
     /**
      * Gets the CMS service.

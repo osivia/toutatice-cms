@@ -36,7 +36,6 @@ import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.DocumentMarshaller;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -139,7 +138,7 @@ public class CMSService implements ICMSService {
         properties.put("displayName", displayName);
         properties.put("type", doc.getType());
 
-        CMSItem cmsItem = new CMSItem(path, properties, doc);
+        CMSItem cmsItem = new CMSItem(path, doc.getString("ttc:webid"), properties, doc);
 
         // CMS item type
         CMSItemType type = this.customizer.getCMSItemTypes().get(doc.getType());
@@ -301,6 +300,8 @@ public class CMSService implements ICMSService {
 
             cmsCtx.setAsyncCacheRefreshing(false);
             CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
+            path = pubInfos.getDocumentPath();
+
             cmsCtx.setAsyncCacheRefreshing(saveAsync);
 
             boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
@@ -459,7 +460,7 @@ public class CMSService implements ICMSService {
                 cmsCtx.setForcePublicationInfosScope("anonymous");
             }
 
-            picture = this.fetchContent(cmsCtx, docPath);
+            picture = this.fetchContent(cmsCtx, publiInfos.getDocumentPath());
 
 
             /* Lecture de la ressources binaire */
@@ -1037,10 +1038,15 @@ public class CMSService implements ICMSService {
     }
 
 
-    public String adaptCMSPathToWeb(CMSServiceCtx cmsCtx, String basePath, String requestPath, boolean webPath) throws CMSException {
+
+    public String adaptWebPathToCms(CMSServiceCtx cmsCtx, String requestPath) throws CMSException {
         try {
 
-            return this.customizer.adaptCMSPathToWeb(cmsCtx, basePath, requestPath, webPath);
+            // LBI : no need of customization
+
+            CMSItem content = getContent(cmsCtx, requestPath);
+            return content.getPath();
+
         } catch (Exception e) {
             if (!(e instanceof CMSException)) {
                 if ((e instanceof NuxeoException) && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {

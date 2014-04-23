@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -242,6 +243,24 @@ public class NavigationItemAdapter {
 		}
 
 
+        /* DomainID */
+
+
+            String domainId = (String) doc.getProperties().get("ttc:domainID");
+            if (StringUtils.isNotEmpty(domainId)) {
+            properties.put(IWebIdService.DOMAIN_ID, domainId);
+            }
+
+        /* explicitUrl */
+
+        String explicitUrl = (String) doc.getProperties().get("ttc:explicitUrl");
+        if (StringUtils.isNotEmpty(explicitUrl)) {
+            properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
+        }
+        String extensionUrl = (String) doc.getProperties().get("ttc:extensionUrl");
+        if (StringUtils.isNotEmpty(extensionUrl)) {
+            properties.put(IWebIdService.EXTENSION_URL, extensionUrl);
+        }
 		/*
 		if( publishSpaceItem != null && "Workspace".equals(((Document) publishSpaceItem.getNativeItem()).getType()))	{
 			// Tous les sous-items d'un workspace sont navigables
