@@ -27,6 +27,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -1474,7 +1475,7 @@ public class NuxeoController {
 
             String webid = doc.getString("ttc:webid");
 
-            if (webid != null) {
+            if (StringUtils.isNotEmpty(webid)) {
                 
                 String domainId = doc.getString("ttc:domainID");
                 String explicitUrl = doc.getString("ttc:explicitUrl");
