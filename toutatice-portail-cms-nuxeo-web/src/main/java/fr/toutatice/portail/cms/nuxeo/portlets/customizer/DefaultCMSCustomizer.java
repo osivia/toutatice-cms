@@ -34,6 +34,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
@@ -59,6 +60,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
+import org.osivia.portal.core.web.IWebIdService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -143,6 +145,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** CMS service. */
     private CMSService cmsService;
+    
+    /** WEBID service. */    
+    private IWebIdService webIdService;
 
 
     /**
@@ -169,6 +174,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
     }
 
+    public IWebIdService getWebIdService() {
+        if (this.webIdService == null) {
+            this.webIdService = (IWebIdService) this.portletCtx.getAttribute("webIdService");
+        }
+
+        return this.webIdService;
+    }
+    
 
     /**
      * Get Nuxeo connection properties.
@@ -1129,6 +1142,46 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public void setParser(XMLReader parser) {
         this.parser = parser;
+    }
+
+
+    /* 
+     * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getContentWebIdAwarePath(org.osivia.portal.core.cms.CMSServiceCtx)
+     */
+    @Override
+    
+    public String getContentWebIdPath(CMSServiceCtx cmsCtx)  {
+        
+        Document doc = (Document) cmsCtx.getDoc();
+        
+        String webId = doc.getString("ttc:webid");
+        
+        String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
+        
+        if (StringUtils.isNotEmpty(webId)) {
+            
+            String domainId = doc.getString("ttc:domainID");
+            String explicitUrl = doc.getString("ttc:explicitUrl");
+            String extension = doc.getString("ttc:extensionUrl");
+            
+            
+            Map<String, String> properties = new HashMap<String, String>();
+            if (domainId != null) {
+                properties.put(IWebIdService.DOMAIN_ID, domainId);
+            }
+            if (explicitUrl != null) {
+                properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
+            }
+            if (extension != null) {
+                properties.put(IWebIdService.EXTENSION_URL, extension);
+            }
+            CMSItem cmsItem = new CMSItem(doc.getPath(), webId, properties, doc);
+            
+            permLinkPath = getWebIdService().itemToPageUrl(cmsItem);
+
+        }
+        
+        return permLinkPath;
     }
 
 }

@@ -27,6 +27,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
@@ -46,6 +47,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -74,6 +76,7 @@ public class MenuBarFormater {
     DefaultCMSCustomizer customizer;
     PortletContext portletCtx;
     IContributionService contributionService;
+
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
 
@@ -86,6 +89,9 @@ public class MenuBarFormater {
         return this.urlFactory;
     }
 
+
+    
+    
 
 
     public IContributionService getContributionService() throws Exception {
@@ -707,11 +713,12 @@ public class MenuBarFormater {
         if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
             return;
         }
-
-
+       
+        String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
+ 
         String permaLinkURL = this.getPortalUrlFactory().getPermaLink(
                 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
-                ((Document) (cmsCtx.getDoc())).getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
         if (permaLinkURL != null) {
             this.addPermaLinkItem(menuBar, permaLinkURL);

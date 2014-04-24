@@ -1465,39 +1465,9 @@ public class NuxeoController {
             Page page = window.getPage();
 
             Map<String, String> pageParams = new HashMap<String, String>();
-
-
-            // v2.0-rc7 : suppression du scope
-            // String url = getPortalUrlFactory().getCMSUrl(portalCtx,
-            // page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), doc.getPath(), pageParams, localContextualization, displayContext, getHideMetaDatas(),
-            // getScope(), getDisplayLiveVersion(), null);
-            String path = doc.getPath();
-
-            String webid = doc.getString("ttc:webid");
-
-            if (StringUtils.isNotEmpty(webid)) {
-                
-                String domainId = doc.getString("ttc:domainID");
-                String explicitUrl = doc.getString("ttc:explicitUrl");
-                String extension = doc.getString("ttc:extensionUrl");
-                
-                
-                Map<String, String> properties = new HashMap<String, String>();
-                if (domainId != null) {
-                    properties.put(IWebIdService.DOMAIN_ID, domainId);
-                }
-                if (explicitUrl != null) {
-                    properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
-                }
-                if (extension != null) {
-                    properties.put(IWebIdService.EXTENSION_URL, extension);
-                }
-                CMSItem cmsItem = new CMSItem(path, webid, properties, doc);
-                
-                path = getWebIdService().itemToPageUrl(cmsItem);
-
-            }
-
+          
+            String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
+            
 
             String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path,
                     pageParams, localContextualization, displayContext, this.getHideMetaDatas(), null, this.getDisplayLiveVersion(), null);
@@ -1516,7 +1486,25 @@ public class NuxeoController {
         }
 
     }
+    
+    
 
+    
+    /**
+     * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
+     * 
+     * if no webId is defined, returns original path
+     *
+     * @return the content web id path
+     */
+    
+    public String getContentWebIdPath() {
+       
+       INuxeoService nuxeoService = this.getNuxeoCMSService();
+
+       String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(this.getCMSCtx());
+       return path;
+    }
 
     /**
      * Insert content menubar items.

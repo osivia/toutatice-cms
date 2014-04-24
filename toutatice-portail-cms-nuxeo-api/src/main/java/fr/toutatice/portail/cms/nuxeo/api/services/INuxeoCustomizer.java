@@ -117,6 +117,16 @@ public interface INuxeoCustomizer {
      * @throws Exception
      */
     String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception;
+    
+    
+    
+    /**
+     * Get webID path like /_webid/domain-def-jss/publistatfaq.html
+     *
+     * @param ctx CMS context
+     * @throws Exception
+     */
+    String getContentWebIdPath(CMSServiceCtx ctx) ;
 
 
     /**

@@ -53,9 +53,11 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
 
             ctrl.setCurrentDoc(doc);
             ctrl.insertContentMenuBarItems();
+            
+            String permlinkPath = ctrl.getContentWebIdPath();
 
             String url = this.getPortalUrlFactory(ctrl.getPortletCtx()).getPermaLink(new PortalControllerContext(ctrl.getPortletCtx(), request, response),
-                    null, null, navigationPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                    null, null, permlinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
             List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
