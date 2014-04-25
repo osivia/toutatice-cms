@@ -121,3 +121,8 @@ function clearText(div) {
     	inputs[i].value = "";
     }
 }
+
+
+
+
+

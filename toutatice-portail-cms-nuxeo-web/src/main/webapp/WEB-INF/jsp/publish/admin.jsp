@@ -16,6 +16,11 @@
 <%
 NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
+String jstree = "";
+if( "1".equals( request.getAttribute("jstree")))
+    jstree = "checked";
+
+
 %>
 	<div>
 		<form method="post" action="<portlet:actionURL/>">
@@ -23,6 +28,9 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 		<label>Nombre de niveaux ouverts :</label> <input type="text" name="openLevels" value="${openLevels}" size="1"> <br/>
 		<label>Nombre de niveaux maximum :</label> <input type="text" name="maxLevels" value="${maxLevels}" size="1"> <br/>
+
+
+        <input type="checkbox" name="jstree" value="1" <%= jstree %>/> Filtrer l'arbre (beta) <br/>
 			
 		
 			<input type="submit" name="modifierPrefs"  value="Valider">

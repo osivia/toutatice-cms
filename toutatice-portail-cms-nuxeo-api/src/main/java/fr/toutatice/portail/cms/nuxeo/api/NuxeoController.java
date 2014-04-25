@@ -129,6 +129,20 @@ public class NuxeoController {
 
     /** The parent path to create. */
     String parentPathToCreate;
+    
+    
+    /** The domain path. */
+    String domainPath;
+    
+    
+    /**
+     * Gets the domain path.
+     *
+     * @return the domain path
+     */
+    public String getDomainPath() {
+        return domainPath;
+    }
 
     /**
      * Gets the parent path to create.
@@ -710,6 +724,14 @@ public class NuxeoController {
 
 
             this.basePath = window.getPageProperty("osivia.cms.basePath");
+            
+            if( basePath != null) {
+                String[] parts = basePath.split("/");
+                if( parts != null && parts.length > 0)
+                    domainPath = "/" + parts[ 1];
+             }
+                
+                        
 
             this.navigationPath = request.getParameter("osivia.cms.path");
 
@@ -968,6 +990,15 @@ public class NuxeoController {
 
                 computedPath = computedPath.replaceAll("\\$\\{sitePath\\}", path);
             }
+            
+            if (computedPath.contains("${domainPath}")) {
+                String path = getDomainPath();
+                if (path == null)
+                    path = "";
+
+                computedPath = computedPath.replaceAll("\\$\\{domainPath\\}", path);
+            }
+
 
 
         }

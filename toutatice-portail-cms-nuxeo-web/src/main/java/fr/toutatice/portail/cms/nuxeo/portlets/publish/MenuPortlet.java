@@ -118,6 +118,10 @@ public class MenuPortlet extends CMSPortlet {
             }
 
 
+            if ("1".equals(req.getParameter("jstree")))
+                window.setProperty("osivia.cms.filtering", "jstree");
+            else if (window.getProperty("osivia.cms.filtering") != null)
+                window.setProperty("osivia.cms.filtering", null);           
 
 
             res.setPortletMode(PortletMode.VIEW);
@@ -147,6 +151,11 @@ public class MenuPortlet extends CMSPortlet {
 
         String maxLevels = window.getProperty("osivia.cms.maxLevels");
         req.setAttribute("maxLevels", maxLevels);
+        
+        String filtering =  window.getProperty("osivia.cms.filtering");
+        if("jstree".equals(filtering))
+            req.setAttribute("jstree", "1");
+        
 
         req.setAttribute("ctx", ctx);
 
@@ -344,7 +353,12 @@ public class MenuPortlet extends CMSPortlet {
 
                 request.setAttribute("ctx", ctx);
 
-                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view.jsp").include(request, response);
+                String filtering =  window.getProperty("osivia.cms.filtering");
+                if("jstree".equals(filtering)) {
+                       getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view_jstree.jsp").include(request, response);
+                }  else    {
+                    getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view.jsp").include(request, response);
+                }
             } else {
                 response.setContentType("text/html");
                 response.getWriter().print("<h2>Path de la page non défini</h2>");
