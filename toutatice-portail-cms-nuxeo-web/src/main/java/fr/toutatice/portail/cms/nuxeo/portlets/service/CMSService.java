@@ -985,7 +985,27 @@ public class CMSService implements ICMSService {
 
     public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
         CMSItem configItem = null;
+
+        HttpServletRequest portalRequest = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
+        String requestKey = "osivia.cache.spaceConfig." + publishSpacePath;
+
         try {
+
+            CMSItem value = (CMSItem) portalRequest.getAttribute(requestKey);
+            if (value != null) {
+                // Has been reloaded since PageResfresh
+                if (PageProperties.getProperties().isRefreshingPage()) {
+                    if (portalRequest.getAttribute(requestKey + ".resfreshed") == null) {
+                        portalRequest.setAttribute(requestKey + ".resfreshed", "1");
+                        value = null;
+                    }
+                }
+                if (value != null) {
+                    return value;
+                }
+            }
+
+
             String savedScope = cmsCtx.getScope();
             String savedPubInfosScope = cmsCtx.getForcePublicationInfosScope();
             try {
@@ -999,6 +1019,9 @@ public class CMSService implements ICMSService {
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
 
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
+
+                portalRequest.setAttribute(requestKey, configItem);
+
             } finally {
                 cmsCtx.setScope(savedScope);
                 cmsCtx.setAsyncCacheRefreshing(false);
@@ -1016,6 +1039,8 @@ public class CMSService implements ICMSService {
                 throw (CMSException) e;
             }
         }
+
+
         return configItem;
     }
 
