@@ -57,6 +57,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCo
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.HTMLCommentsTreeBuilder;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 
 /**
@@ -98,7 +99,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             // v1.0.16
             ThumbnailServlet.setPortletContext(this.getPortletContext());
-
+            SitePictureServlet.setPortletContext(getPortletContext());
 
         } catch (Exception e) {
             throw new PortletException(e);
