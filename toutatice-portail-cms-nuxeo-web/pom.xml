@@ -11,7 +11,7 @@
 
 	<artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
 	<packaging>war</packaging>
-	<name>Nuxeo cms portlets</name>
+	<name>Toutatice Portal - Nuxeo CMS portlets</name>
 
 
 	<dependencies>
@@ -24,13 +24,11 @@
 		</dependency>
 		
         <dependency>
-            <groupId>toutatice-portail.cms</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
             <version>${project.version}</version>
-                <scope>provided</scope>         
+            <scope>provided</scope>         
         </dependency>
-		
-
 
 		<dependency>
     			<groupId>org.beanshell</groupId>

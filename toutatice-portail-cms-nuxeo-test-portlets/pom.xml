@@ -10,7 +10,7 @@
 
     <artifactId>toutatice-portail-cms-test-portlets</artifactId>
     <packaging>war</packaging>
-    <name>Toutatice portail CMS - Test portlets</name>
+    <name>Toutatice Portal - Test portlets</name>
 
 
     <dependencies>

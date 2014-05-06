@@ -32,10 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
-import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
-import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.RemoteException;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -87,13 +84,15 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	}
 
 
-	public IPortalUrlFactory getPortalUrlFactory(NuxeoCommandContext ctx ) throws Exception {
+	@Override
+    public IPortalUrlFactory getPortalUrlFactory(NuxeoCommandContext ctx ) throws Exception {
 		IPortalUrlFactory portalUrlFactory = (IPortalUrlFactory) ctx.getPortletContext().getAttribute("UrlService");
 		return portalUrlFactory;
 	}
 
 
-	public IProfilManager getProfilManager( NuxeoCommandContext ctx ) throws Exception {
+	@Override
+    public IProfilManager getProfilManager( NuxeoCommandContext ctx ) throws Exception {
 
         IProfilManager profilManager = (IProfilManager) ctx.getPortletContext().getAttribute(Constants.PROFILE_SERVICE_NAME);
 		return profilManager;
@@ -400,7 +399,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	}
 
-	public Object executeCommand(NuxeoCommandContext ctx, INuxeoServiceCommand command) throws Exception {
+	@Override
+    public Object executeCommand(NuxeoCommandContext ctx, INuxeoServiceCommand command) throws Exception {
 		try {
 			Object resp = null;
 
@@ -444,7 +444,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		return null;
 	}
 
-	public void destroy() throws Exception {
+	@Override
+    public void destroy() throws Exception {
 
 			// Arret du thread
 			if (this.executor != null) {

@@ -12,17 +12,14 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
-import javax.servlet.http.HttpServletRequest;
 
-import org.jboss.mx.server.Invocation;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.aspects.controller.PageCustomizerInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -35,34 +32,34 @@ import org.osivia.portal.core.profils.ProfilBean;
 public class NuxeoCommandContext {
 
 	/** The auth type anonymous. */
-	public static int AUTH_TYPE_ANONYMOUS = 0; 
-	
+	public static int AUTH_TYPE_ANONYMOUS = 0;
+
 	/** The auth type user. */
-	public static int AUTH_TYPE_USER = 1;	
-	
+	public static int AUTH_TYPE_USER = 1;
+
 	/** The auth type profil. */
-	public static int AUTH_TYPE_PROFIL = 2; 
-	
+	public static int AUTH_TYPE_PROFIL = 2;
+
 	/** The auth type superuser. */
 	public static int AUTH_TYPE_SUPERUSER = 3;
-	
+
 	/** The request. */
 	private Object request;
-	
+
 	/** The controller ctx. */
 	private ControllerContext controllerCtx;
-	
+
 	/** The server invocation. */
 	private ServerInvocation serverInvocation;
 
-	
+
 	/**
 	 * Gets the server invocation.
 	 *
 	 * @return the server invocation
 	 */
 	public ServerInvocation getServerInvocation() {
-		return serverInvocation;
+		return this.serverInvocation;
 	}
 
 	/**
@@ -73,7 +70,7 @@ public class NuxeoCommandContext {
 	public void setServerInvocation(ServerInvocation serverInvocation) {
 		this.serverInvocation = serverInvocation;
 	}
-	
+
 	/**
 	 * Asynchronous loadinf policy
 	 */
@@ -81,21 +78,21 @@ public class NuxeoCommandContext {
 
 	/** The asynchronous updates. */
 	public boolean asynchronousUpdates = false;
-	
+
 	/** The administrator. */
 	private boolean administrator = false;
-	
+
 
 	/** The force reload. */
 	private boolean forceReload = false;
-	
+
 	/**
 	 * Checks if is force reload.
 	 *
 	 * @return the forceReload
 	 */
 	public boolean isForceReload() {
-		return forceReload;
+		return this.forceReload;
 	}
 
 	/**
@@ -113,7 +110,7 @@ public class NuxeoCommandContext {
 	 * @return true, if is administrator
 	 */
 	public boolean isAdministrator() {
-		return administrator;
+		return this.administrator;
 	}
 
 	/**
@@ -122,7 +119,7 @@ public class NuxeoCommandContext {
 	 * @return true, if is asynchronous updates
 	 */
 	public boolean isAsynchronousUpdates() {
-		return asynchronousUpdates;
+		return this.asynchronousUpdates;
 	}
 
 	/**
@@ -140,7 +137,7 @@ public class NuxeoCommandContext {
 	 * @return the cache time out
 	 */
 	public long getCacheTimeOut() {
-		return cacheTimeOut;
+		return this.cacheTimeOut;
 	}
 
 	/**
@@ -158,17 +155,17 @@ public class NuxeoCommandContext {
 
 	/** The auth type. */
 	int authType = AUTH_TYPE_USER;
-	
+
 	/** The cache type. */
 	int cacheType = CacheInfo.CACHE_SCOPE_NONE;
-	
+
 	/**
 	 * Gets the cache type.
 	 *
 	 * @return the cache type
 	 */
 	public int getCacheType() {
-		return cacheType;
+		return this.cacheType;
 	}
 
 	/**
@@ -182,7 +179,7 @@ public class NuxeoCommandContext {
 
 	/** The profil. */
 	ProfilBean profil = null;
-	
+
 	/** The cache time out. */
 	long cacheTimeOut = -1;
 
@@ -192,7 +189,7 @@ public class NuxeoCommandContext {
 	 * @return the auth type
 	 */
 	public int getAuthType() {
-		return authType;
+		return this.authType;
 	}
 
 	/**
@@ -210,7 +207,7 @@ public class NuxeoCommandContext {
 	 * @return the auth profil
 	 */
 	public ProfilBean getAuthProfil() {
-		return profil;
+		return this.profil;
 	}
 
 	/**
@@ -228,7 +225,7 @@ public class NuxeoCommandContext {
 	 * @return the request
 	 */
 	public Object getRequest() 	{
-		return request;
+		return this.request;
 	}
 
 
@@ -238,16 +235,16 @@ public class NuxeoCommandContext {
 	 * @return the portlet context
 	 */
 	public PortletContext getPortletContext() {
-		return ctx;
+		return this.ctx;
 	}
-	
+
 	/**
 	 * Checks if is async cache refreshing.
 	 *
 	 * @return true, if is async cache refreshing
 	 */
 	public boolean isAsyncCacheRefreshing() {
-		return isAsyncCacheRefreshing;
+		return this.isAsyncCacheRefreshing;
 	}
 
 	/**
@@ -269,7 +266,7 @@ public class NuxeoCommandContext {
 		this.ctx = ctx;
 
 	}
-	
+
 	/**
 	 * Instantiates a new nuxeo command context.
 	 *
@@ -280,15 +277,15 @@ public class NuxeoCommandContext {
 		super();
 		this.ctx = ctx;
 		this.request = request;
-		
+
 		if( request instanceof PortletRequest)	{
-			controllerCtx =  (ControllerContext) ((PortletRequest) getRequest()).getAttribute("osivia.controller");
-			administrator = "true".equals(     (((PortletRequest) getRequest()).getAttribute("osivia.isAdministrator")))		;	
+			this.controllerCtx =  (ControllerContext) ((PortletRequest) this.getRequest()).getAttribute("osivia.controller");
+			this.administrator = "true".equals(     (((PortletRequest) this.getRequest()).getAttribute("osivia.isAdministrator")))		;
 		}
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Instantiates a new nuxeo command context.
 	 *
@@ -301,22 +298,22 @@ public class NuxeoCommandContext {
 		this.serverInvocation =  serverInvocation;
 
 		this.request = serverInvocation.getServerContext().getClientRequest();
-		
-		
+
+
 		Boolean isAdmin = (Boolean) serverInvocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
-		
+
 		if( Boolean.TRUE.equals(isAdmin))
-			administrator = true;
+			this.administrator = true;
 	}
 
-	
+
 	/**
 	 * Gets the controler context.
 	 *
 	 * @return the controler context
 	 */
 	public ControllerContext getControlerContext()	{
-		return controllerCtx;
+		return this.controllerCtx;
 
 	}
 

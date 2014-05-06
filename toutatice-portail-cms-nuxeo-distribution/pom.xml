@@ -2,51 +2,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>toutatice-portail.cms</groupId>
+        <artifactId>cms-parent</artifactId>
+        <version>3.2.0-SNAPSHOT</version>
+    </parent>
 
-    <groupId>toutatice-portail.distribution</groupId>
-    <artifactId>toutatice-portail-distribution</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <artifactId>toutatice-portail-cms-nuxeo-distribution</artifactId>
+    <name>Toutatice Portal - Distribution</name>
+
 
     <prerequisites>
         <maven>2.1.0</maven>
     </prerequisites>
-
-
-    <properties>
-        <osivia-portal.version>3.2.0-SNAPSHOT</osivia-portal.version>
-        <toutatice.cms.version>3.2.0-SNAPSHOT</toutatice.cms.version>
-    </properties>
+    
 
     <dependencies>
 
         <dependency>
             <groupId>toutatice-portail.cms</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-sar</artifactId>
-            <version>${toutatice.cms.version}</version>
+            <version>${project.version}</version>
             <type>sar</type>
         </dependency>
-
         
          <dependency>
             <groupId>toutatice-portail.cms</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
-            <version>${toutatice.cms.version}</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
 
-
     </dependencies>
 
-    <profiles>
 
+    <profiles>
 
         <profile>
             <id>unpack</id>
             <build>
                 <defaultGoal>package</defaultGoal>
                 <plugins>
-
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
@@ -73,13 +69,9 @@
                             </execution>
                         </executions>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
-
-
-
 
         <profile>
             <id>pack</id>
@@ -106,13 +98,11 @@
                             </execution>
                         </executions>
                     </plugin>
-
-
-
                 </plugins>
             </build>
         </profile>
     </profiles>
+
 
     <build>
         <pluginManagement>
@@ -136,25 +126,7 @@
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
-
-
-    <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/distribution/trunk</developerConnection>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>toutatice-releases</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>toutatice-snapshots</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 
 </project>

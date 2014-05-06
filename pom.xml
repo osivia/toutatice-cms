@@ -1,145 +1,187 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
     <version>3.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>toutatice-portail-cms</name>
+    <name>Toutatice Portal - Parent</name>
 
 
     <properties>
-        <nuxeo.automation.version>5.6.0-HF17</nuxeo.automation.version>
-
-        <deploy.dir>${toutatice-portail-runtime-dir}</deploy.dir>
-        <deploy.socle.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/deploy/socle</deploy.socle.dir>
-        <deploy.socle-libs.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/lib</deploy.socle-libs.dir>
-
+        <nuxeo.automation.version>5.6.0-HF29</nuxeo.automation.version>
+        
         <jboss.portal.version>2.7.2</jboss.portal.version>
         <jboss.modules.identity.version>1.1.3</jboss.modules.identity.version>
         <jboss.version>4.2.3.GA</jboss.version>
-
-        <osivia-portal.version>3.2.0-SNAPSHOT</osivia-portal.version>
-
-        <dom4j.version>1.6.1</dom4j.version>
-
+    
+        <json.version>2.4</json.version>
+    
+        <deploy.dir>${toutatice-portail-runtime-dir}</deploy.dir>
+        <deploy.socle.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/deploy/socle</deploy.socle.dir>
+        <deploy.socle-libs.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/lib</deploy.socle-libs.dir>
     </properties>
+
+
+    <dependencyManagement>
+        <dependencies>
+        
+            <!-- OSIVIA portal -->
+            <dependency>
+                <groupId>org.osivia.portal</groupId>
+                <artifactId>osivia-portal-dependencies</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osivia.portal</groupId>
+                <artifactId>osivia-portal-dependencies-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osivia.portal.core</groupId>
+                <artifactId>osivia-portal-custom-lib-utils</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+    
+            <!-- JBoss -->
+            <dependency>
+                <groupId>jboss</groupId>
+                <artifactId>jboss-system</artifactId>
+                <version>${jboss.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>jboss</groupId>
+                <artifactId>jboss-jmx</artifactId>
+                <version>${jboss.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal</groupId>
+                <artifactId>portal-api-lib</artifactId>
+                <version>${jboss.portal.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal</groupId>
+                <artifactId>portal-core-lib</artifactId>
+                <version>${jboss.portal.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal</groupId>
+                <artifactId>portal-common-lib</artifactId>
+                <version>${jboss.portal.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal.identity</groupId>
+                <artifactId>identity-identity</artifactId>
+                <version>${jboss.modules.identity.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal</groupId>
+                <artifactId>portal-theme-lib</artifactId>
+                <version>${jboss.portal.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.portal</groupId>
+                <artifactId>portal-server-lib</artifactId>
+                <version>${jboss.portal.version}</version>
+                <scope>provided</scope>
+            </dependency>
+    
+            <!-- Nuxeo automation -->
+            <dependency>
+                <groupId>org.nuxeo.ecm.automation</groupId>
+                <artifactId>nuxeo-automation-client</artifactId>
+                <version>${nuxeo.automation.version}</version>
+                <scope>provided</scope>
+            </dependency>
+    
+            <!-- JSON -->
+            <dependency>
+                <groupId>net.sf.json-lib</groupId>
+                <artifactId>json-lib</artifactId>
+                <version>${json.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        
+        </dependencies>
+    </dependencyManagement>
 
 
     <dependencies>
     
         <!-- OSIVIA portal -->
-
         <dependency>
             <groupId>org.osivia.portal</groupId>
             <artifactId>osivia-portal-dependencies</artifactId>
-            <version>${osivia-portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-        
         <dependency>
             <groupId>org.osivia.portal</groupId>
             <artifactId>osivia-portal-dependencies-test</artifactId>
-            <version>${osivia-portal.version}</version>
-            <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.osivia.portal.core</groupId>
-            <artifactId>osivia-portal-custom-lib-utils</artifactId>
-            <version>${osivia-portal.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
+        
+        <!-- JBoss -->
         <dependency>
             <groupId>jboss</groupId>
             <artifactId>jboss-system</artifactId>
-            <version>${jboss.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>jboss</groupId>
             <artifactId>jboss-jmx</artifactId>
-            <version>${jboss.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-api-lib</artifactId>
-            <version>${jboss.portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-core-lib</artifactId>
-            <version>${jboss.portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-common-lib</artifactId>
-            <version>${jboss.portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal.identity</groupId>
             <artifactId>identity-identity</artifactId>
-            <version>${jboss.modules.identity.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-theme-lib</artifactId>
-            <version>${jboss.portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-server-lib</artifactId>
-            <version>${jboss.portal.version}</version>
-            <scope>provided</scope>
         </dependency>
-
+        
+        <!-- Nuxeo automation -->
         <dependency>
             <groupId>org.nuxeo.ecm.automation</groupId>
             <artifactId>nuxeo-automation-client</artifactId>
-            <version>${nuxeo.automation.version}</version>
-            <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-
-
-          <dependency>
-                <groupId>dom4j</groupId>
-                <artifactId>dom4j</artifactId>
-                <version>${dom4j.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
+        
+        <!-- JSON -->
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
         </dependency>
 
     </dependencies>
@@ -150,7 +192,10 @@
         <module>toutatice-portail-cms-nuxeo-web</module>
         <module>toutatice-portail-cms-nuxeo-sar</module>
         <module>toutatice-portail-cms-nuxeo-automation-client</module>
-        <module>toutatice-portail-cms-test-portlets</module>
+        <module>toutatice-portail-cms-nuxeo-test-portlets</module>
+        <module>toutatice-portail-cms-nuxeo-dependencies</module>
+        <module>toutatice-portail-cms-nuxeo-dependencies-test</module>
+        <module>toutatice-portail-cms-nuxeo-distribution</module>
     </modules>
 
 
@@ -192,7 +237,6 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.2.1</version>
                 <configuration>
-                    <!--<tagBase>http://eqpor.in.ac-rennes.fr/repos/toutatice-portail/test/tags/</tagBase> -->
                     <tagBase>http://projet.toutatice.fr/repos/toutatice-portail/cms/tags</tagBase>
                     <useReleaseProfile>false</useReleaseProfile>
                     <preparationGoals>clean install</preparationGoals>
