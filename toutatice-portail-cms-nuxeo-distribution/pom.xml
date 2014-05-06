@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+
+    <groupId>toutatice-portail.distribution</groupId>
+    <artifactId>toutatice-portail-distribution</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+
+    <prerequisites>
+        <maven>2.1.0</maven>
+    </prerequisites>
+
+
+    <properties>
+        <osivia-portal.version>3.2.0-SNAPSHOT</osivia-portal.version>
+        <toutatice.cms.version>3.2.0-SNAPSHOT</toutatice.cms.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>toutatice-portail.cms</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-sar</artifactId>
+            <version>${toutatice.cms.version}</version>
+            <type>sar</type>
+        </dependency>
+
+        
+         <dependency>
+            <groupId>toutatice-portail.cms</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
+            <version>${toutatice.cms.version}</version>
+            <type>jar</type>
+        </dependency>
+
+
+    </dependencies>
+
+    <profiles>
+
+
+        <profile>
+            <id>unpack</id>
+            <build>
+                <defaultGoal>package</defaultGoal>
+                <plugins>
+
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.osivia.portal</groupId>
+                                            <artifactId>osivia-portal-distribution</artifactId>
+                                            <version>${osivia-portal.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${project.build.directory}/osivia-distribution</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+
+
+
+        <profile>
+            <id>pack</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>zip-tomcat-portal</id>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>toutatice-portail-distribution-${project.version}</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <!--<attach>false</attach> -->
+                                </configuration>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.2.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <tagBase>http://projet.toutatice.fr/repos/toutatice-portail/distribution/tags</tagBase>
+                    <releaseProfiles>unpack,pack</releaseProfiles>
+                    <preparationGoals>clean install</preparationGoals>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+    <scm>
+        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/distribution/trunk</developerConnection>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>toutatice-releases</id>
+            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>toutatice-snapshots</id>
+            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+</project>
