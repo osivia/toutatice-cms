@@ -19,16 +19,24 @@
     <dependencies>
 
         <dependency>
-            <groupId>toutatice-portail.cms</groupId>
-            <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>toutatice-portail.cms</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- Nuxeo automation -->
+        <dependency>
+            <groupId>org.nuxeo.ecm.automation</groupId>
+            <artifactId>nuxeo-automation-client</artifactId>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
