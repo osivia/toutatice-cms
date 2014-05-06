@@ -14,7 +14,7 @@
       <unpack>false</unpack>
       <scope>runtime</scope>
 	<includes>
-		<include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-sar:sar:${toutatice.cms.version}</include>
+		<include>${project.groupId}:toutatice-portail-cms-nuxeo-sar:sar:${project.version}</include>
        	</includes>
     </dependencySet>
 
@@ -24,7 +24,7 @@
       <unpack>false</unpack>
       <scope>runtime</scope>
 	<includes>
-		<include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-api:jar:${toutatice.cms.version}</include>
+		<include>${project.groupId}:toutatice-portail-cms-nuxeo-api:jar:${project.version}</include>
        	</includes>
      </dependencySet>
 
