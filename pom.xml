@@ -236,7 +236,7 @@
                 <version>2.2.1</version>
                 <configuration>
                     <tagBase>http://projet.toutatice.fr/repos/toutatice-portail/cms/tags</tagBase>
-                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>unpack,pack</releaseProfiles>
                     <preparationGoals>clean install</preparationGoals>
                     <goals>deploy</goals>
                     <arguments>-Prelease</arguments>
