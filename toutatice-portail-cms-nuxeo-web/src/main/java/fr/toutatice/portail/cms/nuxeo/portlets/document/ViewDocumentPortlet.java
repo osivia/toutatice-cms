@@ -51,6 +51,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
@@ -282,20 +283,22 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     String noteTransformee = ctx.transformHTMLContent(note);
                     request.setAttribute("note", noteTransformee);
 
+                    if( ContextualizationHelper.isCurrentDocContextualized(ctx.getCMSCtx())) {
 
+                        ICMSService cmsService = NuxeoController.getCMSService();
+                        CMSPublicationInfos publiInfos = cmsService.getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
 
-                    ICMSService cmsService = NuxeoController.getCMSService();
-                    CMSPublicationInfos publiInfos = cmsService.getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
-                    
-                    boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
+                        boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
 
-                    if (docCanBeCommentedByUser) {// TODO: ajouter cdt de contextualisation
-                        String user = request.getRemoteUser();
-                        int authType = ctx.getAuthType();
-                        JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
-                        CMSServiceCtx cmsCtx = ctx.getCMSCtx();
-                        String comments = HTMLCommentsTreeBuilder.buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
-                        request.setAttribute("comments", comments);
+                        if (docCanBeCommentedByUser) {
+
+                            String user = request.getRemoteUser();
+                            int authType = ctx.getAuthType();
+                            JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
+                            CMSServiceCtx cmsCtx = ctx.getCMSCtx();
+                            String comments = HTMLCommentsTreeBuilder.buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
+                            request.setAttribute("comments", comments);
+                        }
                     }
 
 
