@@ -19,7 +19,6 @@
         <dependency>
             <groupId>org.osivia.portal</groupId>
             <artifactId>osivia-portal-dependencies-test</artifactId>
-            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 
