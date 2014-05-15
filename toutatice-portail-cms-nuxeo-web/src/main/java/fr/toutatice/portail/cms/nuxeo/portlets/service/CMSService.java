@@ -752,7 +752,7 @@ public class CMSService implements ICMSService {
                     if (item == null) {
                         if (navItem.getMainDoc() != null) {
                             navItem.setAdaptedCMSItem(this.createNavigationItem(cmsCtx, livePath, ((Document) navItem.getMainDoc()).getTitle(),
-                                    (Document) navItem.getMainDoc(), publishSpacePath));
+                                    (Document) navItem.getMainDoc(), publishSpaceConfig.getPath()));
                         } else {
                             return null;
                         }
