@@ -767,7 +767,7 @@ public class NuxeoController {
             }
             return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
         } else
-            return new NuxeoException(e.getCause());
+            return new NuxeoException(e);
 
     }
 
