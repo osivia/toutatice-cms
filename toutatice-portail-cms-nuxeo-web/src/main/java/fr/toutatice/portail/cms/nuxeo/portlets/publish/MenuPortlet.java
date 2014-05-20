@@ -301,7 +301,7 @@ public class MenuPortlet extends CMSPortlet {
 
 
                 // rafraichir en asynchrone
-                ctx.setAsynchronousUpdates(true);
+                //ctx.setAsynchronousUpdates(true);
 
                 int maxLevels = 3;
 

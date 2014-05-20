@@ -872,6 +872,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String policyFilter = null;
 
         ServerInvocation invocation = ctx.getServerInvocation();
+        
         String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
         // Dans certaines cas, le nom du portail n'est pas connu
