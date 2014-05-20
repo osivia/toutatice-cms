@@ -343,6 +343,11 @@ public class MenuBarFormater {
 
 
     protected void getLiveContentBrowserLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
+            return;
+        }
+        
         // Portal controller context
         PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
 
@@ -363,7 +368,7 @@ public class MenuBarFormater {
         }
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
-        if (!pubInfos.isLiveSpace() && folderish) {
+        if (!pubInfos.isLiveSpace() && !pubInfos.getSubTypes().isEmpty() && folderish) {
             // Live content browser popup link
             Map<String, String> properties = new HashMap<String, String>(1);
             properties.put("osivia.browser.path", path);
