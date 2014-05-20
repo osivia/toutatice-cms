@@ -869,39 +869,8 @@ public class CMSService implements ICMSService {
             boolean liveContent = "1".equals(cmsContext.getDisplayLiveVersion());
 
             // Nuxeo command execution
-            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(parentId, liveContent);
-            JSONArray documentsWithPublishingInfos = (JSONArray) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
-
-            // CMS items
-            List<CMSItem> cmsItems = new ArrayList<CMSItem>(documentsWithPublishingInfos.size());
-            Iterator documentsIterator = documentsWithPublishingInfos.iterator();
-            while (documentsIterator.hasNext()) {
-                JSONObject documentWithPublishingStatus = (JSONObject) documentsIterator.next();
-
-                String documentId = (String) documentWithPublishingStatus.get("docId");
-                String documentPath = (String) documentWithPublishingStatus.get("docPath");
-                String documentType = (String) documentWithPublishingStatus.get("docType");
-
-                String documentTitle = (String) documentWithPublishingStatus.get("docTitle");
-                PropertyMap nxProperties = new PropertyMap();
-                nxProperties.set("dc:title", documentTitle);
-
-                Document poorDocument = new Document(documentId, documentType, null, null, documentPath, null, null, null, null, null, nxProperties, null);
-
-                CMSItem cmsItem = this.createItem(cmsContext, poorDocument.getPath(), poorDocument.getTitle(), poorDocument);
-
-                boolean isPublished = documentWithPublishingStatus.getBoolean("isPublished");
-                boolean isLiveModifiedFromProxy = documentWithPublishingStatus.getBoolean("isLiveModifiedFromProxy");
-                cmsItem.setPublished(Boolean.valueOf(isPublished));
-                cmsItem.setBeingModified(Boolean.valueOf(isLiveModifiedFromProxy));
-
-                boolean isFolderish = documentWithPublishingStatus.getBoolean("isFolderish");
-                CMSItemType cmsItemType = new CMSItemType(documentType, isFolderish, false, false, false, false, null, null);
-                cmsItem.setType(cmsItemType);
-                
-                cmsItems.add(cmsItem);
-            }
-            return cmsItems;
+            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(cmsContext, parentId, liveContent);
+            return (List<CMSItem>) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
             
         } catch (CMSException e) {
             throw e;
