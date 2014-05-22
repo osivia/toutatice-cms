@@ -873,7 +873,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         ServerInvocation invocation = ctx.getServerInvocation();
         
-        String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
+        String portalName = null;
+
+        
+        // Cas des chargement asynchrones : pas de contexte
+        if(invocation != null)
+            portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
         // Dans certaines cas, le nom du portail n'est pas connu
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
@@ -916,11 +921,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
                 }
             }
-        }
 
-        String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
-        if (extraFilter != null) {
-            requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+            String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
+            if (extraFilter != null) {
+                requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+            }
         }
 
         // Insertion du filtre avant le order
@@ -1159,11 +1164,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         
         String webId = doc.getString("ttc:webid");
         
+        String domainId = doc.getString("ttc:domainID");
+        
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
         
-        if (StringUtils.isNotEmpty(webId)) {
+        
+        // webId and domainId have no signification without each other
+        if (StringUtils.isNotEmpty(webId) && StringUtils.isNotEmpty(domainId)) {
             
-            String domainId = doc.getString("ttc:domainID");
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
             
