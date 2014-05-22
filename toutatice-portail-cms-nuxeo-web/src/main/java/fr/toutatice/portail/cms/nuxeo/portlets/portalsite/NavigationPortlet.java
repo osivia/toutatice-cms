@@ -135,7 +135,7 @@ public class NavigationPortlet extends CMSPortlet {
 				NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
 								
 					// rafraichir en asynchrone
-				//ctx.setAsynchronousUpdates(true);
+				ctx.setAsynchronousUpdates(true);
 				
 
 				PortalSiteBean portalSite = (PortalSiteBean) ctx.executeNuxeoCommand(new PortalSiteFetchCommand(
