@@ -112,6 +112,7 @@ public class MenuBarFormater {
 
 
 
+    @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
         if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
@@ -120,48 +121,48 @@ public class MenuBarFormater {
 
         PortletRequest request = cmsCtx.getRequest();
 
-        List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+        // Menubar
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
-        // Menu bar
+        
 
         try {
 
 
             if (cmsCtx.getDoc() != null) {
-                this.getPermaLinkLink(cmsCtx, menuBar);
+                this.getPermaLinkLink(cmsCtx, menubar);
             }
 
             if (cmsCtx.getDoc() != null) {
-                this.getContextualizationLink(cmsCtx, menuBar);
+                this.getContextualizationLink(cmsCtx, menubar);
             }
 
             if (cmsCtx.getDoc() != null) {
-                this.getChangeModeLink(cmsCtx, menuBar);
+                this.getChangeModeLink(cmsCtx, menubar);
             }
 
-            this.getLiveContentBrowserLink(cmsCtx, menuBar);
+            this.getLiveContentBrowserLink(cmsCtx, menubar);
 
             if (cmsCtx.getDoc() != null) {
-                this.getEditLink(cmsCtx, menuBar);
+                this.getEditLink(cmsCtx, menubar);
             }
 
-            this.getCreateLink(cmsCtx, menuBar);
+            this.getCreateLink(cmsCtx, menubar);
 
             if (cmsCtx.getDoc() != null) {
-                this.getDeleteLink(cmsCtx, menuBar);
+                this.getDeleteLink(cmsCtx, menubar);
             }
 
 
             if (cmsCtx.getDoc() != null) {
-                this.getAdministrationLink(cmsCtx, menuBar);
+                this.getAdministrationLink(cmsCtx, menubar);
             }
 
 
 
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
-                // On ne fait rien : le document n'existe pas ou je n'ai pas
-                // les droits
+                // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
             } else  {
                 throw e;
             }
@@ -382,95 +383,133 @@ public class MenuBarFormater {
         }
     }
 
-
-    protected void addEditLinkItem(List<MenubarItem> menuBar, String onClick, String url) throws Exception {
-
-        MenubarItem item = new MenubarItem("EDIT", "Modifier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick, "fancyframe_refresh edition", "nuxeo");
-        item.setAjaxDisabled(true);
-        item.setDropdownItem(true);
-        menuBar.add(item);
-
-    }
-
-
-    protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-
+    
+    /**
+     * Get edit CMS content link.
+     * 
+     * @param cmsCtx CMS context
+     * @param menubar menubar
+     * @throws Exception
+     */
+    protected void getEditLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
 
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
+        // Publication infos
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
-
         if (pubInfos.isEditableByUser()) {
             if ((pubInfos.isLiveSpace() || (this.isInLiveMode(cmsCtx, pubInfos))) && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 Document doc = (Document) cmsCtx.getDoc();
 
                 CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
                 if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
-                    String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(
-                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
+                    // Portal controller context
+                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+                            cmsCtx.getResponse());
+                    // Callback URL
+                    String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+                    // Portal base URL
+                    String portalBaseURL = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
+                    // ECM base URL
+                    String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
 
-                    String onClick = "setCallbackParams(null, '" + callBackURL + "')";
+                    // URL
+                    StringBuilder url = new StringBuilder();
+                    url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                    url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                    url.append("@toutatice_edit?fromUrl=").append(portalBaseURL);
 
-                    this.addEditLinkItem(menuBar, onClick, NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
-                            + "@toutatice_edit");
+                    // On click action
+                    StringBuilder onClick = new StringBuilder();
+                    onClick.append("javascript:setCallbackFromEcmParams('");
+                    onClick.append(callbackURL);
+                    onClick.append("', '");
+                    onClick.append(ecmBaseURL);
+                    onClick.append("');");
+
+                    // Menubar item
+                    MenubarItem item = new MenubarItem("EDIT", bundle.getString("EDIT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url.toString(), onClick.toString(),
+                            "fancyframe_refresh edition", "nuxeo");
+                    item.setAjaxDisabled(true);
+                    item.setDropdownItem(true);
+                    menubar.add(item);
                 }
             }
         }
     }
 
 
-
-
-    protected void getCreateLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-    	Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-
-        if (cmsCtx.getRequest().getRemoteUser() == null)    {
+    /**
+     * Get create CMS content link.
+     * 
+     * @param cmsCtx CMS context
+     * @param menubar menubar
+     * @throws Exception
+     */
+    protected void getCreateLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
+        
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
-
+        // Creation type
         String creationType = cmsCtx.getCreationType();
+        // Creation path
         String creationPath = cmsCtx.getCreationPath();
-
+        // Parent document
         Document parentDoc = (Document) cmsCtx.getDoc();
-
         if (creationPath != null) {
             parentDoc = (Document) this.cmsService.getContent(cmsCtx, creationPath).getNativeItem();
         }
 
-        /* Contextualisation */
-
-
+        // Contextualization
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
-
         if ((creationPath != null) || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+            // Callback URL
+            String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+            // Portal base URL
+            String portalBaseURL = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
+            // ECM base URL
+            String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
+            // On click action
+            StringBuilder onClick = new StringBuilder();
+            onClick.append("javascript:setCallbackFromEcmParams('");
+            onClick.append(callbackURL);
+            onClick.append("', '");
+            onClick.append(ecmBaseURL);
+            onClick.append("');");
 
+            // Sub-types
             Map<String, String> subTypes = pubInfos.getSubTypes();
-
             List<SubType> portalDocsToCreate = new ArrayList<SubType>();
             Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
             CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
-
                 for (String docType : subTypes.keySet()) {
-
-                    // is this type managed at portal level ?
-
+                    // Is this type managed at portal level ?
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
-
                         CMSItemType docTypeDef = managedTypes.get(docType);
-
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
+                            // Sub-type URL
+                            StringBuilder url = new StringBuilder();
+                            url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                            url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                            url.append("@toutatice_create?type=").append(docType);
+                            url.append("&fromUrl=").append(portalBaseURL);
 
+                            // Sub-type
                             SubType subType = new SubType();
-
-
                             subType.setDocType(docType);
                             subType.setName(bundle.getString(docType.toUpperCase()));
-                            subType.setUrl(NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath()
-                                    + "@toutatice_create?type=" + docType);
+                            subType.setUrl(url.toString());
                             portalDocsToCreate.add(subType);
                         }
                     }
@@ -478,46 +517,24 @@ public class MenuBarFormater {
             }
 
 
-            // Refresh all page
-
-            String callBackURL = this.getPortalUrlFactory().getRefreshPageUrl(
-                    new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()));
-
-
-            String onClick = "setCallbackParams(null, '" + callBackURL + "')";
-
-
             if (portalDocsToCreate.size() == 1) {
-                // Pas de fancybox
+                // No fancybox
+                StringBuilder url = new StringBuilder();
+                url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                url.append("@toutatice_create?type=").append(portalDocsToCreate.get(0).getDocType());
+                url.append("&fromUrl=").append(portalBaseURL);
 
-                String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxpath/default" + pubInfos.getDocumentPath() + "@toutatice_create?type="
-                        + portalDocsToCreate.get(0).getDocType();
-
-                MenubarItem add = new MenubarItem("CREATE", "Ajouter", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, onClick,
+                // Menubar item
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url.toString(), onClick.toString(),
                         "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
-
-                add.setDropdownItem(true);
-                add.setAjaxDisabled(true);
-                menuBar.add(add);
-
-                return;
-
-            }
-
-
-            /* Lien de création */
-
-            String fancyID = null;
-            if (portalDocsToCreate.size() > 0) {
-                fancyID = "_PORTAL_CREATE";
-            }
-
-            if (fancyID != null) {
-
-
-                // fancybox div
-
-                StringBuffer fancyContent = new StringBuffer();
+                item.setDropdownItem(true);
+                item.setAjaxDisabled(true);
+                menubar.add(item);
+            } else if (portalDocsToCreate.size() > 0) {
+                // Fancybox
+                String fancyId = "_PORTAL_CREATE";
+                StringBuilder fancyContent = new StringBuilder();
 
                 fancyContent.append("<div class=\"fancybox-content\">");
                 fancyContent.append("   <div id=\"" + cmsCtx.getResponse().getNamespace() + "_PORTAL_CREATE\" class=\"document-types\">");
@@ -529,13 +546,14 @@ public class MenuBarFormater {
                 for (SubType subDoc : portalDocsToCreate) {
                     fancyContent.append("<div class=\"doc-type-detail\">");
                     fancyContent.append("   <div class=\"vignette\">");
-                    fancyContent.append("       <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\">");
+                    fancyContent.append("       <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\" onclick=\"" + onClick.toString() + "\">");
                     fancyContent.append("           <img src=\"/toutatice-portail-cms-nuxeo/img/icons/" + subDoc.getDocType().toLowerCase() + "_100.png\"> ");
                     fancyContent.append("       </a>");
                     fancyContent.append("   </div>");
                     fancyContent.append("   <div class=\"main\">");
                     fancyContent.append("       <div class=\"title\">");
-                    fancyContent.append("           <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\">" + subDoc.getName() + "</a>");
+                    fancyContent.append("           <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\" onclick=\"" + onClick.toString() + "\">"
+                            + subDoc.getName() + "</a>");
                     fancyContent.append("       </div>");
                     fancyContent.append("   </div>");
                     fancyContent.append("</div>");
@@ -546,24 +564,25 @@ public class MenuBarFormater {
                     index++;
                 }
 
-
                 fancyContent.append("        </div>");
                 fancyContent.append("   </div>");
                 fancyContent.append("</div>");
 
 
-                MenubarItem item = new MenubarItem("EDIT", "Ajouter ", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#" + cmsCtx.getResponse().getNamespace()
-                        + fancyID, onClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+                // Fancybox callback URL : refresh all page
+                String fancyCallbackURL = this.getPortalUrlFactory().getRefreshPageUrl(portalControllerContext);
+                // Fancybox onclick action
+                String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
 
+                // Menubar item
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#"
+                        + cmsCtx.getResponse().getNamespace() + fancyId, fancyOnClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
                 item.setAjaxDisabled(true);
                 item.setAssociatedHtml(fancyContent.toString());
                 item.setDropdownItem(true);
-
-                menuBar.add(item);
-
+                menubar.add(item);
             }
         }
-
     }
 
 

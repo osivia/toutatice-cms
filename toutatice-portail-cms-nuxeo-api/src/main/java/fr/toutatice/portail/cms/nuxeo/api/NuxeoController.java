@@ -1817,7 +1817,7 @@ public class NuxeoController {
         // Preview mode
         EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
         if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-            this.cmsCtx.setPreviewVersionPath(editionState.getDocPath());
+            this.cmsCtx.setForcedLivePath(editionState.getDocPath());
         }
 
         this.cmsCtx.setPageId(this.getPageId());
