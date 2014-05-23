@@ -88,12 +88,13 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
 				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
+				publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
 				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
 				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
 				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
 				publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
 
-                 if (infos.containsKey("spaceID")) {
+                if (infos.containsKey("spaceID")) {
                     publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
                 }
                 if (infos.containsKey("parentSpaceID")) {
@@ -141,7 +142,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "PublishInfosCommand" + path;
+		return "PublishInfosCommand" + StringUtils.removeEnd(path, ".proxy");
 	}
 
 	/**

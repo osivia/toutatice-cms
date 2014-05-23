@@ -260,102 +260,110 @@ public class MenuBarFormater {
     }
 
 
-
-
-    protected void addChangeModeLinkItem(List<MenubarItem> menuBar, String url, EditionState newState) throws Exception {
-        if(EditionState.CONTRIBUTION_MODE_EDITION.equals(newState.getContributionMode()))   {
-            MenubarItem liveView = new MenubarItem(null, "Voir la version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "live", "");
-            liveView.setAjaxDisabled(true);
-            liveView.setDropdownItem(true);
-            menuBar.add(liveView);
-        }   else    {
-
-
-
-            MenubarItem publishedView = new MenubarItem(null, "Voir la version publiée", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "published", "");
-            publishedView.setAjaxDisabled(true);
-            publishedView.setDropdownItem(true);
-            menuBar.add(publishedView);
-        }
-    }
-
-
-
-
-    protected void getChangeModeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-
+    /**
+     * Get change mode link.
+     * 
+     * @param cmsCtx CMS context
+     * @param menubar menubar
+     * @throws Exception
+     */
+    protected void getChangeModeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
 
+        // Current document
         Document document = (Document) (cmsCtx.getDoc());
         String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 
-
         if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            // Internationalization bundle
+            Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
 
-            EditionState newState = new EditionState( EditionState.CONTRIBUTION_MODE_EDITION, path);
+            // Edition state
+            EditionState editionState;
 
+            if (this.isInLiveMode(cmsCtx, pubInfos)) {
+                editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
 
-            PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
-
-
-
-            if( this.isInLiveMode(cmsCtx, pubInfos))  {
-                newState =  new EditionState( EditionState.CONTRIBUTION_MODE_ONLINE, path);
-
-                MenubarItem liveIndicator = new MenubarItem(null, "Version de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null,
-                        "portlet-menuitem-edition live", null);
+                // Live version indicator menubar item
+                MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null,
+                        null, "portlet-menuitem-edition live", null);
                 liveIndicator.setStateItem(true);
-                menuBar.add(liveIndicator);
-            }   else    {
+                menubar.add(liveIndicator);
+            } else {
+                editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
+
                 // Forget old state
-                this.getContributionService().removeWindowEditionState(portalCtx) ;
-
+                this.getContributionService().removeWindowEditionState(portalControllerContext);
             }
-
 
             // Do not insert any action for remote proxy
-            if( this.isRemoteProxy(cmsCtx, pubInfos))
-                return;
+            if (!this.isRemoteProxy(cmsCtx, pubInfos)) {
+                if (this.isInLiveMode(cmsCtx, pubInfos)) {
+                    // Publish menubar item
+                    String publishURL = this.getContributionService().getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                    MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
+                            null, "publish-action", null);
+                    publishItem.setAjaxDisabled(true);
+                    publishItem.setDropdownItem(true);
+                    menubar.add(publishItem);
 
-            /* Publish link */
-            String url = this.getContributionService().getChangeEditionStateUrl( portalCtx, newState);
-            if(! EditionState.CONTRIBUTION_MODE_EDITION.equals(newState.getContributionMode()))   {
-                String publishUrl = this.getContributionService().getPublishContributionUrl(portalCtx, pubInfos.getDocumentPath());
+                    // Go to proxy menubar item
+                    String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
+                    MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, proxyURL,
+                            null, "published", null);
+                    proxyItem.setAjaxDisabled(true);
+                    proxyItem.setDropdownItem(true);
+                    menubar.add(proxyItem);
+                } else {
+                    // Unpublish menubar item
+                    String unpublishURL = this.getContributionService().getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                    MenubarItem publishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+                            unpublishURL, null, "unpublish-action", null);
+                    publishItem.setAjaxDisabled(true);
+                    publishItem.setDropdownItem(true);
+                    menubar.add(publishItem);
 
-
-                MenubarItem publishAction = new MenubarItem(null, "Publier", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishUrl, null, "publish-action", "");
-                publishAction.setAjaxDisabled(true);
-                publishAction.setDropdownItem(true);
-                menuBar.add(publishAction);
+                    if (pubInfos.isBeingModified()) {
+                        // Go to preview menubar item
+                        String previewURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
+                        MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS,
+                                previewURL, null, "live", null);
+                        previewItem.setAjaxDisabled(true);
+                        previewItem.setDropdownItem(true);
+                        menubar.add(previewItem);
+                    }
+                }
             }
-
-            // No publication yet ! can't change edition mode
-            if( this.isInLiveMode(cmsCtx, pubInfos) && !pubInfos.isPublished())
-                return;
-
-
-            /* Change mode link */
-            this.addChangeModeLinkItem(menuBar, url, newState);
         }
     }
+    
 
-
-    protected void getLiveContentBrowserLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-        
+    /**
+     * Get live content browser link.
+     * 
+     * @param cmsCtx CMS context
+     * @param menubar menubar
+     * @throws Exception
+     */
+    protected void getLiveContentBrowserLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
-        
-        // Portal controller context
-        PortalControllerContext portalCtx = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
 
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
+
+        // Current document
+        Document document = (Document) cmsCtx.getDoc();
         String path;
         boolean folderish;
-
-        Document document = (Document) cmsCtx.getDoc();
         if (document == null) {
             path = cmsCtx.getCreationPath();
 
@@ -374,12 +382,13 @@ public class MenuBarFormater {
             Map<String, String> properties = new HashMap<String, String>(1);
             properties.put("osivia.browser.path", path);
             Map<String, String> parameters = new HashMap<String, String>(0);
-            String browserUrl = this.getPortalUrlFactory().getStartPortletUrl(portalCtx, "osivia-portal-browser-portlet-instance", properties, parameters, true);
-            MenubarItem browserItem = new MenubarItem(null, "Parcourir les versions de travail", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, browserUrl, null,
-                    "browser live fancyframe_refresh", "");
+            String browserUrl = this.getPortalUrlFactory()
+                    .getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, parameters, true);
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS,
+                    browserUrl, null, "browser live fancyframe_refresh", "");
             browserItem.setAjaxDisabled(true);
             browserItem.setDropdownItem(true);
-            menuBar.add(browserItem);
+            menubar.add(browserItem);
         }
     }
 
@@ -402,7 +411,7 @@ public class MenuBarFormater {
         // Publication infos
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
         if (pubInfos.isEditableByUser()) {
-            if ((pubInfos.isLiveSpace() || (this.isInLiveMode(cmsCtx, pubInfos))) && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            if (pubInfos.isLiveSpace() || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 Document doc = (Document) cmsCtx.getDoc();
 
                 CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());

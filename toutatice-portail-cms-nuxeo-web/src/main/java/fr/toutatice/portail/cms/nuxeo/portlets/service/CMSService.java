@@ -306,7 +306,7 @@ public class CMSService implements ICMSService {
 
             boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
 
-            if (pubInfos.getDocumentPath().equals(cmsCtx.getForcedLivePath())) {
+            if (pubInfos.getDocumentPath().equals(cmsCtx.getForcedLivePath()) || pubInfos.getLiveId().equals(cmsCtx.getForcedLivePath())) {
                 haveToGetLive = true;
             }
 
