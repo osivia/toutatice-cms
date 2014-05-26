@@ -19,15 +19,16 @@
 		commentDiv.style.display = 'none';
 	}
 </script>
-<% 
+<% 	
+	String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 	String commentsTree = (String) renderRequest.getAttribute("comments"); 
   	if (commentsTree != null) {
 %>
     <div class="commentsTitle"><h2>Commentaires</h2></div>
     
     <div class="add-comment-link">
-    	<span class="add-comment-span" onclick="showCommentField('div_add_comment');" >Ajouter un commentaire</span> 
-    	<div id="div_add_comment" style="display: none">
+    	<span class="add-comment-span" onclick="showCommentField('div_add_comment<%= containerId %>');" >Ajouter un commentaire</span> 
+    	<div id="div_add_comment<%= containerId %>" style="display: none">
 			<jsp:include page="add-comment.jsp"></jsp:include>
 		</div>
 	</div>
@@ -42,6 +43,7 @@
 	<%  String commentId = "";
 		for(String commentsTreePart : commentsTreeSplit){ 
 		    commentsTreePart = commentsTreePart.replace(HTMLCommentsTreeBuilder.DIV_COM_ID_TAG, commentId);
+		    commentsTreePart = commentsTreePart.replace(HTMLCommentsTreeBuilder.ADD_CONTAINER_ID, containerId);
 	%>
 		<%= commentsTreePart %>
 		<% if(index < treeSize){ 
@@ -55,7 +57,7 @@
 	%>
 	</div> 
 	
-	<div id="div_delete_comment" style="display: none">
+	<div id="div_delete_comment<%= containerId %>" style="display: none">
 		<jsp:include page="delete-comment.jsp"></jsp:include>
 	</div>
 

@@ -16,6 +16,6 @@ String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 		<textarea id="addedContent" name="content" rows="6" cols="60"></textarea><br/>
 		<div id="errorAddCom" class="contentError"></div>
 		<input type="submit" name="addComment"  value="Ajouter" class="ajax-link">
-		<input type="reset" name="noAddComment"  value="Annuler" onclick="hideCommentField('div_add_comment');">
+		<input type="reset" name="noAddComment"  value="Annuler" onclick="hideCommentField('div_add_comment<%= containerId %>');">
 	</form>
 </div>

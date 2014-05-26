@@ -7,7 +7,6 @@
 
 <%
 String commentId = (String) renderRequest.getAttribute("commentDivId");
-String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 %>
 
 <portlet:actionURL var="valid_child" ><portlet:param name="comments" value="addChild"/></portlet:actionURL>
