@@ -51,14 +51,19 @@ public class CreateChildCommentCommand implements INuxeoCommand {
         childCommentContent = HTMLCommentsTreeBuilder.storeNewLines(childCommentContent);
         request.set("childComment", childCommentContent);
         request.set("childCommentTitle", childCommentTitle);
+        File tmpFile = null;
         if (hasFile) {
             request.set("fileName", file.getName());
+            request.setInput(new FileBlob(file));
+        }else{
+            tmpFile = File.createTempFile("tmp_com", ".tmp");
+            request.setInput(new FileBlob(tmpFile));
         }
-        Blob commentIdBinary = (Blob) request.execute();
-        if (hasFile) {
-            String commentId = IOUtils.toString(commentIdBinary.getStream(), "UTF-8");
-            AddCommentCommand.setBlob(nuxeoSession, commentId, file);
-        }
+        request.execute();
+        
+        /* To avoid temporary file persistence */
+        tmpFile.delete();
+        
         return document;
     }
 
