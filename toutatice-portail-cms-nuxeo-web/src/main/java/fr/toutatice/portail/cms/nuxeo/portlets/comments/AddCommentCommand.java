@@ -22,7 +22,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPost;
 
 /**
  * Add comment command.
- *
+ * 
  * @author David Chevrier
  * @author Cédric Krommenhoek
  * @see INuxeoCommand
@@ -39,7 +39,7 @@ public class AddCommentCommand implements INuxeoCommand {
 
     /**
      * Constructor.
-     *
+     * 
      * @param document Nuxeo document
      * @param comment comment
      * @param parentId parent comment identifier, may be null
@@ -102,24 +102,28 @@ public class AddCommentCommand implements INuxeoCommand {
 
         // Parent document identifier
         request.set("commentableDoc", this.document.getId());
+        File tmpFile = null;
         // Thread post attachment
         if (attachment != null) {
             request.set("fileName", filename);
+            request.setInput(new FileBlob(attachment));
+        } else {
+            /* Nuxeo operation need no null input */
+            tmpFile = File.createTempFile("tmp_com", ".tmp");
+            request.setInput(new FileBlob(tmpFile));
         }
 
         Blob blob = (Blob) request.execute();
 
-        // Thread post attachment
-        if (attachment != null) {
-            String commentId = IOUtils.toString(blob.getStream(), CharEncoding.UTF_8);
-            DocRef docRef = new DocRef(commentId);
-            Blob fileBlob = new FileBlob(attachment);
-            documentService.setBlob(docRef, fileBlob, "post:fileContent");
+        /* To avoid temporary file persistence */
+        if (tmpFile != null) {
+            tmpFile.delete();
         }
 
         // Update thread
         documentService.setProperty(this.document, "dc:title", this.document.getTitle());
 
+        // return blob;
         return blob;
     }
 
