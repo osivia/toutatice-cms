@@ -43,6 +43,8 @@ public class HTMLCommentsTreeBuilder {
 	public static final String ADD_COM_CHILD_JSP_TAG = "§§§";
 	/** Tag pour insérer les id des div de commenatires */
 	public static final String DIV_COM_ID_TAG = "###";
+	/**Tag to insert container identifiant */
+    public static final String ADD_CONTAINER_ID = "*$%";
 
 	public static String buildHtmlTree(CMSServiceCtx cmsCtx, StringBuffer htmlTree, JSONArray comments, int level, int authType, String user) throws CMSException {
 
@@ -86,8 +88,8 @@ public class HTMLCommentsTreeBuilder {
 				Boolean canDelete = (Boolean) comment.get("canDelete");
 				if (canDelete) {
 					htmlTree.append("<div class=\"delete_comment\">");
-					htmlTree.append("<a class=\"fancybox_inline\" href=\"#div_delete_comment\" ");
-					htmlTree.append("onclick=\"document.getElementById('currentCommentId').value='");
+					htmlTree.append("<a class=\"fancybox_inline\" href=\"#div_delete_comment" + ADD_CONTAINER_ID +"\" ");
+					htmlTree.append("onclick=\"document.getElementById('currentCommentId" + ADD_CONTAINER_ID + "').value='");
 					htmlTree.append(comment.get("id"));
 					htmlTree.append("'\">Supprimer</a>");
 					htmlTree.append("</div>");
