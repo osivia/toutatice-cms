@@ -102,13 +102,18 @@ function isEmptyField(inputId, errorElementId, msg){
 }
 
 /* Affichage des actions répondre/supprimer au survol */
-function toggleactions(obj, show){    
+function toggleactions(obj, show){ 
+	var delete_elem = obj.getElementsByClassName('delete_comment')[0];
 	if(show){       
-		obj.getElementsByClassName('child_comment')[0].style.display="block";     
-		obj.getElementsByClassName('delete_comment')[0].style.display="block";  
+		obj.getElementsByClassName('child_comment')[0].style.display="block"; 
+		if(typeof(delete_elem) != "undefined"){
+			delete_elem.style.display="block";  
+		}
 	}else{      
 		obj.getElementsByClassName('child_comment')[0].style.display="none";       
-		obj.getElementsByClassName('delete_comment')[0].style.display="none";  
+		if(typeof(delete_elem) != "undefined"){
+			delete_elem.style.display="none";  
+		}
 	}  
 }
 
