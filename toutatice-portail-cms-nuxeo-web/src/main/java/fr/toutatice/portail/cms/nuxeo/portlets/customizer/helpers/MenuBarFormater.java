@@ -184,8 +184,6 @@ public class MenuBarFormater {
         EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
 
         if( (curState != null) && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION))  {
-
-
             if( curState.getDocPath().equals(pubInfos.getDocumentPath())) {
                 liveMode = true;
             }
@@ -223,7 +221,7 @@ public class MenuBarFormater {
      */
     protected void addAdministrationLinkItem(List<MenubarItem> menuBar, String url) throws Exception {
 
-        MenubarItem item = new MenubarItem("MANAGE", "Gérer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 3, url, null, "portlet-menuitem-nuxeo-manage", "nuxeo");
+        MenubarItem item = new MenubarItem("MANAGE", "Gérer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 24, url, null, "portlet-menuitem-nuxeo-manage", "nuxeo");
         item.setAjaxDisabled(true);
         item.setDropdownItem(true);
         menuBar.add(item);
@@ -247,7 +245,7 @@ public class MenuBarFormater {
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
 
 
-        // Do not delete remote proxy
+        // Do not manage remote proxy
         if( this.isRemoteProxy(cmsCtx, pubInfos))
             return;
 
@@ -354,6 +352,11 @@ public class MenuBarFormater {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
+        
+        if ( !ContextualizationHelper.isCurrentDocContextualized(cmsCtx))    {
+            return;
+        }
+            
 
         // Internationalization bundle
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
@@ -377,6 +380,12 @@ public class MenuBarFormater {
         }
 
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+        
+        
+        // Do not browse into remote proxy
+        if( this.isRemoteProxy(cmsCtx, pubInfos))
+            return;
+        
         if (!pubInfos.isLiveSpace() && !pubInfos.getSubTypes().isEmpty() && folderish) {
             // Live content browser popup link
             Map<String, String> properties = new HashMap<String, String>(1);
@@ -384,7 +393,7 @@ public class MenuBarFormater {
             Map<String, String> parameters = new HashMap<String, String>(0);
             String browserUrl = this.getPortalUrlFactory()
                     .getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, parameters, true);
-            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS,
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
                     browserUrl, null, "browser live fancyframe_refresh", "");
             browserItem.setAjaxDisabled(true);
             browserItem.setDropdownItem(true);
@@ -404,14 +413,21 @@ public class MenuBarFormater {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
+        
 
         // Internationalization bundle
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
         // Publication infos
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+        
+        
+        if( this.isRemoteProxy(cmsCtx, pubInfos))
+            return;
+
+        
         if (pubInfos.isEditableByUser()) {
-            if (pubInfos.isLiveSpace() || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            if ( ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 Document doc = (Document) cmsCtx.getDoc();
 
                 CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
@@ -440,8 +456,14 @@ public class MenuBarFormater {
                     onClick.append(ecmBaseURL);
                     onClick.append("');");
 
+                    String editLabel = null;
+                    if( !pubInfos.isLiveSpace() && !isInLiveMode( cmsCtx, pubInfos) && pubInfos.isBeingModified()) {
+                        editLabel = bundle.getString("EDIT_LIVE_VERSION");
+                    }   else
+                        editLabel = bundle.getString("EDIT");
+                    
                     // Menubar item
-                    MenubarItem item = new MenubarItem("EDIT", bundle.getString("EDIT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url.toString(), onClick.toString(),
+                    MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url.toString(), onClick.toString(),
                             "fancyframe_refresh edition", "nuxeo");
                     item.setAjaxDisabled(true);
                     item.setDropdownItem(true);
@@ -479,6 +501,12 @@ public class MenuBarFormater {
 
         // Contextualization
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
+        
+        
+        // Do not add into remote proxy
+        if( this.isRemoteProxy(cmsCtx, pubInfos))
+            return;
+        
         if ((creationPath != null) || ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
             // Portal controller context
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
@@ -535,8 +563,8 @@ public class MenuBarFormater {
                 url.append("&fromUrl=").append(portalBaseURL);
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url.toString(), onClick.toString(),
-                        "fancyframe_refresh portlet-menuitem-nuxeo-add", "nuxeo");
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, url.toString(), onClick.toString(),
+                        "fancyframe_refresh portlet-menuitem-edition add", "nuxeo");
                 item.setDropdownItem(true);
                 item.setAjaxDisabled(true);
                 menubar.add(item);
@@ -584,7 +612,7 @@ public class MenuBarFormater {
                 String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, "#"
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, "#"
                         + cmsCtx.getResponse().getNamespace() + fancyId, fancyOnClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
                 item.setAjaxDisabled(true);
                 item.setAssociatedHtml(fancyContent.toString());
@@ -597,7 +625,7 @@ public class MenuBarFormater {
 
     protected void addDeleteLinkItem(List<MenubarItem> menuBar, String onClick, String url, String fancyContent) throws Exception {
 
-        MenubarItem delete = new MenubarItem("DELETE", "Supprimer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 20, url, null,
+        MenubarItem delete = new MenubarItem("DELETE", "Supprimer", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 10, url, null,
                 "fancybox_inline portlet-menuitem-nuxeo-delete", null);
         delete.setAjaxDisabled(true);
         delete.setAssociatedHtml(fancyContent);
@@ -626,8 +654,9 @@ public class MenuBarFormater {
         if( this.isRemoteProxy(cmsCtx, pubInfos))
             return;
 
+        // Do not delete published elements
 
-        if (pubInfos.isDeletableByUser() && !this.isRemoteProxy(cmsCtx, pubInfos)) {
+        if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() ||  this.isInLiveMode(cmsCtx, pubInfos))) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
                 CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(doc.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
