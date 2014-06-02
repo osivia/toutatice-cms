@@ -38,6 +38,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
@@ -449,7 +450,8 @@ public Matcher getPortalMatcherReference() throws Exception	{
 
 						String pictureIndex = mResInternalPicture.group(3);
 
-						return  this.getNuxeoController().createAttachedPictureLink(uid, pictureIndex);
+						String portalLink =    this.getNuxeoController().createAttachedPictureLink(uid, pictureIndex);
+						return portalLink;
 						}
 					}
 
@@ -482,7 +484,8 @@ public Matcher getPortalMatcherReference() throws Exception	{
 
 							// v2 : simplification : phase de redirection trop complexe
 
-							return  this.getNuxeoController().getCMSLinkByPath(path, null).getUrl();
+							String portalLink =   this.getNuxeoController().getCMSLinkByPath(path, null).getUrl();
+							return portalLink;
 
 
 							//return ctx.createRedirectDocumentLink(path);

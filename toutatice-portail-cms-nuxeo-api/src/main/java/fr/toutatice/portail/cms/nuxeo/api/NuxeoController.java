@@ -1608,10 +1608,15 @@ public class NuxeoController {
 
         try {
             CMSServiceCtx cmsCtx = this.getCMSCtx();
+            
+
             // Prévisualisation des portlets définis au niveau du template
             if (path.equals(this.getNavigationPath())) {
-                if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
-                    cmsCtx.setDisplayLiveVersion("1");
+                // Uniquement en mode web page
+                if( path.equals(getRequest().getAttribute("osivia.cms.webPagePath"))) {
+                     if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
+                        cmsCtx.setDisplayLiveVersion("1");
+                    }
                 }
 
             }

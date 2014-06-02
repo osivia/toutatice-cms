@@ -26,6 +26,9 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
@@ -45,6 +48,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -125,36 +129,51 @@ public class MenuBarFormater {
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
 
         
+        // Check if web page mode
+        // layout contains CMS regions and content supports fragments
+        // Edition mode is supported by the webpage menu
+        boolean webPageFragment = false;
+        
+        if( cmsCtx.getDoc() != null ) {
+            String webPagePath = (String) request.getAttribute("osivia.cms.webPagePath");
+            
+            String docLivePath = ContextualizationHelper.getLivePath(((Document) (cmsCtx.getDoc())).getPath());
+            if (StringUtils.equals(docLivePath, webPagePath)) {
+                    webPageFragment = true;
+            }
+        }
+
+        
 
         try {
 
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null && !webPageFragment) {
                 this.getPermaLinkLink(cmsCtx, menubar);
             }
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null  && !webPageFragment) {
                 this.getContextualizationLink(cmsCtx, menubar);
             }
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null  && !webPageFragment) {
                 this.getChangeModeLink(cmsCtx, menubar);
             }
 
             this.getLiveContentBrowserLink(cmsCtx, menubar);
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null  && !webPageFragment) {
                 this.getEditLink(cmsCtx, menubar);
             }
 
             this.getCreateLink(cmsCtx, menubar);
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null  && !webPageFragment) {
                 this.getDeleteLink(cmsCtx, menubar);
             }
 
 
-            if (cmsCtx.getDoc() != null) {
+            if (cmsCtx.getDoc() != null  && !webPageFragment) {
                 this.getAdministrationLink(cmsCtx, menubar);
             }
 
@@ -311,12 +330,14 @@ public class MenuBarFormater {
                     menubar.add(publishItem);
 
                     // Go to proxy menubar item
-                    String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
-                    MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, proxyURL,
+                    if( pubInfos.isPublished()){
+                        String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
+                        MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, proxyURL,
                             null, "published", null);
-                    proxyItem.setAjaxDisabled(true);
-                    proxyItem.setDropdownItem(true);
-                    menubar.add(proxyItem);
+                        proxyItem.setAjaxDisabled(true);
+                        proxyItem.setDropdownItem(true);
+                        menubar.add(proxyItem);
+                    }
                 } else {
                     // Unpublish menubar item
                     String unpublishURL = this.getContributionService().getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
@@ -393,7 +414,7 @@ public class MenuBarFormater {
             Map<String, String> parameters = new HashMap<String, String>(0);
             String browserUrl = this.getPortalUrlFactory()
                     .getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, parameters, true);
-            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2,
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4,
                     browserUrl, null, "browser live fancyframe_refresh", "");
             browserItem.setAjaxDisabled(true);
             browserItem.setDropdownItem(true);
@@ -463,7 +484,7 @@ public class MenuBarFormater {
                         editLabel = bundle.getString("EDIT");
                     
                     // Menubar item
-                    MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url.toString(), onClick.toString(),
+                    MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url.toString(), onClick.toString(),
                             "fancyframe_refresh edition", "nuxeo");
                     item.setAjaxDisabled(true);
                     item.setDropdownItem(true);
@@ -563,7 +584,7 @@ public class MenuBarFormater {
                 url.append("&fromUrl=").append(portalBaseURL);
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, url.toString(), onClick.toString(),
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url.toString(), onClick.toString(),
                         "fancyframe_refresh portlet-menuitem-edition add", "nuxeo");
                 item.setDropdownItem(true);
                 item.setAjaxDisabled(true);
@@ -612,8 +633,8 @@ public class MenuBarFormater {
                 String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4, "#"
-                        + cmsCtx.getResponse().getNamespace() + fancyId, fancyOnClick, "fancybox_inline fancybox-no-title portlet-menuitem-nuxeo-add", "nuxeo");
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, "#"
+                        + cmsCtx.getResponse().getNamespace() + fancyId, fancyOnClick, "fancybox_inline fancybox-no-title portlet-menuitem-edition add", "nuxeo");
                 item.setAjaxDisabled(true);
                 item.setAssociatedHtml(fancyContent.toString());
                 item.setDropdownItem(true);
