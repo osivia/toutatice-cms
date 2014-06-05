@@ -33,6 +33,18 @@
 		<servlet-name>SitePictureServlet</servlet-name>
 		<url-pattern>/sitepicture/*</url-pattern>
 	</servlet-mapping>
+    
+    
+    <servlet>
+        <servlet-name>AvatarServlet</servlet-name>
+        <servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AvatarServlet</servlet-name>
+        <url-pattern>/avatar/*</url-pattern>
+    </servlet-mapping>
+    
 	<servlet>
         <servlet-name>StreamingServlet</servlet-name>
         <servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.streaming.StreamingServlet</servlet-class>

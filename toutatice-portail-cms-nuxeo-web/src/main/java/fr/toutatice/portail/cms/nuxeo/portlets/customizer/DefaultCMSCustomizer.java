@@ -19,6 +19,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,6 +50,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -113,6 +116,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
+    /** servlet url for avatars */
+    private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
+
 
     /** Portlet context. */
     private PortletContext portletCtx;
@@ -150,6 +156,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** WEBID service. */    
     private IWebIdService webIdService;
 
+    /** Directory service */
+    private IDirectoryService directoryService;
+
 
     /**
      * Constructor.
@@ -183,7 +192,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.webIdService;
     }
     
-
     /**
      * Get Nuxeo connection properties.
      *
@@ -268,7 +276,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public INuxeoCommentsService getNuxeoCommentsService() {
         if (this.commentsService == null) {
-            this.commentsService = new NuxeoCommentsServiceImpl(this.cmsService);
+            this.commentsService = new NuxeoCommentsServiceImpl(this.cmsService, this.directoryService);
         }
         return this.commentsService;
     }
@@ -1108,6 +1116,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
     /**
+     * @return the directoryService
+     */
+    public IDirectoryService getDirectoryService() {
+        return directoryService;
+    }
+
+
+    /**
+     * @param directoryService the directoryService to set
+     */
+    public void setDirectoryService(IDirectoryService directoryService) {
+        this.directoryService = directoryService;
+    }
+
+    /**
      * Getter for portletCtx.
      *
      * @return the portletCtx
@@ -1193,6 +1216,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
         
         return permLinkPath;
+    }
+
+    @Override
+    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
+
+        String src = "";
+        try {
+            src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new CMSException(e);
+        }
+
+        return new Link(src, false);
     }
 
 }

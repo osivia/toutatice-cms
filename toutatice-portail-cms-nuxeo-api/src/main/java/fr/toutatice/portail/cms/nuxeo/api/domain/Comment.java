@@ -18,6 +18,8 @@ package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.util.List;
 
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
+
 
 /**
  * Nuxeo document comment java-bean.
@@ -32,6 +34,10 @@ public class Comment {
     private String path;
     /** Author. */
     private String author;
+
+    /** Author's LDAP object. */
+    private DirectoryPerson person;
+
     /** Creation date. */
     private String creationDate;
     /** Content. */
@@ -149,6 +155,23 @@ public class Comment {
     public void setAuthor(String author) {
         this.author = author;
     }
+
+
+    /**
+     * @return the person
+     */
+    public DirectoryPerson getPerson() {
+        return person;
+    }
+
+
+    /**
+     * @param person the person to set
+     */
+    public void setPerson(DirectoryPerson person) {
+        this.person = person;
+    }
+
 
     /**
      * Getter for creationDate.

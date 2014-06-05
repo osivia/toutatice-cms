@@ -28,6 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.HTMLConstants;
+import org.osivia.portal.api.directory.IDirectoryService;
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
@@ -48,15 +50,17 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
     /** CMS service. */
     private final CMSService cmsService;
 
+    private IDirectoryService directoryService;
 
     /**
      * Default constructor.
      *
      * @param cmsService CMS service
      */
-    public NuxeoCommentsServiceImpl(CMSService cmsService) {
+    public NuxeoCommentsServiceImpl(CMSService cmsService, IDirectoryService directoryService) {
         super();
         this.cmsService = cmsService;
+        this.directoryService = directoryService;
     }
 
 
@@ -96,9 +100,9 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             INuxeoCommand command = new GetCommentsCommand(document);
             JSONArray jsonArray = (JSONArray) this.cmsService.executeNuxeoCommand(cmsContext, command);
 
-            return this.convertJSONArrayToComments(jsonArray, type, locale);
-        } catch (CMSException e) {
-            throw e;
+            List<T> comments = convertJSONArrayToComments(jsonArray, type, locale);
+
+            return comments;
         } catch (Exception e) {
             throw new CMSException(e);
         }
@@ -107,7 +111,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
 
     /**
      * Convert JSON array to comments list.
-     *
+     * 
      * @param <T> comments parameterized type
      * @param jsonArray JSON array
      * @param type comments type
@@ -139,6 +143,12 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             if (jsonObject.containsKey("author")) {
                 String author = jsonObject.getString("author");
                 comment.setAuthor(author);
+
+                if (directoryService != null) {
+                    DirectoryPerson person = directoryService.getPerson(author);
+                    comment.setPerson(person);
+                }
+
             }
 
             // Creation date

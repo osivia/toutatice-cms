@@ -27,7 +27,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -1885,4 +1884,15 @@ public class NuxeoController {
 
     }
 
+    /**
+     * Get the user avatar (acceded from portlets).
+     * 
+     * @param username
+     * @return a link to the avatar
+     * @throws CMSException
+     */
+    public Link getUserAvatar(String username) throws CMSException {
+
+        return getCMSService().getUserAvatar(getCMSCtx(), username);
+    }
 }

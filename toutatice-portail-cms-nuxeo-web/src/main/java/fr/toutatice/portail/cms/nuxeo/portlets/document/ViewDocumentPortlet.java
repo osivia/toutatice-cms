@@ -16,7 +16,6 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.portlet.ActionRequest;
@@ -37,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -50,6 +50,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
@@ -92,15 +93,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSService CMSservice = new CMSService(this.getPortletContext());
             ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
             cmsLocator.register(CMSservice);
-
-
             customizer.setCmsService(CMSservice);
+
+            IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
+            customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
+
             CMSservice.setCustomizer(customizer);
 
 
             // v1.0.16
             ThumbnailServlet.setPortletContext(this.getPortletContext());
             SitePictureServlet.setPortletContext(getPortletContext());
+            AvatarServlet.setPortletContext(getPortletContext());
 
         } catch (Exception e) {
             throw new PortletException(e);

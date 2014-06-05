@@ -144,4 +144,13 @@ public interface INuxeoCustomizer {
      */
     INuxeoCommentsService getNuxeoCommentsService();
 
+    /**
+     * Get the current user avatar
+     * 
+     * @param cmsCtx cms context
+     * @param username username
+     * @return
+     */
+    Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
+
 }

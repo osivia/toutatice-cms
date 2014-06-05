@@ -18,15 +18,11 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -44,6 +40,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
@@ -1374,6 +1371,13 @@ public class CMSService implements ICMSService {
         } catch (Exception e) {
             throw new CMSException(e);
         }
+
+    }
+
+    @Override
+    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
+
+        return customizer.getUserAvatar(cmsCtx, username);
 
     }
 

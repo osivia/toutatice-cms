@@ -87,9 +87,23 @@ public class CommentsFormatter {
         Element node = new DOMElement(QName.get(HTMLConstants.DIV));
         node.addAttribute(QName.get(HTMLConstants.CLASS), "comment");
 
-        // Author
-        Element author = this.generateCommentAttribute("author", comment.getAuthor());
-        node.add(author);
+        // Avatar
+        if (comment.getPerson() != null) {
+            Element avatarImg = new DOMElement(QName.get(HTMLConstants.IMG));
+            avatarImg.addAttribute(QName.get(HTMLConstants.SRC), comment.getPerson().getAvatar().getUrl());
+            avatarImg.addAttribute(QName.get(HTMLConstants.ALT), "avatar");
+
+            node.add(avatarImg);
+
+            // Author
+            Element author = this.generateCommentAttribute("author", comment.getPerson().getDisplayName());
+            node.add(author);
+        } else {
+            // Author
+            Element author = this.generateCommentAttribute("author", comment.getAuthor());
+            node.add(author);
+        }
+
 
         // Creation date
         Element creationDate = this.generateCommentAttribute("creation-date", comment.getCreationDate());
