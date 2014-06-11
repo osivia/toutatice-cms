@@ -212,6 +212,9 @@ public class MenuBarFormater {
 
 
     protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
+        
+        if( cmsCtx.getDoc() == null)
+            return false;
 
         if( pubInfos.isPublished() && !this.isInLiveMode(cmsCtx, pubInfos)){
             String docPath = (((Document) (cmsCtx.getDoc())).getPath());
