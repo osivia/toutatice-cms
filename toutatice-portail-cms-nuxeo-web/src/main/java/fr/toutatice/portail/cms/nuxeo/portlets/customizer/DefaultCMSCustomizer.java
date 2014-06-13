@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +38,8 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
@@ -101,6 +104,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavig
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
+    /** Logger. */
+    protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
+
     /* Default style for lists */
     /** Style "mini". */
     public static final String STYLE_MINI = "mini";
@@ -158,6 +164,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Directory service */
     private IDirectoryService directoryService;
+
+    private Map<String, String> avatarMap = new HashMap<String, String>();
 
 
     /**
@@ -1223,12 +1231,33 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String src = "";
         try {
-            src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8"));
+
+            // get timestamp defined previously
+            String avatarTime = avatarMap.get(username);
+
+            if (avatarTime == null) {
+                // if not defined, set ie
+                avatarTime = refreshUserAvatar(cmsCtx, username);
+            }
+
+            // timestamp is concated in the url to control the client cache
+            src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8")).concat("&t=").concat(avatarTime.toString());
         } catch (UnsupportedEncodingException e) {
             throw new CMSException(e);
         }
 
         return new Link(src, false);
+    }
+
+    @Override
+    public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
+
+        // renew the timestamp and map it to the user
+        String avatarTime = Long.toString(new Date().getTime());
+
+        avatarMap.put(username, avatarTime);
+
+        return avatarTime;
     }
 
 }

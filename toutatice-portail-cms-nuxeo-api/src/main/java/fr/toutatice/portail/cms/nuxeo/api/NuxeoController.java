@@ -1892,7 +1892,18 @@ public class NuxeoController {
      * @throws CMSException
      */
     public Link getUserAvatar(String username) throws CMSException {
-
         return getCMSService().getUserAvatar(getCMSCtx(), username);
+
+	}
+    
+    /**
+     * Refresh the user avatar (acceded from portlets).
+     * 
+     * @param username
+     * @return a timestamp
+     * @throws CMSException
+     */
+    public String refreshUserAvatar(String username) {
+        return getCMSService().refreshUserAvatar(getCMSCtx(), username);
     }
 }

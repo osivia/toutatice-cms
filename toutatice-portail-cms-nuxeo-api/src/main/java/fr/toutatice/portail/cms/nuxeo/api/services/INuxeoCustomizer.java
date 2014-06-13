@@ -145,12 +145,22 @@ public interface INuxeoCustomizer {
     INuxeoCommentsService getNuxeoCommentsService();
 
     /**
-     * Get the current user avatar
+     * Get the user avatar
      * 
      * @param cmsCtx cms context
      * @param username username
      * @return
      */
     Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
+
+    /**
+     * Refresh the user avatar
+     * 
+     * @param cmsCtx cms context
+     * @param username username
+     * @return the timestamp associated with the refresh event
+     */
+    String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
+
 
 }

@@ -39,6 +39,9 @@ public class FileContentCommand implements INuxeoCommand {
 	Document document;
 	String docPath;
 	String fieldName;
+	
+	/** special resources such as avatar need to be reloaded without cache. Add a timestamp to force reload in nuxeo. */
+    String timestamp;
 	boolean streamingSupport = false;
 	
     public FileContentCommand(Document document, String fieldName) {
@@ -141,13 +144,34 @@ public class FileContentCommand implements INuxeoCommand {
 	
 	};		
 	
-	public String getId() {
+
+    /**
+     * @return the timestamp
+     */
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+
+    /**
+     * @param timestamp the timestamp to set
+     */
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getId() {
 		String id = "FileContentCommand";
 		if(document == null){
 			id += docPath;
 		}else{
 			id += document;
 		}
+
+        if (timestamp != null) {
+            id += timestamp;
+        }
+
 		return id += "/"+fieldName;
 	};		
 

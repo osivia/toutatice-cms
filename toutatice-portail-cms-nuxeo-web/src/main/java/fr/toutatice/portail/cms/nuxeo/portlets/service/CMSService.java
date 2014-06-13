@@ -1381,4 +1381,10 @@ public class CMSService implements ICMSService {
 
     }
 
+    @Override
+    public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
+
+        return customizer.refreshUserAvatar(cmsCtx, username);
+    }
+
 }

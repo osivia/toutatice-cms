@@ -27,13 +27,14 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -45,8 +46,17 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
-
+/**
+ * Servlet for caching and displaying avatar's from nuxeo
+ * 
+ * @author lbillon
+ * 
+ */
 public class AvatarServlet extends HttpServlet {
+
+
+    /** Logger. */
+    protected static final Log logger = LogFactory.getLog(AvatarServlet.class);
 
     /**
      * 
@@ -61,45 +71,45 @@ public class AvatarServlet extends HttpServlet {
 
     private static final int AVATAR_TIMEOUT = 3600;
 
-    public boolean isResourceExpired(String sOriginalDate) {
+    // public boolean isResourceExpired(String sOriginalDate) {
+    //
+    // boolean isExpired = true;
+    //
+    // if (sOriginalDate != null) {
+    //
+    // SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    // inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
+    // try {
+    // Date originalDate = inputFormater.parse(sOriginalDate);
+    // if (System.currentTimeMillis() < originalDate.getTime() + AVATAR_TIMEOUT * 1000)
+    // isExpired = false;
+    // } catch (Exception e) {
+    //
+    // }
+    // }
+    //
+    // return isExpired;
+    // }
 
-        boolean isExpired = true;
-
-        if (sOriginalDate != null) {
-
-            SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-            inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
-            try {
-                Date originalDate = inputFormater.parse(sOriginalDate);
-                if (System.currentTimeMillis() < originalDate.getTime() + AVATAR_TIMEOUT * 1000)
-                    isExpired = false;
-            } catch (Exception e) {
-
-            }
-        }
-
-        return isExpired;
-    }
-
-    public boolean serveResourceByCache(HttpServletRequest resourceRequest, HttpServletResponse resourceResponse) throws PortletException, IOException {
-
-        String sOriginalDate = resourceRequest.getHeader("if-modified-since");
-        if (sOriginalDate == null)
-            sOriginalDate = resourceRequest.getHeader("If-Modified-Since");
-
-        if (!isResourceExpired(sOriginalDate)) { // validation
-                                                 // request
-
-            // resourceResponse.setContentLength(0);
-            resourceResponse.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-
-            resourceResponse.setHeader("Last-Modified", sOriginalDate);
-
-            return true;
-        }
-
-        return false;
-    }
+    // public boolean serveResourceByCache(HttpServletRequest resourceRequest, HttpServletResponse resourceResponse) throws PortletException, IOException {
+    //
+    // String sOriginalDate = resourceRequest.getHeader("if-modified-since");
+    // if (sOriginalDate == null)
+    // sOriginalDate = resourceRequest.getHeader("If-Modified-Since");
+    //
+    // if (!isResourceExpired(sOriginalDate)) { // validation
+    // // request
+    //
+    // // resourceResponse.setContentLength(0);
+    // resourceResponse.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+    //
+    // resourceResponse.setHeader("Last-Modified", sOriginalDate);
+    //
+    // return true;
+    // }
+    //
+    // return false;
+    // }
 
     public String formatResourceLastModified() {
 
@@ -113,8 +123,6 @@ public class AvatarServlet extends HttpServlet {
         OutputStream output = theResponse.getOutputStream();
         try {
 
-            if (serveResourceByCache(theRequest, theResponse))
-                return;
 
             String username = theRequest.getParameter("username");
             username = URLDecoder.decode(username, "UTF-8");
@@ -133,14 +141,19 @@ public class AvatarServlet extends HttpServlet {
             theResponse.setHeader("Last-Modified", formatResourceLastModified());
 
             if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
-                CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(new FileContentCommand(fetchedUserProfile, "userprofile:avatar"));
+                FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
+                command.setTimestamp(theRequest.getParameter("t"));
+
+                CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
 
                 // Les headers doivent être positionnées avant la réponse
                 theResponse.setContentType(content.getMimeType());
 
                 ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
+
             } else {
 
+                // no avatar found, use the guest avatar
                 File file = new File(portletCtx.getRealPath("/img/guest.png"));
 
                 byte[] data = FileUtils.readFileToByteArray(file);
