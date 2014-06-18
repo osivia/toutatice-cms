@@ -18,6 +18,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -102,6 +103,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> keywords = selectors.get(req.getParameter("selectorId"));
                 if ((keywords != null) && (keywords.size() > 0)) {
                     keywords.clear();
+                    selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                     
                     res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
                 }
             }
@@ -148,7 +150,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     keywords.add(keyword);
                 }
 
-
+                selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE)); 
                 res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL
@@ -172,6 +174,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
             if ((keywords != null) && (keywords.size() > occ)) {
 
                 keywords.remove(occ);
+                selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                 
                 res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL
