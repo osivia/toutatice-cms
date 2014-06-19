@@ -484,10 +484,10 @@ div.document-types .more-document-types	{
 }
 
 .commentsTree .authorDate {
-	background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
+	/*background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
 	margin-bottom: 2px;
     padding-bottom: 5px;
-    padding-left: 25px;
+    padding-left: 25px;*/
 }
 
 .commentsTree .author {

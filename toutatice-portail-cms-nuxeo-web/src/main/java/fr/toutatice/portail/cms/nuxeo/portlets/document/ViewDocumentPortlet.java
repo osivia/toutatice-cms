@@ -300,7 +300,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                             int authType = ctx.getAuthType();
                             JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
                             CMSServiceCtx cmsCtx = ctx.getCMSCtx();
-                            String comments = HTMLCommentsTreeBuilder.buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
+                            String comments = HTMLCommentsTreeBuilder.getInstance().buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
                             request.setAttribute("comments", comments);
                         }
                     }

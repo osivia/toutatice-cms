@@ -38,15 +38,19 @@ date = Formater.formatDate( doc);
 
 
 String creator = doc.getProperties().getString("dc:creator");
+
 if( creator == null)
 	creator = "-";
+
+String avatar = ctx.getUserAvatar(creator).getUrl();
+
 %>
 
 <div class="nuxeo-docview-metadata" >
 
 
 	<div style="border-bottom:1px solid #88ABBC;color: #88ABBC;font-weight: bold;">Méta-données </div>
-	<span style="font-weight:bold">Auteur : </span><span><%=creator%></span><br/>
+	<span style="font-weight:bold">Auteur : </span><span><img src="<%=avatar%>" alt="creator" class="avatarIcon"><%=creator%></span><br/>
 	<span style="font-weight:bold">Publication : </span><span><%=date%></span><br/>
 <%
 String srcVignette = "";
