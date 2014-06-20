@@ -42,7 +42,7 @@ public class GetUserProfileCommand  implements INuxeoCommand{
 	 */
 	public Object execute(Session automationSession) throws Exception {
 	
-        OperationRequest newRequest = automationSession.newRequest("Services.GetUserProfile");
+        OperationRequest newRequest = automationSession.newRequest("Services.GetToutaticeUserProfile");
         if (username != null) {
             newRequest.set("username", username);
         }
