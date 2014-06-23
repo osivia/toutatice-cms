@@ -40,9 +40,9 @@
         out.println("<ul class=\"" + cssClass + "\">");
         
         int iChild = 0;
-        int size = itemToDisplay.getChildrens().size();
+        int size = itemToDisplay.getChildren().size();
 
-        for (NavigationDisplayItem child : itemToDisplay.getChildrens()) {
+        for (NavigationDisplayItem child : itemToDisplay.getChildren()) {
             {
                 String target = "";
                 cssClass = "";
@@ -73,7 +73,7 @@
 
                 out.println("<a " + target + " class=\"" + cssClass + "\"  href=\"" + child.getUrl() + "\">" + child.getTitle() + "</a>");
 
-                if (child.getChildrens().size() > 0) {
+                if (child.getChildren().size() > 0) {
                     if (child.isSelected() || (level + 1 < openLevels)) {
                         displayItem(out, child, level + 1, openLevels);
                     }
@@ -100,8 +100,7 @@
 </div>
 
 <%
-    NavigationDisplayItem itemToDisplay = (NavigationDisplayItem) renderRequest.getAttribute("itemToDisplay");
-    NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx");
+    NavigationDisplayItem itemToDisplay = (NavigationDisplayItem) request.getAttribute("displayItem");
     int openLevels = (Integer) request.getAttribute("openLevels");
 %>
 

@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 
@@ -26,25 +26,23 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.security.CmsPermissionHelper;
 
@@ -52,332 +50,314 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * Publication menu portlet.
+ *
+ * @see CMSPortlet
  */
-
 public class MenuPortlet extends CMSPortlet {
 
-    private static Log logger = LogFactory.getLog(MenuPortlet.class);
+    /** Default open levels. */
+    private static final int DEFAULT_OPEN_LEVELS = 1;
+    /** Default max levels. */
+    private static final int DEFAULT_MAX_LEVELS = 3;
 
+    /** View path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/publish/view.jsp";
+    /** Admin path. */
+    private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
+
+    /** Portal URL factory. */
     private IPortalUrlFactory portalUrlFactory;
 
+
+    /**
+     * Default constructor.
+     */
+    public MenuPortlet() {
+        super();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
+        // Portal URL factory
         this.portalUrlFactory = (IPortalUrlFactory) this.getPortletContext().getAttribute("UrlService");
         if (this.portalUrlFactory == null) {
             throw new PortletException("Cannot start TestPortlet due to service unavailability");
         }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        logger.debug("processAction ");
+        if ("admin".equals(request.getPortletMode().toString())) {
+            if ("save".equals(action)) {
+                // Save action
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+                // Current window
+                PortalWindow window = WindowFactory.getWindow(request);
 
-            PortalWindow window = WindowFactory.getWindow(req);
+                // Open levels
+                int openLevels = NumberUtils.toInt(request.getParameter("openLevels"));
+                if (openLevels > 0) {
+                    window.setProperty("osivia.cms.openLevels", String.valueOf(openLevels));
+                } else {
+                    window.setProperty("osivia.cms.openLevels", null);
+                }
 
+                // Max levels
+                int maxLevels = NumberUtils.toInt(request.getParameter("maxLevels"));
+                if (maxLevels > 0) {
+                    window.setProperty("osivia.cms.maxLevels", String.valueOf(maxLevels));
+                } else {
+                    window.setProperty("osivia.cms.maxLevels", null);
+                }
 
-
-            // Nombre de niveaux ouverts
-            int openLevels = 0;
-            if (req.getParameter("openLevels") != null) {
-                try {
-                    openLevels = Integer.parseInt(req.getParameter("openLevels"));
-                } catch (Exception e) {
-                    // Mal formatté
+                // JSTree display
+                if ("1".equals(request.getParameter("jstree"))) {
+                    window.setProperty("osivia.cms.filtering", "jstree");
+                } else {
+                    window.setProperty("osivia.cms.filtering", null);
                 }
             }
 
-            if (openLevels > 0) {
-                window.setProperty("osivia.cms.openLevels", Integer.toString(openLevels));
-            } else if (window.getProperty("osivia.cms.openLevels") != null) {
-                window.setProperty("osivia.cms.openLevels", null);
-            }
-
-            // Nombre de niveaux maximum
-            int maxLevels = 0;
-            if (req.getParameter("maxLevels") != null) {
-                try {
-                    maxLevels = Integer.parseInt(req.getParameter("maxLevels"));
-                } catch (Exception e) {
-                    // Mal formatté
-                }
-            }
-
-            if (maxLevels > 0) {
-                window.setProperty("osivia.cms.maxLevels", Integer.toString(maxLevels));
-            } else if (window.getProperty("osivia.cms.maxLevels") != null) {
-                window.setProperty("osivia.cms.maxLevels", null);
-            }
-
-
-            if ("1".equals(req.getParameter("jstree")))
-                window.setProperty("osivia.cms.filtering", "jstree");
-            else if (window.getProperty("osivia.cms.filtering") != null)
-                window.setProperty("osivia.cms.filtering", null);           
-
-
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
-
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
-
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
         }
     }
 
+
+    /**
+     * Admin view display.
+     *
+     * @param request request
+     * @param response response
+     * @throws PortletException
+     * @throws IOException
+     */
     @RenderMode(name = "admin")
-    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+    public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        res.setContentType("text/html");
-
-        NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
-        PortletRequestDispatcher rd = null;
-
-        PortalWindow window = WindowFactory.getWindow(req);
-
+        // Open levels
         String openLevels = window.getProperty("osivia.cms.openLevels");
-        req.setAttribute("openLevels", openLevels);
+        request.setAttribute("openLevels", openLevels);
+        request.setAttribute("defaultOpenLevels", DEFAULT_OPEN_LEVELS);
 
-
+        // Max levels
         String maxLevels = window.getProperty("osivia.cms.maxLevels");
-        req.setAttribute("maxLevels", maxLevels);
-        
-        String filtering =  window.getProperty("osivia.cms.filtering");
-        if("jstree".equals(filtering))
-            req.setAttribute("jstree", "1");
-        
+        request.setAttribute("maxLevels", maxLevels);
+        request.setAttribute("defaultMaxLevels", DEFAULT_MAX_LEVELS);
 
-        req.setAttribute("ctx", ctx);
+        // JSTree filtering
+        String filtering = window.getProperty("osivia.cms.filtering");
+        if ("jstree".equals(filtering)) {
+            request.setAttribute("jstree", "1");
+        }
 
-        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/admin.jsp");
-        rd.include(req, res);
-
+        response.setContentType("text/html");
+        this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
     }
 
 
-    private NavigationDisplayItem createServiceItem(NuxeoController ctx, CMSServiceCtx cmsReadNavContext, PortalControllerContext portalCtx,
-            int curLevel, int maxLevel, String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws Exception {
-
-
-        //TODO : factoriser dans NuxeoController
-
-
-        INuxeoService nuxeoService = (INuxeoService) ctx.getPortletCtx().getAttribute("NuxeoService");
-
-        CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, spacePath, nuxeoPath);
-
-        if( navItem == null) {
-            return null;
-        }
-
-        Document doc = (Document) navItem.getNativeItem();
-
-        String navPath = navItem.getPath();
-
-        // Get root publish page
-
-
-        Link link = ctx.getLink(doc,"menu");
-
-        boolean selected = false;
-
-
-        String itemPath = ctx.getItemNavigationPath();
-
-
-
-        if (itemPath != null)	{
-            itemPath += "/";
-
-            if( itemPath.startsWith(navPath + "/") && isParentNavigable) {
-                // non navigational items are not selected
-                // because children elements are managed at portlet level and not CMS levels
-                // So selection can not be sure
-                // See FAQ sample : links between questions don't interact with CMS
-                selected = true;
-            } else	{
-                // Les path proxy items de l'arbre navigation peut être filtrés à tort
-                // cas du 'publier vers' de Nuxeo
-                // Dans ce cas, on compare avec le nativeItem
-
-                if( ctx.getItemNavigationPath().equals(doc.getPath())) {
-                    selected = true;
-                }
-
-            }
-        }
-
-        NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(),
-                selected, navItem);
-
-
-        ArrayList<NavigationDisplayItem> displayChildren = new ArrayList<NavigationDisplayItem>();
-
-        if ( (partialOpenLevels == -1 && curLevel + 1 <= maxLevel )  || (partialOpenLevels != -1 && ( selected || (curLevel + 1 <= partialOpenLevels))))  {
-            List<CMSItem> navItems = ctx.getCMSService().getPortalNavigationSubitems(cmsReadNavContext, basePath, nuxeoPath);
-
-            for(CMSItem child : navItems){
-
-                if ( "1".equals(child.getProperties().get("menuItem")) )	{
-
-                    NavigationDisplayItem newItem = this.createServiceItem(ctx, cmsReadNavContext, portalCtx, curLevel + 1, maxLevel, spacePath, basePath, child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")), partialOpenLevels);
-                    if( newItem != null) {
-                        displayChildren.add(	newItem);
-                    }
-
-                }
-
-            }
-
-        }
-
-        //v2.0.9 Ajout tri pour affichage cohérent avec FileBrowser
-        List<NavigationDisplayItem> sortedDocs = (ArrayList<NavigationDisplayItem>) displayChildren.clone();
-
-        CMSItemType cmsItemType = ctx.getCMSItemTypes().get(doc.getType());
-        if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
-            Collections.sort(sortedDocs, new MenuComparator(ctx));
-        }
-
-        displayItem.setChildrens(sortedDocs);
-
-        return displayItem;
-
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    @SuppressWarnings("unchecked")
-    protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-    PortletSecurityException, IOException {
-
-        logger.debug("doView");
-
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
-
-            response.setContentType("text/html");
-
-            /* On détermine l'uid et le scope */
-
+            // Current window
             PortalWindow window = WindowFactory.getWindow(request);
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
 
-            String nuxeoPath = null;
-
-
-            // logger.debug("doView "+ uid);
-            NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
-
-
-            // v2.1 : proto dafpic : on fixe le path du menu meme dans les pages de recherche
-            // (toutes les pages non contextualisées)
-            String basePath = ctx.getBasePath();
-            String spacePath = ctx.getSpacePath();
+            // v2.1 : proto dafpic : on fixe le path du menu meme dans les pages de recherche (toutes les pages non contextualisées)
+            String basePath = nuxeoController.getBasePath();
+            String spacePath = nuxeoController.getSpacePath();
 
 
-            String menuRootPath = ctx.getMenuRootPath();
-
-            ////
-            ////			String menuRootPath = window.getPageProperty("osivia.navigation.menuRootPath");
-            ////
-            ////
-            if( menuRootPath != null)	{
+            String menuRootPath = nuxeoController.getMenuRootPath();
+            if (menuRootPath != null) {
                 basePath = menuRootPath;
                 spacePath = menuRootPath;
             }
 
 
-
             if (basePath != null) {
+                // Asynchronous refresh
+                // nuxeoController.setAsynchronousUpdates(true);
 
-
-
-                // rafraichir en asynchrone
-                //ctx.setAsynchronousUpdates(true);
-
-                int maxLevels = 3;
-
+                // Max levels
+                int maxLevels = DEFAULT_MAX_LEVELS;
                 String sMaxLevels = window.getProperty("osivia.cms.maxLevels");
-                if (sMaxLevels != null && sMaxLevels.length() > 0) {
+                if ((sMaxLevels != null) && (sMaxLevels.length() > 0)) {
                     maxLevels = Integer.parseInt(sMaxLevels);
                 }
 
-                int openLevels = 1;
-
+                // Open levels
+                int openLevels = DEFAULT_OPEN_LEVELS;
                 String sOpenLevels = window.getProperty("osivia.cms.openLevels");
-                if (sOpenLevels != null && sOpenLevels.length() > 0) {
+                if ((sOpenLevels != null) && (sOpenLevels.length() > 0)) {
                     openLevels = Integer.parseInt(sOpenLevels);
                 }
 
-
-
                 // Navigation context
                 CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-                ControllerContext context = ControllerContextAdapter.getControllerContext(ctx.getPortalCtx());
-                cmsReadNavContext.setControllerContext(context);
-                cmsReadNavContext.setScope(ctx.getNavigationScope());
+                ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(nuxeoController.getPortalCtx());
+                cmsReadNavContext.setControllerContext(controllerContext);
+                cmsReadNavContext.setScope(nuxeoController.getNavigationScope());
 
-                if (CmsPermissionHelper.getCurrentCmsVersion(context).equals(CmsPermissionHelper.CMS_VERSION_PREVIEW)) {
+                if (CmsPermissionHelper.getCurrentCmsVersion(controllerContext).equals(CmsPermissionHelper.CMS_VERSION_PREVIEW)) {
                     cmsReadNavContext.setDisplayLiveVersion("1");
                 }
 
                 int partialOpenLevels = -1;
-                CMSItem navItem = ctx.getCMSService().getPortalNavigationItem(cmsReadNavContext, basePath, basePath);
+                CMSItem navItem = NuxeoController.getCMSService().getPortalNavigationItem(cmsReadNavContext, basePath, basePath);
 
-                if( "1".equals(navItem.getProperties().get("partialLoading")))	{
+                if ("1".equals(navItem.getProperties().get("partialLoading"))) {
                     partialOpenLevels = openLevels;
 
                 }
 
-
-                NavigationDisplayItem displayItem = this.createServiceItem(ctx, cmsReadNavContext, new PortalControllerContext(
-                        this.getPortletContext(), request, response), 0, maxLevels, spacePath, basePath,  basePath, true , partialOpenLevels);
-
-                if( displayItem != null)	{
-
+                // Navigation display item
+                NavigationDisplayItem displayItem = this.createServiceItem(nuxeoController, cmsReadNavContext, 0, maxLevels,
+                        spacePath, basePath, basePath, true, partialOpenLevels);
+                if (displayItem != null) {
                     if (displayItem.getTitle() != null) {
                         response.setTitle(displayItem.getTitle());
                     }
-
-                    request.setAttribute("itemToDisplay", displayItem);
+                    request.setAttribute("displayItem", displayItem);
                 }
                 request.setAttribute("openLevels", openLevels);
-
-                request.setAttribute("ctx", ctx);
-
-                String filtering =  window.getProperty("osivia.cms.filtering");
-                if("jstree".equals(filtering)) {
-                       getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view_jstree.jsp").include(request, response);
-                }  else    {
-                    getPortletContext().getRequestDispatcher("/WEB-INF/jsp/publish/view.jsp").include(request, response);
-                }
-            } else {
-                response.setContentType("text/html");
-                response.getWriter().print("<h2>Path de la page non défini</h2>");
-                response.getWriter().close();
-                return;
             }
 
+            response.setContentType("text/html");
+
+            // Dispatcher
+            String requestDispatcherPath = PATH_VIEW;
+            String filtering = window.getProperty("osivia.cms.filtering");
+            if ("jstree".equals(filtering)) {
+                requestDispatcherPath = "/WEB-INF/jsp/publish/view_jstree.jsp";
+            }
+            this.getPortletContext().getRequestDispatcher(requestDispatcherPath).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    /**
+     * Create navigation display item.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param cmsContext CMS context
+     * @param level current level
+     * @param maxLevel maximum level
+     * @param spacePath space path
+     * @param basePath base path
+     * @param nuxeoPath Nuxeo path
+     * @param isParentNavigable parent navigable indicator
+     * @param partialOpenLevels partial open levels indicator
+     * @return navigation display item
+     * @throws CMSException
+     */
+    private NavigationDisplayItem createServiceItem(NuxeoController nuxeoController, CMSServiceCtx cmsContext, int level, int maxLevel, String spacePath,
+            String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws CMSException {
+        // TODO : factoriser dans NuxeoController
+
+        // CMS service
+        ICMSService cmsService = NuxeoController.getCMSService();
+        // CMS item
+        CMSItem navItem = cmsService.getPortalNavigationItem(cmsContext, spacePath, nuxeoPath);
+        if (navItem == null) {
+            return null;
         }
 
-        catch (Exception e) {
-            if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
+        // Nuxeo document
+        Document doc = (Document) navItem.getNativeItem();
+        // Nuxeo document link
+        Link link = nuxeoController.getLink(doc, "menu");
+
+        // Navigation path
+        String navPath = navItem.getPath();
+        // Item path
+        String itemPath = nuxeoController.getItemNavigationPath();
+        // Selected item
+        boolean selected = false;
+        // Current item
+        boolean current = false;
+
+        if (itemPath != null) {
+            if (itemPath.startsWith(navPath) && isParentNavigable) {
+                // Non navigational items are not selected because children elements are managed at portlet level and not CMS levels ; so selection can not be sure
+                // See FAQ sample : links between questions don't interact with CMS
+                selected = true;
+
+                if (itemPath.equals(navPath)) {
+                    current = true;
+                }
+            } else if (nuxeoController.getItemNavigationPath().equals(doc.getPath())) {
+                // Les path proxy items de l'arbre navigation peut être filtrés à tort
+                // cas du 'publier vers' de Nuxeo
+                // Dans ce cas, on compare avec le nativeItem
+                selected = true;
+                current = true;
             }
         }
 
-        logger.debug("doView end");
+        // Navigation display item
+        NavigationDisplayItem displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(), selected, current, navItem);
 
+        // Children
+        ArrayList<NavigationDisplayItem> displayChildren = new ArrayList<NavigationDisplayItem>();
+
+
+        boolean partial = (partialOpenLevels != -1);
+        boolean fullOpened = (!partial && (level < maxLevel));
+        boolean partialOpened = (partial && (selected || ((level + 1) <= partialOpenLevels)));
+
+        if (fullOpened || partialOpened) {
+            List<CMSItem> navItems = cmsService.getPortalNavigationSubitems(cmsContext, basePath, nuxeoPath);
+
+            for (CMSItem child : navItems) {
+                if ("1".equals(child.getProperties().get("menuItem"))) {
+
+                    NavigationDisplayItem newItem = this.createServiceItem(nuxeoController, cmsContext, level + 1, maxLevel, spacePath, basePath,
+                            child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")), partialOpenLevels);
+                    if (newItem != null) {
+                        displayChildren.add(newItem);
+                    }
+                }
+            }
+
+        }
+
+        // v2.0.9 Ajout tri pour affichage cohérent avec FileBrowser
+        CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(doc.getType());
+        if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
+            Collections.sort(displayChildren, new MenuComparator(nuxeoController));
+        }
+
+        displayItem.getChildren().addAll(displayChildren);
+
+        return displayItem;
     }
 
 }

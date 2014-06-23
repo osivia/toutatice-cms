@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
@@ -26,13 +26,13 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.Constants;
@@ -70,112 +70,109 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
      * {@inheritDoc}
      */
     @Override
-    public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
         logger.debug("processAction ");
 
-        PortalWindow window = WindowFactory.getWindow(req);
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+        // Current action
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("modifierPrefs") != null)) {
+        if ("admin".equals(request.getPortletMode().toString())) {
+            // Admin
 
-            if (req.getParameter("selectorId").length() > 0) {
-                window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
-            } else if (window.getProperty("osivia.selectorId") != null) {
-                window.setProperty("osivia.selectorId", null);
-            }
+            if ("save".equals(action)) {
+                // Save
 
+                // Selector identifier
+                String identifier = request.getParameter("selectorId");
+                if (StringUtils.isNotBlank(identifier)) {
+                    window.setProperty("osivia.selectorId", identifier);
+                } else {
+                    window.setProperty("osivia.selectorId", null);
+                }
 
-            if (req.getParameter("libelle").length() > 0) {
-                window.setProperty("osivia.libelle", req.getParameter("libelle"));
-            } else if (window.getProperty("osivia.libelle") != null) {
-                window.setProperty("osivia.libelle", null);
-            }
+                // Selector label
+                String label = request.getParameter("libelle");
+                if (StringUtils.isNotBlank(label)) {
+                    window.setProperty("osivia.libelle", label);
+                } else {
+                    window.setProperty("osivia.libelle", null);
+                }
 
-            if ("1".equals(req.getParameter("keywordMonoValued"))) {
-                window.setProperty("osivia.keywordMonoValued", "1");
-            } else if (window.getProperty("osivia.keywordMonoValued") != null) {
-                window.setProperty("osivia.keywordMonoValued", null);
-            }
+                // Mono-valued indicator
+                if ("1".equals(request.getParameter("keywordMonoValued"))) {
+                    window.setProperty("osivia.keywordMonoValued", "1");
+                } else {
+                    window.setProperty("osivia.keywordMonoValued", null);
+                }
 
-            /* Initialisation des mots-clés suite à configuration. */
-            Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-            if (selectors != null) {
-                List<String> keywords = selectors.get(req.getParameter("selectorId"));
-                if ((keywords != null) && (keywords.size() > 0)) {
-                    keywords.clear();
-                    res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                // Keywords initialization
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                if (selectors != null) {
+                    List<String> keywords = selectors.get(request.getParameter("selectorId"));
+                    if ((keywords != null) && (keywords.size() > 0)) {
+                        keywords.clear();
+                        response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                    }
                 }
             }
 
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View
 
-        if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("annuler") != null)) {
+            boolean clear = (request.getParameter("clear") != null);
+            if ((request.getParameter("add") != null) || (request.getParameter("monoAdd") != null) || clear) {
+                // Add or clear
 
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
+                String selectorId = window.getProperty("osivia.selectorId");
+                if (selectorId != null) {
+                    String keyword = null;
+                    if (!clear) {
+                        keyword = request.getParameter("keyword");
+                    }
 
-        // Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-        boolean isAddAction = (req.getParameter("add.x") != null) || (req.getParameter("add") != null);
-        boolean isMonoValuedAddAction = (req.getParameter("monoAdd.x") != null) || (req.getParameter("monoAdd") != null);
+                    Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
 
-        if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction)) {
+                    List<String> keywords = selectors.get(selectorId);
+                    if (keywords == null) {
+                        keywords = new ArrayList<String>();
+                        selectors.put(selectorId, keywords);
+                    }
 
-            // Set public parameter
-            String selectorId = window.getProperty("osivia.selectorId");
-            if (selectorId != null) {
+                    if ("1".equals(window.getProperty("osivia.keywordMonoValued"))) {
+                        // On ne conserve qu'une valeur dans le cas d'un sélecteur mono-valué.
+                        keywords.clear();
+                    }
 
-                String keyword = req.getParameter("keyword");
+                    if (StringUtils.isNotBlank(keyword)) {
+                        keywords.add(keyword);
+                    }
 
-                Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+                    response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
+                    // Réinitialisation des fenetres en mode NORMAL
+                    request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
+                }
+
+                response.setPortletMode(PortletMode.VIEW);
+                response.setWindowState(WindowState.NORMAL);
+            } else if ("delete".equals(request.getParameter("action"))) {
+                // Delete
+
+                int occ = new Integer(request.getParameter("occ")) - 1;
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                String selectorId = window.getProperty("osivia.selectorId");
                 List<String> keywords = selectors.get(selectorId);
-                if (keywords == null) {
-                    keywords = new ArrayList<String>();
-                    selectors.put(selectorId, keywords);
+                if ((keywords != null) && (keywords.size() > occ)) {
+                    keywords.remove(occ);
+                    response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+
+                    // Réinitialisation des fenetres en mode NORMAL
+                    request.setAttribute("osivia.unsetMaxMode", "true");
                 }
-
-                if ("1".equals(window.getProperty("osivia.keywordMonoValued"))) {
-                    /*
-                     * On ne conserve qu'une valeur dans le cas d'un
-                     * sélecteur mono-valué.
-                     */
-                    keywords.clear();
-                }
-
-                if ((keyword != null) && (keyword.length() > 0)) {
-                    keywords.add(keyword);
-                }
-
-
-                res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-
-                // Réinitialisation des fenetres en mode NORMAL
-                req.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
-
-
-            }
-
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
-
-        // Delete
-        if ("view".equals(req.getPortletMode().toString()) && "delete".equals(req.getParameter("action"))) {
-            int occ = new Integer(req.getParameter("occ")) - 1;
-
-            Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-            String selectorId = window.getProperty("osivia.selectorId");
-
-            List<String> keywords = selectors.get(selectorId);
-            if ((keywords != null) && (keywords.size() > occ)) {
-
-                keywords.remove(occ);
-                res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-
-                // Réinitialisation des fenetres en mode NORMAL
-                req.setAttribute("osivia.unsetMaxMode", "true");
             }
         }
     }
@@ -223,7 +220,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
      * {@inheritDoc}
      */
     @Override
-    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         logger.debug("doView");
 
         try {
@@ -266,12 +263,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
-        }
-
-        catch (Exception e) {
-            if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
-            }
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
         }
 
         logger.debug("doView end");

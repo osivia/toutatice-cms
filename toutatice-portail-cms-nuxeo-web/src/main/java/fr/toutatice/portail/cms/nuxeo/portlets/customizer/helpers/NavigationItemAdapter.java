@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -117,7 +117,7 @@ public class NavigationItemAdapter {
 
 		Document doc = (Document) publishSpaceNavigationItem.getNativeItem();
 		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
-		
+
 		Map<String, String> properties = publishSpaceNavigationItem.getProperties();
 
         /* titre */
@@ -137,23 +137,23 @@ public class NavigationItemAdapter {
 			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);
 				properties.put("defaultTemplate", "1");
-			}			
+			}
 		}
-		
+
 		if (StringUtils.isNotBlank(pageTemplate)) {
 			properties.put("pageTemplate", pageTemplate);
 		}
-		
-		
+
+
 		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 			properties.put("navigationElement", "1");
-			
+
             // Theme
             String theme = (String) doc.getProperties().get("ttc:theme");
             if (StringUtils.isNotEmpty(theme)) {
                 properties.put("theme", theme);
             }
-            
+
             properties.put("pageDisplayMode", "1");
 		}
 
@@ -234,19 +234,19 @@ public class NavigationItemAdapter {
 			if( (contextualizeInternalContents != null) && "true".equals(contextualizeInternalContents) ) {
 	            properties.put("contextualizeInternalContents", "1");
 	        }
-	
+
 			String contextualizeExternalContents =  (String) doc.getProperties().get("ttc:contextualizeExternalContents");
 			if( (contextualizeExternalContents != null) && "true".equals(contextualizeExternalContents) ) {
 	            properties.put("contextualizeExternalContents", "1");
 	        }
 		}
-		
+
 
 		/* Workspace et UserWorkspaces*/
 
 		if("Workspace".equals(doc.getType()))	{
 			properties.put("displayLiveVersion", "1");
-			properties.put("partialLoading", "1");
+            // properties.put("partialLoading", "1");
 		}
 
 

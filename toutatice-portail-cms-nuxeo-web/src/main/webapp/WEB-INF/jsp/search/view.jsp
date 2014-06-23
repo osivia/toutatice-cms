@@ -1,47 +1,38 @@
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="internationalization" prefix="is"%>
 
-<%@page import="java.util.List"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="javax.portlet.PortletURL"%>
+<%@ page contentType="text/html" isELIgnored="false"%>
 
-
-
-<%@page import="javax.portlet.ResourceURL"%>
 
 <portlet:defineObjects />
 
-
-<%
-
-String searchBaseUrl = (String) request.getAttribute("searchUrl");
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-
-%>
+<c:set var="namespace">
+    <portlet:namespace />
+</c:set>
 
 
 <script type="text/javascript">
-function onsubmitsearch( form)
-{
-   var searchUrl = "<%=searchBaseUrl%>";
-   
-   searchUrl = searchUrl.replace("__REPLACE_KEYWORDS__", form.keywords.value);
-   form.action = searchUrl;
-
+function onSubmitSearch(form) {
+	var searchUrl = "${searchUrl}";
+	searchUrl = searchUrl.replace("__REPLACE_KEYWORDS__", form.keywords.value);
+	form.action = searchUrl;
 }
 </script>
 
 
 <div class="nuxeo-input-search-small">
-		<form method="post" onsubmit="return onsubmitsearch( this);">
-			<input type="text" name="keywords" value="" size="20" />	<input type="submit" value="OK" />
-		</form>
+    <form method="post" onsubmit="return onSubmitSearch(this);" class="form" role="search">
+        <div class="form-group">
+            <label class="sr-only" for="${namespace}-search-input">Search</label>
+            <div class="input-group">
+                <input id="${namespace}-search-input" type="text" name="keywords" class="form-control" placeholder='<is:getProperty key="SEARCH_PLACEHOLDER" />'>
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" title='<is:getProperty key="SEARCH_TITLE" />' data-toggle="tooltip" data-placement="bottom">
+                        <span class="glyphicons halflings search"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </form>
 </div>
-
-
-
-<%= ctx.getDebugInfos() %>

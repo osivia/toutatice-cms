@@ -1,3 +1,24 @@
+var $JQry = jQuery.noConflict();
+
+
+// Publication menu
+$JQry(document).ready(function($) {
+	$(".nuxeo-publish-navigation .menu-closed-item").addClass("hidden");
+	
+	$(".nuxeo-publish-navigation li button").click(function() {
+		$this = $(this);
+		
+		// Toggle button glyphicon
+		$glyph = $this.find(".glyphicons");
+		$glyph.toggleClass("expand collapse text-muted");
+		
+		// Toggle item children display
+		$children = $this.parent().children("ul");
+		$children.toggleClass("hidden");
+	});
+});
+
+
 
 
 function refreshOnVocabularyChange( selectText, url) {
@@ -126,8 +147,4 @@ function clearText(div) {
     	inputs[i].value = "";
     }
 }
-
-
-
-
 

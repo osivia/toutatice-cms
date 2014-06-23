@@ -1,11 +1,9 @@
 /**
- * 
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -13,15 +11,12 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -29,16 +24,16 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 /**
  * Fragment permettant l'affichage d'une MenuBar pour un espace (page)
  * --- appliqué pour le moment aux workspaces ---
- * 
+ *
  * @author dchevrier
- * 
+ *
  */
 public class SpaceMenuBarFragmentModule implements IFragmentModule {
 
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule#injectViewAttributes(fr.toutatice.portail.cms.nuxeo.api.NuxeoController,
      * org.osivia.portal.api.windows.PortalWindow, javax.portlet.PortletRequest, javax.portlet.RenderResponse)
      */
@@ -48,12 +43,12 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
         String navigationPath = ctrl.getNavigationPath();
 
         if (navigationPath != null) {
-            
+
             Document doc = ctrl.fetchDocument(navigationPath);
 
             ctrl.setCurrentDoc(doc);
             ctrl.insertContentMenuBarItems();
-            
+
             String permlinkPath = ctrl.getContentWebIdPath();
 
             String url = this.getPortalUrlFactory(ctrl.getPortletCtx()).getPermaLink(new PortalControllerContext(ctrl.getPortletCtx(), request, response),
@@ -62,7 +57,7 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
             List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
             MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-permalink", null);
-
+            item.setGlyphicon("halflings link");
             item.setAjaxDisabled(true);
             menuBar.add(item);
 
@@ -72,7 +67,7 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule#injectAdminAttributes(fr.toutatice.portail.cms.nuxeo.api.NuxeoController,
      * org.osivia.portal.api.windows.PortalWindow, javax.portlet.PortletRequest, javax.portlet.RenderResponse)
      */
@@ -82,7 +77,7 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule#processAdminAttributes(fr.toutatice.portail.cms.nuxeo.api.NuxeoController,
      * org.osivia.portal.api.windows.PortalWindow, javax.portlet.ActionRequest, javax.portlet.ActionResponse)
      */

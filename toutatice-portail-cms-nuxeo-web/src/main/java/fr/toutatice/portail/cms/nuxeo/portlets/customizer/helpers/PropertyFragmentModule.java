@@ -26,7 +26,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.HTMLConstants;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;

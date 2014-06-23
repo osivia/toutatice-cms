@@ -10,15 +10,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.search;
 
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -26,210 +25,268 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
 
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * Nuxeo search portlet.
+ *
+ * @see CMSPortlet
  */
-
 public class SearchPortlet extends CMSPortlet {
-	
-	protected IPortalUrlFactory urlFactory;
-	
-	public void init(PortletConfig config) throws PortletException {
 
-		super.init(config);
-		
-		urlFactory = (IPortalUrlFactory) getPortletContext().getAttribute("UrlService");
-	}
-	
-	
-	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    /** View path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/search/view.jsp";
+    /** Result path. */
+    private static final String PATH_RESULT = "/WEB-INF/jsp/search/result.jsp";
+    /** Admin path. */
+    private static final String PATH_ADMIN = "/WEB-INF/jsp/search/admin.jsp";
 
-        // logger.debug("processAction ");
-		
-		if( PortletMode.VIEW.equals(req.getPortletMode()) && req.getParameter("searchAction") != null){
-			res.setRenderParameter("keywords", req.getParameter("keywords"));
-		}
+    /** Portal URL factory. */
+    private IPortalUrlFactory portalUrlFactory;
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
 
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
-
-			PortalWindow window = WindowFactory.getWindow(req);
-			window.setProperty(Constants.WINDOW_PROP_URI, req.getParameter("nuxeoPath"));
-
-			
-			if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-				window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
-			else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
-				window.setProperty(Constants.WINDOW_PROP_VERSION, null);
-			
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-	}
-
-	@RenderMode(name = "admin")
-	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
-
-		res.setContentType("text/html");
-		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
-	
-		
-		PortletRequestDispatcher rd = null;
-
-		PortalWindow window = WindowFactory.getWindow(req);
-		String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-		if (nuxeoPath == null)
-			nuxeoPath = "";
-		req.setAttribute("nuxeoPath", nuxeoPath);
-		
-		String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
-		req.setAttribute("displayLiveVersion", displayLiveVersion);
-		
-		req.setAttribute("ctx", ctx);
-
-		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/search/admin.jsp");
-		rd.include(req, res);
-
-	}
-
-	@SuppressWarnings("unchecked")
-	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-			PortletSecurityException, IOException {
-
-        // LBI - pb LinkageException, voir #67
-        // logger.debug("doView");
-		
-		NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-
-		PortalWindow window = WindowFactory.getWindow(request);
-
-		String	nuxeoPath =  window.getProperty(Constants.WINDOW_PROP_URI);
-
-			
-		String keywords = request.getParameter("keywords");
-		
-		if( keywords == null)
-			// on prend les keywords public
-			keywords = request.getParameter("osivia.keywords");
-
-			
-		
-		/* Filtre pour sélectionner uniquement les version publiées */
+    /**
+     * Default constructor.
+     */
+    public SearchPortlet() {
+        super();
+    }
 
 
-		try {
-			response.setContentType("text/html");
-			
-		
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(PortletConfig config) throws PortletException {
+        super.init(config);
 
-			if (keywords != null) {
-				// Page de resultats
+        // Portal URL factory
+        this.portalUrlFactory = (IPortalUrlFactory) this.getPortletContext().getAttribute("UrlService");
+        if (this.portalUrlFactory == null) {
+            throw new PortletException("Cannot start TestPortlet due to service unavailability");
+        }
 
-				
-				int currentPage = 0;
-				String sCurrentPage =  request.getParameter("currentPage");
-				if( sCurrentPage != null)
-					currentPage = Integer.parseInt(sCurrentPage);
-
-				// Pas de cache sur les recherches
-				ctx.setCacheTimeOut(0);
-				
-	
-				PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new SearchCommand(nuxeoPath, ctx.isDisplayingLiveVersion(), keywords, currentPage ));
-
-				request.setAttribute("docs", docs);
-				request.setAttribute("ctx", ctx);
-				
-				//v2.0.5 : on repete le formulaire de recherche
-				//request.setAttribute("hideSearchSubForm", window.getProperty("osivia.hideSearchSubForm"));
-
-				request.setAttribute("keywords", keywords);
-				
-				request.setAttribute("currentPage", currentPage);
-				
-				response.setTitle("Résultats de la recherche");
-				
-
-				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/search/result.jsp").include(request, response);
-
-			} else {
-
-				// Page de recherche
-				Window windowPortal = (Window) request.getAttribute("osivia.window");
-
-				Page page = (Page) windowPortal.getParent();
-				String pageId = URLEncoder.encode(page.getId().toString(PortalObjectPath.SAFEST_FORMAT), "UTF-8");
-
-				// Url d'appel de la recherche
-
-				Map<String, String> windowProperties = new HashMap<String, String>();
-				windowProperties.put(Constants.WINDOW_PROP_URI, ctx.getComputedPath(nuxeoPath));
-				windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-				windowProperties.put("osivia.hideSearchSubForm", "1");
-				
-				windowProperties.put("osivia.title", "Résultats de la recherche");
-				windowProperties.put("osivia.hideDecorators", "1");
-				
-
-				Map<String, String> params = new HashMap<String, String>();
-				params.put("keywords", "__REPLACE_KEYWORDS__");
+        // Internationalization service initialization
+        IInternationalizationService internationalizationService = (IInternationalizationService) this.getPortletContext().getAttribute(
+                Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+    }
 
 
-				String url = urlFactory.getStartPortletInRegionUrl(new PortalControllerContext(getPortletContext(), request,
-						response), pageId, "toutatice-portail-cms-nuxeo-searchPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-				request.setAttribute("searchUrl", url);
-				
-				request.setAttribute("ctx", ctx);
+        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View
+            if ("search".equals(action)) {
+                // Refresh search keywords
+                response.setRenderParameter("keywords", request.getParameter("keywords"));
+            }
+        } else if ("admin".equals(request.getPortletMode().toString())) {
+            // Admin
+            if ("save".equals(action)) {
+                // Current window
+                PortalWindow window = WindowFactory.getWindow(request);
 
-				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/search/view.jsp").include(request, response);
-			}
-		}
-		
-		catch( NuxeoException e){
-			PortletErrorHandler.handleGenericErrors(response, e);
-		}
+                // Path
+                String path = request.getParameter("path");
+                window.setProperty(Constants.WINDOW_PROP_URI, path);
+
+                // Display live version indicator
+                String displayLiveVersion = request.getParameter("displayLiveVersion");
+                if (StringUtils.isNotEmpty(displayLiveVersion)) {
+                    window.setProperty(Constants.WINDOW_PROP_VERSION, displayLiveVersion);
+                } else {
+                    window.setProperty(Constants.WINDOW_PROP_VERSION, null);
+                }
+            }
+
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        }
+    }
 
 
-		catch (Exception e) {
-			if (!(e instanceof PortletException))
-				throw new PortletException(e);
-		}
+    /**
+     * Admin view display.
+     *
+     * @param request request
+     * @param response response
+     * @throws PortletException
+     * @throws IOException
+     */
+    @RenderMode(name = "admin")
+    public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        // logger.debug("doView end");
+        // Path
+        String path = window.getProperty(Constants.WINDOW_PROP_URI);
+        request.setAttribute("path", StringUtils.trimToEmpty(path));
 
-	}
+        // Display live version HTML input
+        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
+        String displayLiveVersionInput = nuxeoController.formatDisplayLiveVersionList(displayLiveVersion);
+        request.setAttribute("displayLiveVersionInput", displayLiveVersionInput);
 
-	
+        response.setContentType("text/html");
+        this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Current window
+        PortalWindow portalWindow = WindowFactory.getWindow(request);
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+        // Path
+        String path = portalWindow.getProperty(Constants.WINDOW_PROP_URI);
+        // Keywords
+        String keywords = request.getParameter("keywords");
+        if (keywords == null) {
+            // Get public keywords
+            keywords = request.getParameter("osivia.keywords");
+        }
+
+        try {
+            String requestDispatcherPath;
+
+            if (keywords != null) {
+                // Result page
+
+                // Current page
+                String currentPageParam = request.getParameter("currentPage");
+                int currentPage = NumberUtils.toInt(currentPageParam);
+
+                // No cache for search
+                nuxeoController.setCacheTimeOut(0);
+
+                // Search command execution
+                SearchCommand command = new SearchCommand(path, nuxeoController.isDisplayingLiveVersion(), keywords, currentPage);
+                PaginableDocuments docs = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
+                List<SearchResultVO> results = this.toViewObjects(nuxeoController, docs);
+                int minPage = Math.max(0, currentPage - docs.getPageSize());
+                int maxPage = Math.min(currentPage + docs.getPageSize(), docs.getPageCount()) - 1;
+
+                request.setAttribute("keywords", keywords);
+                request.setAttribute("results", results);
+                request.setAttribute("totalSize", docs.getTotalSize());
+                request.setAttribute("currentPage", currentPage);
+                request.setAttribute("minPage", minPage);
+                request.setAttribute("maxPage", maxPage);
+
+                // Title
+                response.setTitle(bundle.getString("SEARCH_RESULT"));
+
+                requestDispatcherPath = PATH_RESULT;
+            } else {
+                // Search page
+
+                // Current technical window
+                Window technicalWindow = (Window) request.getAttribute("osivia.window");
+                // Current page
+                Page page = (Page) technicalWindow.getParent();
+                // Current page identifier
+                String pageId = PortalObjectUtils.getHTMLSafeId(page.getId());
+
+                // URL window properties
+                Map<String, String> windowProperties = new HashMap<String, String>();
+                windowProperties.put(Constants.WINDOW_PROP_URI, nuxeoController.getComputedPath(path));
+                windowProperties.put(Constants.WINDOW_PROP_VERSION, nuxeoController.getDisplayLiveVersion());
+                windowProperties.put("osivia.title", bundle.getString("SEARCH_RESULT"));
+                windowProperties.put("osivia.hideDecorators", "1");
+
+                // URL parameters
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("keywords", "__REPLACE_KEYWORDS__");
+
+                // URL
+                String url = this.portalUrlFactory.getStartPortletInRegionUrl(nuxeoController.getPortalCtx(), pageId,
+                        "toutatice-portail-cms-nuxeo-searchPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+                request.setAttribute("searchUrl", url);
+
+                requestDispatcherPath = PATH_VIEW;
+            }
+
+            response.setContentType("text/html");
+            this.getPortletContext().getRequestDispatcher(requestDispatcherPath).include(request, response);
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    /**
+     * Convert Nuxeo documents to view objects.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param documents Nuxeo documents
+     * @return view objects
+     */
+    private List<SearchResultVO> toViewObjects(NuxeoController nuxeoController, PaginableDocuments documents) {
+        List<SearchResultVO> results = new ArrayList<SearchResultVO>(documents.getPageSize());
+
+        for (Document document : documents) {
+            String title = document.getTitle();
+            String icon = nuxeoController.getRequest().getContextPath() + Formater.formatSpecificIcon(document);
+            Link link = nuxeoController.getLink(document);
+            String description;
+            try {
+                description = Formater.formatDescription(document);
+            } catch (ParseException e) {
+                description = null;
+            }
+
+            SearchResultVO result = new SearchResultVO(title, icon, link, description);
+            results.add(result);
+        }
+
+        return results;
+    }
 
 }

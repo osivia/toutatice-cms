@@ -10,13 +10,13 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +26,6 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -34,6 +33,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
@@ -51,14 +51,18 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
 
 
 /**
- * Portlet d'affichage d'un explorateur de fichiers.
+ * File browser portlet.
  *
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** View path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/files/view.jsp";
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -89,7 +93,6 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
-    // v2.1 WORKSPACE
     /**
      * {@inheritDoc}
      */
@@ -240,99 +243,104 @@ public class FileBrowserPortlet extends CMSPortlet {
      * {@inheritDoc}
      */
     @Override
-    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
-
-        logger.debug("doView");
-
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
-
-            response.setContentType("text/html");
-
+            // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
 
-            /* On détermine l'uid et le scope */
-
-            String nuxeoPath = null;
-
-            // portal window parameter (appels dynamiques depuis le portail)
-            nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-
-            if (nuxeoPath == null) {
-                nuxeoPath = window.getProperty("osivia.nuxeoPath");
+            // Path
+            String path = window.getProperty(Constants.WINDOW_PROP_URI);
+            if (path == null) {
+                path = window.getProperty("osivia.nuxeoPath");
             }
 
+            if (StringUtils.isNotEmpty(path)) {
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+                nuxeoController.setDisplayLiveVersion("1");
 
-            if (nuxeoPath != null) {
-                NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
+                // Computed path
+                path = nuxeoController.getComputedPath(path);
 
-                ctx.setDisplayLiveVersion("1");
+                // Current Nuxeo document
+                Document doc = nuxeoController.fetchDocument(path);
 
+                // Publication informations
+                CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(nuxeoController.getCMSCtx(), path);
 
-                nuxeoPath = ctx.getComputedPath(nuxeoPath);
+                // Nuxeo children documents
+                Documents documents = (Documents) nuxeoController.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId()));
 
-
-                Document doc = ctx.fetchDocument(nuxeoPath);
-
-
-                /* Récupération des fils */
-
-
-                CMSPublicationInfos pubInfos = NuxeoController.getCMSService().getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
-
-
-                Documents docs = (Documents) ctx.executeNuxeoCommand(new FolderGetFilesCommand(pubInfos.getDocumentPath(), pubInfos.getLiveId()));
-
-
-                // Tri pour affichage
-
-                List<Document> sortedDocs = docs.list();
-
-
-                CMSItemType cmsItemType = ctx.getCMSItemTypes().get(doc.getType());
+                // Sorted documents
+                List<Document> sortedDocuments = documents.list();
+                CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(doc.getType());
                 if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
-                    Collections.sort(sortedDocs, new FileBrowserComparator(ctx));
+                    Collections.sort(sortedDocuments, new FileBrowserComparator(nuxeoController));
                 }
-                request.setAttribute("docs", sortedDocs);
-
 
                 // Insert standard menu bar for content item
-                ctx.setCurrentDoc(doc);
-                ctx.insertContentMenuBarItems();
+                nuxeoController.setCurrentDoc(doc);
+                nuxeoController.insertContentMenuBarItems();
 
+                // Description
+                request.setAttribute("description", Formater.formatDescription(doc));
+                // Documents
+                request.setAttribute("documents", this.toViewObjects(nuxeoController, sortedDocuments));
+                // Path
+                request.setAttribute("path", path);
 
-                /* attributs de la JSP */
-                request.setAttribute("basePath", nuxeoPath);
-                request.setAttribute("folderPath", nuxeoPath);
-
-
-                request.setAttribute("doc", doc);
-                request.setAttribute("ctx", ctx);
-
-
+                // Title
                 response.setTitle(doc.getTitle());
-
-                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/files/view.jsp").include(request, response);
-
-            } else {
-                response.setContentType("text/html");
-                response.getWriter().print("<h2>Document non défini</h2>");
-                response.getWriter().close();
-                return;
             }
 
+            response.setContentType("text/html");
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
         }
+    }
 
-        catch (Exception e) {
-            if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
+
+    /**
+     * Convert Nuxeo documents to view objects.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param documents Nuxeo documents
+     * @return view objects
+     * @throws ParseException
+     */
+    private Collection<FileBrowserDocumentVO> toViewObjects(NuxeoController nuxeoController, List<Document> documents) throws ParseException {
+        Collection<FileBrowserDocumentVO> results = new ArrayList<FileBrowserDocumentVO>(documents.size());
+
+        for (Document document : documents) {
+            FileBrowserDocumentVO documentVO = new FileBrowserDocumentVO();
+            // Title
+            documentVO.setTitle(document.getTitle());
+            // Link
+            documentVO.setLink(nuxeoController.getLink(document, "fileExplorer"));
+            // Document size
+            documentVO.setSize(Formater.formatSize(document));
+            // Icon source
+            documentVO.setIconSource(Formater.formatNuxeoIcon(document));
+            // Icon alt
+            documentVO.setIconAlt(document.getType());
+            // Download link
+            if ("File".equals(document.getType())) {
+                documentVO.setDownloadLink(nuxeoController.getLink(document, "download"));
             }
+            // Date
+            documentVO.setDate(Formater.formatDateAndTime(document));
+            // Last contributor
+            documentVO.setLastContributor(StringUtils.trimToEmpty(document.getString("dc:lastContributor")));
+
+            results.add(documentVO);
         }
-
-        logger.debug("doView end");
-
+        return results;
     }
 
 }

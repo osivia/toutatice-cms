@@ -27,7 +27,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.HTMLConstants;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.core.cms.CMSException;

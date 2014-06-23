@@ -1,119 +1,106 @@
-
-<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
-<%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="internationalization" prefix="is" %>
 
-<%@page import="java.util.List"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="javax.portlet.PortletURL"%>
+<%@ page contentType="text/html" isELIgnored="false"%>
 
-
-<%@page import="javax.portlet.WindowState"%>
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Documents"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-
-
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
-
-
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.PaginableDocuments"%><portlet:defineObjects />
-
-<%
-PaginableDocuments docs = (PaginableDocuments) renderRequest.getAttribute("docs")	;
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-String keywords = (String) request.getAttribute("keywords");
-int currentPage = (Integer) request.getAttribute("currentPage");
-String hideSearchSubForm = (String) request.getAttribute("hideSearchSubForm");
-
-%>
 
 <portlet:defineObjects />
 
+<portlet:actionURL name="search" var="searchActionURL" />
 
-<div class="nuxeo-results-search">
 
-<% if(!"1".equals(hideSearchSubForm)){ %>
+<c:set var="namespace"><portlet:namespace /></c:set>
 
-	<div class="nuxeo-input-search">
-			<form method="post" action="<portlet:actionURL/>">
-				<input type="text" name="keywords" value="<%= StringEscapeUtils.escapeHtml((String) request.getAttribute("keywords")) %>" size="40">	<input type="submit" value="Rechercher" name="searchAction"/>
-			</form>
-	</div>
-	
-<% } %>
 
-<div class="nuxeo-nb-results_search">
+<div class="row nuxeo-results-search">
+    <!-- Search form -->
+    <div class="col-lg-4">
+        <form action="${searchActionURL}" method="post" class="form" role="search">
+            <div class="form-group">
+                <label class="sr-only" for="${namespace}-search-input">Search</label>
+                <div class="input-group">
+                    <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder='<is:getProperty key="SEARCH_PLACEHOLDER" />'>
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default"><span class="glyphicons halflings search"></span></button>
+                    </span>
+                </div>
+            </div>
+        </form>
+    </div>
 
-	<%= docs.getTotalSize() %> <%= (docs.getTotalSize() <= 1) ? "résultat" : "résultats" %>
-
+    <!-- Search result -->
+    <div class="col-lg-8">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <!-- Indicator -->
+                <p>
+                    <span>${totalSize} </span>
+                    <c:choose>
+                        <c:when test="${totalSize > 1}">
+                            <is:getProperty key="SEARCH_RESULTS_INDICATOR" />
+                        </c:when>
+                        
+                        <c:otherwise>
+                            <is:getProperty key="SEARCH_RESULT_INDICATOR" />
+                        </c:otherwise>
+                    </c:choose>
+                </p>
+            
+                <!-- List -->
+                <ul class="list-unstyled">
+                    <c:forEach var="result" items="${results}">
+                        <li>
+                            <img src="${result.icon}" alt="icon" class="pull-left">
+                            <div>
+                                <a href="${result.link.url}">
+                                    <span>${result.title}</span>
+                                
+                                    <c:if test="${result.link.downloadable}">
+                                        <span class="glyphicon glyphicon-download"></span>
+                                    </c:if>
+                                
+                                    <c:if test="${result.link.external}">
+                                        <span class="glyphicon glyphicon-new-window"></span>
+                                    </c:if>
+                                </a>
+                                <p>${result.description}</p>
+                            </div>
+                        </li>
+                    </c:forEach>
+                </ul>
+                
+                <!-- Pagination -->
+                <div class="text-center">
+                    <ul class="pagination">
+                        <c:forEach var="index" begin="${minPage}" end="${maxPage}">
+                            <c:choose>
+                                <c:when test="${index == currentPage}">
+                                    <li class="active">
+                                        <a>
+                                            <span>${index + 1}</span>
+                                            <span class="sr-only">(current)</span>
+                                        </a>
+                                    </li>
+                                </c:when>
+                                
+                                <c:otherwise>
+                                    <portlet:renderURL var="pageURL">
+                                        <portlet:param name="keywords" value="${keywords}" />
+                                        <portlet:param name="currentPage" value="${index}" />
+                                    </portlet:renderURL>
+                                    
+                                    <li>
+                                        <a href="${pageURL}">
+                                            <span>${index + 1}</span>
+                                        </a>
+                                    </li>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-
-<div class="nuxeo-list-search">
-	<ul>
-
-<%
-
-Iterator it = docs.iterator();
-while( it.hasNext())	{
-	
-	Document doc = (Document) it.next();
-	
-	Link link = ctx.getLink(doc);
-
-
-	String	icon = "<img style=\"vertical-align:middle\" src=\""+renderRequest.getContextPath()+Formater.formatSpecificIcon(doc)+"\">";
-
-	
-%>
-		<li><%=icon%>  <%= Formater.formatLink(link, doc, "title") %>  <br><p class="description"><%= Formater.formatDescription(doc)%></p><div class="separateur"></div></li>
-
-<%
-}
-%>
-			</ul>
-</div>
-
-
-<div class="pagination">
-
-
-	
-Page 
-<%
-
-int minPage = Math.max(0, currentPage - 5);
-int maxPage = Math.min(currentPage + 5, docs.getPageCount());
-
-for( int numPage = minPage; numPage < maxPage; numPage++)	{
-	PortletURL pageURL = renderResponse.createRenderURL();
-
-	pageURL.setParameter("keywords", keywords);
-	pageURL.setParameter( "currentPage", Integer.toString(numPage));
-	
-	if( currentPage == numPage)	{
-%>
-			<b><span><%= (numPage + 1) %></span></b>
-<%	} else { %>
-			<a href="<%= pageURL.toString()%>"><span><%= (numPage + 1) %></span></a>
-<%	}  
-}
-%>
-</div>
-
-
-</div>
-
-
-
-<%= ctx.getDebugInfos() %>

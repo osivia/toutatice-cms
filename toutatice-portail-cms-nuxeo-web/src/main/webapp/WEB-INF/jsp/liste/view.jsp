@@ -48,7 +48,8 @@ List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.P
 
 if( permaLinkURL != null)	{
 	MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC, permaLinkURL, null, "portlet-menuitem-permalink", null);
-	item.setAjaxDisabled(true);
+	item.setGlyphicon("link");
+    item.setAjaxDisabled(true);
 	menuBar.add(item);
 }
 %>
@@ -72,7 +73,7 @@ if( rssLinkURL != null)	{
 
 
 <div class="no-ajax-link">
-	<ul>
+	<ul class="list-group">
 <%
 int indice = 0;
 int parite = 0;
@@ -102,9 +103,9 @@ while( it.hasNext())
 </div>	
 <% 
 if ( nbPages > 1 )	
-{ %>	
-	<div class="pagination">
-	Page
+{ %>
+<div class="text-center">	
+	<ul class="pagination">
 <%
 
 int minPage = Math.max(0, currentPage - 5);
@@ -121,14 +122,22 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 	
 	if( currentPage == numPage)	{
 %>
-			<b><span><%= (numPage + 1) %></span></b>
+			<li class="active">
+                <a href="#">
+                    <span><%=(numPage + 1) %></span>
+                    <span class="sr-only">(current)</span>
+                </a>
+            </li>
 <%	} else { %>
-			<!-- JMETER_URL_LIST="<%= pageURL.toString()%>" --> <a href="<%= pageURL.toString()%>"><span><%= (numPage + 1) %></span></a>
+			<!-- JMETER_URL_LIST="<%= pageURL.toString()%>" -->
+            <li>
+                <a href="<%=pageURL.toString() %>"><%=(numPage + 1) %></a>
+            </li>
 <%	}  
 }
 %>
-	</div>
-
+	</ul>
+</div>
 <% } %>
 
 

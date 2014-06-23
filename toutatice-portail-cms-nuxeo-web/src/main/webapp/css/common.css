@@ -103,20 +103,6 @@ div.nuxeo-list-detailed ul li p.description	{
 	margin-left: 30px;	
 }
 
-div.nuxeo-list-search {
-	padding-top:10px;
-}
-
-div.nuxeo-list-search ul li	{
-	list-style-type: none;
-	margin-top:10px;
-}
-
-div.nuxeo-list-search ul li	p.description {
-	min-height: 10px; 
-	margin-left:20px
-}
-
 	
 div.pagination	{
   width:100%;
@@ -384,16 +370,48 @@ div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	
 
 /* Navigation publication */
 
+.nuxeo-publish-navigation > a {
+	margin-bottom: 3px;
+}
 
+.nuxeo-publish-navigation li {
+	position: relative
+}
 
-div.nuxeo-publish-navigation ul a.current {
-	font-size: 14px;
+.nuxeo-publish-navigation li button {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	z-index: 3;
+	padding: 1px 5px 0 6px;
+	font-size: 22px;
+}
+
+.nuxeo-publish-navigation ul ul li button {
+	left: 8px;
+}
+
+.nuxeo-publish-navigation li a {
+	padding-left: 47px;
+}
+
+.nuxeo-publish-navigation li a.current {
     font-weight: bold;
 }
 
-div.nuxeo-publish-navigation ul a {
-    text-decoration: none;
+
+
+/* Search */
+
+.nuxeo-results-search li > img {
+    margin-right: 3px;
 }
+
+.nuxeo-results-search li > div {
+	overflow: hidden;
+}
+
+
 
 
 

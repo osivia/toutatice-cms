@@ -22,7 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.Element;
 import org.dom4j.QName;
 import org.dom4j.dom.DOMElement;
-import org.osivia.portal.api.HTMLConstants;
+import org.osivia.portal.api.html.HTMLConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
 

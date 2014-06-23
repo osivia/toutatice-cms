@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-
-<!DOCTYPE web-app
-    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-           "http://java.sun.com/dtd/web-app_2_3.dtd">
-
-<web-app>
+<?xml version="1.0" encoding="UTF-8" ?>
+<web-app
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
 
 	<display-name>Nuxeo Portlets</display-name>
 
@@ -12,6 +12,7 @@
 		This application is a portlet. It can not be used outside a portal.
 		This web.xml file is mandatory in each .par archive file.
 	</description>
+
 
 	<servlet>
 		<servlet-name>ThumbnailServlet</servlet-name>
@@ -55,6 +56,17 @@
         <url-pattern>/streaming/*</url-pattern>
     </servlet-mapping>
 	
+    
+    <jsp-config>
+        <taglib>
+            <taglib-uri>osivia-portal</taglib-uri>
+            <taglib-location>theme/osivia-portal.tld</taglib-location>
+        </taglib>
+        <taglib>
+            <taglib-uri>internationalization</taglib-uri>
+            <taglib-location>theme/internationalization.tld</taglib-location>
+        </taglib>
+    </jsp-config>
 	
 </web-app>
 

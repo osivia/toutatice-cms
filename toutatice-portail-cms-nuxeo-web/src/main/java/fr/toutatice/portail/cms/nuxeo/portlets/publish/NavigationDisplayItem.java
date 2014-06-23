@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 
@@ -21,88 +18,126 @@ import java.util.List;
 
 import org.osivia.portal.core.cms.CMSItem;
 
-
+/**
+ * Navigation display item java-bean.
+ */
 public class NavigationDisplayItem {
-	/** The display title of the  link. */
-	private String title;
-	
-	/** The absolute URL of the  link. */
-	private String url;
-	
-	private boolean external;
-	
-	private boolean selected;
-	
-	public boolean isSelected() {
-		return selected;
-	}
 
-	public void setSelected(boolean selected) {
-		this.selected = selected;
-	}
+    /** The display title of the link. */
+    private final String title;
+    /** The absolute URL of the link. */
+    private final String url;
+    /** External link indicator. */
+    private final boolean external;
+    /** Selected item indicator. */
+    private final boolean selected;
+    /** Current item indicator. */
+    private final boolean current;
+    /** CMS item. */
+    private final CMSItem navItem;
+    /** Children. */
+    private final List<NavigationDisplayItem> children;
 
-	private List<NavigationDisplayItem> childrens = new ArrayList<NavigationDisplayItem>();
-	
-	public List<NavigationDisplayItem> getChildrens() {
-		return childrens;
-	}
 
-	public void setChildrens(List<NavigationDisplayItem> childrens) {
-		this.childrens = childrens;
-	}
-
-	public boolean isExternal() {
-		return external;
-	}
-
-	public void setExternal(boolean external) {
-		this.external = external;
-	}
-
-	/** Default constructor. */
+    /**
+     * Default constructor.
+     */
 	public NavigationDisplayItem() {
-		this(null, "/", false, false, null);
+        this(null, "/", false, false, false, null);
 	}
-	
-	/** Canonical constructor.*/
-	public NavigationDisplayItem(String aTitle, String anUrl, boolean anExternal, boolean anSelected, CMSItem anNavItem) {
+
+    /**
+     * Canonical constructor.
+     *
+     * @param title display title of the link
+     * @param url absolute URL of the link
+     * @param external external link indicator
+     * @param selected selected item indicator
+     * @param current current item indicator
+     * @param navItem CMS item
+     */
+    public NavigationDisplayItem(String title, String url, boolean external, boolean selected, boolean current, CMSItem navItem) {
 		super();
-		title = aTitle;
-		url = anUrl;
-		external = anExternal;
-		selected = anSelected;
-		navItem = anNavItem;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String aTitle) {
-		this.title = aTitle;
-	}
-
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String anUrl) {
-		this.url = anUrl;
-	}
-	
-	public CMSItem navItem;
-	
-
-	public CMSItem getNavItem() {
-		return navItem;
-	}
-
-	public void setNavItem(CMSItem navItem) {
+		this.title = title;
+		this.url = url;
+		this.external = external;
+		this.selected = selected;
+        this.current = current;
 		this.navItem = navItem;
+        this.children = new ArrayList<NavigationDisplayItem>();
 	}
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
 	public String toString() {
-		return super.toString() + " {" + title + ": " + url + "}";
-	}		
+		return super.toString() + " {" + this.title + ": " + this.url + "}";
+	}
+
+
+    /**
+     * Getter for title.
+     *
+     * @return the title
+     */
+    public String getTitle() {
+        return this.title;
+    }
+
+    /**
+     * Getter for url.
+     *
+     * @return the url
+     */
+    public String getUrl() {
+        return this.url;
+    }
+
+    /**
+     * Getter for external.
+     *
+     * @return the external
+     */
+    public boolean isExternal() {
+        return this.external;
+    }
+
+    /**
+     * Getter for selected.
+     *
+     * @return the selected
+     */
+    public boolean isSelected() {
+        return this.selected;
+    }
+
+    /**
+     * Getter for current.
+     * 
+     * @return the current
+     */
+    public boolean isCurrent() {
+        return this.current;
+    }
+
+    /**
+     * Getter for navItem.
+     * 
+     * @return the navItem
+     */
+    public CMSItem getNavItem() {
+        return this.navItem;
+    }
+
+    /**
+     * Getter for children.
+     *
+     * @return the children
+     */
+    public List<NavigationDisplayItem> getChildren() {
+        return this.children;
+    }
 
 }
