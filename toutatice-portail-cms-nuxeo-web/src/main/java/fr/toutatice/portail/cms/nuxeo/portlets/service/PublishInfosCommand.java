@@ -87,6 +87,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
 				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
+				publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
 				publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
 				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
