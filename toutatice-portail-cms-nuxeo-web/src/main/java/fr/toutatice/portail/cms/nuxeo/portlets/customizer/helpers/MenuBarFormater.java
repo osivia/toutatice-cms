@@ -324,13 +324,15 @@ public class MenuBarFormater {
             // Do not insert any action for remote proxy
             if (!this.isRemoteProxy(cmsCtx, pubInfos)) {
                 if (this.isInLiveMode(cmsCtx, pubInfos)) {
-                    // Publish menubar item
-                    String publishURL = this.getContributionService().getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-                    MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
-                            null, "publish-action", null);
-                    publishItem.setAjaxDisabled(true);
-                    publishItem.setDropdownItem(true);
-                    menubar.add(publishItem);
+                	if (pubInfos.isUserCanValidate()) {
+	                    // Publish menubar item
+	                    String publishURL = this.getContributionService().getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+	                    MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
+	                            null, "publish-action", null);
+	                    publishItem.setAjaxDisabled(true);
+	                    publishItem.setDropdownItem(true);
+	                    menubar.add(publishItem);
+                	}
 
                     // Go to proxy menubar item
                     if( pubInfos.isPublished()){
@@ -342,13 +344,15 @@ public class MenuBarFormater {
                         menubar.add(proxyItem);
                     }
                 } else {
-                    // Unpublish menubar item
-                    String unpublishURL = this.getContributionService().getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-                    MenubarItem publishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
-                            unpublishURL, null, "unpublish-action", null);
-                    publishItem.setAjaxDisabled(true);
-                    publishItem.setDropdownItem(true);
-                    menubar.add(publishItem);
+                	if (pubInfos.isUserCanValidate()) {
+	                    // Unpublish menubar item
+	                    String unpublishURL = this.getContributionService().getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+	                    MenubarItem publishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+	                            unpublishURL, null, "unpublish-action", null);
+	                    publishItem.setAjaxDisabled(true);
+	                    publishItem.setDropdownItem(true);
+	                    menubar.add(publishItem);
+                	}
 
                     if (pubInfos.isBeingModified()) {
                         // Go to preview menubar item
