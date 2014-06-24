@@ -97,8 +97,8 @@ public class HTMLCommentsTreeBuilder {
 				
 				htmlTree.append("<div class=\"child_comment\">");
 				htmlTree.append("<span  class=\"add-child-comment-span\" ");
-				htmlTree.append("onclick=\"showCommentField(\'" + DIV_COM_ID_TAG + "\');");
-				htmlTree.append("document.getElementById('commentParentId" + DIV_COM_ID_TAG +"').value='");
+				htmlTree.append("onclick=\"showCommentField(\'" + DIV_COM_ID_TAG + ADD_CONTAINER_ID + "\');");
+				htmlTree.append("document.getElementById('commentParentId" + DIV_COM_ID_TAG + ADD_CONTAINER_ID + "').value='");
 				htmlTree.append(comment.get("id"));
 				htmlTree.append("'\">Répondre");
 				htmlTree.append("</span>");
