@@ -39,6 +39,7 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.urls.EcmCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -51,7 +52,6 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.EcmCommand;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.page.PageProperties;
@@ -1202,6 +1202,10 @@ public class CMSService implements ICMSService {
         if (command == EcmCommand.createPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_document?";
             requestParameters.put("type", "PortalPage");
+        } else if (command == EcmCommand.createDocument) {
+            url = uri.toString() + "/nxpath/default" + path + "@toutatice_create?";
+        } else if (command == EcmCommand.editDocument) {
+            url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
         } else if (command == EcmCommand.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmCommand.createFgtInRegion) {

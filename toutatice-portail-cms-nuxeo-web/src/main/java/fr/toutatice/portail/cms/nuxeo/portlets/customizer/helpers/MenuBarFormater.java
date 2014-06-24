@@ -40,6 +40,7 @@ import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.EcmCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -443,11 +444,14 @@ public class MenuBarFormater {
                     // ECM base URL
                     String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
 
+                    Map<String, String> requestParameters = new HashMap<String, String>();
+                    String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.editDocument, pubInfos.getDocumentPath(), requestParameters);
+
                     // URL
-                    StringBuilder url = new StringBuilder();
-                    url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
-                    url.append("/nxpath/default").append(pubInfos.getDocumentPath());
-                    url.append("@toutatice_edit?fromUrl=").append(portalBaseURL);
+                    // StringBuilder url = new StringBuilder();
+                    // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                    // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                    // url.append("@toutatice_edit?fromUrl=").append(portalBaseURL);
 
                     // On click action
                     StringBuilder onClick = new StringBuilder();
@@ -465,7 +469,7 @@ public class MenuBarFormater {
                     }
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url.toString(), onClick.toString(),
+                    MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick.toString(),
                             "fancyframe_refresh", null);
                     item.setGlyphicon("halflings edit");
                     item.setAjaxDisabled(true);
@@ -538,18 +542,23 @@ public class MenuBarFormater {
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
                         CMSItemType docTypeDef = managedTypes.get(docType);
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
+
+                            Map<String, String> requestParameters = new HashMap<String, String>();
+                            requestParameters.put("type", docType);
+                            String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
+
                             // Sub-type URL
-                            StringBuilder url = new StringBuilder();
-                            url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
-                            url.append("/nxpath/default").append(pubInfos.getDocumentPath());
-                            url.append("@toutatice_create?type=").append(docType);
-                            url.append("&fromUrl=").append(portalBaseURL);
+                            // StringBuilder url = new StringBuilder();
+                            // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                            // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                            // url.append("@toutatice_create?type=").append(docType);
+                            // url.append("&fromUrl=").append(portalBaseURL);
 
                             // Sub-type
                             SubType subType = new SubType();
                             subType.setDocType(docType);
                             subType.setName(bundle.getString(docType.toUpperCase()));
-                            subType.setUrl(url.toString());
+                            subType.setUrl(url);
                             portalDocsToCreate.add(subType);
                         }
                     }
@@ -559,14 +568,20 @@ public class MenuBarFormater {
 
             if (portalDocsToCreate.size() == 1) {
                 // No fancybox
-                StringBuilder url = new StringBuilder();
-                url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
-                url.append("/nxpath/default").append(pubInfos.getDocumentPath());
-                url.append("@toutatice_create?type=").append(portalDocsToCreate.get(0).getDocType());
-                url.append("&fromUrl=").append(portalBaseURL);
+
+                Map<String, String> requestParameters = new HashMap<String, String>();
+                requestParameters.put("type", portalDocsToCreate.get(0).getDocType());
+                String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
+
+
+                // StringBuilder url = new StringBuilder();
+                // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                // url.append("@toutatice_create?type=").append(portalDocsToCreate.get(0).getDocType());
+                // url.append("&fromUrl=").append(portalBaseURL);
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url.toString(), onClick.toString(),
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url, onClick.toString(),
                         "fancyframe_refresh portlet-menuitem-edition add", "nuxeo");
                 item.setGlyphicon("halflings plus");
                 item.setDropdownItem(true);
