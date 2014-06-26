@@ -73,6 +73,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
@@ -80,6 +82,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
 
 /**
  * CMS service Toutatice implementation.
@@ -1348,6 +1351,83 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
 
+    }
+    
+    public void askToPublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            this.executeNuxeoCommand(cmsCtx, new AskSetOnLineCommand(doc));
+
+         // On force le rechargement du cache de la page
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
+    
+    public void cancelPublishWorkflow(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            this.executeNuxeoCommand(cmsCtx, new CancelWorkflowCommand(doc, "toutatice_online_approbation"));
+
+         // On force le rechargement du cache de la page
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
+    
+    public void validatePublicationOfDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        callValidationCommand(cmsCtx, pagePath, true);
+    }
+    
+    public void rejectPublicationOfDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        callValidationCommand(cmsCtx, pagePath, false);
+    }
+
+    /**
+     * @param cmsCtx
+     * @param pagePath
+     * @throws CMSException
+     */
+    public void callValidationCommand(CMSServiceCtx cmsCtx, String pagePath, boolean accept) throws CMSException {
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            this.executeNuxeoCommand(cmsCtx, new ValidationPublishCommand(doc, accept));
+
+         // On force le rechargement du cache de la page
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
     }
 
     public void deleteDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {

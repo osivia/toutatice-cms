@@ -279,6 +279,16 @@ public class MenuBarFormater {
                 liveIndicator.setGlyphicon("halflings eye-open");
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
+                
+                if (pubInfos.isOnLinePending()) {
+                    // OnLIne workflow pending indicator menubar item
+                    MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"),
+                            MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, null, null);
+                    pendingIndicator.setGlyphicon("history");
+                    pendingIndicator.setStateItem(true);
+                    menubar.add(pendingIndicator);
+                }
+                
             } else {
                 editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
 
@@ -289,18 +299,49 @@ public class MenuBarFormater {
             // Do not insert any action for remote proxy
             if (!this.isRemoteProxy(cmsCtx, pubInfos)) {
                 if (this.isInLiveMode(cmsCtx, pubInfos)) {
-                    // Publish menubar item
-                    String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-                    MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
-                            null, null, null);
-                    publishItem.setGlyphicon("halflings ok-circle");
-                    publishItem.setAjaxDisabled(true);
-                    publishItem.setDropdownItem(true);
-                    menubar.add(publishItem);
+                    if (pubInfos.isUserCanValidate()) {
+
+                        if (pubInfos.isOnLinePending()) {
+                            // OnLine workflow validation items
+                            addValidatePublishingItems(portalControllerContext, cmsCtx, menubar, pubInfos);
+                        } else {
+                            if(pubInfos.isBeingModified()){
+                                // Publish menubar item
+                                String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                                MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
+                                        null, null, null);
+                                publishItem.setGlyphicon("halflings ok-circle");
+                                publishItem.setAjaxDisabled(true);
+                                publishItem.setDropdownItem(true);
+                                menubar.add(publishItem);
+                            }
+                        }
+                    } else{
+                        if(!pubInfos.isOnLinePending() && pubInfos.isBeingModified()){
+                            // Ask Publication (workflow) item
+                            String askPublishURL = this.getContributionService().getAskPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                            MenubarItem askPublishItem = new MenubarItem("ASK_PUBLISH", bundle.getString("ASK_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+                                    askPublishURL, null, null, null);
+                            askPublishItem.setGlyphicon("chat");
+                            askPublishItem.setAjaxDisabled(true);
+                            askPublishItem.setDropdownItem(true);
+                            menubar.add(askPublishItem);
+                        }
+                        if(pubInfos.isOnLinePending() && pubInfos.isUserOnLineInitiator()){
+                            // Cancel publishing ask (workflow) item
+                            String cancelAskPublishURL = this.getContributionService().getCancelPublishingAskContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                            MenubarItem cancelAskPublishItem = new MenubarItem("CANCEL_ASK_PUBLISH", bundle.getString("CANCEL_ASK_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+                                    cancelAskPublishURL, null, null, null);
+                            cancelAskPublishItem.setGlyphicon("halflings remove-circle");
+                            cancelAskPublishItem.setAjaxDisabled(true);
+                            cancelAskPublishItem.setDropdownItem(true);
+                            menubar.add(cancelAskPublishItem);
+                        }
+                    }
 
                     // Go to proxy menubar item
-                    if( pubInfos.isPublished()){
-                        String proxyURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
+                    if (pubInfos.isPublished()) {
+                        String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
                         MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, proxyURL,
                             null, null, null);
                         proxyItem.setGlyphicon("halflings eye-close");
@@ -309,14 +350,16 @@ public class MenuBarFormater {
                         menubar.add(proxyItem);
                     }
                 } else {
-                    // Unpublish menubar item
-                    String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-                    MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
-                            unpublishURL, null, null, null);
-                    unpublishItem.setGlyphicon("halflings remove-circle");
-                    unpublishItem.setAjaxDisabled(true);
-                    unpublishItem.setDropdownItem(true);
-                    menubar.add(unpublishItem);
+                    if (pubInfos.isUserCanValidate()) {
+                        // Unpublish menubar item
+                        String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                        MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+                                unpublishURL, null, null, null);
+                        unpublishItem.setGlyphicon("halflings remove-circle");
+                        unpublishItem.setAjaxDisabled(true);
+                        unpublishItem.setDropdownItem(true);
+                        menubar.add(unpublishItem);
+                    }
 
                     if (pubInfos.isBeingModified()) {
                         // Current modification indicator
@@ -339,6 +382,32 @@ public class MenuBarFormater {
                 }
             }
         }
+    }
+
+    /**
+     * Generate validate or recject OnLine workflow items..
+     * 
+     * @param menubar
+     * @throws Exception 
+     */
+    protected void addValidatePublishingItems(PortalControllerContext portalControllerContext, CMSServiceCtx cmsCtx, List<MenubarItem> menubar, CMSPublicationInfos pubInfos) throws Exception {
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+        
+        String validateUrl = this.getContributionService().getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+        MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, validateUrl,
+                null, null, null);
+        validateItem.setGlyphicon("halflings ok-circle");
+        validateItem.setAjaxDisabled(true);
+        validateItem.setDropdownItem(true);
+        menubar.add(validateItem);
+        
+        String rejectUrl = this.getContributionService().getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+        MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 13, rejectUrl,
+                null, null, null);
+        rejectItem.setGlyphicon("halflings remove-circle");
+        rejectItem.setAjaxDisabled(true);
+        rejectItem.setDropdownItem(true);
+        menubar.add(rejectItem);
     }
 
 
