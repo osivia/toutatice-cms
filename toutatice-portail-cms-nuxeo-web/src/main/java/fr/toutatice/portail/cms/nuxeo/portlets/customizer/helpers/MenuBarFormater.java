@@ -276,7 +276,7 @@ public class MenuBarFormater {
                 // Live version indicator menubar item
                 MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null,
                         null, null, null);
-                liveIndicator.setGlyphicon("halflings eye-open");
+                liveIndicator.setGlyphicon("notes_2");
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
                 

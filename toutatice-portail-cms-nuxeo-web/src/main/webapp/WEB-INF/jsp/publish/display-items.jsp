@@ -29,11 +29,11 @@
                 <button type="button" class="btn btn-default">
                     <c:choose>
                         <c:when test="${child.selected or (childLevel <= openLevels)}">
-                            <span class="glyphicons halflings collapse"></span>
+                            <span class="glyphicons halflings chevron-down"></span>
                         </c:when>
                         
                         <c:otherwise>
-                            <span class="glyphicons halflings expand text-muted"></span>
+                            <span class="glyphicons halflings chevron-right text-muted"></span>
                         </c:otherwise>
                     </c:choose>
                 </button>

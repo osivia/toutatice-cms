@@ -10,7 +10,7 @@ $JQry(document).ready(function($) {
 		
 		// Toggle button glyphicon
 		$glyph = $this.find(".glyphicons");
-		$glyph.toggleClass("expand collapse text-muted");
+		$glyph.toggleClass("chevron-down chevron-right text-muted");
 		
 		// Toggle item children display
 		$children = $this.parent().children("ul");
