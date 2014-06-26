@@ -18,6 +18,9 @@
 		var commentDiv = document.getElementById(id);
 		commentDiv.style.display = 'none';
 	}
+	function focusCommentField(){
+		document.getElementById('addedContent').focus();
+	}
 </script>
 <% 	
 	String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
@@ -25,13 +28,6 @@
   	if (commentsTree != null) {
 %>
     <div class="commentsTitle"><h2>Commentaires</h2></div>
-    
-    <div class="add-comment-link">
-    	<span class="add-comment-span" onclick="showCommentField('div_add_comment<%= containerId %>');" >Ajouter un commentaire</span> 
-    	<div id="div_add_comment<%= containerId %>" style="display: none">
-			<jsp:include page="add-comment.jsp"></jsp:include>
-		</div>
-	</div>
 	
 	<!-- Inclusion de la jsp des réponses aux commentaires -->
 <%
@@ -60,7 +56,15 @@
 	<div id="div_delete_comment<%= containerId %>" style="display: none">
 		<jsp:include page="delete-comment.jsp"></jsp:include>
 	</div>
-
+	
+	<div class="add-comment-link">
+		<div id="fake_add_comment<%= containerId %>"  class="add-comment" onclick="showCommentField('div_add_comment<%= containerId %>');hideCommentField('fake_add_comment<%= containerId %>');focusCommentField();" >	
+				<textarea id="fakeaddedContent" name="content" rows="1" cols="60" style="color:#bbbbbb">Ajouter un commentaire...</textarea><br/>
+		</div>
+    	<div id="div_add_comment<%= containerId %>" style="display: none">
+			<jsp:include page="add-comment.jsp"></jsp:include>
+		</div>
+	</div>
 <% 
 	} 
 %>
