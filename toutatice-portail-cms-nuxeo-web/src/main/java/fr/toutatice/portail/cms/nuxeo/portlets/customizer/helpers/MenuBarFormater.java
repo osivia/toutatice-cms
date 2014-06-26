@@ -59,13 +59,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 /**
  * Menu bar associée aux contenus
  *
- * Techniquement cette classe est intéressante car elle montre comment on peut
- * déployer à chaud des fonctionnalités partagées entre les portlets
- *
- * Les fonctions du NuxeoController pourront donc etre basculées petit à petit
- * dans le CMSCustomizer
- *
- * A PACKAGER pour la suite
  *
  * @author jeanseb
  *
@@ -117,7 +110,7 @@ public class MenuBarFormater {
 
 
     @SuppressWarnings("unchecked")
-    public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
+    private void formatDefaultContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
 
         if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
             return;
@@ -188,7 +181,45 @@ public class MenuBarFormater {
         }
     }
 
+    protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
+        
+        PortletRequest request = cmsCtx.getRequest();
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+        
+        // Duplication bouton ajouter
 
+        MenubarItem duplicateItem = null;
+        boolean otherItem = false;
+        int indice = -1;
+        int addIndice = -1;
+        for(MenubarItem menuItem : menubar){
+            indice++;
+            if (menuItem.isDropdownItem()) {
+                if ("ADD".equals(menuItem.getId())) {
+                    duplicateItem = menuItem.clone();
+                    duplicateItem.setDropdownItem(false);
+                    addIndice = indice;
+                } else {
+                    otherItem = true;
+                }
+            }
+        }
+        
+        if( duplicateItem != null)  {
+            menubar.add(duplicateItem) ;
+
+            // Si uniquement bouton ajouter dans le menu, le supprimer
+
+            if( !otherItem)
+                menubar.remove(addIndice) ;
+        }
+    }
+    
+    public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
+        formatDefaultContentMenuBar(cmsCtx);
+        adaptDropdowMenu(cmsCtx);
+    }
+    
 
     /**
      * Controls if live mode is associated with the current document
