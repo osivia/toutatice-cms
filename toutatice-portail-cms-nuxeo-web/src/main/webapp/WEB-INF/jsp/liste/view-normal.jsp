@@ -41,4 +41,4 @@ icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
 
 %>
 
-		<li> <div class="list-bloc">  <%= icon%> <%= Formater.formatLink(link, doc, "title") %><p class="list-date"><%= Formater.formatDateAndTime(doc)%> par <img src="<%=avatarLink%>" class="avatarIcon"/> <%=username%> </p></div></li>	
+		<li> <div class="list-bloc">  <%= icon%> <%= Formater.formatLink(link, doc, "title") %><p class="list-date"><%= Formater.formatDateAndTime(doc)%> par <img src="<%=avatarLink%>" class="avatar"/> <%=username%> </p></div></li>	

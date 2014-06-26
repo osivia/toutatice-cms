@@ -92,7 +92,7 @@ public class HTMLCommentsTreeBuilder {
 			htmlTree.append("<div class=\"author\">");
             htmlTree.append("<img src=\"");
             htmlTree.append(NuxeoController.getCMSService().getUserAvatar(cmsCtx, comment.get("author").toString()).getUrl());
-            htmlTree.append("\" alt=\"avatar\" class=\"avatarIcon\"> ");
+            htmlTree.append("\" alt='avatar' class='avatar'> ");
 
             if (directoryServiceLocator.getDirectoryService() != null) {
                 DirectoryPerson person = directoryServiceLocator.getDirectoryService().getPerson(creator);

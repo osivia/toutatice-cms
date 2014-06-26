@@ -92,7 +92,7 @@ public class CommentsFormatter {
             Element avatarImg = new DOMElement(QName.get(HTMLConstants.IMG));
             avatarImg.addAttribute(QName.get(HTMLConstants.SRC), comment.getPerson().getAvatar().getUrl());
             avatarImg.addAttribute(QName.get(HTMLConstants.ALT), "avatar");
-            avatarImg.addAttribute(QName.get(HTMLConstants.CLASS), "avatarIcon");
+            avatarImg.addAttribute(QName.get(HTMLConstants.CLASS), "avatar");
 
             node.add(avatarImg);
 

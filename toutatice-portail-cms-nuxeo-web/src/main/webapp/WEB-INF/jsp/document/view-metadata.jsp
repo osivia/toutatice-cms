@@ -50,7 +50,7 @@ String avatar = ctx.getUserAvatar(creator).getUrl();
 
 
 	<div style="border-bottom:1px solid #88ABBC;color: #88ABBC;font-weight: bold;">Méta-données </div>
-	<span style="font-weight:bold">Auteur : </span><span><img src="<%=avatar%>" alt="creator" class="avatarIcon"><%=creator%></span><br/>
+	<span style="font-weight:bold">Auteur : </span><span><img src="<%=avatar%>" alt="creator" class="avatar"><%=creator%></span><br/>
 	<span style="font-weight:bold">Publication : </span><span><%=date%></span><br/>
 <%
 String srcVignette = "";
