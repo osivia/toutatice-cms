@@ -374,6 +374,10 @@ div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	
 	margin-bottom: 3px;
 }
 
+.nuxeo-publish-navigation > ul.list-group > li.list-group-item {
+	padding-bottom: 1px;
+}
+
 .nuxeo-publish-navigation li {
 	position: relative
 }
