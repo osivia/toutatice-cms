@@ -110,7 +110,7 @@ public class MenuBarFormater {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
+    public void formatDefaultContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
         if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
             return;
         }
@@ -166,6 +166,45 @@ public class MenuBarFormater {
         }
     }
 
+ protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
+        
+        PortletRequest request = cmsCtx.getRequest();
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+        
+        // Duplication bouton ajouter
+
+        MenubarItem duplicateItem = null;
+        boolean otherItem = false;
+        int indice = -1;
+        int addIndice = -1;
+        for(MenubarItem menuItem : menubar){
+            indice++;
+            if (menuItem.isDropdownItem()) {
+                if ("ADD".equals(menuItem.getId())) {
+                    duplicateItem = menuItem.clone();
+                    duplicateItem.setDropdownItem(false);
+                    addIndice = indice;
+                } else {
+                    otherItem = true;
+                }
+            }
+        }
+        
+        if( duplicateItem != null)  {
+            menubar.add(duplicateItem) ;
+
+            // Si uniquement bouton ajouter dans le menu, le supprimer
+
+            if( !otherItem)
+                menubar.remove(addIndice) ;
+        }
+    }
+    
+    public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
+        formatDefaultContentMenuBar(cmsCtx);
+        adaptDropdowMenu(cmsCtx);
+    }
+
 
 
     /**
@@ -196,6 +235,10 @@ public class MenuBarFormater {
      * @return true if current document is a remote proxy
      */
     protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
+        
+        if( cmsCtx.getDoc() == null)
+            return false;
+        
         if( pubInfos.isPublished() && !this.isInLiveMode(cmsCtx, pubInfos)){
             String docPath = (((Document) (cmsCtx.getDoc())).getPath());
 
