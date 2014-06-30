@@ -27,7 +27,7 @@
 	String commentsTree = (String) renderRequest.getAttribute("comments"); 
   	if (commentsTree != null) {
 %>
-    <div class="commentsTitle"><h2>Commentaires</h2></div>
+    <div class="commentsTitle">Commentaires</div>
 	
 	<!-- Inclusion de la jsp des réponses aux commentaires -->
 <%

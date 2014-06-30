@@ -484,11 +484,11 @@ div.document-types .more-document-types	{
 /* Commentaires */
 
 .commentsTitle {
-	
+	font-weight: bold;
 }
 
 .commentsTree {
-	
+	font-size: 12px;
 }
 
 .commentsTree ul {
@@ -575,6 +575,7 @@ div.document-types .more-document-types	{
 
 .add-comment textarea,.add-child-comment textarea,.delete-comment textarea {
 	margin-bottom: 11px;
+	width: 100%;
 }
 
 .errorDateFormat,.contentError {
@@ -584,9 +585,14 @@ div.document-types .more-document-types	{
 
 .commentsTree .delete_comment {
     display: none;
+    font-size: 11px;
 }
 .commentsTree .child_comment {
     display: none;
+}
+
+.add-child-comment-span {
+    font-size: 11px;
 }
 
 
