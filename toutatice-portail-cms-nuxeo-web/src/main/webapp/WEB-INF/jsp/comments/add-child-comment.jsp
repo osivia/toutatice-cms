@@ -14,7 +14,7 @@ String containerId = (String) renderRequest.getAttribute("osivia.window.ID");
 
 <div id="<%= commentId %><%= containerId %>" class="add-child-comment" style="display: none">
 	<form method="post" action="${valid_child}" class="ajax-form">
-		<textarea id="addedChildComment<%= commentId %><%= containerId %>" name="childCommentContent" rows="6" cols="60"></textarea><br/>
+		<textarea id="addedChildComment<%= commentId %><%= containerId %>" name="childCommentContent" rows="3" cols="60"></textarea><br/>
 		<div id="errorAddChildCom<%= commentId %><%= containerId %>" class="contentError"></div>
 		<input id="commentParentId<%= commentId %><%= containerId %>" type="hidden" name="commentId" value=""/>	
 		<input type="submit" name="addComment"  value="Répondre" class="ajax-link">		
