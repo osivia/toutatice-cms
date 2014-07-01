@@ -6,7 +6,7 @@
 </c:if>
 
 
-<ul class="list-group ${closed}">
+<ul class="list-group multi-level ${closed}">
     <c:set var="childLevel" value="${level + 1}" />
 
     <c:forEach var="child" items="${parent.children}">
