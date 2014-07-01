@@ -4,13 +4,13 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>3.2.8-SNAPSHO-SNAPSHOT</version>
+    <version>3.2.8-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
 
     <properties>
-        <osivia-portal.version>3.2.7</osivia-portal.version>
+        <osivia-portal.version>3.2.8-SNAPSHOT</osivia-portal.version>
         <nuxeo.automation.version>5.6.0-HF29</nuxeo.automation.version>
         
         <jboss.portal.version>2.7.2</jboss.portal.version>
