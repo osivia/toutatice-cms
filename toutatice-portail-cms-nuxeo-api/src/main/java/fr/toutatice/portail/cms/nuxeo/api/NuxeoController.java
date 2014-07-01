@@ -37,6 +37,9 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.api.directory.IDirectoryService;
+import org.osivia.portal.api.directory.IDirectoryServiceLocator;
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -133,6 +136,20 @@ public class NuxeoController {
     /** The domain path. */
     String domainPath;
     
+    /** Directory service */
+    private IDirectoryServiceLocator directoryServiceLocator;
+
+    private IDirectoryService directoryService;
+
+    private IDirectoryService getDirectoryService() {
+        if (directoryService == null) {
+
+            directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
+            directoryService = directoryServiceLocator.getDirectoryService();
+        }
+        return directoryService;
+    }
+
     
     /**
      * Gets the domain path.
@@ -1905,5 +1922,21 @@ public class NuxeoController {
      */
     public String refreshUserAvatar(String username) {
         return getCMSService().refreshUserAvatar(getCMSCtx(), username);
+    }
+
+    /**
+     * Get a person
+     * 
+     * @param uid of the person
+     * @return the person
+     */
+    public DirectoryPerson getPerson(String uid) {
+        IDirectoryService service = getDirectoryService();
+        DirectoryPerson p = null;
+        if (service != null) {
+            p = service.getPerson(uid);
+        }
+
+        return p;
     }
 }

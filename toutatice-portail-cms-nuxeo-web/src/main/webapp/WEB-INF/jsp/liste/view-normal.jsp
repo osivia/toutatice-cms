@@ -1,5 +1,6 @@
 
 
+<%@page import="org.osivia.portal.api.directory.entity.DirectoryPerson"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
@@ -33,7 +34,14 @@ Link link = ctx.getLink(doc);
 String icon = Formater.formatNuxeoIcon(doc);
 
 String username = doc.getProperties().get("dc:creator").toString();
+
+DirectoryPerson p = ctx.getPerson(username);
+if(p != null) {
+    username = p.getDisplayName();
+}
+
 String avatarLink = ctx.getUserAvatar(username).getUrl();
+
 
 
 icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
