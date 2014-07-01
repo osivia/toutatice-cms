@@ -34,14 +34,12 @@ Link link = ctx.getLink(doc);
 String icon = Formater.formatNuxeoIcon(doc);
 
 String username = doc.getProperties().get("dc:creator").toString();
+String avatarLink = ctx.getUserAvatar(username).getUrl();
 
 DirectoryPerson p = ctx.getPerson(username);
 if(p != null) {
     username = p.getDisplayName();
 }
-
-String avatarLink = ctx.getUserAvatar(username).getUrl();
-
 
 
 icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
