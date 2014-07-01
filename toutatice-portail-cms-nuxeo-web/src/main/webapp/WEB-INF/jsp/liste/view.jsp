@@ -73,7 +73,7 @@ if( rssLinkURL != null)	{
 
 
 <div class="no-ajax-link">
-	<ul class="list-group">
+	<ul class="list-unstyled list-group">
 <%
 int indice = 0;
 int parite = 0;
