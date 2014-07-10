@@ -374,10 +374,6 @@ div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	
 	margin-bottom: 3px;
 }
 
-.nuxeo-publish-navigation > ul.list-group > li.list-group-item {
-	padding-bottom: 1px;
-}
-
 .nuxeo-publish-navigation li {
 	position: relative
 }
@@ -395,11 +391,27 @@ div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	
 
 .nuxeo-publish-navigation li a {
 	padding-left: 47px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .nuxeo-publish-navigation li a.current {
     font-weight: bold;
 }
+
+@media screen and (min-width: 768px) {
+	.nuxeo-publish-navigation li button {
+	    top: 9px;
+	    font-size: 12px;
+	    padding: 1px 5px;
+	}
+	
+	.nuxeo-publish-navigation li a {
+	    padding-left: 30px;
+	}
+}
+
 
 
 
