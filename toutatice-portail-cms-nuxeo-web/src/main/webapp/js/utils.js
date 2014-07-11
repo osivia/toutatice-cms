@@ -3,7 +3,7 @@ var $JQry = jQuery.noConflict();
 
 // Publication menu
 $JQry(document).ready(function($) {
-	$(".nuxeo-publish-navigation .menu-closed-item").addClass("hidden");
+	$(".nuxeo-publish-navigation .hidden-script").addClass("hidden").removeClass("hidden-script");
 	
 	$(".nuxeo-publish-navigation li button").click(function() {
 		$this = $(this);

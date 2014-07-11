@@ -2,7 +2,7 @@
 
 
 <c:if test="${not parent.selected && level > openLevels}">
-    <c:set var="closed" value="menu-closed-item" />
+    <c:set var="closed" value="hidden-script" />
 </c:if>
 
 
@@ -26,7 +26,7 @@
         <li class="list-group-item">
             <!-- Button -->
             <c:if test="${not empty child.children}">
-                <button type="button" class="btn btn-default">
+                <button type="button" class="btn btn-default hidden-noscript">
                     <c:choose>
                         <c:when test="${child.selected or (childLevel <= openLevels)}">
                             <span class="glyphicons halflings chevron-down"></span>
