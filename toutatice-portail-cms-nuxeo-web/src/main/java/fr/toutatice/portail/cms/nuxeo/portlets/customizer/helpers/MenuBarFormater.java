@@ -980,30 +980,25 @@ public class MenuBarFormater {
         if( document == null)
         	return;
 
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, document.getPath());
         
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
+        EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
+        if ((curState != null) && curState.getBackPageMarker() != null) {
+            // Appeler url back
+            boolean refresh = false;
+            if( curState.isHasBeenModified())
+                refresh = true;
+            String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
 
- //       if (pubInfos.isLiveSpace() ) {
-
-            // Ne pas remettre àdfgdfg
-            EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
-            if ((curState != null) && curState.getBackPageMarker() != null) {
-                // Appeler url back
-                boolean refresh = false;
-                if( curState.isHasBeenModified())
-                    refresh = true;
-                String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
-
-                MenubarItem backItem = new MenubarItem("BACK", bundle.getString("GO_BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
-                        null, null, null);
-                backItem.setGlyphicon("halflings arrow-left");
-                backItem.setAjaxDisabled(true);
-                backItem.setFirstItem(true);
-                menubar.add(backItem);
-            }
+            MenubarItem backItem = new MenubarItem("BACK", bundle.getString("GO_BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
+                    null, null, null);
+            backItem.setGlyphicon("halflings arrow-left");
+            backItem.setAjaxDisabled(true);
+            backItem.setFirstItem(true);
+            menubar.add(backItem);
         }
+    }
 
     
 
