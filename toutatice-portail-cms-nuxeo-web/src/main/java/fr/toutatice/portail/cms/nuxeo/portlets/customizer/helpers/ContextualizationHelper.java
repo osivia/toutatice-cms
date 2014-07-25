@@ -50,7 +50,7 @@ public abstract class ContextualizationHelper {
             if ("1".equals(window.getDeclaredProperty("osivia.cms.contextualization")))
                 return true;
 
-            // Non player items
+            // Non player items (ex: spaceBar)
             String basePath = window.getPage().getProperty("osivia.cms.basePath");
             boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
 
@@ -59,10 +59,11 @@ public abstract class ContextualizationHelper {
                 String path = ((Document) cmsCtx.getDoc()).getPath();
                 String navigationPath = cmsCtx.getRequest().getParameter("osivia.cms.path");
 
-                if (StringUtils.startsWith(getLivePath(path), navigationPath))  {
+                if (StringUtils.equals(getLivePath(path), navigationPath))  {
                     return true;
                 }
             }
+            
         }
 
 

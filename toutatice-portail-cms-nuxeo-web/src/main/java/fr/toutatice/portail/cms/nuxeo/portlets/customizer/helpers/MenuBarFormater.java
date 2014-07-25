@@ -996,7 +996,7 @@ public class MenuBarFormater {
                     refresh = true;
                 String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
 
-                MenubarItem backItem = new MenubarItem("BACK", bundle.getString("BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
+                MenubarItem backItem = new MenubarItem("BACK", bundle.getString("GO_BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
                         null, null, null);
                 backItem.setGlyphicon("halflings arrow-left");
                 backItem.setAjaxDisabled(true);
