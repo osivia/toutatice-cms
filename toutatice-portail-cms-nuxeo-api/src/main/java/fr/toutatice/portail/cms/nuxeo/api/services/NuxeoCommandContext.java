@@ -280,7 +280,7 @@ public class NuxeoCommandContext {
 
 		if( request instanceof PortletRequest)	{
 			this.controllerCtx =  (ControllerContext) ((PortletRequest) this.getRequest()).getAttribute("osivia.controller");
-			this.administrator = "true".equals(     (((PortletRequest) this.getRequest()).getAttribute("osivia.isAdministrator")))		;
+            this.administrator = Boolean.TRUE.equals(     (((PortletRequest) this.getRequest()).getAttribute("osivia.isAdministrator")))        ;
 		}
 	}
 

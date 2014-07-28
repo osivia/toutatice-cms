@@ -29,12 +29,15 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- Nuxeo automation -->
+
+        
         <dependency>
-            <groupId>org.nuxeo.ecm.automation</groupId>
-            <artifactId>nuxeo-automation-client</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>      
+        
 
     </dependencies>
     

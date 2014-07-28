@@ -692,8 +692,11 @@ public class ViewListPortlet extends CMSPortlet {
                 String permaLinkRef = window.getProperty("osivia.permaLinkRef");
                 if (permaLinkRef != null) {
                     Map<String, String> publicParams = new HashMap<String, String>();
-                    if (selectors != null)
-                        publicParams.put("selectors", selectors);
+                    if (selectors != null)  {
+                        Map<String, List<String>> decodedSelectors = PageSelectors.decodeProperties(selectors);
+                        decodedSelectors.remove("selectorChanged");
+                        publicParams.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
+                    }
                     String permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
                     if (request.getParameter("osivia.cms.path") != null) {
                         permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;

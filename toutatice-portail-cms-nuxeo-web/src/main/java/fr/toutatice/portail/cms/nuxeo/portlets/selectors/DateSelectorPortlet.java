@@ -18,6 +18,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -175,7 +176,7 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (validation) {
             datesSelector.add(dateFrom + DATES_SEPARATOR + dateTo);
         }
-
+        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -200,7 +201,8 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (dateSelectors != null) {
             dateSelectors.remove(occ);
         }
-
+        
+        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
