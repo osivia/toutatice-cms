@@ -24,6 +24,7 @@ import org.osivia.portal.core.tracker.RequestContextUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class NuxeoQueryFilter.
  * 
@@ -33,19 +34,8 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
  */
 
 public class NuxeoQueryFilter {
+    
 
-	
-	/**
-	 * Adds the publication filter.
-	 *
-	 * @param nuxeoRequest the nuxeo request
-	 * @param displayLiveVersion the display live version
-	 * @return the string
-	 */
-	public static String addPublicationFilter(String nuxeoRequest, boolean displayLiveVersion)	{
-		return addPublicationFilter(nuxeoRequest, displayLiveVersion, null);
-	}
-	
 	
 	/**
 	 * Gets the CMS ctx.
@@ -66,22 +56,21 @@ public class NuxeoQueryFilter {
 	/**
 	 * Adds the publication filter.
 	 *
+	 * @param queryCtx the query ctx
 	 * @param nuxeoRequest the nuxeo request
-	 * @param displayLiveVersion the display live version
-	 * @param requestFilteringPolicy the request filtering policy
 	 * @return the string
 	 */
-	public static String addPublicationFilter(String nuxeoRequest, boolean displayLiveVersion,  String requestFilteringPolicy) {
+	public static String addPublicationFilter(NuxeoQueryFilterContext queryCtx,String nuxeoRequest) {
 
 		// adapt thanks to CMSCustomizer
 		
 		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		CMSServiceCtx ctx = getCMSCtx();
-		if( displayLiveVersion)
+		if( queryCtx.getState() == queryCtx.STATE_LIVE)
 			ctx.setDisplayLiveVersion("1");
 		try {
-			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, requestFilteringPolicy);
+			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, queryCtx.getPolicy());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

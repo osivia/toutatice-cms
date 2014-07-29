@@ -49,6 +49,8 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
 
@@ -123,14 +125,7 @@ public class SearchPortlet extends CMSPortlet {
                 // Path
                 String path = request.getParameter("path");
                 window.setProperty(Constants.WINDOW_PROP_URI, path);
-
-                // Display live version indicator
-                String displayLiveVersion = request.getParameter("displayLiveVersion");
-                if (StringUtils.isNotEmpty(displayLiveVersion)) {
-                    window.setProperty(Constants.WINDOW_PROP_VERSION, displayLiveVersion);
-                } else {
-                    window.setProperty(Constants.WINDOW_PROP_VERSION, null);
-                }
+              
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -157,11 +152,6 @@ public class SearchPortlet extends CMSPortlet {
         // Path
         String path = window.getProperty(Constants.WINDOW_PROP_URI);
         request.setAttribute("path", StringUtils.trimToEmpty(path));
-
-        // Display live version HTML input
-        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
-        String displayLiveVersionInput = nuxeoController.formatDisplayLiveVersionList(displayLiveVersion);
-        request.setAttribute("displayLiveVersionInput", displayLiveVersionInput);
 
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
@@ -202,8 +192,13 @@ public class SearchPortlet extends CMSPortlet {
                 // No cache for search
                 nuxeoController.setCacheTimeOut(0);
 
+                NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext();
+                if( path != null && path.length() > 0)  {
+                    queryFilter = nuxeoController.getQueryFilterContextForPath(path);
+                }
+                
                 // Search command execution
-                SearchCommand command = new SearchCommand(path, nuxeoController.isDisplayingLiveVersion(), keywords, currentPage);
+                SearchCommand command = new SearchCommand(queryFilter, path, keywords, currentPage);
                 PaginableDocuments docs = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
                 List<SearchResultVO> results = this.toViewObjects(nuxeoController, docs);
                 int minPage = Math.max(0, currentPage - docs.getPageSize());
@@ -233,7 +228,6 @@ public class SearchPortlet extends CMSPortlet {
                 // URL window properties
                 Map<String, String> windowProperties = new HashMap<String, String>();
                 windowProperties.put(Constants.WINDOW_PROP_URI, nuxeoController.getComputedPath(path));
-                windowProperties.put(Constants.WINDOW_PROP_VERSION, nuxeoController.getDisplayLiveVersion());
                 windowProperties.put("osivia.title", bundle.getString("SEARCH_RESULT"));
                 windowProperties.put("osivia.hideDecorators", "1");
 

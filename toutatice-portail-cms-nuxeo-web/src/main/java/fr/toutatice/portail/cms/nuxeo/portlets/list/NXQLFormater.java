@@ -27,9 +27,11 @@ import javax.portlet.PortletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet;
@@ -294,8 +296,9 @@ public class NXQLFormater {
         buffer.append("ecm:fulltext = '");
         buffer.append(StringUtils.join(searchValues, " "));
         buffer.append(" -noindex'");
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( );
 
-        return NuxeoQueryFilter.addPublicationFilter(buffer.toString(), false);
+        return NuxeoQueryFilter.addPublicationFilter(queryFilter, buffer.toString());
     }
 
 }

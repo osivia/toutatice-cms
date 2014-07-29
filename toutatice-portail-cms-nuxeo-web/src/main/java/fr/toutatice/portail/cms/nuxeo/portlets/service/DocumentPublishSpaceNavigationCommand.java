@@ -32,6 +32,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 
 
@@ -98,8 +99,11 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		
 		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
 		
+		
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(live? NuxeoQueryFilterContext.STATE_LIVE: NuxeoQueryFilterContext.STATE_DEFAULT, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER );
+
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, live,  InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 	
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
 		

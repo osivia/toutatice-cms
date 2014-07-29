@@ -23,6 +23,7 @@ import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
@@ -31,14 +32,16 @@ public class SearchCommand implements INuxeoCommand{
 	String path;
 	String keywords;
 	int pageNumber;
-	boolean displayLiveVersion;
+
+	NuxeoQueryFilterContext queryCtx;
 	
-	public SearchCommand( String path, boolean displayLiveVersion, String keywords, int pageNumber) {
+	public SearchCommand( NuxeoQueryFilterContext queryCtx, String path,String keywords, int pageNumber) {
 		super();
+        this.queryCtx = queryCtx;
 		this.path = path;
 		this.keywords = keywords;
 		this.pageNumber = pageNumber;
-		this.displayLiveVersion = displayLiveVersion;
+
 	}
 	
 	private String addClause(String request, String clause)	{
@@ -75,7 +78,7 @@ public class SearchCommand implements INuxeoCommand{
 
 
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(searchQuery, displayLiveVersion);
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryCtx, searchQuery);
 
 			
 		request.set("query", "SELECT * FROM Document " + filteredRequest);
@@ -94,7 +97,7 @@ public class SearchCommand implements INuxeoCommand{
 
 	public String getId() {
 
-		return "SearchCommand/"+displayLiveVersion+"/"+path+"/"+ keywords;
+		return "SearchCommand"+path+"/"+ keywords;
 	};		
 
 }

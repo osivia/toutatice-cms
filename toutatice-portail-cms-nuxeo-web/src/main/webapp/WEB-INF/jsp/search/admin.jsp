@@ -19,15 +19,6 @@
                 <input id="search-path" type="text" name="path" value="${path}" class="form-control" placeholder='<is:getProperty key="SEARCH_PATH" />' />
             </div>
         </div>
-        
-        <!-- Version -->
-        <div class="form-group">
-            <label for="cms-scope" class="control-label col-sm-4"><is:getProperty key="SEARCH_VERSION" /></label>
-            <div class="col-sm-8">
-                <c:out value="${displayLiveVersionInput}" escapeXml="false" />
-            </div>
-        </div>
-
         <!-- Buttons -->
         <div class="form-group">
             <div class="col-sm-offset-4 col-sm-8">

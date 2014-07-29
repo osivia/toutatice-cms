@@ -26,12 +26,6 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
 			
-					<label>Version</label><br/>
-<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
-<br/>	
-			
-<!--  			<label>Scope</label><br/>
-<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %>--><br/> 
 			
 <%			
 			String checkOnlyDescription = "checked";

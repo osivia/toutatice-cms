@@ -128,12 +128,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 		String scope = window.getProperty("osivia.cms.forcePublicationScope");
         request.setAttribute("scope", scope);
 
-		
-		String displayLiveVersion = window
-				.getProperty(Constants.WINDOW_PROP_VERSION);
-		if (displayLiveVersion == null)
-			displayLiveVersion = "";
-		request.setAttribute("displayLiveVersion", displayLiveVersion);
 
 		
 		String displayCMSMenu = window.getProperty("osivia.cms.menu");
@@ -164,11 +158,6 @@ public class PropertyFragmentModule implements IFragmentModule {
 	        else if (window.getProperty("osivia.cms.forcePublicationScope") != null)
 	            window.setProperty("osivia.cms.forcePublicationScope", null);
 
-		
-		if ("1".equals(request.getParameter("displayLiveVersion")))
-			window.setProperty(Constants.WINDOW_PROP_VERSION, "1");
-		else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
-			window.setProperty(Constants.WINDOW_PROP_VERSION, null);
 		
 		// Display CMS menu indicator
 		if ("1".equals(request.getParameter("displayCMSMenu"))) {

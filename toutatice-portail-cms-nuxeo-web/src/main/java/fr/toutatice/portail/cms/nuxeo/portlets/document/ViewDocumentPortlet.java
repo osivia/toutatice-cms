@@ -138,11 +138,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
             }
 
 
-            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0) {
-                window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
-            } else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null) {
-                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
-            }
 
 
             res.setPortletMode(PortletMode.VIEW);
@@ -222,8 +217,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
         req.setAttribute("showMetadatas", showMetadatas);
 
 
-        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
-        req.setAttribute("displayLiveVersion", displayLiveVersion);
 
         req.setAttribute("ctx", ctx);
 

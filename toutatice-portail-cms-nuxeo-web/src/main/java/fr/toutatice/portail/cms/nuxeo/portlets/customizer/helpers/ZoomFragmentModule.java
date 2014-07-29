@@ -141,19 +141,14 @@ public class ZoomFragmentModule implements IFragmentModule {
             nuxeoPath = "";
         request.setAttribute("nuxeoPath", nuxeoPath);
 
-        // String propertyName = window.getProperty("osivia.propertyName");
-        // if (propertyName == null)
-        // propertyName = "";
+
         request.setAttribute("propertyName", ZoomEditableWindow.ZOOM_LINKS);
 
         String scope = window.getProperty("osivia.cms.forcePublicationScope");
         request.setAttribute("scope", scope);
 
 
-        String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
-        if (displayLiveVersion == null)
-            displayLiveVersion = "";
-        request.setAttribute("displayLiveVersion", displayLiveVersion);
+
 
     }
 
@@ -162,12 +157,7 @@ public class ZoomFragmentModule implements IFragmentModule {
         if (request.getParameter("nuxeoPath") != null)
             window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
 
-        // if (request.getParameter("propertyName") != null) {
-        // if (request.getParameter("propertyName").length() > 0)
-        // window.setProperty("osivia.propertyName", request.getParameter("propertyName"));
-        // else if (window.getProperty("osivia.propertyName") != null)
-        // window.setProperty("osivia.propertyName", null);
-        // }
+
 
         if (request.getParameter("scope") != null && request.getParameter("scope").length() > 0) {
             window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
@@ -175,13 +165,6 @@ public class ZoomFragmentModule implements IFragmentModule {
             window.setProperty("osivia.cms.forcePublicationScope", null);
 
 
-        if (request.getParameter("displayLiveVersion") != null) {
-
-            if ("1".equals(request.getParameter("displayLiveVersion")))
-                window.setProperty(Constants.WINDOW_PROP_VERSION, "1");
-            else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
-                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
-        }
 
     }
 

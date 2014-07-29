@@ -24,6 +24,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 
 public class FolderGetFilesCommand implements INuxeoCommand {
@@ -56,7 +57,7 @@ public class FolderGetFilesCommand implements INuxeoCommand {
  			
 			
 			// Insertion du filtre sur les élements publiés
-			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, true, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+			String filteredRequest = NuxeoQueryFilter.addPublicationFilter(new NuxeoQueryFilterContext( NuxeoQueryFilterContext.STATE_LIVE, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER), nuxeoRequest);
 
 			
 			request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);

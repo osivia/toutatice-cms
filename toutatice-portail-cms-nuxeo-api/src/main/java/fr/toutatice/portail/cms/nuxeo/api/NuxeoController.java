@@ -1680,6 +1680,33 @@ public class NuxeoController {
             throw wrapNuxeoException(e);
         }
     }
+    
+    
+    
+    /**
+     * Get the query filter
+     * 
+     * @param path path to fetch
+     * @return applie live filters to the query
+     * @throws Exception the exception
+     */
+    public NuxeoQueryFilterContext getQueryFilterContextForPath( String path) {
+        
+        NuxeoQueryFilterContext queryCtx = new NuxeoQueryFilterContext();
+
+        try {
+            CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), path);
+            
+            if( pubInfos.isLiveSpace() )    {
+                queryCtx.setState(NuxeoQueryFilterContext.STATE_LIVE);
+            }
+
+            return queryCtx;
+
+        } catch (Exception e) {
+            throw wrapNuxeoException(e);
+        }
+    }
 
 
     /**

@@ -23,6 +23,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 /**
  * Requête Nuxeo de recherche des Liens définis dans un dossier
@@ -47,9 +48,12 @@ public class DocumentGetMediaLibraryCommand implements INuxeoCommand {
 		
         String nuxeoRequest = "ecm:path STARTSWITH '" + path + "' AND ecm:primaryType = 'MediaLibrary' ORDER BY ecm:pos";
 		
-        boolean displayLiveVersion = true; // Ne pas afficher les versions de travail
+
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion , "global");
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( NuxeoQueryFilterContext.STATE_LIVE, "global" );
+
+        
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 		
 		request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
 		

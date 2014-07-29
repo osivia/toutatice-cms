@@ -19,9 +19,11 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 
 public class ListCommand implements INuxeoCommand {
@@ -55,7 +57,9 @@ public class ListCommand implements INuxeoCommand {
 		request.set("page", pageNumber);
 		
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(nuxeoRequest, displayLiveVersion, portalPolicyFilter);
+		NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( displayLiveVersion ? NuxeoQueryFilterContext.STATE_LIVE : NuxeoQueryFilterContext.STATE_DEFAULT, portalPolicyFilter);
+		
+		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 
 		
 		request.set("query", "SELECT * FROM Document WHERE "  + filteredRequest);
