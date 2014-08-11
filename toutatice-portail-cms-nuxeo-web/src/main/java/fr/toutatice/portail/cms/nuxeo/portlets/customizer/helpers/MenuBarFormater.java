@@ -27,13 +27,9 @@ import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.portal.core.controller.command.response.RedirectionResponse;
 import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
-import org.jboss.portal.server.request.URLContext;
-import org.jboss.portal.server.request.URLFormat;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -51,7 +47,6 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -991,7 +986,7 @@ public class MenuBarFormater {
                 refresh = true;
             String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
 
-            MenubarItem backItem = new MenubarItem("BACK", bundle.getString("GO_BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
+            MenubarItem backItem = new MenubarItem("BACK", bundle.getString("BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
                     null, null, null);
             backItem.setGlyphicon("halflings arrow-left");
             backItem.setAjaxDisabled(true);
