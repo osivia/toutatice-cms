@@ -138,7 +138,7 @@ public class MenuPortlet extends CMSPortlet {
 
                     // Start level
                     int startLevel = NumberUtils.toInt(request.getParameter("startLevel"));
-                    if (openLevels > 0) {
+                    if (startLevel > 0) {
                         window.setProperty(START_LEVEL_WINDOW_PROPERTY, String.valueOf(startLevel));
                     } else {
                         window.setProperty(START_LEVEL_WINDOW_PROPERTY, null);
