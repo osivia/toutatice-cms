@@ -19,7 +19,7 @@
         
             <!-- Navigation home link -->
             <a href="${displayItem.url}" class="btn btn-default btn-block visible-xs ${current}">
-                <span class="glyphicons halflings home"></span>            
+                <i class="glyphicons halflings home"></i>
                 <span>${displayItem.title}</span>
             </a>
         

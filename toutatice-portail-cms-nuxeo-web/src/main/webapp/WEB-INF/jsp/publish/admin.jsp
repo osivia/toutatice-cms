@@ -12,19 +12,45 @@
 <portlet:actionURL name="save" var="saveAdminURL" />
 
 
-<c:if test='${jstree == "1"}'>
+<c:if test="${horizontal}">
+    <c:set var="horizontalChecked" value="checked" />
+</c:if>
+
+<c:if test="${jstree}">
     <c:set var="jstreeChecked" value="checked" />
 </c:if>
 
 
 <div class="container">
     <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
+        <!-- Horizontal menu -->
+        <div class="form-group">
+            <label for="horizontal" class="control-label col-sm-4"><is:getProperty key="MENU_HORIZONTAL" /></label>
+            <div class="col-sm-8">
+                <div class="checkbox">
+                    <label>
+                        <input id="horizontal" type="checkbox" name="horizontal" ${horizontalChecked} />
+                    </label>
+                </div>
+                <span class="help-block"><is:getProperty key="MESSAGE_MENU_HORIZONTAL_HELP" /></span>
+            </div>
+        </div>
+
         <!-- Open levels -->
         <div class="form-group">
             <label for="open-levels" class="control-label col-sm-4"><is:getProperty key="MENU_OPEN_LEVELS" /></label>
             <div class="col-sm-8">
-                <input id="open-levels" type="text" name="openLevels" value="${openLevels}" class="form-control" placeholder='<is:getProperty key="MENU_OPEN_LEVELS" />' />
+                <input id="open-levels" type="text" name="openLevels" value="${openLevels}" class="form-control" />
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_OPEN_LEVELS_HELP" args="${defaultOpenLevels}" /></span>
+            </div>
+        </div>
+        
+        <!-- Start level -->
+        <div class="form-group">
+            <label for="start-level" class="control-label col-sm-4"><is:getProperty key="MENU_START_LEVEL" /></label>
+            <div class="col-sm-8">
+                <input id="start-level" type="text" name="startLevel" value="${startLevel}" class="form-control" />
+                <span class="help-block"><is:getProperty key="MESSAGE_MENU_START_LEVEL_HELP" /></span>
             </div>
         </div>
         
@@ -32,17 +58,19 @@
         <div class="form-group">
             <label for="max-levels" class="control-label col-sm-4"><is:getProperty key="MENU_MAX_LEVELS" /></label>
             <div class="col-sm-8">
-                <input id="max-levels" type="text" name="maxLevels" value="${maxLevels}" class="form-control" placeholder='<is:getProperty key="MENU_MAX_LEVELS" />' />
+                <input id="max-levels" type="text" name="maxLevels" value="${maxLevels}" class="form-control" />
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_MAX_LEVELS_HELP" args="${defaultMaxLevels}" /></span>
             </div>
         </div>
-        
+
         <!-- JSTree display -->
         <div class="form-group">
             <label for="jstree-display" class="control-label col-sm-4"><is:getProperty key="MENU_JSTREE_DISPLAY" /></label>
             <div class="col-sm-8">
                 <div class="checkbox">
-                    <input id="jstree-display" type="checkbox" name="jstree" value="1" ${jstreeChecked} />
+                    <label>
+                        <input id="jstree-display" type="checkbox" name="jstree" ${jstreeChecked} />
+                    </label>
                 </div>
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_JSTREE_DISPLAY_HELP" /></span>
             </div>

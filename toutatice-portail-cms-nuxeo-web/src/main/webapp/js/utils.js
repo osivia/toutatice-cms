@@ -16,7 +16,18 @@ $JQry(document).ready(function($) {
 		$children = $this.parent().children("ul");
 		$children.toggleClass("hidden");
 	});
+	
+	toggleHorizontalMenu(document.getElementById("horizontal"));
+	$("#horizontal").change(toggleHorizontalMenu);
 });
+
+function toggleHorizontalMenu() {
+	var checked = $JQry("#horizontal").is(":checked");
+	$JQry("#open-levels").prop("disabled", checked);
+	$JQry("#start-level").prop("disabled", checked);
+	$JQry("#max-levels").prop("disabled", checked);
+	$JQry("#jstree-display").prop("disabled", checked);
+}
 
 
 
