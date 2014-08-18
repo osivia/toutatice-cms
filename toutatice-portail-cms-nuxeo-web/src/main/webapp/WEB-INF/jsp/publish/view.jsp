@@ -12,22 +12,27 @@
     <c:choose>
         <c:when test="${not empty displayItem}">
             <c:if test="${not empty displayItem.children}">
-                <!-- Current item ? -->
-                <c:remove var="current" />
-                <c:if test="${displayItem.current}">
-                    <c:set var="current" value="btn-primary" />
-                </c:if>
+                <nav>
+                    <!-- Title -->
+                    <h3 class="hidden"><is:getProperty key="MENU_TITLE_DEFAULT" /></h3>
             
-                <!-- Navigation home link -->
-                <a href="${displayItem.url}" class="btn btn-default btn-block visible-xs ${current}">
-                    <i class="glyphicons halflings home"></i>
-                    <span>${displayItem.title}</span>
-                </a>
-            
-                <!-- Menu -->
-                <c:set var="parent" value="${displayItem}" scope="request" />
-                <c:set var="level" value="1" scope="request" />
-                <jsp:include page="display-items.jsp" />
+                    <!-- Current item ? -->
+                    <c:remove var="current" />
+                    <c:if test="${displayItem.current}">
+                        <c:set var="current" value="btn-primary" />
+                    </c:if>
+                
+                    <!-- Navigation home link -->
+                    <a href="${displayItem.url}" class="btn btn-default btn-block visible-xs ${current}">
+                        <i class="glyphicons halflings home"></i>
+                        <span>${displayItem.title}</span>
+                    </a>
+                
+                    <!-- Menu -->
+                    <c:set var="parent" value="${displayItem}" scope="request" />
+                    <c:set var="level" value="1" scope="request" />
+                    <jsp:include page="display-items.jsp" />
+                </nav>
             </c:if>
         </c:when>
     

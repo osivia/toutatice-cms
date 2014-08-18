@@ -10,20 +10,26 @@
 
 <c:choose>
     <c:when test="${not empty displayItem}">
-        <ul class="list-inline">
-            <c:forEach var="child" items="${displayItem.children}">
-                <c:remove var="selected" />
-                <c:if test="${child.selected}">
-                    <c:set var="selected" value="active" />
-                </c:if>
-
-                <li>
-                    <a href="${child.url}" class="${selected}">            
-                        <span>${child.title}</span>
-                    </a>
-                </li>
-            </c:forEach>
-        </ul>
+        <nav>
+            <!-- Title -->
+            <h3 class="hidden"><is:getProperty key="MENU_TITLE_HORIZONTAL" /></h3>
+            
+            <!-- Menu -->
+            <ul class="list-inline">
+                <c:forEach var="child" items="${displayItem.children}">
+                    <c:remove var="selected" />
+                    <c:if test="${child.selected}">
+                        <c:set var="selected" value="active" />
+                    </c:if>
+    
+                    <li>
+                        <a href="${child.url}" class="${selected}">            
+                            <span>${child.title}</span>
+                        </a>
+                    </li>
+                </c:forEach>
+            </ul>
+        </nav>
     </c:when>
 
     <c:otherwise>
