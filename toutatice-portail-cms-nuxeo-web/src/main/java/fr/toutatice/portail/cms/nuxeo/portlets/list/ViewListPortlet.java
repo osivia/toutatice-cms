@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
@@ -30,10 +30,8 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
-import javax.portlet.PortletURL;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -52,7 +50,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -69,10 +66,8 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
@@ -105,6 +100,7 @@ public class ViewListPortlet extends CMSPortlet {
         return template;
     }
 
+    @Override
     public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
 
         try {
@@ -115,14 +111,14 @@ public class ViewListPortlet extends CMSPortlet {
             /*
              * pour tests
              * if( "zoom".equals(resourceRequest.getResourceID())) {
-             * 
+             *
              * NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
-             * 
+             *
              * Document doc = ctx.fetchDocument(resourceRequest.getParameter("docId"));
-             * 
+             *
              * resourceRequest.setAttribute("doc", doc);
              * resourceRequest.setAttribute("ctx", ctx);
-             * 
+             *
              * getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/zoom.jsp").include(resourceRequest, resourceResponse);
              * }
              */
@@ -133,9 +129,9 @@ public class ViewListPortlet extends CMSPortlet {
 
                 /* Contexts initialization */
 
-                NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
+                NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, this.getPortletContext());
 
-                PortalControllerContext portalCtx = new PortalControllerContext(getPortletContext(), resourceRequest, resourceResponse);
+                PortalControllerContext portalCtx = new PortalControllerContext(this.getPortletContext(), resourceRequest, resourceResponse);
 
                 // ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 
@@ -222,7 +218,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                     resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
 
-                    resourceResponse.setProperty("Last-Modified", formatResourceLastModified());
+                    resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
 
                 } else
                     throw new IllegalArgumentException("No request defined for RSS");
@@ -237,12 +233,13 @@ public class ViewListPortlet extends CMSPortlet {
     }
 
 
+    @Override
     public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
         logger.debug("processAction ");
 
         PortalWindow window = WindowFactory.getWindow(req);
-        NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
+        NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
 
         if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
 
@@ -372,7 +369,7 @@ public class ViewListPortlet extends CMSPortlet {
 
 
         // v2.0.8 : ajout custom
-        ListTemplate template = getCurrentTemplate(window);
+        ListTemplate template = this.getCurrentTemplate(window);
 
         if (template.getModule() != null) {
             try {
@@ -390,7 +387,7 @@ public class ViewListPortlet extends CMSPortlet {
 
         try {
 
-            NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
+            NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
 
             PortletRequestDispatcher rd = null;
 
@@ -478,7 +475,7 @@ public class ViewListPortlet extends CMSPortlet {
 
             req.setAttribute("ctx", ctx);
 
-            rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
+            rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
             rd.include(req, res);
         }
 
@@ -489,6 +486,7 @@ public class ViewListPortlet extends CMSPortlet {
 
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
 
@@ -498,7 +496,7 @@ public class ViewListPortlet extends CMSPortlet {
 
             response.setContentType("text/html");
 
-            NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
+            NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
             request.setAttribute("ctx", ctx);
 
 
@@ -638,7 +636,7 @@ public class ViewListPortlet extends CMSPortlet {
 
 
                 // v2.0.8 : ajout custom
-                ListTemplate template = getCurrentTemplate(window);
+                ListTemplate template = this.getCurrentTemplate(window);
 
 
                 String schemas = template.getSchemas();
@@ -675,8 +673,10 @@ public class ViewListPortlet extends CMSPortlet {
                     }
                 }
 
+                request.setAttribute("templates", getListTemplates());
+
                 request.setAttribute("docs",
-                        new PaginableDocuments(docsList, docs.getTotalSize(), docs.getPageSize(), docs.getPageCount(), docs.getPageCount()));
+                        new PaginableDocuments(docsList, docs.getTotalSize(), docs.getPageSize(), docs.getPageCount(), docs.getPageCount()).list());
 
                 request.setAttribute("currentPage", currentPage);
 
@@ -703,7 +703,7 @@ public class ViewListPortlet extends CMSPortlet {
                         permaLinkRef = null;
                     }
 
-                    String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request, response),
+                    String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(this.getPortletContext(), request, response),
                             permaLinkRef, publicParams, request.getParameter("osivia.cms.path"), permLinkType);
                     request.setAttribute("permaLinkURL", permaLinkURL);
                 }
@@ -734,7 +734,7 @@ public class ViewListPortlet extends CMSPortlet {
                             publicParams.put("selectors", selectors);
 
 
-                        String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request, response),
+                        String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(this.getPortletContext(), request, response),
                                 rssLinkRef, publicParams, request.getParameter("osivia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
 
                         request.setAttribute("rssLinkURL", rssLinkURL);
@@ -767,7 +767,7 @@ public class ViewListPortlet extends CMSPortlet {
                     template.getModule().doView(ctx, window, request, response);
 
 
-                getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
+                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
 
             } else {
 
