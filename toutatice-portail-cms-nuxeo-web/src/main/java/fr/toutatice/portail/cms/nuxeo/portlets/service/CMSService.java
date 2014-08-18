@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
@@ -86,7 +86,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCo
 
 /**
  * CMS service Toutatice implementation.
- * 
+ *
  * @see ICMSService
  */
 public class CMSService implements ICMSService {
@@ -105,7 +105,7 @@ public class CMSService implements ICMSService {
 
     /**
      * Constructor.
-     * 
+     *
      * @param portletCtx portlet context
      */
     public CMSService(PortletContext portletCtx) {
@@ -124,7 +124,7 @@ public class CMSService implements ICMSService {
 
     /**
      * Create CMS item.
-     * 
+     *
      * @param cmsCtx CMS context
      * @param path CMS path
      * @param displayName display name
@@ -150,7 +150,7 @@ public class CMSService implements ICMSService {
 
     /**
      * Create CMS navigation item.
-     * 
+     *
      * @param cmsCtx CMS context
      * @param path CMS path
      * @param displayName display name
@@ -280,10 +280,12 @@ public class CMSService implements ICMSService {
 
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 
+            @Override
             public String getId() {
                 return command.getId();
             }
 
+            @Override
             public Object execute(Session nuxeoSession) throws Exception {
                 return command.execute(nuxeoSession);
             }
@@ -344,6 +346,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
 
@@ -366,6 +369,7 @@ public class CMSService implements ICMSService {
         return content;
     }
 
+    @Override
     public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {
         CMSBinaryContent content = new CMSBinaryContent();
 
@@ -521,34 +525,34 @@ public class CMSService implements ICMSService {
             if(StringUtils.isNotEmpty(savedScope)){
                 cmsCtx.setForcePublicationInfosScope(savedScope);
             }
-            CMSItem document = fetchContent(cmsCtx, docPath);
-            
+            CMSItem document = this.fetchContent(cmsCtx, docPath);
+
             if (document != null) {
 
                 cmsCtx.setScope("superuser_context");
-                
+
                 FileContentCommand cmd = new FileContentCommand((Document) document.getNativeItem(), fieldName);
-                
+
                 if( cmsCtx.isStreamingSupport())    {
                     PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
                     if(map != null && !map.isEmpty()){
                         String size = map.getString("length");
 
-                    
+
                         if(size != null && Long.parseLong(size)> 1000000L) {
                             //Activation du mode streaming
                             cmd.setStreamingSupport(true);
-                            // Pas de cache en mode streaming                   
+                            // Pas de cache en mode streaming
                             cmsCtx.setScope("superuser_no_cache");
                         }
                     }
                 }
 
-                content = (CMSBinaryContent) executeNuxeoCommand(cmsCtx,
+                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx,
                         (cmd));
-                
-                
-                
+
+
+
             }
         } finally {
             cmsCtx.setScope(savedScope);
@@ -556,7 +560,8 @@ public class CMSService implements ICMSService {
         return content;
     }
 
-    
+
+    @Override
     public boolean checkContentAnonymousAccess(CMSServiceCtx cmsCtx, String path) throws CMSException {
 
         try {
@@ -579,6 +584,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
         // Document doc = ctx.g
         try {
@@ -712,6 +718,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
 
         String savedScope = cmsCtx.getScope();
@@ -779,6 +786,7 @@ public class CMSService implements ICMSService {
         return null;
     }
 
+    @Override
     public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
 
         String savedScope = cmsCtx.getScope();
@@ -859,6 +867,7 @@ public class CMSService implements ICMSService {
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<CMSItem> getPortalSubitems(CMSServiceCtx cmsContext, String path) throws CMSException {
         try {
             // Parent identifier
@@ -871,7 +880,7 @@ public class CMSService implements ICMSService {
             // Nuxeo command execution
             INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(cmsContext, parentId, liveContent);
             return (List<CMSItem>) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
-            
+
         } catch (CMSException e) {
             throw e;
         } catch (Exception e) {
@@ -882,9 +891,10 @@ public class CMSService implements ICMSService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
      */
+    @Override
     public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
         /* Instanciation pour que la méthode soit techniquement "null safe" */
         CMSPublicationInfos pubInfos = new CMSPublicationInfos();
@@ -952,6 +962,7 @@ public class CMSService implements ICMSService {
 
     }
 
+    @Override
     public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
         CMSItem configItem = null;
 
@@ -1013,6 +1024,7 @@ public class CMSService implements ICMSService {
         return configItem;
     }
 
+    @Override
     public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters) throws CMSException {
         try {
 
@@ -1033,12 +1045,13 @@ public class CMSService implements ICMSService {
 
 
 
+    @Override
     public String adaptWebPathToCms(CMSServiceCtx cmsCtx, String requestPath) throws CMSException {
         try {
 
             // LBI : no need of customization
 
-            CMSItem content = getContent(cmsCtx, requestPath);
+            CMSItem content = this.getContent(cmsCtx, requestPath);
             return content.getPath();
 
         } catch (Exception e) {
@@ -1056,6 +1069,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws CMSException {
         try {
 
@@ -1077,6 +1091,7 @@ public class CMSService implements ICMSService {
     /**
      * Création des fragments dans la page
      */
+    @Override
     public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
         try {
 
@@ -1142,6 +1157,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1191,11 +1207,13 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public String getEcmDomain(CMSServiceCtx cmsCtx) {
         return NuxeoConnectionProperties.getPublicDomainUri().toString();
     }
 
 
+    @Override
     public String getEcmUrl(CMSServiceCtx cmsCtx, EcmCommand command, String path, Map<String, String> requestParameters) throws CMSException {
         // get the défault domain and app name
         String uri = NuxeoConnectionProperties.getPublicBaseUri().toString();
@@ -1252,6 +1270,7 @@ public class CMSService implements ICMSService {
         return url;
     }
 
+    @Override
     public void moveFragment(CMSServiceCtx cmsCtx, String pagePath, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri)
             throws CMSException {
 
@@ -1292,6 +1311,7 @@ public class CMSService implements ICMSService {
         }
     }
 
+    @Override
     public boolean isCmsWebPage(CMSServiceCtx cmsCtx, String cmsPath) throws CMSException {
 
         // Une webpage CMS est porteuse du schéma fragment sous Nuxeo
@@ -1308,6 +1328,7 @@ public class CMSService implements ICMSService {
 
     }
 
+    @Override
     public void publishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1332,6 +1353,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @Override
     public void unpublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1352,7 +1374,8 @@ public class CMSService implements ICMSService {
         }
 
     }
-    
+
+    @Override
     public void askToPublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1374,7 +1397,8 @@ public class CMSService implements ICMSService {
         }
 
     }
-    
+
+    @Override
     public void cancelPublishWorkflow(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1396,13 +1420,15 @@ public class CMSService implements ICMSService {
         }
 
     }
-    
+
+    @Override
     public void validatePublicationOfDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
-        callValidationCommand(cmsCtx, pagePath, true);
+        this.callValidationCommand(cmsCtx, pagePath, true);
     }
-    
+
+    @Override
     public void rejectPublicationOfDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
-        callValidationCommand(cmsCtx, pagePath, false);
+        this.callValidationCommand(cmsCtx, pagePath, false);
     }
 
     /**
@@ -1430,6 +1456,7 @@ public class CMSService implements ICMSService {
         }
     }
 
+    @Override
     public void deleteDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -1446,6 +1473,7 @@ public class CMSService implements ICMSService {
 
     }
 
+    @Override
     public void putDocumentInTrash(CMSServiceCtx cmsCtx, String docId) throws CMSException {
 
 
@@ -1461,14 +1489,23 @@ public class CMSService implements ICMSService {
     @Override
     public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
 
-        return customizer.getUserAvatar(cmsCtx, username);
+        return this.customizer.getUserAvatar(cmsCtx, username);
 
     }
 
     @Override
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
 
-        return customizer.refreshUserAvatar(cmsCtx, username);
+        return this.customizer.refreshUserAvatar(cmsCtx, username);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
+        return this.customizer.getMenuTemplates(cmsContext);
     }
 
 }

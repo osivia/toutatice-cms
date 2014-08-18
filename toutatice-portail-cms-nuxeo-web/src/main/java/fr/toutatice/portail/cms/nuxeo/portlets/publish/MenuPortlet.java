@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -31,7 +32,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
@@ -60,14 +60,14 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
  */
 public class MenuPortlet extends CMSPortlet {
 
-    /** Horizontal menu window property name. */
-    private static final String HORIZONTAL_WINDOW_PROPERTY = "osivia.cms.horizontal";
     /** Max levels window property name. */
     private static final String MAX_LEVELS_WINDOW_PROPERTY = "osivia.cms.maxLevels";
     /** Start level window property name. */
     private static final String START_LEVEL_WINDOW_PROPERTY = "osivia.cms.startLevel";
     /** Open levels window property name. */
     private static final String OPEN_LEVELS_WINDOW_PROPERTY = "osivia.cms.openLevels";
+    /** Template window property name. */
+    private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.template";
 
     /** Default max levels. */
     private static final int DEFAULT_MAX_LEVELS = 3;
@@ -77,8 +77,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final int DEFAULT_OPEN_LEVELS = 1;
 
 
-    /** View path. */
-    private static final String PATH_VIEW = "/WEB-INF/jsp/publish/view.jsp";
+    /** View path prefix. */
+    private static final String PATH_VIEW_PREFIX = "/WEB-INF/jsp/publish/view";
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
 
@@ -123,39 +123,35 @@ public class MenuPortlet extends CMSPortlet {
                 // Current window
                 PortalWindow window = WindowFactory.getWindow(request);
 
-                // Horizontal menu
-                boolean horizontal = BooleanUtils.toBoolean(request.getParameter("horizontal"));
-                window.setProperty(HORIZONTAL_WINDOW_PROPERTY, BooleanUtils.toStringTrueFalse(horizontal));
 
-                if (!horizontal) {
-                    // Open levels
-                    int openLevels = NumberUtils.toInt(request.getParameter("openLevels"));
-                    if (openLevels > 0) {
-                        window.setProperty(OPEN_LEVELS_WINDOW_PROPERTY, String.valueOf(openLevels));
-                    } else {
-                        window.setProperty(OPEN_LEVELS_WINDOW_PROPERTY, null);
-                    }
-
-                    // Start level
-                    int startLevel = NumberUtils.toInt(request.getParameter("startLevel"));
-                    if (startLevel > 0) {
-                        window.setProperty(START_LEVEL_WINDOW_PROPERTY, String.valueOf(startLevel));
-                    } else {
-                        window.setProperty(START_LEVEL_WINDOW_PROPERTY, null);
-                    }
-
-                    // Max levels
-                    int maxLevels = NumberUtils.toInt(request.getParameter("maxLevels"));
-                    if (maxLevels > 0) {
-                        window.setProperty(MAX_LEVELS_WINDOW_PROPERTY, String.valueOf(maxLevels));
-                    } else {
-                        window.setProperty(MAX_LEVELS_WINDOW_PROPERTY, null);
-                    }
-
-                    // JSTree display
-                    boolean filtering = BooleanUtils.toBoolean(request.getParameter("jstree"));
-                    window.setProperty("osivia.cms.filtering", BooleanUtils.toStringTrueFalse(filtering));
+                // Open levels
+                int openLevels = NumberUtils.toInt(request.getParameter("openLevels"));
+                if (openLevels > 0) {
+                    window.setProperty(OPEN_LEVELS_WINDOW_PROPERTY, String.valueOf(openLevels));
+                } else {
+                    window.setProperty(OPEN_LEVELS_WINDOW_PROPERTY, null);
                 }
+
+                // Start level
+                int startLevel = NumberUtils.toInt(request.getParameter("startLevel"));
+                if (startLevel > 0) {
+                    window.setProperty(START_LEVEL_WINDOW_PROPERTY, String.valueOf(startLevel));
+                } else {
+                    window.setProperty(START_LEVEL_WINDOW_PROPERTY, null);
+                }
+
+                // Max levels
+                int maxLevels = NumberUtils.toInt(request.getParameter("maxLevels"));
+                if (maxLevels > 0) {
+                    window.setProperty(MAX_LEVELS_WINDOW_PROPERTY, String.valueOf(maxLevels));
+                } else {
+                    window.setProperty(MAX_LEVELS_WINDOW_PROPERTY, null);
+                }
+
+                // Template
+                String template = request.getParameter("template");
+                window.setProperty(TEMPLATE_WINDOW_PROPERTY, template);
+
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -174,13 +170,11 @@ public class MenuPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
-
-        // Horizontal menu
-        boolean horizontal = BooleanUtils.toBoolean(window.getProperty(HORIZONTAL_WINDOW_PROPERTY));
-        request.setAttribute("horizontal", horizontal);
 
         // Open levels
         String openLevels = window.getProperty(OPEN_LEVELS_WINDOW_PROPERTY);
@@ -196,9 +190,11 @@ public class MenuPortlet extends CMSPortlet {
         request.setAttribute("maxLevels", maxLevels);
         request.setAttribute("defaultMaxLevels", DEFAULT_MAX_LEVELS);
 
-        // JSTree filtering
-        boolean filtering = BooleanUtils.toBoolean(window.getProperty("osivia.cms.filtering"));
-        request.setAttribute("jstree", filtering);
+        // Templates
+        Map<String, String> templates = NuxeoController.getCMSService().getMenuTemplates(nuxeoController.getCMSCtx());
+        request.setAttribute("templates", templates);
+        String selectedTemplate = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
+        request.setAttribute("selectedTemplate", selectedTemplate);
 
 
         response.setContentType("text/html");
@@ -229,29 +225,29 @@ public class MenuPortlet extends CMSPortlet {
             }
 
 
-            // Horizontal menu
-            boolean horizontal = BooleanUtils.toBoolean(window.getProperty(HORIZONTAL_WINDOW_PROPERTY));
-
             // Max levels
             int maxLevels = DEFAULT_MAX_LEVELS;
             String maxLevelWindowProperty = window.getProperty(MAX_LEVELS_WINDOW_PROPERTY);
-            if (!horizontal && StringUtils.isNotBlank(maxLevelWindowProperty)) {
+            if (StringUtils.isNotBlank(maxLevelWindowProperty)) {
                 maxLevels = NumberUtils.toInt(maxLevelWindowProperty);
             }
 
             // Start level
             int startLevel = DEFAULT_START_LEVEL;
             String startLevelWindowProperty = window.getProperty(START_LEVEL_WINDOW_PROPERTY);
-            if (!horizontal && StringUtils.isNotBlank(startLevelWindowProperty)) {
+            if (StringUtils.isNotBlank(startLevelWindowProperty)) {
                 startLevel = NumberUtils.toInt(startLevelWindowProperty);
             }
 
             // Open levels
             int openLevels = DEFAULT_OPEN_LEVELS;
             String openLevelsWindowProperty = window.getProperty(OPEN_LEVELS_WINDOW_PROPERTY);
-            if (!horizontal && StringUtils.isNotBlank(openLevelsWindowProperty)) {
+            if (StringUtils.isNotBlank(openLevelsWindowProperty)) {
                 openLevels = NumberUtils.toInt(openLevelsWindowProperty);
             }
+
+            // Template
+            String template = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
 
 
             if (basePath != null) {
@@ -292,12 +288,11 @@ public class MenuPortlet extends CMSPortlet {
             response.setContentType("text/html");
 
             // Dispatcher
-            String requestDispatcherPath = PATH_VIEW;
-            boolean filtering = BooleanUtils.toBoolean(window.getProperty("osivia.cms.filtering"));
-            if (horizontal) {
-                requestDispatcherPath = "/WEB-INF/jsp/publish/view-horizontal.jsp";
-            } else if (filtering) {
-                requestDispatcherPath = "/WEB-INF/jsp/publish/view-jstree.jsp";
+            String requestDispatcherPath;
+            if (StringUtils.isBlank(template)) {
+                requestDispatcherPath = PATH_VIEW_PREFIX + ".jsp";
+            } else {
+                requestDispatcherPath = PATH_VIEW_PREFIX + "-" + template + ".jsp";
             }
             this.getPortletContext().getRequestDispatcher(requestDispatcherPath).include(request, response);
         } catch (NuxeoException e) {

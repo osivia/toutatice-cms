@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,6 +55,9 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.IDirectoryService;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -127,9 +131,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /** Portlet context. */
-    private PortletContext portletCtx;
+    private final PortletContext portletCtx;
     /** Portal URL factory. */
-    private IPortalUrlFactory portalUrlFactory;
+    private final IPortalUrlFactory portalUrlFactory;
+    /** Bundle factory. */
+    private final IBundleFactory bundleFactory;
+
     /** User pages loader. */
     private UserPagesLoader userPagesLoader;
     /** Menu bar formatter. */
@@ -158,8 +165,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** CMS service. */
     private CMSService cmsService;
-    
-    /** WEBID service. */    
+
+    /** WEBID service. */
     private IWebIdService webIdService;
 
     /** Directory service */
@@ -175,8 +182,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public DefaultCMSCustomizer(PortletContext ctx) {
         super();
+        // Portlet context
         this.portletCtx = ctx;
-        this.portalUrlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
+
+        // Portal URL factory
+        this.portalUrlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute(Constants.URL_SERVICE_NAME);
+
+        // Bundle factory
+        IInternationalizationService internationalizationService = (IInternationalizationService) this.portletCtx
+                .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
 
         // initialise le player view document par défaut
         this.players = new HashMap<String, IPlayer>();
@@ -199,7 +214,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return this.webIdService;
     }
-    
+
     /**
      * Get Nuxeo connection properties.
      *
@@ -596,6 +611,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
         Document doc = (Document) ctx.getDoc();
 
@@ -657,9 +673,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSPlayer);
             Documents configs = null;
             try {
-                
-               configs = WebConfigurationHelper.executeWebConfigCmd(ctx, cmsService, command);
-                
+
+               configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);
+
             } catch (Exception e) {
                 // Can't get confs
             }
@@ -770,6 +786,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Link createCustomLink(CMSServiceCtx ctx) throws Exception {
         Document doc = (Document) ctx.getDoc();
 
@@ -816,6 +833,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
         this.getMenuBarFormater().formatContentMenuBar(ctx);
@@ -863,6 +881,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
         return this.getCMSItemAdapter().adaptDocument(ctx, doc);
     }
@@ -871,6 +890,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
         /* Filtre pour sélectionner uniquement les version publiées */
         String requestFilter = "";
@@ -888,10 +908,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String policyFilter = null;
 
         ServerInvocation invocation = ctx.getServerInvocation();
-        
+
         String portalName = null;
 
-        
+
         // Cas des chargement asynchrones : pas de contexte
         if(invocation != null)
             portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
@@ -995,8 +1015,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // get configs installed in nuxeo
             WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.extraRequestFilter);
             Documents configs = null;
-            
-            configs = WebConfigurationHelper.executeWebConfigCmd(ctx, cmsService, command);
+
+            configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);
 
 
             if (configs.size() > 0) {
@@ -1024,6 +1044,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception {
         ClassLoader originalCL = Thread.currentThread().getContextClassLoader();
 
@@ -1049,6 +1070,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String, CMSItemType> getCMSItemTypes() {
         if (this.cmsItemTypes == null) {
             List<CMSItemType> defaultTypes = this.getDefaultCMSItemTypes();
@@ -1092,8 +1114,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null));
 
-        
-        
+
+
         return defaultTypes;
     }
 
@@ -1131,7 +1153,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the directoryService
      */
     public IDirectoryService getDirectoryService() {
-        return directoryService;
+        return this.directoryService;
     }
 
 
@@ -1149,15 +1171,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public PortletContext getPortletCtx() {
         return this.portletCtx;
-    }
-
-    /**
-     * Setter for portletCtx.
-     *
-     * @param portletCtx the portletCtx to set
-     */
-    public void setPortletCtx(PortletContext portletCtx) {
-        this.portletCtx = portletCtx;
     }
 
     /**
@@ -1188,29 +1201,29 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-    /* 
+    /*
      * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getContentWebIdAwarePath(org.osivia.portal.core.cms.CMSServiceCtx)
      */
     @Override
-    
+
     public String getContentWebIdPath(CMSServiceCtx cmsCtx)  {
-        
+
         Document doc = (Document) cmsCtx.getDoc();
-        
+
         String webId = doc.getString("ttc:webid");
-        
+
         String domainId = doc.getString("ttc:domainID");
-        
+
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
-        
-        
+
+
         // webId and domainId have no signification without each other
         if (StringUtils.isNotEmpty(webId) && StringUtils.isNotEmpty(domainId)) {
-            
+
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
-            
-            
+
+
             Map<String, String> properties = new HashMap<String, String>();
             if (domainId != null) {
                 properties.put(IWebIdService.DOMAIN_ID, domainId);
@@ -1222,11 +1235,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
             }
             CMSItem cmsItem = new CMSItem(doc.getPath(), webId, properties, doc);
-            
-            permLinkPath = getWebIdService().itemToPageUrl(cmsItem);
+
+            permLinkPath = this.getWebIdService().itemToPageUrl(cmsItem);
 
         }
-        
+
         return permLinkPath;
     }
 
@@ -1237,11 +1250,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         try {
 
             // get timestamp defined previously
-            String avatarTime = avatarMap.get(username);
+            String avatarTime = this.avatarMap.get(username);
 
             if (avatarTime == null) {
                 // if not defined, set ie
-                avatarTime = refreshUserAvatar(cmsCtx, username);
+                avatarTime = this.refreshUserAvatar(cmsCtx, username);
             }
 
             // timestamp is concated in the url to control the client cache
@@ -1259,9 +1272,42 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // renew the timestamp and map it to the user
         String avatarTime = Long.toString(new Date().getTime());
 
-        avatarMap.put(username, avatarTime);
+        this.avatarMap.put(username, avatarTime);
 
         return avatarTime;
+    }
+
+
+    /**
+     * Get menu templates.
+     *
+     * @param cmsContext CMS context
+     * @return menu templates
+     */
+    public Map<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
+        Map<String, String> templates = Collections.synchronizedMap(new HashMap<String, String>());
+
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+
+        // Default
+        templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));
+        // Horizontal
+        templates.put("horizontal", bundle.getString("MENU_TEMPLATE_HORIZONTAL"));
+        // JSTree
+        templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
+
+        return templates;
+    }
+
+
+    /**
+     * Getter for bundleFactory.
+     *
+     * @return the bundleFactory
+     */
+    public IBundleFactory getBundleFactory() {
+        return this.bundleFactory;
     }
 
 }

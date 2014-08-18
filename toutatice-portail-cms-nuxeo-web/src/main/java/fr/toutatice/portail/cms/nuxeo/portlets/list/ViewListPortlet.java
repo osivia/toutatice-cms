@@ -71,12 +71,28 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
 
 /**
  * Portlet d'affichage d'un document Nuxeo
+ *
+ * @see CMSPortlet
  */
-
 public class ViewListPortlet extends CMSPortlet {
 
-    private static Log logger = LogFactory.getLog(ViewListPortlet.class);
+    /** Logger. */
+    private static final Log LOGGER = LogFactory.getLog(ViewListPortlet.class);
 
+
+    /**
+     * Default constructor.
+     */
+    public ViewListPortlet() {
+        super();
+    }
+
+
+    /**
+     * Get list templates.
+     *
+     * @return list templates
+     */
     public static Map<String, ListTemplate> getListTemplates() {
         List<ListTemplate> templatesList = CMSCustomizer.getListTemplates();
         Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
@@ -86,8 +102,13 @@ public class ViewListPortlet extends CMSPortlet {
     }
 
 
+    /**
+     * Get current template.
+     *
+     * @param window current window
+     * @return current template
+     */
     public ListTemplate getCurrentTemplate(PortalWindow window) {
-
         String style = window.getProperty("osivia.cms.style");
         if (style == null)
             style = CMSCustomizer.STYLE_NORMAL;
@@ -100,13 +121,14 @@ public class ViewListPortlet extends CMSPortlet {
         return template;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
-
         try {
-
             /* Génération Flux RSS */
-
 
             /*
              * pour tests
@@ -123,26 +145,17 @@ public class ViewListPortlet extends CMSPortlet {
              * }
              */
 
-
             if ("rss".equals(resourceRequest.getParameter("type"))) {
-
-
                 /* Contexts initialization */
-
                 NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, this.getPortletContext());
-
                 PortalControllerContext portalCtx = new PortalControllerContext(this.getPortletContext(), resourceRequest, resourceResponse);
 
                 // ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
 
                 /* On détermine l'uid et le scope */
-
                 String nuxeoRequest = null;
-
                 PortalWindow window = WindowFactory.getWindow(resourceRequest);
-
                 nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
-
 
                 if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
                     // Evaluation beanshell
@@ -157,13 +170,11 @@ public class ViewListPortlet extends CMSPortlet {
                     i.set("navigationPath", ctx.getNavigationPath());
                     i.set("contentPath", ctx.getContentPath());
 
-
                     nuxeoRequest = (String) i.eval(nuxeoRequest);
                 }
 
 
                 /* Initialisation de la page courante et de la taille de la page */
-
                 int pageSize = 10;
 
                 String pageSizeAttributeName = "osivia.cms.pageSizeMax";
@@ -175,23 +186,13 @@ public class ViewListPortlet extends CMSPortlet {
                 if (style == null)
                     style = CMSCustomizer.STYLE_NORMAL;
 
-                /* Reinitialisation du numéro de page si changement de critères */
-
-                String selectors = resourceRequest.getParameter("selectors");
-
                 if (nuxeoRequest != null) {
-
                     // Calcul de la taille de la page
-
                     ListTemplate template = getListTemplates().get(style);
                     if (template == null)
                         template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
 
                     String schemas = getListTemplates().get(style).getSchemas();
-
-                    boolean applyPortalRequestFilter = true;
-                    if ("global".equals(window.getProperty("osivia.cms.requestFilteringPolicy")))
-                        applyPortalRequestFilter = false;
 
                     PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest, ctx.isDisplayingLiveVersion(), 0,
                             pageSize, schemas, window.getProperty("osivia.cms.requestFilteringPolicy")));
@@ -201,7 +202,6 @@ public class ViewListPortlet extends CMSPortlet {
 
 
                     /* Envoi du flux */
-
                     TransformerFactory tFactory = TransformerFactory.newInstance();
                     Transformer transformer = tFactory.newTransformer();
                     DOMSource source = new DOMSource(document);
@@ -215,35 +215,29 @@ public class ViewListPortlet extends CMSPortlet {
                     ResourceUtil.copy(in, resourceResponse.getPortletOutputStream(), 4096);
 
                     resourceResponse.setContentType("application/rss+xml");
-
                     resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-
                     resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-
                 } else
                     throw new IllegalArgumentException("No request defined for RSS");
             } else
                 super.serveResource(resourceRequest, resourceResponse);
-
         } catch (Exception e) {
-
             throw new PortletException(e);
-
         }
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
-
-        logger.debug("processAction ");
+        LOGGER.debug("processAction ");
 
         PortalWindow window = WindowFactory.getWindow(req);
         NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
 
         if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
-
-
             window.setProperty("osivia.nuxeoRequest", req.getParameter("nuxeoRequest"));
 
             if ("1".equals(req.getParameter("beanShell")))
@@ -256,18 +250,15 @@ public class ViewListPortlet extends CMSPortlet {
             else if (window.getProperty("osivia.displayNuxeoRequest") != null)
                 window.setProperty("osivia.displayNuxeoRequest", null);
 
-
             if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
                 window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
             else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
                 window.setProperty(Constants.WINDOW_PROP_VERSION, null);
 
-
             if (req.getParameter("requestFilteringPolicy") != null && req.getParameter("requestFilteringPolicy").length() > 0)
                 window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, req.getParameter("requestFilteringPolicy"));
             else if (window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY) != null)
                 window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, null);
-
 
             if (!"1".equals(req.getParameter("showMetadatas")))
                 window.setProperty("osivia.cms.hideMetaDatas", "1");
@@ -380,6 +371,7 @@ public class ViewListPortlet extends CMSPortlet {
         }
     }
 
+
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
@@ -486,11 +478,13 @@ public class ViewListPortlet extends CMSPortlet {
 
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
 
-        logger.debug("doView");
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        LOGGER.debug("doView");
 
         try {
 
@@ -553,7 +547,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 i.set("spaceId", null);
                 if (ctx.getNavigationPath() != null) {
-                    CMSPublicationInfos navigationPubInfos = ctx.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
+                    CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
                     i.set("navigationPubInfos", navigationPubInfos);
                     i.set("spaceId", navigationPubInfos.getSpaceID());
                 }
@@ -711,8 +705,6 @@ public class ViewListPortlet extends CMSPortlet {
 
                 String rssLinkRef = window.getProperty("osivia.rssLinkRef");
                 if (rssLinkRef != null) {
-
-
                     boolean anonymousAccess = true;
 
                     if (request.getParameter("osivia.cms.path") != null) {
@@ -722,24 +714,20 @@ public class ViewListPortlet extends CMSPortlet {
                         cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(ctx.getPortalCtx()));
                         cmsReadNavContext.setScope(ctx.getScope());
 
-                        anonymousAccess = ctx.getCMSService().checkContentAnonymousAccess(cmsReadNavContext, request.getParameter("osivia.cms.path"));
-
-
+                        anonymousAccess = NuxeoController.getCMSService().checkContentAnonymousAccess(cmsReadNavContext,
+                                request.getParameter("osivia.cms.path"));
                     }
 
                     if (anonymousAccess) {
-
                         Map<String, String> publicParams = new HashMap<String, String>();
                         if (selectors != null)
                             publicParams.put("selectors", selectors);
-
 
                         String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(this.getPortletContext(), request, response),
                                 rssLinkRef, publicParams, request.getParameter("osivia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
 
                         request.setAttribute("rssLinkURL", rssLinkURL);
                     }
-
                 }
 
 
@@ -815,7 +803,7 @@ public class ViewListPortlet extends CMSPortlet {
                 throw new PortletException(e);
         }
 
-        logger.debug("doView end");
+        LOGGER.debug("doView end");
     }
 
 }

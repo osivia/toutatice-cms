@@ -12,30 +12,8 @@
 <portlet:actionURL name="save" var="saveAdminURL" />
 
 
-<c:if test="${horizontal}">
-    <c:set var="horizontalChecked" value="checked" />
-</c:if>
-
-<c:if test="${jstree}">
-    <c:set var="jstreeChecked" value="checked" />
-</c:if>
-
-
 <div class="container">
     <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
-        <!-- Horizontal menu -->
-        <div class="form-group">
-            <label for="horizontal" class="control-label col-sm-4"><is:getProperty key="MENU_HORIZONTAL" /></label>
-            <div class="col-sm-8">
-                <div class="checkbox">
-                    <label>
-                        <input id="horizontal" type="checkbox" name="horizontal" ${horizontalChecked} />
-                    </label>
-                </div>
-                <span class="help-block"><is:getProperty key="MESSAGE_MENU_HORIZONTAL_HELP" /></span>
-            </div>
-        </div>
-
         <!-- Open levels -->
         <div class="form-group">
             <label for="open-levels" class="control-label col-sm-4"><is:getProperty key="MENU_OPEN_LEVELS" /></label>
@@ -63,16 +41,20 @@
             </div>
         </div>
 
-        <!-- JSTree display -->
+        <!-- Template -->
         <div class="form-group">
-            <label for="jstree-display" class="control-label col-sm-4"><is:getProperty key="MENU_JSTREE_DISPLAY" /></label>
+            <label for="template" class="control-label col-sm-4"><is:getProperty key="MENU_TEMPLATE" /></label>
             <div class="col-sm-8">
-                <div class="checkbox">
-                    <label>
-                        <input id="jstree-display" type="checkbox" name="jstree" ${jstreeChecked} />
-                    </label>
-                </div>
-                <span class="help-block"><is:getProperty key="MESSAGE_MENU_JSTREE_DISPLAY_HELP" /></span>
+                <select id="template" name="template" class="form-control">
+                    <c:forEach var="template" items="${templates}">
+                        <c:remove var="selected" />
+                        <c:if test="${template.key eq selectedTemplate}">
+                            <c:set var="selected" value="selected" />
+                        </c:if>
+                    
+                        <option value="${template.key}" ${selected}>${template.value}</option>
+                    </c:forEach>
+                </select>
             </div>
         </div>
         
