@@ -289,7 +289,7 @@ public class MenuPortlet extends CMSPortlet {
 
             // Dispatcher
             String requestDispatcherPath;
-            if (StringUtils.isBlank(template)) {
+            if (StringUtils.isEmpty(template)) {
                 requestDispatcherPath = PATH_VIEW_PREFIX + ".jsp";
             } else {
                 requestDispatcherPath = PATH_VIEW_PREFIX + "-" + template + ".jsp";

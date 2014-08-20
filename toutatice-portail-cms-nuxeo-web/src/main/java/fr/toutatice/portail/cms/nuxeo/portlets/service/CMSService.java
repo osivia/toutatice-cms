@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -1504,7 +1505,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
+    public SortedMap<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
         return this.customizer.getMenuTemplates(cmsContext);
     }
 

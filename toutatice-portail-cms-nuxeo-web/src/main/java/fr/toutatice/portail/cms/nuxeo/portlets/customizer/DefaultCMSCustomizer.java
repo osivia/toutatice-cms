@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1284,8 +1286,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @param cmsContext CMS context
      * @return menu templates
      */
-    public Map<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
-        Map<String, String> templates = Collections.synchronizedMap(new HashMap<String, String>());
+    public SortedMap<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
+        SortedMap<String, String> templates = Collections.synchronizedSortedMap(new TreeMap<String, String>());
 
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
@@ -1294,6 +1296,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));
         // Horizontal
         templates.put("horizontal", bundle.getString("MENU_TEMPLATE_HORIZONTAL"));
+        // Footer
+        templates.put("footer", bundle.getString("MENU_TEMPLATE_FOOTER"));
         // JSTree
         templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
 
