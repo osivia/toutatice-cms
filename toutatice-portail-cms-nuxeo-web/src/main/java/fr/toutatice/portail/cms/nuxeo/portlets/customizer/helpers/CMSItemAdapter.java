@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -38,6 +39,7 @@ public class CMSItemAdapter {
     private static final String NX_DC_TITLE = "dc:title";
     private static final String NX_DC_DESCRIPTION = "dc:description";
     private static final String NX_DC_CREATOR = "dc:creator";
+    private static final String NX_TTC_KEYWORDS = "ttc:keywords";
 
     protected CMSService CMSService;
     protected DefaultCMSCustomizer customizer;
@@ -134,14 +136,23 @@ public class CMSItemAdapter {
             properties.put(Constants.HEADER_TITLE, nxProperties.getString(NX_DC_TITLE));
         }
 
-        if (nxProperties.getString(NX_DC_DESCRIPTION) != null) {
+        if (StringUtils.isNotBlank(nxProperties.getString(NX_DC_DESCRIPTION))) {
             properties.put(Constants.HEADER_META.concat(".description"), nxProperties.getString(NX_DC_DESCRIPTION));
         }
 
-        if (nxProperties.getString(NX_DC_CREATOR) != null) {
+        if (StringUtils.isNotBlank(nxProperties.getString(NX_DC_CREATOR))) {
             properties.put(Constants.HEADER_META.concat(".author"), nxProperties.getString(NX_DC_CREATOR));
         }
 
+        // TODO dc:subjects ??
+        if (nxProperties.getList(NX_TTC_KEYWORDS) != null) {
+            String keywords = StringUtils.join(nxProperties.getList(NX_TTC_KEYWORDS).list(), ",");
+
+            if (StringUtils.isNotBlank(keywords)) {
+                properties.put(Constants.HEADER_META.concat(".keywords"), keywords);
+            }
+
+        }
     }
 
     public void adaptDoc(CMSServiceCtx ctx, Document doc, Map<String, String> properties) throws Exception {
