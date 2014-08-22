@@ -22,15 +22,16 @@
 <portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) request.getAttribute("ctx")	;
 
-Document doc = (Document) renderRequest.getAttribute("doc");
-int parite =  (Integer) renderRequest.getAttribute("parite");
+Document doc = (Document) request.getAttribute("doc");
+int parite = ((Long) request.getAttribute("parite")).intValue();
+
 
 Link link = ctx.getLink(doc);
 
 String icon = Formater.formatNuxeoIcon(doc);
-icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
+icon = "<img class=\"icon\" src=\""+request.getContextPath()+icon+"\">";
 
 String detail = "";
 detail = Formater.formatDate( doc);

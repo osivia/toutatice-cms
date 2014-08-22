@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
@@ -22,14 +19,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
@@ -43,7 +41,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -53,24 +53,26 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
+import bsh.EvalError;
 import bsh.Interpreter;
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * List portlet.
  *
  * @see CMSPortlet
  */
@@ -78,6 +80,50 @@ public class ViewListPortlet extends CMSPortlet {
 
     /** Logger. */
     private static final Log LOGGER = LogFactory.getLog(ViewListPortlet.class);
+
+    /** Nuxeo request window property name. */
+    private static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
+    /** Bean Shell interpretation indicator window property name. */
+    private static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
+    /** @deprecated old Bean Shell window property name. */
+    @Deprecated
+    private static final String BEAN_SHELL_WINDOW_PROPERTY_OLD = "osivia.requestInterpretor";
+    /** Version window property name. */
+    private static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
+    /** Content filter window property name. */
+    private static final String CONTENT_FILTER_WINDOW_PROPERTY = InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY;
+    /** Scope window property name. */
+    private static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
+    /** Metadata display indicator window property name. */
+    private static final String METADATA_DISPLAY_WINDOW_PROPERTY = "osivia.metadataDisplay";
+    /** @deprecated old metadata hidding indicator window property name. */
+    @Deprecated
+    private static final String METADATA_DISPLAY_WINDOW_PROPERTY_OLD = "osivia.cms.hideMetaDatas";
+    /** Nuxeo request display indicator window property name. */
+    private static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
+    /** Results limit window property name. */
+    private static final String RESULTS_LIMIT_WINDOW_PROPERTY = "osivia.cms.maxItems";
+    /** Normal view pagination window property name. */
+    private static final String NORMAL_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSize";
+    /** Maximized view pagination window property name. */
+    private static final String MAXIMIZED_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSizeMax";
+    /** Template window property name. */
+    private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.style";
+    /** Permalink reference window property name. */
+    private static final String PERMALINK_REFERENCE_WINDOW_PROPERTY = "osivia.permaLinkRef";
+    /** RSS reference window property name. */
+    private static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
+    /** RSS title window property name. */
+    private static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
+    /** Creation parent container path window property name. */
+    private static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
+    /** Creation content type window property name. */
+    private static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
+
+    /** Default request page size. */
+    private static final int DEFAULT_REQUEST_PAGE_SIZE = 100;
+    /** Default RSS results limit. */
+    private static final int DEFAULT_RSS_RESULTS_LIMIT = 10;
 
 
     /**
@@ -89,36 +135,38 @@ public class ViewListPortlet extends CMSPortlet {
 
 
     /**
-     * Get list templates.
-     *
-     * @return list templates
-     */
-    public static Map<String, ListTemplate> getListTemplates() {
-        List<ListTemplate> templatesList = CMSCustomizer.getListTemplates();
-        Map<String, ListTemplate> templatesMap = new LinkedHashMap<String, ListTemplate>();
-        for (ListTemplate template : templatesList)
-            templatesMap.put(template.getKey(), template);
-        return templatesMap;
-    }
-
-
-    /**
      * Get current template.
      *
-     * @param window current window
+     * @param locale user locale
+     * @param configuration configuration
      * @return current template
      */
-    public ListTemplate getCurrentTemplate(PortalWindow window) {
-        String style = window.getProperty("osivia.cms.style");
-        if (style == null)
-            style = CMSCustomizer.STYLE_NORMAL;
+    public ListTemplate getCurrentTemplate(Locale locale, ListConfiguration configuration) {
+        String currentTemplateName = configuration.getTemplate();
+        if (currentTemplateName == null) {
+            currentTemplateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
+        }
 
-        ListTemplate template = getListTemplates().get(style);
+        // Search template
+        ListTemplate currentTemplate = null;
+        ListTemplate defaultTemplate = null;
+        List<ListTemplate> templates = NuxeoController.getCMSService().getListTemplates(locale);
+        for (ListTemplate template : templates) {
+            if (currentTemplateName.equals(template.getKey())) {
+                // Current template
+                currentTemplate = template;
+                break;
+            } else if (DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL.equals(template.getKey())) {
+                // Default template
+                defaultTemplate = template;
+            }
+        }
 
-        if (template == null)
-            template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
+        if (currentTemplate == null) {
+            currentTemplate = defaultTemplate;
+        }
 
-        return template;
+        return currentTemplate;
     }
 
 
@@ -126,101 +174,89 @@ public class ViewListPortlet extends CMSPortlet {
      * {@inheritDoc}
      */
     @Override
-    public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
+    public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         try {
-            /* Génération Flux RSS */
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            // Portal controller context
+            PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
+            // Configuration
+            ListConfiguration configuration = this.getConfiguration(window);
 
-            /*
-             * pour tests
-             * if( "zoom".equals(resourceRequest.getResourceID())) {
-             *
-             * NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, getPortletContext());
-             *
-             * Document doc = ctx.fetchDocument(resourceRequest.getParameter("docId"));
-             *
-             * resourceRequest.setAttribute("doc", doc);
-             * resourceRequest.setAttribute("ctx", ctx);
-             *
-             * getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/zoom.jsp").include(resourceRequest, resourceResponse);
-             * }
-             */
 
-            if ("rss".equals(resourceRequest.getParameter("type"))) {
-                /* Contexts initialization */
-                NuxeoController ctx = new NuxeoController(resourceRequest, resourceResponse, this.getPortletContext());
-                PortalControllerContext portalCtx = new PortalControllerContext(this.getPortletContext(), resourceRequest, resourceResponse);
+            if ("rss".equals(request.getParameter("type"))) {
+                // RSS generation
 
-                // ctx.setContextualization(IPortalUrlFactory.CONTEXTUALIZATION_PORTAL);
+                // Nuxeo request
+                String nuxeoRequest = configuration.getNuxeoRequest();
 
-                /* On détermine l'uid et le scope */
-                String nuxeoRequest = null;
-                PortalWindow window = WindowFactory.getWindow(resourceRequest);
-                nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
+                if (configuration.isBeanShell()) {
+                    // BeanShell interpretation
+                    Interpreter interpreter = new Interpreter();
+                    interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
+                    interpreter.set("request", request);
+                    interpreter.set("NXQLFormater", new NXQLFormater());
 
-                if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
-                    // Evaluation beanshell
-                    Interpreter i = new Interpreter();
-                    i.set("params", PageSelectors.decodeProperties(resourceRequest.getParameter("selectors")));
-                    i.set("request", resourceRequest);
-                    i.set("NXQLFormater", new NXQLFormater());
-                    // i.set("path", resourceRequest.getParameter("osivia.cms.path"));
+                    interpreter.set("basePath", nuxeoController.getBasePath());
+                    interpreter.set("spacePath", nuxeoController.getSpacePath());
+                    interpreter.set("navigationPath", nuxeoController.getNavigationPath());
+                    interpreter.set("contentPath", nuxeoController.getContentPath());
 
-                    i.set("basePath", ctx.getBasePath());
-                    i.set("spacePath", ctx.getSpacePath());
-                    i.set("navigationPath", ctx.getNavigationPath());
-                    i.set("contentPath", ctx.getContentPath());
-
-                    nuxeoRequest = (String) i.eval(nuxeoRequest);
+                    nuxeoRequest = (String) interpreter.eval(nuxeoRequest);
                 }
 
 
-                /* Initialisation de la page courante et de la taille de la page */
-                int pageSize = 10;
-
-                String pageSizeAttributeName = "osivia.cms.pageSizeMax";
-                if (window.getProperty(pageSizeAttributeName) != null) {
-                    pageSize = Integer.parseInt(window.getProperty(pageSizeAttributeName));
+                // Results limit
+                int resultsLimit = DEFAULT_RSS_RESULTS_LIMIT;
+                if (configuration.getMaximizedPagination() != null) {
+                    resultsLimit = configuration.getMaximizedPagination();
                 }
 
-                String style = window.getProperty("osivia.cms.style");
-                if (style == null)
-                    style = CMSCustomizer.STYLE_NORMAL;
 
                 if (nuxeoRequest != null) {
-                    // Calcul de la taille de la page
-                    ListTemplate template = getListTemplates().get(style);
-                    if (template == null)
-                        template = getListTemplates().get(CMSCustomizer.STYLE_NORMAL);
-
-                    String schemas = getListTemplates().get(style).getSchemas();
-
-                    PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest, ctx.isDisplayingLiveVersion(), 0,
-                            pageSize, schemas, window.getProperty("osivia.cms.requestFilteringPolicy")));
-
-                    org.w3c.dom.Document document = RssGenerator.createDocument(ctx, portalCtx, window.getProperty("osivia.rssTitle"), docs,
-                            window.getProperty("osivia.rssLinkRef"));
+                    // Template
+                    ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+                    String schemas = template.getSchemas();
 
 
-                    /* Envoi du flux */
-                    TransformerFactory tFactory = TransformerFactory.newInstance();
-                    Transformer transformer = tFactory.newTransformer();
+                    // Nuxeo command
+                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), 0, resultsLimit, schemas,
+                            configuration.getContentFilter());
+
+                    // Nuxeo documents
+                    PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
+
+                    // RSS document
+                    org.w3c.dom.Document document = RssGenerator.createDocument(nuxeoController, portalControllerContext, configuration.getRssTitle(),
+                            documents, configuration.getRssReference());
+
+
+                    // Send RSS content
+                    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                    Transformer transformer = transformerFactory.newTransformer();
                     DOMSource source = new DOMSource(document);
-                    StringWriter sw = new StringWriter();
-                    StreamResult result = new StreamResult(sw);
-                    transformer.transform(source, result);
-                    String xmlString = sw.toString();
+                    StringWriter stringWriter = new StringWriter();
+                    StreamResult streamResult = new StreamResult(stringWriter);
+                    transformer.transform(source, streamResult);
+                    String xmlString = stringWriter.toString();
 
                     InputStream in = new ByteArrayInputStream(xmlString.getBytes());
 
-                    ResourceUtil.copy(in, resourceResponse.getPortletOutputStream(), 4096);
+                    ResourceUtil.copy(in, response.getPortletOutputStream(), 4096);
 
-                    resourceResponse.setContentType("application/rss+xml");
-                    resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-                    resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-                } else
+                    response.setContentType("application/rss+xml");
+                    response.setProperty("Cache-Control", "max-age=" + response.getCacheControl().getExpirationTime());
+                    response.setProperty("Last-Modified", this.formatResourceLastModified());
+                } else {
                     throw new IllegalArgumentException("No request defined for RSS");
-            } else
-                super.serveResource(resourceRequest, resourceResponse);
+                }
+            } else {
+                super.serveResource(request, response);
+            }
+        } catch (PortletException e) {
+            throw e;
         } catch (Exception e) {
             throw new PortletException(e);
         }
@@ -231,140 +267,88 @@ public class ViewListPortlet extends CMSPortlet {
      * {@inheritDoc}
      */
     @Override
-    public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
         LOGGER.debug("processAction ");
 
-        PortalWindow window = WindowFactory.getWindow(req);
-        NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Action
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
-            window.setProperty("osivia.nuxeoRequest", req.getParameter("nuxeoRequest"));
+        if ("admin".equals(request.getPortletMode().toString())) {
+            if ("save".equals(action)) {
+                // Save action
 
-            if ("1".equals(req.getParameter("beanShell")))
-                window.setProperty("osivia.requestInterpretor", "beanShell");
-            else if (window.getProperty("osivia.requestInterpretor") != null)
-                window.setProperty("osivia.requestInterpretor", null);
+                // Nuxeo request
+                window.setProperty(NUXEO_REQUEST_WINDOW_PROPERTY, request.getParameter("nuxeoRequest"));
 
-            if ("1".equals(req.getParameter("displayNuxeoRequest")))
-                window.setProperty("osivia.displayNuxeoRequest", "1");
-            else if (window.getProperty("osivia.displayNuxeoRequest") != null)
-                window.setProperty("osivia.displayNuxeoRequest", null);
+                // BeanShell
+                window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, request.getParameter("beanShell"));
+                // Clean old configuration
+                window.setProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD, null);
 
-            if (req.getParameter("displayLiveVersion") != null && req.getParameter("displayLiveVersion").length() > 0)
-                window.setProperty(Constants.WINDOW_PROP_VERSION, req.getParameter("displayLiveVersion"));
-            else if (window.getProperty(Constants.WINDOW_PROP_VERSION) != null)
-                window.setProperty(Constants.WINDOW_PROP_VERSION, null);
+                // Version
+                window.setProperty(VERSION_WINDOW_PROPERTY, request.getParameter("displayLiveVersion"));
 
-            if (req.getParameter("requestFilteringPolicy") != null && req.getParameter("requestFilteringPolicy").length() > 0)
-                window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, req.getParameter("requestFilteringPolicy"));
-            else if (window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY) != null)
-                window.setProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY, null);
+                // Content filter
+                window.setProperty(CONTENT_FILTER_WINDOW_PROPERTY, request.getParameter("requestFilteringPolicy"));
 
-            if (!"1".equals(req.getParameter("showMetadatas")))
-                window.setProperty("osivia.cms.hideMetaDatas", "1");
-            else if (window.getProperty("osivia.cms.hideMetaDatas") != null)
-                window.setProperty("osivia.cms.hideMetaDatas", null);
+                // Scope
+                window.setProperty(SCOPE_WINDOW_PROPERTY, request.getParameter("scope"));
 
-            if (req.getParameter("scope") != null && req.getParameter("scope").length() > 0)
-                window.setProperty(Constants.WINDOW_PROP_SCOPE, req.getParameter("scope"));
-            else if (window.getProperty(Constants.WINDOW_PROP_SCOPE) != null)
-                window.setProperty(Constants.WINDOW_PROP_SCOPE, null);
+                // Metadata display
+                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, request.getParameter("metadataDisplay"));
+                // Clean old configuration
+                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD, null);
 
-            if (req.getParameter("style") != null && req.getParameter("style").length() > 0)
-                window.setProperty("osivia.cms.style", req.getParameter("style"));
-            else if (window.getProperty("osivia.cms.style") != null)
-                window.setProperty("osivia.cms.style", null);
+                // Nuxeo request display
+                window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, request.getParameter("nuxeoRequestDisplay"));
 
-            // Taille de page
-            int pageSize = 0;
-            if (req.getParameter("pageSize") != null) {
-                try {
-                    pageSize = Integer.parseInt(req.getParameter("pageSize"));
-                } catch (Exception e) {
-                    // Mal formatté
-                }
+                // Results limit
+                window.setProperty(RESULTS_LIMIT_WINDOW_PROPERTY, request.getParameter("resultsLimit"));
+
+                // Normal view pagination
+                window.setProperty(NORMAL_PAGINATION_WINDOW_PROPERTY, request.getParameter("normalPagination"));
+
+                // Maximized view pagination
+                window.setProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY, request.getParameter("maximizedPagination"));
+
+                // Template
+                window.setProperty(TEMPLATE_WINDOW_PROPERTY, request.getParameter("template"));
+
+                // Permalink reference
+                window.setProperty(PERMALINK_REFERENCE_WINDOW_PROPERTY, request.getParameter("permalinkReference"));
+
+                // RSS reference
+                window.setProperty(RSS_REFERENCE_WINDOW_PROPERTY, request.getParameter("rssReference"));
+
+                // RSS title
+                window.setProperty(RSS_TITLE_WINDOW_PROPERTY, request.getParameter("rssTitle"));
+
+                // Parent container path
+                window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, request.getParameter("creationParentPath"));
+
+                // Content type
+                window.setProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY, request.getParameter("creationContentType"));
             }
 
-            if (pageSize > 0)
-                window.setProperty("osivia.cms.pageSize", Integer.toString(pageSize));
-            else if (window.getProperty("osivia.cms.pageSize") != null)
-                window.setProperty("osivia.cms.pageSize", null);
-
-            // Taille de page max
-            int pageSizeMax = 0;
-            if (req.getParameter("pageSizeMax") != null) {
-                try {
-                    pageSizeMax = Integer.parseInt(req.getParameter("pageSizeMax"));
-                } catch (Exception e) {
-                    // Mal formatté
-                }
-            }
-
-            if (pageSizeMax > 0)
-                window.setProperty("osivia.cms.pageSizeMax", Integer.toString(pageSizeMax));
-            else if (window.getProperty("osivia.cms.pageSizeMax") != null)
-                window.setProperty("osivia.cms.pageSizeMax", null);
-
-            // Limite
-            int maxItems = 0;
-            if (req.getParameter("maxItems") != null) {
-                try {
-                    maxItems = Integer.parseInt(req.getParameter("maxItems"));
-                } catch (Exception e) {
-                    // Mal formatté
-                }
-            }
-
-            if (maxItems > 0)
-                window.setProperty("osivia.cms.maxItems", Integer.toString(maxItems));
-            else if (window.getProperty("osivia.cms.maxItems") != null)
-                window.setProperty("osivia.cms.maxItems", null);
-
-            if (req.getParameter("permaLinkRef") != null && req.getParameter("permaLinkRef").length() > 0)
-                window.setProperty("osivia.permaLinkRef", req.getParameter("permaLinkRef"));
-            else if (window.getProperty("osivia.permaLinkRef") != null)
-                window.setProperty("osivia.permaLinkRef", null);
-
-            if (req.getParameter("rssLinkRef") != null && req.getParameter("rssLinkRef").length() > 0)
-                window.setProperty("osivia.rssLinkRef", req.getParameter("rssLinkRef"));
-            else if (window.getProperty("osivia.rssLinkRef") != null)
-                window.setProperty("osivia.rssLinkRef", null);
-
-
-            if (req.getParameter("rssTitle") != null && req.getParameter("rssTitle").length() > 0)
-                window.setProperty("osivia.rssTitle", req.getParameter("rssTitle"));
-            else if (window.getProperty("osivia.rssTitle") != null)
-                window.setProperty("osivia.rssTitle", null);
-
-            /* Paramètres de création de documents */
-            if (req.getParameter("createParentPath") != null && req.getParameter("createParentPath").length() > 0)
-                window.setProperty("osivia.createParentPath", req.getParameter("createParentPath"));
-            else if (window.getProperty("osivia.createParentPath") != null)
-                window.setProperty("osivia.createParentPath", null);
-
-            if (req.getParameter("createDocType") != null && req.getParameter("createDocType").length() > 0)
-                window.setProperty("osivia.createDocType", req.getParameter("createDocType"));
-            else if (window.getProperty("osivia.createDocType") != null)
-                window.setProperty("osivia.createDocType", null);
-
-
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
         }
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
 
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
+        // Configuration
+        ListConfiguration configuration = this.getConfiguration(window);
 
 
         // v2.0.8 : ajout custom
-        ListTemplate template = this.getCurrentTemplate(window);
+        ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
 
         if (template.getModule() != null) {
             try {
-                template.getModule().processAction(ctx, window, req, res);
+                template.getModule().processAction(nuxeoController.getPortalCtx(), window, request, response);
             } catch (Exception e) {
                 throw new PortletException(e);
             }
@@ -372,110 +356,51 @@ public class ViewListPortlet extends CMSPortlet {
     }
 
 
+    /**
+     * Admin view display.
+     *
+     * @param request request
+     * @param response response
+     * @throws PortletException
+     * @throws IOException
+     */
     @RenderMode(name = "admin")
-    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
-
-        res.setContentType("text/html");
-
+    public void doAdmin(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
-
-            NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
-
-            PortletRequestDispatcher rd = null;
-
-            PortalWindow window = WindowFactory.getWindow(req);
-
-            String nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
-            if (nuxeoRequest == null)
-                nuxeoRequest = "";
-            req.setAttribute("nuxeoRequest", nuxeoRequest);
-
-            String displayLiveVersion = window.getProperty(Constants.WINDOW_PROP_VERSION);
-            req.setAttribute("displayLiveVersion", displayLiveVersion);
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
 
-            String requestFilteringPolicy = window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
-            req.setAttribute("requestFilteringPolicy", requestFilteringPolicy);
+            // Configuration
+            ListConfiguration configuration = this.getConfiguration(window);
+            request.setAttribute("configuration", configuration);
+
+            // Versions
+            request.setAttribute("versions", nuxeoController.formatDisplayLiveVersionList(configuration.getVersion()));
+
+            // Content filters
+            request.setAttribute("contentFilters", nuxeoController.formatRequestFilteringPolicyList(configuration.getContentFilter()));
+
+            // Scopes
+            request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
+
+            // Templates
+            request.setAttribute("templates", NuxeoController.getCMSService().getListTemplates(request.getLocale()));
 
 
-            String showMetadatas = "1";
-            if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
-                showMetadatas = "0";
-            req.setAttribute("showMetadatas", showMetadatas);
+            response.setContentType("text/html");
 
-            String beanShell = "";
-            String interpretor = window.getProperty("osivia.requestInterpretor");
-            if ("beanShell".equals(interpretor))
-                beanShell = "1";
-            req.setAttribute("beanShell", beanShell);
-
-            req.setAttribute("displayNuxeoRequest", window.getProperty("osivia.displayNuxeoRequest"));
-
-            // v2.0.5
-            req.setAttribute("changeDisplayMode", window.getProperty("osivia.changeDisplayMode"));
-            req.setAttribute("forceContextualization", window.getProperty("osivia.forceContextualization"));
-
-            String scope = window.getProperty(Constants.WINDOW_PROP_SCOPE);
-            req.setAttribute("scope", scope);
-
-            /* Styles d'affichage */
-
-            Map<String, ListTemplate> templates = getListTemplates();
-            req.setAttribute("templates", templates);
-
-            String style = window.getProperty("osivia.cms.style");
-            if (style == null)
-                style = CMSCustomizer.STYLE_NORMAL;
-            req.setAttribute("style", style);
-
-            String pageSize = window.getProperty("osivia.cms.pageSize");
-            req.setAttribute("pageSize", pageSize);
-
-            String pageSizeMax = window.getProperty("osivia.cms.pageSizeMax");
-            req.setAttribute("pageSizeMax", pageSizeMax);
-
-            String maxItems = window.getProperty("osivia.cms.maxItems");
-            req.setAttribute("maxItems", maxItems);
-
-            String permaLinkRef = window.getProperty("osivia.permaLinkRef");
-            if (permaLinkRef == null)
-                permaLinkRef = "";
-            req.setAttribute("permaLinkRef", permaLinkRef);
-
-
-            String rssLinkRef = window.getProperty("osivia.rssLinkRef");
-            if (rssLinkRef == null)
-                rssLinkRef = "";
-            req.setAttribute("rssLinkRef", rssLinkRef);
-
-
-            String rssTitle = window.getProperty("osivia.rssTitle");
-            if (rssTitle == null)
-                rssTitle = "";
-            req.setAttribute("rssTitle", rssTitle);
-
-            String createParentPath = window.getProperty("osivia.createParentPath");
-            if (createParentPath == null)
-                createParentPath = "";
-            req.setAttribute("createParentPath", createParentPath);
-
-            String createDocType = window.getProperty("osivia.createDocType");
-            if (createDocType == null)
-                createDocType = "";
-            req.setAttribute("createDocType", createDocType);
-
-
-            req.setAttribute("ctx", ctx);
-
-            rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
-            rd.include(req, res);
+            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
+            dispatcher.include(request, response);
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
         }
-
-        catch (Exception e) {
-            if (!(e instanceof PortletException))
-                throw new PortletException(e);
-        }
-
     }
 
 
@@ -487,323 +412,390 @@ public class ViewListPortlet extends CMSPortlet {
         LOGGER.debug("doView");
 
         try {
-
-            response.setContentType("text/html");
-
-            NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("ctx", ctx);
-
-
-            /* On détermine l'uid et le scope */
-
-            String nuxeoRequest = null;
-
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            request.setAttribute("ctx", nuxeoController);
+            // Portal controller context
+            PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+            // Current window
             PortalWindow window = WindowFactory.getWindow(request);
+            // Configuration
+            ListConfiguration configuration = this.getConfiguration(window);
 
-            // Mode fil de documents
-            Map<String, Integer> documentOrder = new HashMap<String, Integer>();
+            // Feed mode
+            boolean feed = BooleanUtils.toBoolean(window.getProperty("osivia.cms.feed"));
+            Map<String, Integer> feedDocumentsOrder = null;
 
-            if ("true".equals(window.getProperty("osivia.cms.feed"))) {
-                nuxeoRequest = "return \"";
-                boolean first = true;
-                int nbElements = Integer.parseInt(window.getProperty("osivia.cms.news.size"));
+            // Nuxeo request
+            String nuxeoRequest;
+            if (feed) {
+                int size = NumberUtils.toInt(window.getProperty("osivia.cms.news.size"));
+                feedDocumentsOrder = new HashMap<String, Integer>(size);
 
+                StringBuilder builder = new StringBuilder();
+                builder.append("return \"");
 
-                for (Integer i = 0; i < nbElements; i++) {
-                    if (first)
-                        first = false;
-                    else {
-                        nuxeoRequest = nuxeoRequest.concat(" OR ");
+                for (int i = 0; i < size; i++) {
+                    if (i > 0) {
+                        builder.append(" OR ");
                     }
 
-                    String path = window.getProperty("osivia.cms.news." + i.toString() + ".docURI");
-
-                    documentOrder.put(path, Integer.parseInt(window.getProperty("osivia.cms.news." + i.toString() + ".order")));
-
-                    nuxeoRequest = nuxeoRequest.concat("ecm:path = '" + path + "'");
-
-                }
-                nuxeoRequest = nuxeoRequest.concat("\";");
-            }
-            // Mode requêtage classique
-            else {
-                nuxeoRequest = window.getProperty("osivia.nuxeoRequest");
-            }
-
-            if ("beanShell".equals(window.getProperty("osivia.requestInterpretor"))) {
-                // Evaluation beanshell
-                Interpreter i = new Interpreter();
-                i.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
-                i.set("basePath", ctx.getBasePath());
-                i.set("domainPath",  ctx.getDomainPath());
-                i.set("spacePath", ctx.getSpacePath());
-                i.set("navigationPath", ctx.getNavigationPath());
-                /*
-                 * Initialisation de navigationPubInfos pour éviter des erreurs
-                 * de "non définition" lors
-                 * de la construction d'une requête avec cette variable.
-                 */
-                i.set("navigationPubInfos", null);
-
-                i.set("spaceId", null);
-                if (ctx.getNavigationPath() != null) {
-                    CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(ctx.getCMSCtx(), ctx.getNavigationPath());
-                    i.set("navigationPubInfos", navigationPubInfos);
-                    i.set("spaceId", navigationPubInfos.getSpaceID());
+                    // Path
+                    String path = window.getProperty("osivia.cms.news." + i + ".docURI");
+                    feedDocumentsOrder.put(path, NumberUtils.toInt(window.getProperty("osivia.cms.news." + i + ".order")));
+                    builder.append("ecm:path = '").append(path).append("'");
                 }
 
+                builder.append("\";");
 
-                i.set("contentPath", ctx.getContentPath());
-                i.set("request", request);
-                i.set("NXQLFormater", new NXQLFormater());
+                nuxeoRequest = builder.toString();
+            } else {
+                nuxeoRequest = configuration.getNuxeoRequest();
+            }
 
-                CMSItem navItem = ctx.getNavigationItem();
-                i.set("navItem", navItem);
-
-
-                nuxeoRequest = (String) i.eval(nuxeoRequest);
+            // BeanShell
+            if (configuration.isBeanShell()) {
+                nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
             }
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
                 request.setAttribute("osivia.emptyResponse", "1");
-                response.getWriter().print("<h2>Requête vide</h2>");
-                response.getWriter().close();
-                return;
-
-            }
-
-
-            /* Filtre pour sélectionner uniquement les version publiées */
-
-            int maxItems = -1;
-            if (window.getProperty("osivia.cms.maxItems") != null)
-                maxItems = Integer.parseInt(window.getProperty("osivia.cms.maxItems"));
-
-            /* Initialisation de la page courante et de la taille de la page */
-
-            int pageSize = -1;
-            int currentPage = 0;
-
-            String pageSizeAttributeName = "osivia.cms.pageSize";
-            if (WindowState.MAXIMIZED.equals(request.getWindowState()))
-                pageSizeAttributeName = "osivia.cms.pageSizeMax";
-
-            if (window.getProperty(pageSizeAttributeName) != null) {
-                pageSize = Integer.parseInt(window.getProperty(pageSizeAttributeName));
-
-                String currentState = request.getParameter("currentState");
-                String sCurrentPage = request.getParameter("currentPage");
-
-                // La page est réinitialisée si on change de mode
-                if (sCurrentPage != null && request.getWindowState().toString().equals(currentState))
-                    currentPage = Integer.parseInt(sCurrentPage);
-            }
-
-            /* Reinitialisation du numéro de page si changement de critères */
-
-            String selectors = request.getParameter("selectors");
-            String lastSelectors = request.getParameter("lastSelectors");
-
-            if (((selectors != null) && (!selectors.equals(lastSelectors))) || (selectors == null) && (lastSelectors != null))
-                currentPage = 0;
-
-            String style = window.getProperty("osivia.cms.style");
-            if (style == null)
-                style = CMSCustomizer.STYLE_NORMAL;
-
-            if (nuxeoRequest != null) {
-
-
-                // Calcul de la taille de la page
-
-                int requestPageSize = 100;
-                if (pageSize != -1)
-                    requestPageSize = pageSize;
-
-                // Pas d'autre solution que de servir de la pagination pour
-                // limiter le nombre d'items ...
-                // limite de la taille de la page par le nombre d'items (sur la
-                // première page)
-                if (maxItems != -1 && currentPage == 0) {
-                    requestPageSize = Math.min(requestPageSize, maxItems);
+                request.setAttribute("error", "Requête vide");
+            } else if (nuxeoRequest != null) {
+                // Nuxeo request
+                if (configuration.isNuxeoRequestDisplay()) {
+                    request.setAttribute("nuxeoRequest", nuxeoRequest);
                 }
 
 
-                // v2.0.8 : ajout custom
-                ListTemplate template = this.getCurrentTemplate(window);
+                // CMS path
+                String cmsPath = request.getParameter("osivia.cms.path");
 
 
+                // Selectors
+                String selectors = request.getParameter("selectors");
+                String lastSelectors = request.getParameter("lastSelectors");
+                request.setAttribute("selectors", selectors);
+
+
+                // Results limit
+                int resultsLimit;
+                if (configuration.getResultsLimit() == null) {
+                    resultsLimit = -1;
+                } else {
+                    resultsLimit = configuration.getResultsLimit();
+                }
+
+
+                // Pagination
+                int pageSize = -1;
+                int currentPage = 0;
+                Integer pageSizeProperty;
+                if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+                    pageSizeProperty = configuration.getMaximizedPagination();
+                } else {
+                    pageSizeProperty = configuration.getNormalPagination();
+                }
+                if (pageSizeProperty != null) {
+                    pageSize = pageSizeProperty;
+
+                    String currentStateParameter = request.getParameter("currentState");
+                    String currentPageParameter = request.getParameter("currentPage");
+
+                    // Current page is reset on mode change
+                    boolean modeChanged = !request.getWindowState().toString().equals(currentStateParameter);
+                    // Current page is reset on selectors change
+                    boolean selectorsChanged = (((selectors != null) && !selectors.equals(lastSelectors)) || ((selectors == null) && (lastSelectors != null)));
+
+                    if (!((currentPageParameter == null) || modeChanged || selectorsChanged)) {
+                        currentPage = NumberUtils.toInt(currentPageParameter);
+                    }
+                }
+                request.setAttribute("currentPage", currentPage);
+
+
+                // Templates
+                request.setAttribute("templates", NuxeoController.getCMSService().getListTemplates(request.getLocale()));
+                String templateName = configuration.getTemplate();
+                if (templateName == null) {
+                    templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
+                }
+                ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+                request.setAttribute("style", template.getKey());
                 String schemas = template.getSchemas();
 
 
-                PaginableDocuments docs = (PaginableDocuments) ctx.executeNuxeoCommand(new ListCommand(nuxeoRequest, ctx.isDisplayingLiveVersion(),
-                        currentPage, requestPageSize, schemas, window.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY)));
-
-                List<Document> docsList = docs.list();
-                // En mode fil, on trie les documents suivant l'ordre défini par l'utilisateur
-                if ("true".equals(window.getProperty("osivia.cms.feed"))) {
-                    Collections.sort(docsList, new DocumentComparator(documentOrder));
+                // Request page size
+                int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
+                if (pageSize > 0) {
+                    requestPageSize = pageSize;
+                }
+                if ((resultsLimit > 0) && (currentPage == 0)) {
+                    // Limit size on first page
+                    requestPageSize = Math.min(requestPageSize, resultsLimit);
                 }
 
-                int nbPages = 0;
 
-                if (pageSize != -1) {
-                    if (maxItems == -1)
-                        nbPages = ((docs.getTotalSize() - 1) / pageSize) + 1;
-                    else {
-                        nbPages = ((Math.min(docs.getTotalSize(), maxItems) - 1) / pageSize) + 1;
+                // Nuxeo command
+                INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,
+                        configuration.getContentFilter());
 
-                        // Attention à la dernière page ...
-                        // Elle peut contenir trop d'éléments ...
+                // Nuxeo documents
+                PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
 
-                        if (docs.size() < (currentPage + 1) * requestPageSize) {
+                // Result list
+                List<Document> list = documents.list();
+                if (feed) {
+                    DocumentComparator comparator = new DocumentComparator(feedDocumentsOrder);
+                    Collections.sort(list, comparator);
+                }
+                request.setAttribute("docs", list);
 
-                            int pageLimit = Math.max(0, maxItems - currentPage * requestPageSize);
 
-                            while (docs.size() > pageLimit)
-                                docsList.remove(docs.size() - 1);
+                // Pages count
+                int pagesCount = 0;
+                if (pageSize > 0) {
+                    int limit;
+                    if (resultsLimit > 0) {
+                        limit = Math.min(documents.getTotalSize(), resultsLimit);
+
+                        // Remove excess results
+                        if (documents.size() < ((currentPage + 1) * requestPageSize)) {
+                            int lastPageLimit = Math.max(0, resultsLimit - (currentPage * requestPageSize));
+                            while (documents.size() > lastPageLimit) {
+                                // Remove last item
+                                list.remove(documents.size() - 1);
+                            }
                         }
-
+                    } else {
+                        limit = documents.getTotalSize();
                     }
+                    pagesCount = ((limit - 1) / pageSize) + 1;
                 }
+                request.setAttribute("nbPages", pagesCount);
 
-                request.setAttribute("templates", getListTemplates());
 
-                request.setAttribute("docs",
-                        new PaginableDocuments(docsList, docs.getTotalSize(), docs.getPageSize(), docs.getPageCount(), docs.getPageCount()).list());
+                // Permalink
+                if (StringUtils.isNotBlank(configuration.getPermalinkReference())) {
+                    String reference = configuration.getPermalinkReference();
+                    Map<String, String> parameters = new HashMap<String, String>();
 
-                request.setAttribute("currentPage", currentPage);
-
-                request.setAttribute("nbPages", nbPages);
-
-                if ("1".equals(window.getProperty("osivia.displayNuxeoRequest")))
-                    request.setAttribute("nuxeoRequest", nuxeoRequest);
-
-                request.setAttribute("selectors", request.getParameter("selectors"));
-
-                request.setAttribute("style", style);
-
-                String permaLinkRef = window.getProperty("osivia.permaLinkRef");
-                if (permaLinkRef != null) {
-                    Map<String, String> publicParams = new HashMap<String, String>();
-                    if (selectors != null)  {
+                    if (selectors != null) {
                         Map<String, List<String>> decodedSelectors = PageSelectors.decodeProperties(selectors);
                         decodedSelectors.remove("selectorChanged");
-                        publicParams.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
-                    }
-                    String permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
-                    if (request.getParameter("osivia.cms.path") != null) {
-                        permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
-                        permaLinkRef = null;
+                        parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
                     }
 
-                    String permaLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(this.getPortletContext(), request, response),
-                            permaLinkRef, publicParams, request.getParameter("osivia.cms.path"), permLinkType);
-                    request.setAttribute("permaLinkURL", permaLinkURL);
+                    String type;
+                    if (cmsPath == null) {
+                        type = IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
+                    } else {
+                        type = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
+                        reference = null;
+                    }
+
+                    String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, reference, parameters, cmsPath, type);
+                    request.setAttribute("permaLinkURL", url);
                 }
 
 
-                String rssLinkRef = window.getProperty("osivia.rssLinkRef");
-                if (rssLinkRef != null) {
+                // RSS
+                if (StringUtils.isNotBlank(configuration.getRssReference())) {
                     boolean anonymousAccess = true;
 
-                    if (request.getParameter("osivia.cms.path") != null) {
+                    if (cmsPath != null) {
+                        // Check if navigation folder is accessible in anonymous mode
+                        CMSServiceCtx cmsContext = new CMSServiceCtx();
+                        cmsContext.setControllerContext(ControllerContextAdapter.getControllerContext(portalControllerContext));
+                        cmsContext.setScope(nuxeoController.getScope());
 
-                        // check if the navigation folder is accessible in anonymous mode (for rss)
-                        CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-                        cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(ctx.getPortalCtx()));
-                        cmsReadNavContext.setScope(ctx.getScope());
-
-                        anonymousAccess = NuxeoController.getCMSService().checkContentAnonymousAccess(cmsReadNavContext,
-                                request.getParameter("osivia.cms.path"));
+                        anonymousAccess = NuxeoController.getCMSService().checkContentAnonymousAccess(cmsContext, cmsPath);
                     }
 
                     if (anonymousAccess) {
-                        Map<String, String> publicParams = new HashMap<String, String>();
-                        if (selectors != null)
-                            publicParams.put("selectors", selectors);
+                        Map<String, String> parameters = new HashMap<String, String>();
+                        if (selectors != null) {
+                            parameters.put("selectors", selectors);
+                        }
 
-                        String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(this.getPortletContext(), request, response),
-                                rssLinkRef, publicParams, request.getParameter("osivia.cms.path"), IPortalUrlFactory.PERM_LINK_TYPE_RSS);
-
-                        request.setAttribute("rssLinkURL", rssLinkURL);
+                        String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, configuration.getRssReference(),
+                                parameters, cmsPath, IPortalUrlFactory.PERM_LINK_TYPE_RSS);
+                        request.setAttribute("rssLinkURL", url);
                     }
                 }
 
 
-                /* Ajout d'un item de création si les paramètres sont renseignés */
-
+                // Creation item, if parameters are given
                 String dynamicPath = window.getProperty(Constants.WINDOW_PROP_URI);
                 if (dynamicPath != null) {
-                    dynamicPath = ctx.getLivePath(dynamicPath);
-                    Document folder = ctx.fetchDocument(dynamicPath);
-                    ctx.setCurrentDoc(folder);
+                    dynamicPath = nuxeoController.getLivePath(dynamicPath);
+                    Document folder = nuxeoController.fetchDocument(dynamicPath);
+                    nuxeoController.setCurrentDoc(folder);
                     response.setTitle(folder.getTitle());
                 }
 
+                nuxeoController.insertContentMenuBarItems();
 
-                ctx.insertContentMenuBarItems();
 
-
-                // Notify portal if empty response (to enable 'hideEmptyPortlet' use cases)
-                if (currentPage == 0 && docs.size() == 0)
+                // Empty response indicator
+                if ((currentPage == 0) && (documents.size() == 0)) {
                     request.setAttribute("osivia.emptyResponse", "1");
-
-
-                // v2.0.8 : ajout custom
-                if (template.getModule() != null)
-                    template.getModule().doView(ctx, window, request, response);
-
-
-                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp").include(request, response);
-
-            } else {
-
-                if ((StringUtils.isNotEmpty((String) request.getAttribute("bsh.title"))) || (StringUtils.isNotEmpty((String) request.getAttribute("bsh.html")))) {
-
-                    if (StringUtils.isNotEmpty((String) request.getAttribute("bsh.title")))
-                        response.setTitle((String) request.getAttribute("bsh.title"));
-
-                    if (StringUtils.isNotEmpty((String) request.getAttribute("bsh.html"))) {
-
-                        response.setContentType("text/html");
-                        response.getWriter().print((String) request.getAttribute("bsh.html"));
-                        response.getWriter().close();
-
-                    }
-                    return;
-
-                } else {
-
-                    response.setContentType("text/html");
-                    response.getWriter().print("<h2>Requête non définie</h2>");
-                    response.getWriter().close();
-                    return;
-
                 }
 
-            }
 
+                // v2.0.8 : customization
+                if (template.getModule() != null) {
+                    template.getModule().doView(portalControllerContext, window, request, response);
+                }
+            } else {
+                String bshTitle = (String) request.getAttribute("bsh.title");
+                String bshHTML = (String) request.getAttribute("bsh.html");
+                if (StringUtils.isNotEmpty(bshTitle) || StringUtils.isNotEmpty(bshHTML)) {
+                    if (StringUtils.isNotEmpty(bshTitle)) {
+                        response.setTitle(bshTitle);
+                    }
+                    if (StringUtils.isNotEmpty(bshHTML)) {
+                        response.setContentType("text/html");
+
+                        response.getWriter().print(bshHTML);
+                        response.getWriter().close();
+                    }
+                    return;
+                } else {
+                    request.setAttribute("error", "Requête non définie");
+                }
+            }
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (EvalError e) {
+            request.setAttribute("error", "Requête incorrecte");
+            request.setAttribute("errorMessage", e.getMessage());
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
         }
 
-        catch (Exception e) {
-            if (e instanceof bsh.EvalError) {
-                response.setContentType("text/html");
-                response.getWriter().print("<h2>Requête incorrecte : </h2>");
-                response.getWriter().print(((bsh.EvalError) e).getMessage());
-                response.getWriter().close();
-                return;
+        response.setContentType("text/html");
 
-
-            } else
-
-            if (!(e instanceof PortletException))
-                throw new PortletException(e);
-        }
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp");
+        dispatcher.include(request, response);
 
         LOGGER.debug("doView end");
+    }
+
+
+    /**
+     * BeanShell interpretation.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param nuxeoRequest Nuxeo request
+     * @return interpreted request
+     * @throws EvalError
+     * @throws CMSException
+     */
+    private String beanShellInterpretation(NuxeoController nuxeoController, String nuxeoRequest) throws EvalError, CMSException {
+        // Request
+        PortletRequest request = nuxeoController.getRequest();
+
+        // BeanShell
+        Interpreter interpreter = new Interpreter();
+        interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
+        interpreter.set("basePath", nuxeoController.getBasePath());
+        interpreter.set("domainPath", nuxeoController.getDomainPath());
+        interpreter.set("spacePath", nuxeoController.getSpacePath());
+        interpreter.set("navigationPath", nuxeoController.getNavigationPath());
+
+        // Initialization to avoid undefined errors when request building with with var
+        interpreter.set("navigationPubInfos", null);
+        interpreter.set("spaceId", null);
+        if (nuxeoController.getNavigationPath() != null) {
+            CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(nuxeoController.getCMSCtx(),
+                    nuxeoController.getNavigationPath());
+            interpreter.set("navigationPubInfos", navigationPubInfos);
+            interpreter.set("spaceId", navigationPubInfos.getSpaceID());
+        }
+
+        interpreter.set("contentPath", nuxeoController.getContentPath());
+        interpreter.set("request", request);
+        interpreter.set("NXQLFormater", new NXQLFormater());
+        interpreter.set("navItem", nuxeoController.getNavigationItem());
+
+        return (String) interpreter.eval(nuxeoRequest);
+    }
+
+
+    /**
+     * Get list configuration.
+     *
+     * @param window portal window
+     * @return list configuration
+     */
+    private ListConfiguration getConfiguration(PortalWindow window) {
+        ListConfiguration configuration = new ListConfiguration();
+
+        // Nuxeo request
+        configuration.setNuxeoRequest(window.getProperty(NUXEO_REQUEST_WINDOW_PROPERTY));
+
+        // BeanShell
+        if (window.getProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD) != null) {
+            // Old configuration
+            configuration.setBeanShell("beanShell".equals(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD)));
+        } else {
+            // New configuration
+            configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
+        }
+
+        // Version
+        configuration.setVersion(window.getProperty(VERSION_WINDOW_PROPERTY));
+
+        // Content filter
+        configuration.setContentFilter(window.getProperty(CONTENT_FILTER_WINDOW_PROPERTY));
+
+        // Scope
+        configuration.setScope(window.getProperty(SCOPE_WINDOW_PROPERTY));
+
+        // Metadata display
+        if (window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD) != null) {
+            // Old configuration
+            configuration.setMetadataDisplay(!"1".equals(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD)));
+        } else {
+            // New configuration
+            configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY)));
+        }
+
+        // Nuxeo request display
+        configuration.setNuxeoRequestDisplay(BooleanUtils.toBoolean(window.getProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY)));
+
+        // Results limit
+        configuration.setResultsLimit(NumberUtils.createInteger(StringUtils.trimToNull(window.getProperty(RESULTS_LIMIT_WINDOW_PROPERTY))));
+
+        // Normal view pagination
+        configuration.setNormalPagination(NumberUtils.createInteger(StringUtils.trimToNull(window.getProperty(NORMAL_PAGINATION_WINDOW_PROPERTY))));
+
+        // Maximized view pagination
+        configuration.setMaximizedPagination(NumberUtils.createInteger(StringUtils.trimToNull(window.getProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY))));
+
+        // Template
+        configuration.setTemplate(window.getProperty(TEMPLATE_WINDOW_PROPERTY));
+
+        // Permalink reference
+        configuration.setPermalinkReference(window.getProperty(PERMALINK_REFERENCE_WINDOW_PROPERTY));
+
+        // RSS reference
+        configuration.setRssReference(window.getProperty(RSS_REFERENCE_WINDOW_PROPERTY));
+
+        // RSS title
+        configuration.setRssTitle(window.getProperty(RSS_TITLE_WINDOW_PROPERTY));
+
+        // Parent container path
+        configuration.setCreationParentPath(window.getProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY));
+
+        // Content type
+        configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
+
+
+        return configuration;
     }
 
 }

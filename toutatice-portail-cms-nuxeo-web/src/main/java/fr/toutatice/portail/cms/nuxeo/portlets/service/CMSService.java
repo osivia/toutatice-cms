@@ -19,6 +19,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -54,6 +55,7 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
@@ -1457,9 +1459,12 @@ public class CMSService implements ICMSService {
         }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
-
         cmsCtx.setDisplayLiveVersion("1");
 
         CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
@@ -1467,36 +1472,39 @@ public class CMSService implements ICMSService {
 
         try {
             this.executeNuxeoCommand(cmsCtx, new DocumentDeleteCommand(doc));
-
         } catch (Exception e) {
             throw new CMSException(e);
         }
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void putDocumentInTrash(CMSServiceCtx cmsCtx, String docId) throws CMSException {
-
-
         try {
             this.executeNuxeoCommand(cmsCtx, new PutInTrashDocumentCommand(docId));
-
         } catch (Exception e) {
             throw new CMSException(e);
         }
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
-
         return this.customizer.getUserAvatar(cmsCtx, username);
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
-
         return this.customizer.refreshUserAvatar(cmsCtx, username);
     }
 
@@ -1505,8 +1513,17 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public SortedMap<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
-        return this.customizer.getMenuTemplates(cmsContext);
+    public List<ListTemplate> getListTemplates(Locale locale) {
+        return this.customizer.getListTemplates(locale);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SortedMap<String, String> getMenuTemplates(Locale locale) {
+        return this.customizer.getMenuTemplates(locale);
     }
 
 }

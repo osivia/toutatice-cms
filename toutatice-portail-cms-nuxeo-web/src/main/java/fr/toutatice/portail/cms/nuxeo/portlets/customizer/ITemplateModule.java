@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
@@ -25,7 +25,11 @@ import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
-public interface ITemplateModule {
+/**
+ * @deprecated Use org.osivia.portal.core.cms.ITemplateModule instead.
+ */
+@Deprecated
+public interface ITemplateModule extends org.osivia.portal.core.cms.ITemplateModule {
 
 	public void doView(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception ;
 

@@ -23,11 +23,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -70,6 +70,7 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
@@ -114,14 +115,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
 
     /* Default style for lists */
-    /** Style "mini". */
-    public static final String STYLE_MINI = "mini";
-    /** Style "normal". */
-    public static final String STYLE_NORMAL = "normal";
-    /** Style "detailed". */
-    public static final String STYLE_DETAILED = "detailed";
-    /** Style "editorial". */
-    public static final String STYLE_EDITORIAL = "editorial";
+    /** List template minimal. */
+    public static final String LIST_TEMPLATE_MINI = "mini";
+    /** List template normal. */
+    public static final String LIST_TEMPLATE_NORMAL = "normal";
+    /** List template detailed. */
+    public static final String LIST_TEMPLATE_DETAILED = "detailed";
+    /** List template editorial. */
+    public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
 
     /** Default schemas. */
     public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice, file";
@@ -130,6 +131,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** servlet url for avatars */
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
+
+
+    /** Singleton instance for deprecied method compatibility. DO NOT USE. */
+    private static DefaultCMSCustomizer instance;
 
 
     /** Portlet context. */
@@ -184,6 +189,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public DefaultCMSCustomizer(PortletContext ctx) {
         super();
+
+        // Singleton instance for deprecied method compatibility
+        instance = this;
+
         // Portlet context
         this.portletCtx = ctx;
 
@@ -308,16 +317,43 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
+     * @deprecated Use non-static method instead.
+     * @return templates
+     */
+    @Deprecated
+    public static List<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate> getListTemplates() {
+        List<ListTemplate> templates = instance.getListTemplates(Locale.getDefault());
+
+        List<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate> oldTemplates = new ArrayList<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate>(
+                templates.size());
+        for (ListTemplate template : templates) {
+            oldTemplates.add(new fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate(template));
+        }
+        return oldTemplates;
+    }
+
+
+    /**
      * Get templates list.
-     *
+     * 
+     * @param locale user locale
      * @return template list
      */
-    public static List<ListTemplate> getListTemplates() {
+    public List<ListTemplate> getListTemplates(Locale locale) {
         List<ListTemplate> templates = new ArrayList<ListTemplate>();
-        templates.add(new ListTemplate(STYLE_MINI, "Minimal [titre]", DEFAULT_SCHEMAS));
-        templates.add(new ListTemplate(STYLE_NORMAL, "Normal [titre, date]", DEFAULT_SCHEMAS));
-        templates.add(new ListTemplate(STYLE_DETAILED, "Détaillé [titre, description, date, ...]", DEFAULT_SCHEMAS));
-        templates.add(new ListTemplate(STYLE_EDITORIAL, "Editorial [vignette, titre, description]", DEFAULT_SCHEMAS));
+
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        // Minimal
+        templates.add(new ListTemplate(LIST_TEMPLATE_MINI, bundle.getString("LIST_TEMPLATE_MINI"), DEFAULT_SCHEMAS));
+        // Normal
+        templates.add(new ListTemplate(LIST_TEMPLATE_NORMAL, bundle.getString("LIST_TEMPLATE_NORMAL"), DEFAULT_SCHEMAS));
+        // Detailed
+        templates.add(new ListTemplate(LIST_TEMPLATE_DETAILED, bundle.getString("LIST_TEMPLATE_DETAILED"), DEFAULT_SCHEMAS));
+        // Editorial
+        templates.add(new ListTemplate(LIST_TEMPLATE_EDITORIAL, bundle.getString("LIST_TEMPLATE_EDITORIAL"), DEFAULT_SCHEMAS));
+
         return templates;
     }
 
@@ -425,7 +461,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, false));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -453,7 +489,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -480,7 +516,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws CMSException {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -510,7 +546,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, false));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -539,7 +575,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Map<String, String> windowProperties = new HashMap<String, String>();
 
         windowProperties.put("osivia.nuxeoRequest", "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ORDER BY dc:modified DESC");
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -567,7 +603,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", doc.getString("ttc:queryPart"));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.STYLE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -1283,14 +1319,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get menu templates.
      *
-     * @param cmsContext CMS context
+     * @param locale user locale
      * @return menu templates
      */
-    public SortedMap<String, String> getMenuTemplates(CMSServiceCtx cmsContext) {
-        SortedMap<String, String> templates = Collections.synchronizedSortedMap(new TreeMap<String, String>());
+    public SortedMap<String, String> getMenuTemplates(Locale locale) {
+        SortedMap<String, String> templates = new TreeMap<String, String>();
 
         // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+        Bundle bundle = this.bundleFactory.getBundle(locale);
 
         // Default
         templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));

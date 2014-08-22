@@ -170,8 +170,6 @@ public class MenuPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
@@ -191,7 +189,7 @@ public class MenuPortlet extends CMSPortlet {
         request.setAttribute("defaultMaxLevels", DEFAULT_MAX_LEVELS);
 
         // Templates
-        Map<String, String> templates = NuxeoController.getCMSService().getMenuTemplates(nuxeoController.getCMSCtx());
+        Map<String, String> templates = NuxeoController.getCMSService().getMenuTemplates(request.getLocale());
         request.setAttribute("templates", templates);
         String selectedTemplate = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
         request.setAttribute("selectedTemplate", selectedTemplate);
