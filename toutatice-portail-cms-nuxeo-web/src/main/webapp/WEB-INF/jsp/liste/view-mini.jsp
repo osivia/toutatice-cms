@@ -1,34 +1,43 @@
+<%@ page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
+<%@ page import="org.nuxeo.ecm.automation.client.model.Document"%>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 
-<%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
+<%@ page isELIgnored="false" %>
 
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-
-<%@page import="javax.portlet.PortletURL"%>
-
-
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-
-
-<portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+// Nuxeo controller
+NuxeoController nuxeoController = (NuxeoController) request.getAttribute("ctx");
+// Nuxeo document
+Document document = (Document) request.getAttribute("doc");
 
-Document doc = (Document) renderRequest.getAttribute("doc");
-int parite = (Integer) renderRequest.getAttribute("parite");
-
-Link link = ctx.getLink(doc);
+// Title
+pageContext.setAttribute("title", document.getTitle());
+// Link
+pageContext.setAttribute("link", nuxeoController.getLink(document));
 
 %>
 
-<li class="item<%=parite%>">  <%= Formater.formatLink(link, doc) %>  </li>
+
+<c:if test="${link.external}">
+    <c:set var="target" value="_blank" />
+</c:if>
+
+
+<li>
+    <a href="${link.url}" target="${target}">
+        <span>${title}</span>
+        
+        <!-- Downloadable -->
+        <c:if test="${link.downloadable}">
+            <i class="glyphicons download_alt"></i>
+        </c:if>
+        
+        <!-- External -->
+        <c:if test="${link.external}">
+            <i class="glyphicons new_window_alt"></i>
+        </c:if>
+    </a>
+</li>

@@ -1,168 +1,283 @@
-
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@page import="java.util.List"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="internationalization" prefix="is" %>
+
 
 <%@ page isELIgnored="false" %>
 
 
-<%@page import="java.util.Map"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet"%>
+<portlet:defineObjects />
+
+<portlet:actionURL name="save" var="saveAdminURL" />
+
+<c:if test="${configuration.beanShell}">
+    <c:set var="beanShellChecked" value="checked" />
+</c:if>
+
+<c:if test="${configuration.metadataDisplay}">
+    <c:set var="metadataDisplayChecked" value="checked" />
+</c:if>
+
+<c:if test="${configuration.nuxeoRequestDisplay}">
+    <c:set var="nuxeoRequestDisplayChecked" value="checked" />
+</c:if>
 
 
-<portlet:defineObjects/>
+<div class="container">
+    <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
+        <fieldset>
+            <legend>
+                <i class="glyphicons halflings cog"></i>
+                <span><is:getProperty key="LIST_REQUEST_CONFIGURATION" /></span>
+            </legend>
+    
+            <!-- Example -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <a href="#bean-shell-example" data-toggle="collapse">
+                        <i class="glyphicons halflings info-sign"></i>
+                        <span><is:getProperty key="LIST_BEAN_SHELL_EXAMPLE" /></span>
+                    </a>
+                </div>
+                <div id="bean-shell-example" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <p>Implicits variables :</p>
+                        <dl>
+                            <dt>navigationPath</dt>
+                            <dd>current navigation folder path</dd>
+                            
+                            <dt>navigationPubInfos</dt>
+                            <dd>current navigation publication infos ; navigationPubInfos.getLiveId() to get folder's live ID</dd>
+                            
+                            <dt>basePath</dt>
+                            <dd>page folder path</dd>
+                            
+                            <dt>contentPath</dt>
+                            <dd>current item path</dd>
+                            
+                            <dt>request</dt>
+                            <dd>portlet request</dd>
+                            
+                            <dt>params</dt>
+                            <dd>public selectors (shared parameters)</dd>
+                            
+                            <dt>spaceId</dt>
+                            <dd>space's (workspace or published space) live ID</dd>
+                        </dl>
 
+<pre>
+StringBuilder request = new StringBuilder();
 
-<script language="javascript"> 
-function toggleSample() {
+request.append("ecm:path STARTSWITH '").append(navigationPath).append("' ");
 
-	var ele = document.getElementById("toggleSampleText");
-
-	if(ele.style.display == "block") {
-    		ele.style.display = "none";
-  	}
-	else {
-		ele.style.display = "block";
-	}
-} 
-</script>
-
-
-
-<%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-String beanShell = "";
-if( "1".equals( request.getAttribute("beanShell")))
-		beanShell = "checked";
-String displayNuxeoRequest = "";
-if( "1".equals( request.getAttribute("displayNuxeoRequest")))
-	displayNuxeoRequest = "checked";
-
-%>
-
-
-	<div>
-		<form method="post" action="<portlet:actionURL/>">
-		<label>Requête Nuxeo</label><br/>
-		<textarea rows="10" cols="75" name="nuxeoRequest" >${nuxeoRequest}</textarea><br/><br/>
-		<input type="checkbox" name="beanShell" value="1" <%= beanShell%>/>Interprétation BeanShell de la requête (
-		
-		<a id="displayText" href="javascript:toggleSample();">Exemple</a>)<br/>
-		
-		<div id="toggleSampleText" style="display: none; border: 1px; border-style: solid"> <pre>
-		
-/*
-implicits variables :
-   - navigationPath :  current navigation folder path
-   - navigationPubInfos : current navigation publication infos   
-           navigationPubInfos.getLiveId() to get folder's live ID
-   - basePath :  page folder path
-   - contentPath : current item path
-   - request : portlet request 
-   - params : public selectors (shared parameters)
-   - spaceId : space's (workspace or published space) live id
-*/
-
-String requete =  "ecm:path STARTSWITH '"+navigationPath+"'";
-
-// format search by title
-if (params.get("title") != null) {
-requete += " AND " + NXQLFormater.formatTextSearch("dc:title",params.get("title")) ;
+// Format search by title
+if (param.get("title") != null) {
+    request.append("AND ").append(NXQLFormater.formatTextSearch("dc:title", params.get("title"))).append(" ");
 }
 
-//format for dates search
+// Format search by dates
 if (params.get("datesId") != null) {
-requete += " AND " + NXQLFormater.formatDateSearch("dc:created",params.get("datesId")) ;
+    request.append("AND ").append(NXQLFormater.formatDateSearch("dc:created", params.get("datesId"))).append(" ");
 }
 
-// format search by nature
-
+// Format search by nature
 if (params.get("nature") != null) {
-requete += " AND " + NXQLFormater.formatVocabularySearch("dc:nature",params.get("nature")) ;
+    request.append("AND ").append(NXQLFormater.formatVocabularySearch("dc:nature", params.get("nature"))).append(" ");
 }
 
-// get childrens
-requete +=  "AND ecm:parentId =  '"+navigationPubInfos.getLiveId()+"'";
+// Get childrens
+request.append("AND ecm:parentId = '").append(navigationPubInfos.getLiveId()).append("' ");
 
-requete += " ORDER BY dc:modified DESC";
+request.append("ORDER BY dc:modified DESC");
 
-return requete;
+return request.toString();
 </pre>
-</div>	
-<br/>
-	
-		<label>Version</label><br/>
-<%= ctx.formatDisplayLiveVersionList( (String) renderRequest.getAttribute("displayLiveVersion")) %><br/><br/>
-<br/>	
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Nuxeo request -->
+            <div class="form-group">
+                <label for="nuxeo-request" class="control-label col-sm-4"><is:getProperty key="LIST_NUXEO_REQUEST" /></label>
+                <div class="col-sm-8">
+                    <textarea id="nuxeo-request" name="nuxeoRequest" rows="10" class="form-control">${configuration.nuxeoRequest}</textarea>
+                </div>
+            </div>
+            
+            <!-- Bean Shell -->
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-8">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="beanShell" ${beanShellChecked}>
+                            <span><is:getProperty key="LIST_BEAN_SHELL" /></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-		<label>Filtre sur les contenus</label><br/>
-<%= ctx.formatRequestFilteringPolicyList( (String) renderRequest.getAttribute("requestFilteringPolicy")) %><br/><br/>
-<br/>	
+            <!-- Version -->
+            <div class="form-group">                
+                <label for="cms-version" class="control-label col-sm-4"><is:getProperty key="LIST_VERSION" /></label>
+                <div class="col-sm-8">
+                    <span>${versions}</span>
+                </div>
+            </div>
+        
+            <!-- Content filter -->
+            <div class="form-group">                
+                <label for="cms-filter" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_FILTER" /></label>
+                <div class="col-sm-8">
+                    <span>${contentFilters}</span>
+                </div>
+            </div>
+            
+            <!-- Scope -->
+            <div class="form-group">
+                <label for="cms-scope" class="control-label col-sm-4"><is:getProperty key="LIST_SCOPE" /></label>
+                <div class="col-sm-8">
+                    <span>${scopes}</span>
+                </div>
+            </div>
+        </fieldset>
+        
+        <fieldset>
+            <legend>
+                <i class="glyphicons display"></i>
+                <span><is:getProperty key="LIST_DISPLAY_CONFIGURATION" /></span>
+            </legend>
 
-<%			
-			String checkShowMetadatas = "checked";
-			String showMetadatas = (String) request.getAttribute("showMetadatas");
-			if( ! "1".equals( showMetadatas))
-				checkShowMetadatas = "";
-%>			
-			
-		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>Affichage des méta-données (sur le détail des documents) <br/>	
-	
-<br/>
-		<input type="checkbox" name="displayNuxeoRequest" value="1" <%= displayNuxeoRequest%>/>Affichage de la requête (pour test) <br/>
-<br/>
-		<label>Limiter les résultats à </label> <input type="text" name="maxItems" value="${maxItems}" size="2"> items <br/><br/>
-
-		<label>Pagination :</label> <br/>
-			&nbsp;&nbsp;Mode normal&nbsp;&nbsp;&nbsp;&nbsp;: <input type="text" name="pageSize" value="${pageSize}" size="2"> items par page<br/>
-			&nbsp;&nbsp;Mode maximized&nbsp: <input type="text" name="pageSizeMax" value="${pageSizeMax}" size="2"> items par page<br/><br/>
-			
-		<label>Style d'affichage</label><br/>
-		<select name="style">
-<%
-			Map<String, ListTemplate> templates = (Map<String, ListTemplate>) request.getAttribute("templates");
-			String style = (String) request.getAttribute("style");
-
-			for(Map.Entry<String,ListTemplate> template : templates.entrySet()){
-				String possibleStyle = template.getValue().getKey();
-					if( possibleStyle.equals(style)){
-%>
-										<option selected="selected" value="<%= possibleStyle %>"><%= template.getValue().getLabel() %></option>
-<%
-					}else{
-%>
-										<option value="<%= possibleStyle %>"><%= template.getValue().getLabel() %></option>
-<%						
-					}
-				}
-
-%>
-									</select><br/><br/>		
-	
-		<label>Scope</label><br/>
-<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/><br/>
-
-		<label>Référence permalink :</label> <input type="text" name="permaLinkRef" value="${permaLinkRef}" size="10"> <br/><br/>
-
-
-		<label>Référence rss :</label> <input type="text" name="rssLinkRef" value="${rssLinkRef}" size="10"> <br/><br/>
-
-
-		<label>Titre RSS :</label> <input type="text" name="rssTitle" value="${rssTitle}" size="40"> <br/><br/>
-		
-				
-		<b>Création de contenus</b><br/>
-		<label>Chemin du conteneur :</label><input type="text" name="createParentPath" value="${createParentPath}" size="40"> <br/>
-		<label>Type de contenu :</label><input type="text" name="createDocType" value="${createDocType}" size="40"> <br/><br/>
-		
-			
-			<input type="submit" name="modifierPrefs"  value="Valider">
-			<input type="submit" name="annuler"  value="Annuler">
-		</form>
-	</div>
-	
-	
+            <!-- Metadata -->
+            <div class="form-group">
+                <label for="metadata-display" class="control-label col-sm-4"><is:getProperty key="LIST_METADATA" /></label>
+                <div class="col-sm-8">
+                    <div class="checkbox">
+                        <label>
+                            <input id="metadata-display" type="checkbox" name="metadataDisplay" ${metadataDisplayChecked}>
+                            <span><is:getProperty key="LIST_METADATA_DISPLAY" /></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Request display -->
+            <div class="form-group">
+                <label for="request-display" class="control-label col-sm-4"><is:getProperty key="LIST_NUXEO_REQUEST" /></label>
+                <div class="col-sm-8">
+                    <div class="checkbox">
+                        <label>
+                            <input id="request-display" type="checkbox" name="nuxeoRequestDisplay" ${nuxeoRequestDisplayChecked}>
+                            <span><is:getProperty key="LIST_DISPLAY_NUXEO_REQUEST" /></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Results limit -->
+            <div class="form-group">                
+                <label for="results-limit" class="control-label col-sm-4"><is:getProperty key="LIST_RESULTS_LIMIT" /></label>
+                <div class="col-sm-8">
+                    <input id="results-limit" type="number" name="resultsLimit" value="${configuration.resultsLimit}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- Normal view pagination -->
+            <div class="form-group">                
+                <label for="normal-pagination" class="control-label col-sm-4"><is:getProperty key="LIST_NORMAL_PAGINATION" /></label>
+                <div class="col-sm-8">
+                    <input id="normal-pagination" type="number" name="normalPagination" value="${configuration.normalPagination}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- Maximized view pagination -->
+            <div class="form-group">                
+                <label for="maximized-pagination" class="control-label col-sm-4"><is:getProperty key="LIST_MAXIMIZED_PAGINATION" /></label>
+                <div class="col-sm-8">
+                    <input id="maximized-pagination" type="number" name="maximizedPagination" value="${configuration.maximizedPagination}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- Template -->
+            <div class="form-group">
+                <label for="template" class="control-label col-sm-4"><is:getProperty key="LIST_TEMPLATE" /></label>
+                <div class="col-sm-8">
+                    <select id="template" name="template" class="form-control">
+                        <c:forEach var="template" items="${templates}">
+                            <c:remove var="selected" />
+                            <c:if test="${template.key eq configuration.template}">
+                                <c:set var="selected" value="selected" />
+                            </c:if>
+                        
+                            <option value="${template.key}" ${selected}>${template.label}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+        
+        <fieldset>
+            <legend>
+                <i class="glyphicons social rss"></i>
+                <span><is:getProperty key="LIST_PERMALINK_RSS_CONFIGURATION" /></span>
+            </legend>
+        
+            <!-- Permalink reference -->
+            <div class="form-group">                
+                <label for="permalink-reference" class="control-label col-sm-4"><is:getProperty key="LIST_PERMALINK_REFERENCE" /></label>
+                <div class="col-sm-8">
+                    <input id="permalink-reference" type="text" name="permalinkReference" value="${configuration.permalinkReference}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- RSS reference -->
+            <div class="form-group">                
+                <label for="rss-reference" class="control-label col-sm-4"><is:getProperty key="LIST_RSS_REFERENCE" /></label>
+                <div class="col-sm-8">
+                    <input id="rss-reference" type="text" name="rssReference" value="${configuration.rssReference}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- RSS title -->
+            <div class="form-group">                
+                <label for="rss-title" class="control-label col-sm-4"><is:getProperty key="LIST_RSS_TITLE" /></label>
+                <div class="col-sm-8">
+                    <input id="rss-title" type="text" name="rssTitle" value="${configuration.rssTitle}" class="form-control" />
+                </div>
+            </div>
+        </fieldset>
+        
+        <fieldset>
+            <legend>
+                <i class="glyphicons halflings plus-sign"></i>
+                <span><is:getProperty key="LIST_CONTENT_CREATION_CONFIGURATION" /></span>
+            </legend>
+        
+            <!-- Creation parent container path -->
+            <div class="form-group">                
+                <label for="parent-path" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_PARENT_PATH" /></label>
+                <div class="col-sm-8">
+                    <input id="parent-path" type="text" name="creationParentPath" value="${configuration.creationParentPath}" class="form-control" />
+                </div>
+            </div>
+            
+            <!-- Creation content type -->
+            <div class="form-group">                
+                <label for="content-type" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_TYPE" /></label>
+                <div class="col-sm-8">
+                    <input id="content-type" type="text" name="creationContentType" value="${configuration.creationContentType}" class="form-control" />
+                </div>
+            </div>
+        </fieldset>
+        
+        <!-- Buttons -->
+        <div class="form-group">
+            <div class="col-sm-offset-4 col-sm-8">
+                <button type="submit" class="btn btn-default btn-primary"><is:getProperty key="SAVE" /></button>
+                <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+            </div>
+        </div>
+    </form>
+</div>

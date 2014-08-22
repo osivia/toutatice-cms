@@ -19,28 +19,43 @@
 
 
 <div class="nuxeo-list-${style}">
-    <!-- Request -->
-    <c:if test="${not empty nuxeoRequest}">
-        <div class="alert alert-info">${nuxeoRequest}</div>
-    </c:if>
-
-
-    <!-- Documents -->
-    <div class="no-ajax-link">
-        <ul class="list-unstyled clearfix">
-            <c:forEach var="doc" items="${docs}" varStatus="status">
-                <c:set var="doc" value="${doc}" scope="request" />
-                <c:set var="parite" value="${status.count % 2}" />
-                <jsp:include page="view-${fn:toLowerCase(style)}.jsp" />
-            </c:forEach>
-        </ul>
-    </div>
-    
-    
-    <!-- Pagination -->
-    <jsp:include page="pagination.jsp" />
-    
-    
-    <!-- Footer -->
-    <jsp:include page="footer.jsp" />
+    <c:choose>
+        <c:when test="${empty error}">
+            <!-- Request -->
+            <c:if test="${not empty nuxeoRequest}">
+                <div class="alert alert-info">${nuxeoRequest}</div>
+            </c:if>
+        
+        
+            <!-- Documents -->
+            <div class="no-ajax-link">
+                <ul class="list-unstyled clearfix">
+                    <c:forEach var="doc" items="${docs}" varStatus="status">
+                        <c:set var="doc" value="${doc}" scope="request" />
+                        <c:set var="parite" value="${status.count % 2}" />
+                        <jsp:include page="view-${fn:toLowerCase(style)}.jsp" />
+                    </c:forEach>
+                </ul>
+            </div>
+            
+            
+            <!-- Pagination -->
+            <jsp:include page="pagination.jsp" />
+            
+            
+            <!-- Footer -->
+            <jsp:include page="footer.jsp" />
+        </c:when>
+        
+        <c:otherwise>
+            <p class="text-danger">
+                <i class="glyphicons halflings exclamation-sign"></i>
+                <span>${error}</span>
+            </p>
+            
+            <c:if test="${not empty errorMessage}">
+                <p class="text-danger">${errorMessage}</p>
+            </c:if>
+        </c:otherwise>
+    </c:choose>
 </div>

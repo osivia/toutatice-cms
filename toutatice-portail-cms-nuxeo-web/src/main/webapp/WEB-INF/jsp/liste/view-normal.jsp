@@ -1,50 +1,75 @@
+<%@ page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
+<%@ page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
+<%@ page import="org.nuxeo.ecm.automation.client.model.Document"%>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 
-<%@page import="org.osivia.portal.api.directory.entity.DirectoryPerson"%>
-<%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
+<%@ page isELIgnored="false" %>
 
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-
-<%@page import="javax.portlet.PortletURL"%>
-
-
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-
-
-<portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+// Nuxeo controller
+NuxeoController nuxeoController = (NuxeoController) request.getAttribute("ctx");
+// Nuxeo document
+Document document = (Document) request.getAttribute("doc");
 
-Document doc = (Document) renderRequest.getAttribute("doc");
-int parite = (Integer) renderRequest.getAttribute("parite");
-
-
-Link link = ctx.getLink(doc);
-
-String icon = Formater.formatNuxeoIcon(doc);
-
-String username = doc.getProperties().get("dc:creator").toString();
-String avatarLink = ctx.getUserAvatar(username).getUrl();
-
-DirectoryPerson p = ctx.getPerson(username);
-if(p != null) {
-    username = p.getDisplayName();
+// Title
+pageContext.setAttribute("title", document.getTitle());
+// Link
+pageContext.setAttribute("link", nuxeoController.getLink(document));
+// Icon
+pageContext.setAttribute("icon", Formater.formatNuxeoIcon(document));
+// Type
+pageContext.setAttribute("type", document.getType());
+// Date
+if (document.getDate("dc:modified") == null) {
+    pageContext.setAttribute("date", document.getDate("dc:created"));
+} else {
+    pageContext.setAttribute("date", document.getDate("dc:modified"));
 }
-
-
-icon = "<img class=\"icon\" src=\""+renderRequest.getContextPath()+icon+"\">";
-
+// Username
+String username = document.getString("dc:creator");
+if (nuxeoController.getPerson(username) != null) {
+    pageContext.setAttribute("username", nuxeoController.getPerson(username).getDisplayName());
+} else {
+    pageContext.setAttribute("username", username);
+}
+// Avatar
+pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
 
 %>
 
-		<li> <div class="list-bloc">  <%= icon%> <%= Formater.formatLink(link, doc, "title") %><p class="list-date"><%= Formater.formatDateAndTime(doc)%> par <img src="<%=avatarLink%>" class="avatar"/> <%=username%> </p></div></li>	
+
+<c:if test="${link.external}">
+    <c:set var="target" value="_blank" />
+</c:if>
+
+
+<li>
+    <p>
+        <img src="${pageContext.request.contextPath}${icon}" alt="${type}" />
+    
+        <a href="${link.url}" target="${target}">
+            <span>${title}</span>
+            
+            <!-- Downloadable -->
+            <c:if test="${link.downloadable}">
+                <i class="glyphicons download_alt"></i>
+            </c:if>
+            
+            <!-- External -->
+            <c:if test="${link.external}">
+                <i class="glyphicons new_window_alt"></i>
+            </c:if>
+        </a>
+    </p>
+    
+    <p class="small">
+        <img src="${avatar.url}" alt="" class="avatar avatar-small" />
+        <span>${username}</span>
+        <span> - </span>
+        <span><fmt:formatDate value="${date}" type="both" dateStyle="medium" timeStyle="short" /></span>
+    </p>
+</li>

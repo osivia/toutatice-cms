@@ -22,8 +22,8 @@
     
     <!-- Maximum pagination -->
     <c:set var="max" value="${currentPage + size}" />
-    <c:if test="${max > nbPages}">
-        <c:set var="max" value="${nbPages}" />
+    <c:if test="${max > (nbPages - 1)}">
+        <c:set var="max" value="${nbPages - 1}" />
     </c:if>
 
     
@@ -47,7 +47,7 @@
     
     <!-- Right -->
     <c:choose>
-        <c:when test="${currentPage == nbPages}">
+        <c:when test="${currentPage == max}">
             <c:set var="rightUrl" value="#" />
             <c:set var="rightClass" value="disabled" />
         </c:when>
@@ -62,7 +62,7 @@
             </portlet:renderURL>
         </c:otherwise>
     </c:choose>
-    
+
 
     <div class="text-center">
         <ul class="pagination">
@@ -130,7 +130,7 @@
             </c:forEach>
             
             <!-- More right -->
-            <c:if test="${max < nbPages}">
+            <c:if test="${max < (nbPages - 1)}">
                 <li class="disabled">
                     <a href="#">
                         <i class="glyphicons more"></i>

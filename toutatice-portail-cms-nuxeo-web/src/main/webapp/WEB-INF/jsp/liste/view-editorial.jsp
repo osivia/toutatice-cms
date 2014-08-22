@@ -1,62 +1,92 @@
+<%@ page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
+<%@ page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
+<%@ page import="org.nuxeo.ecm.automation.client.model.Document"%>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 
-<%@page import="java.util.Map"%>
-<%@page import="org.osivia.portal.core.cms.CMSItem"%>
-<%@page import="javax.portlet.ResourceURL"%>
-<%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
+<%@ page isELIgnored="false" %>
 
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-
-<%@page import="javax.portlet.PortletURL"%>
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-
-
-<portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+// Nuxeo controller
+NuxeoController nuxeoController = (NuxeoController) request.getAttribute("ctx");
+// Nuxeo document
+Document document = (Document) request.getAttribute("doc");
 
-Document doc = (Document) renderRequest.getAttribute("doc");
-int parite = (Integer) renderRequest.getAttribute("parite");
+// Title
+pageContext.setAttribute("title", document.getTitle());
+// Link
+pageContext.setAttribute("link", nuxeoController.getLink(document));
+// Description
+pageContext.setAttribute("description", document.getString("dc:description"));
+// Vignette
+if ((document.getProperties().getMap("ttc:vignette") != null) && (document.getProperties().getMap("ttc:vignette").getString("data") != null)) {
+    pageContext.setAttribute("vignette", nuxeoController.createFileLink(document, "ttc:vignette"));
+}
+// Detailed view link
+pageContext.setAttribute("detailedViewLink", nuxeoController.getLink(document, "detailedView"));
 
 
-Link link = ctx.getLink(doc);
-
-String srcVignette = "";
-PropertyMap map = doc.getProperties().getMap("ttc:vignette");
-
-if( map != null && map.getString("data") != null)	
-	srcVignette = "<div class=\"vignette\"><img class=\"vignette\" src=\""+ ctx.createFileLink(doc, "ttc:vignette") + "\" /></div>";
-else
-	srcVignette = "<div class=\"vignette-vide\"> </div>";
 
 
-Map<String,String> docCfg = ctx.getDocumentConfiguration( doc);
-	
+// Date
+if (document.getDate("dc:modified") == null) {
+    pageContext.setAttribute("date", document.getDate("dc:created"));
+} else {
+    pageContext.setAttribute("date", document.getDate("dc:modified"));
+}
+// Username
+String username = document.getString("dc:creator");
+if (nuxeoController.getPerson(username) != null) {
+    pageContext.setAttribute("username", nuxeoController.getPerson(username).getDisplayName());
+} else {
+    pageContext.setAttribute("username", username);
+}
+// Avatar
+pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
+
 %>
 
-		<li class="item<%=parite%>">
-			<%=srcVignette%>
-			<%= Formater.formatLink(link, doc) %>
-			
-			
-			<p class="description"><%= Formater.formatDescription(doc)%></p>
+
+<c:if test="${link.external}">
+    <c:set var="target" value="_blank" />
+</c:if>
 
 
-			<p style="text-align: right;" class="action-link">
-				<a title="+ d'infos" class="" href="<%= ctx.getLink(doc,"detailedView").getUrl() %>">Vue détaillée</a>
-			</p>
-			
-	
-			<div class="separateur"></div>
-		</li>
-		
+<li class="clearfix">
+    <!-- Vignette -->
+    <c:if test="${not empty vignette}">
+        <img src="${vignette}" alt="" class="pull-left" />
+    </c:if>
+
+    <div>
+        <!-- Title -->
+        <p class="lead">
+            <a href="${link.url}" target="${target}">
+                <span>${title}</span>
+                
+                <!-- Downloadable -->
+                <c:if test="${link.downloadable}">
+                    <i class="glyphicons download_alt"></i>
+                </c:if>
+                
+                <!-- External -->
+                <c:if test="${link.external}">
+                    <i class="glyphicons new_window_alt"></i>
+                </c:if>
+            </a>
+        </p>
+
+        <!-- Description -->
+        <p>${description}</p>
+
+        <!-- Detailed view -->
+        <p class="pull-right">
+            <a href="${detailedViewLink.url}"><is:getProperty key="LIST_DETAILED_VIEW" /></a>
+        </p>
+    </div>
+</li>
