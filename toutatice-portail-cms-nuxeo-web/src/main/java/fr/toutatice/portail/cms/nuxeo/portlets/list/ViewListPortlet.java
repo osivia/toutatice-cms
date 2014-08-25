@@ -282,56 +282,56 @@ public class ViewListPortlet extends CMSPortlet {
                 // Save action
 
                 // Nuxeo request
-                window.setProperty(NUXEO_REQUEST_WINDOW_PROPERTY, request.getParameter("nuxeoRequest"));
+                window.setProperty(NUXEO_REQUEST_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoRequest")));
 
                 // BeanShell
-                window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, request.getParameter("beanShell"));
+                window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
                 // Clean old configuration
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD, null);
 
                 // Version
-                window.setProperty(VERSION_WINDOW_PROPERTY, request.getParameter("displayLiveVersion"));
+                window.setProperty(VERSION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("displayLiveVersion")));
 
                 // Content filter
-                window.setProperty(CONTENT_FILTER_WINDOW_PROPERTY, request.getParameter("requestFilteringPolicy"));
+                window.setProperty(CONTENT_FILTER_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("requestFilteringPolicy")));
 
                 // Scope
-                window.setProperty(SCOPE_WINDOW_PROPERTY, request.getParameter("scope"));
+                window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
 
                 // Metadata display
-                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, request.getParameter("metadataDisplay"));
+                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("metadataDisplay")));
                 // Clean old configuration
                 window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD, null);
 
                 // Nuxeo request display
-                window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, request.getParameter("nuxeoRequestDisplay"));
+                window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoRequestDisplay")));
 
                 // Results limit
-                window.setProperty(RESULTS_LIMIT_WINDOW_PROPERTY, request.getParameter("resultsLimit"));
+                window.setProperty(RESULTS_LIMIT_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("resultsLimit")));
 
                 // Normal view pagination
-                window.setProperty(NORMAL_PAGINATION_WINDOW_PROPERTY, request.getParameter("normalPagination"));
+                window.setProperty(NORMAL_PAGINATION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("normalPagination")));
 
                 // Maximized view pagination
-                window.setProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY, request.getParameter("maximizedPagination"));
+                window.setProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("maximizedPagination")));
 
                 // Template
-                window.setProperty(TEMPLATE_WINDOW_PROPERTY, request.getParameter("template"));
+                window.setProperty(TEMPLATE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("template")));
 
                 // Permalink reference
-                window.setProperty(PERMALINK_REFERENCE_WINDOW_PROPERTY, request.getParameter("permalinkReference"));
+                window.setProperty(PERMALINK_REFERENCE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("permalinkReference")));
 
                 // RSS reference
-                window.setProperty(RSS_REFERENCE_WINDOW_PROPERTY, request.getParameter("rssReference"));
+                window.setProperty(RSS_REFERENCE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("rssReference")));
 
                 // RSS title
-                window.setProperty(RSS_TITLE_WINDOW_PROPERTY, request.getParameter("rssTitle"));
+                window.setProperty(RSS_TITLE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("rssTitle")));
 
                 // Parent container path
-                window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, request.getParameter("creationParentPath"));
+                window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationParentPath")));
 
                 // Content type
-                window.setProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY, request.getParameter("creationContentType"));
+                window.setProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationContentType")));
             }
 
             response.setPortletMode(PortletMode.VIEW);

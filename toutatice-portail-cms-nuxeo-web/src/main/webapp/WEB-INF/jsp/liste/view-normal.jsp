@@ -23,12 +23,6 @@ pageContext.setAttribute("link", nuxeoController.getLink(document));
 pageContext.setAttribute("icon", Formater.formatNuxeoIcon(document));
 // Type
 pageContext.setAttribute("type", document.getType());
-// Date
-if (document.getDate("dc:modified") == null) {
-    pageContext.setAttribute("date", document.getDate("dc:created"));
-} else {
-    pageContext.setAttribute("date", document.getDate("dc:modified"));
-}
 // Username
 String username = document.getString("dc:creator");
 if (nuxeoController.getPerson(username) != null) {
@@ -38,6 +32,12 @@ if (nuxeoController.getPerson(username) != null) {
 }
 // Avatar
 pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
+// Date
+if (document.getDate("dc:modified") == null) {
+ pageContext.setAttribute("date", document.getDate("dc:created"));
+} else {
+ pageContext.setAttribute("date", document.getDate("dc:modified"));
+}
 
 %>
 
@@ -49,7 +49,7 @@ pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
 
 <li>
     <p>
-        <img src="${pageContext.request.contextPath}${icon}" alt="${type}" />
+        <img src="${pageContext.request.contextPath}${icon}" alt="${type}" class="icon" />
     
         <a href="${link.url}" target="${target}">
             <span>${title}</span>
