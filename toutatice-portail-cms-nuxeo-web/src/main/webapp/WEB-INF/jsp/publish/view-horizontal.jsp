@@ -16,6 +16,20 @@
             
             <!-- Menu -->
             <ul class="list-inline">
+                <!-- Home -->
+                <c:remove var="current" />
+                <c:if test="${displayItem.current}">
+                    <c:set var="current" value="active" />
+                </c:if>
+                <li class="visible-xs">
+                    <a href="${displayItem.url}" class="${current}">            
+                        <i class="glyphicons halflings home"></i>
+                        <span class=sr-only>${displayItem.title}</span>
+                    </a>
+                </li>
+            
+            
+                <!-- Children -->
                 <c:forEach var="child" items="${displayItem.children}">
                     <c:remove var="selected" />
                     <c:if test="${child.selected}">
