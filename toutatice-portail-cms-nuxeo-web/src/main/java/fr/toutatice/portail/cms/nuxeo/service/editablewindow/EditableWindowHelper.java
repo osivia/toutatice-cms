@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
 
@@ -31,51 +31,60 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.core.cms.CMSException;
 
 /**
- * Classe utilitaire de manipulation des schémas complexes
- * 
+ * Classe utilitaire de manipulation des schémas complexes.
+ *
  * @author loic
- * 
  */
-public class EditableWindowHelper {
+public final class EditableWindowHelper {
 
-    /** Identifiant schéma générique des fragments Nuxeo */
-    public static String SCHEMA = "fgts:fragments";
+    /** Identifiant schéma générique des fragments Nuxeo. */
+    public static final String SCHEMA_FRAGMENTS = "fgts:fragments";
 
-    /** URI */
-    public static String FGT_URI = "uri";
+    /** Regions schema. */
+    public static final String SCHEMA_REGIONS = "rg:regions";
 
-    /** type de fragment (html, liste...) */
-    public static String FGT_TYPE = "fragmentCategory";
+    /** URI. */
+    public static final String FGT_URI = "uri";
 
-    /** ordre d'apparition dans la page */
-    public static String FGT_ORDER = "order";
+    /** type de fragment (html, liste...). */
+    public static final String FGT_TYPE = "fragmentCategory";
 
-    /** region CMS où se rattache le fragment */
-    public static String FGT_REGION = "regionId";
+    /** ordre d'apparition dans la page. */
+    public static final String FGT_ORDER = "order";
+
+    /** Region identifier property key. */
+    public static final String REGION_IDENTIFIER = "regionId";
+
+    /** Inheritance property key. */
+    public static final String INHERITANCE = "inheritance";
 
 
-    /** Comparateur de fragments */
+    /** Comparateur de fragments. */
     private static EditableWindowComparator comparator = new EditableWindowComparator();
 
-    /** logger */
-    protected static final Log logger = LogFactory.getLog(EditableWindowHelper.class);
+    /** logger. */
+    private static final Log LOGGER = LogFactory.getLog(EditableWindowHelper.class);
 
+
+    /**
+     * Private constructor.
+     */
     private EditableWindowHelper() {
-
+        super();
     }
+
 
     /**
      * Méthode permettant d'extraire l'index d'une liste de propriétés complexes
      * où la liste correspond à l'uri donné.
-     * 
+     *
      * @param doc e doc
-     * @param schema le schéma a explorer
      * @param refURI la clé de recherche
      * @return la map
      */
     public static Integer findIndexByURI(Document doc, String refURI) {
 
-        PropertyList list = doc.getProperties().getList(SCHEMA);
+        PropertyList list = doc.getProperties().getList(SCHEMA_FRAGMENTS);
         int index = 0;
 
         for (Object o : list.list()) {
@@ -89,14 +98,14 @@ public class EditableWindowHelper {
             index++;
         }
 
-        logger.warn("Fragment " + refURI + " non défini dans le schéma " + SCHEMA);
+        LOGGER.warn("Fragment " + refURI + " non défini dans le schéma " + SCHEMA_FRAGMENTS);
         return null; // par défaut
     }
 
+
     /**
-     * Méthode permettant d'extraire les propriétés complexes d'un objet par son
-     * RefURI
-     * 
+     * Méthode permettant d'extraire les propriétés complexes d'un objet par son RefURI.
+     *
      * @param doc e doc
      * @param schema le schéma a explorer
      * @param refURI la clé de recherche
@@ -118,14 +127,13 @@ public class EditableWindowHelper {
             index++;
         }
 
-        logger.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
+        LOGGER.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
         return null;
     }
 
     /**
-     * Méthode permettant d'extraire les propriétés complexes d'un objet par son
-     * RefURI
-     * 
+     * Méthode permettant d'extraire les propriétés complexes d'un objet par son RefURI.
+     *
      * @param doc e doc
      * @param schema le schéma a explorer
      * @param refURI la clé de recherche
@@ -149,14 +157,13 @@ public class EditableWindowHelper {
             index++;
         }
 
-        logger.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
+        LOGGER.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
         return indexes;
     }
 
     /**
-     * Méthode permettant d'extraire les propriétés complexes d'un objet par son
-     * RefURI
-     * 
+     * Méthode permettant d'extraire les propriétés complexes d'un objet par son RefURI.
+     *
      * @param doc e doc
      * @param schema le schéma a explorer
      * @param refURI la clé de recherche
@@ -176,21 +183,21 @@ public class EditableWindowHelper {
             }
         }
 
-        logger.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
+        LOGGER.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
         return null;
     }
 
 
     /**
-     * Vérification de la cohérence des n° d'ordre dans les fragments
-     * 
+     * Vérification de la cohérence des n° d'ordre dans les fragments.
+     *
      * @param doc
      * @return
      */
     public static List<String> checkBeforeMove(Document doc, String fromRegion, Integer fromPos, String refUri) throws CMSException {
         List<String> propertiesToUpdate = new ArrayList<String>();
 
-        PropertyList list = doc.getProperties().getList(SCHEMA);
+        PropertyList list = doc.getProperties().getList(SCHEMA_FRAGMENTS);
 
 
         Map<String, SortedSet<PropertyMap>> map = new HashMap<String, SortedSet<PropertyMap>>();
@@ -200,7 +207,7 @@ public class EditableWindowHelper {
             if (o instanceof PropertyMap) {
                 PropertyMap currentFrag = (PropertyMap) o;
 
-                String currentRegion = currentFrag.getString(FGT_REGION);
+                String currentRegion = currentFrag.getString(REGION_IDENTIFIER);
 
                 SortedSet<PropertyMap> currentSet;
 
@@ -223,7 +230,7 @@ public class EditableWindowHelper {
                 if (!(currentOrder == expectedOrder)) {
                     Integer fgtToUpdate = findIndexByURI(doc, fragment.getString(FGT_URI));
 
-                    String moveToOrder = SCHEMA.concat("/").concat(fgtToUpdate.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                    String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(fgtToUpdate.toString()).concat("/").concat(FGT_ORDER).concat("=")
                             .concat(expectedOrder.toString());
 
                     propertiesToUpdate.add(moveToOrder);
@@ -238,7 +245,7 @@ public class EditableWindowHelper {
 
     /**
      * Préparation du déplacement d'un fragment
-     * 
+     *
      * @param doc
      * @param fromRegion the identifier of the region from the fragment is moved
      * @param fromPos position in the fromRegion (from 0 (top) to N-1 ( number of current fgts in the region)
@@ -251,8 +258,8 @@ public class EditableWindowHelper {
     public static List<String> prepareMove(Document doc, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri) throws CMSException {
 
         // Détecter des cas de désynchro
-        PropertyMap currentInNuxeo = findSchemaByRefURI(doc, SCHEMA, refUri);
-        if (!(currentInNuxeo.getString(FGT_ORDER).equals(Integer.toString(fromPos)) && currentInNuxeo.getString(FGT_REGION).equals(fromRegion))) {
+        PropertyMap currentInNuxeo = findSchemaByRefURI(doc, SCHEMA_FRAGMENTS, refUri);
+        if (!(currentInNuxeo.getString(FGT_ORDER).equals(Integer.toString(fromPos)) && currentInNuxeo.getString(REGION_IDENTIFIER).equals(fromRegion))) {
             throw new CMSException("Document Nuxéo désynchronisé");
 
         }
@@ -260,8 +267,8 @@ public class EditableWindowHelper {
         List<String> propertiesToUpdate = new ArrayList<String>();
 
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("+-------> Move " + refUri + " (" + fromRegion + "/" + fromPos + ") to (" + toRegion + "/" + toPos + ") ");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("+-------> Move " + refUri + " (" + fromRegion + "/" + fromPos + ") to (" + toRegion + "/" + toPos + ") ");
         }
 
         // Test si déplacement au même endroit, rien à faire
@@ -270,7 +277,7 @@ public class EditableWindowHelper {
         }
 
 
-        PropertyList list = doc.getProperties().getList(SCHEMA);
+        PropertyList list = doc.getProperties().getList(SCHEMA_FRAGMENTS);
         Integer index = 0;
 
 
@@ -293,23 +300,23 @@ public class EditableWindowHelper {
 
                     // Si fgt en cours de déplacement :
                     // Attribution de la nouvelle région et de la nouvelle position
-                    if (fromRegion.equals(currentFrag.getString(FGT_REGION))) {
+                    if (fromRegion.equals(currentFrag.getString(REGION_IDENTIFIER))) {
 
 
                         if (fromPos.equals(currentOrder)) {
 
                             Integer newOrder = toPos;
 
-                            String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                            String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
                                     .concat(newOrder.toString());
 
                             propertiesToUpdate.add(moveToOrder);
                         }
 
-                        else if (fromRegion.equals(currentFrag.getString(FGT_REGION)) && (currentOrder >= minOrder && currentOrder <= maxOrder)) {
+                        else if (fromRegion.equals(currentFrag.getString(REGION_IDENTIFIER)) && (currentOrder >= minOrder && currentOrder <= maxOrder)) {
 
                             Integer newOrder = moveDown ? currentOrder - 1 : currentOrder + 1;
-                            String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                            String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
                                     .concat(newOrder.toString());
 
                             propertiesToUpdate.add(moveToOrder);
@@ -328,15 +335,15 @@ public class EditableWindowHelper {
 
                     // Si fgt en cours de déplacement :
                     // Attribution de la nouvelle région et de la nouvelle position
-                    if ((fromRegion.equals(currentFrag.getString(FGT_REGION))) && (fromPos.equals(currentOrder))) {
+                    if ((fromRegion.equals(currentFrag.getString(REGION_IDENTIFIER))) && (fromPos.equals(currentOrder))) {
 
-                        String moveToRegion = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_REGION).concat("=").concat(toRegion);
+                        String moveToRegion = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(REGION_IDENTIFIER).concat("=").concat(toRegion);
 
                         propertiesToUpdate.add(moveToRegion);
 
                         Integer newOrder = toPos;
 
-                        String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=").concat(newOrder.toString());
+                        String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=").concat(newOrder.toString());
 
                         propertiesToUpdate.add(moveToOrder);
                     } else {
@@ -344,10 +351,10 @@ public class EditableWindowHelper {
                         // Si fgt de la région d'origine et en dessous du fgt
                         // déplacé
                         // Décalage vers le haut
-                        if (fromRegion.equals(currentFrag.getString(FGT_REGION)) && currentOrder > fromPos) {
+                        if (fromRegion.equals(currentFrag.getString(REGION_IDENTIFIER)) && currentOrder > fromPos) {
 
                             Integer newOrder = currentOrder - 1;
-                            String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                            String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
                                     .concat(newOrder.toString());
 
                             propertiesToUpdate.add(moveToOrder);
@@ -356,12 +363,12 @@ public class EditableWindowHelper {
                         // Si fgt de la région cible est au niveau de la région
                         // déplacée
                         // Décalage vers le bas
-                        if (toRegion.equals(currentFrag.getString(FGT_REGION))) {
+                        if (toRegion.equals(currentFrag.getString(REGION_IDENTIFIER))) {
 
                             if (currentOrder >= toPos) {
 
                                 Integer newOrder = currentOrder + 1;
-                                String moveToOrder = SCHEMA.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
+                                String moveToOrder = SCHEMA_FRAGMENTS.concat("/").concat(index.toString()).concat("/").concat(FGT_ORDER).concat("=")
                                         .concat(newOrder.toString());
 
                                 propertiesToUpdate.add(moveToOrder);

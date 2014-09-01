@@ -149,7 +149,7 @@ public abstract class EditableWindow {
 
         Integer indexToRemove = EditableWindowHelper.findIndexByURI(doc, refURI);
 
-        propertiesToRemove.add(EditableWindowHelper.SCHEMA.concat("/").concat(indexToRemove.toString()));
+        propertiesToRemove.add(EditableWindowHelper.SCHEMA_FRAGMENTS.concat("/").concat(indexToRemove.toString()));
     }
 
     /**

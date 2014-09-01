@@ -18,14 +18,19 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,6 +62,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.cms.RegionInheritance;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
@@ -78,6 +84,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
@@ -1092,74 +1099,333 @@ public class CMSService implements ICMSService {
     }
 
     /**
-     * Création des fragments dans la page
+     * {@inheritDoc}
      */
     @Override
-    public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+    public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath, String navigationScope)
+            throws CMSException {
         try {
-
-            CMSItem pageItem = this.fetchContent(cmsCtx, pagePath);
+            CMSItem pageItem = this.fetchContent(cmsContext, path);
 
             List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
 
             boolean editionMode = false;
-            if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
+            if ("1".equals(cmsContext.getDisplayLiveVersion())) {
                 editionMode = true;
             }
 
-            Document doc = (Document) pageItem.getNativeItem();
+            Document document = (Document) pageItem.getNativeItem();
 
-            // Propriétés générales des fragments
-            PropertyList pmFragmentsValues = doc.getProperties().getList(EditableWindowHelper.SCHEMA);
 
-            if ((pmFragmentsValues != null) && !pmFragmentsValues.isEmpty()) {
-
-                EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
-
-                // Pour chaque fragment
-                for (int fragmentIndex = 0; fragmentIndex < pmFragmentsValues.size(); fragmentIndex++) {
-
-                    // Test de la catégorie
-                    String fragmentCategory = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
-                    String uri = (String) pmFragmentsValues.getMap(fragmentIndex).get(EditableWindowHelper.FGT_URI);
-
-                    EditableWindow ew = adapter.getType(fragmentCategory);
-
-                    // EditableWindowTypeEnum type = EditableWindowTypeEnum.findByName(fragmentCategory);
-
-                    if (ew != null) {
-
-                        // Récupération d'une classe utilitaire se chargeant des traitements spécifiques à chaque fgt
-                        // EditableWindowService ewService = type.getService();
-
-                        // Valorisation des propriétés
-                        Map<String, String> props = ew.fillProps(doc, pmFragmentsValues.getMap(fragmentIndex), editionMode);
-
-                        // Construction de la window
-                        windows.add(ew.createNewEditabletWindow(fragmentIndex, props));
-
+            // Inherited regions
+            Map<String, List<CMSEditableWindow>> inheritedRegions;
+            if (document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS) != null) {
+                inheritedRegions = this.getInheritedRegions(cmsContext, path, publishSpacePath, sitePath, navigationScope, editionMode);
+                for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+                    if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+                        // Add inherited region windows
+                        windows.addAll(inheritedWindows);
                     }
-                    // Si type de portlet non trouvé, erreur.
-                    else {
-                        logger.warn("Type de fragment " + fragmentCategory + " non géré");
+                }
+            } else {
+                inheritedRegions = new HashMap<String, List<CMSEditableWindow>>(0);
+            }
+            int nbInheritedWindows = windows.size();
+
+
+            if (publishSpacePath != null) {
+                // Fragments
+                PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
+                if ((fragments != null) && !fragments.isEmpty()) {
+                    EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
+
+                    // Loop
+                    for (int i = 0; i < fragments.size(); i++) {
+                        PropertyMap fragment = fragments.getMap(i);
+                        String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
+
+                        if (inheritedRegions.get(regionId) == null) {
+                            String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
+
+                            EditableWindow editableWindow = adapter.getType(category);
+                            if (editableWindow != null) {
+                                // Window creation
+                                int windowId = nbInheritedWindows + i;
+                                Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
+                                CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
+                                windows.add(window);
+                            } else {
+                                // Si type de portlet non trouvé, erreur.
+                                logger.warn("Type de fragment " + category + " non géré");
+                            }
+                        }
                     }
                 }
             }
 
-
             return windows;
+        } catch (CMSException e) {
+            throw e;
         } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
-            } else {
-
-                throw (CMSException) e;
-            }
+            throw new CMSException(e);
         }
-
     }
 
 
+    /**
+     * Get inherited regions.
+     *
+     * @param cmsContext CMS context
+     * @param path current page path
+     * @param publishSpacePath publish space path
+     * @param sitePath site path
+     * @param navigationScope navigation scope
+     * @param editionMode edition mode
+     * @return inherited regions
+     */
+    private Map<String, List<CMSEditableWindow>> getInheritedRegions(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath,
+            String navigationScope, boolean editionMode) {
+        Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>>();
+
+        // CMS context
+        CMSServiceCtx navCMSContext = new CMSServiceCtx();
+        if (cmsContext.getControllerContext() != null) {
+            navCMSContext.setControllerContext(cmsContext.getControllerContext());
+        } else if (cmsContext.getServerInvocation() != null) {
+            navCMSContext.setServerInvocation(cmsContext.getServerInvocation());
+        }
+        navCMSContext.setScope(navigationScope);
+
+        // Window adapter
+        EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
+
+
+        // Overrided regions
+        Set<String> overridedRegions = this.getPageOverridedRegions(cmsContext, path, publishSpacePath);
+
+
+        String parentPath = CMSObjectPath.parse(path).getParent().toString();
+        while (StringUtils.startsWith(parentPath, publishSpacePath)) {
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, adapter, parentPath,
+                    publishSpacePath, editionMode);
+            inheritedRegions.putAll(pagePropagatedRegions);
+            overridedRegions.addAll(pagePropagatedRegions.keySet());
+
+            // Loop on parent path
+            parentPath = CMSObjectPath.parse(parentPath).getParent().toString();
+        }
+
+
+        boolean directInheritance = (publishSpacePath != null) && (StringUtils.startsWith(path, sitePath));
+        if (!directInheritance) {
+            // Add defaut page propagated region windows in case of indirect inheritance
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, adapter, sitePath,
+                    sitePath, editionMode);
+            inheritedRegions.putAll(pagePropagatedRegions);
+        }
+
+        return inheritedRegions;
+    }
+
+
+    /**
+     * Get page overrided regions.
+     *
+     * @param cmsContext CMS context
+     * @param path current path
+     * @param publishSpacePath publish space path
+     * @return page overrided regions
+     */
+    private Set<String> getPageOverridedRegions(CMSServiceCtx cmsContext, String path, String publishSpacePath) {
+        Set<String> overridedRegions = new TreeSet<String>();
+
+        try {
+            // Get navigation item
+            CMSItem navItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, path);
+
+            if (navItem != null) {
+                Map<String, RegionInheritance> regionsInheritance = this.getRegionsInheritance(navItem);
+                for (Entry<String, RegionInheritance> region : regionsInheritance.entrySet()) {
+                    if (!RegionInheritance.DEFAULT.equals(region.getValue())) {
+                        overridedRegions.add(region.getKey());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Do nothing
+        }
+
+        return overridedRegions;
+    }
+
+
+    /**
+     * Get page propagated regions.
+     *
+     * @param cmsContext cmsContext
+     * @param overridedRegions overrided regions
+     * @param adapter editable window adapter
+     * @param path current path
+     * @param publishSpacePath publish space path
+     * @param editionMode edition mode indicator
+     * @return page propagated regions
+     */
+    private Map<String, List<CMSEditableWindow>> getPagePropagatedRegions(CMSServiceCtx cmsContext, Set<String> overridedRegions,
+            EditableWindowAdapter adapter, String path, String publishSpacePath, boolean editionMode) {
+        Map<String, List<CMSEditableWindow>> pagePropagatedRegions = new HashMap<String, List<CMSEditableWindow>>();
+
+        try {
+            // Get navigation item
+            CMSItem navItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, path);
+
+            if (navItem != null) {
+                Map<String, RegionInheritance> inheritance = this.getRegionsInheritance(navItem);
+                Set<String> identifiers = new HashSet<String>();
+                int windowId = 0;
+
+                // Document regions loop
+                for (Entry<String, RegionInheritance> region : inheritance.entrySet()) {
+                    if (!overridedRegions.contains(region.getKey())) {
+                        if (RegionInheritance.NO_INHERITANCE.equals(region.getValue())) {
+                            // No inheritance
+                            pagePropagatedRegions.put(region.getKey(), null);
+                        } else if (RegionInheritance.PROPAGATED.equals(region.getValue())) {
+                            // Propagation
+                            pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
+                            identifiers.add(region.getKey());
+                        }
+                    }
+                }
+
+
+                if (!identifiers.isEmpty()) {
+                    // Fetch
+                    CMSItem item = this.fetchContent(cmsContext, path);
+
+                    if (item != null) {
+                        Document document = (Document) item.getNativeItem();
+
+                        // Document fragments loop
+                        PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
+                        for (int i = 0; i < fragments.size(); i++) {
+                            PropertyMap fragment = fragments.getMap(i);
+                            String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
+
+                            if (identifiers.contains(regionId)) {
+                                String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
+
+                                EditableWindow editableWindow = adapter.getType(category);
+                                if (editableWindow != null) {
+                                    // Window creation
+                                    Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
+                                    properties.put("osivia.cms.inherited", String.valueOf(true));
+                                    CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
+
+                                    List<CMSEditableWindow> windows = pagePropagatedRegions.get(regionId);
+                                    windows.add(window);
+                                    windowId++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Do nothing
+        }
+
+        return pagePropagatedRegions;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, RegionInheritance> getRegionsInheritance(CMSItem item) {
+        Map<String, RegionInheritance> regionsInheritance = new HashMap<String, RegionInheritance>();
+
+        if (item != null) {
+            Document document = (Document) item.getNativeItem();
+
+            // Document regions loop
+            PropertyList regions = document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS);
+            if (regions != null) {
+                for (int i = 0; i < regions.size(); i++) {
+                    PropertyMap region = regions.getMap(i);
+                    String id = region.getString(EditableWindowHelper.REGION_IDENTIFIER);
+                    RegionInheritance inheritance = RegionInheritance.fromValue(region.getString(EditableWindowHelper.INHERITANCE));
+
+                    regionsInheritance.put(id, inheritance);
+                }
+            }
+        }
+
+        return regionsInheritance;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveInheritanceConfiguration(CMSServiceCtx cmsContext, String path, String regionName, RegionInheritance inheritance) throws CMSException {
+        cmsContext.setDisplayLiveVersion("1");
+
+        try {
+            CMSItem cmsItem = this.getContent(cmsContext, path);
+            Document document = (Document) cmsItem.getNativeItem();
+
+            PropertyList regions = document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS);
+            if (regions != null) {
+                // Updated properties
+                List<String> properties = new ArrayList<String>();
+
+                for (int i = 0; i < regions.size(); i++) {
+                    PropertyMap region = regions.getMap(i);
+
+                    if (StringUtils.equals(regionName, region.getString(EditableWindowHelper.REGION_IDENTIFIER))) {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(EditableWindowHelper.SCHEMA_REGIONS);
+                        builder.append("/");
+                        builder.append(i);
+                        builder.append("/");
+                        builder.append(EditableWindowHelper.INHERITANCE);
+                        builder.append("=");
+                        builder.append(StringUtils.trimToEmpty(inheritance.getValue()));
+
+                        properties.add(builder.toString());
+
+                        break;
+                    }
+                }
+
+                // Nuxeo command
+                INuxeoCommand command;
+                if (properties.isEmpty()) {
+                    // Add new property
+                    Map<String, String> value = new HashMap<String, String>();
+                    value.put(EditableWindowHelper.REGION_IDENTIFIER, regionName);
+                    value.put(EditableWindowHelper.INHERITANCE, StringUtils.trimToEmpty(inheritance.getValue()));
+                    command = new DocumentAddComplexPropertyCommand(document, "regions", value);
+                } else {
+                    // Update existing property
+                    command = new DocumentUpdatePropertiesCommand(document, properties);
+                }
+
+                this.executeNuxeoCommand(cmsContext, command);
+            }
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {
 
@@ -1169,7 +1435,7 @@ public class CMSService implements ICMSService {
         Document doc = (Document) cmsItem.getNativeItem();
 
         // Propriétés générales des fragments
-        PropertyList fragments = doc.getProperties().getList(EditableWindowHelper.SCHEMA);
+        PropertyList fragments = doc.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
 
         List<String> propertiesToRemove = null;
         if ((fragments != null) && !fragments.isEmpty()) {
@@ -1320,7 +1586,7 @@ public class CMSService implements ICMSService {
         // Une webpage CMS est porteuse du schéma fragment sous Nuxeo
         CMSItem content = this.getContent(cmsCtx, cmsPath);
         Document nativeItem = (Document) content.getNativeItem();
-        PropertyList list = nativeItem.getProperties().getList(EditableWindowHelper.SCHEMA);
+        PropertyList list = nativeItem.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
 
         if (list != null) {
             return true;

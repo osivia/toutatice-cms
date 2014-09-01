@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
@@ -38,20 +38,20 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 /**
  * Return all the navigation items
- * 
+ *
  * @author jeanseb
- * 
+ *
  */
 public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 
 	CMSItem publishSpaceConfig;
-	
+
 	/** Récupérer aussi les versions en cours de travail */
     private boolean forceLiveVersion;
-    
-	public final static String basicNavigationSchemas = "dublincore,common, toutatice";
-	
+
+    public final static String basicNavigationSchemas = "dublincore,common, toutatice, regions";
+
     public DocumentPublishSpaceNavigationCommand(CMSItem publishSpaceConfig, boolean forceLiveVersion) {
 		super();
 
@@ -65,58 +65,59 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			result = result.substring(0, result.length() - 6);
 		return result;
 	}
-	
-	public Object execute(Session session) throws Exception {
-		
+
+	@Override
+    public Object execute(Session session) throws Exception {
+
 		OperationRequest request;
 
 		request = session.newRequest("Document.Query");
 
 		// TODO : gerer le PortalVirtualPage de maniere générique
-		
-        boolean live = "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"));
 
-        if (forceLiveVersion)
+        boolean live = "1".equals(this.publishSpaceConfig.getProperties().get("displayLiveVersion"));
+
+        if (this.forceLiveVersion)
         // XXX temp
             live = true;
-		
-		String uuid =  ((Document)publishSpaceConfig.getNativeItem()).getId();
-		
+
+		String uuid =  ((Document)this.publishSpaceConfig.getNativeItem()).getId();
+
 		/*
 		String spacePath = path;
 		if( !live)
 			spacePath += ".proxy";
 		*/
-		
-		String path = publishSpaceConfig.getPath();
-		
+
+		String path = this.publishSpaceConfig.getPath();
+
 		//String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
-		
+
 		// Modif JSS 20130130 : vu avec oliver
 		//  1 - filtre uniquement sur ttc:showInMenu
 		//  2 - le 'ecm:path =' pose des problemes de perfs quand il est compibné avec un OR ecm:path startswith -> fetch specifique pour récuperer la racine
 		//  3 - suppression cas particulier PortalVirtualPage
-		
+
 		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
-		
-		
+
+
         NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(live? NuxeoQueryFilterContext.STATE_LIVE: NuxeoQueryFilterContext.STATE_DEFAULT, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER );
 
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
-	
+
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
-		
+
 		//test sans proxy ok
 		//String nuxeoRequest = "ecm:parentId = 'a984744a-838c-4f89-9627-50acec8df78b'";
 		//request.set("query", "SELECT * FROM Document WHERE " + nuxeoRequest + " ORDER BY ecm:pos");
-		
+
 		String navigationSchemas = basicNavigationSchemas;
-		
+
 		String extraNavigationSchemas = System.getProperty("nuxeo.navigationSchemas");
-		
+
 		if( extraNavigationSchemas != null)
-			navigationSchemas += "," + extraNavigationSchemas;
+            navigationSchemas += ", " + extraNavigationSchemas;
 
 		request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
 
@@ -125,13 +126,13 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		Map<String, NavigationItem> navItems = new HashMap<String, NavigationItem>();
 
 		Documents children = (Documents) request.execute();
-		
-		
+
+
 		/* Make children list */
-		
-		
+
+
 		List<Document>  concatDocuments = new ArrayList<Document>();
-		
+
 		// Add root document
 		// oblige de sortir de la requete principale pour des problemes de perfs
 		org.nuxeo.ecm.automation.client.model.Document doc = (org.nuxeo.ecm.automation.client.model.Document) session
@@ -141,9 +142,9 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		for (Document child : children) {
 			concatDocuments.add(child);
-		
+
 		}
-		
+
 		// Iterate over childrens to update hierarchy
 
 		for (Document child : concatDocuments) {
@@ -152,7 +153,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 			/* Update current Item */
 			String navPath = computeNavPath(child.getPath());
-			
+
 			navItem = navItems.get(navPath);
 			if (navItem == null) {
 
@@ -179,11 +180,12 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 	}
 
-	public String getId() {
+	@Override
+    public String getId() {
         String sLive = "false";
-        if (forceLiveVersion)
+        if (this.forceLiveVersion)
             sLive = "true";
-        return "PublishSpaceNavigationCommandT2/" + sLive + "/" + publishSpaceConfig.getPath();
+        return "PublishSpaceNavigationCommandT2/" + sLive + "/" + this.publishSpaceConfig.getPath();
 	};
 
 }
