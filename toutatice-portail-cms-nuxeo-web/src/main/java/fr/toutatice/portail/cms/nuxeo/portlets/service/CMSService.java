@@ -1105,7 +1105,16 @@ public class CMSService implements ICMSService {
     public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath, String navigationScope)
             throws CMSException {
         try {
-            CMSItem pageItem = this.fetchContent(cmsContext, path);
+            // Working path
+            String workingPath;
+            if (path == null) {
+                workingPath = sitePath;
+            } else {
+                workingPath = path;
+            }
+
+
+            CMSItem pageItem = this.fetchContent(cmsContext, workingPath);
 
             List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
 
@@ -1118,19 +1127,15 @@ public class CMSService implements ICMSService {
 
 
             // Inherited regions
-            Map<String, List<CMSEditableWindow>> inheritedRegions;
-            if (document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS) != null) {
-                inheritedRegions = this.getInheritedRegions(cmsContext, path, publishSpacePath, sitePath, navigationScope, editionMode);
-                for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
-                    if (CollectionUtils.isNotEmpty(inheritedWindows)) {
-                        // Add inherited region windows
-                        windows.addAll(inheritedWindows);
-                    }
+            Map<String, List<CMSEditableWindow>> inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath,
+                    navigationScope, editionMode);
+            for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+                if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+                    // Add inherited region windows
+                    windows.addAll(inheritedWindows);
                 }
-            } else {
-                inheritedRegions = new HashMap<String, List<CMSEditableWindow>>(0);
             }
-            int nbInheritedWindows = windows.size();
+            int windowsCount = windows.size();
 
 
             if (publishSpacePath != null) {
@@ -1138,6 +1143,9 @@ public class CMSService implements ICMSService {
                 PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
                 if ((fragments != null) && !fragments.isEmpty()) {
                     EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
+
+                    // Region windows count
+                    int regionWindowsCount = 0;
 
                     // Loop
                     for (int i = 0; i < fragments.size(); i++) {
@@ -1150,10 +1158,11 @@ public class CMSService implements ICMSService {
                             EditableWindow editableWindow = adapter.getType(category);
                             if (editableWindow != null) {
                                 // Window creation
-                                int windowId = nbInheritedWindows + i;
+                                int windowId = windowsCount + regionWindowsCount;
                                 Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
                                 CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
                                 windows.add(window);
+                                regionWindowsCount++;
                             } else {
                                 // Si type de portlet non trouvé, erreur.
                                 logger.warn("Type de fragment " + category + " non géré");
@@ -1203,13 +1212,23 @@ public class CMSService implements ICMSService {
         // Overrided regions
         Set<String> overridedRegions = this.getPageOverridedRegions(cmsContext, path, publishSpacePath);
 
+        // Window identifier
+        int windowId = 0;
+
 
         String parentPath = CMSObjectPath.parse(path).getParent().toString();
         while (StringUtils.startsWith(parentPath, publishSpacePath)) {
-            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, adapter, parentPath,
-                    publishSpacePath, editionMode);
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, adapter,
+                    parentPath, publishSpacePath, editionMode);
             inheritedRegions.putAll(pagePropagatedRegions);
             overridedRegions.addAll(pagePropagatedRegions.keySet());
+
+            // Window identifier increment
+            for (List<CMSEditableWindow> windows : pagePropagatedRegions.values()) {
+                if (CollectionUtils.isNotEmpty(windows)) {
+                    windowId += windows.size();
+                }
+            }
 
             // Loop on parent path
             parentPath = CMSObjectPath.parse(parentPath).getParent().toString();
@@ -1219,8 +1238,8 @@ public class CMSService implements ICMSService {
         boolean directInheritance = (publishSpacePath != null) && (StringUtils.startsWith(path, sitePath));
         if (!directInheritance) {
             // Add defaut page propagated region windows in case of indirect inheritance
-            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, adapter, sitePath,
-                    sitePath, editionMode);
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, adapter,
+                    sitePath, sitePath, editionMode);
             inheritedRegions.putAll(pagePropagatedRegions);
         }
 
@@ -1264,13 +1283,14 @@ public class CMSService implements ICMSService {
      *
      * @param cmsContext cmsContext
      * @param overridedRegions overrided regions
+     * @param windowsCount windows count
      * @param adapter editable window adapter
      * @param path current path
      * @param publishSpacePath publish space path
      * @param editionMode edition mode indicator
      * @return page propagated regions
      */
-    private Map<String, List<CMSEditableWindow>> getPagePropagatedRegions(CMSServiceCtx cmsContext, Set<String> overridedRegions,
+    private Map<String, List<CMSEditableWindow>> getPagePropagatedRegions(CMSServiceCtx cmsContext, Set<String> overridedRegions, int windowsCount,
             EditableWindowAdapter adapter, String path, String publishSpacePath, boolean editionMode) {
         Map<String, List<CMSEditableWindow>> pagePropagatedRegions = new HashMap<String, List<CMSEditableWindow>>();
 
@@ -1281,7 +1301,6 @@ public class CMSService implements ICMSService {
             if (navItem != null) {
                 Map<String, RegionInheritance> inheritance = this.getRegionsInheritance(navItem);
                 Set<String> identifiers = new HashSet<String>();
-                int windowId = 0;
 
                 // Document regions loop
                 for (Entry<String, RegionInheritance> region : inheritance.entrySet()) {
@@ -1305,6 +1324,9 @@ public class CMSService implements ICMSService {
                     if (item != null) {
                         Document document = (Document) item.getNativeItem();
 
+                        // Region windows count
+                        int regionWindowsCount = 0;
+
                         // Document fragments loop
                         PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
                         for (int i = 0; i < fragments.size(); i++) {
@@ -1316,14 +1338,15 @@ public class CMSService implements ICMSService {
 
                                 EditableWindow editableWindow = adapter.getType(category);
                                 if (editableWindow != null) {
+                                    List<CMSEditableWindow> windows = pagePropagatedRegions.get(regionId);
+
                                     // Window creation
+                                    int windowId = windowsCount + regionWindowsCount;
                                     Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
                                     properties.put("osivia.cms.inherited", String.valueOf(true));
                                     CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
-
-                                    List<CMSEditableWindow> windows = pagePropagatedRegions.get(regionId);
                                     windows.add(window);
-                                    windowId++;
+                                    regionWindowsCount++;
                                 }
                             }
                         }
@@ -1407,7 +1430,7 @@ public class CMSService implements ICMSService {
                     Map<String, String> value = new HashMap<String, String>();
                     value.put(EditableWindowHelper.REGION_IDENTIFIER, regionName);
                     value.put(EditableWindowHelper.INHERITANCE, StringUtils.trimToEmpty(inheritance.getValue()));
-                    command = new DocumentAddComplexPropertyCommand(document, "regions", value);
+                    command = new DocumentAddComplexPropertyCommand(document, EditableWindowHelper.SCHEMA_REGIONS, value);
                 } else {
                     // Update existing property
                     command = new DocumentUpdatePropertiesCommand(document, properties);

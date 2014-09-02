@@ -19,23 +19,23 @@ public class DocumentAddComplexPropertyCommand implements INuxeoCommand {
 
     /** Command input document. */
     private final Document inputDocument;
-    /** Property schema. */
-    private final String schema;
+    /** Property xpath. */
+    private final String xpath;
     /** Property added value. */
     private final Map<String, String> value;
 
 
     /**
      * Constructor.
-     *
+     * 
      * @param inputDocument command input document
-     * @param schema property schema
+     * @param xpath property xpath
      * @param value property added value
      */
-    public DocumentAddComplexPropertyCommand(Document inputDocument, String schema, Map<String, String> value) {
+    public DocumentAddComplexPropertyCommand(Document inputDocument, String xpath, Map<String, String> value) {
         super();
         this.inputDocument = inputDocument;
-        this.schema = schema;
+        this.xpath = xpath;
         this.value = value;
     }
 
@@ -62,7 +62,7 @@ public class DocumentAddComplexPropertyCommand implements INuxeoCommand {
         // Request
         OperationRequest request = nuxeoSession.newRequest("Document.AddComplexProperty");
         request.setInput(this.inputDocument);
-        request.set("schema", this.schema);
+        request.set("xpath", this.xpath);
         request.set("value", builder.toString());
 
         return request.execute();
@@ -77,7 +77,7 @@ public class DocumentAddComplexPropertyCommand implements INuxeoCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName());
         builder.append(" : ");
-        builder.append(this.schema);
+        builder.append(this.xpath);
 
         return builder.toString();
     }
