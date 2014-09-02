@@ -32,6 +32,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
@@ -68,6 +69,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final String OPEN_LEVELS_WINDOW_PROPERTY = "osivia.cms.openLevels";
     /** Template window property name. */
     private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.template";
+    /** Force navigation window property name. */
+    private static final String FORCE_NAVIGATION_WINDOW_PROPERTY = "osivia.cms.forceNavigation";
 
     /** Default max levels. */
     private static final int DEFAULT_MAX_LEVELS = 3;
@@ -152,6 +155,9 @@ public class MenuPortlet extends CMSPortlet {
                 String template = request.getParameter("template");
                 window.setProperty(TEMPLATE_WINDOW_PROPERTY, template);
 
+                // Force navigation
+                String forceNavigation = request.getParameter("forceNavigation");
+                window.setProperty(FORCE_NAVIGATION_WINDOW_PROPERTY, forceNavigation);
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -194,6 +200,10 @@ public class MenuPortlet extends CMSPortlet {
         String selectedTemplate = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
         request.setAttribute("selectedTemplate", selectedTemplate);
 
+        // Force navigation
+        boolean forceNavigation = BooleanUtils.toBoolean(window.getProperty(FORCE_NAVIGATION_WINDOW_PROPERTY));
+        request.setAttribute("forceNavigation", forceNavigation);
+
 
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
@@ -215,11 +225,15 @@ public class MenuPortlet extends CMSPortlet {
             String basePath = nuxeoController.getBasePath();
             String spacePath = nuxeoController.getSpacePath();
 
+            // Force navigation
+            boolean forceNavigation = BooleanUtils.toBoolean(window.getProperty(FORCE_NAVIGATION_WINDOW_PROPERTY));
 
-            String menuRootPath = nuxeoController.getMenuRootPath();
-            if (menuRootPath != null) {
-                basePath = menuRootPath;
-                spacePath = menuRootPath;
+            if (!forceNavigation) {
+                String menuRootPath = nuxeoController.getMenuRootPath();
+                if (menuRootPath != null) {
+                    basePath = menuRootPath;
+                    spacePath = menuRootPath;
+                }
             }
 
 

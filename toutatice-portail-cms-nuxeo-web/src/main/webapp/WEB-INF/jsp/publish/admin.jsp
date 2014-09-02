@@ -12,6 +12,11 @@
 <portlet:actionURL name="save" var="saveAdminURL" />
 
 
+<c:if test="${forceNavigation}">
+    <c:set var="forceNavigationChecked" value="checked" />
+</c:if>
+
+
 <div class="container">
     <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
         <!-- Open levels -->
@@ -55,6 +60,20 @@
                         <option value="${template.key}" ${selected}>${template.value}</option>
                     </c:forEach>
                 </select>
+            </div>
+        </div>
+        
+        <!-- Force navigation -->
+        <div class="form-group">
+            <label for="force-navigation" class="control-label col-sm-4"><is:getProperty key="MENU_FORCE_NAVIGATION" /></label>
+            <div class="col-sm-8">
+                <div class="checkbox">
+                    <label>
+                        <input id="force-navigation" type="checkbox" name="forceNavigation" ${forceNavigationChecked} />
+                        <span><is:getProperty key="MENU_FORCE_CURRENT_SPACE_NAVIGATION" /></span>
+                    </label>
+                </div>
+                <span class="help-block"><is:getProperty key="MENU_FORCE_CURRENT_SPACE_NAVIGATION_HELP" /></span>
             </div>
         </div>
         
