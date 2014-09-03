@@ -157,13 +157,13 @@ public class MenuBarFormater {
             if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
                 this.getAdministrationLink(cmsCtx, menubar);
             }
-            
+
             if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
                 this.getBackLink( cmsCtx,  menubar);
             }
 
-            
-            
+
+
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
@@ -174,10 +174,10 @@ public class MenuBarFormater {
     }
 
  protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
-        
+
         PortletRequest request = cmsCtx.getRequest();
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
-        
+
         // Duplication bouton ajouter
 
         MenubarItem duplicateItem = null;
@@ -196,7 +196,7 @@ public class MenuBarFormater {
                 }
             }
         }
-        
+
         if( duplicateItem != null)  {
             menubar.add(duplicateItem) ;
 
@@ -206,10 +206,10 @@ public class MenuBarFormater {
                 menubar.remove(addIndice) ;
         }
     }
-    
+
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
-        formatDefaultContentMenuBar(cmsCtx);
-        adaptDropdowMenu(cmsCtx);
+        this.formatDefaultContentMenuBar(cmsCtx);
+        this.adaptDropdowMenu(cmsCtx);
     }
 
 
@@ -242,10 +242,10 @@ public class MenuBarFormater {
      * @return true if current document is a remote proxy
      */
     protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
-        
+
         if( cmsCtx.getDoc() == null)
             return false;
-        
+
         if( pubInfos.isPublished() && !this.isInLiveMode(cmsCtx, pubInfos)){
             String docPath = (((Document) (cmsCtx.getDoc())).getPath());
 
@@ -329,7 +329,7 @@ public class MenuBarFormater {
                 liveIndicator.setGlyphicon("notes_2");
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
-                
+
                 if (pubInfos.isOnLinePending()) {
                     // OnLIne workflow pending indicator menubar item
                     MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"),
@@ -338,9 +338,9 @@ public class MenuBarFormater {
                     pendingIndicator.setStateItem(true);
                     menubar.add(pendingIndicator);
                 }
-                
-            } 
-            
+
+            }
+
             else {
                 editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
 
@@ -355,7 +355,7 @@ public class MenuBarFormater {
 
                         if (pubInfos.isOnLinePending()) {
                             // OnLine workflow validation items
-                            addValidatePublishingItems(portalControllerContext, cmsCtx, menubar, pubInfos);
+                            this.addValidatePublishingItems(portalControllerContext, cmsCtx, menubar, pubInfos);
                         } else {
                             if(pubInfos.isBeingModified()){
                                 // Publish menubar item
@@ -438,13 +438,13 @@ public class MenuBarFormater {
 
     /**
      * Generate validate or recject OnLine workflow items..
-     * 
+     *
      * @param menubar
-     * @throws Exception 
+     * @throws Exception
      */
     protected void addValidatePublishingItems(PortalControllerContext portalControllerContext, CMSServiceCtx cmsCtx, List<MenubarItem> menubar, CMSPublicationInfos pubInfos) throws Exception {
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-        
+
         String validateUrl = this.getContributionService().getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
         MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, validateUrl,
                 null, null, null);
@@ -452,7 +452,7 @@ public class MenuBarFormater {
         validateItem.setAjaxDisabled(true);
         validateItem.setDropdownItem(true);
         menubar.add(validateItem);
-        
+
         String rejectUrl = this.getContributionService().getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
         MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 13, rejectUrl,
                 null, null, null);
@@ -640,10 +640,10 @@ public class MenuBarFormater {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
             // Callback URL
             //String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
-            
+
             // Test ergo JSS
             String callbackURL = this.urlFactory.getRefreshPageUrl(portalControllerContext);
-            
+
             // Portal base URL
             String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
             // ECM base URL
@@ -921,8 +921,10 @@ public class MenuBarFormater {
     }
 
 
-    protected void addPermaLinkItem(List<MenubarItem> menuBar, String url) throws Exception {
-        MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, null, null);
+    protected void addPermaLinkItem(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar, String url) throws Exception {
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, null, null);
         item.setGlyphicon("halflings link");
         item.setAjaxDisabled(true);
         menuBar.add(item);
@@ -942,14 +944,14 @@ public class MenuBarFormater {
                 permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
         if (permaLinkURL != null) {
-            this.addPermaLinkItem(menuBar, permaLinkURL);
+            this.addPermaLinkItem(cmsCtx, menuBar, permaLinkURL);
         }
 
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * Get back link.
      *
@@ -971,11 +973,11 @@ public class MenuBarFormater {
 
         // Current document
         Document document = (Document) cmsCtx.getDoc();
-        
+
         if( document == null)
         	return;
 
-        
+
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
         EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
@@ -995,7 +997,7 @@ public class MenuBarFormater {
         }
     }
 
-    
+
 
 
     /**
