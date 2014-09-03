@@ -12,7 +12,7 @@
     <c:choose>
         <c:when test="${not empty displayItem}">
             <c:if test="${not empty displayItem.children}">
-                <nav>
+                <nav class="menu-default">
                     <!-- Title -->
                     <h3 class="hidden"><is:getProperty key="MENU_TITLE_DEFAULT" /></h3>
             
