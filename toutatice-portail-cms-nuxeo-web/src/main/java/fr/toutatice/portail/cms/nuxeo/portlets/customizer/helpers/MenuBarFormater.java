@@ -162,8 +162,13 @@ public class MenuBarFormater {
                 this.getBackLink( cmsCtx,  menubar);
             }
 
-
-
+            if ((cmsCtx.getDoc() != null) && !webPageFragment) {
+                this.getDriveEditUrl(cmsCtx, menubar);
+            }
+            if ((cmsCtx.getDoc() != null) && !webPageFragment) {
+                this.getSynchronizeLink(cmsCtx, menubar);
+            }
+            
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
@@ -173,7 +178,9 @@ public class MenuBarFormater {
         }
     }
 
- protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
+
+
+    protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
 
         PortletRequest request = cmsCtx.getRequest();
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
@@ -526,6 +533,96 @@ public class MenuBarFormater {
         }
     }
 
+    protected void getDriveEditUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        if (!ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            return;
+        }
+
+        // Current document
+        Document document = (Document) cmsCtx.getDoc();
+        String path = document.getPath();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+
+        if (pubInfos.getDriveEditURL() != null) {
+            // Internationalization bundle
+            Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+
+            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 4,
+                    pubInfos.getDriveEditURL(), null, null, null);
+            driveEditItem.setGlyphicon("halflings play");
+            driveEditItem.setAjaxDisabled(true);
+            driveEditItem.setDropdownItem(true);
+            menubar.add(driveEditItem);
+        }
+    }
+
+    protected void getSynchronizeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        if (!ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            return;
+        }
+
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+
+
+        // Current document
+        Document document = (Document) cmsCtx.getDoc();
+        String path = document.getPath();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+
+        Boolean enableParamter = null;
+        String command = null;
+        String icon = null;
+        
+        if (pubInfos.isCanSynchronize()) {
+            enableParamter = true;
+            command = "SYNCHRONIZE";
+            icon = "refresh";
+        }
+        else if(pubInfos.isCanUnsynchronize()) {
+            enableParamter = false;
+            command = "UNSYNCHRONIZE";
+            icon = "ban-circle";
+        }
+        
+        if (enableParamter != null) {
+
+
+
+            String synchronizeUrl = this.urlFactory.getSynchronizationCommandUrl(
+new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), enableParamter);
+
+
+            MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), MenubarItem.ORDER_PORTLET_GENERIC + 5,
+                    synchronizeUrl, null, null, null);
+            synchronizeItem.setGlyphicon("halflings "+icon);
+            synchronizeItem.setAjaxDisabled(true);
+            synchronizeItem.setDropdownItem(true);
+            menubar.add(synchronizeItem);
+        } else if (pubInfos.getSynchronizationRootPath() != null) {
+
+            String rootUrl = urlFactory.getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
+                    pubInfos.getSynchronizationRootPath(), null, null, null, null, null, null, null);
+
+            MenubarItem rootUrlItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), MenubarItem.ORDER_PORTLET_GENERIC + 5, rootUrl,
+                    null, null, null);
+            rootUrlItem.setGlyphicon("halflings backward");
+            rootUrlItem.setAjaxDisabled(true);
+            rootUrlItem.setDropdownItem(true);
+            menubar.add(rootUrlItem);
+            
+        }
+
+    }
 
     /**
      * Get edit CMS content link.

@@ -75,6 +75,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentSetSynchronizationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
@@ -1813,6 +1814,29 @@ public class CMSService implements ICMSService {
     @Override
     public SortedMap<String, String> getMenuTemplates(Locale locale) {
         return this.customizer.getMenuTemplates(locale);
+    }
+
+    @Override
+    public void setSynchronization(CMSServiceCtx cmsCtx, String pagePath, Boolean enable) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, enable));
+
+            // On force le rechargement du cache de la page
+            cmsCtx.setDisplayLiveVersion("0");
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
     }
 
 }
