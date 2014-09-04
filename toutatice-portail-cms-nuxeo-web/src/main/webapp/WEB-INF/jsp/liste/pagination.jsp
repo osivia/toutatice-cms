@@ -65,7 +65,7 @@
 
 
     <div class="text-center">
-        <ul class="pagination">
+        <ul class="pagination pagination-sm">
             <!-- Start -->
             <c:if test="${min > 0}">
                 <portlet:renderURL var="startUrl">
