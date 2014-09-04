@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -692,8 +693,18 @@ public class ViewListPortlet extends CMSPortlet {
                 String permaLinkRef = window.getProperty("osivia.permaLinkRef");
                 if (permaLinkRef != null) {
                     Map<String, String> publicParams = new HashMap<String, String>();
-                    if (selectors != null)
-                        publicParams.put("selectors", selectors);
+                    if (selectors != null)  {
+                        // Selectors
+                        Map<String, List<String>> selectorsMap = PageSelectors.decodeProperties(selectors);
+                        
+                        selectorsMap.remove("selectorChanged");
+                        publicParams.put("selectors", PageSelectors.encodeProperties(selectorsMap));
+
+                    }
+                                        
+                    
+                    
+                    
                     String permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_PAGE;
                     if (request.getParameter("osivia.cms.path") != null) {
                         permLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
@@ -727,8 +738,13 @@ public class ViewListPortlet extends CMSPortlet {
                     if (anonymousAccess) {
 
                         Map<String, String> publicParams = new HashMap<String, String>();
-                        if (selectors != null)
-                            publicParams.put("selectors", selectors);
+                        if (selectors != null)  {
+                            // Selectors
+                            Map<String, List<String>> selectorsMap = PageSelectors.decodeProperties(selectors);
+                            
+                            selectorsMap.remove("selectorChanged");
+                            publicParams.put("selectors", PageSelectors.encodeProperties(selectorsMap));
+                        }
 
 
                         String rssLinkURL = ctx.getPortalUrlFactory().getPermaLink(new PortalControllerContext(getPortletContext(), request, response),

@@ -444,12 +444,34 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
 			// Get public parameter
 			Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-			if (selectors.get(selectorId) != null) {
-                request.setAttribute("vocabsId", selectors.get(selectorId));
+			List<String> curSelect = selectors.get(selectorId) ;
+			if (curSelect != null) {
+                request.setAttribute("vocabsId", curSelect);
+                if( "1".equals(selectorMonoValued))  {
+                    
+                    
+                    if( curSelect.size() > 0)   {
+                        String[] tokens = curSelect.get( 0).split("/");
+                        if( tokens.length > 0)  {
+                            vocab1Id = tokens[0];
+                        }
+                        if( tokens.length > 1)  {
+                            vocab2Id = tokens[1];
+                        }
+                        if( tokens.length > 2)  {
+                            vocab3Id = tokens[2];
+                        }
+                                                
+                    }             
+                }
             } else {
                 request.setAttribute("vocabsId", new ArrayList<String>());
             }
 
+
+			
+			
+			
 
 			request.setAttribute("vocab1Id", vocab1Id);
 			request.setAttribute("vocab2Id", vocab2Id);

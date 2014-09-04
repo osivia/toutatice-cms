@@ -278,8 +278,24 @@ public class DateSelectorPortlet extends CMSPortlet {
             if (selectorId != null) {
                 // Get public parameter
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-                if (selectors.get(selectorId) != null) {
-                    request.setAttribute("dates", selectors.get(selectorId));
+                List<String> curSelect = selectors.get(selectorId) ;
+                if (curSelect != null) {
+                    request.setAttribute("dates", curSelect);
+                    
+                    if( "1".equals(datesMonoValued))  {
+                        
+
+                        if( curSelect.size() > 0)   {
+                            String[] tokens = curSelect.get(0).split("\\"+DATES_SEPARATOR);
+                            if( tokens.length > 0)  {
+                                dateFrom = tokens[0];
+                            }
+                            if( tokens.length > 1)  {
+                                dateTo = tokens[1];
+                            }
+                            
+                        }             
+                    }                    
                 } else {
                     request.setAttribute("dates", new ArrayList<String>());
                 }
