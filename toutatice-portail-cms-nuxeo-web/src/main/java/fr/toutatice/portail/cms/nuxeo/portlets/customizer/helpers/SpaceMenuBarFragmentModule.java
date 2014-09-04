@@ -52,20 +52,9 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
             Document doc = ctrl.fetchDocument(navigationPath);
 
             ctrl.setCurrentDoc(doc);
+            request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
             ctrl.insertContentMenuBarItems();
-            
-            String permlinkPath = ctrl.getContentWebIdPath();
-
-            String url = this.getPortalUrlFactory(ctrl.getPortletCtx()).getPermaLink(new PortalControllerContext(ctrl.getPortletCtx(), request, response),
-                    null, null, permlinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-
-            List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-            MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-permalink", null);
-
-            item.setAjaxDisabled(true);
-            menuBar.add(item);
-
+ 
 
         }
     }

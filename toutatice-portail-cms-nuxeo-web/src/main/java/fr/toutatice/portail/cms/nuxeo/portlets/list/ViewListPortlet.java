@@ -348,6 +348,13 @@ public class ViewListPortlet extends CMSPortlet {
                 window.setProperty("osivia.rssTitle", req.getParameter("rssTitle"));
             else if (window.getProperty("osivia.rssTitle") != null)
                 window.setProperty("osivia.rssTitle", null);
+            
+            
+            if ("1".equals(req.getParameter("showSpaceMenuBar")))
+                window.setProperty("osivia.cms.showSpaceMenuBar", "1");
+            else if (window.getProperty("osivia.cms.showSpaceMenuBar") != null)
+                window.setProperty("osivia.cms.showSpaceMenuBar", null);
+            
 
             /* Paramètres de création de documents */
             if (req.getParameter("createParentPath") != null && req.getParameter("createParentPath").length() > 0)
@@ -414,6 +421,13 @@ public class ViewListPortlet extends CMSPortlet {
             if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas")))
                 showMetadatas = "0";
             req.setAttribute("showMetadatas", showMetadatas);
+            
+            
+            String showSpaceMenuBar = "0";
+            if ("1".equals(window.getProperty("osivia.cms.showSpaceMenuBar")))
+                showSpaceMenuBar = "1";
+            req.setAttribute("showSpaceMenuBar", showSpaceMenuBar);
+            
 
             String beanShell = "";
             String interpretor = window.getProperty("osivia.requestInterpretor");
@@ -755,6 +769,18 @@ public class ViewListPortlet extends CMSPortlet {
 
                 }
 
+                // Ajout menu bar d'espace 
+                
+                if("1".equals(window.getProperty("osivia.cms.showSpaceMenuBar")))   {
+                    String navigationPath = ctx.getNavigationPath();
+
+                    if (navigationPath != null) {
+                         Document doc = ctx.fetchDocument(navigationPath);
+                         ctx.setCurrentDoc(doc);
+                         request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
+                    }
+                }
+                
 
                 /* Ajout d'un item de création si les paramètres sont renseignés */
 
@@ -767,6 +793,9 @@ public class ViewListPortlet extends CMSPortlet {
                 }
 
 
+  
+                
+                
                 ctx.insertContentMenuBarItems();
 
 

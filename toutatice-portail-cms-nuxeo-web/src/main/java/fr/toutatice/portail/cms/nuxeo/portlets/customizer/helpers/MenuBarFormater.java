@@ -839,28 +839,53 @@ public class MenuBarFormater {
     }
 
 
-    protected void addPermaLinkItem(List<MenubarItem> menuBar, String url) throws Exception {
+    protected void addPermaLinkItem(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar, String url) throws Exception {
         MenubarItem item = new MenubarItem("PERMLINK", "Permalink", MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-permalink", null);
 
         item.setAjaxDisabled(true);
         menuBar.add(item);
 
     }
-
-    protected void getPermaLinkLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-
-        if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
-            return;
-        }
-
+    
+    
+    protected String computePermaLinkUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
         String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
 
         String permaLinkURL = this.getPortalUrlFactory().getPermaLink(
                 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
                 permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
 
+        return permaLinkURL;
+    }
+    
+    
+    protected boolean mustDisplayPermalink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
+        boolean displayPermaLink = false;
+
+        if (WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
+            displayPermaLink = true;
+        }
+        
+        // for spaceMenuBar fragment
+        if( BooleanUtils.isTrue((Boolean) cmsCtx.getRequest().getAttribute("osivia.cms.forcePermalinkDisplay")))  {
+            displayPermaLink = true;            
+        }
+        
+        return displayPermaLink;     
+    }
+    
+    
+    protected void getPermaLinkLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
+        if( ! mustDisplayPermalink(cmsCtx, menuBar))
+            return;
+        
+        String permaLinkURL = computePermaLinkUrl(cmsCtx, menuBar);
+
         if (permaLinkURL != null) {
-            this.addPermaLinkItem(menuBar, permaLinkURL);
+            this.addPermaLinkItem(cmsCtx, menuBar, permaLinkURL);
         }
 
     }

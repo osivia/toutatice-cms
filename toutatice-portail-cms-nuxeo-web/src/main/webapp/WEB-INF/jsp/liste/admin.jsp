@@ -108,6 +108,12 @@ return requete;
 			String showMetadatas = (String) request.getAttribute("showMetadatas");
 			if( ! "1".equals( showMetadatas))
 				checkShowMetadatas = "";
+			
+			
+			String checkSpaceMenuBar = "checked";
+			String showSpaceMenuBar = (String) request.getAttribute("showSpaceMenuBar");
+			if( ! "1".equals( showSpaceMenuBar))
+			    checkSpaceMenuBar = "";
 %>			
 			
 		<input type="checkbox" name="showMetadatas" value="1" <%=checkShowMetadatas%>/>Affichage des méta-données (sur le détail des documents) <br/>	
@@ -154,6 +160,10 @@ return requete;
 
 		<label>Titre RSS :</label> <input type="text" name="rssTitle" value="${rssTitle}" size="40"> <br/><br/>
 		
+		
+		<b>Menu</b><br/>
+		
+				<input type="checkbox" name="showSpaceMenuBar" value="1" <%=checkSpaceMenuBar%>/>Affichage barre de menu d'espace <br/>	
 				
 		<b>Création de contenus</b><br/>
 		<label>Chemin du conteneur :</label><input type="text" name="createParentPath" value="${createParentPath}" size="40"> <br/>
