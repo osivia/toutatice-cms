@@ -26,10 +26,10 @@ pageContext.setAttribute("link", nuxeoController.getLink(document));
 </c:if>
 
 
-<li>
+<li class="list-group-item">
     <a href="${link.url}" target="${target}">
         <span>${title}</span>
-        
+    
         <!-- Downloadable -->
         <c:if test="${link.downloadable}">
             <i class="glyphicons download_alt"></i>

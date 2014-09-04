@@ -4,6 +4,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 
 <%@ page isELIgnored="false" %>
@@ -34,9 +35,9 @@ if (nuxeoController.getPerson(username) != null) {
 pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
 // Date
 if (document.getDate("dc:modified") == null) {
- pageContext.setAttribute("date", document.getDate("dc:created"));
+    pageContext.setAttribute("date", document.getDate("dc:created"));
 } else {
- pageContext.setAttribute("date", document.getDate("dc:modified"));
+    pageContext.setAttribute("date", document.getDate("dc:modified"));
 }
 
 %>
@@ -47,13 +48,13 @@ if (document.getDate("dc:modified") == null) {
 </c:if>
 
 
-<li>
+<li class="list-group-item">
     <p>
         <img src="${pageContext.request.contextPath}${icon}" alt="${type}" class="icon" />
     
         <a href="${link.url}" target="${target}">
             <span>${title}</span>
-            
+        
             <!-- Downloadable -->
             <c:if test="${link.downloadable}">
                 <i class="glyphicons download_alt"></i>
@@ -66,10 +67,12 @@ if (document.getDate("dc:modified") == null) {
         </a>
     </p>
     
+    <!-- Last edition informations -->
     <p class="small">
+        <span><is:getProperty key="EDITED_BY" /></span>
         <img src="${avatar.url}" alt="" class="avatar avatar-small" />
         <span>${username}</span>
-        <span> - </span>
-        <span><fmt:formatDate value="${date}" type="both" dateStyle="medium" timeStyle="short" /></span>
+        <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+        <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
     </p>
 </li>

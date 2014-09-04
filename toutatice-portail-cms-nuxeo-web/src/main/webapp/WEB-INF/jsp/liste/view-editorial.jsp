@@ -2,6 +2,7 @@
 <%@ page import="org.nuxeo.ecm.automation.client.model.Document"%>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="internationalization" prefix="is" %>
 
 
@@ -24,8 +25,21 @@ pageContext.setAttribute("description", document.getString("dc:description"));
 if ((document.getProperties().getMap("ttc:vignette") != null) && (document.getProperties().getMap("ttc:vignette").getString("data") != null)) {
     pageContext.setAttribute("vignette", nuxeoController.createFileLink(document, "ttc:vignette"));
 }
-// Detailed view link
-pageContext.setAttribute("detailedViewLink", nuxeoController.getLink(document, "detailedView"));
+// Username
+String username = document.getString("dc:creator");
+if (nuxeoController.getPerson(username) != null) {
+    pageContext.setAttribute("username", nuxeoController.getPerson(username).getDisplayName());
+} else {
+    pageContext.setAttribute("username", username);
+}
+// Avatar
+pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
+// Date
+if (document.getDate("dc:modified") == null) {
+    pageContext.setAttribute("date", document.getDate("dc:created"));
+} else {
+    pageContext.setAttribute("date", document.getDate("dc:modified"));
+}
 
 %>
 
@@ -35,7 +49,7 @@ pageContext.setAttribute("detailedViewLink", nuxeoController.getLink(document, "
 </c:if>
 
 
-<li class="clearfix">
+<li class="list-group-item clearfix">
     <!-- Vignette -->
     <c:if test="${not empty vignette}">
         <img src="${vignette}" alt="" class="vignette pull-left" />
@@ -43,7 +57,7 @@ pageContext.setAttribute("detailedViewLink", nuxeoController.getLink(document, "
 
     <div>
         <!-- Title -->
-        <p class="lead">
+        <h4>
             <a href="${link.url}" target="${target}">
                 <span>${title}</span>
                 
@@ -57,14 +71,18 @@ pageContext.setAttribute("detailedViewLink", nuxeoController.getLink(document, "
                     <i class="glyphicons new_window_alt"></i>
                 </c:if>
             </a>
-        </p>
+        </h4>
 
         <!-- Description -->
         <p>${description}</p>
-
-        <!-- Detailed view -->
-        <p class="pull-right">
-            <a href="${detailedViewLink.url}"><is:getProperty key="LIST_DETAILED_VIEW" /></a>
+        
+        <!-- Last edition informations -->
+        <p class="small">
+            <span><is:getProperty key="EDITED_BY" /></span>
+            <img src="${avatar.url}" alt="" class="avatar avatar-small" />
+            <span>${username}</span>
+            <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+            <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
         </p>
     </div>
 </li>

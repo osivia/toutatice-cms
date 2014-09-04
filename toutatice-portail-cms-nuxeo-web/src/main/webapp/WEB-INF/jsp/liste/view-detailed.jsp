@@ -4,6 +4,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 
 <%@ page isELIgnored="false" %>
@@ -28,9 +29,9 @@ pageContext.setAttribute("description", document.getString("dc:description"));
 // Username
 String username = document.getString("dc:creator");
 if (nuxeoController.getPerson(username) != null) {
- pageContext.setAttribute("username", nuxeoController.getPerson(username).getDisplayName());
+    pageContext.setAttribute("username", nuxeoController.getPerson(username).getDisplayName());
 } else {
- pageContext.setAttribute("username", username);
+    pageContext.setAttribute("username", username);
 }
 // Avatar
 pageContext.setAttribute("avatar", nuxeoController.getUserAvatar(username));
@@ -49,13 +50,14 @@ if (document.getDate("dc:modified") == null) {
 </c:if>
 
 
-<li>
-    <p>
+<li class="list-group-item">
+    <!-- Title -->
+    <h4>
         <img src="${pageContext.request.contextPath}${icon}" alt="${type}" class="icon" />
-    
+        
         <a href="${link.url}" target="${target}">
             <span>${title}</span>
-            
+        
             <!-- Downloadable -->
             <c:if test="${link.downloadable}">
                 <i class="glyphicons download_alt"></i>
@@ -66,14 +68,19 @@ if (document.getDate("dc:modified") == null) {
                 <i class="glyphicons new_window_alt"></i>
             </c:if>
         </a>
+    </h4>
+    
+    <!-- Description -->
+    <p>
+        <span>${description}</span>
     </p>
-
-    <p>${description}</p>
-
+    
+    <!-- Last edition informations -->
     <p class="small">
+        <span><is:getProperty key="EDITED_BY" /></span>
         <img src="${avatar.url}" alt="" class="avatar avatar-small" />
         <span>${username}</span>
-        <span> - </span>
-        <span><fmt:formatDate value="${date}" type="both" dateStyle="medium" timeStyle="short" /></span>
+        <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+        <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
     </p>
 </li>

@@ -29,7 +29,7 @@
         
             <!-- Documents -->
             <div class="no-ajax-link">
-                <ul class="list-unstyled clearfix">
+                <ul class="list-unstyled list-group clearfix">
                     <c:forEach var="doc" items="${docs}" varStatus="status">
                         <c:set var="doc" value="${doc}" scope="request" />
                         <c:set var="parite" value="${status.count % 2}" />
