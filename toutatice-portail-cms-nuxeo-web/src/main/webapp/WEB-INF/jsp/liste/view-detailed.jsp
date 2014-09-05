@@ -50,12 +50,12 @@ if (document.getDate("dc:modified") == null) {
 </c:if>
 
 
-<li class="list-group-item">
-    <!-- Title -->
-    <h4>
-        <img src="${pageContext.request.contextPath}${icon}" alt="${type}" class="icon" />
-        
-        <a href="${link.url}" target="${target}">
+<li class="list-group-item list-linked-item">
+    <a href="${link.url}" target="${target}" class="list-group-item">
+        <!-- Title -->
+        <h4 class="list-group-item-heading">
+            <img src="${pageContext.request.contextPath}${icon}" alt="${type}" class="icon" />
+
             <span>${title}</span>
         
             <!-- Downloadable -->
@@ -67,20 +67,20 @@ if (document.getDate("dc:modified") == null) {
             <c:if test="${link.external}">
                 <i class="glyphicons new_window_alt"></i>
             </c:if>
-        </a>
-    </h4>
-    
-    <!-- Description -->
-    <p>
-        <span>${description}</span>
-    </p>
-    
-    <!-- Last edition informations -->
-    <p class="small">
-        <span><is:getProperty key="EDITED_BY" /></span>
-        <img src="${avatar.url}" alt="" class="avatar avatar-small" />
-        <span>${username}</span>
-        <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
-        <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
-    </p>
+        </h4>
+        
+        <!-- Description -->
+        <p class="list-group-item-text">
+            <span>${description}</span>
+        </p>
+        
+        <!-- Last edition informations -->
+        <p class="list-group-item-text small">
+            <span><is:getProperty key="EDITED_BY" /></span>
+            <img src="${avatar.url}" alt="" class="avatar avatar-small" />
+            <span>${username}</span>
+            <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+            <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+        </p>
+    </a>
 </li>
