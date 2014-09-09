@@ -23,19 +23,17 @@
 	
 	<xsl:template match="/HTML/BODY">
 		<div>
-				<xsl:apply-templates select="node()" />
+			<xsl:apply-templates select="node()" />
 		</div>
 	</xsl:template>
 	
     <xsl:template match="IMG">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" />
-                
-            <xsl:attribute name="src">
-                <xsl:value-of select="bridge:link($bridge,  @src)" />
-            </xsl:attribute>
-            
-            <xsl:attribute name="class"><xsl:value-of select="@class" /> img-responsive</xsl:attribute>
+
+            <xsl:if test="not(ancestor::* [@class = 'no-format'])">
+                <xsl:attribute name="class"><xsl:value-of select="@class" /> img-responsive</xsl:attribute>
+            </xsl:if>
         </xsl:copy>
     </xsl:template>
 	
