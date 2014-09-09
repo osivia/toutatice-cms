@@ -63,6 +63,7 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
@@ -1301,24 +1302,30 @@ public class CMSService implements ICMSService {
 
             if (navItem != null) {
                 Map<String, RegionInheritance> inheritance = this.getRegionsInheritance(navItem);
-                Set<String> identifiers = new HashSet<String>();
+                Set<String> propagatedRegions = new HashSet<String>();
+                Set<String> lockedRegions = new HashSet<String>();
 
                 // Document regions loop
                 for (Entry<String, RegionInheritance> region : inheritance.entrySet()) {
-                    if (!overridedRegions.contains(region.getKey())) {
+                    if (RegionInheritance.LOCKED.equals(region.getValue())) {
+                        // Locked
+                        pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
+                        propagatedRegions.add(region.getKey());
+                        lockedRegions.add(region.getKey());
+                    } else if (!overridedRegions.contains(region.getKey())) {
                         if (RegionInheritance.NO_INHERITANCE.equals(region.getValue())) {
                             // No inheritance
                             pagePropagatedRegions.put(region.getKey(), null);
                         } else if (RegionInheritance.PROPAGATED.equals(region.getValue())) {
                             // Propagation
                             pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
-                            identifiers.add(region.getKey());
+                            propagatedRegions.add(region.getKey());
                         }
                     }
                 }
 
 
-                if (!identifiers.isEmpty()) {
+                if (!propagatedRegions.isEmpty()) {
                     // Fetch
                     CMSItem item = this.fetchContent(cmsContext, path);
 
@@ -1334,7 +1341,7 @@ public class CMSService implements ICMSService {
                             PropertyMap fragment = fragments.getMap(i);
                             String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
 
-                            if (identifiers.contains(regionId)) {
+                            if (propagatedRegions.contains(regionId)) {
                                 String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
 
                                 EditableWindow editableWindow = adapter.getType(category);
@@ -1344,7 +1351,10 @@ public class CMSService implements ICMSService {
                                     // Window creation
                                     int windowId = windowsCount + regionWindowsCount;
                                     Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
-                                    properties.put("osivia.cms.inherited", String.valueOf(true));
+                                    properties.put(InternalConstants.INHERITANCE_INDICATOR_PROPERTY, String.valueOf(true));
+                                    if (lockedRegions.contains(regionId)) {
+                                        properties.put(InternalConstants.INHERITANCE_LOCKED_INDICATOR_PROPERTY, String.valueOf(true));
+                                    }
                                     CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
                                     windows.add(window);
                                     regionWindowsCount++;
