@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @author lbi
  * 
  */
-public class Zoom implements Serializable, Comparable<Zoom> {
+public class Link implements Serializable, Comparable<Link> {
 
     /** title const. */
     public static final String TITLE = "title";
@@ -33,10 +33,10 @@ public class Zoom implements Serializable, Comparable<Zoom> {
     public static final String HREF = "href";
 
     /** vignette const. */
-    public static final String VIGNETTE = "vignette";
+    public static final String ICON = "icon";
 
-    /** desc const. */
-    public static final String DESCRIPTION = "desc";
+//    /** desc const. */
+//    public static final String DESCRIPTION = "desc";
 
     /** order const. */
     public static final String ORDER = "order";
@@ -52,11 +52,11 @@ public class Zoom implements Serializable, Comparable<Zoom> {
     /** href. */
     private String href;
     
-    /** imgSrc. */
-    private String imgSrc;
+    /** icon. */
+    private String icon;
     
-    /** description. */
-    private String description = "";
+//    /** description. */
+//    private String description = "";
 
     /** order. */
     private Integer order;
@@ -67,7 +67,7 @@ public class Zoom implements Serializable, Comparable<Zoom> {
      * @param o the other zoom
      * @return order.compareTo
      */
-    public int compareTo(Zoom o) {
+    public int compareTo(Link o) {
         return this.getOrder().compareTo(o.getOrder());
     }
 
@@ -104,36 +104,33 @@ public class Zoom implements Serializable, Comparable<Zoom> {
     }
 
 
-    /**
-     * @return the imgSrc
-     */
-    public String getImgSrc() {
-        return imgSrc;
-    }
 
 
-    /**
-     * @param imgSrc the imgSrc to set
-     */
-    public void setImgSrc(String imgSrc) {
-        this.imgSrc = imgSrc;
-    }
+
+    public String getIcon() {
+		return icon;
+	}
 
 
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
 
 
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
+//	/**
+//     * @return the description
+//     */
+//    public String getDescription() {
+//        return description;
+//    }
+
+
+//    /**
+//     * @param description the description to set
+//     */
+//    public void setDescription(String description) {
+//        this.description = description;
+//    }
 
 
     /**

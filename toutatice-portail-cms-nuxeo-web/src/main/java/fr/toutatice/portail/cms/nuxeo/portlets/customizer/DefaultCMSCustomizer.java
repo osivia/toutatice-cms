@@ -89,6 +89,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictur
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.IPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
@@ -369,6 +370,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
         fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, ZoomFragmentModule.DESC, new ZoomFragmentModule(), ZoomFragmentModule.JSP,
                 ZoomFragmentModule.ADMIN_JSP));
+        fragmentTypes.add(new FragmentType(LinksFragmentModule.ID, LinksFragmentModule.DESC, new LinksFragmentModule(), LinksFragmentModule.JSP,
+        		LinksFragmentModule.ADMIN_JSP));
         fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
         fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "document-picture"));
         fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));

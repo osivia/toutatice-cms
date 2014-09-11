@@ -25,6 +25,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
 
 /**
@@ -32,15 +33,15 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentMo
  * Service spécifique fragments HTML
  * 
  */
-public class ZoomEditableWindow extends EditableWindow {
+public class LinksEditableWindow extends EditableWindow {
 
     /** sch for fragment. */
-    public static final String ZOOM_SCHEMA = "zfgt:zoomFragment";
+    public static final String LINKS_FGT_SCHEMA = "lkfgt:linksFragment";
 
     /** sch for each link of the list . */
-    //public static final String ZOOM_LINKS = "zl:zoomLink";
+    public static final String LINKS_SCHEMA = "lk:links";
 	
-    public ZoomEditableWindow(String instancePortlet, String prefixWindow) {
+    public LinksEditableWindow(String instancePortlet, String prefixWindow) {
         super(instancePortlet, prefixWindow);
 
     }
@@ -51,11 +52,11 @@ public class ZoomEditableWindow extends EditableWindow {
         Map<String, String> propsFilled = super.fillGenericProps(doc, fragment, modeEditionPage);
         propsFilled.put(Constants.WINDOW_PROP_URI, doc.getPath());
 
-        PropertyMap mapListe = EditableWindowHelper.findSchemaByRefURI(doc, ZOOM_SCHEMA, fragment.getString("uri"));
+        PropertyMap mapListe = EditableWindowHelper.findSchemaByRefURI(doc, LINKS_FGT_SCHEMA, fragment.getString("uri"));
 
-        propsFilled.put("osivia.cms.style", mapListe.getString("view"));
-        propsFilled.put("osivia.fragmentTypeId", ZoomFragmentModule.ID);
-        //propsFilled.put("osivia.propertyName", ZOOM_LINKS);
+        //propsFilled.put("osivia.cms.style", "links");
+        propsFilled.put("osivia.fragmentTypeId", LinksFragmentModule.ID);
+        //propsFilled.put("osivia.propertyName", LINKS_SCHEMA);
 
         return propsFilled;
 	}
@@ -69,14 +70,14 @@ public class ZoomEditableWindow extends EditableWindow {
 		prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 		
 
-        Integer findIndexByRefURI = EditableWindowHelper.findIndexByRefURI(doc, ZOOM_SCHEMA, refURI);
-        propertiesToRemove.add(ZOOM_SCHEMA.concat("/").concat(findIndexByRefURI.toString()));
+        Integer findIndexByRefURI = EditableWindowHelper.findIndexByRefURI(doc, LINKS_FGT_SCHEMA, refURI);
+        propertiesToRemove.add(LINKS_FGT_SCHEMA.concat("/").concat(findIndexByRefURI.toString()));
 		
-//        List<Integer> findIndexesByRefURI = EditableWindowHelper.findIndexesByRefURI(doc, ZOOM_LINKS, refURI);
-//
-//        for (Integer indexToRemove : findIndexesByRefURI) {
-//            propertiesToRemove.add(ZOOM_LINKS.concat("/").concat(indexToRemove.toString()));
-//        }
+        List<Integer> findIndexesByRefURI = EditableWindowHelper.findIndexesByRefURI(doc, LINKS_SCHEMA, refURI);
+
+        for (Integer indexToRemove : findIndexesByRefURI) {
+            propertiesToRemove.add(LINKS_SCHEMA.concat("/").concat(indexToRemove.toString()));
+        }
 
         // Bug automation, supprimer la liste de propriétés par son dernier élément, puis l'avant dernier, etc.
         // sinon décalage des n° d'index dans les propriétés

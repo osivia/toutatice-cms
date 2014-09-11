@@ -1,5 +1,5 @@
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.service.editablewindow.Zoom"%>
+<%@page import="fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link"%>
 <%@page import="org.osivia.portal.api.urls.Link"%>
 <%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
 <%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%>
@@ -18,13 +18,10 @@
 <portlet:defineObjects />
 
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+	NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
 Document doc = (Document) renderRequest.getAttribute("doc");
-Zoom zoom = (Zoom) renderRequest.getAttribute("zoom");
-
-
-
+Link zoom = (Link) renderRequest.getAttribute("zoom");
 %>
 		<li> <div class="list-bloc"> <a href="<%=zoom.getHref()%>"><%=zoom.getTitle()%></a>
 		</div></li>	

@@ -35,6 +35,7 @@ import org.osivia.portal.api.windows.PortalWindow;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
@@ -43,31 +44,26 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
  * @author lbi
  * 
  */
-public class ZoomFragmentModule implements IFragmentModule {
+public class LinksFragmentModule implements IFragmentModule {
 
     /** name. */
-    public static final String ID = "zoom_property";
+    public static final String ID = "links_property";
 
     /** description of module. */
-    public static final String DESC = "Zoom";
+    public static final String DESC = "Liste de liens";
 
     /** jsp view-zoom in portlet fragment. */
-    public static final String JSP = "zoom";
+    public static final String JSP = "links";
 
     /** jsp admin property in portlet fragment. */
-    public static final String ADMIN_JSP = "zoom";
+    public static final String ADMIN_JSP = "links";
 
     private static final String REF_URI = "refURI";
-    private static final String HREF = "href";
-    private static final String CONTENT = "content";
-    private static final String PICTURE = "picture";
-    private static final String TYPE = "zoomType";
-    
 
     public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        ;
+        
         boolean emptyContent = true;
 
 
@@ -80,14 +76,14 @@ public class ZoomFragmentModule implements IFragmentModule {
             if (doc.getTitle() != null)
                 response.setTitle(doc.getTitle());
 
-            String propertyName = ZoomEditableWindow.ZOOM_SCHEMA;
+            String propertyName = LinksEditableWindow.LINKS_SCHEMA;
             String refURI = window.getProperty("osivia.refURI");
-            String view = window.getProperty("osivia.cms.style");
+            //String view = window.getProperty("osivia.cms.style");
 
             if (StringUtils.isNotEmpty(propertyName)) {
 
                 Object content = doc.getProperties().get(propertyName);
-                //List<Link> zoomContents = new ArrayList<Link>();
+                List<Link> zoomContents = new ArrayList<Link>();
 
                 // Si paramétrage de l'URI, propriétés du fragment attendues dans propertyName
                 if (StringUtils.isNotEmpty(refURI)) {
@@ -100,33 +96,18 @@ public class ZoomFragmentModule implements IFragmentModule {
 
                             for (int index = 0; index < dataContents.size(); index++) {
                                 PropertyMap mProperty = dataContents.getMap(index);
-                                
-                                
                                 String refURIValue = (String) mProperty.get(REF_URI);
-                                
-                                
-                                
 
                                 if (refURI.equalsIgnoreCase(refURIValue)) {
-                                    //Link zoom = new Link();
-                                	
-                                	
-                                	request.setAttribute("href", mProperty.get(HREF));
-                                    request.setAttribute("content", mProperty.get(CONTENT));
-                                    request.setAttribute("picture", mProperty.get(PICTURE));
-                                    
-                                    request.setAttribute("zoomType", mProperty.get(TYPE));
-                                    
-//                                    PropertyMap map = (PropertyMap) dataContents.getMap(index);
-                                    //zoom.setDescription(map.getString(Link.DESCRIPTION));
-//                                    zoom.setHref(map.getString(Link.HREF));
-                                    // zoom.setImgSrc(map.getString(Zoom.ViGNETTE));
-//                                    zoom.setOrder(map.getLong(Link.ORDER).intValue());
-//                                    zoom.setTitle(map.getString(Link.TITLE));
-//
-//                                    zoomContents.add(zoom);
-//                                    
-//                                    request.setAttribute("doc", doc);
+                                    Link link = new Link();
+                                    PropertyMap map = (PropertyMap) dataContents.getMap(index);
+                                    //link.setDescription(map.getString(Link.DESCRIPTION));
+                                    link.setHref(map.getString(Link.HREF));
+                                    link.setIcon(map.getString(Link.ICON));
+                                    //link.setOrder(map.getLong(Link.ORDER).intValue());
+                                    link.setTitle(map.getString(Link.TITLE));
+
+                                    zoomContents.add(link);
                                 }
                             }
 
@@ -134,18 +115,18 @@ public class ZoomFragmentModule implements IFragmentModule {
                     }
                 }
 
-//                if (zoomContents != null && zoomContents.size() > 0) {
-//
-//                    Collections.sort(zoomContents);
-//
-//                    ctx.setCurrentDoc(doc);
-//                    request.setAttribute("doc", doc);
-//                    request.setAttribute("ctx", ctx);
-//                    request.setAttribute("dataContent", zoomContents);
-//                    request.setAttribute("view", view);
-//
-//                    emptyContent = false;
-//                }
+                if (zoomContents != null && zoomContents.size() > 0) {
+
+                    //Collections.sort(zoomContents);
+
+                    ctx.setCurrentDoc(doc);
+                    request.setAttribute("doc", doc);
+                    request.setAttribute("ctx", ctx);
+                    request.setAttribute("dataContent", zoomContents);
+                    //request.setAttribute("view", view);
+
+                    emptyContent = false;
+                }
             }
         }
 
@@ -162,7 +143,7 @@ public class ZoomFragmentModule implements IFragmentModule {
         request.setAttribute("nuxeoPath", nuxeoPath);
 
 
-        //request.setAttribute("propertyName", ZoomEditableWindow.ZOOM_LINKS);
+        request.setAttribute("propertyName", LinksEditableWindow.LINKS_SCHEMA);
 
         String scope = window.getProperty("osivia.cms.forcePublicationScope");
         request.setAttribute("scope", scope);

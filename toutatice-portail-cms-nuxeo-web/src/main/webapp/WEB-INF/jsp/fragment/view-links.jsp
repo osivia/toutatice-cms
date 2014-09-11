@@ -21,11 +21,21 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 //view = "view-zoom-" + view + ".jsp";
 
 
+List<Link> linkContent = (List<Link>) renderRequest.getAttribute("dataContent");
 %>
 
-View Zoom
+<ul>
+<%
+	if(doc != null && linkContent != null) {
+    
+    for(Link l : linkContent) {
+        //renderRequest.setAttribute("zoom",z);
+%>
+		
+		<li><a href="${l.href}" class="${l.icon}">${l.title}</a></li>
+		
+<%	}	
+}
 
-${href}
-${content}
-${picture}
-
+%>
+</ul>
