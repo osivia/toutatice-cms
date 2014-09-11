@@ -96,8 +96,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragme
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SitePictueFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
@@ -708,7 +708,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (domainPath != null) {
             // get configs installed in nuxeo
-            WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSPlayer);
+            WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.CMS_PLAYER);
             Documents configs = null;
             try {
 
@@ -721,7 +721,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if ((configs != null) && (configs.size() > 0)) {
                 for (Document config : configs) {
                     String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
-                    String playerInstance = config.getProperties().getString(WebConfigurationHelper.CODECOMP);
+                    String playerInstance = config.getProperties().getString(WebConfigurationHelper.ADDITIONAL_CODE);
 
                     if (doc.getType().equals(documentType) && this.players.containsKey(playerInstance)) {
 
@@ -1051,7 +1051,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (domainPath != null) {
             // get configs installed in nuxeo
-            WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.extraRequestFilter);
+            WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.EXTRA_REQUEST_FILTER);
             Documents configs = null;
 
             configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);

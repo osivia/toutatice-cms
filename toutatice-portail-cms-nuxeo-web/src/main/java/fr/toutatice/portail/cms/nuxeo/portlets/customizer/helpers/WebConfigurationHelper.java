@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -31,14 +31,13 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
  * Assistant pour gestion des objets de conf.
- * 
  */
-public class WebConfigurationHelper {
+public final class WebConfigurationHelper {
 
     /** id 1 des objets de conf. */
     public static final String CODE = "wconf:code";
     /** id 2 des objets de conf. */
-    public static final String CODECOMP = "wconf:code2";
+    public static final String ADDITIONAL_CODE = "wconf:code2";
     /** paramètres. */
     public static final String OPTIONS = "wconf:options";
     /** clé du paramnètre. */
@@ -46,9 +45,18 @@ public class WebConfigurationHelper {
     /** valeur du paramètre. */
     public static final String OPTION_VALUE = "propertyDefaultValue";
 
+
+    /**
+     * Private constructor : prevent instantiation.
+     */
+    private WebConfigurationHelper() {
+        throw new AssertionError();
+    }
+
+
     /**
      * Retourne le domain Nuxeo à partir de la page courante.
-     * 
+     *
      * @param ctx contexte cms
      * @return domaine
      */
@@ -76,28 +84,29 @@ public class WebConfigurationHelper {
 
         return domainPath;
     }
-    
+
+
     /**
-     * Execute web config cmd (as superuser)
-     * 
-     * @param ctx
-     * @param cmsService
-     * @param cmd
-     * @return
+     * Execute web config cmd (as superuser).
+     *
+     * @param ctx CMS context
+     * @param cmsService CMS service
+     * @param cmd Nuxeo command
+     * @return configs
      * @throws Exception
      */
-    public static Documents executeWebConfigCmd ( CMSServiceCtx ctx, CMSService cmsService, WebConfiguratinQueryCommand cmd) throws Exception{
+    public static Documents executeWebConfigCmd(CMSServiceCtx ctx, CMSService cmsService, WebConfigurationQueryCommand cmd) throws Exception {
         String savedScope = ctx.getScope();
-        ctx.setScope("superuser_context");   
-        
+        ctx.setScope("superuser_context");
+
         Documents configs = null;
 
         try {
-            configs = (Documents)  cmsService.executeNuxeoCommand(ctx, cmd);
-        } finally   {
+            configs = (Documents) cmsService.executeNuxeoCommand(ctx, cmd);
+        } finally {
             ctx.setScope(savedScope);
         }
-        
+
         return configs;
     }
 

@@ -40,6 +40,7 @@ import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
@@ -50,6 +51,7 @@ import org.osivia.portal.api.urls.EcmCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSBinaryContent;
+import org.osivia.portal.core.cms.CMSConfigurationItem;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
@@ -79,6 +81,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCo
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentSetSynchronizationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
@@ -1265,7 +1270,7 @@ public class CMSService implements ICMSService {
             CMSItem navItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, path);
 
             if (navItem != null) {
-                Map<String, RegionInheritance> regionsInheritance = this.getRegionsInheritance(navItem);
+                Map<String, RegionInheritance> regionsInheritance = this.getCMSRegionsInheritance(navItem);
                 for (Entry<String, RegionInheritance> region : regionsInheritance.entrySet()) {
                     if (!RegionInheritance.DEFAULT.equals(region.getValue())) {
                         overridedRegions.add(region.getKey());
@@ -1301,7 +1306,7 @@ public class CMSService implements ICMSService {
             CMSItem navItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, path);
 
             if (navItem != null) {
-                Map<String, RegionInheritance> inheritance = this.getRegionsInheritance(navItem);
+                Map<String, RegionInheritance> inheritance = this.getCMSRegionsInheritance(navItem);
                 Set<String> propagatedRegions = new HashSet<String>();
                 Set<String> lockedRegions = new HashSet<String>();
 
@@ -1376,7 +1381,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, RegionInheritance> getRegionsInheritance(CMSItem item) {
+    public Map<String, RegionInheritance> getCMSRegionsInheritance(CMSItem item) {
         Map<String, RegionInheritance> regionsInheritance = new HashMap<String, RegionInheritance>();
 
         if (item != null) {
@@ -1403,7 +1408,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public void saveInheritanceConfiguration(CMSServiceCtx cmsContext, String path, String regionName, RegionInheritance inheritance) throws CMSException {
+    public void saveCMSRegionInheritance(CMSServiceCtx cmsContext, String path, String regionName, RegionInheritance inheritance) throws CMSException {
         cmsContext.setDisplayLiveVersion("1");
 
         try {
@@ -1441,6 +1446,134 @@ public class CMSService implements ICMSService {
                     Map<String, String> value = new HashMap<String, String>();
                     value.put(EditableWindowHelper.REGION_IDENTIFIER, regionName);
                     value.put(EditableWindowHelper.INHERITANCE, StringUtils.trimToEmpty(inheritance.getValue()));
+                    command = new DocumentAddComplexPropertyCommand(document, EditableWindowHelper.SCHEMA_REGIONS, value);
+                } else {
+                    // Update existing property
+                    command = new DocumentUpdatePropertiesCommand(document, properties);
+                }
+
+                this.executeNuxeoCommand(cmsContext, command);
+            }
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<CMSConfigurationItem> getCMSRegionLayoutsConfigurationItems(CMSServiceCtx cmsContext) throws CMSException {
+        // Domain path
+        String domainPath = WebConfigurationHelper.getDomainPath(cmsContext);
+
+        Set<CMSConfigurationItem> configurationItems = null;
+        if (domainPath != null) {
+            // Nuxeo command
+            WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.REGION_LAYOUT);
+
+            try {
+                Documents documents = WebConfigurationHelper.executeWebConfigCmd(cmsContext, this, command);
+
+                configurationItems = new HashSet<CMSConfigurationItem>(documents.size());
+                for (Document document : documents) {
+                    PropertyMap properties = document.getProperties();
+                    String code = properties.getString(WebConfigurationHelper.CODE);
+                    String additionalCode = properties.getString(WebConfigurationHelper.ADDITIONAL_CODE);
+
+                    CMSConfigurationItem configurationItem = new CMSConfigurationItem(document.getTitle(), code);
+                    configurationItem.setAdditionalCode(additionalCode);
+                    configurationItems.add(configurationItem);
+                }
+            } catch (Exception e) {
+                // Do nothing
+            }
+        }
+        return configurationItems;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, CMSConfigurationItem> getCMSRegionsSelectedLayout(CMSItem item, Set<CMSConfigurationItem> regionLayouts) throws CMSException {
+        Map<String, CMSConfigurationItem> regionsLayout = new HashMap<String, CMSConfigurationItem>();
+
+        if (item != null) {
+            Document document = (Document) item.getNativeItem();
+
+            // Document regions loop
+            PropertyList regions = document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS);
+            if (regions != null) {
+                for (int i = 0; i < regions.size(); i++) {
+                    PropertyMap region = regions.getMap(i);
+                    String id = region.getString(EditableWindowHelper.REGION_IDENTIFIER);
+                    String regionLayoutCode = region.getString(EditableWindowHelper.REGION_LAYOUT);
+
+                    // Find selected region layout
+                    CMSConfigurationItem selectedRegionLayout = null;
+                    for (CMSConfigurationItem regionLayout : regionLayouts) {
+                        if (StringUtils.equals(regionLayout.getCode(), regionLayoutCode)) {
+                            selectedRegionLayout = regionLayout;
+                            break;
+                        }
+                    }
+
+                    regionsLayout.put(id, selectedRegionLayout);
+                }
+            }
+        }
+
+        return regionsLayout;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveCMSRegionSelectedLayout(CMSServiceCtx cmsContext, String path, String regionName, String regionLayoutName) throws CMSException {
+        cmsContext.setDisplayLiveVersion("1");
+
+        try {
+            CMSItem cmsItem = this.getContent(cmsContext, path);
+            Document document = (Document) cmsItem.getNativeItem();
+
+            PropertyList regions = document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS);
+            if (regions != null) {
+                // Updated properties
+                List<String> properties = new ArrayList<String>();
+
+                for (int i = 0; i < regions.size(); i++) {
+                    PropertyMap region = regions.getMap(i);
+
+                    if (StringUtils.equals(regionName, region.getString(EditableWindowHelper.REGION_IDENTIFIER))) {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(EditableWindowHelper.SCHEMA_REGIONS);
+                        builder.append("/");
+                        builder.append(i);
+                        builder.append("/");
+                        builder.append(EditableWindowHelper.REGION_LAYOUT);
+                        builder.append("=");
+                        builder.append(StringUtils.trimToEmpty(regionLayoutName));
+
+                        properties.add(builder.toString());
+
+                        break;
+                    }
+                }
+
+                // Nuxeo command
+                INuxeoCommand command;
+                if (properties.isEmpty()) {
+                    // Add new property
+                    Map<String, String> value = new HashMap<String, String>();
+                    value.put(EditableWindowHelper.REGION_IDENTIFIER, regionName);
+                    value.put(EditableWindowHelper.REGION_LAYOUT, StringUtils.trimToEmpty(regionLayoutName));
                     command = new DocumentAddComplexPropertyCommand(document, EditableWindowHelper.SCHEMA_REGIONS, value);
                 } else {
                     // Update existing property

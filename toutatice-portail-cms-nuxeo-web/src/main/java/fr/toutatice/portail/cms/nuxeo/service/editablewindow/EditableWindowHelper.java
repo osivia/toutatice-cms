@@ -58,6 +58,9 @@ public final class EditableWindowHelper {
     /** Inheritance property key. */
     public static final String INHERITANCE = "inheritance";
 
+    /** Region layout property key. */
+    public static final String REGION_LAYOUT = "regionLayout";
+
 
     /** Comparateur de fragments. */
     private static EditableWindowComparator comparator = new EditableWindowComparator();

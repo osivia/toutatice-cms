@@ -31,7 +31,7 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfiguratinQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 public class CMSItemAdapter {
@@ -107,7 +107,7 @@ public class CMSItemAdapter {
         if (domainPath != null) {
             // get configs installed in nuxeo
 
-            WebConfiguratinQueryCommand command = new WebConfiguratinQueryCommand(domainPath, WebConfigurationType.CMSNavigationAdapter);
+            WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.CMS_NAVIGATION_ADAPTER);
             
 
             Documents configs = WebConfigurationHelper.executeWebConfigCmd(ctx, CMSService, command);
@@ -115,7 +115,7 @@ public class CMSItemAdapter {
             if (configs.size() > 0) {
                 for (Document config : configs) {
                     String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
-                    String urlAdapted = config.getProperties().getString(WebConfigurationHelper.CODECOMP);
+                    String urlAdapted = config.getProperties().getString(WebConfigurationHelper.ADDITIONAL_CODE);
 
                     if (doc.getType().equals(documentType)) {
                         String path = computeNavPath(urlAdapted);
