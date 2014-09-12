@@ -10,15 +10,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -34,158 +27,149 @@ import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
  * Display zooms of a current page.
- * 
- * @author lbi
- * 
+ *
+ * @author Loïc Billon
+ * @see IFragmentModule
  */
 public class ZoomFragmentModule implements IFragmentModule {
 
-    /** name. */
+    /** Name. */
     public static final String ID = "zoom_property";
-
-    /** description of module. */
+    /** Module description. */
     public static final String DESC = "Zoom";
-
-    /** jsp view-zoom in portlet fragment. */
+    /** View JSP name. */
     public static final String JSP = "zoom";
-
-    /** jsp admin property in portlet fragment. */
+    /** Admin JSP name. */
     public static final String ADMIN_JSP = "zoom";
 
+
+    /** Ref URI. */
     private static final String REF_URI = "refURI";
+    /** HREF. */
     private static final String HREF = "href";
+    /** Content. */
     private static final String CONTENT = "content";
+    /** Picture. */
     private static final String PICTURE = "picture";
-    private static final String TYPE = "zoomType";
-    
+    /** Template. */
+    private static final String TEMPLATE = "zoomTemplate";
 
-    public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
+    /**
+     * Default constructor.
+     */
+    public ZoomFragmentModule() {
+        super();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void injectViewAttributes(NuxeoController nuxeoController, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+        // Nuxeo path
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        ;
+        // Empty content indicator
         boolean emptyContent = true;
 
 
         if (StringUtils.isNotEmpty(nuxeoPath)) {
+            nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
 
-            nuxeoPath = ctx.getComputedPath(nuxeoPath);
+            // Fetch document
+            Document document = nuxeoController.fetchDocument(nuxeoPath);
 
-            Document doc = ctx.fetchDocument(nuxeoPath);
+            // Title
+            if (document.getTitle() != null) {
+                response.setTitle(document.getTitle());
+            }
 
-            if (doc.getTitle() != null)
-                response.setTitle(doc.getTitle());
-
-            String propertyName = ZoomEditableWindow.ZOOM_SCHEMA;
-            String refURI = window.getProperty("osivia.refURI");
-            String view = window.getProperty("osivia.cms.style");
-
-            if (StringUtils.isNotEmpty(propertyName)) {
-
-                Object content = doc.getProperties().get(propertyName);
-                //List<Link> zoomContents = new ArrayList<Link>();
-
-                // Si paramétrage de l'URI, propriétés du fragment attendues dans propertyName
+            // Zoom schema
+            String schema = ZoomEditableWindow.ZOOM_SCHEMA;
+            if (StringUtils.isNotEmpty(schema)) {
+                // Ref URI
+                String refURI = window.getProperty("osivia.refURI");
                 if (StringUtils.isNotEmpty(refURI)) {
-
+                    // Content
+                    Object content = document.getProperties().get(schema);
                     if (content instanceof PropertyList) {
+                        PropertyList propertyList = (PropertyList) content;
+                        if ((propertyList != null) && (propertyList.size() > 0)) {
+                            for (int index = 0; index < propertyList.size(); index++) {
+                                PropertyMap propertyMap = propertyList.getMap(index);
 
-                        PropertyList dataContents = (PropertyList) content;
-
-                        if (dataContents != null && dataContents.size() > 0) {
-
-                            for (int index = 0; index < dataContents.size(); index++) {
-                                PropertyMap mProperty = dataContents.getMap(index);
-                                
-                                
-                                String refURIValue = (String) mProperty.get(REF_URI);
-                                
-                                
-                                
-
+                                String refURIValue = (String) propertyMap.get(REF_URI);
                                 if (refURI.equalsIgnoreCase(refURIValue)) {
-                                    //Link zoom = new Link();
-                                	
-                                	
-                                	request.setAttribute("href", mProperty.get(HREF));
-                                    request.setAttribute("content", mProperty.get(CONTENT));
-                                    request.setAttribute("picture", mProperty.get(PICTURE));
-                                    
-                                    request.setAttribute("zoomType", mProperty.get(TYPE));
-                                    
-//                                    PropertyMap map = (PropertyMap) dataContents.getMap(index);
-                                    //zoom.setDescription(map.getString(Link.DESCRIPTION));
-//                                    zoom.setHref(map.getString(Link.HREF));
-                                    // zoom.setImgSrc(map.getString(Zoom.ViGNETTE));
-//                                    zoom.setOrder(map.getLong(Link.ORDER).intValue());
-//                                    zoom.setTitle(map.getString(Link.TITLE));
-//
-//                                    zoomContents.add(zoom);
-//                                    
-//                                    request.setAttribute("doc", doc);
+                                    // Template
+                                    request.setAttribute("template", propertyMap.getString(TEMPLATE));
+
+                                    // Title
+                                    request.setAttribute("title", window.getProperty("osivia.title"));
+
+                                    // URL
+                                    String url = propertyMap.getString(HREF);
+                                    if (StringUtils.isNotBlank(url) && url.startsWith("/")) {
+                                        url = nuxeoController.getCMSLinkByPath(url, null).getUrl();
+                                    }
+                                    request.setAttribute("url", url);
+
+                                    // Image source
+                                    String imageSource = null;
+                                    if (StringUtils.isNotBlank(propertyMap.getString(PICTURE))) {
+                                        imageSource = nuxeoController.createAttachedPictureLink(nuxeoPath, propertyMap.getString(PICTURE));
+                                    }
+                                    request.setAttribute("imageSource", imageSource);
+
+                                    // Content
+                                    request.setAttribute("content", propertyMap.getString(CONTENT));
+
+                                    emptyContent = false;
                                 }
                             }
-
                         }
                     }
                 }
-
-//                if (zoomContents != null && zoomContents.size() > 0) {
-//
-//                    Collections.sort(zoomContents);
-//
-//                    ctx.setCurrentDoc(doc);
-//                    request.setAttribute("doc", doc);
-//                    request.setAttribute("ctx", ctx);
-//                    request.setAttribute("dataContent", zoomContents);
-//                    request.setAttribute("view", view);
-//
-//                    emptyContent = false;
-//                }
             }
         }
 
-        if (emptyContent)
+        if (emptyContent) {
             request.setAttribute("osivia.emptyResponse", "1");
-
+        }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
-
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        if (nuxeoPath == null)
-            nuxeoPath = "";
-        request.setAttribute("nuxeoPath", nuxeoPath);
-
-
-        //request.setAttribute("propertyName", ZoomEditableWindow.ZOOM_LINKS);
+        request.setAttribute("nuxeoPath", StringUtils.trimToEmpty(nuxeoPath));
 
         String scope = window.getProperty("osivia.cms.forcePublicationScope");
         request.setAttribute("scope", scope);
-
-
-
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
-
-        if (request.getParameter("nuxeoPath") != null)
+        if (request.getParameter("nuxeoPath") != null) {
             window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
+        }
 
-
-
-        if (request.getParameter("scope") != null && request.getParameter("scope").length() > 0) {
+        if ((request.getParameter("scope") != null) && (request.getParameter("scope").length() > 0)) {
             window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
-        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null)
+        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null) {
             window.setProperty("osivia.cms.forcePublicationScope", null);
-
-
-
+        }
     }
 
 }

@@ -1,31 +1,21 @@
-<%@page import="fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link"%>
-<%@page import="java.util.List"%>
-<%@ page contentType="text/plain; charset=UTF-8"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-
-
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
+<%@ page contentType="text/html" isELIgnored="false"%>
 
 
 <portlet:defineObjects />
 
-<%
-	Document doc = (Document) renderRequest.getAttribute("doc");
 
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-//String view = (String) renderRequest.getAttribute("view");
-//view = "view-zoom-" + view + ".jsp";
-
-
-%>
-
-View Zoom
-
-${href}
-${content}
-${picture}
-
+<div class="zoom">
+    <c:choose>
+        <c:when test="${empty template}">
+            <jsp:include page="view-zoom-default.jsp" />
+        </c:when>
+        
+        <c:otherwise>
+            <jsp:include page="view-zoom-${fn:toLowerCase(template)}.jsp" />
+        </c:otherwise>
+    </c:choose>
+</div>

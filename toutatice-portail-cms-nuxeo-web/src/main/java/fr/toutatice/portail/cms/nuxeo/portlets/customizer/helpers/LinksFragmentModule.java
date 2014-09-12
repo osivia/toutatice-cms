@@ -10,14 +10,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
@@ -36,137 +32,164 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
- * Display zooms of a current page.
- * 
- * @author lbi
- * 
+ * Display links of a current page.
+ *
+ * @author Loïc Billon
+ * @see IFragmentModule
  */
 public class LinksFragmentModule implements IFragmentModule {
 
     /** name. */
     public static final String ID = "links_property";
-
     /** description of module. */
     public static final String DESC = "Liste de liens";
-
     /** jsp view-zoom in portlet fragment. */
     public static final String JSP = "links";
-
     /** jsp admin property in portlet fragment. */
     public static final String ADMIN_JSP = "links";
 
+    /** Ref URI. */
     private static final String REF_URI = "refURI";
+    /** Template. */
+    private static final String TEMPLATE = "linksTemplate";
 
-    public void injectViewAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
 
+    /**
+     * Default constructor.
+     */
+    public LinksFragmentModule() {
+        super();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void injectViewAttributes(NuxeoController nuxeoController, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+        // Nuxeo path
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        
+        // Empty content indicator
         boolean emptyContent = true;
 
-
         if (StringUtils.isNotEmpty(nuxeoPath)) {
+            nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
 
-            nuxeoPath = ctx.getComputedPath(nuxeoPath);
+            // Fetch document
+            Document document = nuxeoController.fetchDocument(nuxeoPath);
 
-            Document doc = ctx.fetchDocument(nuxeoPath);
+            // Title
+            if (document.getTitle() != null) {
+                response.setTitle(document.getTitle());
+            }
 
-            if (doc.getTitle() != null)
-                response.setTitle(doc.getTitle());
-
-            String propertyName = LinksEditableWindow.LINKS_SCHEMA;
+            // Ref URI
             String refURI = window.getProperty("osivia.refURI");
-            //String view = window.getProperty("osivia.cms.style");
+            if (StringUtils.isNotEmpty(refURI)) {
+                // Links schema
+                String linksSchema = LinksEditableWindow.LINKS_SCHEMA;
+                if (StringUtils.isNotEmpty(linksSchema)) {
+                    List<Link> links = new ArrayList<Link>();
 
-            if (StringUtils.isNotEmpty(propertyName)) {
-
-                Object content = doc.getProperties().get(propertyName);
-                List<Link> zoomContents = new ArrayList<Link>();
-
-                // Si paramétrage de l'URI, propriétés du fragment attendues dans propertyName
-                if (StringUtils.isNotEmpty(refURI)) {
-
+                    // Content
+                    Object content = document.getProperties().get(linksSchema);
                     if (content instanceof PropertyList) {
-
                         PropertyList dataContents = (PropertyList) content;
-
-                        if (dataContents != null && dataContents.size() > 0) {
-
+                        if ((dataContents != null) && (dataContents.size() > 0)) {
                             for (int index = 0; index < dataContents.size(); index++) {
-                                PropertyMap mProperty = dataContents.getMap(index);
-                                String refURIValue = (String) mProperty.get(REF_URI);
+                                PropertyMap propertyMap = dataContents.getMap(index);
 
-                                if (refURI.equalsIgnoreCase(refURIValue)) {
+                                String refURIValue = (String) propertyMap.get(REF_URI);
+                                if (refURI.equalsIgnoreCase(refURIValue) && StringUtils.isNotBlank(propertyMap.getString(Link.HREF))) {
                                     Link link = new Link();
-                                    PropertyMap map = (PropertyMap) dataContents.getMap(index);
-                                    //link.setDescription(map.getString(Link.DESCRIPTION));
-                                    link.setHref(map.getString(Link.HREF));
-                                    link.setIcon(map.getString(Link.ICON));
-                                    //link.setOrder(map.getLong(Link.ORDER).intValue());
-                                    link.setTitle(map.getString(Link.TITLE));
 
-                                    zoomContents.add(link);
+                                    // HREF
+                                    String href = propertyMap.getString(Link.HREF);
+                                    if (StringUtils.isNotBlank(href) && href.startsWith("/")) {
+                                        href = nuxeoController.getCMSLinkByPath(href, null).getUrl();
+                                    }
+                                    link.setHref(href);
+
+                                    // Title
+                                    link.setTitle(propertyMap.getString(Link.TITLE));
+
+                                    // Glyphicon
+                                    link.setIcon(propertyMap.getString(Link.ICON));
+
+                                    links.add(link);
                                 }
                             }
-
                         }
+                    }
+
+                    if (!links.isEmpty()) {
+                        request.setAttribute("links", links);
+                        emptyContent = false;
                     }
                 }
 
-                if (zoomContents != null && zoomContents.size() > 0) {
+                // links fragments schema
+                String linksFragmentsSchema = LinksEditableWindow.LINKS_FGT_SCHEMA;
+                if (StringUtils.isNotEmpty(linksFragmentsSchema)) {
+                    // Content
+                    Object content = document.getProperties().get(linksFragmentsSchema);
+                    if (content instanceof PropertyList) {
+                        PropertyList dataContents = (PropertyList) content;
+                        if ((dataContents != null) && (dataContents.size() > 0)) {
+                            for (int index = 0; index < dataContents.size(); index++) {
+                                PropertyMap propertyMap = dataContents.getMap(index);
 
-                    //Collections.sort(zoomContents);
+                                String refURIValue = (String) propertyMap.get(REF_URI);
+                                if (refURI.equalsIgnoreCase(refURIValue)) {
+                                    // Template
+                                    request.setAttribute("template", propertyMap.getString(TEMPLATE));
 
-                    ctx.setCurrentDoc(doc);
-                    request.setAttribute("doc", doc);
-                    request.setAttribute("ctx", ctx);
-                    request.setAttribute("dataContent", zoomContents);
-                    //request.setAttribute("view", view);
-
-                    emptyContent = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        if (emptyContent)
+        if (emptyContent) {
             request.setAttribute("osivia.emptyResponse", "1");
-
+        }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
-
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        if (nuxeoPath == null)
-            nuxeoPath = "";
-        request.setAttribute("nuxeoPath", nuxeoPath);
-
+        request.setAttribute("nuxeoPath", StringUtils.trimToEmpty(nuxeoPath));
 
         request.setAttribute("propertyName", LinksEditableWindow.LINKS_SCHEMA);
 
         String scope = window.getProperty("osivia.cms.forcePublicationScope");
         request.setAttribute("scope", scope);
-
-
-
-
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
-
-        if (request.getParameter("nuxeoPath") != null)
+        if (request.getParameter("nuxeoPath") != null) {
             window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
+        }
 
-
-
-        if (request.getParameter("scope") != null && request.getParameter("scope").length() > 0) {
+        if ((request.getParameter("scope") != null) && (request.getParameter("scope").length() > 0)) {
             window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
-        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null)
+        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null) {
             window.setProperty("osivia.cms.forcePublicationScope", null);
-
-
-
+        }
     }
 
 }
