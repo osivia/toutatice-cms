@@ -21,12 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
+import org.dom4j.Element;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -36,6 +38,9 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.api.html.AccessibilityRoles;
+import org.osivia.portal.api.html.DOM4JUtils;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -870,67 +875,113 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     /**
      * Get delete link.
      *
-     * @param cmsCtx CMS context
+     * @param cmsContext CMS context
      * @param menubar menubar
      * @throws Exception
      */
-    protected void getDeleteLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
-        if (cmsCtx.getRequest().getRemoteUser() == null) {
+    protected void getDeleteLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
+        if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
 
-        Document doc = (Document) cmsCtx.getDoc();
+        Document document = (Document) cmsContext.getDoc();
 
         // Contextualization
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, doc.getPath());
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
 
         // Do not delete remote proxy
-        if( this.isRemoteProxy(cmsCtx, pubInfos)) {
+        if (this.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
         // Do not delete published elements
-        if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() ||  this.isInLiveMode(cmsCtx, pubInfos))) {
-            if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
-                CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(doc.getType());
+        if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() || this.isInLiveMode(cmsContext, pubInfos))) {
+            if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
+                    // Fancybox properties
+                    Map<String, String> properties = new HashMap<String, String>();
+                    properties.put("docId", document.getId());
+                    properties.put("docPath", document.getPath());
+
                     // Internationalization bundle
-                    Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+                    Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
 
-                    // Lien de création
-                    String fancyID = "_PORTAL_DELETE";
+                    // Fancybox identifier
+                    String fancyboxId = cmsContext.getResponse().getNamespace() + "_PORTAL_DELETE";
 
-                    // fancybox div
-                    StringBuilder fancyContent = new StringBuilder();
-                    fancyContent.append(" <div id=\"" + cmsCtx.getResponse().getNamespace() + fancyID + "\">");
-
+                    // Fancybox delete action URL
                     String putInTrashUrl = this.urlFactory.getPutDocumentInTrashUrl(
-                            new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), pubInfos.getLiveId(),
+                            new PortalControllerContext(cmsContext.getPortletCtx(), cmsContext.getRequest(), cmsContext.getResponse()), pubInfos.getLiveId(),
                             pubInfos.getDocumentPath());
 
-                    fancyContent.append("   <form method=\"post\" action=\"" + putInTrashUrl + "\">");
-                    fancyContent.append("       <div>Confirmez-vous la suppression de l'élément ?</div><br/>");
-                    fancyContent.append("       <input id=\"currentDocId\" type=\"hidden\" name=\"docId\" value=\"" + doc.getId() + "\"/>");
-                    fancyContent.append("       <input id=\"currentDocPath\" type=\"hidden\" name=\"docPath\" value=\"" + doc.getPath() + "\"/>");
-                    fancyContent.append("       <input type=\"submit\" name=\"deleteDoc\"  value=\"Confirmer\">");
-                    fancyContent.append("       <input type=\"reset\" name=\"noDeleteDoc\"  value=\"Annuler\" onclick=\"closeFancyBox();\">");
-                    fancyContent.append("   </form>");
-                    fancyContent.append(" </div>");
+                    // Fancybox HTML data
+                    String fancybox = this.generateDeleteConfirmationFancybox(properties, bundle, fancyboxId, putInTrashUrl);
+
 
                     // URL
-                    String url = "#" + cmsCtx.getResponse().getNamespace() + fancyID;
+                    String url = "#" + fancyboxId;
 
                     // Menubar item
                     MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 20, url, null,
                             "fancybox_inline", null);
                     item.setGlyphicon("halflings remove");
                     item.setAjaxDisabled(true);
-                    item.setAssociatedHtml(fancyContent.toString());
+                    item.setAssociatedHtml(fancybox);
                     item.setDropdownItem(true);
                     menubar.add(item);
                 }
             }
         }
+    }
+
+
+    /**
+     * Generate delete confirmation fancybox HTML data.
+     *
+     * @param properties fancybox properties
+     * @param bundle internationalization bundle
+     * @param fancyboxId fancybox identifier
+     * @param actionURL delete action URL
+     * @return fancybox HTML data
+     */
+    private String generateDeleteConfirmationFancybox(Map<String, String> properties, Bundle bundle, String fancyboxId, String actionURL) {
+        // Container
+        Element container = DOM4JUtils.generateDivElement("container-fluid");
+        DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
+
+        // Form
+        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "text-center", null, null, AccessibilityRoles.FORM);
+        DOM4JUtils.addAttribute(form, HTMLConstants.ACTION, actionURL);
+        DOM4JUtils.addAttribute(form, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
+        container.add(form);
+
+        // Message
+        Element message = DOM4JUtils.generateElement(HTMLConstants.P, null, bundle.getString("CMS_DELETE_CONFIRM_MESSAGE"));
+        form.add(message);
+
+        // Hidden fields
+        for (Entry<String, String> property : properties.entrySet()) {
+            Element hidden = DOM4JUtils.generateElement(HTMLConstants.INPUT, null, null);
+            DOM4JUtils.addAttribute(hidden, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_HIDDEN);
+            DOM4JUtils.addAttribute(hidden, HTMLConstants.NAME, property.getKey());
+            DOM4JUtils.addAttribute(hidden, HTMLConstants.VALUE, property.getValue());
+            form.add(hidden);
+        }
+
+        // OK button
+        Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default btn-warning", bundle.getString("YES"), "halflings warning-sign",
+                null);
+        DOM4JUtils.addAttribute(okButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
+        form.add(okButton);
+
+        // Cancel button
+        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        DOM4JUtils.addAttribute(cancelButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "closeFancybox()");
+        form.add(cancelButton);
+
+        return DOM4JUtils.write(container);
     }
 
 
