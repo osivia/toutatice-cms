@@ -28,6 +28,7 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
+import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -47,6 +48,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -168,7 +170,7 @@ public class MenuBarFormater {
             if ((cmsCtx.getDoc() != null) && !webPageFragment) {
                 this.getSynchronizeLink(cmsCtx, menubar);
             }
-            
+
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
@@ -581,7 +583,7 @@ public class MenuBarFormater {
         Boolean enableParamter = null;
         String command = null;
         String icon = null;
-        
+
         if (pubInfos.isCanSynchronize()) {
             enableParamter = true;
             command = "SYNCHRONIZE";
@@ -592,7 +594,7 @@ public class MenuBarFormater {
             command = "UNSYNCHRONIZE";
             icon = "ban-circle";
         }
-        
+
         if (enableParamter != null) {
 
 
@@ -610,7 +612,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             menubar.add(synchronizeItem);
         } else if (pubInfos.getSynchronizationRootPath() != null) {
 
-            String rootUrl = urlFactory.getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
+            String rootUrl = this.urlFactory.getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null,
                     pubInfos.getSynchronizationRootPath(), null, null, null, null, null, null, null);
 
             MenubarItem rootUrlItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), MenubarItem.ORDER_PORTLET_GENERIC + 5, rootUrl,
@@ -619,7 +621,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             rootUrlItem.setAjaxDisabled(true);
             rootUrlItem.setDropdownItem(true);
             menubar.add(rootUrlItem);
-            
+
         }
 
     }
@@ -1018,35 +1020,51 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
 
-    protected void addPermaLinkItem(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar, String url) throws Exception {
-        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+    /**
+     * Add permalink item.
+     *
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     * @param url permalink URL
+     * @throws Exception
+     */
+    protected void addPermaLinkItem(CMSServiceCtx cmsContext, List<MenubarItem> menubar, String url) throws Exception {
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
 
         MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, null, null);
         item.setGlyphicon("halflings link");
         item.setAjaxDisabled(true);
-        menuBar.add(item);
+        menubar.add(item);
     }
 
 
-    protected void getPermaLinkLink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-
-        if (!WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
-            return;
+    /**
+     * Get permalink link.
+     *
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     * @throws Exception
+     */
+    protected void getPermaLinkLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
+        if (!WindowState.MAXIMIZED.equals(cmsContext.getRequest().getWindowState())) {
+            // Current portal
+            Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+            // Space site indicator
+            boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
+            if (!spaceSite) {
+                // Path
+                String permLinkPath = this.customizer.getContentWebIdPath(cmsContext);
+                // URL
+                String permaLinkURL = this.urlFactory.getPermaLink(
+                        new PortalControllerContext(cmsContext.getPortletCtx(), cmsContext.getRequest(), cmsContext.getResponse()), null, null, permLinkPath,
+                        IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                if (permaLinkURL != null) {
+                    this.addPermaLinkItem(cmsContext, menubar, permaLinkURL);
+                }
+            }
         }
-
-        String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
-
-        String permaLinkURL = this.urlFactory.getPermaLink(
-                new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
-                permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-
-        if (permaLinkURL != null) {
-            this.addPermaLinkItem(cmsCtx, menuBar, permaLinkURL);
-        }
-
     }
-
-
 
 
     /**

@@ -10,6 +10,7 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
+import org.jboss.portal.core.model.portal.Portal;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -20,6 +21,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -71,17 +73,23 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
             nuxeoController.setCurrentDoc(doc);
             nuxeoController.insertContentMenuBarItems();
 
-            String permlinkPath = nuxeoController.getContentWebIdPath();
+            // Current portal
+            Portal portal = PortalObjectUtils.getPortal(nuxeoController.getCMSCtx().getControllerContext());
+            // Space site indicator
+            boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
+            if (!spaceSite) {
+                List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-            String url = this.urlFactory.getPermaLink(new PortalControllerContext(nuxeoController.getPortletCtx(), request, response), null, null, permlinkPath,
-                    IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-
-            List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-            MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, "portlet-menuitem-permalink", null);
-            item.setGlyphicon("halflings link");
-            item.setAjaxDisabled(true);
-            menuBar.add(item);
+                // Permalink
+                String permlinkPath = nuxeoController.getContentWebIdPath();
+                String url = this.urlFactory.getPermaLink(new PortalControllerContext(nuxeoController.getPortletCtx(), request, response), null, null,
+                        permlinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null,
+                        "portlet-menuitem-permalink", null);
+                item.setGlyphicon("halflings link");
+                item.setAjaxDisabled(true);
+                menuBar.add(item);
+            }
         }
     }
 
