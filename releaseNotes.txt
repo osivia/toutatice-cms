@@ -1,0 +1,26 @@
+
+Version 3.3.0-RC1
+================
+11/09/2014
+
+Dependencies
+------------
+osivia-portal > 3.3.0
+
+Content
+------------
+[merge] from portal 3.2.9
+[evol] bootstrap + less for portlets lik
+[evol] ergonomics (back button)
+[evol] Improvment of integration with LDAP user informations (avatar, displayname)
+[evol] cms command to get user's tasks
+[evol] cms command to manage document's workflow (reject / accept)
+[evol] cms command to manage drive synchronization
+[evol] improvment of item menubar and callback from ecm status
+[evol] region header-metadata (title, metas) for all portals
+[evol] webpages / regions can inherit their contents
+[evol] webpages / regions can be displayed as an horizontal flox
+
+About
+================
+Toutatice CMS implementation of osivia-portal for Nuxeo
