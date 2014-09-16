@@ -73,13 +73,14 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
             nuxeoController.setCurrentDoc(doc);
             nuxeoController.insertContentMenuBarItems();
 
+            List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+
             // Current portal
             Portal portal = PortalObjectUtils.getPortal(nuxeoController.getCMSCtx().getControllerContext());
             // Space site indicator
             boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
-            if (!spaceSite) {
-                List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
+            if (!spaceSite) {
                 // Permalink
                 String permlinkPath = nuxeoController.getContentWebIdPath();
                 String url = this.urlFactory.getPermaLink(new PortalControllerContext(nuxeoController.getPortletCtx(), request, response), null, null,
@@ -89,6 +90,10 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
                 item.setGlyphicon("halflings link");
                 item.setAjaxDisabled(true);
                 menuBar.add(item);
+            }
+
+            if (menuBar.isEmpty()) {
+                request.setAttribute("osivia.emptyResponse", "1");
             }
         }
     }

@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
 
@@ -30,7 +30,7 @@ import org.osivia.portal.core.cms.CMSEditableWindow;
 
 /**
  * Classe générique de fragment nuxeo
- * 
+ *
  */
 public abstract class EditableWindow {
 
@@ -47,7 +47,7 @@ public abstract class EditableWindow {
 
 
     /**
-     * 
+     *
      * @param instancePortlet
      * @param prefixWindow
      */
@@ -61,7 +61,7 @@ public abstract class EditableWindow {
      * @return the instancePortlet
      */
     public String getInstancePortlet() {
-        return instancePortlet;
+        return this.instancePortlet;
     }
 
 
@@ -77,14 +77,14 @@ public abstract class EditableWindow {
      * @return the prefixWindow
      */
     public String getPrefixWindow() {
-        return prefixWindow;
+        return this.prefixWindow;
     }
 
 
     /**
      * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo et
      * retourne ces propriétés pour créer chaque portlet.
-     * 
+     *
      * @param doc
      *            conteneur des fragments
      * @param fragment
@@ -98,7 +98,7 @@ public abstract class EditableWindow {
     /**
      * Extrait le mapping des propriétés par fragment récupéré depuis Nuxeo et
      * retourne ces propriétés pour créer chaque portlet.
-     * 
+     *
      * @param doc
      *            conteneur des fragments
      * @param fragment
@@ -122,6 +122,7 @@ public abstract class EditableWindow {
 
         propsFilled.put("osivia.ajaxLink", "1");
         propsFilled.put("osivia.hideDecorators", "1");
+        propsFilled.put("osivia.hideEmptyPortlet", "1");
 
         if (fragment.getBoolean("hideTitle").equals(Boolean.TRUE)) {
             propsFilled.put("osivia.hideTitle", "1");
@@ -140,7 +141,7 @@ public abstract class EditableWindow {
 
     /**
      * Prépare la commande pour supprimer une entrée du schéma générique
-     * 
+     *
      * @param propertiesToRemove
      * @param doc
      * @param refURI
@@ -154,7 +155,7 @@ public abstract class EditableWindow {
 
     /**
      * Prépare la commande pour supprimer un fragment
-     * 
+     *
      * @param doc
      * @param refURI
      * @return
@@ -163,7 +164,7 @@ public abstract class EditableWindow {
 
     /**
      * Retourner un nouveau porlet en fonction du type de fragment souhaité
-     * 
+     *
      * @param id
      *            identifiant de la portlet dans la page
      * @param fp
@@ -173,9 +174,9 @@ public abstract class EditableWindow {
      * @return la fenetre éditable avec le portlet instancié
      */
     public CMSEditableWindow createNewEditabletWindow(int id, Map<String, String> portletProps) {
-        String windowId = prefixWindow.concat(Integer.toString(id));
+        String windowId = this.prefixWindow.concat(Integer.toString(id));
 
-        return new CMSEditableWindow(windowId, instancePortlet, portletProps);
+        return new CMSEditableWindow(windowId, this.instancePortlet, portletProps);
     }
 
 }
