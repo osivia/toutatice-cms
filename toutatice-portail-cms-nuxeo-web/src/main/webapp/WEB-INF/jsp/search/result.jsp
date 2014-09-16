@@ -12,17 +12,22 @@
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
+<c:set var="searchTitle"><is:getProperty key="SEARCH_TITLE" /></c:set>
+<c:set var="searchPlaceholder"><is:getProperty key="SEARCH_PLACEHOLDER" /></c:set>
+
 
 <div class="row nuxeo-results-search">
     <!-- Search form -->
     <div class="col-lg-4">
         <form action="${searchActionURL}" method="post" class="form" role="search">
             <div class="form-group">
-                <label class="sr-only" for="${namespace}-search-input">Search</label>
+                <label class="sr-only" for="${namespace}-search-input"><is:getProperty key="SEARCH" /></label>
                 <div class="input-group">
-                    <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder='<is:getProperty key="SEARCH_PLACEHOLDER" />'>
+                    <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
                     <span class="input-group-btn">
-                        <button type="submit" class="btn btn-default"><span class="glyphicons halflings search"></span></button>
+                        <button type="submit" class="btn btn-default" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
+                            <span class="glyphicons halflings search"></span>
+                        </button>
                     </span>
                 </div>
             </div>
@@ -72,7 +77,7 @@
                 
                 <!-- Pagination -->
                 <div class="text-center">
-                    <ul class="pagination">
+                    <ul class="pagination pagination-sm">
                         <c:forEach var="index" begin="${minPage}" end="${maxPage}">
                             <c:choose>
                                 <c:when test="${index == currentPage}">
