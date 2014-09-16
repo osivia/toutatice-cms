@@ -53,7 +53,7 @@
                 </p>
             
                 <!-- List -->
-                <ul class="list-unstyled">
+                <ul class="list-unstyled no-ajax-link">
                     <c:forEach var="result" items="${results}">
                         <li>
                             <img src="${result.icon}" alt="icon" class="pull-left">

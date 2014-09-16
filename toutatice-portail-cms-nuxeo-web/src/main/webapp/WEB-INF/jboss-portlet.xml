@@ -111,7 +111,7 @@
         <portlet-name>toutatice-portail-cms-nuxeo-searchPortlet</portlet-name>
 
         <ajax>
-            <partial-refresh>false</partial-refresh>
+            <partial-refresh>true</partial-refresh>
         </ajax>
 
         <transaction>
