@@ -131,7 +131,8 @@ public class ZoomFragmentModule implements IFragmentModule {
                                     request.setAttribute("imageSource", imageSource);
 
                                     // Content
-                                    request.setAttribute("content", propertyMap.getString(CONTENT));
+                                    request.setAttribute("content",
+                                            nuxeoController.transformHTMLContent(StringUtils.trimToEmpty(propertyMap.getString(CONTENT))));
 
                                     emptyContent = false;
                                 }
