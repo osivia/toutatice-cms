@@ -5,10 +5,16 @@
 
 <ul class="list-inline">
     <c:forEach var="link" items="${links}">
+        <c:remove var="target" />
+        <c:if test="${link.external}">
+            <c:set var="target" value="_blank" />
+        </c:if>
+    
+    
         <li>
-            <a href="${link.href}">
-                <c:if test="${not empty link.icon}">
-                    <i class="glyphicons ${link.icon}"></i>
+            <a href="${link.url}" target="${target}">
+                <c:if test="${not empty link.glyphicon}">
+                    <i class="glyphicons ${link.glyphicon}"></i>
                 </c:if>
                 
                 <span>${link.title}</span>

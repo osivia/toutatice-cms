@@ -23,6 +23,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -113,8 +114,12 @@ public class ZoomFragmentModule implements IFragmentModule {
 
                                     // URL
                                     String url = propertyMap.getString(HREF);
-                                    if (StringUtils.isNotBlank(url) && url.startsWith("/")) {
+                                    if (StringUtils.startsWith(url, "/")) {
                                         url = nuxeoController.getCMSLinkByPath(url, null).getUrl();
+                                    } else if (StringUtils.isNotBlank(url)) {
+                                        request.setAttribute("external", true);
+                                    } else {
+                                        url = HTMLConstants.A_HREF_DEFAULT;
                                     }
                                     request.setAttribute("url", url);
 

@@ -26,11 +26,12 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.Link;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinkFragment;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
 
 /**
@@ -91,7 +92,7 @@ public class LinksFragmentModule implements IFragmentModule {
                 // Links schema
                 String linksSchema = LinksEditableWindow.LINKS_SCHEMA;
                 if (StringUtils.isNotEmpty(linksSchema)) {
-                    List<Link> links = new ArrayList<Link>();
+                    List<LinkFragment> links = new ArrayList<LinkFragment>();
 
                     // Content
                     Object content = document.getProperties().get(linksSchema);
@@ -102,21 +103,21 @@ public class LinksFragmentModule implements IFragmentModule {
                                 PropertyMap propertyMap = dataContents.getMap(index);
 
                                 String refURIValue = (String) propertyMap.get(REF_URI);
-                                if (refURI.equalsIgnoreCase(refURIValue) && StringUtils.isNotBlank(propertyMap.getString(Link.HREF))) {
-                                    Link link = new Link();
-
-                                    // HREF
-                                    String href = propertyMap.getString(Link.HREF);
-                                    if (StringUtils.isNotBlank(href) && href.startsWith("/")) {
-                                        href = nuxeoController.getCMSLinkByPath(href, null).getUrl();
+                                String href = propertyMap.getString(LinkFragment.HREF_PROPERTY);
+                                if (refURI.equalsIgnoreCase(refURIValue) && StringUtils.isNotBlank(href)) {
+                                    // Link
+                                    LinkFragment link;
+                                    if (StringUtils.startsWith(href, "/")) {
+                                        link = new LinkFragment(nuxeoController.getCMSLinkByPath(href, null));
+                                    } else {
+                                        link = new LinkFragment(StringUtils.defaultIfBlank(href, HTMLConstants.A_HREF_DEFAULT), StringUtils.isNotBlank(href));
                                     }
-                                    link.setHref(href);
 
                                     // Title
-                                    link.setTitle(propertyMap.getString(Link.TITLE));
+                                    link.setTitle(propertyMap.getString(LinkFragment.TITLE_PROPERTY));
 
                                     // Glyphicon
-                                    link.setIcon(propertyMap.getString(Link.ICON));
+                                    link.setGlyphicon(propertyMap.getString(LinkFragment.ICON_PROPERTY));
 
                                     links.add(link);
                                 }
