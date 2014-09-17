@@ -8,6 +8,10 @@
 
 <portlet:defineObjects />
 
+<portlet:actionURL var="addAction">
+    <portlet:param name="action" value="add"/>
+</portlet:actionURL>
+
 
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 
@@ -16,7 +20,7 @@
 </c:if>
 
 <div class="nuxeo-keywords-selector">
-    <form method="post" action="<portlet:actionURL/>">
+    <form method="post" action="${addAction}">
         <div class="table">
             <c:choose>
                 <c:when test='${keywordMonoValued == "1"}'>

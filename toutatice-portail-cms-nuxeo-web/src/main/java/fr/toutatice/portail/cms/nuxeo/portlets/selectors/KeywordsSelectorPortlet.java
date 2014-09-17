@@ -119,10 +119,12 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         }
 
         // Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-        boolean isAddAction = (req.getParameter("add.x") != null) || (req.getParameter("add") != null);
-        boolean isMonoValuedAddAction = (req.getParameter("monoAdd.x") != null) || (req.getParameter("monoAdd") != null);
+//        boolean isAddAction = (req.getParameter("add.x") != null) || (req.getParameter("add") != null);
+//        boolean isMonoValuedAddAction = (req.getParameter("monoAdd.x") != null) || (req.getParameter("monoAdd") != null);
 
-        if ("view".equals(req.getPortletMode().toString()) && (isAddAction || isMonoValuedAddAction)) {
+        String action = req.getParameter("action");
+        
+        if ("add".equalsIgnoreCase(action)) {
 
             // Set public parameter
             String selectorId = window.getProperty("osivia.selectorId");
