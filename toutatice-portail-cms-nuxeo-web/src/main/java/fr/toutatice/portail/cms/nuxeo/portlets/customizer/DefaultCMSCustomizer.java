@@ -97,9 +97,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragme
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SitePictueFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -336,7 +336,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get templates list.
-     * 
+     *
      * @param locale user locale
      * @return template list
      */
@@ -1135,9 +1135,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace
         defaultTypes.add(new CMSItemType("Workspace", true, false, true, false, false, Arrays.asList("File", "Folder", "Note"), "/default/templates/workspace"));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, false, true, true, true, Arrays.asList("File", "Folder", "Note"), null));
+        defaultTypes.add(new CMSItemType("PortalSite", true, false, true, true, true, Arrays.asList("File", "Annonce"), null));
         // Portal page
-        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, Arrays.asList("File", "Folder", "Note"), null));
+        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, Arrays.asList("File", "Annonce"), null));
         // Folder
         defaultTypes.add(new CMSItemType("Folder", true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null));
         // File
