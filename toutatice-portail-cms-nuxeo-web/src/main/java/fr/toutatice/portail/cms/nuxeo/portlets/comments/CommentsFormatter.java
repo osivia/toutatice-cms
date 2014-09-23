@@ -12,11 +12,13 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.comments;
 
+import java.text.DateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.Element;
@@ -24,7 +26,7 @@ import org.dom4j.QName;
 import org.dom4j.dom.DOMElement;
 import org.osivia.portal.api.html.HTMLConstants;
 
-import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 
 /**
  * Nuxeo document comments formatter.
@@ -34,7 +36,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
 public class CommentsFormatter {
 
     /** Document comments. */
-    private final List<Comment> comments;
+    private final List<CommentDTO> comments;
 
 
     /**
@@ -42,7 +44,7 @@ public class CommentsFormatter {
      *
      * @param comments document comments
      */
-    public CommentsFormatter(List<Comment> comments) {
+    public CommentsFormatter(List<CommentDTO> comments) {
         super();
         this.comments = comments;
     }
@@ -51,13 +53,14 @@ public class CommentsFormatter {
     /**
      * HTML content generator entry point.
      *
+     * @param locale locale
      * @return HTML content
      */
-    public String generateHTMLContent() {
+    public String generateHTMLContent(Locale locale) {
         Element root = this.generateRootNode();
 
-        for (Comment comment : this.comments) {
-            Element commentNode = this.generateCommentNode(comment);
+        for (CommentDTO comment : this.comments) {
+            Element commentNode = this.generateCommentNode(comment, locale);
             root.add(commentNode);
         }
 
@@ -79,11 +82,12 @@ public class CommentsFormatter {
 
     /**
      * Generate comment node.
-     *
+     * 
      * @param comment comment
+     * @param locale locale
      * @return comment node
      */
-    protected Element generateCommentNode(Comment comment) {
+    protected Element generateCommentNode(CommentDTO comment, Locale locale) {
         Element node = new DOMElement(QName.get(HTMLConstants.DIV));
         node.addAttribute(QName.get(HTMLConstants.CLASS), "comment");
 
@@ -107,11 +111,12 @@ public class CommentsFormatter {
 
 
         // Creation date
-        Element creationDate = this.generateCommentAttribute("creation-date", comment.getCreationDate());
+        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, locale);
+        Element creationDate = this.generateCommentAttribute("creation-date", dateFormat.format(comment.getCreationDate()));
         node.add(creationDate);
 
         // Content
-        Element content = this.generateCommentAttribute("content", comment.getCreationDate());
+        Element content = this.generateCommentAttribute("content", comment.getContent());
         node.add(content);
 
         // Action
@@ -120,7 +125,7 @@ public class CommentsFormatter {
 
         // Children
         if (CollectionUtils.isNotEmpty(comment.getChildren())) {
-            Element children = this.generateChildrenNode(comment);
+            Element children = this.generateChildrenNode(comment, locale);
             node.add(children);
         }
 
@@ -145,11 +150,11 @@ public class CommentsFormatter {
 
     /**
      * Generate comment actions node.
-     * 
+     *
      * @param comment comment
      * @return comment actions node
      */
-    protected Element generateCommentActions(Comment comment) {
+    protected Element generateCommentActions(CommentDTO comment) {
         Element node = new DOMElement(QName.get(HTMLConstants.DIV));
         node.addAttribute(QName.get(HTMLConstants.CLASS), "actions");
 
@@ -163,14 +168,15 @@ public class CommentsFormatter {
      * Generate comment children node.
      *
      * @param comment comment
+     * @param locale locale
      * @return comment children node
      */
-    protected Element generateChildrenNode(Comment comment) {
+    protected Element generateChildrenNode(CommentDTO comment, Locale locale) {
         Element node = new DOMElement(QName.get(HTMLConstants.DIV));
         node.addAttribute(QName.get(HTMLConstants.CLASS), "children");
 
-        for (Comment child : comment.getChildren()) {
-            Element childNode = this.generateCommentNode(child);
+        for (CommentDTO child : comment.getChildren()) {
+            Element childNode = this.generateCommentNode(child, locale);
             node.add(childNode);
         }
 

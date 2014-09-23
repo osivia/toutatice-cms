@@ -1,67 +1,50 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="toutatice" prefix="ttc" %>
+
+<%@ page isELIgnored="false"%>
 
 
-<%@ page contentType="text/plain; charset=UTF-8"%>
+<c:set var="imageURL"><ttc:getImageURL property="annonce:image" /></c:set>
+<c:set var="author" value="${document.properties['dc:creator']}" />
+<ttc:setDate var="date" property="dc:created" />
+<c:set var="resume" value="${document.properties['annonce:resume']}" />
+<c:set var="content"><ttc:transform property="note:note" /></c:set>
+
+<c:set var="contentClass" value="col-xs-12" />
 
 
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
-
-<%@page import="java.util.List"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="javax.portlet.PortletURL"%>
-
-
-<%@page import="javax.portlet.WindowState"%>
-
-
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Blob"%>
-
-
-<%@page import="javax.portlet.ResourceURL"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyList"%>
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%><portlet:defineObjects />
-
-<%
-Document doc = (Document) renderRequest.getAttribute("doc");
-
-
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-
-
-String srcImage = "";
-
-PropertyMap mapImage = doc.getProperties().getMap("annonce:image");
-if( mapImage != null && mapImage.getString("data") != null)	
-	srcImage = "<img class=\"nuxeo-docview-image\" src=\""+ ctx.createFileLink(doc, "annonce:image") + "\" />";
-		
-String resume = doc.getProperties().getString("annonce:resume");
-
-
-String note = doc.getString("note:note", "");
-if( note != null)
-		note = ctx.transformHTMLContent( note);	
-
-%>
-
-
-<%= srcImage %>
-
-<% if (resume != null && resume.length() > 0)	{	%>	
-			<p class="nuxeo-docview-resume">
-				<%=  Formater.formatText( resume, true)%> 
-			</p>
-<% } %>	
-
-			
-<div class="nuxeo-docview-note">			
-		<%= note %>
-</div>
-			
-	
+<article class="annonce">
+    <div class="row">
+        <!-- Title -->
+        <h3 class="hidden">${document.title}</h3>
+        
+        <!-- Image -->
+        <c:if test="${not empty imageURL}">
+            <c:set var="contentClass" value="col-xs-12 col-md-8" />
+            
+            <div class="col-xs-12 col-md-4">
+                <p>
+                    <img src="${imageURL}" alt="" class="img-thumbnail">
+                </p>
+            </div>
+        </c:if>
+        
+        <div class="${contentClass}">
+            <!-- Resume -->
+            <div class="lead">${resume}</div>
+            
+            <!-- Content -->
+            <div>${content}</div>
+        </div>
+    </div>
+    
+    <!-- Edition informations -->
+    <p class="small test-right">
+        <span><is:getProperty key="CREATED_BY" /></span>
+        <ttc:user name="${author}"/>
+        <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+        <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+    </p>
+</article>

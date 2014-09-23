@@ -66,6 +66,10 @@
             <taglib-uri>internationalization</taglib-uri>
             <taglib-location>theme/internationalization.tld</taglib-location>
         </taglib>
+        <taglib>
+            <taglib-uri>toutatice</taglib-uri>
+            <taglib-location>/WEB-INF/tld/toutatice.tld</taglib-location>
+        </taglib>
     </jsp-config>
 	
 </web-app>

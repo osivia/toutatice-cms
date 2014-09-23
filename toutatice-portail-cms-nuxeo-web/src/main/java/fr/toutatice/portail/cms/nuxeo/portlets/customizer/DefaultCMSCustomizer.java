@@ -77,7 +77,7 @@ import org.osivia.portal.core.web.IWebIdService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
@@ -177,7 +177,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** WEBID service. */
     private IWebIdService webIdService;
 
-    /** Directory service */
+    /** Directory service. */
     private IDirectoryService directoryService;
 
     private Map<String, String> avatarMap = new HashMap<String, String>();
@@ -1166,9 +1166,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public String getCommentsHTMLContent(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        List<Comment> comments = this.getNuxeoCommentsService().getDocumentComments(cmsContext, document);
+        List<CommentDTO> comments = this.getNuxeoCommentsService().getDocumentComments(cmsContext, document);
         CommentsFormatter formatter = new CommentsFormatter(comments);
-        return formatter.generateHTMLContent();
+        Locale locale = cmsContext.getRequest().getLocale();
+        return formatter.generateHTMLContent(locale);
     }
 
 

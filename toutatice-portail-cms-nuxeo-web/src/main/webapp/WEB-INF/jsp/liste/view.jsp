@@ -48,13 +48,13 @@
         </c:when>
         
         <c:otherwise>
-            <p class="text-danger">
+            <p class="lead text-danger">
                 <i class="glyphicons halflings exclamation-sign"></i>
                 <span>${error}</span>
             </p>
             
             <c:if test="${not empty errorMessage}">
-                <p class="text-danger">${errorMessage}</p>
+                <p class="lead text-danger">${errorMessage}</p>
             </c:if>
         </c:otherwise>
     </c:choose>

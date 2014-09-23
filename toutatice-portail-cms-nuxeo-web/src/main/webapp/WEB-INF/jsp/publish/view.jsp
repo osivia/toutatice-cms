@@ -37,7 +37,7 @@
         </c:when>
     
         <c:otherwise>
-            <p class="text-danger">
+            <p class="lead text-danger">
                 <i class="glyphicons halflings exclamation-sign"></i>
                 <span><is:getProperty key="MESSAGE_PATH_NOT_DEFINED" /></span>
             </p>

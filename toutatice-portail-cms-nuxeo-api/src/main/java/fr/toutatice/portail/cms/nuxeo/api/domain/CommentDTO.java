@@ -10,23 +10,22 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 
 
 /**
- * Nuxeo document comment java-bean.
+ * Nuxeo document comment data transfert object.
  *
  * @author Cédric Krommenhoek
  */
-public class Comment {
+public class CommentDTO {
 
     /** Identifier. */
     private String id;
@@ -39,20 +38,22 @@ public class Comment {
     private DirectoryPerson person;
 
     /** Creation date. */
-    private String creationDate;
+    private Date creationDate;
     /** Content. */
     private String content;
     /** Deletable indicator. */
     private boolean deletable;
     /** Children. */
-    private List<? extends Comment> children;
+    private final List<CommentDTO> children;
 
 
     /**
      * Default constructor.
      */
-    public Comment() {
+    public CommentDTO() {
         super();
+
+        this.children = new ArrayList<CommentDTO>();
     }
 
 
@@ -90,7 +91,7 @@ public class Comment {
         if (this.getClass() != obj.getClass()) {
             return false;
         }
-        Comment other = (Comment) obj;
+        CommentDTO other = (CommentDTO) obj;
         if (this.id == null) {
             if (other.id != null) {
                 return false;
@@ -122,7 +123,7 @@ public class Comment {
 
     /**
      * Getter for path.
-     * 
+     *
      * @return the path
      */
     public String getPath() {
@@ -131,7 +132,7 @@ public class Comment {
 
     /**
      * Setter for path.
-     * 
+     *
      * @param path the path to set
      */
     public void setPath(String path) {
@@ -161,7 +162,7 @@ public class Comment {
      * @return the person
      */
     public DirectoryPerson getPerson() {
-        return person;
+        return this.person;
     }
 
 
@@ -178,7 +179,7 @@ public class Comment {
      *
      * @return the creationDate
      */
-    public String getCreationDate() {
+    public Date getCreationDate() {
         return this.creationDate;
     }
 
@@ -187,7 +188,7 @@ public class Comment {
      *
      * @param creationDate the creationDate to set
      */
-    public void setCreationDate(String creationDate) {
+    public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
 
@@ -232,17 +233,8 @@ public class Comment {
      *
      * @return the children
      */
-    public List<? extends Comment> getChildren() {
+    public List<CommentDTO> getChildren() {
         return this.children;
-    }
-
-    /**
-     * Setter for children.
-     *
-     * @param children the children to set
-     */
-    public void setChildren(List<? extends Comment> children) {
-        this.children = children;
     }
 
 }

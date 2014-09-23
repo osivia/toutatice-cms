@@ -311,185 +311,32 @@ div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	
 
 
 
+/* Document */
 
-
-/* Vues de création de document */
-
-.doc-type-detail {
-    display: inline-block;
-}
-
-div.document-types	 .separateur {
-	background: #CECECE;
-	height: 1px;
-	padding: 0;
-	margin: 0;
+.document .metadata .img-thumbnail {
+	height: 60px;
 }
 
 
 
-div.document-types div.doc-type-detail div.vignette	{
-	width: 100%;
-	margin-top: 2px;
-	margin-bottom: 12px;
-	text-align: center;
+/* Document comments */
+
+.comments .comment .children {
+	margin-left: 30px;
 }
 
-
-div.document-types div.doc-type-detail div.vignette img	{
-	max-width: 100px;
-    margin: 0 auto 0 auto;
-}
-
-
-div.document-types div.doc-type-detail .main {
-	width: 140px;
-	margin-left: 5px;
-    margin-right: 5px;	
-}
-
-div.document-types div.doc-type-detail .main .title {
-	text-align: center;
-}
-
-div.document-types div.doc-type-detail .main .title a {
-	color: black;
-	font-weight: bold;
-	text-decoration: none;
-}
-
-div.document-types .more-document-types	{
-	visibility: hidden;
-}
-
-div.document-types .more-document-types	{
-	visibility: hidden;
-}
-
-.vertical-separator {
-	display: inline-block;
-	background: #CECECE;
-    height: 150px;
-	width: 1px;
-	padding: 0;
-	margin: 0;
+.comments .comment .children .comment {
+    margin-top: 10px;
+    padding-top: 10px;
+    padding-left: 15px;
+    
+    border-color: #eee;
+    border-width: 1px;
+    border-top-style: solid;
 }
 
 
 
-/* Commentaires */
-
-.commentsTitle {
-	font-weight: bold;
-}
-
-.commentsTree {
-	font-size: 12px;
-}
-
-.commentsTree ul {
-	list-style-type: none;
-}
-
-.commentsTree li:hover {
-	background-color: #abd4fb;
-}
-
-.commentsTree li {
-    padding: 10px 10px 20px 10px;
-}
-
-.commentsTree .authorDate {
-	/*background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
-	margin-bottom: 2px;
-    padding-bottom: 5px;
-    padding-left: 25px;*/
-}
-
-.commentsTree .author {
-	display: inline;
-	font-weight: bold;
-	color: #444444;
-}
-
-.commentsTree .creationDate {
-	display: inline;
-	padding-left: 10px;
-}
-
-.commentsTree .content {
-	white-space:normal;
-}
-
-.add-comment-link {
-	background: url("../img/icons/toggle_plus.png") no-repeat scroll left -2px transparent;
-	font-size: 12px;
-	padding-left:17px;
-}
-
-.child_comment {
-	display: inline;
-	float: right;
-	padding-right: 10px;
-}
-
-#content .child_comment a {
-	font-weight: normal;
-}
-
-#content .delete_comment a {
-	font-weight: normal;
-}
-
-.delete_comment {
-	display: inline;
-	padding-left: 10px;
-	font-weight: normal;
-	float: right;
-	border-left: 1px solid;
-}
-
-.add-comment input,.add-child-comment input {
-	font-size: 11px;
-}
-
-.add-comment-span {
-	font-weight: bold;
-	color: #006699;
-	cursor: pointer;
-}
-
-.add-child-comment-span {
-	color: #006699;
-	cursor: pointer;
-}
-
-.delete-comment {
-    text-align: center;
-    vertical-align: middle;
-}
-
-.add-comment textarea,.add-child-comment textarea,.delete-comment textarea {
-	margin-bottom: 11px;
-	width: 100%;
-}
-
-.errorDateFormat,.contentError {
-	font-weight: bold;
-	color: red;
-}
-
-.commentsTree .delete_comment {
-    display: none;
-    font-size: 11px;
-}
-.commentsTree .child_comment {
-    display: none;
-}
-
-.add-child-comment-span {
-    font-size: 11px;
-}
 
 
 /* Modif-FILEBROWSER-begin */

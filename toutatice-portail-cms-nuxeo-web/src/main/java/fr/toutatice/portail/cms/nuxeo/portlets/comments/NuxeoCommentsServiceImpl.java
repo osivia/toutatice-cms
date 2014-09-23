@@ -16,8 +16,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.comments;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,15 +27,15 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
+import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPost;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPostDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
@@ -49,13 +49,14 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
 
     /** CMS service. */
     private final CMSService cmsService;
-
-    private IDirectoryService directoryService;
+    /** Directory service. */
+    private final IDirectoryService directoryService;
 
     /**
      * Default constructor.
      *
      * @param cmsService CMS service
+     * @param directoryService directory service
      */
     public NuxeoCommentsServiceImpl(CMSService cmsService, IDirectoryService directoryService) {
         super();
@@ -68,8 +69,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * {@inheritDoc}
      */
     @Override
-    public List<Comment> getDocumentComments(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        return this.getGenericComments(cmsContext, document, Comment.class);
+    public List<CommentDTO> getDocumentComments(CMSServiceCtx cmsContext, Document document) throws CMSException {
+        return this.getGenericComments(cmsContext, document, CommentDTO.class);
     }
 
 
@@ -77,8 +78,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * {@inheritDoc}
      */
     @Override
-    public List<ThreadPost> getForumThreadPosts(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        return this.getGenericComments(cmsContext, document, ThreadPost.class);
+    public List<ThreadPostDTO> getForumThreadPosts(CMSServiceCtx cmsContext, Document document) throws CMSException {
+        return this.getGenericComments(cmsContext, document, ThreadPostDTO.class);
     }
 
 
@@ -92,7 +93,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * @return generic comments
      * @throws CMSException
      */
-    private <T extends Comment> List<T> getGenericComments(CMSServiceCtx cmsContext, Document document, Class<T> type) throws CMSException {
+    private <T extends CommentDTO> List<T> getGenericComments(CMSServiceCtx cmsContext, Document document, Class<T> type) throws CMSException {
         try {
             // Locale
             Locale locale = cmsContext.getControllerContext().getServerInvocation().getRequest().getLocale();
@@ -100,7 +101,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             INuxeoCommand command = new GetCommentsCommand(document);
             JSONArray jsonArray = (JSONArray) this.cmsService.executeNuxeoCommand(cmsContext, command);
 
-            List<T> comments = convertJSONArrayToComments(jsonArray, type, locale);
+            List<T> comments = this.convertJSONArrayToComments(jsonArray, type, locale);
 
             return comments;
         } catch (Exception e) {
@@ -111,7 +112,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
 
     /**
      * Convert JSON array to comments list.
-     * 
+     *
      * @param <T> comments parameterized type
      * @param jsonArray JSON array
      * @param type comments type
@@ -120,7 +121,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    private <T extends Comment> List<T> convertJSONArrayToComments(JSONArray jsonArray, Class<T> type, Locale locale)
+    private <T extends CommentDTO> List<T> convertJSONArrayToComments(JSONArray jsonArray, Class<T> type, Locale locale)
             throws InstantiationException, IllegalAccessException {
         List<T> comments = new ArrayList<T>(jsonArray.size());
         for (Object object : jsonArray) {
@@ -144,8 +145,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
                 String author = jsonObject.getString("author");
                 comment.setAuthor(author);
 
-                if (directoryService != null) {
-                    DirectoryPerson person = directoryService.getPerson(author);
+                if (this.directoryService != null) {
+                    DirectoryPerson person = this.directoryService.getPerson(author);
                     comment.setPerson(person);
                 }
 
@@ -155,9 +156,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             if (jsonObject.containsKey("creationDate")) {
                 JSONObject jsonObjectDate = jsonObject.getJSONObject("creationDate");
                 Long time = (Long) jsonObjectDate.get("timeInMillis");
-                DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, locale);
-                String formattedDate = dateFormat.format(time);
-                comment.setCreationDate(formattedDate);
+                comment.setCreationDate(new Date(time));
             }
 
             // Content
@@ -173,8 +172,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             }
 
             // Thead post specific attributes
-            if (comment instanceof ThreadPost) {
-                ThreadPost threadPost = (ThreadPost) comment;
+            if (comment instanceof ThreadPostDTO) {
+                ThreadPostDTO threadPost = (ThreadPostDTO) comment;
 
                 // Title
                 if (jsonObject.containsKey("title")) {
@@ -192,8 +191,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             // Children handling
             if (jsonObject.containsKey("children")) {
                 JSONArray children = jsonObject.getJSONArray("children");
-                List<T> commentChildren = this.convertJSONArrayToComments(children, type, locale);
-                comment.setChildren(commentChildren);
+                List<? extends CommentDTO> commentChildren = this.convertJSONArrayToComments(children, type, locale);
+                comment.getChildren().addAll(commentChildren);
             }
 
             comments.add(comment);
@@ -206,7 +205,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * {@inheritDoc}
      */
     @Override
-    public void addDocumentComment(CMSServiceCtx cmsContext, Document document, Comment comment, String parentId) throws CMSException {
+    public void addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException {
         try {
             INuxeoCommand command = new AddCommentCommand(document, comment, parentId);
             this.cmsService.executeNuxeoCommand(cmsContext, command);

@@ -5,20 +5,17 @@ package fr.toutatice.portail.cms.nuxeo.portlets.comments;
 
 import java.io.File;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Blob;
-import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPost;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPostDTO;
 
 /**
  * Add comment command.
@@ -32,7 +29,7 @@ public class AddCommentCommand implements INuxeoCommand {
     /** Nuxeo document. */
     private final Document document;
     /** Comment. */
-    private final Comment comment;
+    private final CommentDTO comment;
     /** Parent comment identifier. */
     private final String parentId;
 
@@ -44,7 +41,7 @@ public class AddCommentCommand implements INuxeoCommand {
      * @param comment comment
      * @param parentId parent comment identifier, may be null
      */
-    public AddCommentCommand(Document document, Comment comment, String parentId) {
+    public AddCommentCommand(Document document, CommentDTO comment, String parentId) {
         super();
         this.document = document;
         this.comment = comment;
@@ -66,8 +63,8 @@ public class AddCommentCommand implements INuxeoCommand {
         String title = null;
         File attachment = null;
         String filename = null;
-        if (this.comment instanceof ThreadPost) {
-            ThreadPost threadPost = (ThreadPost) this.comment;
+        if (this.comment instanceof ThreadPostDTO) {
+            ThreadPostDTO threadPost = (ThreadPostDTO) this.comment;
             // Title
             title = threadPost.getTitle();
             // Attachment

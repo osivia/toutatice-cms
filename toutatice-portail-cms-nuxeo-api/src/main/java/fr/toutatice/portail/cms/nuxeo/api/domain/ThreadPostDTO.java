@@ -10,21 +10,18 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.io.File;
 
 /**
- * Forum thread post java-bean.
- *
+ * Forum thread post data transfert object.
+ * 
  * @author Cédric Krommenhoek
- * @see Comment
+ * @see CommentDTO
  */
-public class ThreadPost extends Comment {
+public class ThreadPostDTO extends CommentDTO {
 
     /** Thread title. */
     private String title;
@@ -37,7 +34,7 @@ public class ThreadPost extends Comment {
     /**
      * Default constructor.
      */
-    public ThreadPost() {
+    public ThreadPostDTO() {
         super();
     }
 
@@ -80,7 +77,7 @@ public class ThreadPost extends Comment {
 
     /**
      * Getter for attachment.
-     * 
+     *
      * @return the attachment
      */
     public File getAttachment() {
@@ -89,7 +86,7 @@ public class ThreadPost extends Comment {
 
     /**
      * Setter for attachment.
-     * 
+     *
      * @param attachment the attachment to set
      */
     public void setAttachment(File attachment) {

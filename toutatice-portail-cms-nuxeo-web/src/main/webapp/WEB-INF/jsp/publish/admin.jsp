@@ -1,5 +1,3 @@
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.publish.MenuPortlet"%>
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>

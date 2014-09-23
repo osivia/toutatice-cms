@@ -1,0 +1,163 @@
+/*
+ * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ */
+package fr.toutatice.portail.cms.nuxeo.api.domain;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Document data transfert object.
+ *
+ * @author Cédric Krommenhoek
+ */
+public class DocumentDTO {
+
+    /** Document title. */
+    private String title;
+    /** Document path. */
+    private String path;
+    /** Document type. */
+    private String type;
+    /** Document properties. */
+    private final Map<String, Object> properties;
+    /** Document attachments. */
+    private final List<DocumentAttachmentDTO> attachments;
+    /** Document commentable indicator. */
+    private boolean commentable;
+    /** Document comments. */
+    private final List<CommentDTO> comments;
+
+
+    /**
+     * Constructor.
+     */
+    public DocumentDTO() {
+        super();
+        this.properties = new HashMap<String, Object>();
+        this.attachments = new ArrayList<DocumentAttachmentDTO>();
+        this.comments = new ArrayList<CommentDTO>();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "DocumentDTO [title=" + this.title + ", path=" + this.path + ", type=" + this.type + "]";
+    }
+
+
+    /**
+     * Getter for title.
+     *
+     * @return the title
+     */
+    public String getTitle() {
+        return this.title;
+    }
+
+    /**
+     * Setter for title.
+     *
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Getter for path.
+     *
+     * @return the path
+     */
+    public String getPath() {
+        return this.path;
+    }
+
+    /**
+     * Setter for path.
+     *
+     * @param path the path to set
+     */
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    /**
+     * Getter for type.
+     *
+     * @return the type
+     */
+    public String getType() {
+        return this.type;
+    }
+
+    /**
+     * Setter for type.
+     *
+     * @param type the type to set
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * Getter for properties.
+     *
+     * @return the properties
+     */
+    public Map<String, Object> getProperties() {
+        return this.properties;
+    }
+
+    /**
+     * Getter for attachments.
+     *
+     * @return the attachments
+     */
+    public List<DocumentAttachmentDTO> getAttachments() {
+        return this.attachments;
+    }
+
+    /**
+     * Getter for commentable.
+     *
+     * @return the commentable
+     */
+    public boolean isCommentable() {
+        return this.commentable;
+    }
+
+    /**
+     * Setter for commentable.
+     *
+     * @param commentable the commentable to set
+     */
+    public void setCommentable(boolean commentable) {
+        this.commentable = commentable;
+    }
+
+    /**
+     * Getter for comments.
+     * 
+     * @return the comments
+     */
+    public List<CommentDTO> getComments() {
+        return this.comments;
+    }
+
+}

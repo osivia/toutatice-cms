@@ -1,117 +1,44 @@
-
-<%@page import="org.osivia.portal.api.urls.IPortalUrlFactory"%>
-<%@page import="org.osivia.portal.api.menubar.MenubarItem"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet"%>
-<%@page import="org.osivia.portal.api.urls.Link"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="internationalization" prefix="is" %>
 
-<%@page import="java.util.List"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="javax.portlet.PortletURL"%>
-
-
-<%@page import="javax.portlet.WindowState"%>
+<%@ page contentType="text/html" isELIgnored="false"%>
 
 
-
-<%@page import="org.nuxeo.ecm.automation.client.model.Blob"%>
-
-
-<%@page import="javax.portlet.ResourceURL"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.Document"%>
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyList"%>
+<portlet:defineObjects />
 
 
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.StringHelper"%>
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater"%>
-
-<%@page import="org.nuxeo.ecm.automation.client.model.PropertyMap"%><portlet:defineObjects />
-
-<%
-Document doc = (Document) renderRequest.getAttribute("doc");
-
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-
-
-
-String onlyDescription = (String) request.getAttribute("onlyDescription");
-
-String showMetadatas = (String) request.getAttribute("showMetadatas");
-
-if( "detailedView".equals(ctx.getDisplayContext()))
-	showMetadatas = "1";
-
-
-
-String srcVignette = "";
-PropertyMap map = doc.getProperties().getMap("ttc:vignette");
-if( map != null && map.getString("data") != null)	
-	srcVignette = "<img class=\"nuxeo-docview-vignette\" src=\""+ ctx.createFileLink(doc, "ttc:vignette") + "\" />";
-
-%>
-
-<div class="nuxeo-docview-<%= doc.getType().toLowerCase()%> no-ajax-link">
-
-<% if( "1".equals(onlyDescription) && !renderRequest.getWindowState().equals(WindowState.MAXIMIZED))	{	%>
-	<div class="nuxeo-docview-short-view">
-
-			<%= srcVignette %><p class="nuxeo-docview-description"><%=Formater.formatDescription(doc)%></p>
-
-			<div class="nuxeo-docview-switch-mode"><a href="<%= ctx.getLink(doc).getUrl() %>">suite...</a></div>
-	</div>			
-			
-<% } else	{	 %>
-
-<div class="nuxeo-docview-normal-view">
-
-	<% if( "1".equals(showMetadatas) )	{	%>
-
-
-	<jsp:include page="view-metadata.jsp"></jsp:include>
-	
-	<% }  %>
-
-	<div class="nuxeo-docview-main">
-
-	<jsp:include page="view-dispatch.jsp"></jsp:include>
-
-
-<% 
-	PropertyList files = doc.getProperties().getList("files:files");
-	if( files != null && !files.isEmpty())	{	
-		
-%>
-		<div class="nuxeo-docview-files">
-			<h3>
-				<span>Fichiers joints</span>
-			</h3>
-			<ul>
-<% 		
-		int fileIndex = 0;
-		while (fileIndex < files.size()) {	
-			String fileName = files.getMap(fileIndex).getString("filename");
-			
-			String fileUrl = ctx.createAttachedFileLink(doc.getPath(),  Integer.toString(fileIndex));
-			
-%>
-					<li> <a href="<%= fileUrl %>"> <%=fileName  %> </a></li>
-<%			fileIndex++;
-		} %>						
-			</ul>
-		</div>	
-		
-<%	} %>	
-		 <jsp:include page="../comments/view-comments.jsp"></jsp:include>
-	</div>
+<div class="document clearfix">
+    <c:choose>
+        <c:when test="${not empty document}">
+            <!-- Metadata -->
+            <c:if test="${metadata}">
+                <jsp:include page="metadata.jsp" />
+            </c:if>
+            
+            <c:choose>
+                <c:when test="${onlyDescription}">
+                    <jsp:include page="only-description.jsp" />
+                </c:when>
+                
+                <c:otherwise>
+                    <!-- Document view -->
+                    <jsp:include page="dispatch.jsp" />
+                    
+                    <!-- Document attachments view -->
+                    <jsp:include page="attachments.jsp" />
+                    
+                    <!-- Document comments view -->
+                    <jsp:include page="comments.jsp" />
+                </c:otherwise>
+            </c:choose>
+        </c:when>
+        
+        <c:otherwise>
+            <p class="lead text-danger">
+                <i class="glyphicons halflings exclamation-sign"></i>
+                <span><is:getProperty key="MESSAGE_PATH_NOT_DEFINED" /></span>
+            </p>
+        </c:otherwise>
+    </c:choose>
 </div>
-
-
-<%	} %>
-			
-</div>
-
-<%= ctx.getDebugInfos() %>

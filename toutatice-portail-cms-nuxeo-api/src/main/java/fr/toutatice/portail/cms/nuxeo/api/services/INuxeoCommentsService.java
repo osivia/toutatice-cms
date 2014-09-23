@@ -22,8 +22,8 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
-import fr.toutatice.portail.cms.nuxeo.api.domain.Comment;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPost;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPostDTO;
 
 /**
  * Nuxeo comments service interface.
@@ -40,7 +40,7 @@ public interface INuxeoCommentsService {
      * @return comments list
      * @throws CMSException
      */
-    List<Comment> getDocumentComments(CMSServiceCtx cmsContext, Document document) throws CMSException;
+    List<CommentDTO> getDocumentComments(CMSServiceCtx cmsContext, Document document) throws CMSException;
 
 
     /**
@@ -51,7 +51,7 @@ public interface INuxeoCommentsService {
      * @return thread posts list
      * @throws CMSException
      */
-    List<ThreadPost> getForumThreadPosts(CMSServiceCtx cmsContext, Document document) throws CMSException;
+    List<ThreadPostDTO> getForumThreadPosts(CMSServiceCtx cmsContext, Document document) throws CMSException;
 
 
     /**
@@ -63,7 +63,7 @@ public interface INuxeoCommentsService {
      * @param parentId parent comment identifier, may be null
      * @throws CMSException
      */
-    void addDocumentComment(CMSServiceCtx cmsContext, Document document, Comment comment, String parentId) throws CMSException;
+    void addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException;
 
 
     /**

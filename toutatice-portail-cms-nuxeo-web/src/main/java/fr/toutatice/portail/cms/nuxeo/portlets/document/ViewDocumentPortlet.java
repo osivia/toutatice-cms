@@ -10,31 +10,30 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.locator.Locator;
@@ -46,10 +45,16 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
@@ -57,284 +62,329 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentComma
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.HTMLCommentsTreeBuilder;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * View Nuxeo document portlet.
+ *
+ * @see CMSPortlet
  */
-
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    private static Log logger = LogFactory.getLog(ViewDocumentPortlet.class);
+    /** Portlet mode "admin". */
+    private static final String PORTLET_MODE_ADMIN = "admin";
 
+    /** Path window property name. */
+    private static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
+    /** Display only description indicator window property name. */
+    private static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
+    /** Display metadata indicator window property name. */
+    private static final String METADATA_WINDOW_PROPERTY = "osivia.document.metadata";
+
+    /** Admin path. */
+    private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
+    /** View path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
+
+
+    /** Nuxeo service. */
     private INuxeoService nuxeoService;
 
+    /** Document DAO. */
+    private final DocumentDAO documentDAO;
+    /** Document comment DAO. */
+    private final CommentDAO commentDAO;
 
+
+    /**
+     * Constructor.
+     */
+    public ViewDocumentPortlet() {
+        super();
+
+        this.documentDAO = DocumentDAO.getInstance();
+        this.commentDAO = CommentDAO.getInstance();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init(PortletConfig config) throws PortletException {
-
         super.init(config);
 
-
         try {
-            // Enregistremennt des gestionnaires de liens et de template
-
+            // Nuxeo service
             this.nuxeoService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
             if (this.nuxeoService == null) {
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
             }
 
+            // CMS customizer
             CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
             this.nuxeoService.registerCMSCustomizer(customizer);
 
-            CMSService CMSservice = new CMSService(this.getPortletContext());
+            // CMS service
+            CMSService cmsService = new CMSService(this.getPortletContext());
             ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
-            cmsLocator.register(CMSservice);
-            customizer.setCmsService(CMSservice);
+            cmsLocator.register(cmsService);
+            cmsService.setCustomizer(customizer);
+            customizer.setCmsService(cmsService);
 
+            // Directory service locator
             IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
             customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
 
-            CMSservice.setCustomizer(customizer);
-
-
             // v1.0.16
             ThumbnailServlet.setPortletContext(this.getPortletContext());
-            SitePictureServlet.setPortletContext(getPortletContext());
-            AvatarServlet.setPortletContext(getPortletContext());
-
+            SitePictureServlet.setPortletContext(this.getPortletContext());
+            AvatarServlet.setPortletContext(this.getPortletContext());
+        } catch (PortletException e) {
+            throw e;
         } catch (Exception e) {
             throw new PortletException(e);
         }
-
-
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+        // Action name
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        logger.debug("processAction ");
+        if (PORTLET_MODE_ADMIN.equals(request.getPortletMode().toString())) {
+            // Admin
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+            if ("save".equals(action)) {
+                // Save action
 
-            PortalWindow window = WindowFactory.getWindow(req);
-            window.setProperty(Constants.WINDOW_PROP_URI, req.getParameter("nuxeoPath"));
+                // Path
+                String path = request.getParameter("path");
+                window.setProperty(PATH_WINDOW_PROPERTY, path);
 
+                // Display only description indicator
+                String onlyDescription = request.getParameter("onlyDescription");
+                window.setProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY, onlyDescription);
 
-            if ("1".equals(req.getParameter("onlyDescription"))) {
-                window.setProperty("osivia.document.onlyDescription", "1");
-            } else if (window.getProperty("osivia.document.onlyDescription") != null) {
-                window.setProperty("osivia.document.onlyDescription", null);
+                // Display metadata indicator
+                String metadata = request.getParameter("metadata");
+                window.setProperty(METADATA_WINDOW_PROPERTY, metadata);
             }
 
-            if (!"1".equals(req.getParameter("showMetadatas"))) {
-                window.setProperty("osivia.cms.hideMetaDatas", "1");
-            } else if (window.getProperty("osivia.cms.hideMetaDatas") != null) {
-                window.setProperty("osivia.cms.hideMetaDatas", null);
-            }
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View
 
+            // Comment identifier
+            String id = request.getParameter("id");
+            // Comment content
+            String content = request.getParameter("content");
 
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            // Document path
+            String path = window.getProperty(PATH_WINDOW_PROPERTY);
 
+            if (path != null) {
+                // Fetch Nuxeo document
+                Document document = nuxeoController.fetchDocument(path);
 
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
+                if ("addComment".equals(action)) {
+                    // Add comment
 
-        if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
+                    // Nuxeo command
+                    INuxeoCommand command = new AddCommentCommand(document, content, null, null);
+                    nuxeoController.executeNuxeoCommand(command);
+                } else if ("replyComment".equals(action)) {
+                    // Reply comment
 
-            res.setPortletMode(PortletMode.VIEW);
-            res.setWindowState(WindowState.NORMAL);
-        }
+                    // Nuxeo command
+                    INuxeoCommand command = new CreateChildCommentCommand(document, id, content, null, null);
+                    nuxeoController.executeNuxeoCommand(command);
+                } else if ("deleteComment".equals(action)) {
+                    // Delete comment
 
-        String commentAction = req.getParameter("comments");
-        if (commentAction != null) {
-
-            NuxeoController ctrl = new NuxeoController(req, res, this.getPortletContext());
-            PortalWindow window = WindowFactory.getWindow(req);
-            String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-            if (nuxeoPath == null) {
-                // WIndow parameter (back-office)
-                nuxeoPath = window.getProperty("osivia.nuxeoPath");
-            }
-
-            if (nuxeoPath != null) {
-                nuxeoPath = ctrl.getComputedPath(nuxeoPath);
-                try {
-                    Document commentableDoc = ctrl.fetchDocument(nuxeoPath);
-                    if ("toAdd".equals(commentAction)) {
-                        String commentContent = req.getParameter("content");                   
-                        ctrl.executeNuxeoCommand(new AddCommentCommand(commentableDoc, commentContent, null, null));
-                    }
-
-                    if ("addChild".equals(req.getParameter("comments"))) {
-                        String commentId = req.getParameter("commentId");
-                        String childCommentContent = req.getParameter("childCommentContent");
-                        ctrl.executeNuxeoCommand(new CreateChildCommentCommand(commentableDoc, commentId, childCommentContent, null, null));
-                    }
-
-                    if ("delete".equals(commentAction)) {
-                        String commentId = req.getParameter("commentId");
-                        ctrl.executeNuxeoCommand(new DeleteCommentCommand(commentableDoc, commentId));
-                    }
-                } catch (Exception e) {
-                    if (!(e instanceof PortletException)) {
-                        throw new PortletException(e);
-                    }
+                    // Nuxeo command
+                    INuxeoCommand command = new DeleteCommentCommand(document, id);
+                    nuxeoController.executeNuxeoCommand(command);
                 }
             }
         }
-        // Modif-COMMENTS-end
-
     }
 
 
-    @RenderMode(name = "admin")
-    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+    /**
+     * Admin view display.
+     *
+     * @param request request
+     * @param response response
+     * @throws PortletException
+     * @throws IOException
+     */
+    @RenderMode(name = PORTLET_MODE_ADMIN)
+    public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        res.setContentType("text/html");
-        NuxeoController ctx = new NuxeoController(req, res, this.getPortletContext());
+        // Path
+        String path = window.getProperty(PATH_WINDOW_PROPERTY);
+        request.setAttribute("path", path);
 
-        PortletRequestDispatcher rd = null;
+        // Display only description indicator
+        boolean onlyDescription = BooleanUtils.toBoolean(window.getProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY));
+        request.setAttribute("onlyDescription", onlyDescription);
 
-        PortalWindow window = WindowFactory.getWindow(req);
-        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        if (nuxeoPath == null) {
-            nuxeoPath = "";
-        }
-        req.setAttribute("nuxeoPath", nuxeoPath);
+        // Display metadata indicator
+        boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY));
+        request.setAttribute("metadata", metadata);
 
-        String onlyDescription = window.getProperty("osivia.document.onlyDescription");
-        req.setAttribute("onlyDescription", onlyDescription);
-
-        String showMetadatas = "1";
-        if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas"))) {
-            showMetadatas = "0";
-        }
-        req.setAttribute("showMetadatas", showMetadatas);
-
-
-
-        req.setAttribute("ctx", ctx);
-
-        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/admin.jsp");
-        rd.include(req, res);
-
-
+        response.setContentType("text/html");
+        this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    @SuppressWarnings("unchecked")
-    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
-
-        logger.debug("doView");
-
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
-
-            response.setContentType("text/html");
-
+            // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
-            /* On détermine l'uid et le scope */
+            // Path
+            String path = window.getProperty(PATH_WINDOW_PROPERTY);
 
-            String nuxeoPath = null;
+            if (StringUtils.isNotBlank(path)) {
+                boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
 
-
-            // path parameter
-            nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-
-
-            if (nuxeoPath != null) {
-
-                NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
-
-                nuxeoPath = ctx.getComputedPath(nuxeoPath);
-
-                Document doc = ctx.fetchDocument(nuxeoPath);
-
-
-                if (doc.getTitle() != null) {
-                    response.setTitle(doc.getTitle());
+                // Display only description indicator
+                boolean onlyDescription = BooleanUtils.toBoolean(window.getProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY));
+                if (!maximized) {
+                    request.setAttribute("onlyDescription", onlyDescription);
                 }
 
+                // Display metadata indicator
+                boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY));
+                request.setAttribute("metadata", metadata);
 
-                request.setAttribute("doc", doc);
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+                request.setAttribute("nuxeoController", nuxeoController);
 
+                // CMS context
+                CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
-                if (!"1".equals(window.getProperty("osivia.document.onlyDescription")) || request.getWindowState().equals(WindowState.MAXIMIZED)) {
+                // Computed path
+                path = nuxeoController.getComputedPath(path);
 
-                    /* transformation de la partie wysiwyg */
+                // Fetch document
+                Document document = nuxeoController.fetchDocument(path);
+                nuxeoController.setCurrentDoc(document);
+                request.setAttribute("nuxeoDocument", document);
 
-                    String note = doc.getString("note:note", "");
+                // DTO
+                DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                request.setAttribute("document", documentDTO);
 
+                // Title
+                String title = document.getTitle();
+                if (StringUtils.isNotBlank(title)) {
+                    response.setTitle(title);
+                }
 
-                    ctx.setCurrentDoc(doc);
+                if (!onlyDescription || maximized) {
+                    // Insert content menubar items
+                    nuxeoController.insertContentMenuBarItems();
 
-                    // Insert standard menu bar for content item
-                    ctx.insertContentMenuBarItems();
+                    // Attachments
+                    this.generateAttachments(nuxeoController, document, documentDTO);
 
-
-                    String noteTransformee = ctx.transformHTMLContent(note);
-                    request.setAttribute("note", noteTransformee);
-
-                    if( ContextualizationHelper.isCurrentDocContextualized(ctx.getCMSCtx())) {
-
+                    // Comments
+                    if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                        // CMS service
                         ICMSService cmsService = NuxeoController.getCMSService();
-                        CMSPublicationInfos publiInfos = cmsService.getPublicationInfos(ctx.getCMSCtx(), nuxeoPath);
 
-                        boolean docCanBeCommentedByUser = publiInfos.isCommentableByUser();
+                        // Publication infos
+                        CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
-                        if (docCanBeCommentedByUser) {
+                        if (publicationInfos.isCommentableByUser()) {
+                            documentDTO.setCommentable(true);
 
-                            String user = request.getRemoteUser();
-                            int authType = ctx.getAuthType();
-                            JSONArray jsonComments = (JSONArray) ctx.executeNuxeoCommand(new GetCommentsCommand(doc));
-                            CMSServiceCtx cmsCtx = ctx.getCMSCtx();
-                            String comments = HTMLCommentsTreeBuilder.getInstance().buildHtmlTree(cmsCtx, new StringBuffer(), jsonComments, 0, authType, user);
-                            request.setAttribute("comments", comments);
+                            // Comments
+                            this.generateComments(nuxeoController, document, documentDTO);
                         }
                     }
-
-
                 }
-
-                request.setAttribute("ctx", ctx);
-
-                String description = doc.getString("dc:description", "");
-                request.setAttribute("description", description);
-
-                request.setAttribute("onlyDescription", window.getProperty("osivia.document.onlyDescription"));
-
-
-                String showMetadatas = "1";
-                if ("1".equals(window.getProperty("osivia.cms.hideMetaDatas"))) {
-                    showMetadatas = "0";
-                }
-                request.setAttribute("showMetadatas", showMetadatas);
-
-
-                this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/document/view.jsp").include(request, response);
-            } else {
-                response.setContentType("text/html");
-                response.getWriter().print("<h2>Document non défini</h2>");
-                response.getWriter().close();
             }
-        }
 
-        catch (NuxeoException e) {
+            response.setContentType("text/html");
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
+        } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
         } catch (Exception e) {
-            if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
-            }
+            throw new PortletException(e);
         }
-
-        logger.debug("doView end");
-
     }
 
+
+    /**
+     * Generate document attachments.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param document Nuxeo document
+     * @param documentDTO document DTO
+     */
+    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO) {
+        List<DocumentAttachmentDTO> attachments = documentDTO.getAttachments();
+        PropertyList files = document.getProperties().getList("files:files");
+        if (files != null) {
+            for (int i = 0; i < files.size(); i++) {
+                PropertyMap map = files.getMap(i);
+
+                DocumentAttachmentDTO attachment = new DocumentAttachmentDTO();
+
+                // Attachment name
+                String name = map.getString("filename");
+                attachment.setName(name);
+
+                // Attachement URL
+                String url = nuxeoController.createAttachedFileLink(document.getPath(), String.valueOf(i));
+                attachment.setUrl(url);
+
+                attachments.add(attachment);
+            }
+        }
+    }
+
+
+    /**
+     * Generate document comments.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param document Nuxeo document
+     * @param documentDTO document DTO
+     */
+    private void generateComments(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO) {
+        INuxeoCommand getCommentsCommand = new GetCommentsCommand(document);
+        JSONArray jsonComments = (JSONArray) nuxeoController.executeNuxeoCommand(getCommentsCommand);
+
+        for (int i = 0; i < jsonComments.size(); i++) {
+            JSONObject jsonComment = jsonComments.getJSONObject(i);
+            CommentDTO commentDTO = this.commentDAO.toDTO(jsonComment);
+            documentDTO.getComments().add(commentDTO);
+        }
+    }
 
 }
