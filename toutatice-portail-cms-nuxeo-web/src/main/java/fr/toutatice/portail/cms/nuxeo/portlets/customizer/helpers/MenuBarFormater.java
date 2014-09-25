@@ -187,6 +187,7 @@ public class MenuBarFormater {
 
 
 
+    @SuppressWarnings("unchecked")
     protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
 
         PortletRequest request = cmsCtx.getRequest();
@@ -665,7 +666,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     // Callback URL
                     String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
                     // Portal base URL
-                    String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
+                    // String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
                     // ECM base URL
                     String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
 
@@ -732,7 +733,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, parentDoc.getPath());
 
         // Do not add into remote proxy
-        if( this.isRemoteProxy(cmsCtx, pubInfos)) {
+        if (this.isRemoteProxy(cmsCtx, pubInfos)) {
             return;
         }
 
@@ -743,13 +744,12 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             // Portal controller context
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
             // Callback URL
-            //String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
-
+            // String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
             // Test ergo JSS
             String callbackURL = this.urlFactory.getRefreshPageUrl(portalControllerContext);
 
             // Portal base URL
-            String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
+            // String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
             // ECM base URL
             String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
             // On click action
@@ -817,41 +817,49 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 item.setAjaxDisabled(true);
                 menubar.add(item);
             } else if (portalDocsToCreate.size() > 0) {
-                // Fancybox
-                String fancyId = "_PORTAL_CREATE";
-                StringBuilder fancyContent = new StringBuilder();
+                // Context path
+                String contextPath = "/toutatice-portail-cms-nuxeo";
+                // Namespace
+                String namespace = cmsCtx.getResponse().getNamespace();
 
-                fancyContent.append("<div class=\"fancybox-content\">");
-                fancyContent.append("   <div id=\"" + cmsCtx.getResponse().getNamespace() + "_PORTAL_CREATE\" class=\"document-types\">");
-                fancyContent.append("       <div class=\"main-doc-types\" id=\"" + cmsCtx.getResponse().getNamespace() + "_MAIN\">");
-                fancyContent.append("           <div class=\"doc-type-title\">Ajouter un contenu</div>");
+                // Fancybox identifier
+                String fancyboxId = namespace + "_PORTAL_CREATE";
 
-                int index = 1;
-                int nbSubDocs = portalDocsToCreate.size();
-                for (SubType subDoc : portalDocsToCreate) {
-                    fancyContent.append("<div class=\"doc-type-detail\">");
-                    fancyContent.append("   <div class=\"vignette\">");
-                    fancyContent.append("       <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\" onclick=\"" + onClick.toString() + "\">");
-                    fancyContent.append("           <img src=\"/toutatice-portail-cms-nuxeo/img/icons/" + subDoc.getDocType().toLowerCase() + "_100.png\"> ");
-                    fancyContent.append("       </a>");
-                    fancyContent.append("   </div>");
-                    fancyContent.append("   <div class=\"main\">");
-                    fancyContent.append("       <div class=\"title\">");
-                    fancyContent.append("           <a class=\"fancyframe_refresh\" href=\"" + subDoc.getUrl() + "\" onclick=\"" + onClick.toString() + "\">"
-                            + subDoc.getName() + "</a>");
-                    fancyContent.append("       </div>");
-                    fancyContent.append("   </div>");
-                    fancyContent.append("</div>");
+                // Container
+                Element container = DOM4JUtils.generateDivElement("container-fluid");
+                DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
 
-                    if (index < nbSubDocs) {
-                        fancyContent.append("<div class=\"vertical-separator\"></div>");
-                    }
-                    index++;
+                // Title
+                Element title = DOM4JUtils.generateElement(HTMLConstants.P, "lead", bundle.getString("ADD_CONTENT"));
+                container.add(title);
+
+                // Row
+                Element row = DOM4JUtils.generateDivElement("row");
+                container.add(row);
+
+                for (SubType subType : portalDocsToCreate) {
+                    // Document type
+                    String documentType = subType.getDocType();
+
+                    // Col
+                    Element col = DOM4JUtils.generateDivElement("col-xs-6");
+                    row.add(col);
+
+                    // Thumbnail link
+                    Element thumbnail = DOM4JUtils.generateLinkElement(subType.getUrl(), null, onClick.toString(), "thumbnail fancyframe_refresh", null);
+                    col.add(thumbnail);
+
+                    // Vignette
+                    Element vignette = DOM4JUtils.generateElement(HTMLConstants.IMG, null, null);
+                    DOM4JUtils.addAttribute(vignette, HTMLConstants.SRC, contextPath + "/img/icons/" + documentType.toLowerCase() + "_100.png");
+                    DOM4JUtils.addAttribute(vignette, HTMLConstants.ALT, StringUtils.EMPTY);
+                    thumbnail.add(vignette);
+
+                    // Caption
+                    Element caption = DOM4JUtils.generateDivElement("caption text-center");
+                    caption.setText(bundle.getString(documentType.toUpperCase()));
+                    thumbnail.add(caption);
                 }
-
-                fancyContent.append("        </div>");
-                fancyContent.append("   </div>");
-                fancyContent.append("</div>");
 
 
                 // Fancybox callback URL : refresh all page
@@ -860,11 +868,11 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, "#"
-                        + cmsCtx.getResponse().getNamespace() + fancyId, fancyOnClick, "fancybox_inline fancybox-no-title", null);
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, "#" + fancyboxId, fancyOnClick,
+                        "fancybox_inline", null);
                 item.setGlyphicon("halflings plus");
                 item.setAjaxDisabled(true);
-                item.setAssociatedHtml(fancyContent.toString());
+                item.setAssociatedHtml(DOM4JUtils.write(container));
                 item.setDropdownItem(true);
                 menubar.add(item);
             }

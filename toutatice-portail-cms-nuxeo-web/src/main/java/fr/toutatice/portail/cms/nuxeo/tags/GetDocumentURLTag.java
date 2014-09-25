@@ -8,6 +8,7 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.urls.Link;
@@ -24,6 +25,8 @@ public class GetDocumentURLTag extends SimpleTagSupport {
 
     /** Document display context. */
     private String displayContext;
+    /** Picture document indicator. */
+    private Boolean picture;
 
 
     /**
@@ -49,10 +52,18 @@ public class GetDocumentURLTag extends SimpleTagSupport {
         Document document = (Document) request.getAttribute("nuxeoDocument");
 
         if ((nuxeoController != null) && (document != null)) {
-            Link link = nuxeoController.getLink(document, StringUtils.trimToNull(this.displayContext));
+            // URL
+            String url;
+            if (BooleanUtils.isTrue(this.picture)) {
+                String path = document.getPath();
+                url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
+            } else {
+                Link link = nuxeoController.getLink(document, StringUtils.trimToNull(this.displayContext));
+                url = link.getUrl();
+            }
 
             JspWriter out = pageContext.getOut();
-            out.write(link.getUrl());
+            out.write(url);
         }
     }
 
@@ -73,6 +84,24 @@ public class GetDocumentURLTag extends SimpleTagSupport {
      */
     public void setDisplayContext(String displayContext) {
         this.displayContext = displayContext;
+    }
+
+    /**
+     * Getter for picture.
+     *
+     * @return the picture
+     */
+    public Boolean getPicture() {
+        return this.picture;
+    }
+
+    /**
+     * Setter for picture.
+     *
+     * @param picture the picture to set
+     */
+    public void setPicture(Boolean picture) {
+        this.picture = picture;
     }
 
 }
