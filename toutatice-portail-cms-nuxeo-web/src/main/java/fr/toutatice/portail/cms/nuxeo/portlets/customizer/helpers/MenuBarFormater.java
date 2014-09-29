@@ -855,6 +855,8 @@ public class MenuBarFormater {
         String permaLinkURL = this.getPortalUrlFactory().getPermaLink(
                 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
                 permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        
+        permaLinkURL = ContextualizationHelper.getLivePath(permaLinkURL);
 
         return permaLinkURL;
     }
