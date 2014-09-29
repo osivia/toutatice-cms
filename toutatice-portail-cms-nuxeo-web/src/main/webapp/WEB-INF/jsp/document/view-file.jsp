@@ -10,7 +10,7 @@
 <c:set var="iconURL"><ttc:getDocumentIconURL /></c:set>
 <c:set var="typeName"><is:getProperty key="${document.type}" /></c:set>
 <c:set var="fileName" value="${document.properties['file:filename']}" />
-<c:set var="fileSize"><ttc:getFileSize /></c:set>
+<c:set var="fileSize" value="${document.properties['file:content']['length']}" />
 
 
 <ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="download_alt" />
@@ -19,6 +19,6 @@
     <p>
         <img src="${iconURL}" alt="${typeName}">
         <a href="${documentURL}">${fileName}</a>
-        <span>(${fileSize})</span>
+        <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
     </p>
 </div>

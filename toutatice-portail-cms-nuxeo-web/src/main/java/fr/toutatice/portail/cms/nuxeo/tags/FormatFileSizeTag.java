@@ -10,19 +10,18 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
-import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 
 /**
- * Get Nuxeo document file size tag.
+ * Format Nuxeo document file size tag.
+ *
  * @author Cédric Krommenhoek
  * @see SimpleTagSupport
  */
-public class GetFileSizeTag extends SimpleTagSupport {
+public class FormatFileSizeTag extends SimpleTagSupport {
 
     /** File size units. */
     private static final String[] UNITS = {"BYTE", "KILOBYTE", "MEGABYTE", "GIGABYTE", "TERABYTE"};
@@ -32,10 +31,14 @@ public class GetFileSizeTag extends SimpleTagSupport {
     private static final IBundleFactory BUNDLE_FACTORY = getBundleFactory();
 
 
+    /** File size. */
+    private Long size;
+
+
     /**
      * Default constructor.
      */
-    public GetFileSizeTag() {
+    public FormatFileSizeTag() {
         super();
     }
 
@@ -53,29 +56,21 @@ public class GetFileSizeTag extends SimpleTagSupport {
         Locale locale = request.getLocale();
         // Bundle
         Bundle bundle = BUNDLE_FACTORY.getBundle(locale);
-        // Nuxeo document
-        Document document = (Document) request.getAttribute("nuxeoDocument");
 
-        if (document != null) {
-            // File size
-            PropertyMap fileContent = document.getProperties().getMap("file:content");
-            Long fileSize = fileContent.getLong("length");
+        // Factor
+        int factor = Double.valueOf(Math.log10(this.size) / Math.log10(UNIT_FACTOR)).intValue();
+        // Factorized size
+        double factorizedSize = this.size / Math.pow(UNIT_FACTOR, factor);
+        // Unit
+        String unit = bundle.getString(UNITS[factor]);
+        // Number format
+        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
+        numberFormat.setMaximumFractionDigits(1);
 
-            // Factor
-            int factor = Double.valueOf(Math.log10(fileSize) / Math.log10(UNIT_FACTOR)).intValue();
-            // Size
-            double size = fileSize / Math.pow(UNIT_FACTOR, factor);
-            // Unit
-            String unit = bundle.getString(UNITS[factor]);
-            // Number format
-            NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-            numberFormat.setMaximumFractionDigits(1);
-
-            JspWriter out = pageContext.getOut();
-            out.write(numberFormat.format(size));
-            out.write(" ");
-            out.write(unit);
-        }
+        JspWriter out = pageContext.getOut();
+        out.write(numberFormat.format(factorizedSize));
+        out.write(" ");
+        out.write(unit);
     }
 
 
@@ -87,7 +82,26 @@ public class GetFileSizeTag extends SimpleTagSupport {
     private static IBundleFactory getBundleFactory() {
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        return internationalizationService.getBundleFactory(GetFileSizeTag.class.getClassLoader());
+        return internationalizationService.getBundleFactory(FormatFileSizeTag.class.getClassLoader());
+    }
+
+
+    /**
+     * Getter for size.
+     *
+     * @return the size
+     */
+    public Long getSize() {
+        return this.size;
+    }
+
+    /**
+     * Setter for size.
+     *
+     * @param size the size to set
+     */
+    public void setSize(Long size) {
+        this.size = size;
     }
 
 }

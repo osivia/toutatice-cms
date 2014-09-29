@@ -25,6 +25,8 @@ import java.util.Map;
  */
 public class DocumentDTO {
 
+    /** Document identifier. */
+    private String id;
     /** Document title. */
     private String title;
     /** Document path. */
@@ -60,6 +62,24 @@ public class DocumentDTO {
         return "DocumentDTO [title=" + this.title + ", path=" + this.path + ", type=" + this.type + "]";
     }
 
+
+    /**
+     * Getter for id.
+     * 
+     * @return the id
+     */
+    public String getId() {
+        return this.id;
+    }
+
+    /**
+     * Setter for id.
+     * 
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
 
     /**
      * Getter for title.
@@ -153,7 +173,7 @@ public class DocumentDTO {
 
     /**
      * Getter for comments.
-     * 
+     *
      * @return the comments
      */
     public List<CommentDTO> getComments() {

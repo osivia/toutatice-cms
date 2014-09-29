@@ -8,7 +8,7 @@
 
 <c:set var="imageURL"><ttc:getImageURL property="annonce:image" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
-<ttc:setDate var="date" property="dc:created" />
+<c:set var="date" value="${document.properties['dc:created']}" />
 <c:set var="resume" value="${document.properties['annonce:resume']}" />
 <c:set var="content"><ttc:transform property="note:note" /></c:set>
 

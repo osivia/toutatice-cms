@@ -91,21 +91,17 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /** Nuxeo service. */
     private INuxeoService nuxeoService;
-
     /** Document DAO. */
-    private final DocumentDAO documentDAO;
+    private DocumentDAO documentDAO;
     /** Document comment DAO. */
-    private final CommentDAO commentDAO;
+    private CommentDAO commentDAO;
 
 
     /**
-     * Constructor.
+     * Default constructor.
      */
     public ViewDocumentPortlet() {
         super();
-
-        this.documentDAO = DocumentDAO.getInstance();
-        this.commentDAO = CommentDAO.getInstance();
     }
 
 
@@ -126,6 +122,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // CMS customizer
             CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
             this.nuxeoService.registerCMSCustomizer(customizer);
+
+            // DAO
+            this.documentDAO = DocumentDAO.getInstance();
+            this.commentDAO = CommentDAO.getInstance();
 
             // CMS service
             CMSService cmsService = new CMSService(this.getPortletContext());
@@ -258,11 +258,19 @@ public class ViewDocumentPortlet extends CMSPortlet {
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            request.setAttribute("nuxeoController", nuxeoController);
+            // CMS context
+            CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
             // Path
             String path = window.getProperty(PATH_WINDOW_PROPERTY);
+            // Computed path
+            path = nuxeoController.getComputedPath(path);
 
             if (StringUtils.isNotBlank(path)) {
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
@@ -276,16 +284,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // Display metadata indicator
                 boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY));
                 request.setAttribute("metadata", metadata);
-
-                // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-                request.setAttribute("nuxeoController", nuxeoController);
-
-                // CMS context
-                CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
-
-                // Computed path
-                path = nuxeoController.getComputedPath(path);
 
                 // Fetch document
                 Document document = nuxeoController.fetchDocument(path);

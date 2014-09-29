@@ -94,39 +94,22 @@
     
     
     <tag>
-        <description>Get Nuxeo document file size.</description>
-        <display-name>Get file size</display-name>
-        <name>getFileSize</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetFileSizeTag</tag-class>
-        <body-content>empty</body-content>
-    </tag>
-    
-    
-    <tag>
-        <description>Set Nuxeo document date into request attribute.</description>
-        <display-name>Set date into request attribute</display-name>
-        <name>setDate</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.SetDateTag</tag-class>
+        <description>Format file size.</description>
+        <display-name>Format file size</display-name>
+        <name>formatFileSize</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.FormatFileSizeTag</tag-class>
         <body-content>empty</body-content>
         
         <attribute>
-            <description>Request attribute name.</description>
-            <name>var</name>
+            <description>File size.</description>
+            <name>size</name>
             <required>true</required>
-            <rtexprvalue>false</rtexprvalue>
-            <type>java.lang.String</type>
-        </attribute>
-        
-        <attribute>
-            <description>Nuxeo document HTML Content property name.</description>
-            <name>property</name>
-            <required>false</required>
             <rtexprvalue>true</rtexprvalue>
-            <type>java.lang.String</type>
+            <type>java.lang.Long</type>
         </attribute>
     </tag>
     
-    
+
     <tag>
         <description>Add menubar item.</description>
         <display-name>Add menubar item</display-name>

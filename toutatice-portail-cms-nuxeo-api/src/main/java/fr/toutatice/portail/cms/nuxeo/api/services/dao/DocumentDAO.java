@@ -13,9 +13,15 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
@@ -29,8 +35,14 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
  */
 public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
+    /** Nuxeo date regex. */
+    private static final String NUXEO_DATE_REGEX = "[\\-0-9]+T[:\\.0-9]+Z";
+
     /** Singleton instance. */
     private static DocumentDAO instance;
+
+    /** Nuxeo date regex pattern. */
+    private final Pattern datePattern;
 
 
     /**
@@ -38,6 +50,9 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      */
     private DocumentDAO() {
         super();
+
+        // Nuxeo date regex pattern
+        this.datePattern = Pattern.compile(NUXEO_DATE_REGEX);
     }
 
 
@@ -61,6 +76,8 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
     public DocumentDTO toDTO(Document document) {
         DocumentDTO dto = new DocumentDTO();
 
+        // Identifier
+        dto.setId(document.getId());
         // Title
         dto.setTitle(document.getTitle());
         // Path
@@ -69,9 +86,44 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         dto.setType(document.getType());
         // Properties
         Map<String, Object> properties = dto.getProperties();
-        properties.putAll(document.getProperties().map());
+        properties.putAll(this.toMap(document.getProperties()));
 
         return dto;
+    }
+
+
+    /**
+     * Convert property map to map.
+     *
+     * @param propertyMap property map
+     * @return map
+     */
+    private Map<String, Object> toMap(PropertyMap propertyMap) {
+        Map<String, Object> map = new HashMap<String, Object>(propertyMap.size());
+
+        for (Entry<String, Object> entry : propertyMap.map().entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value instanceof PropertyMap) {
+                PropertyMap propertyMapValue = (PropertyMap) value;
+                map.put(key, this.toMap(propertyMapValue));
+            } else if (value instanceof String) {
+                String stringValue = (String) value;
+
+                Matcher dateMatcher = this.datePattern.matcher(stringValue);
+                if (dateMatcher.matches()) {
+                    Date date = propertyMap.getDate(key);
+                    map.put(key, date);
+                } else {
+                    map.put(key, stringValue);
+                }
+            } else {
+                map.put(key, value);
+            }
+        }
+
+        return map;
     }
 
 }

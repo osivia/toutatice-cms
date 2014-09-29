@@ -8,7 +8,11 @@
 
 <c:set var="vignetteURL"><ttc:getImageURL property="ttc:vignette" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
-<ttc:setDate var="date" />
+
+<c:set var="date" value="${document.properties['dc:modified']}" />
+<c:if test="${empty date}">
+    <c:set var="date" value="${document.properties['dc:created']}" />
+</c:if>
 
 
 <div class="metadata">

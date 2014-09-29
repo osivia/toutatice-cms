@@ -96,7 +96,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
     private static IBundleFactory getBundleFactory() {
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        return internationalizationService.getBundleFactory(GetFileSizeTag.class.getClassLoader());
+        return internationalizationService.getBundleFactory(FormatFileSizeTag.class.getClassLoader());
     }
 
 
