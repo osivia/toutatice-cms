@@ -42,8 +42,8 @@
     
     <!-- Edition informations -->
     <p class="small test-right">
-        <span><is:getProperty key="CREATED_BY" /></span>
-        <ttc:user name="${author}"/>
+<%--         <span><is:getProperty key="CREATED_BY" /></span> --%>
+<%--         <ttc:user name="${author}"/> --%>
         <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
         <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
     </p>
