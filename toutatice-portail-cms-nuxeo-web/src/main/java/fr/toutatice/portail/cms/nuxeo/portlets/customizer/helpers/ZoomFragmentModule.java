@@ -24,7 +24,9 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.html.HTMLConstants;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -60,11 +62,18 @@ public class ZoomFragmentModule implements IFragmentModule {
     private static final String TEMPLATE = "zoomTemplate";
 
 
+    /** Web id service. */
+    private final IWebIdService webIdService;
+
+
     /**
-     * Default constructor.
+     * Constructor.
      */
     public ZoomFragmentModule() {
         super();
+
+        // Web id service
+        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
     }
 
 
@@ -115,11 +124,20 @@ public class ZoomFragmentModule implements IFragmentModule {
                                     // URL
                                     String url = propertyMap.getString(HREF);
                                     if (StringUtils.startsWith(url, "/")) {
+                                        // CMS
                                         url = nuxeoController.getCMSLinkByPath(url, null).getUrl();
-                                    } else if (StringUtils.isNotBlank(url)) {
-                                        request.setAttribute("external", true);
-                                    } else {
+                                    } else if (StringUtils.startsWith(url, "http")) {
+                                        // Absolute URL
+                                        String serverName = nuxeoController.getRequest().getServerName();
+                                        String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(url, "://"), "/");
+                                        request.setAttribute("external", !StringUtils.equals(serverName, urlServerName));
+                                    } else if (StringUtils.isBlank(url)) {
+                                        // Blank URL
                                         url = HTMLConstants.A_HREF_DEFAULT;
+                                    } else {
+                                        // Web URL
+                                        String path = this.webIdService.webPathToPageUrl(url);
+                                        url = nuxeoController.getCMSLinkByPath(path, null).getUrl();
                                     }
                                     request.setAttribute("url", url);
 

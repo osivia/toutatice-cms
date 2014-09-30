@@ -27,7 +27,9 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.html.HTMLConstants;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
@@ -57,11 +59,18 @@ public class LinksFragmentModule implements IFragmentModule {
     private static final String TEMPLATE = "linksTemplate";
 
 
+    /** Web id service. */
+    private final IWebIdService webIdService;
+
+
     /**
-     * Default constructor.
+     * Constructor.
      */
     public LinksFragmentModule() {
         super();
+
+        // Web id service
+        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
     }
 
 
@@ -108,9 +117,21 @@ public class LinksFragmentModule implements IFragmentModule {
                                     // Link
                                     LinkFragment link;
                                     if (StringUtils.startsWith(href, "/")) {
+                                        // CMS
                                         link = new LinkFragment(nuxeoController.getCMSLinkByPath(href, null));
+                                    } else if (StringUtils.startsWith(href, "http")) {
+                                        // Absolute URL
+                                        String serverName = nuxeoController.getRequest().getServerName();
+                                        String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(href, "://"), "/");
+                                        boolean external = !StringUtils.equals(serverName, urlServerName);
+                                        link = new LinkFragment(href, external);
+                                    } else if (StringUtils.isBlank(href)) {
+                                        // Blank URL
+                                        link = new LinkFragment(HTMLConstants.A_HREF_DEFAULT, false);
                                     } else {
-                                        link = new LinkFragment(StringUtils.defaultIfBlank(href, HTMLConstants.A_HREF_DEFAULT), StringUtils.isNotBlank(href));
+                                        // Web URL
+                                        String path = this.webIdService.webPathToPageUrl(href);
+                                        link = new LinkFragment(nuxeoController.getCMSLinkByPath(path, null));
                                     }
 
                                     // Title
