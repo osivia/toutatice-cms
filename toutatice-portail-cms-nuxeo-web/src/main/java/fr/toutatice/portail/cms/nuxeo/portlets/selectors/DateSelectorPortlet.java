@@ -1,18 +1,15 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
@@ -48,7 +45,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 
 /**
  * Portlet de sélection par dates.
- *
+ * 
  * @see CMSPortlet
  */
 public class DateSelectorPortlet extends CMSPortlet {
@@ -141,7 +138,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Utility method used to add dates.
-     *
+     * 
      * @param request action request
      * @param response action response
      * @param selectorId selector identifier
@@ -176,7 +173,7 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (validation) {
             datesSelector.add(dateFrom + DATES_SEPARATOR + dateTo);
         }
-        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
+        selectors.put("selectorChanged", Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -186,7 +183,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Utility method used to delete dates.
-     *
+     * 
      * @param request action request
      * @param response action response
      * @param selectorId selector identifier
@@ -201,8 +198,8 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (dateSelectors != null) {
             dateSelectors.remove(occ);
         }
-        
-        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
+
+        selectors.put("selectorChanged", Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -213,7 +210,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     *
+     * 
      * @param req request
      * @param res response
      * @throws PortletException
@@ -276,8 +273,24 @@ public class DateSelectorPortlet extends CMSPortlet {
             if (selectorId != null) {
                 // Get public parameter
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-                if (selectors.get(selectorId) != null) {
-                    request.setAttribute("dates", selectors.get(selectorId));
+                List<String> curSelect = selectors.get(selectorId);
+                if (curSelect != null) {
+                    request.setAttribute("dates", curSelect);
+
+                    if ("1".equals(datesMonoValued)) {
+
+
+                        if (curSelect.size() > 0) {
+                            String[] tokens = curSelect.get(0).split("\\" + DATES_SEPARATOR);
+                            if (tokens.length > 0) {
+                                dateFrom = tokens[0];
+                            }
+                            if (tokens.length > 1) {
+                                dateTo = tokens[1];
+                            }
+
+                        }
+                    }
                 } else {
                     request.setAttribute("dates", new ArrayList<String>());
                 }

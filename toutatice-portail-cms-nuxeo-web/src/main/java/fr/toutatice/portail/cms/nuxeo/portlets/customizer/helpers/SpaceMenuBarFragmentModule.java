@@ -63,7 +63,6 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
     @SuppressWarnings("unchecked")
     @Override
     public void injectViewAttributes(NuxeoController nuxeoController, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
 
         String navigationPath = nuxeoController.getNavigationPath();
 
@@ -71,26 +70,10 @@ public class SpaceMenuBarFragmentModule implements IFragmentModule {
             Document doc = nuxeoController.fetchDocument(navigationPath);
 
             nuxeoController.setCurrentDoc(doc);
+            request.setAttribute("osivia.cms.forcePermalinkDisplay", true);            
             nuxeoController.insertContentMenuBarItems();
 
             List<MenubarItem> menuBar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-            // Current portal
-            Portal portal = PortalObjectUtils.getPortal(nuxeoController.getCMSCtx().getControllerContext());
-            // Space site indicator
-            boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
-
-            if (!spaceSite) {
-                // Permalink
-                String permlinkPath = nuxeoController.getContentWebIdPath();
-                String url = this.urlFactory.getPermaLink(new PortalControllerContext(nuxeoController.getPortletCtx(), request, response), null, null,
-                        permlinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-                MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null,
-                        "portlet-menuitem-permalink", null);
-                item.setGlyphicon("halflings link");
-                item.setAjaxDisabled(true);
-                menuBar.add(item);
-            }
 
             if (menuBar.isEmpty()) {
                 request.setAttribute("osivia.emptyResponse", "1");

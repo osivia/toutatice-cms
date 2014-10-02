@@ -27,6 +27,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.jboss.portal.core.model.portal.Page;
@@ -1098,6 +1099,47 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
 
+    
+   
+    
+    protected String computePermaLinkUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
+        String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
+
+        String permaLinkURL = this.getUrlFactory().getPermaLink(
+                new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
+                permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        
+        permaLinkURL = ContextualizationHelper.getLivePath(permaLinkURL);
+        
+        return permaLinkURL;
+    }
+    
+    
+    protected boolean mustDisplayPermalink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+        
+        boolean displayPermaLink = false;
+
+        if (WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
+            displayPermaLink = true;
+        }
+        
+        // for spaceMenuBar fragment
+        if( BooleanUtils.isTrue((Boolean) cmsCtx.getRequest().getAttribute("osivia.cms.forcePermalinkDisplay")))  {
+            displayPermaLink = true;            
+        }
+        
+        // Current portal
+        Portal portal = PortalObjectUtils.getPortal(cmsCtx.getControllerContext());
+        // Space site indicator
+        boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
+        if (spaceSite) {
+            displayPermaLink = false;
+        }
+        
+        
+        return displayPermaLink;     
+    }
     /**
      * Get permalink link.
      *
@@ -1106,23 +1148,18 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
      * @throws Exception
      */
     protected void getPermaLinkLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
-        if (!WindowState.MAXIMIZED.equals(cmsContext.getRequest().getWindowState())) {
-            // Current portal
-            Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
-            // Space site indicator
-            boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
-            if (!spaceSite) {
-                // Path
-                String permLinkPath = this.customizer.getContentWebIdPath(cmsContext);
-                // URL
-                String permaLinkURL = this.urlFactory.getPermaLink(
-                        new PortalControllerContext(cmsContext.getPortletCtx(), cmsContext.getRequest(), cmsContext.getResponse()), null, null, permLinkPath,
-                        IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-                if (permaLinkURL != null) {
-                    this.addPermaLinkItem(cmsContext, menubar, permaLinkURL);
-                }
-            }
+        
+        if (!mustDisplayPermalink(cmsContext, menubar))
+            return;
+
+
+        String permaLinkURL = computePermaLinkUrl(cmsContext, menubar);
+
+        if (permaLinkURL != null) {
+            this.addPermaLinkItem(cmsContext, menubar, permaLinkURL);
         }
+
+
     }
 
 

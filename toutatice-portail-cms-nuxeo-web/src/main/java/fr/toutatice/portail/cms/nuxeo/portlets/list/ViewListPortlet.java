@@ -115,6 +115,11 @@ public class ViewListPortlet extends CMSPortlet {
     private static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
     /** RSS title window property name. */
     private static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
+    /** Space menu bar window property name. */
+    @Deprecated
+    private static final String SPACE_MENUBAR_WINDOW_PROPERTY_OLD = "osivia.cms.showSpaceMenuBar";
+    /** Space menu bar window property name. */
+    private static final String SPACE_MENUBAR_WINDOW_PROPERTY = "osivia.showSpaceMenuBar";
     /** Creation parent container path window property name. */
     private static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
     /** Creation content type window property name. */
@@ -326,7 +331,12 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // RSS title
                 window.setProperty(RSS_TITLE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("rssTitle")));
-
+ 
+                 // Space Menu Bar
+                window.setProperty(SPACE_MENUBAR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("showSpaceMenuBar")));
+                // Clean old configuration
+                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD, null);
+                
                 // Parent container path
                 window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationParentPath")));
 
@@ -613,17 +623,32 @@ public class ViewListPortlet extends CMSPortlet {
                     }
 
                     if (anonymousAccess) {
-                        Map<String, String> parameters = new HashMap<String, String>();
-                        if (selectors != null) {
-                            parameters.put("selectors", selectors);
+                        Map<String, String> publicParams = new HashMap<String, String>();
+                        if (selectors != null)  {
+                            // Selectors
+                            Map<String, List<String>> selectorsMap = PageSelectors.decodeProperties(selectors);
+                            
+                            selectorsMap.remove("selectorChanged");
+                            publicParams.put("selectors", PageSelectors.encodeProperties(selectorsMap));
                         }
 
                         String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, configuration.getRssReference(),
-                                parameters, cmsPath, IPortalUrlFactory.PERM_LINK_TYPE_RSS);
+                                publicParams, cmsPath, IPortalUrlFactory.PERM_LINK_TYPE_RSS);
                         request.setAttribute("rssLinkURL", url);
                     }
                 }
 
+                // Space menubar injection 
+                
+                if(configuration.isSpaceMenuBar())   {
+                    String navigationPath = nuxeoController.getNavigationPath();
+
+                    if (navigationPath != null) {
+                         Document doc = nuxeoController.fetchDocument(navigationPath);
+                         nuxeoController.setCurrentDoc(doc);
+                         request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
+                    }
+                }
 
                 // Creation item, if parameters are given
                 String dynamicPath = window.getProperty(Constants.WINDOW_PROP_URI);
@@ -793,7 +818,18 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
-
+        
+        // Content type
+        
+        // BeanShell
+        if (window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY_OLD) != null) {
+            // Old configuration
+            configuration.setSpaceMenuBar("1".equals(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY_OLD)));
+        } else {
+            // New configuration
+            configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
+        }
+       
 
         return configuration;
     }

@@ -25,6 +25,10 @@
     <c:set var="nuxeoRequestDisplayChecked" value="checked" />
 </c:if>
 
+<c:if test="${configuration.spaceMenuBar}">
+    <c:set var="spaceMenuBarChecked" value="checked" />
+</c:if>
+
 
 <div class="container">
     <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
@@ -150,18 +154,24 @@ return request.toString();
                 <span><is:getProperty key="LIST_DISPLAY_CONFIGURATION" /></span>
             </legend>
 
-            <!-- Metadata -->
+			 <!-- Template -->
             <div class="form-group">
-                <label for="metadata-display" class="control-label col-sm-4"><is:getProperty key="LIST_METADATA" /></label>
+                <label for="template" class="control-label col-sm-4"><is:getProperty key="LIST_TEMPLATE" /></label>
                 <div class="col-sm-8">
-                    <div class="checkbox">
-                        <label>
-                            <input id="metadata-display" type="checkbox" name="metadataDisplay" ${metadataDisplayChecked}>
-                            <span><is:getProperty key="LIST_METADATA_DISPLAY" /></span>
-                        </label>
-                    </div>
+                    <select id="template" name="template" class="form-control">
+                        <c:forEach var="template" items="${templates}">
+                            <c:remove var="selected" />
+                            <c:if test="${template.key eq configuration.template}">
+                                <c:set var="selected" value="selected" />
+                            </c:if>
+                        
+                            <option value="${template.key}" ${selected}>${template.label}</option>
+                        </c:forEach>
+                    </select>
                 </div>
             </div>
+
+           
             
             <!-- Request display -->
             <div class="form-group">
@@ -200,22 +210,33 @@ return request.toString();
                 </div>
             </div>
             
-            <!-- Template -->
+ 			<!-- Metadata -->
             <div class="form-group">
-                <label for="template" class="control-label col-sm-4"><is:getProperty key="LIST_TEMPLATE" /></label>
+                <label for="metadata-display" class="control-label col-sm-4"><is:getProperty key="LIST_METADATA" /></label>
                 <div class="col-sm-8">
-                    <select id="template" name="template" class="form-control">
-                        <c:forEach var="template" items="${templates}">
-                            <c:remove var="selected" />
-                            <c:if test="${template.key eq configuration.template}">
-                                <c:set var="selected" value="selected" />
-                            </c:if>
-                        
-                            <option value="${template.key}" ${selected}>${template.label}</option>
-                        </c:forEach>
-                    </select>
+                    <div class="checkbox">
+                        <label>
+                            <input id="metadata-display" type="checkbox" name="metadataDisplay" ${metadataDisplayChecked}>
+                            <span><is:getProperty key="LIST_METADATA_DISPLAY" /></span>
+                        </label>
+                    </div>
+                </div>
+            </div>            
+            
+            <!-- MenuBar -->
+            <div class="form-group">                
+				<label for="menubar-display" class="control-label col-sm-4"><is:getProperty key="LIST_MENUBAR" /></label>
+                <div class="col-sm-8">
+                    <div class="checkbox">
+                        <label>
+                            <input id="menubar-display" type="checkbox" name="showSpaceMenuBar" ${spaceMenuBarChecked}>
+                            <span><is:getProperty key="LIST_SPACE_MENUBAR_DISPLAY" /></span>
+                        </label>
+                    </div>
                 </div>
             </div>
+            
+           
         </fieldset>
         
         <fieldset>
