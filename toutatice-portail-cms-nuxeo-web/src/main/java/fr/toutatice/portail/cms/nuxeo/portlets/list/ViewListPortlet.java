@@ -111,9 +111,6 @@ public class ViewListPortlet extends CMSPortlet {
     /** RSS title window property name. */
     private static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
     /** Space menu bar window property name. */
-    @Deprecated
-    private static final String SPACE_MENUBAR_WINDOW_PROPERTY_OLD = "osivia.cms.showSpaceMenuBar";
-    /** Space menu bar window property name. */
     private static final String SPACE_MENUBAR_WINDOW_PROPERTY = "osivia.showSpaceMenuBar";
     /** Creation parent container path window property name. */
     private static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
