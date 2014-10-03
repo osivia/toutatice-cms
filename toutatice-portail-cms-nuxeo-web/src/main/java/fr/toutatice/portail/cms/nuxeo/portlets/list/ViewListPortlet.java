@@ -86,8 +86,6 @@ public class ViewListPortlet extends CMSPortlet {
     /** Bean Shell interpretation indicator window property name. */
     private static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
     /** @deprecated old Bean Shell window property name. */
-    @Deprecated
-    private static final String BEAN_SHELL_WINDOW_PROPERTY_OLD = "osivia.requestInterpretor";
     /** Version window property name. */
     private static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
     /** Content filter window property name. */
@@ -96,9 +94,6 @@ public class ViewListPortlet extends CMSPortlet {
     private static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
     /** Metadata display indicator window property name. */
     private static final String METADATA_DISPLAY_WINDOW_PROPERTY = "osivia.metadataDisplay";
-    /** @deprecated old metadata hidding indicator window property name. */
-    @Deprecated
-    private static final String METADATA_DISPLAY_WINDOW_PROPERTY_OLD = "osivia.cms.hideMetaDatas";
     /** Nuxeo request display indicator window property name. */
     private static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
     /** Results limit window property name. */
@@ -291,8 +286,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
-                // Clean old configuration
-                window.setProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD, null);
+
 
                 // Version
                 window.setProperty(VERSION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("displayLiveVersion")));
@@ -305,8 +299,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // Metadata display
                 window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("metadataDisplay")));
-                // Clean old configuration
-                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD, null);
+
 
                 // Nuxeo request display
                 window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoRequestDisplay")));
@@ -334,9 +327,7 @@ public class ViewListPortlet extends CMSPortlet {
  
                  // Space Menu Bar
                 window.setProperty(SPACE_MENUBAR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("showSpaceMenuBar")));
-                // Clean old configuration
-                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD, null);
-                
+
                 // Parent container path
                 window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationParentPath")));
 
@@ -762,14 +753,7 @@ public class ViewListPortlet extends CMSPortlet {
         // Nuxeo request
         configuration.setNuxeoRequest(window.getProperty(NUXEO_REQUEST_WINDOW_PROPERTY));
 
-        // BeanShell
-        if (window.getProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD) != null) {
-            // Old configuration
-            configuration.setBeanShell("beanShell".equals(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY_OLD)));
-        } else {
-            // New configuration
-            configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
-        }
+        configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
 
         // Version
         configuration.setVersion(window.getProperty(VERSION_WINDOW_PROPERTY));
@@ -780,14 +764,9 @@ public class ViewListPortlet extends CMSPortlet {
         // Scope
         configuration.setScope(window.getProperty(SCOPE_WINDOW_PROPERTY));
 
-        // Metadata display
-        if (window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD) != null) {
-            // Old configuration
-            configuration.setMetadataDisplay(!"1".equals(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY_OLD)));
-        } else {
-            // New configuration
-            configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY)));
-        }
+        // New configuration
+        configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY)));
+
 
         // Nuxeo request display
         configuration.setNuxeoRequestDisplay(BooleanUtils.toBoolean(window.getProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY)));
@@ -821,14 +800,9 @@ public class ViewListPortlet extends CMSPortlet {
         
         // Content type
         
-        // BeanShell
-        if (window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY_OLD) != null) {
-            // Old configuration
-            configuration.setSpaceMenuBar("1".equals(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY_OLD)));
-        } else {
-            // New configuration
-            configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
-        }
+        // Space Menu Bar
+        configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
+
        
 
         return configuration;
