@@ -82,40 +82,39 @@ public class ViewListPortlet extends CMSPortlet {
     private static final Log LOGGER = LogFactory.getLog(ViewListPortlet.class);
 
     /** Nuxeo request window property name. */
-    private static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
+    public static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
     /** Bean Shell interpretation indicator window property name. */
-    private static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
-    /** @deprecated old Bean Shell window property name. */
+    public static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
     /** Version window property name. */
-    private static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
+    public static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
     /** Content filter window property name. */
-    private static final String CONTENT_FILTER_WINDOW_PROPERTY = InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY;
+    public static final String CONTENT_FILTER_WINDOW_PROPERTY = InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY;
     /** Scope window property name. */
-    private static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
+    public static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
     /** Metadata display indicator window property name. */
-    private static final String METADATA_DISPLAY_WINDOW_PROPERTY = "osivia.metadataDisplay";
+    public static final String METADATA_DISPLAY_WINDOW_PROPERTY = "osivia.metadataDisplay";
     /** Nuxeo request display indicator window property name. */
-    private static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
+    public static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
     /** Results limit window property name. */
-    private static final String RESULTS_LIMIT_WINDOW_PROPERTY = "osivia.cms.maxItems";
+    public static final String RESULTS_LIMIT_WINDOW_PROPERTY = "osivia.cms.maxItems";
     /** Normal view pagination window property name. */
-    private static final String NORMAL_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSize";
+    public static final String NORMAL_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSize";
     /** Maximized view pagination window property name. */
-    private static final String MAXIMIZED_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSizeMax";
+    public static final String MAXIMIZED_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSizeMax";
     /** Template window property name. */
-    private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.style";
+    public static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.style";
     /** Permalink reference window property name. */
-    private static final String PERMALINK_REFERENCE_WINDOW_PROPERTY = "osivia.permaLinkRef";
+    public static final String PERMALINK_REFERENCE_WINDOW_PROPERTY = "osivia.permaLinkRef";
     /** RSS reference window property name. */
-    private static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
+    public static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
     /** RSS title window property name. */
-    private static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
+    public static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
     /** Space menu bar window property name. */
-    private static final String SPACE_MENUBAR_WINDOW_PROPERTY = "osivia.showSpaceMenuBar";
+    public static final String SPACE_MENUBAR_WINDOW_PROPERTY = "osivia.showSpaceMenuBar";
     /** Creation parent container path window property name. */
-    private static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
+    public static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
     /** Creation content type window property name. */
-    private static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
+    public static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
 
     /** Default request page size. */
     private static final int DEFAULT_REQUEST_PAGE_SIZE = 100;
@@ -321,7 +320,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // RSS title
                 window.setProperty(RSS_TITLE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("rssTitle")));
- 
+
                  // Space Menu Bar
                 window.setProperty(SPACE_MENUBAR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("showSpaceMenuBar")));
 
@@ -615,7 +614,7 @@ public class ViewListPortlet extends CMSPortlet {
                         if (selectors != null)  {
                             // Selectors
                             Map<String, List<String>> selectorsMap = PageSelectors.decodeProperties(selectors);
-                            
+
                             selectorsMap.remove("selectorChanged");
                             publicParams.put("selectors", PageSelectors.encodeProperties(selectorsMap));
                         }
@@ -626,8 +625,8 @@ public class ViewListPortlet extends CMSPortlet {
                     }
                 }
 
-                // Space menubar injection 
-                
+                // Space menubar injection
+
                 if(configuration.isSpaceMenuBar())   {
                     String navigationPath = nuxeoController.getNavigationPath();
 
@@ -750,6 +749,7 @@ public class ViewListPortlet extends CMSPortlet {
         // Nuxeo request
         configuration.setNuxeoRequest(window.getProperty(NUXEO_REQUEST_WINDOW_PROPERTY));
 
+        // Bean Shell interpretation
         configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
 
         // Version
@@ -761,9 +761,8 @@ public class ViewListPortlet extends CMSPortlet {
         // Scope
         configuration.setScope(window.getProperty(SCOPE_WINDOW_PROPERTY));
 
-        // New configuration
+        // Metadata display
         configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY)));
-
 
         // Nuxeo request display
         configuration.setNuxeoRequestDisplay(BooleanUtils.toBoolean(window.getProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY)));
@@ -794,13 +793,13 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
-        
+
         // Content type
-        
+
         // Space Menu Bar
         configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
 
-       
+
 
         return configuration;
     }

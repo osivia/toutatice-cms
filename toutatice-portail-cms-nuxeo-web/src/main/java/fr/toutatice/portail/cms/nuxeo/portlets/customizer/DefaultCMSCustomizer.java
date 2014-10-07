@@ -126,7 +126,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
 
     /** Default schemas. */
-    public static final String DEFAULT_SCHEMAS = "dublincore,common, toutatice, file";
+    public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
@@ -954,8 +954,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
         // Cas des chargement asynchrones : pas de contexte
-        if(invocation != null)
+        if (invocation != null) {
             portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
+        }
 
         // Dans certaines cas, le nom du portail n'est pas connu
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
