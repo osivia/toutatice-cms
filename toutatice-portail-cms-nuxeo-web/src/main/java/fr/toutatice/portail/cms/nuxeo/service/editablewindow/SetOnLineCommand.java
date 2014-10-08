@@ -43,7 +43,7 @@ public class SetOnLineCommand implements INuxeoCommand {
 
         Object execute = null;
 
-        OperationRequest request = nuxeoSession.newRequest("setOnLine").setInput(inputDoc);
+        OperationRequest request = nuxeoSession.newRequest("portal_setOnLine").setInput(inputDoc);
 
         execute = request.execute();
 
