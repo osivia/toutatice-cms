@@ -1271,7 +1271,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
             CMSItem cmsItem = new CMSItem(doc.getPath(), webId, properties, doc);
 
-            permLinkPath = this.getWebIdService().itemToPageUrl(cmsItem);
+			permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx.getControllerContext(), 
+					cmsItem);
 
         }
 
