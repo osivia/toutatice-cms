@@ -112,9 +112,6 @@ public abstract class EditableWindow {
 
         // Propriétés génériques
         Map<String, String> propsFilled = new HashMap<String, String>();
-        propsFilled.put("osivia.fragmentTypeId", "html_property");
-
-        propsFilled.put("osivia.propertyName", "htmlfgt:htmlFragment");
 
         propsFilled.put("osivia.refURI", fragment.getString(EditableWindowHelper.FGT_URI));
 
@@ -134,8 +131,9 @@ public abstract class EditableWindow {
 			propsFilled.put("osivia.hideTitle", "0");
         }
 
-        if (modeEditionPage)
+        if (modeEditionPage) {
             propsFilled.put(Constants.WINDOW_PROP_VERSION, "1");
+        }
 
         propsFilled.put(ThemeConstants.PORTAL_PROP_REGION, fragment.getString("regionId"));
         propsFilled.put(ThemeConstants.PORTAL_PROP_ORDER, fragment.getString("order"));

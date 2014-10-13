@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -20,15 +20,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HtmlEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PictureEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
  * Permet de gérer et ajouter les types de Window affichables dans le portail
- * 
+ *
  */
 public class EditableWindowAdapter {
 
@@ -39,35 +40,37 @@ public class EditableWindowAdapter {
      * Constructeur par défaut (créé le type de window HTML et liste)
      */
     public EditableWindowAdapter() {
-        addType("fgt.html", new HtmlEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
+        this.addType("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
 
-        addType("fgt.links", new LinksEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "links_Frag_"));
-        
-        addType("fgt.zoom", new ZoomEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "zoom_Frag_"));
+        this.addType("fgt.links", new LinksEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "links_Frag_"));
 
-        addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+        this.addType("fgt.zoom", new ZoomEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "zoom_Frag_"));
 
-        addType("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
+        this.addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+
+        this.addType("fgt.picture", new PictureEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "picture_Frag_"));
+
+        this.addType("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
     }
 
     /**
      * Ajout d'un type
-     * 
+     *
      * @param name le code identifié dans nuxeo
      * @param window l'objet EditableWindow correspondant
      */
     protected void addType(String name, EditableWindow window) {
-        types.put(name, window);
+        this.types.put(name, window);
     }
 
     /**
      * Recherche d'un type
-     * 
+     *
      * @param name le code identifié dans nuxeo
      * @return l'objet EditableWindow correspondant
      */
     public EditableWindow getType(String name) {
-        return types.get(name);
+        return this.types.get(name);
     }
 
 
