@@ -80,9 +80,9 @@ public class MenuPortlet extends CMSPortlet {
     private static final int DEFAULT_OPEN_LEVELS = 1;
 
 
-    /** View path prefix. */
+    /** View JSP path prefix. */
     private static final String PATH_VIEW_PREFIX = "/WEB-INF/jsp/publish/view";
-    /** Admin path. */
+    /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
 
     /** Portal URL factory. */

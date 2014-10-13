@@ -1,39 +1,44 @@
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 <%@ page isELIgnored="false" %>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 
 
-<portlet:defineObjects />
+<c:if test="${nuxeoLink}">
+    <c:set var="nuxeoLinkChecked" value="checked" />
+</c:if>
 
-	<div>
-			<label>Nom du lien</label><br/>
-			<i>Il peur s'agir d'une propriété du document Nuxeo; ex: dc:title</i><br/>
-			<input type="text" name="linkName" value="${linkName}" size="40"><br/>
-			<br/>
-	
-			<label>Chemin Nuxeo du document</label><br/>
-			<i>Il peut s'agir d'une propriété calculée; ex: ${basePath}</i><br/>
-			<input type="text" name="docPathForLink" value="${docPathForLink}" size="40"><br/>
-			<br/>
-			
-			<label>Classe(s) CSS</label><br/>
-			<i>Si plusieurs classes sont à renseigner, les séparer par un espace</i><br/>
-			<input type="text" name="cssLinkClass" value="${cssLinkClass}" size="40"><br/>
-			<br/>
-			
-			<% String isNuxeoLink = "";
-			   if("1".equals(renderRequest.getAttribute("isNuxeoLink"))){
-				   isNuxeoLink = "checked='checked'";	
-			   }
-			%>
-			<input type="checkbox" name="isNuxeoLink" value="1" <%= isNuxeoLink %> />&nbsp;Lien vers Nuxeo<br/>
-			<br/>
 
-	</div>
-	
-	
+<!-- Link name -->
+<div class="form-group">
+    <label for="link-name" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_LINK_NAME" /></label>
+    <div class="col-sm-9">
+        <input id="link-name" type="text" name="name" value="${name}" class="form-control" />
+        <span class="help-block"><is:getProperty key="FRAGMENT_LINK_NAME_HELP" /></span>
+    </div>
+</div>
+
+<!-- Link target path & Nuxeo link indicator -->
+<div class="form-group">
+    <label for="target-path" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_LINK_TARGET_PATH" /></label>
+    <div class="col-sm-9">
+        <input id="target-path" type="text" name="targetPath" value="${targetPath}" class="form-control" />
+    </div>
+    <div class="col-sm-offset-3 col-sm-9">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="nuxeoLink" ${nuxeoLinkChecked}>
+                <span><is:getProperty key="FRAGMENT_LINK_NUXEO_INDICATOR" /></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- CSS classes -->
+<div class="form-group">
+    <label for="css-classes" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_LINK_CSS_CLASSES" /></label>
+    <div class="col-sm-9">
+        <input id="css-classes" type="text" name="cssClasses" value="${cssClasses}" class="form-control" />
+        <span class="help-block"><is:getProperty key="FRAGMENT_LINK_CSS_CLASSES_HELP" /></span>
+    </div>
+</div>

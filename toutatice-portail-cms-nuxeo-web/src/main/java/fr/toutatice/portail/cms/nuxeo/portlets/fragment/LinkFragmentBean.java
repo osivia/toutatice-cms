@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
+package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import org.osivia.portal.api.urls.Link;
 
@@ -8,7 +8,7 @@ import org.osivia.portal.api.urls.Link;
  * @author Cédric Krommenhoek
  * @see Link
  */
-public class LinkFragment extends Link {
+public class LinkFragmentBean extends Link {
 
     /** Title property name. */
     public static final String TITLE_PROPERTY = "title";
@@ -26,21 +26,21 @@ public class LinkFragment extends Link {
 
     /**
      * Constructor.
-     *
-     * @param link link
+     * 
+     * @param url link URL
+     * @param external external link indicator
      */
-    public LinkFragment(Link link) {
-        super(link.getUrl(), link.isExternal());
+    public LinkFragmentBean(String url, boolean external) {
+        super(url, external);
     }
 
     /**
      * Constructor.
-     *
-     * @param url link URL
-     * @param external external link indicator
+     * 
+     * @param link link
      */
-    public LinkFragment(String url, boolean external) {
-        super(url, external);
+    public LinkFragmentBean(Link link) {
+        this(link.getUrl(), link.isExternal());
     }
 
 

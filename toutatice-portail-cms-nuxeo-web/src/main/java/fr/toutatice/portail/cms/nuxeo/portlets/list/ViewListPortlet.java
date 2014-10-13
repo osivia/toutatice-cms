@@ -283,7 +283,6 @@ public class ViewListPortlet extends CMSPortlet {
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
 
-
                 // Version
                 window.setProperty(VERSION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("displayLiveVersion")));
 
@@ -295,7 +294,6 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // Metadata display
                 window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("metadataDisplay")));
-
 
                 // Nuxeo request display
                 window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoRequestDisplay")));
@@ -794,12 +792,8 @@ public class ViewListPortlet extends CMSPortlet {
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
 
-        // Content type
-
         // Space Menu Bar
         configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
-
-
 
         return configuration;
     }

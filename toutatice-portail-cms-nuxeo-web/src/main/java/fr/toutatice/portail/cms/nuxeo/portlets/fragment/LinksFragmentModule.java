@@ -11,14 +11,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
+package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletRequest;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,14 +25,15 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.IFragmentModule;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinkFragment;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
 
 /**
@@ -44,19 +44,18 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow
  */
 public class LinksFragmentModule implements IFragmentModule {
 
-    /** name. */
+    /** Links fragment identifier. */
     public static final String ID = "links_property";
-    /** description of module. */
-    public static final String DESC = "Liste de liens";
-    /** jsp view-zoom in portlet fragment. */
-    public static final String JSP = "links";
-    /** jsp admin property in portlet fragment. */
-    public static final String ADMIN_JSP = "links";
 
+    /** View JSP name. */
+    private static final String VIEW_JSP_NAME = "links";
     /** Ref URI. */
     private static final String REF_URI = "refURI";
     /** Template. */
     private static final String TEMPLATE = "linksTemplate";
+
+    /** Singleton instance. */
+    private static IFragmentModule instance;
 
 
     /** Web id service. */
@@ -64,9 +63,9 @@ public class LinksFragmentModule implements IFragmentModule {
 
 
     /**
-     * Constructor.
+     * Private constructor.
      */
-    public LinksFragmentModule() {
+    private LinksFragmentModule() {
         super();
 
         // Web id service
@@ -75,10 +74,32 @@ public class LinksFragmentModule implements IFragmentModule {
 
 
     /**
+     * Get singleton instance.
+     *
+     * @return singleton instance
+     */
+    public static IFragmentModule getInstance() {
+        if (instance == null) {
+            instance = new LinksFragmentModule();
+        }
+        return instance;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    public void injectViewAttributes(NuxeoController nuxeoController, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+    public void doView(PortalControllerContext portalControllerContext) throws PortletException {
+        // Request
+        RenderRequest request = (RenderRequest) portalControllerContext.getRequest();
+        // Response
+        RenderResponse response = (RenderResponse) portalControllerContext.getResponse();
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, portalControllerContext.getPortletCtx());
+
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
         // Nuxeo path
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
         // Empty content indicator
@@ -101,7 +122,7 @@ public class LinksFragmentModule implements IFragmentModule {
                 // Links schema
                 String linksSchema = LinksEditableWindow.LINKS_SCHEMA;
                 if (StringUtils.isNotEmpty(linksSchema)) {
-                    List<LinkFragment> links = new ArrayList<LinkFragment>();
+                    List<LinkFragmentBean> links = new ArrayList<LinkFragmentBean>();
 
                     // Content
                     Object content = document.getProperties().get(linksSchema);
@@ -112,33 +133,33 @@ public class LinksFragmentModule implements IFragmentModule {
                                 PropertyMap propertyMap = dataContents.getMap(index);
 
                                 String refURIValue = (String) propertyMap.get(REF_URI);
-                                String href = propertyMap.getString(LinkFragment.HREF_PROPERTY);
+                                String href = propertyMap.getString(LinkFragmentBean.HREF_PROPERTY);
                                 if (refURI.equalsIgnoreCase(refURIValue) && StringUtils.isNotBlank(href)) {
                                     // Link
-                                    LinkFragment link;
+                                    LinkFragmentBean link;
                                     if (StringUtils.startsWith(href, "/")) {
                                         // CMS
-                                        link = new LinkFragment(nuxeoController.getCMSLinkByPath(href, null));
+                                        link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(href, null));
                                     } else if (StringUtils.startsWith(href, "http")) {
                                         // Absolute URL
                                         String serverName = nuxeoController.getRequest().getServerName();
                                         String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(href, "://"), "/");
                                         boolean external = !StringUtils.equals(serverName, urlServerName);
-                                        link = new LinkFragment(href, external);
+                                        link = new LinkFragmentBean(href, external);
                                     } else if (StringUtils.isBlank(href)) {
                                         // Blank URL
-                                        link = new LinkFragment(HTMLConstants.A_HREF_DEFAULT, false);
+                                        link = new LinkFragmentBean(HTMLConstants.A_HREF_DEFAULT, false);
                                     } else {
                                         // Web URL
                                         String path = this.webIdService.webPathToPageUrl(href);
-                                        link = new LinkFragment(nuxeoController.getCMSLinkByPath(path, null));
+                                        link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(path, null));
                                     }
 
                                     // Title
-                                    link.setTitle(propertyMap.getString(LinkFragment.TITLE_PROPERTY));
+                                    link.setTitle(propertyMap.getString(LinkFragmentBean.TITLE_PROPERTY));
 
                                     // Glyphicon
-                                    link.setGlyphicon(propertyMap.getString(LinkFragment.ICON_PROPERTY));
+                                    link.setGlyphicon(propertyMap.getString(LinkFragmentBean.ICON_PROPERTY));
 
                                     links.add(link);
                                 }
@@ -187,14 +208,8 @@ public class LinksFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
-        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        request.setAttribute("nuxeoPath", StringUtils.trimToEmpty(nuxeoPath));
-
-        request.setAttribute("propertyName", LinksEditableWindow.LINKS_SCHEMA);
-
-        String scope = window.getProperty("osivia.cms.forcePublicationScope");
-        request.setAttribute("scope", scope);
+    public void doAdmin(PortalControllerContext portalControllerContext) throws PortletException {
+        // Do nothing
     }
 
 
@@ -202,16 +217,35 @@ public class LinksFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
-        if (request.getParameter("nuxeoPath") != null) {
-            window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
-        }
+    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+        // Do nothing
+    }
 
-        if ((request.getParameter("scope") != null) && (request.getParameter("scope").length() > 0)) {
-            window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
-        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null) {
-            window.setProperty("osivia.cms.forcePublicationScope", null);
-        }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isDisplayedInAdmin() {
+        return false;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getViewJSPName() {
+        return VIEW_JSP_NAME;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAdminJSPName() {
+        return null;
     }
 
 }

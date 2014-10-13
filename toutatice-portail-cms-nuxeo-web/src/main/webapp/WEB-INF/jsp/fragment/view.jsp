@@ -1,38 +1,33 @@
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType"%>
-<%@ page contentType="text/plain; charset=UTF-8"%>
-
-
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="internationalization" prefix="is" %>
+
+<%@ page contentType="text/html" isELIgnored="false"%>
 
 
 <portlet:defineObjects />
 
-<%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 
-FragmentType fragmentType = (FragmentType) renderRequest.getAttribute("fragmentType")	;
-%>
-
-
-
-<div class="nuxeo-fragment-view">
-
-<% 	
-	if(fragmentType != null)	{
-	   String jspName = "view-"+ fragmentType.getViewJspName()  + ".jsp";
-%>
-		<jsp:include page="<%= jspName %>"></jsp:include>
-<% } %> 
-
-</div>
-
-
-
-<% if (ctx != null){%>
-		<%= ctx.getDebugInfos() %>
-<% } %>
+<c:choose>
+    <c:when test="${not empty fragmentType}">
+        <!-- Message -->
+        <c:if test="${not empty messageKey}">
+            <p class="lead text-danger">
+	            <i class="glyphicons halflings exclamation-sign"></i>
+	            <span><is:getProperty key="${messageKey}" /></span>
+	        </p>
+        </c:if>
+    
+        <!-- Fragment -->
+        <c:if test="${not empty fragmentType.module.viewJSPName}">
+            <jsp:include page="view-${fragmentType.module.viewJSPName}.jsp" />
+        </c:if>
+    </c:when>
+    
+    <c:otherwise>
+        <p class="lead text-danger">
+            <i class="glyphicons halflings exclamation-sign"></i>
+            <span><is:getProperty key="FRAGMENT_MESSAGE_NOT_CONFIGURED" /></span>
+        </p>
+    </c:otherwise>
+</c:choose>

@@ -70,6 +70,7 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.FragmentType;
 import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
@@ -85,23 +86,23 @@ import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.IPlayer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinkFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationPictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.PropertyFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SitePictueFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.SpaceMenuBarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 
@@ -113,7 +114,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavig
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Logger. */
-    protected static final Log logger = LogFactory.getLog(DefaultCMSCustomizer.class);
+    protected static final Log LOGGER = LogFactory.getLog(DefaultCMSCustomizer.class);
 
     /* Default style for lists */
     /** List template minimal. */
@@ -132,10 +133,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** servlet url for avatars */
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
-
-
-    /** Singleton instance for deprecied method compatibility. DO NOT USE. */
-    private static DefaultCMSCustomizer instance;
 
 
     /** Portlet context. */
@@ -190,9 +187,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public DefaultCMSCustomizer(PortletContext ctx) {
         super();
-
-        // Singleton instance for deprecied method compatibility
-        instance = this;
 
         // Portlet context
         this.portletCtx = ctx;
@@ -318,23 +312,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * @deprecated Use non-static method instead.
-     * @return templates
-     */
-    @Deprecated
-    public static List<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate> getListTemplates() {
-        List<ListTemplate> templates = instance.getListTemplates(Locale.getDefault());
-
-        List<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate> oldTemplates = new ArrayList<fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate>(
-                templates.size());
-        for (ListTemplate template : templates) {
-            oldTemplates.add(new fr.toutatice.portail.cms.nuxeo.portlets.customizer.ListTemplate(template));
-        }
-        return oldTemplates;
-    }
-
-
-    /**
      * Get templates list.
      *
      * @param locale user locale
@@ -364,19 +341,34 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return fragments list
      */
-    public static List<FragmentType> getFragmentTypes() {
+    public List<FragmentType> getFragmentTypes(Locale locale) {
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
-        fragmentTypes.add(new FragmentType("text_property", "Propriété texte", new PropertyFragmentModule(), "property-text", "property"));
-        fragmentTypes.add(new FragmentType("html_property", "Propriété html", new PropertyFragmentModule(), "property-html", "property"));
-        fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, ZoomFragmentModule.DESC, new ZoomFragmentModule(), ZoomFragmentModule.JSP,
-                ZoomFragmentModule.ADMIN_JSP));
-        fragmentTypes.add(new FragmentType(LinksFragmentModule.ID, LinksFragmentModule.DESC, new LinksFragmentModule(), LinksFragmentModule.JSP,
-        		LinksFragmentModule.ADMIN_JSP));
-        fragmentTypes.add(new FragmentType("navigation_picture", "Visuel navigation", new NavigationPictureFragmentModule(), "navigation-picture", "navigation"));
-        fragmentTypes.add(new FragmentType("document_picture", "Image jointe", new DocumentPictureFragmentModule(), "document-picture", "document-picture"));
-        fragmentTypes.add(new FragmentType("doc_link", "Lien portail ou Nuxeo", new LinkFragmentModule(), "link", "link"));
-        fragmentTypes.add(new FragmentType("space_menubar", "MenuBar d'un Espace", new SpaceMenuBarFragmentModule(), "space-menubar", "empty"));
-        fragmentTypes.add(new FragmentType("site_picture", "Visuel site", new SitePictueFragmentModule(), "site-picture", "site-picture"));
+
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        // Text fragment
+        fragmentTypes.add(new FragmentType(PropertyFragmentModule.TEXT_ID, bundle.getString("FRAGMENT_TYPE_TEXT"), PropertyFragmentModule.getInstance(false)));
+        // HTML fragment
+        fragmentTypes.add(new FragmentType(PropertyFragmentModule.HTML_ID, bundle.getString("FRAGMENT_TYPE_HTML"), PropertyFragmentModule.getInstance(true)));
+        // Zoom fragment
+        fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_ZOOM"), ZoomFragmentModule.getInstance()));
+        // Links fragment
+        fragmentTypes.add(new FragmentType(LinksFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_LINKS"), LinksFragmentModule.getInstance()));
+        // Navigation picture fragment
+        fragmentTypes.add(new FragmentType(NavigationPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_NAVIGATION_PICTURE"),
+                NavigationPictureFragmentModule.getInstance()));
+        // Document attachment picture fragment
+        fragmentTypes.add(new FragmentType(DocumentPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_DOCUMENT_PICTURE"), DocumentPictureFragmentModule
+                .getInstance()));
+        // Link fragment
+        fragmentTypes.add(new FragmentType(LinkFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_LINK"), LinkFragmentModule.getInstance()));
+        // Space menubar fragment
+        fragmentTypes.add(new FragmentType(SpaceMenubarFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_MENUBAR"), SpaceMenubarFragmentModule.getInstance()));
+        // Site picture fragment
+        fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"), SitePictureFragmentModule
+                .getInstance()));
+
         return fragmentTypes;
     }
 

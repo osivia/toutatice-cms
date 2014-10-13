@@ -25,7 +25,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ZoomFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
 
 /**
  * 

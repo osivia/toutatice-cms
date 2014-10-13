@@ -15,6 +15,7 @@ import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.html.DOM4JUtils;
@@ -64,10 +65,12 @@ public class UserTag extends SimpleTagSupport {
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        // Directory service
+        IDirectoryService directoryService = DIRECTORY_SERVICE_LOCATOR.getDirectoryService();
 
-        if (nuxeoController != null) {
+        if ((nuxeoController != null) && (directoryService != null)) {
             // User LDAP person
-            DirectoryPerson person = DIRECTORY_SERVICE_LOCATOR.getDirectoryService().getPerson(this.name);
+            DirectoryPerson person = directoryService.getPerson(this.name);
 
             // User avatar image source
             String avatarSource;
@@ -83,8 +86,6 @@ public class UserTag extends SimpleTagSupport {
 
             // User profile page URL
             String profileURL = this.getUserProfilePageURL(nuxeoController, person);
-
-
 
             // User display container
             Element container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
@@ -102,11 +103,7 @@ public class UserTag extends SimpleTagSupport {
 
             JspWriter out = pageContext.getOut();
             HTMLWriter htmlWriter = new HTMLWriter(out);
-            // try {
-                htmlWriter.write(container);
-            // } finally {
-            // htmlWriter.close();
-            // }
+            htmlWriter.write(container);
         }
     }
 

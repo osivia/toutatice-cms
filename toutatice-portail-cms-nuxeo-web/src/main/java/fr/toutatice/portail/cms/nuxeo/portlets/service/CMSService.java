@@ -61,6 +61,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.FragmentType;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.cms.NavigationItem;
@@ -494,7 +495,7 @@ public class CMSService implements ICMSService {
 
         } catch (Exception e) {
             if (!(e instanceof CMSException)) {
-                if (e instanceof NuxeoException && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
+                if ((e instanceof NuxeoException) && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
                     return null;
                 } else {
                     throw new CMSException(e);
@@ -552,11 +553,11 @@ public class CMSService implements ICMSService {
 
                 if( cmsCtx.isStreamingSupport())    {
                     PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
-                    if(map != null && !map.isEmpty()){
+                    if((map != null) && !map.isEmpty()){
                         String size = map.getString("length");
 
 
-                        if(size != null && Long.parseLong(size)> 1000000L) {
+                        if((size != null) && (Long.parseLong(size)> 1000000L)) {
                             //Activation du mode streaming
                             cmd.setStreamingSupport(true);
                             // Pas de cache en mode streaming
@@ -677,7 +678,7 @@ public class CMSService implements ICMSService {
             do {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
-                if (navItem != null && (fetchSubItems && navItem.isUnfetchedChildren())) {
+                if ((navItem != null) && (fetchSubItems && navItem.isUnfetchedChildren())) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
                     if (!idsToFetch.contains(doc.getId())) {
@@ -1959,6 +1960,19 @@ public class CMSService implements ICMSService {
         return this.customizer.getMenuTemplates(locale);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<FragmentType> getFragmentTypes(Locale locale) {
+        return this.customizer.getFragmentTypes(locale);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setSynchronization(CMSServiceCtx cmsCtx, String pagePath, Boolean enable) throws CMSException {
 

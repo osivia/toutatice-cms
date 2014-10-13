@@ -1,43 +1,48 @@
-
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 <%@ page isELIgnored="false" %>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 
 
-<portlet:defineObjects/>
+<c:if test="${cmsMenu}">
+    <c:set var="cmsMenuChecked" value="checked" />
+</c:if>
 
 
-<%
-NuxeoController ctx = (NuxeoController) request.getAttribute("ctx")	;
+<!-- Nuxeo path -->
+<div class="form-group">
+    <label for="nuxeo-path" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_NUXEO_PATH" /></label>
+    <div class="col-sm-9">
+        <input id="nuxeo-path" type="text" name="nuxeoPath" value="${nuxeoPath}" class="form-control" />
+    </div>
+</div>
 
-String displayLiveVersion = "";
-if( "1".equals( request.getAttribute("displayLiveVersion")))
-	displayLiveVersion = "checked";
-%>
+<!-- Property name -->
+<div class="form-group">
+    <label for="property-name" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_PROPERTY_NAME" /></label>
+    <div class="col-sm-9">
+        <input id="property-name" type="text" name="propertyName" value="${propertyName}" class="form-control" />
+        <span class="help-block"><is:getProperty key="FRAGMENT_PROPERTY_NAME_HELP" /></span>
+    </div>
+</div>
 
+<!-- Scope -->
+<div class="form-group">
+    <label for="cms-scope" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_SCOPE" /></label>
+    <div class="col-sm-9">
+        <span>${scopes}</span>
+    </div>
+</div>
 
-
-	<div>
-	
-			<label>Path</label><br/>
-			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="50"><br/>
-			<label>Nom de la propriété (ex: 'dc:title')</label><br/>
-			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
-			<label>Scope</label><br/>
-			<%= ctx.formatScopeList( (String) request.getAttribute("scope")) %><br/><br/>
-		
-
-			
-		<input type="checkbox" name="displayLiveVersion" value="1" <%= displayLiveVersion%>/>Affichage des versions non publiées <br/>
-		
-		<input type="checkbox" name="displayCMSMenu" value="1" ${displayCMSMenu} />Affichage du menu CMS<br />
-
-	</div>
-	
-	
+<!-- CMS menu display indicator -->
+<div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="cmsMenu" ${cmsMenuChecked}>
+                <span><is:getProperty key="FRAGMENT_CMS_MENU" /></span>
+            </label>
+        </div>
+    </div>
+</div>
+            

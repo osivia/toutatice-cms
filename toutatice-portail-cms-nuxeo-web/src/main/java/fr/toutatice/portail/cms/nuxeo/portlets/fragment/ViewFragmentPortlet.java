@@ -12,189 +12,196 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.FragmentType;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.FragmentType;
 
 /**
- * Portlet d'affichage d'un document Nuxeo
+ * View fragment portlet
+ *
+ * @see CMSPortlet
  */
-
 public class ViewFragmentPortlet extends CMSPortlet {
 
-	private static Log logger = LogFactory.getLog(ViewFragmentPortlet.class);
+    /** Fragment type identifier window property name. */
+    public static final String FRAGMENT_TYPE_ID_WINDOW_PROPERTY = "osivia.fragmentTypeId";
 
-	public static Map<String, FragmentType> getFragments() {
+    /** Admin JSP path. */
+    private static final String PATH_ADMIN = "/WEB-INF/jsp/fragment/admin.jsp";
+    /** View JSP path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/fragment/view.jsp";
 
-		List<FragmentType> fragmentTypes = CMSCustomizer.getFragmentTypes();
+    /** Fragment types technical map. DO NOT USE FOR DISPLAY. */
+    private final Map<String, FragmentType> fragmentTypesMap;
 
-		Map<String, FragmentType> fragmentsMap = new LinkedHashMap<String, FragmentType>();
 
-		for (FragmentType fragmentType : fragmentTypes)
-			fragmentsMap.put(fragmentType.getKey(), fragmentType);
+    /**
+     * Default constructor.
+     */
+    public ViewFragmentPortlet() {
+        super();
 
-		return fragmentsMap;
+        // Fragment types technical map
+        List<FragmentType> fragmentTypes = NuxeoController.getCMSService().getFragmentTypes(Locale.getDefault());
+        this.fragmentTypesMap = new HashMap<String, FragmentType>(fragmentTypes.size());
+        for (FragmentType fragmentType : fragmentTypes) {
+            this.fragmentTypesMap.put(fragmentType.getKey(), fragmentType);
+        }
+    }
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+
+        if ("admin".equals(request.getPortletMode().toString())) {
+            if ("select".equals(action)) {
+                // Select fragment type action
+
+                // Fragment type identifier
+                String fragmentTypeId = request.getParameter("fragmentTypeId");
+                response.setRenderParameter("fragmentTypeId", fragmentTypeId);
+            } else {
+                if ("save".equals(action)) {
+                    // Save action
+
+                    // Portal controller context
+                    PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+                    // Current window
+                    PortalWindow window = WindowFactory.getWindow(request);
+
+                    // Fragment type
+                    String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
+                    window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
+                    if (fragmentTypeId != null) {
+                        FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
+                        if (fragmentType != null) {
+                            // Specific fragment admin action
+                            fragmentType.getModule().processAdminAction(portalControllerContext);
+                        }
+                    }
+                }
+
+                response.setPortletMode(PortletMode.VIEW);
+                response.setWindowState(WindowState.NORMAL);
+            }
+        }
 	}
 
-	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
 
-		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
+    /**
+     * Admin view display.
+     *
+     * @param request request
+     * @param response response
+     * @throws PortletException
+     * @throws IOException
+     */
+    @RenderMode(name = "admin")
+    public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("changeFragmentType") != null) {
-			res.setRenderParameter("fragmentTypeId", req.getParameter("fragmentTypeId"));
-		}
+        // Fragment type identifier
+        String fragmentTypeId = request.getParameter("fragmentTypeId");
+        if (fragmentTypeId == null) {
+            fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
+        }
+        request.setAttribute("fragmentTypeId", fragmentTypeId);
 
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("modifierPrefs") != null) {
+        // Fragment type
+        if (fragmentTypeId != null) {
+            FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
+            if (fragmentType != null) {
+                // Specific fragment admin view
+                fragmentType.getModule().doAdmin(portalControllerContext);
+                request.setAttribute("fragmentType", fragmentType);
+            }
+        }
 
-			PortalWindow window = WindowFactory.getWindow(req);
+        // Fragment types
+        List<FragmentType> fragmentTypes = NuxeoController.getCMSService().getFragmentTypes(request.getLocale());
+        List<FragmentType> filteredFragmentTypes = new ArrayList<FragmentType>(fragmentTypes.size());
+        for (FragmentType fragmentType : fragmentTypes) {
+            if (fragmentType.getModule().isDisplayedInAdmin()) {
+                filteredFragmentTypes.add(fragmentType);
+            }
+        }
+        request.setAttribute("fragmentTypes", filteredFragmentTypes);
 
-			if (req.getParameter("fragmentTypeId") != null && req.getParameter("fragmentTypeId").length() > 0)
-				window.setProperty("osivia.fragmentTypeId", req.getParameter("fragmentTypeId"));
-			else if (window.getProperty("osivia.fragmentTypeId") != null)
-				window.setProperty("osivia.fragmentTypeId", null);
 
-		
-			String fragmentTypeId = req.getParameter("fragmentTypeId");
-			if (fragmentTypeId != null) {
-				FragmentType fragmentType = getFragments().get(fragmentTypeId);
-				if (fragmentType != null) {
-
-					try {
-						fragmentType.getModule().processAdminAttributes(ctx, window, req, res);
-					} catch (Exception e) {
-						throw new PortletException(e);
-					}
-				}
-			}
-
-			
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-
-		if ("admin".equals(req.getPortletMode().toString()) && req.getParameter("annuler") != null) {
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
+        response.setContentType("text/html");
+        this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
 	}
 
-	@RenderMode(name = "admin")
-	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
 
-		res.setContentType("text/html");
-		NuxeoController ctx = new NuxeoController(req, res, getPortletContext());
 
-		PortletRequestDispatcher rd = null;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+        try {
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            // Portal controller context
+            PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-		PortalWindow window = WindowFactory.getWindow(req);
+            // Fragment type identifier
+            String fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
+            if (StringUtils.isNotEmpty(fragmentTypeId)) {
+                // Fragment type
+                FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
+                if (fragmentType != null) {
+                    fragmentType.getModule().doView(portalControllerContext);
+                    request.setAttribute("fragmentType", fragmentType);
+                }
+            }
 
-		String fragmentTypeId = req.getParameter("fragmentTypeId");
-		if (fragmentTypeId == null)
-			fragmentTypeId = window.getProperty("osivia.fragmentTypeId");
-
-		if (fragmentTypeId != null) {
-			FragmentType fragmentType = getFragments().get(fragmentTypeId);
-			if (fragmentType != null) {
-
-				try {
-					fragmentType.getModule().injectAdminAttributes(ctx, window, req, res);
-				} catch (Exception e) {
-					throw new PortletException(e);
-				}
-			}
-		}
-
-		req.setAttribute("fragmentTypeId", fragmentTypeId);
-
-		req.setAttribute("fragmentTypes", getFragments());
-
-		req.setAttribute("ctx", ctx);
-
-		rd = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/fragment/admin.jsp");
-		rd.include(req, res);
-
+            response.setContentType("text/html");
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
 	}
 
-	
-
-	@SuppressWarnings("unchecked")
-	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-			PortletSecurityException, IOException {
-
-		logger.debug("doView");
-
-		try {
-
-			response.setContentType("text/html");
-
-			PortalWindow window = WindowFactory.getWindow(request);
-
-			String fragmentTypeId = (String) window.getProperty("osivia.fragmentTypeId");
-
-			NuxeoController ctx = new NuxeoController(request, response, getPortletContext());
-
-			if (fragmentTypeId != null) {
-				FragmentType fragmentType = getFragments().get(fragmentTypeId);
-				
-				if (fragmentType != null) {
-
-					try {
-						fragmentType.getModule().injectViewAttributes(ctx, window, request, response);
-					} catch (NuxeoException e) {
-						PortletErrorHandler.handleGenericErrors(response, e);
-					} catch (Exception e) {
-						throw new PortletException(e);
-					}
-				}
-				
-				request.setAttribute("fragmentType", fragmentType);
-
-				getPortletContext().getRequestDispatcher("/WEB-INF/jsp/fragment/view.jsp").include(request, response);
-			} else {
-				response.setContentType("text/html");
-				response.getWriter().print("<h2>Fragment non défini</h2>");
-				response.getWriter().close();
-				return;
-			}
-
-		} catch (NuxeoException e) {
-			PortletErrorHandler.handleGenericErrors(response, e);
-		} catch (Exception e) {
-			if (!(e instanceof PortletException))
-				throw new PortletException(e);
-		}
-
-		logger.debug("doView end");
-
-	}
 }

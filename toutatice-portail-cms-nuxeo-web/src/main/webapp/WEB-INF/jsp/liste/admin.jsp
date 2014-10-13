@@ -171,8 +171,6 @@ return request.toString();
                 </div>
             </div>
 
-           
-            
             <!-- Request display -->
             <div class="form-group">
                 <label for="request-display" class="control-label col-sm-4"><is:getProperty key="LIST_NUXEO_REQUEST" /></label>
@@ -223,7 +221,7 @@ return request.toString();
                 </div>
             </div>            
             
-            <!-- MenuBar -->
+            <!-- Menubar -->
             <div class="form-group">                
 				<label for="menubar-display" class="control-label col-sm-4"><is:getProperty key="LIST_MENUBAR" /></label>
                 <div class="col-sm-8">
@@ -235,8 +233,6 @@ return request.toString();
                     </div>
                 </div>
             </div>
-            
-           
         </fieldset>
         
         <fieldset>

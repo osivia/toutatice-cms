@@ -11,11 +11,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
+package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletRequest;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.apache.commons.lang.StringUtils;
@@ -23,13 +22,15 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
+import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.IFragmentModule;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.IFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
@@ -40,16 +41,18 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
  */
 public class ZoomFragmentModule implements IFragmentModule {
 
-    /** Name. */
+    /** Zoom fragment identifier. */
     public static final String ID = "zoom_property";
-    /** Module description. */
-    public static final String DESC = "Zoom";
+
+    /** Nuxeo path window property name. */
+    public static final String NUXEO_PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
+    /** Scope window property name. */
+    public static final String SCOPE_WINDOW_PROPERTY = "osivia.cms.forcePublicationScope";
+    /** Reference URI window property name. */
+    public static final String REF_URI_WINDOW_PROPERTY = "osivia.refURI";
+
     /** View JSP name. */
-    public static final String JSP = "zoom";
-    /** Admin JSP name. */
-    public static final String ADMIN_JSP = "zoom";
-
-
+    private static final String VIEW_JSP_NAME = "zoom";
     /** Ref URI. */
     private static final String REF_URI = "refURI";
     /** HREF. */
@@ -61,15 +64,18 @@ public class ZoomFragmentModule implements IFragmentModule {
     /** Template. */
     private static final String TEMPLATE = "zoomTemplate";
 
+    /** Singleton instance. */
+    private static IFragmentModule instance;
+
 
     /** Web id service. */
     private final IWebIdService webIdService;
 
 
     /**
-     * Constructor.
+     * Private constructor.
      */
-    public ZoomFragmentModule() {
+    private ZoomFragmentModule() {
         super();
 
         // Web id service
@@ -78,12 +84,34 @@ public class ZoomFragmentModule implements IFragmentModule {
 
 
     /**
+     * Get singleton instance.
+     *
+     * @return singleton instance
+     */
+    public static IFragmentModule getInstance() {
+        if (instance == null) {
+            instance = new ZoomFragmentModule();
+        }
+        return instance;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    public void injectViewAttributes(NuxeoController nuxeoController, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
+    public void doView(PortalControllerContext portalControllerContext) throws PortletException {
+        // Request
+        RenderRequest request = (RenderRequest) portalControllerContext.getRequest();
+        // Response
+        RenderResponse response = (RenderResponse) portalControllerContext.getResponse();
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, portalControllerContext.getPortletCtx());
+
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
         // Nuxeo path
-        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
+        String nuxeoPath = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
         // Empty content indicator
         boolean emptyContent = true;
 
@@ -103,7 +131,7 @@ public class ZoomFragmentModule implements IFragmentModule {
             String schema = ZoomEditableWindow.ZOOM_SCHEMA;
             if (StringUtils.isNotEmpty(schema)) {
                 // Ref URI
-                String refURI = window.getProperty("osivia.refURI");
+                String refURI = window.getProperty(REF_URI_WINDOW_PROPERTY);
                 if (StringUtils.isNotEmpty(refURI)) {
                     // Content
                     Object content = document.getProperties().get(schema);
@@ -171,12 +199,8 @@ public class ZoomFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void injectAdminAttributes(NuxeoController ctx, PortalWindow window, PortletRequest request, RenderResponse response) throws Exception {
-        String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        request.setAttribute("nuxeoPath", StringUtils.trimToEmpty(nuxeoPath));
-
-        String scope = window.getProperty("osivia.cms.forcePublicationScope");
-        request.setAttribute("scope", scope);
+    public void doAdmin(PortalControllerContext portalControllerContext) throws PortletException {
+        // Do nothing
     }
 
 
@@ -184,16 +208,35 @@ public class ZoomFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAttributes(NuxeoController ctx, PortalWindow window, ActionRequest request, ActionResponse res) throws Exception {
-        if (request.getParameter("nuxeoPath") != null) {
-            window.setProperty(Constants.WINDOW_PROP_URI, request.getParameter("nuxeoPath"));
-        }
+    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+        // Do nothing
+    }
 
-        if ((request.getParameter("scope") != null) && (request.getParameter("scope").length() > 0)) {
-            window.setProperty("osivia.cms.forcePublicationScope", request.getParameter("scope"));
-        } else if (window.getProperty("osivia.cms.forcePublicationScope") != null) {
-            window.setProperty("osivia.cms.forcePublicationScope", null);
-        }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isDisplayedInAdmin() {
+        return false;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getViewJSPName() {
+        return VIEW_JSP_NAME;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAdminJSPName() {
+        return null;
     }
 
 }

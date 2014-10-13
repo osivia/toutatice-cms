@@ -1,35 +1,45 @@
-
-
-<%@page import="fr.toutatice.portail.cms.nuxeo.api.NuxeoController"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 <%@ page isELIgnored="false" %>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 
 
-<portlet:defineObjects/>
+<c:if test="${cmsMenu}">
+    <c:set var="cmsMenuChecked" value="checked" />
+</c:if>
 
 
-<%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
-%>
+<!-- Nuxeo path -->
+<div class="form-group">
+    <label for="nuxeo-path" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_NUXEO_PATH" /></label>
+    <div class="col-sm-9">
+        <input id="nuxeo-path" type="text" name="nuxeoPath" value="${nuxeoPath}" class="form-control" />
+    </div>
+</div>
 
+<!-- Property name -->
+<div class="form-group">
+    <label for="property-name" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_PROPERTY_NAME" /></label>
+    <div class="col-sm-9">
+        <input id="property-name" type="text" name="propertyName" value="${propertyName}" class="form-control" />
+        <span class="help-block"><is:getProperty key="FRAGMENT_PROPERTY_NAME_HELP" /></span>
+    </div>
+</div>
 
+<!-- Scope -->
+<div class="form-group">
+    <label for="cms-scope" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_SCOPE" /></label>
+    <div class="col-sm-9">
+        <span>${scopes}</span>
+    </div>
+</div>
 
-	<div>
-	
-			<label>Path du document</label><br/>
-			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="50"><br/>
-			<label>Nom de la propriété de la picture (ex: 'ttcn:picture')</label><br/>
-			<input type="text" name="propertyName" value="${propertyName}" size="20"><br/>
-			<label>Scope</label><br/>
-			<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
-			<label>Path document cible (lien facultatif)</label><br/>
-			<input type="text" name="targetPath" value="${targetPath}" size="50"><br/>
-
-	</div>
-	
-	
+<!-- Target path -->
+<div class="form-group">
+    <label for="target-path" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_TARGET_PATH" /></label>
+    <div class="col-sm-9">
+        <input id="target-path" type="text" name="targetPath" value="${targetPath}" class="form-control" />
+        <span class="help-block"><is:getProperty key="FRAGMENT_TARGET_PATH_HELP" /></span>
+    </div>
+</div>
+            
