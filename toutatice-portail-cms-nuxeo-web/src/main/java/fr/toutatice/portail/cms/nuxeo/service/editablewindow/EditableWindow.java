@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.theme.ThemeConstants;
@@ -124,10 +125,13 @@ public abstract class EditableWindow {
         propsFilled.put("osivia.hideDecorators", "1");
         propsFilled.put("osivia.hideEmptyPortlet", "1");
 
-        if (fragment.getBoolean("hideTitle").equals(Boolean.TRUE)) {
-            propsFilled.put("osivia.hideTitle", "1");
-        } else {
-            propsFilled.put("osivia.hideTitle", "0");
+		if (BooleanUtils.isTrue(fragment.getBoolean("collapsed"))) {
+			propsFilled.put("osivia.mobileCollapse", String.valueOf(true));
+			propsFilled.put("osivia.bootstrapPanelStyle", String.valueOf(true));
+		} else if (BooleanUtils.isTrue(fragment.getBoolean("hideTitle"))) {
+			propsFilled.put("osivia.hideTitle", "1");
+		} else {
+			propsFilled.put("osivia.hideTitle", "0");
         }
 
         if (modeEditionPage)
