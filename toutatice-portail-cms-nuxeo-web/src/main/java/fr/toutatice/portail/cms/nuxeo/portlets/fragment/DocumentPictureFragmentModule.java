@@ -153,8 +153,11 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
                 if (StringUtils.startsWith(targetPath, "/nuxeo/")) {
                     String portalPath = nuxeoController.transformNuxeoLink(targetPath);
                     link = new Link(portalPath, false);
-                } else {
+                } else if (StringUtils.startsWith(targetPath, "/")) {
                     link = nuxeoController.getCMSLinkByPath(targetPath, null);
+                } else {
+                    boolean external = StringUtils.startsWith("http", targetPath);
+                    link = new Link(targetPath, external);
                 }
                 request.setAttribute("link", link);
             }
