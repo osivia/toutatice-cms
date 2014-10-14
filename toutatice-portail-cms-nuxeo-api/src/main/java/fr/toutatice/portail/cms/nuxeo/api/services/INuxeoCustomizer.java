@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
@@ -47,15 +47,15 @@ public interface INuxeoCustomizer {
      * Create custom link.
      *
      * custom links are useful during the cms link generation when the cms controller phase
-     * is not adapted 
-     * 
+     * is not adapted
+     *
      *  Use cases :
      * - the action for the link is powered directly by the portlet (for example, the download of an attached file)
      * - the link opens an external application
      *
      * if this method returns null, then the standard cms pattern will be applied
-     * 
-     * 
+     *
+     *
      * displayContext : menu, download, fileExplorer, permlink ...
      *
      * @param ctx CMS context
@@ -76,7 +76,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Get Nuxeo document comments HTML formatted content.
-     * 
+     *
      * @param cmsContext CMS context
      * @param document Nuxeo document
      * @return comments HTML formatted content
@@ -117,9 +117,19 @@ public interface INuxeoCustomizer {
      * @throws Exception
      */
     String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception;
-    
-    
-    
+
+
+    /**
+     * Transform link URL.
+     * 
+     * @param ctx CMS context
+     * @param link link URL
+     * @return transformed link URL
+     * @throws Exception
+     */
+    String transformLink(CMSServiceCtx ctx, String link) throws Exception;
+
+
     /**
      * Get webID path like /_webid/domain-def-jss/publistatfaq.html
      *
@@ -146,7 +156,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Get the user avatar
-     * 
+     *
      * @param cmsCtx cms context
      * @param username username
      * @return
@@ -155,7 +165,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Refresh the user avatar
-     * 
+     *
      * @param cmsCtx cms context
      * @param username username
      * @return the timestamp associated with the refresh event

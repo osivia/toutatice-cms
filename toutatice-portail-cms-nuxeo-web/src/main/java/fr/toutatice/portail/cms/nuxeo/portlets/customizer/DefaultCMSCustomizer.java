@@ -95,6 +95,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
@@ -1089,7 +1090,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         try {
             Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
 
-            transformer.setParameter("bridge", new fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions(this, ctx));
+            transformer.setParameter("bridge", new XSLFunctions(this, ctx));
             OutputStream output = new ByteArrayOutputStream();
             XMLReader parser = WysiwygParser.getInstance().getParser();
             transformer.transform(new SAXSource(parser, new InputSource(new StringReader(htmlContent))), new StreamResult(output));
@@ -1098,6 +1099,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         } finally {
             Thread.currentThread().setContextClassLoader(originalCL);
         }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String transformLink(CMSServiceCtx ctx, String link) throws Exception {
+        XSLFunctions xslFunctions = new XSLFunctions(this, ctx);
+        return xslFunctions.link(NuxeoConnectionProperties.getPublicDomainUri().toString() + link);
     }
 
 

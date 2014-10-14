@@ -104,50 +104,61 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
         String targetPath = window.getProperty(TARGET_PATH_WINDOW_PROPERTY);
 
         if (StringUtils.isNotEmpty(nuxeoPath)) {
-            // Computed path
-            nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
-
-            // Transform path
-            // nuxeoPath = nuxeoController.transformHTMLContent(nuxeoPath);
-
-            // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(nuxeoPath);
-
-            // Title
-            if (StringUtils.isNotBlank(document.getTitle())) {
-                response.setTitle(document.getTitle());
-            }
-
-            if (StringUtils.isNotEmpty(propertyName)) {
-                boolean emptyContent = true;
-                PropertyMap map = document.getProperties().getMap(propertyName);
-
-                if (map != null) {
-                    String pathFile = map.getString("data");
-
-                    if (pathFile != null) {
-                        nuxeoController.setCurrentDoc(document);
-
-                        // Image source
-                        String imageSource = nuxeoController.createFileLink(document, propertyName);
-                        request.setAttribute("imageSource", imageSource);
-
-                        // Target path
-                        if (StringUtils.isNotEmpty(targetPath)) {
-                            Link link = nuxeoController.getCMSLinkByPath(targetPath, null);
-                            request.setAttribute("link", link);
-                        }
-
-                        emptyContent = false;
-                    }
-                }
-
-                if (emptyContent) {
-                    request.setAttribute("osivia.emptyResponse", "1");
-                }
+            if (StringUtils.startsWith(nuxeoPath, "/nuxeo/")) {
+                // Portal path
+                String portalPath = nuxeoController.transformNuxeoLink(nuxeoPath);
+                request.setAttribute("imageSource", portalPath);
             } else {
-                request.setAttribute("messageKey", "FRAGMENT_MESSAGE_PROPERTY_UNDEFINED");
+                // Computed path
+                nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
+
+                // Fetch Nuxeo document
+                Document document = nuxeoController.fetchDocument(nuxeoPath);
+
+                // Title
+                if (StringUtils.isNotBlank(document.getTitle())) {
+                    response.setTitle(document.getTitle());
+                }
+
+                if (StringUtils.isNotEmpty(propertyName)) {
+                    boolean emptyContent = true;
+                    PropertyMap map = document.getProperties().getMap(propertyName);
+
+                    if (map != null) {
+                        String pathFile = map.getString("data");
+
+                        if (pathFile != null) {
+                            nuxeoController.setCurrentDoc(document);
+
+                            // Image source
+                            String imageSource = nuxeoController.createFileLink(document, propertyName);
+                            request.setAttribute("imageSource", imageSource);
+
+                            emptyContent = false;
+                        }
+                    }
+
+                    if (emptyContent) {
+                        request.setAttribute("osivia.emptyResponse", "1");
+                    }
+                } else {
+                    request.setAttribute("messageKey", "FRAGMENT_MESSAGE_PROPERTY_UNDEFINED");
+                }
             }
+
+
+            // Target path
+            if (StringUtils.isNotEmpty(targetPath)) {
+                Link link;
+                if (StringUtils.startsWith(targetPath, "/nuxeo/")) {
+                    String portalPath = nuxeoController.transformNuxeoLink(targetPath);
+                    link = new Link(portalPath, false);
+                } else {
+                    link = nuxeoController.getCMSLinkByPath(targetPath, null);
+                }
+                request.setAttribute("link", link);
+            }
+
         } else {
             request.setAttribute("messageKey", "MESSAGE_PATH_UNDEFINED");
         }

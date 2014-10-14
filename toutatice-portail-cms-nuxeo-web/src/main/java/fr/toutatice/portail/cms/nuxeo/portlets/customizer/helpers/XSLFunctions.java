@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -38,12 +38,12 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 public class XSLFunctions {
@@ -124,7 +124,7 @@ public class XSLFunctions {
 
     /**
      * WebId service used to transform urls
-     * 
+     *
      * @return the service
      */
     public IWebIdService getWebIdService() {
@@ -389,8 +389,8 @@ public Matcher getPortalMatcherReference() throws Exception	{
 		}
 
 
-		//On traite uniquement les liens absolus ou commencant par /nuxeo
-		if( !link.startsWith("http") && !link.startsWith(customizer.getNuxeoConnectionProps().getNuxeoContext())) {
+            // On traite uniquement les liens absolus ou commencant par /nuxeo
+            if (!link.startsWith("http") && !link.startsWith(NuxeoConnectionProperties.getNuxeoContext())) {
             //	correction v2 pour le mailto
 			//return "";
 			return link;
@@ -542,20 +542,20 @@ public Matcher getPortalMatcherReference() throws Exception	{
                                 String params = url.getQuery();
                                 if (params != null) {
                                     String[] split = params.split("&");
-                                    for (int i = 0; i < split.length; i++) {
+                                    for (String element : split) {
 
                                         // In case of resources url, serve the resource
-                                        if (split[i].startsWith("content")) {
-                                            String[] param = split[i].split("=");
-                                            
-                                            String webId = getWebIdService().webPathToFetchInfoService(webpath);
+                                        if (element.startsWith("content")) {
+                                            String[] param = element.split("=");
+
+                                            String webId = this.getWebIdService().webPathToFetchInfoService(webpath);
 
                                             return this.getNuxeoController().createWebIdLink(webId, param[1]);
                                         }
                                     }
                                 }
                                 // In case of pages
-                                return this.getNuxeoController().getCMSLinkByPath(getWebIdService().webPathToPageUrl(webpath), null).getUrl();
+                                return this.getNuxeoController().getCMSLinkByPath(this.getWebIdService().webPathToPageUrl(webpath), null).getUrl();
 
                             }
 
