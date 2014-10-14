@@ -687,8 +687,16 @@ public class ViewListPortlet extends CMSPortlet {
         }
 
         response.setContentType("text/html");
-
-        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/view.jsp");
+        
+        String view = "/WEB-INF/jsp/liste/view.jsp";
+        
+        HttpServletRequest httpRequest = (HttpServletRequest) request.getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
+        String rendering = (String) httpRequest.getParameter("_rendering");
+        if(StringUtils.isNotEmpty(rendering))   {
+            view = "/WEB-INF/jsp/liste/view-"+rendering+".jsp";
+        }
+      
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(view);
         dispatcher.include(request, response);
 
         LOGGER.debug("doView end");
