@@ -26,6 +26,8 @@ import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+
 
 /**
  * Nuxeo customizer interface.
@@ -121,7 +123,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Transform link URL.
-     * 
+     *
      * @param ctx CMS context
      * @param link link URL
      * @return transformed link URL
@@ -155,8 +157,8 @@ public interface INuxeoCustomizer {
     INuxeoCommentsService getNuxeoCommentsService();
 
     /**
-     * Get the user avatar
-     *
+     * Get the user avatar.
+     * 
      * @param cmsCtx cms context
      * @param username username
      * @return
@@ -164,13 +166,23 @@ public interface INuxeoCustomizer {
     Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
 
     /**
-     * Refresh the user avatar
-     *
+     * Refresh the user avatar.
+     * 
      * @param cmsCtx cms context
      * @param username username
      * @return the timestamp associated with the refresh event
      */
     String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
 
+
+    /**
+     * Execute Nuxeo command.
+     *
+     * @param cmsContext CMS context
+     * @param command Nuxeo command
+     * @return Nuxeo command result
+     * @throws CMSException
+     */
+    Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
 
 }

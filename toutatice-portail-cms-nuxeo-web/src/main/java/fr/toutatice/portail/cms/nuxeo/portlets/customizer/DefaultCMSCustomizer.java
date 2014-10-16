@@ -78,6 +78,7 @@ import org.osivia.portal.core.web.IWebIdService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -1282,7 +1283,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
             CMSItem cmsItem = new CMSItem(doc.getPath(), webId, properties, doc);
 
-			permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx.getControllerContext(), 
+			permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx.getControllerContext(),
 					cmsItem);
 
         }
@@ -1357,6 +1358,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public IBundleFactory getBundleFactory() {
         return this.bundleFactory;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException {
+        try {
+            return this.cmsService.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
     }
 
 }
