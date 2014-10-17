@@ -985,10 +985,18 @@ public class CMSService implements ICMSService {
         CMSItem configItem = null;
 
         HttpServletRequest portalRequest = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
-        String requestKey = "osivia.cache.spaceConfig." + publishSpacePath;
+        
+        boolean forceLiveVersion = false;
+        if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
+            forceLiveVersion = true;
+        }
+                
+        String requestKey = "osivia.cache.spaceConfig." + publishSpacePath+ "."+ forceLiveVersion;
+        
 
         try {
 
+            
             CMSItem value = (CMSItem) portalRequest.getAttribute(requestKey);
             if (value != null) {
                 // Has been reloaded since PageResfresh
@@ -1015,7 +1023,7 @@ public class CMSService implements ICMSService {
                 cmsCtx.setForcePublicationInfosScope("superuser_context");
 
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
-
+                
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
 
                 portalRequest.setAttribute(requestKey, configItem);

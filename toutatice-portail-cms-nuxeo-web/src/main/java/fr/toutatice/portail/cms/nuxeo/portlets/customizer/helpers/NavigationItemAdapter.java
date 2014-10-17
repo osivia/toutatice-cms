@@ -148,15 +148,15 @@ public class NavigationItemAdapter {
 		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 			properties.put("navigationElement", "1");
 
-            // Theme
-            String theme = (String) doc.getProperties().get("ttc:theme");
-            if (StringUtils.isNotEmpty(theme)) {
-                properties.put("theme", theme);
-            }
-
             properties.put("pageDisplayMode", "1");
 		}
 
+		
+        // Theme
+        String theme = (String) doc.getProperties().get("ttc:theme");
+        if (StringUtils.isNotEmpty(theme)) {
+            properties.put("theme", theme);
+        }
 
 		/* Template des sous-espaces de navigation de "publishSpaceNavigationItem" */
 		String childrenPageTemplate =  (String) doc.getProperties().get("ttc:childrenPageTemplate");

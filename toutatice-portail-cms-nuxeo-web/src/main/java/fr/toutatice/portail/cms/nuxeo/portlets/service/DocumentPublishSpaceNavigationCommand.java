@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -43,6 +45,9 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
  *
  */
 public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
+    
+    /** Logger. */
+    protected static final Log logger = LogFactory.getLog(CMSService.class);
 
 
 	CMSItem publishSpaceConfig;
@@ -82,12 +87,8 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
             live = true;
 
 		String uuid =  ((Document)this.publishSpaceConfig.getNativeItem()).getId();
+		
 
-		/*
-		String spacePath = path;
-		if( !live)
-			spacePath += ".proxy";
-		*/
 
 		String path = this.publishSpaceConfig.getPath();
 
@@ -105,6 +106,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		// Insertion du filtre sur les élements publiés
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
+		
 
 		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
 
@@ -175,6 +177,14 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			}
 		}
 
+		/*
+		if( this.forceLiveVersion){
+		    for( NavigationItem item : navItems.values()){
+		        logger.info("DocumentPublishSpaceNavigationCommand" + ((Document) item.getMainDoc()).getPath() + ":" + ((Document) item.getMainDoc()).getProperties().getString("ttc:theme"));
+		    }
+		}
+		*/
+		
 
 		return navItems;
 
