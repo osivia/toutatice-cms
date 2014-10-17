@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -25,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceResponse;
@@ -43,304 +42,242 @@ import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
+/**
+ * XSL functions.
+ */
 public class XSLFunctions {
 
-	private static Log logger = LogFactory.getLog(XSLFunctions.class);
+    /** Logger. */
+    private static final Log LOGGER = LogFactory.getLog(XSLFunctions.class);
 
-    private static DefaultCMSCustomizer customizer;
-    CMSServiceCtx ctx;
-    IPortalUrlFactory urlFactory;
-    PortalControllerContext portalCtx;
-    NuxeoController nuxeoCtx;
-    IWebIdService webIdService;
+    /** Resource pattern. */
+    private static final Pattern PATTERN_RESOURCE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
+    /** Blob pattern. */
+    private static final Pattern PATTERN_BLOB = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
+    /** Picture pattern. */
+    private static final Pattern PATTERN_PICTURE = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
+    /** Web ID pattern. */
+    private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]/]*)(.*)");
+    /** Internal picture pattern. */
+    private static final Pattern PATTERN_INTERNAL_PICTURE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
+    /** Permalink pattern. */
+    private static final Pattern PATTERN_PERMALINK = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
+    /** Document pattern. */
+    private static final Pattern PATTERN_DOCUMENT = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
+    /** Portal reference pattern. */
+    private static final Pattern PATTERN_PORTAL_REF = Pattern.compile("http://([^/:]*)(:[0-9]*)?/([^/]*)(/auth/|/)pagemarker/([0-9]*)/(.*)");
 
+    /** Portal reference. */
+    private static final String PORTAL_REFERENCE = "/portalRef?";
+    /** Portal reference length. */
+    private static final int PORTAL_REFERENCE_LENGTH = PORTAL_REFERENCE.length();
 
-	private final Pattern scope = Pattern.compile(".*");
+    /** CMS context. */
+    private final CMSServiceCtx cmsContext;
 
-//	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
+    /** Portal controller context. */
+    private final PortalControllerContext portalControllerContext;
+    /** Nuxeo controller. */
+    private final NuxeoController nuxeoController;
 
-	// "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
-	private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
+    /** Nuxeo base URIs. */
+    private final List<URI> nuxeoBaseURIs;
 
+    /** Portal URL factory. */
+    private final IPortalUrlFactory portalURLFactory;
+    /** Web ID service. */
+    private final IWebIdService webIdService;
 
-	private final Pattern blobExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
-
-	///nuxeo/nxpicsfile/default/3e0f9ada-c48f-4d89-b410-e9cc93a79d78/Original:content/Wed%20Jan%2004%2021%3A41%3A25%20CET%202012
-	private final Pattern picturesExp = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
-
-
-    private final Pattern webIdExp = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]/]*)(.*)");
-
-
-	///nuxeo/nxfile/default/a1bbb41d-88f7-490c-8480-7772bb085a4c/ttc:images/0/file/banniere.jpg
-	private final Pattern internalPictureExp = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
-
-	private final Pattern permaLinkExp = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
-
-	private final Pattern documentExp = Pattern.compile("/nuxeo/([a-z]*)/default([^@]*)@view_documents(.*)");
-
-	private final Pattern portalRefExp = Pattern.compile("http://([^/:]*)(:[0-9]*)?/([^/]*)(/auth/|/)pagemarker/([0-9]*)/(.*)");
-	private Matcher portalMatcherReference = null;
-
-	private static final String PORTAL_REF = "/portalRef?";
-
-	private static final int PORTAL_REF_LG = PORTAL_REF.length();
-
-	public XSLFunctions(DefaultCMSCustomizer _customizer, CMSServiceCtx ctx) {
-	    customizer = _customizer;
-		this.ctx = ctx;
-	}
-
-	 public IPortalUrlFactory getPortalUrlFactory() throws Exception {
-	        if (this.urlFactory == null) {
-                this.urlFactory = (IPortalUrlFactory) this.ctx.getPortletCtx().getAttribute("UrlService");
-            }
-
-	        return this.urlFactory;
-	}
-
-
-
-	 public PortalControllerContext getPortalControllerContext() throws Exception {
-           if (this.portalCtx == null)   {
-               this.portalCtx = new PortalControllerContext(this.ctx.getPortletCtx(), this.ctx.getRequest(), this.ctx.getResponse());
-           }
-
-           return this.portalCtx;
-    }
-
-
-     public NuxeoController getNuxeoController() throws Exception {
-         if (this.nuxeoCtx == null)   {
-             this.nuxeoCtx = new NuxeoController( this.ctx.getRequest(), this.ctx.getResponse(), this.ctx.getPortletCtx());
-         }
-
-         return this.nuxeoCtx;
-  }
+    /** Portal reference matcher. */
+    private final Matcher portalReferenceMatcher;
 
 
     /**
-     * WebId service used to transform urls
+     * Constructor.
      *
-     * @return the service
+     * @param nuxeoCustomizer Nuxeo customizer
+     * @param cmsContext CMS context
      */
-    public IWebIdService getWebIdService() {
-        if (this.webIdService == null) {
-            this.webIdService = (IWebIdService) this.ctx.getPortletCtx().getAttribute("webIdService");
-        }
+    public XSLFunctions(INuxeoCustomizer nuxeoCustomizer, CMSServiceCtx cmsContext) {
+        super();
+        this.cmsContext = cmsContext;
 
-        return this.webIdService;
+        // Portlet context
+        PortletContext portletContext = cmsContext.getPortletCtx();
+        // Request
+        PortletRequest request = cmsContext.getRequest();
+        // Response
+        RenderResponse response = cmsContext.getResponse();
+
+
+        // Portal controller context
+        this.portalControllerContext = new PortalControllerContext(portletContext, request, response);
+        // Nuxeo controller
+        this.nuxeoController = new NuxeoController(request, response, portletContext);
+
+        // Nuxeo base URIs
+        this.nuxeoBaseURIs = this.getNuxeoBaseURIs();
+
+        // Portal URL factory
+        this.portalURLFactory = (IPortalUrlFactory) this.cmsContext.getPortletCtx().getAttribute("UrlService");
+        // Web ID service
+        this.webIdService = (IWebIdService) this.cmsContext.getPortletCtx().getAttribute("webIdService");
+
+        // Portal reference matcher
+        this.portalReferenceMatcher = this.getPortalReferenceMatcher(this.portalURLFactory, this.portalControllerContext);
     }
 
-	private static  List<URI> baseURIs = null;
 
-	public static List<URI> getNuxeoBaseURIs() throws URISyntaxException	{
+    /**
+     * Get Nuxeo base URIs.
+     *
+     * @return Nuxeo base URIs
+     */
+    private List<URI> getNuxeoBaseURIs() {
+        List<URI> baseURIs = new ArrayList<URI>();
 
-		if (baseURIs == null) {
-			setNuxeoBaseURIs();
-		}
+        // Nuxeo public URI
+        URI publicBaseURI = NuxeoConnectionProperties.getPublicBaseUri();
+        baseURIs.add(publicBaseURI);
 
-		return baseURIs;
-	 }
+        // Alternate paths
+        String alternativeServerNames = System.getProperty("nuxeo.alternativeServerNames");
+        if (StringUtils.isNotEmpty(alternativeServerNames)) {
+            String scheme = "http";
+            String path = NuxeoConnectionProperties.getNuxeoContext();
 
+            for (String host : StringUtils.split(alternativeServerNames, "\\|")) {
+                try {
+                    URI alternativeBaseURI = new URI(scheme, host, path, null);
+                    baseURIs.add(alternativeBaseURI);
+                } catch (URISyntaxException e) {
+                    // Do nothing
+                }
+            }
+        }
 
-
-	public static synchronized void setNuxeoBaseURIs() throws URISyntaxException	{
-
-		if( baseURIs == null){
-
-			List<URI> tmpBaseURIs = new ArrayList<URI>();
-
-			// First, the nuxeo public URI
-			tmpBaseURIs.add(customizer.getNuxeoConnectionProps().getPublicBaseUri());
-
-			// Then the alternate paths
-			String altServers = System.getProperty("nuxeo.alternativeServerNames");
-
-			if (altServers != null) {
-				String[] serverToks = altServers.split("\\|");
-				for (String serverTok : serverToks) {
-					tmpBaseURIs.add(new URI("http://" + serverTok + customizer.getNuxeoConnectionProps().getNuxeoContext()));
-				}
-			}
-
-			baseURIs = tmpBaseURIs;
-		}
-
-	}
+        return baseURIs;
+    }
 
 
+    /**
+     * Get portal reference matcher.
+     *
+     * @param portalURLFactory portal URL factory
+     * @param portalControllerContext portal controller context
+     * @return portal reference matcher
+     */
+    private Matcher getPortalReferenceMatcher(IPortalUrlFactory portalURLFactory, PortalControllerContext portalControllerContext) {
+        String sampleURL = portalURLFactory.getCMSUrl(portalControllerContext, null, StringUtils.EMPTY, null, null, null, null, null, null, null);
+        Matcher portalReferenceMatcher = PATTERN_PORTAL_REF.matcher(sampleURL);
+        return portalReferenceMatcher;
+    }
 
-	/**
-	 * Renvoie le nombre maxi de caractères à afficher
-	 *
-	 * @return
-	 */
-	private int getMaxChars()	{
-		int maxChars = 0 ;
-		try	{
-			if( this.ctx.getRequest().getAttribute("maxChars") != null)	{
-				maxChars = Integer.parseInt((String)this.ctx.getRequest().getAttribute("maxChars"));
-			}
-		} catch (NumberFormatException e){
 
-		}
-		return maxChars;
-	}
+    /**
+     * Get max chars to display.
+     *
+     * @return max chars
+     */
+    private int getMaxChars() {
+        int maxChars = 0;
+        try {
+            if (this.cmsContext.getRequest().getAttribute("maxChars") != null) {
+                maxChars = Integer.parseInt((String) this.cmsContext.getRequest().getAttribute("maxChars"));
+            }
+        } catch (NumberFormatException e) {
 
-	/**
-	 * Renvoie le type d'affichage : 'complet' ou 'partiel'
-	 *
-	 * @return
-	 */
-	public String wysiwygDisplayMode()	{
+        }
+        return maxChars;
+    }
 
-		String displayMode = "complet";
 
-		if( this.getMaxChars() > 0)	{
-			if( WindowState.NORMAL.equals(this.ctx.getRequest().getWindowState())) {
+    /**
+     * Get WYSIWYG display mode (full or partial).
+     *
+     * @return WYSIWYG display mode
+     */
+    public String wysiwygDisplayMode() {
+        String displayMode = "complet";
+
+        if (this.getMaxChars() > 0) {
+            if (WindowState.NORMAL.equals(this.cmsContext.getRequest().getWindowState())) {
                 displayMode = "partiel";
             }
-		}
-
-		return displayMode;
-	}
-
-	public String maximizedLink() throws WindowStateException	{
-
-		PortletURL portletUrl = null;
-
-
-		if( this.ctx.getResponse() instanceof RenderResponse) {
-            portletUrl = this.ctx.getResponse().createRenderURL();
-        } else if( this.ctx.getResponse() instanceof ResourceResponse) {
-            portletUrl = ((ResourceResponse) this.ctx.getResponse()).createRenderURL();
         }
 
-		portletUrl.setWindowState(WindowState.MAXIMIZED);
-
-		return portletUrl.toString();
-	}
+        return displayMode;
+    }
 
 
+    /**
+     * Get maximized link.
+     *
+     * @return maximized link
+     * @throws WindowStateException
+     */
+    public String maximizedLink() throws WindowStateException {
+        PortletURL portletUrl = null;
 
-	public String link(String link) {
-		if (link.startsWith("#")) {
-			return link;
-		} else {
-			return this.rewrite(link, true);
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-public static String transformPortalUrl(String orginalUrl,  Matcher mResReference) throws Exception	{
-		// Les urls portail sont toutes absolues
-
-		Pattern expOrginial = Pattern.compile("http://([^/:]*)(:[0-9]*)?/"+mResReference.group(3)+"(/auth/|/)((pagemarker/[0-9]*/)?)(.*)");
-
-
-		Matcher mResOriginal = expOrginial.matcher(orginalUrl);
-
-		if( !mResOriginal.matches()) {
-            throw new Exception("Not a portal URL !!!");
+        if (this.cmsContext.getResponse() instanceof RenderResponse) {
+            portletUrl = this.cmsContext.getResponse().createRenderURL();
+        } else if (this.cmsContext.getResponse() instanceof ResourceResponse) {
+            portletUrl = ((ResourceResponse) this.cmsContext.getResponse()).createRenderURL();
         }
 
+        portletUrl.setWindowState(WindowState.MAXIMIZED);
 
-		String transformedUrl = "";
-		transformedUrl = "http://"+ mResOriginal.group(1);
-
-		//Port
-		if(StringUtils.isNotEmpty(mResOriginal.group(2))){
-			transformedUrl += mResOriginal.group(2);
-		}
-		//context
-		transformedUrl += "/" + mResReference.group(3);
-
-		//auth
-		transformedUrl +=  mResReference.group(4);
-
-		// add pagemarker
-		transformedUrl += "pagemarker/";
-		transformedUrl += mResReference.group(5) + '/';
-
-		// End of url
-		transformedUrl += mResOriginal.group(6);
-
-		return transformedUrl;
-	}
+        return portletUrl.toString();
+    }
 
 
-
-// TODO : enlever bidouille ( génération d'un lien pour récupérer host, context, page marker)
-// car inaccessibles dans le context sans modifie l'API
-// A refaire pendant packaging toutatice-cms
-
-
-public Matcher getPortalMatcherReference() throws Exception	{
-
-	if( this.portalMatcherReference == null)	{
-		String sampleUrl = this.getPortalUrlFactory().getCMSUrl(
-		        this.getPortalControllerContext(), null, "", null, null, null, null,
-				null, null, null);
-
-		Matcher mReference = this.portalRefExp.matcher(sampleUrl);
-
-		if( mReference.matches())	{
-			this.portalMatcherReference = mReference;
-		} else {
-            throw new Exception("reference is unmatchable");
+    /**
+     * Adapt link.
+     *
+     * @param link link
+     * @return adapted link
+     */
+    public String link(String link) {
+        if (link.startsWith("#")) {
+            return link;
+        } else {
+            return this.rewrite(link, true);
         }
-
-	}
-
-		return this.portalMatcherReference;
-}
+    }
 
 
+    /**
+     * Rewrite link URL.
+     *
+     * @param link link URL
+     * @param checkScope check scope indicator
+     * @return rewrited link URL
+     */
+    private String rewrite(String link, boolean checkScope) {
+        try {
+            // v.0.13 : ajout de liens vers le portail
 
-	private String rewrite(String link, boolean checkScope) {
+            /* Liens vers le portail */
 
-		try	{
+            // JSS 20130321 :
+            // - le lien portalRef peut etre préfixé
+            // - les liens portails type permalink doitent etre regénérés avec un pageMarker (gestion du retour des onglets dynamiques)
+            try {
+                int iPortalRef = link.indexOf(PORTAL_REFERENCE);
+                if (iPortalRef != -1) {
+                    // Liens de type portalRef permettant d'instancier une page dynamique
+                    String paramsArray[] = link.substring(iPortalRef + PORTAL_REFERENCE_LENGTH).split("&");
+                    Map<String, String> params = new HashMap<String, String>();
 
-		// v.0.13 : ajout de liens vers le portail
-
-		/* Liens vers le portail */
-
-
-		// JSS 20130321 :
-		// - le lien portalRef peut etre préfixé
-		// - les liens portails type permalink doitent etre regénérés avec un pageMarker (gestion du retour des onglets dynamiques)
-
-
-			try	{
-
-			int iPortalRef = link.indexOf(PORTAL_REF);
-
-			if (iPortalRef != -1) {
-
-				// Liens de type portalRef permettant d'instancier une page dynamique
-
-							String paramsArray[] = link.substring(
-									iPortalRef + PORTAL_REF_LG).split("&");
-							Map<String, String> params = new HashMap<String, String>();
-
-							for (String element : paramsArray) {
-								String values[] = element.split("=");
-								if (values.length == 2) {
-									params.put(values[0], values[1]);
-								}
-							}
+                    for (String element : paramsArray) {
+                        String values[] = element.split("=");
+                        if (values.length == 2) {
+                            params.put(values[0], values[1]);
+                        }
+                    }
 
                     if ("dynamicPage".equals(params.get("type"))) {
                         String portalName = "/" + PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
@@ -354,246 +291,221 @@ public Matcher getPortalMatcherReference() throws Exception	{
                         Map<String, String> dynaProps = new HashMap<String, String>();
                         Map<String, String> dynaParams = new HashMap<String, String>();
 
-                        String dynamicUrl = this.getPortalUrlFactory().getStartPageUrl(this.getPortalControllerContext(), portalName, pageName, templatePath,
-                                dynaProps, dynaParams);
+                        String dynamicUrl = this.portalURLFactory.getStartPageUrl(this.portalControllerContext, portalName, pageName, templatePath, dynaProps,
+                                dynaParams);
                         return dynamicUrl;
                     }
-
-		}
-			else	{
-					// Autres liens portails
-					// Ils sont retraités pour ajouter le page marker
-
-					Matcher mReference = this.getPortalMatcherReference();
-
-					// COntrole du host + context (portail ou portal ...)
-					if (link.startsWith("http://" + mReference.group(1))) {
-						// COntrole du contexte portail, portal
-						int indiceRawPath = link.indexOf("/", 7);
-						if (indiceRawPath != -1) {
-							String rawPath = link.substring(indiceRawPath);
-							if ((rawPath.length() > 1)
-									&& rawPath.substring(1).startsWith(
-											mReference.group(3))) {
-
-								return transformPortalUrl(link, mReference);
-
-							}
-						}
-
-					}
-			}
-			} catch( Exception e)	{
-				// Probleme dans le parsing, on continue plutot de de renvoyer l'url d'origine
-				// il peut par exemple s'agir d'une url nuxeo mal parsée ...
-		}
+                } else {
+                    // Autres liens portails
+                    // Ils sont retraités pour ajouter le page marker
+                    Matcher mReference = this.portalReferenceMatcher;
+                    // COntrole du host + context (portail ou portal ...)
+                    if (link.startsWith("http://" + mReference.group(1))) {
+                        // COntrole du contexte portail, portal
+                        int indiceRawPath = link.indexOf("/", 7);
+                        if (indiceRawPath != -1) {
+                            String rawPath = link.substring(indiceRawPath);
+                            if ((rawPath.length() > 1) && rawPath.substring(1).startsWith(mReference.group(3))) {
+                                return this.transformPortalURL(link, mReference);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Probleme dans le parsing, on continue plutot de de renvoyer l'url d'origine
+                // il peut par exemple s'agir d'une url nuxeo mal parsée ...
+            }
 
 
             // On traite uniquement les liens absolus ou commencant par /nuxeo
             if (!link.startsWith("http") && !link.startsWith(NuxeoConnectionProperties.getNuxeoContext())) {
-            //	correction v2 pour le mailto
-			//return "";
-			return link;
-        }
+                // correction v2 pour le mailto
+                // return "";
+                return link;
+            }
 
-		String trim = link.trim().replace(" ", "%20");
+            String trim = link.trim().replace(" ", "%20");
 
+            for (URI baseURI : this.nuxeoBaseURIs) {
+                URI url = baseURI.resolve(trim);
+                if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
+                    if (url.getHost().equals(baseURI.getHost())) {
+                        String query = url.getRawPath();
 
+                        Matcher mRes = PATTERN_RESOURCE.matcher(query);
+                        if (mRes.matches()) {
+                            if (mRes.groupCount() > 0) {
+                                String uid = mRes.group(2);
 
-		for(URI baseURI : getNuxeoBaseURIs())	{
+                                // v 1.0.11 : pb. des pices jointes dans le proxy
+                                // Ne fonctionne pas correctement
+                                if (this.cmsContext.getDoc() != null) {
+                                    uid = ((Document) this.cmsContext.getDoc()).getId();
+                                }
 
-		URI url = baseURI.resolve(trim);
+                                String fileIndex = mRes.group(3);
 
-
-		if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
-			if (url.getHost().equals(baseURI.getHost())) {
-
-					//String testUrl = "/nuxeo/nxfile/default/0d067ed3-2d6d-4786-9708-d65f444cb002/files:files/0/file/disconnect.png";
-//					private final Pattern ressourceExp = Pattern.compile("/nuxeo/([a-z&&[^/]]*)/default/(.*)(.*)/");
-
-					String query = url.getRawPath();
-
-
-					Matcher mRes = this.ressourceExp.matcher(query);
-
-					if( mRes.matches())	{
-
-					if (mRes.groupCount() > 0) {
-
-						String uid = mRes.group(2);
-
-						//v 1.0.11 : pb. des pices jointes dans le proxy
-						// Ne fonctionne pas correctement
-						if(  this.ctx.getDoc() != null) {
-                            uid = ((Document) this.ctx.getDoc()).getId();
+                                return this.nuxeoController.createAttachedFileLink(uid, fileIndex);
+                            }
                         }
 
-						String fileIndex = mRes.group(3);
+                        // Ajout v1.0.13 : internal picture
+                        Matcher mResInternalPicture = PATTERN_INTERNAL_PICTURE.matcher(query);
+                        if (mResInternalPicture.matches()) {
+                            if (mResInternalPicture.groupCount() > 0) {
+                                String uid = mResInternalPicture.group(2);
 
-						return this.getNuxeoController().createAttachedFileLink(uid, fileIndex);
-						}
-					}
+                                if (this.cmsContext.getDoc() != null) {
+                                    uid = ((Document) this.cmsContext.getDoc()).getId();
+                                }
 
-					// Ajout v1.0.13 : internal picture
+                                String pictureIndex = mResInternalPicture.group(3);
 
-					Matcher mResInternalPicture = this.internalPictureExp.matcher(query);
-
-					if( mResInternalPicture.matches())	{
-
-					if (mResInternalPicture.groupCount() > 0) {
-
-						String uid = mResInternalPicture.group(2);
-
-	                    if(  this.ctx.getDoc() != null) {
-                            uid = ((Document) this.ctx.getDoc()).getId();
+                                String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
+                                return portalLink;
+                            }
                         }
 
-						String pictureIndex = mResInternalPicture.group(3);
-
-						String portalLink =    this.getNuxeoController().createAttachedPictureLink(uid, pictureIndex);
-						return portalLink;
-						}
-					}
-
-
-
-
-
-					Matcher mPictures = this.picturesExp.matcher(query);
-
-					if( mPictures.matches())	{
-
-					if (mPictures.groupCount() > 0) {
-
-						String uid = mPictures.group(1);
-
-						String content = mPictures.group(2);
-
-						return  this.getNuxeoController().createPictureLink(uid, content);
-						}
-					}
-
-						Matcher mDoc = this.documentExp.matcher(query);
-
-						if( mDoc.matches())	{
-
-						if (mDoc.groupCount() > 0) {
-
-							String path = mDoc.group(2);
-
-
-							// v2 : simplification : phase de redirection trop complexe
-
-							String portalLink =   this.getNuxeoController().getCMSLinkByPath(path, null).getUrl();
-							return portalLink;
-
-
-							//return ctx.createRedirectDocumentLink(path);
-						} else {
-                            return url.toString();
+                        Matcher mPictures = PATTERN_PICTURE.matcher(query);
+                        if (mPictures.matches()) {
+                            if (mPictures.groupCount() > 0) {
+                                String uid = mPictures.group(1);
+                                String content = mPictures.group(2);
+                                return this.nuxeoController.createPictureLink(uid, content);
+                            }
                         }
-						}
 
+                        Matcher mDoc = PATTERN_DOCUMENT.matcher(query);
+                        if (mDoc.matches()) {
+                            if (mDoc.groupCount() > 0) {
+                                String path = mDoc.group(2);
 
-
-						// 1.0.27 ajout permalin nuxeo + blobholder (lien téléchargement)
-
-						Matcher permaDoc = this.permaLinkExp.matcher(query);
-
-						if( permaDoc.matches())	{
-
-						if (permaDoc.groupCount() > 0) {
-
-							String id = permaDoc.group(1);
-
-							return  this.getNuxeoController().getCMSLinkByPath(id, null).getUrl();
-						} else {
-                            return url.toString();
+                                // v2 : simplification : phase de redirection trop complexe
+                                String portalLink = this.nuxeoController.getCMSLinkByPath(path, null).getUrl();
+                                return portalLink;
+                            } else {
+                                return url.toString();
+                            }
                         }
-						}
 
+                        // 1.0.27 ajout permalin nuxeo + blobholder (lien téléchargement)
+                        Matcher permaDoc = PATTERN_PERMALINK.matcher(query);
+                        if (permaDoc.matches()) {
+                            if (permaDoc.groupCount() > 0) {
+                                String id = permaDoc.group(1);
+                                return this.nuxeoController.getCMSLinkByPath(id, null).getUrl();
+                            } else {
+                                return url.toString();
+                            }
+                        }
 
+                        // Lien téléchargement directement extrait de nuxeo
+                        Matcher mBlobExp = PATTERN_BLOB.matcher(query);
+                        if (mBlobExp.matches()) {
+                            if (mBlobExp.groupCount() > 0) {
+                                String uid = mBlobExp.group(2);
+                                String blobIndex = mBlobExp.group(3);
+                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex);
+                            }
+                        }
 
-						// Lien téléchargement directement extrait de nuxeo
-						Matcher mBlobExp = this.blobExp.matcher(query);
-
-						if( mBlobExp.matches())	{
-
-						if (mBlobExp.groupCount() > 0) {
-
-							String uid = mBlobExp.group(2);
-
-
-							String blobIndex = mBlobExp.group(3);
-
-							return  this.getNuxeoController().createAttachedBlobLink(uid, blobIndex);
-							}
-						}
-
-
-                        Matcher mWebId = this.webIdExp.matcher(query);
-
+                        Matcher mWebId = PATTERN_WEB_ID.matcher(query);
                         if (mWebId.matches()) {
-
                             if (mWebId.groupCount() > 0) {
-
                                 String webpath = mWebId.group(1);
 
                                 String params = url.getQuery();
                                 if (params != null) {
                                     String[] split = params.split("&");
                                     for (String element : split) {
-
                                         // In case of resources url, serve the resource
                                         if (element.startsWith("content")) {
                                             String[] param = element.split("=");
-
-                                            String webId = this.getWebIdService().webPathToFetchInfoService(webpath);
-
-                                            return this.getNuxeoController().createWebIdLink(webId, param[1]);
+                                            String webId = this.webIdService.webPathToFetchInfoService(webpath);
+                                            return this.nuxeoController.createWebIdLink(webId, param[1]);
                                         }
                                     }
                                 }
                                 // In case of pages
-                                return this.getNuxeoController().getCMSLinkByPath(this.getWebIdService().webPathToPageUrl(webpath), null).getUrl();
-
+                                return this.nuxeoController.getCMSLinkByPath(this.webIdService.webPathToPageUrl(webpath), null).getUrl();
                             }
-
                         }
 
-				return url.toString();
-
-			}
-			//else {
-			//	return url.toString();
-			//}
-		}
-
-		}
-
-		} catch (Exception e)	{
-			//Don't block on a link
-
-			logger.error("Link "+ link + "generates " + e.getMessage() );
-
-		}
-		return link;
-	}
-
-	private boolean shouldRewrite(URI uri) {
-		return this.scope.matcher(uri.toString()).matches();
-	}
-
-
-
-	public boolean equalsIgnoreCase(String s1, String s2) {
-		if (s1 == s2) {
-            return true;
+                        return url.toString();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Don't block on a link
+            LOGGER.error("Link " + link + "generates " + e.getMessage());
         }
-		if (s1 == null) {
-            return false;
+        return link;
+    }
+
+
+    /**
+     * Transform portal URL.
+     *
+     * @param originalUrl original URL
+     * @param referenceMatcher reference matcher
+     * @return transformed portal URL
+     */
+    private String transformPortalURL(String originalUrl, Matcher referenceMatcher) throws Exception {
+        // Les urls portail sont toutes absolues
+        Pattern expOrginial = Pattern.compile("http://([^/:]*)(:[0-9]*)?/" + referenceMatcher.group(3) + "(/auth/|/)((pagemarker/[0-9]*/)?)(.*)");
+
+        Matcher mResOriginal = expOrginial.matcher(originalUrl);
+        if (!mResOriginal.matches()) {
+            throw new Exception("Not a portal URL !!!");
         }
-		return s1.equalsIgnoreCase(s2);
-	}
+
+        String transformedUrl = "";
+        transformedUrl = "http://" + mResOriginal.group(1);
+
+        // Port
+        if (StringUtils.isNotEmpty(mResOriginal.group(2))) {
+            transformedUrl += mResOriginal.group(2);
+        }
+        // context
+        transformedUrl += "/" + referenceMatcher.group(3);
+
+        // auth
+        transformedUrl += referenceMatcher.group(4);
+
+        // add pagemarker
+        transformedUrl += "pagemarker/";
+        transformedUrl += referenceMatcher.group(5) + '/';
+
+        // End of url
+        transformedUrl += mResOriginal.group(6);
+
+        return transformedUrl;
+    }
+
+
+    /**
+     * Get thumbnail image source.
+     *
+     * @param imageSource image source
+     * @return thumbnail image source
+     */
+    public String thumbnailSource(String imageSource) {
+        String thumbnailSource;
+
+        Pattern pattern = Pattern.compile("^(.*\\?(.*&)?)content=([A-Za-z]+)(&.*)?$");
+        Matcher matcher = pattern.matcher(imageSource);
+        if (matcher.matches()) {
+            // Adapt mediatheque image content size
+            StringBuilder builder = new StringBuilder();
+            builder.append(matcher.group(1));
+            builder.append("content=Original");
+            builder.append(StringUtils.trimToEmpty(matcher.group(4)));
+            thumbnailSource = builder.toString();
+        } else {
+            thumbnailSource = imageSource;
+        }
+
+        return thumbnailSource;
+    }
 
 }
