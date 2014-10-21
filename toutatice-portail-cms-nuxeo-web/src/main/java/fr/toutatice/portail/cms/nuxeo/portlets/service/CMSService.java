@@ -242,7 +242,12 @@ public class CMSService implements ICMSService {
 
     public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
-        NuxeoCommandContext commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
+        NuxeoCommandContext commandCtx = null;
+        
+        if( cmsCtx.getServerInvocation() != null)
+            commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
+        if( cmsCtx.getServletRequest() != null)       
+            commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServletRequest());
         /*
          * Transmission du mode asynchrone ou non de la mise en cache
          * du résultat de la commande.
@@ -933,13 +938,14 @@ public class CMSService implements ICMSService {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
                     // In anonymous mode, publicationsInfos are shared
-
-                    ServerInvocation invocation = ctx.getServerInvocation();
-                    User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
-                    if (user == null) {
-                        ctx.setScope("anonymous");
-                    } else {
-                        ctx.setScope("user_session");
+                    if( ctx.getServerInvocation() != null){
+                        ServerInvocation invocation = ctx.getServerInvocation();
+                        User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
+                        if (user == null) {
+                            ctx.setScope("anonymous");
+                        } else {
+                            ctx.setScope("user_session");
+                        }
                     }
                 }
 

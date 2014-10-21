@@ -26,6 +26,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
+import javax.servlet.http.HttpServletRequest;
 
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
@@ -135,6 +136,18 @@ public class NuxeoController {
 
     /** The domain path. */
     String domainPath;
+    
+    HttpServletRequest servletRequest;
+    
+    public HttpServletRequest getServletRequest() {
+        return servletRequest;
+    }
+
+
+    
+    public void setServletRequest(HttpServletRequest servletRequest) {
+        this.servletRequest = servletRequest;
+    }
 
     /** Directory service */
     private IDirectoryServiceLocator directoryServiceLocator;
@@ -1826,22 +1839,34 @@ public class NuxeoController {
      * @return the resource
      */
     public String createWebIdLink(String webid, String content) {
+        try {
 
-        ResourceURL resourceURL = this.createResourceURL();
+            if (getRequest().getUserPrincipal() == null) {
+                // Serve anonymous resource by servlet
+                
+                String url = this.getRequest().getContextPath() + "/sitepicture?" + "path=" + URLEncoder.encode(webid, "UTF-8");
+                return url;
+            }
 
-        resourceURL.setResourceID(webid);
-        if (content != null) {
-            resourceURL.setParameter("type", "picture");
-            resourceURL.setParameter("docPath", webid);
-            resourceURL.setParameter("content", content);
+            ResourceURL resourceURL = this.createResourceURL();
+
+            resourceURL.setResourceID(webid);
+            if (content != null) {
+                resourceURL.setParameter("type", "picture");
+                resourceURL.setParameter("docPath", webid);
+                resourceURL.setParameter("content", content);
+            }
+            //
+
+            // ne marche pas : bug JBP
+            // resourceURL.setCacheability(ResourceURL.PORTLET);
+            resourceURL.setCacheability(ResourceURL.PAGE);
+
+            return resourceURL.toString();
+
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
         }
-        //
-
-        // ne marche pas : bug JBP
-        // resourceURL.setCacheability(ResourceURL.PORTLET);
-        resourceURL.setCacheability(ResourceURL.PAGE);
-
-        return resourceURL.toString();
     }
 
     /**
@@ -1868,13 +1893,19 @@ public class NuxeoController {
     public CMSServiceCtx getCMSCtx() {
 
         this.cmsCtx = new CMSServiceCtx();
+        
+        if( this.getRequest() != null)  {
 
-        this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
+            this.cmsCtx.setRequest(this.getRequest());
+            this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
                 this.getResponse())));
+        }
 
+        if( this.getServletRequest() != null)
+            this.cmsCtx.setServletRequest(servletRequest);
 
         this.cmsCtx.setPortletCtx(this.getPortletCtx());
-        this.cmsCtx.setRequest(this.getRequest());
+
         if (this.response instanceof RenderResponse) {
             this.cmsCtx.setResponse((RenderResponse) this.response);
         }
@@ -1884,12 +1915,16 @@ public class NuxeoController {
 
 
         // Preview mode
-        EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
-        if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-            this.cmsCtx.setForcedLivePath(editionState.getDocPath());
+        if( this.getRequest() != null)  {
+            EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
+            if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
+                this.cmsCtx.setForcedLivePath(editionState.getDocPath());
+            }
         }
 
-        this.cmsCtx.setPageId(this.getPageId());
+        if( this.getRequest() != null)  {
+            this.cmsCtx.setPageId(this.getPageId());
+        }
         this.cmsCtx.setDoc(this.getCurrentDoc());
         this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
         this.cmsCtx.setDisplayContext(this.displayContext);

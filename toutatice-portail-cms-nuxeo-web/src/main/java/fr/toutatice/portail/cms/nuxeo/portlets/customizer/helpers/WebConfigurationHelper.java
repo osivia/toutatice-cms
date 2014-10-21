@@ -61,26 +61,30 @@ public final class WebConfigurationHelper {
      * @return domaine
      */
     public static String getDomainPath(CMSServiceCtx ctx) {
+        
         String domainPath = null;
-        String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
+        
+        if( ctx.getServerInvocation() != null){
+            String portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
 
-        // Dans certaines cas, le nom du portail n'est pas connu
-        // cas des stacks server (par exemple, le pre-cahrgement des pages)
-        if (portalName != null) {
-            PortalObjectContainer portalObjectContainer = (PortalObjectContainer) ctx.getServerInvocation().getAttribute(Scope.REQUEST_SCOPE,
-                    "osivia.portalObjectContainer");
+            // Dans certaines cas, le nom du portail n'est pas connu
+            // cas des stacks server (par exemple, le pre-cahrgement des pages)
+            if (portalName != null) {
+                PortalObjectContainer portalObjectContainer = (PortalObjectContainer) ctx.getServerInvocation().getAttribute(Scope.REQUEST_SCOPE,
+                        "osivia.portalObjectContainer");
 
-            Portal portal = (Portal) portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+                Portal portal = (Portal) portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
-            if (InternalConstants.PORTAL_TYPE_SPACE.equals(portal.getDeclaredProperty("osivia.portal.portalType"))) {
-                domainPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
-                if (domainPath != null) {
-                    domainPath = domainPath.split("/")[1];
-                    domainPath = "/".concat(domainPath).concat("/");
+                if (InternalConstants.PORTAL_TYPE_SPACE.equals(portal.getDeclaredProperty("osivia.portal.portalType"))) {
+                    domainPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
+                    if (domainPath != null) {
+                        domainPath = domainPath.split("/")[1];
+                        domainPath = "/".concat(domainPath).concat("/");
+                    }
                 }
-            }
 
-        }
+            }
+      }
 
         return domainPath;
     }

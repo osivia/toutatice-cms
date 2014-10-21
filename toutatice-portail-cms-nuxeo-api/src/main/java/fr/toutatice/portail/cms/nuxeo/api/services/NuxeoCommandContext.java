@@ -18,6 +18,7 @@ package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
@@ -305,6 +306,20 @@ public class NuxeoCommandContext {
 		if( Boolean.TRUE.equals(isAdmin))
 			this.administrator = true;
 	}
+	
+	
+	   /**
+     * Instantiates a new nuxeo command context.
+     *
+     * @param ctx the ctx
+     * @param serverInvocation the server invocation
+     */
+    public NuxeoCommandContext(PortletContext ctx, HttpServletRequest servletRequest) {
+        super();
+        this.ctx = ctx;
+        this.request = servletRequest;
+    }
+
 
 
 	/**
