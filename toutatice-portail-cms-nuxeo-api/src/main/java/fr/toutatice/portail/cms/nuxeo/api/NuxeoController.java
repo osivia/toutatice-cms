@@ -1171,6 +1171,15 @@ public class NuxeoController {
                 resourceURL.setParameter("docPath", doc.getPath());
                 resourceURL.setParameter("fieldName", fieldName);
 
+                
+                if (doc.getPath().equals(this.getNavigationPath())) {
+                    // Uniquement en mode web page
+                    if( doc.getPath().equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
+                         if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), doc.getPath()) == Level.allowPreviewVersion) {
+                             resourceURL.setParameter("displayLiveVersion", "1");
+                        }
+                    }
+                }               
 
                 if (this.isDisplayingLiveVersion()) {
                     resourceURL.setParameter("displayLiveVersion", "1");
@@ -1280,30 +1289,50 @@ public class NuxeoController {
      * @return the string
      */
     public String createAttachedPictureLink(String path, String fileIndex) {
+        try {
 
-        ResourceURL resourceURL = this.createResourceURL();
-        resourceURL.setResourceID(path + "/" + fileIndex);
+            ResourceURL resourceURL = this.createResourceURL();
+            resourceURL.setResourceID(path + "/" + fileIndex);
 
-        resourceURL.setParameter("type", "attachedPicture");
-        resourceURL.setParameter("pictureIndex", fileIndex);
-        resourceURL.setParameter("docPath", path);
-
-        if (this.isDisplayingLiveVersion()) {
-            resourceURL.setParameter("displayLiveVersion", "1");
-        }
+            resourceURL.setParameter("type", "attachedPicture");
+            resourceURL.setParameter("pictureIndex", fileIndex);
+            resourceURL.setParameter("docPath", path);
 
 
-        // Force to reload resources
-        if (PageProperties.getProperties().isRefreshingPage()) {
-            resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-        }
+            Document doc = fetchDocument(path);
+
+            String livePath = getLivePath(doc.getPath());
+
+            if (livePath.equals(this.getNavigationPath())) {
+                // Uniquement en mode web page
+                if (livePath.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
+                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), livePath) == Level.allowPreviewVersion) {
+                        resourceURL.setParameter("displayLiveVersion", "1");
+                    }
+                }
+            }
 
 
-        // ne marche pas : bug JBP
-        // resourceURL.setCacheability(ResourceURL.PORTLET);
-        resourceURL.setCacheability(ResourceURL.PAGE);
+            if (this.isDisplayingLiveVersion()) {
+                resourceURL.setParameter("displayLiveVersion", "1");
+            }
 
-        return resourceURL.toString();
+
+            // Force to reload resources
+            if (PageProperties.getProperties().isRefreshingPage()) {
+                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
+            }
+
+
+            // ne marche pas : bug JBP
+            // resourceURL.setCacheability(ResourceURL.PORTLET);
+            resourceURL.setCacheability(ResourceURL.PAGE);
+
+            return resourceURL.toString();
+
+    } catch (Exception e) {
+        throw this.wrapNuxeoException(e);
+    }
     }
 
     /**
@@ -1670,7 +1699,7 @@ public class NuxeoController {
                         cmsCtx.setDisplayLiveVersion("1");
                     }
                 }
-
+                
             }
 
             if (reload) {
@@ -1847,6 +1876,8 @@ public class NuxeoController {
                 // Serve anonymous resource by servlet
                 
                 String url = this.getRequest().getContextPath() + "/sitepicture?" + "path=" + URLEncoder.encode(webid, "UTF-8");
+                if( content != null)
+                    url += "&content=" + content;
                 return url;
             }
 

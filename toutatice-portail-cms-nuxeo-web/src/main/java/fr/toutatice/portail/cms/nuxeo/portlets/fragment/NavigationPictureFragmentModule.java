@@ -191,8 +191,7 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
             String pathToCheck = ctx.getNavigationPath();
 
             // On regarde dans le document courant
-            CMSItem currentItem = NuxeoController.getCMSService().getContent(navCtx, ctx.getContentPath());
-            Document currentDoc = (Document) currentItem.getNativeItem();
+            Document currentDoc = ctx.fetchDocument(ctx.getContentPath());
 
             if (this.docHasPicture(currentDoc, propertyName)) {
                 return currentDoc;

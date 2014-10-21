@@ -121,14 +121,14 @@ public class SitePictureServlet extends HttpServlet
             ctx.setScope("anonymous");
 
 
-            Document doc = ctx.fetchDocument(docPath);
-
-
+            String pictureContent = theRequest.getParameter("content");
+            
             ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
             ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
 
-            CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(new FileContentCommand(doc.getPath(), "file:content"));
+            CMSBinaryContent content = ctx.fetchPicture(docPath, pictureContent);
+
 
             // Les headers doivent être positionnées avant la réponse
             theResponse.setContentType(content.getMimeType());

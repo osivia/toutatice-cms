@@ -337,12 +337,6 @@ public class CMSPortlet extends GenericPortlet {
 
                 NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
 
-                // v2.1 : fetch direct (pour l'instant, on ne remonte pas en 2.0)
-                // On traite comme s'il s'agissait d'un hyper-lien
-
-                // Document doc = fetchLinkedDocument(ctx, docPath);
-                // docPath = doc.getPath();
-                //
 
 
                 CMSBinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
