@@ -505,7 +505,7 @@ public class XSLFunctions {
             thumbnailSource = imageSource;
         }
 
-        return thumbnailSource;
+        return this.link(thumbnailSource);
     }
 
 }

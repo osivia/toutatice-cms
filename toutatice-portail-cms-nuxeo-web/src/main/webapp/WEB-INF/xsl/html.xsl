@@ -52,8 +52,8 @@
                     <xsl:attribute name="href">
                         <xsl:value-of select="bridge:thumbnailSource($bridge,  @src)" />
                     </xsl:attribute>
-                    
-                    <xsl:copy-of select="." />
+                
+                    <xsl:call-template name="image" />
                 </a>
             </xsl:otherwise>
         </xsl:choose>
