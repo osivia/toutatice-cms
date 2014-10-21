@@ -14,25 +14,30 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
- * Get Nuxeo document URL tag.
+ * Nuxeo document link tag.
  *
  * @author Cédric Krommenhoek
  * @see SimpleTagSupport
  */
-public class GetDocumentURLTag extends SimpleTagSupport {
+public class DocumentLinkTag extends SimpleTagSupport {
 
+    /** Document DTO. */
+    private DocumentDTO document;
     /** Document display context. */
     private String displayContext;
     /** Picture document indicator. */
     private Boolean picture;
+    /** Request variable name. */
+    private String var;
 
 
     /**
      * Default constructor.
      */
-    public GetDocumentURLTag() {
+    public DocumentLinkTag() {
         super();
     }
 
@@ -48,25 +53,48 @@ public class GetDocumentURLTag extends SimpleTagSupport {
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
-        // Nuxeo document
-        Document document = (Document) request.getAttribute("nuxeoDocument");
 
-        if ((nuxeoController != null) && (document != null)) {
-            // URL
-            String url;
+        if ((nuxeoController != null) && (this.document != null)) {
+            // Original Nuxeo document
+            Document nuxeoDocument = this.document.getDocument();
+
+            // Link
+            Link link;
             if (BooleanUtils.isTrue(this.picture)) {
-                String path = document.getPath();
-                url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
+                String path = nuxeoDocument.getPath();
+                String url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
+                link = new Link(url, false);
             } else {
-                Link link = nuxeoController.getLink(document, StringUtils.trimToNull(this.displayContext));
-                url = link.getUrl();
+                link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(this.displayContext));
             }
 
-            JspWriter out = pageContext.getOut();
-            out.write(url);
+            if (StringUtils.isEmpty(this.var)) {
+                JspWriter out = pageContext.getOut();
+                out.write(link.getUrl());
+            } else {
+                request.setAttribute(this.var, link);
+            }
         }
     }
 
+
+    /**
+     * Getter for document.
+     * 
+     * @return the document
+     */
+    public DocumentDTO getDocument() {
+        return this.document;
+    }
+
+    /**
+     * Setter for document.
+     * 
+     * @param document the document to set
+     */
+    public void setDocument(DocumentDTO document) {
+        this.document = document;
+    }
 
     /**
      * Getter for displayContext.
@@ -102,6 +130,24 @@ public class GetDocumentURLTag extends SimpleTagSupport {
      */
     public void setPicture(Boolean picture) {
         this.picture = picture;
+    }
+
+    /**
+     * Getter for var.
+     *
+     * @return the var
+     */
+    public String getVar() {
+        return this.var;
+    }
+
+    /**
+     * Setter for var.
+     *
+     * @param var the var to set
+     */
+    public void setVar(String var) {
+        this.var = var;
     }
 
 }

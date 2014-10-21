@@ -12,6 +12,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
  * Get Nuxeo document image URL tag.
@@ -21,6 +22,8 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  */
 public class GetImageURLTag extends SimpleTagSupport {
 
+    /** Document DTO. */
+    private DocumentDTO document;
     /** Nuxeo document image property name. */
     private String property;
 
@@ -44,13 +47,14 @@ public class GetImageURLTag extends SimpleTagSupport {
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
-        // Nuxeo document
-        Document document = (Document) request.getAttribute("nuxeoDocument");
 
-        if ((nuxeoController != null) && (document != null)) {
-            PropertyMap map = document.getProperties().getMap(this.property);
+        if ((nuxeoController != null) && (this.document != null)) {
+            // Original Nuxeo document
+            Document nuxeoDocument = this.document.getDocument();
+
+            PropertyMap map = nuxeoDocument.getProperties().getMap(this.property);
             if ((map != null) && (map.getString("data") != null)) {
-                String url = nuxeoController.createFileLink(document, this.property);
+                String url = nuxeoController.createFileLink(nuxeoDocument, this.property);
 
                 JspWriter out = pageContext.getOut();
                 out.write(url);
@@ -58,6 +62,24 @@ public class GetImageURLTag extends SimpleTagSupport {
         }
     }
 
+
+    /**
+     * Getter for document.
+     * 
+     * @return the document
+     */
+    public DocumentDTO getDocument() {
+        return this.document;
+    }
+
+    /**
+     * Setter for document.
+     * 
+     * @param document the document to set
+     */
+    public void setDocument(DocumentDTO document) {
+        this.document = document;
+    }
 
     /**
      * Getter for property.

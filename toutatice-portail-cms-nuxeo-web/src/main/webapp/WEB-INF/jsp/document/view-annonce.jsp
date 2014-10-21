@@ -6,11 +6,11 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="imageURL"><ttc:getImageURL property="annonce:image" /></c:set>
+<c:set var="imageURL"><ttc:getImageURL document="${document}" property="annonce:image" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
 <c:set var="date" value="${document.properties['dc:created']}" />
 <c:set var="resume" value="${document.properties['annonce:resume']}" />
-<c:set var="content"><ttc:transform property="note:note" /></c:set>
+<c:set var="content"><ttc:transform document="${document}" property="note:note" /></c:set>
 
 <c:set var="contentClass" value="col-xs-12" />
 

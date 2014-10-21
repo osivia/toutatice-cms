@@ -5,8 +5,8 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="documentURL"><ttc:getDocumentURL /></c:set>
-<c:set var="vignetteURL"><ttc:getImageURL property="ttc:vignette" /></c:set>
+<c:set var="documentURL"><ttc:documentLink document="${document}" /></c:set>
+<c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
 <c:set var="description" value="${document.properties['dc:description']}" />
 
 

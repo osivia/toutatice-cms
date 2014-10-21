@@ -8,7 +8,7 @@
 
 <c:set var="author" value="${document.properties['dc:creator']}" />
 <c:set var="date" value="${document.properties['dc:modified']}" />
-<c:set var="content"><ttc:transform property="note:note" /></c:set>
+<c:set var="content"><ttc:transform document="${document}" property="note:note" /></c:set>
 
 
 <article class="note">

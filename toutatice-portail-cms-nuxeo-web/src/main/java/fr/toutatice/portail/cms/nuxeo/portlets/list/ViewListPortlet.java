@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
@@ -36,7 +38,6 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -45,12 +46,14 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -70,7 +73,10 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 /**
  * List portlet.
@@ -78,9 +84,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
  * @see CMSPortlet
  */
 public class ViewListPortlet extends CMSPortlet {
-
-    /** Logger. */
-    private static final Log LOGGER = LogFactory.getLog(ViewListPortlet.class);
 
     /** Nuxeo request window property name. */
     public static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
@@ -93,7 +96,7 @@ public class ViewListPortlet extends CMSPortlet {
     /** Scope window property name. */
     public static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
     /** Metadata display indicator window property name. */
-    public static final String METADATA_DISPLAY_WINDOW_PROPERTY = "osivia.metadataDisplay";
+    public static final String METADATA_DISPLAY_WINDOW_PROPERTY = ViewDocumentPortlet.METADATA_WINDOW_PROPERTY;
     /** Nuxeo request display indicator window property name. */
     public static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
     /** Results limit window property name. */
@@ -122,12 +125,40 @@ public class ViewListPortlet extends CMSPortlet {
     /** Default RSS results limit. */
     private static final int DEFAULT_RSS_RESULTS_LIMIT = 10;
 
+    /** Admin JSP path. */
+    private static final String PATH_ADMIN = "/WEB-INF/jsp/list/admin.jsp";
+    /** View JSP path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
+
+
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
+    /** Document DAO. */
+    private DocumentDAO documentDAO;
+
 
     /**
      * Default constructor.
      */
     public ViewListPortlet() {
         super();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(PortletConfig config) throws PortletException {
+        super.init(config);
+
+        // Bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+
+        // Document DAO
+        this.documentDAO = DocumentDAO.getInstance();
     }
 
 
@@ -265,8 +296,6 @@ public class ViewListPortlet extends CMSPortlet {
      */
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
-        LOGGER.debug("processAction ");
-
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Action
@@ -388,7 +417,7 @@ public class ViewListPortlet extends CMSPortlet {
 
             response.setContentType("text/html");
 
-            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/liste/admin.jsp");
+            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_ADMIN);
             dispatcher.include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
@@ -405,18 +434,18 @@ public class ViewListPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
-        LOGGER.debug("doView");
-
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("ctx", nuxeoController);
+            request.setAttribute("nuxeoController", nuxeoController);
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
             // Configuration
             ListConfiguration configuration = this.getConfiguration(window);
+            // Bundle
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
 
             // Feed mode
             boolean feed = BooleanUtils.toBoolean(window.getProperty("osivia.cms.feed"));
@@ -456,7 +485,7 @@ public class ViewListPortlet extends CMSPortlet {
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
                 request.setAttribute("osivia.emptyResponse", "1");
-                request.setAttribute("error", "Requête vide");
+                request.setAttribute("error", bundle.getString("LIST_MESSAGE_EMPTY_REQUEST"));
             } else if (nuxeoRequest != null) {
                 // Nuxeo request
                 if (configuration.isNuxeoRequestDisplay()) {
@@ -517,7 +546,7 @@ public class ViewListPortlet extends CMSPortlet {
                     templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
                 }
                 ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
-                request.setAttribute("style", template.getKey());
+                request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
 
 
@@ -539,13 +568,20 @@ public class ViewListPortlet extends CMSPortlet {
                 // Nuxeo documents
                 PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
 
-                // Result list
-                List<Document> list = documents.list();
+                // Nuxeo documents sorted list
+                List<Document> documentsList = documents.list();
                 if (feed) {
                     DocumentComparator comparator = new DocumentComparator(feedDocumentsOrder);
-                    Collections.sort(list, comparator);
+                    Collections.sort(documentsList, comparator);
                 }
-                request.setAttribute("docs", list);
+
+                // Result list
+                List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documentsList.size());
+                for (Document document : documentsList) {
+                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    documentsDTO.add(documentDTO);
+                }
+                request.setAttribute("documents", documentsDTO);
 
 
                 // Pages count
@@ -560,7 +596,7 @@ public class ViewListPortlet extends CMSPortlet {
                             int lastPageLimit = Math.max(0, resultsLimit - (currentPage * requestPageSize));
                             while (documents.size() > lastPageLimit) {
                                 // Remove last item
-                                list.remove(documents.size() - 1);
+                                documentsList.remove(documents.size() - 1);
                             }
                         }
                     } else {
@@ -625,7 +661,6 @@ public class ViewListPortlet extends CMSPortlet {
                 }
 
                 // Space menubar injection
-
                 if(configuration.isSpaceMenuBar())   {
                     String navigationPath = nuxeoController.getNavigationPath();
 
@@ -679,7 +714,7 @@ public class ViewListPortlet extends CMSPortlet {
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (EvalError e) {
-            request.setAttribute("error", "Requête incorrecte");
+            request.setAttribute("error", "LIST_MESSAGE_INVALID_REQUEST");
             request.setAttribute("errorMessage", e.getMessage());
         } catch (PortletException e) {
             throw e;
@@ -688,19 +723,9 @@ public class ViewListPortlet extends CMSPortlet {
         }
 
         response.setContentType("text/html");
-        
-        String view = "/WEB-INF/jsp/liste/view.jsp";
-        
-        HttpServletRequest httpRequest = (HttpServletRequest) request.getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
-        String rendering = (String) httpRequest.getParameter("_rendering");
-        if(StringUtils.isNotEmpty(rendering))   {
-            view = "/WEB-INF/jsp/liste/view-"+rendering+".jsp";
-        }
-      
-        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(view);
-        dispatcher.include(request, response);
 
-        LOGGER.debug("doView end");
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
+        dispatcher.include(request, response);
     }
 
 

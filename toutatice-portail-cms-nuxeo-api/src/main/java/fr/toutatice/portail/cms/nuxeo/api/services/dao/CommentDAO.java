@@ -5,6 +5,7 @@ import java.util.Date;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.locator.Locator;
 
@@ -71,7 +72,10 @@ public final class CommentDAO implements IDAO<JSONObject, CommentDTO> {
         dto.setAuthor(author);
 
         // LDAP person
-        dto.setPerson(this.directoryServiceLocator.getDirectoryService().getPerson(author));
+        IDirectoryService directoryService = this.directoryServiceLocator.getDirectoryService();
+        if (directoryService != null) {
+            dto.setPerson(directoryService.getPerson(author));
+        }
 
         // Creation date
         JSONObject jsonDate = jsonObject.getJSONObject("creationDate");

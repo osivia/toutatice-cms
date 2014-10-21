@@ -88,6 +88,9 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
 
+        // Original Nuxeo document
+        dto.setDocument(document);
+
         return dto;
     }
 

@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
  * Transform HTML content tag.
@@ -21,6 +22,8 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  */
 public class TransformHTMLTag extends SimpleTagSupport {
 
+    /** Document DTO. */
+    private DocumentDTO document;
     /** Nuxeo document HTML content property name. */
     private String property;
 
@@ -44,12 +47,13 @@ public class TransformHTMLTag extends SimpleTagSupport {
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
-        // Nuxeo document
-        Document document = (Document) request.getAttribute("nuxeoDocument");
 
-        if ((nuxeoController != null) && (document != null)) {
+        if ((nuxeoController != null) && (this.document != null)) {
+            // Original Nuxeo document
+            Document nuxeoDocument = this.document.getDocument();
+
             // HTML content
-            String htmlContent = StringUtils.trimToEmpty(document.getString(this.property));
+            String htmlContent = StringUtils.trimToEmpty(nuxeoDocument.getString(this.property));
 
             // Transformation
             htmlContent = nuxeoController.transformHTMLContent(htmlContent);
@@ -59,6 +63,24 @@ public class TransformHTMLTag extends SimpleTagSupport {
         }
     }
 
+
+    /**
+     * Getter for document.
+     * 
+     * @return the document
+     */
+    public DocumentDTO getDocument() {
+        return this.document;
+    }
+
+    /**
+     * Setter for document.
+     * 
+     * @param document the document to set
+     */
+    public void setDocument(DocumentDTO document) {
+        this.document = document;
+    }
 
     /**
      * Getter for property.
@@ -77,6 +99,5 @@ public class TransformHTMLTag extends SimpleTagSupport {
     public void setProperty(String property) {
         this.property = property;
     }
-
 
 }

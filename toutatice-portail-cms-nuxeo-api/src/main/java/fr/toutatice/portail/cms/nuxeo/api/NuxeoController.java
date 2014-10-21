@@ -28,6 +28,7 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -728,11 +729,12 @@ public class NuxeoController {
             }
 
 
-            String hideMetadatas = window.getProperty("osivia.cms.hideMetaDatas");
-
             this.setScope(scope);
             this.setDisplayLiveVersion(displayLiveVersion);
-            this.setHideMetaDatas(hideMetadatas);
+
+            // Metadata display indicator
+            boolean metadataDisplay = BooleanUtils.toBoolean(window.getProperty("osivia.document.metadata"));
+            this.setHideMetaDatas(BooleanUtils.toString(metadataDisplay, null, "1"));
 
             this.setDocTypeToCreate(window.getProperty("osivia.createDocType"));
             String parentPathToCreate = window.getProperty("osivia.createParentPath");

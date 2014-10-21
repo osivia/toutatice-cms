@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -24,28 +24,50 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+
 /**
  * Default player (use view document portlet).
- * 
+ *
+ * @see IPlayer
  */
 public class DefaultPlayer implements IPlayer {
 
-    public CMSHandlerProperties play(CMSServiceCtx ctx, Document doc) throws Exception {
+    /** Default CMS customizer. */
+    private final DefaultCMSCustomizer customizer;
 
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
-        return play(ctx, doc, windowProperties);
-
+    /**
+     * Constructor.
+     *
+     * @param customizer default CMS customizer
+     */
+    public DefaultPlayer(DefaultCMSCustomizer customizer) {
+        super();
+        this.customizer = customizer;
     }
 
-    public CMSHandlerProperties play(CMSServiceCtx ctx, Document doc, Map<String, String> windowProperties) throws Exception {
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.cms.hideMetaDatas", ctx.getHideMetaDatas());
-        windowProperties.put(Constants.WINDOW_PROP_URI, doc.getPath());
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CMSHandlerProperties play(CMSServiceCtx cmsContext, Document document) throws Exception {
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        return this.play(cmsContext, document, windowProperties);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CMSHandlerProperties play(CMSServiceCtx cmsContext, Document document, Map<String, String> windowProperties) throws Exception {
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
+        windowProperties.put("osivia.document.metadata", this.customizer.computeMetadataDisplayIndicator(cmsContext));
+        windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
-//        windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-
 
         CMSHandlerProperties linkProps = new CMSHandlerProperties();
         linkProps.setWindowProperties(windowProperties);

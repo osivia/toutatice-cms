@@ -7,8 +7,8 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="documentURL"><ttc:getDocumentURL displayContext="download" /></c:set>
-<c:set var="iconURL"><ttc:getDocumentIconURL /></c:set>
+<c:set var="documentURL"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
+<c:set var="iconURL"><ttc:getDocumentIconURL document="${document}" /></c:set>
 <c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type)}" /></c:set>
 <c:set var="fileName" value="${document.properties['file:filename']}" />
 <c:set var="fileSize" value="${document.properties['file:content']['length']}" />

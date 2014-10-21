@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.nuxeo.ecm.automation.client.model.Document;
+
 /**
  * Document data transfert object.
  *
@@ -42,6 +44,9 @@ public class DocumentDTO {
     /** Document comments. */
     private final List<CommentDTO> comments;
 
+    /** Original Nuxeo document. */
+    private Document document;
+
 
     /**
      * Constructor.
@@ -65,7 +70,7 @@ public class DocumentDTO {
 
     /**
      * Getter for id.
-     * 
+     *
      * @return the id
      */
     public String getId() {
@@ -74,7 +79,7 @@ public class DocumentDTO {
 
     /**
      * Setter for id.
-     * 
+     *
      * @param id the id to set
      */
     public void setId(String id) {
@@ -178,6 +183,24 @@ public class DocumentDTO {
      */
     public List<CommentDTO> getComments() {
         return this.comments;
+    }
+
+    /**
+     * Getter for document.
+     * 
+     * @return the document
+     */
+    public Document getDocument() {
+        return this.document;
+    }
+
+    /**
+     * Setter for document.
+     * 
+     * @param document the document to set
+     */
+    public void setDocument(Document document) {
+        this.document = document;
     }
 
 }

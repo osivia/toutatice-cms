@@ -9,11 +9,19 @@
 
 
     <tag>
-        <description>Get Nuxeo document URL.</description>
-        <display-name>Get document URL</display-name>
-        <name>getDocumentURL</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetDocumentURLTag</tag-class>
+        <description>Get document link.</description>
+        <display-name>Document link</display-name>
+        <name>documentLink</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.DocumentLinkTag</tag-class>
         <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
         
         <attribute>
             <description>Document display context.</description>
@@ -30,6 +38,14 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Boolean</type>
         </attribute>
+        
+        <attribute>
+            <description>Request variable name.</description>
+            <name>var</name>
+            <required>false</required>
+            <rtexprvalue>false</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
     </tag>
 
 
@@ -39,6 +55,14 @@
         <name>getImageURL</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetImageURLTag</tag-class>
         <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
 
         <attribute>
             <description>Nuxeo document image property name.</description>
@@ -75,6 +99,14 @@
         <body-content>empty</body-content>
 
         <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+
+        <attribute>
             <description>Nuxeo document HTML Content property name.</description>
             <name>property</name>
             <required>true</required>
@@ -90,6 +122,14 @@
         <name>getDocumentIconURL</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetDocumentIconURLTag</tag-class>
         <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
     </tag>
     
     
@@ -179,6 +219,14 @@
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Menubar item AJAX indicator. Default = true</description>
+            <name>ajax</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
         </attribute>
     </tag>
 

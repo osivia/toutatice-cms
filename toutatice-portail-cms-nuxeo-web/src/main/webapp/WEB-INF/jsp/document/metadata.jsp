@@ -6,7 +6,7 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="vignetteURL"><ttc:getImageURL property="ttc:vignette" /></c:set>
+<c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
 
 <c:set var="date" value="${document.properties['dc:modified']}" />

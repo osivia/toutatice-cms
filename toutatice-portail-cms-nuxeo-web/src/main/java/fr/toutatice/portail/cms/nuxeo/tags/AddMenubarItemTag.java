@@ -8,6 +8,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -42,6 +43,8 @@ public class AddMenubarItemTag extends SimpleTagSupport {
     private String target;
     /** Menubar item glyphicon. */
     private String glyphicon;
+    /** Menubar item AJAX indicator. */
+    private Boolean ajax;
 
 
     /**
@@ -82,6 +85,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
             // Menubar item
             MenubarItem item = new MenubarItem(this.id, title, orderInt, this.url, this.onclick, this.htmlClass, this.target);
             item.setGlyphicon(this.glyphicon);
+            item.setAjaxDisabled(BooleanUtils.isFalse(this.ajax));
 
             menubar.add(item);
         }
@@ -242,6 +246,24 @@ public class AddMenubarItemTag extends SimpleTagSupport {
      */
     public void setGlyphicon(String glyphicon) {
         this.glyphicon = glyphicon;
+    }
+
+    /**
+     * Getter for ajax.
+     * 
+     * @return the ajax
+     */
+    public Boolean getAjax() {
+        return this.ajax;
+    }
+
+    /**
+     * Setter for ajax.
+     * 
+     * @param ajax the ajax to set
+     */
+    public void setAjax(Boolean ajax) {
+        this.ajax = ajax;
     }
 
 }

@@ -73,15 +73,12 @@ import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    /** Portlet mode "admin". */
-    private static final String PORTLET_MODE_ADMIN = "admin";
-
     /** Path window property name. */
-    private static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
+    public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
-    private static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
+    public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
     /** Display metadata indicator window property name. */
-    private static final String METADATA_WINDOW_PROPERTY = "osivia.document.metadata";
+    public static final String METADATA_WINDOW_PROPERTY = "osivia.document.metadata";
 
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
@@ -160,7 +157,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        if (PORTLET_MODE_ADMIN.equals(request.getPortletMode().toString())) {
+        if ("admin".equals(request.getPortletMode().toString())) {
             // Admin
 
             if ("save".equals(action)) {
@@ -230,7 +227,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
      * @throws PortletException
      * @throws IOException
      */
-    @RenderMode(name = PORTLET_MODE_ADMIN)
+    @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
@@ -288,7 +285,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // Fetch document
                 Document document = nuxeoController.fetchDocument(path);
                 nuxeoController.setCurrentDoc(document);
-                request.setAttribute("nuxeoDocument", document);
 
                 // DTO
                 DocumentDTO documentDTO = this.documentDAO.toDTO(document);
