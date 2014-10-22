@@ -105,6 +105,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmen
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
@@ -368,10 +369,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Site picture fragment
         fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"), SitePictureFragmentModule
                 .getInstance()));
+        // Summary fragment
+        fragmentTypes.add(new FragmentType(SummaryFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SUMMARY"), SummaryFragmentModule.getInstance()));
 
         return fragmentTypes;
     }
-
 
     /**
      * {@inheritDoc}
@@ -394,7 +396,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return templates;
     }
-
 
     /**
      * Get search schema.
