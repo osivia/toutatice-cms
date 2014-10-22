@@ -199,8 +199,8 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
                 // Puis dans l'arbre de navigation
                 do {
                     CMSItem cmsItemNav = NuxeoController.getCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
-                    pictureContainer = (Document) cmsItemNav.getNativeItem();
-                    if (pictureContainer != null) {
+                    if ((cmsItemNav != null) && (cmsItemNav.getNativeItem() != null)) {
+                        pictureContainer = (Document) cmsItemNav.getNativeItem();
                         hasPicture = this.docHasPicture(pictureContainer, propertyName);
                     }
 
