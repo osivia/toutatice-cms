@@ -27,10 +27,10 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.IFragmentModule;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
 
 /**
  * Navigation picture fragment module.

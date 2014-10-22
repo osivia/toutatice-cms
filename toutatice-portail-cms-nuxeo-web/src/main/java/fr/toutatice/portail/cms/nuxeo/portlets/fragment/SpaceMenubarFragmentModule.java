@@ -13,9 +13,9 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.core.cms.IFragmentModule;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
 
 /**
  * Fragment permettant l'affichage d'une Menubar pour un espace (page).

@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -53,6 +54,8 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
  * Publication menu portlet.
@@ -87,6 +90,8 @@ public class MenuPortlet extends CMSPortlet {
 
     /** Portal URL factory. */
     private IPortalUrlFactory portalUrlFactory;
+    /** CMS customizer. */
+    private INuxeoCustomizer customizer;
 
 
     /**
@@ -109,6 +114,11 @@ public class MenuPortlet extends CMSPortlet {
         if (this.portalUrlFactory == null) {
             throw new PortletException("Cannot start TestPortlet due to service unavailability");
         }
+
+        // Nuxeo service
+        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        // CMS customizer
+        this.customizer = nuxeoService.getCMSCustomizer();
     }
 
 
@@ -195,7 +205,7 @@ public class MenuPortlet extends CMSPortlet {
         request.setAttribute("defaultMaxLevels", DEFAULT_MAX_LEVELS);
 
         // Templates
-        Map<String, String> templates = NuxeoController.getCMSService().getMenuTemplates(request.getLocale());
+        Map<String, String> templates = this.customizer.getMenuTemplates(request.getLocale());
         request.setAttribute("templates", templates);
         String selectedTemplate = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
         request.setAttribute("selectedTemplate", selectedTemplate);

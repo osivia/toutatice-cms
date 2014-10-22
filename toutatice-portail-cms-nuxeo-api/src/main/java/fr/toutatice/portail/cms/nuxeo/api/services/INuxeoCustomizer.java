@@ -17,7 +17,10 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.SortedMap;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.urls.Link;
@@ -27,6 +30,8 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
 
 /**
@@ -158,7 +163,7 @@ public interface INuxeoCustomizer {
 
     /**
      * Get the user avatar.
-     * 
+     *
      * @param cmsCtx cms context
      * @param username username
      * @return
@@ -167,12 +172,38 @@ public interface INuxeoCustomizer {
 
     /**
      * Refresh the user avatar.
-     * 
+     *
      * @param cmsCtx cms context
      * @param username username
      * @return the timestamp associated with the refresh event
      */
     String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
+
+
+    /**
+     * Get templates list.
+     *
+     * @param locale user locale
+     * @return template list
+     */
+    List<ListTemplate> getListTemplates(Locale locale);
+
+
+    /**
+     * Get fragments list.
+     *
+     * @return fragments list
+     */
+    List<FragmentType> getFragmentTypes(Locale locale);
+
+
+    /**
+     * Get menu templates.
+     *
+     * @param locale user locale
+     * @return menu templates
+     */
+    SortedMap<String, String> getMenuTemplates(Locale locale);
 
 
     /**

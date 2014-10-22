@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.RenderMode;
@@ -34,14 +35,17 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.FragmentType;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
  * View fragment portlet
@@ -58,8 +62,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
     /** View JSP path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/fragment/view.jsp";
 
+    /** CMS customizer. */
+    private INuxeoCustomizer customizer;
     /** Fragment types technical map. DO NOT USE FOR DISPLAY. */
-    private final Map<String, FragmentType> fragmentTypesMap;
+    private Map<String, FragmentType> fragmentTypesMap;
 
 
     /**
@@ -67,15 +73,28 @@ public class ViewFragmentPortlet extends CMSPortlet {
      */
     public ViewFragmentPortlet() {
         super();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(PortletConfig config) throws PortletException {
+        super.init(config);
+
+        // Nuxeo service
+        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        // CMS customizer
+        this.customizer = nuxeoService.getCMSCustomizer();
 
         // Fragment types technical map
-        List<FragmentType> fragmentTypes = NuxeoController.getCMSService().getFragmentTypes(Locale.getDefault());
+        List<FragmentType> fragmentTypes = this.customizer.getFragmentTypes(Locale.getDefault());
         this.fragmentTypesMap = new HashMap<String, FragmentType>(fragmentTypes.size());
         for (FragmentType fragmentType : fragmentTypes) {
             this.fragmentTypesMap.put(fragmentType.getKey(), fragmentType);
         }
     }
-
 
 
     /**
@@ -153,7 +172,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
         }
 
         // Fragment types
-        List<FragmentType> fragmentTypes = NuxeoController.getCMSService().getFragmentTypes(request.getLocale());
+        List<FragmentType> fragmentTypes = this.customizer.getFragmentTypes(request.getLocale());
         List<FragmentType> filteredFragmentTypes = new ArrayList<FragmentType>(fragmentTypes.size());
         for (FragmentType fragmentType : fragmentTypes) {
             if (fragmentType.getModule().isDisplayedInAdmin()) {

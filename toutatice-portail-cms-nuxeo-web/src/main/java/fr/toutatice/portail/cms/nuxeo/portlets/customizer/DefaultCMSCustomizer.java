@@ -71,8 +71,6 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.FragmentType;
-import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
@@ -81,6 +79,8 @@ import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
@@ -315,11 +315,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Get templates list.
-     *
-     * @param locale user locale
-     * @return template list
+     * {@inheritDoc}
      */
+    @Override
     public List<ListTemplate> getListTemplates(Locale locale) {
         List<ListTemplate> templates = new ArrayList<ListTemplate>();
 
@@ -340,10 +338,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Get fragments list.
-     *
-     * @return fragments list
+     * {@inheritDoc}
      */
+    @Override
     public List<FragmentType> getFragmentTypes(Locale locale) {
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
 
@@ -373,6 +370,29 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 .getInstance()));
 
         return fragmentTypes;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SortedMap<String, String> getMenuTemplates(Locale locale) {
+        SortedMap<String, String> templates = new TreeMap<String, String>();
+
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        // Default
+        templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));
+        // Horizontal
+        templates.put("horizontal", bundle.getString("MENU_TEMPLATE_HORIZONTAL"));
+        // Footer
+        templates.put("footer", bundle.getString("MENU_TEMPLATE_FOOTER"));
+        // JSTree
+        templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
+
+        return templates;
     }
 
 
@@ -1328,31 +1348,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Get menu templates.
-     *
-     * @param locale user locale
-     * @return menu templates
-     */
-    public SortedMap<String, String> getMenuTemplates(Locale locale) {
-        SortedMap<String, String> templates = new TreeMap<String, String>();
-
-        // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(locale);
-
-        // Default
-        templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));
-        // Horizontal
-        templates.put("horizontal", bundle.getString("MENU_TEMPLATE_HORIZONTAL"));
-        // Footer
-        templates.put("footer", bundle.getString("MENU_TEMPLATE_FOOTER"));
-        // JSTree
-        templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
-
-        return templates;
-    }
-
-
-    /**
      * Getter for bundleFactory.
      *
      * @return the bundleFactory
@@ -1379,7 +1374,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Compute metadata display indicator string value from CMS context.
-     * 
+     *
      * @param cmsContext CMS context
      * @return metadata display indicator
      */

@@ -60,7 +60,6 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
@@ -74,6 +73,9 @@ import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
@@ -135,6 +137,8 @@ public class ViewListPortlet extends CMSPortlet {
     private IBundleFactory bundleFactory;
     /** Document DAO. */
     private DocumentDAO documentDAO;
+    /** CMS customizer. */
+    private INuxeoCustomizer customizer;
 
 
     /**
@@ -159,6 +163,11 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
+
+        // Nuxeo service
+        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        // CMS customizer
+        this.customizer = nuxeoService.getCMSCustomizer();
     }
 
 
@@ -178,7 +187,7 @@ public class ViewListPortlet extends CMSPortlet {
         // Search template
         ListTemplate currentTemplate = null;
         ListTemplate defaultTemplate = null;
-        List<ListTemplate> templates = NuxeoController.getCMSService().getListTemplates(locale);
+        List<ListTemplate> templates = this.customizer.getListTemplates(locale);
         for (ListTemplate template : templates) {
             if (currentTemplateName.equals(template.getKey())) {
                 // Current template
@@ -412,7 +421,7 @@ public class ViewListPortlet extends CMSPortlet {
             request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
 
             // Templates
-            request.setAttribute("templates", NuxeoController.getCMSService().getListTemplates(request.getLocale()));
+            request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
 
 
             response.setContentType("text/html");
@@ -540,7 +549,7 @@ public class ViewListPortlet extends CMSPortlet {
 
 
                 // Templates
-                request.setAttribute("templates", NuxeoController.getCMSService().getListTemplates(request.getLocale()));
+                request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
                 String templateName = configuration.getTemplate();
                 if (templateName == null) {
                     templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;

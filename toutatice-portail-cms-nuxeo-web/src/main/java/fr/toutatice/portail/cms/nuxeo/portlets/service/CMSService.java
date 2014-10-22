@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeSet;
 
 import javax.portlet.PortletContext;
@@ -61,9 +59,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.FragmentType;
 import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.ListTemplate;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
 import org.osivia.portal.core.constants.InternalConstants;
@@ -243,11 +239,13 @@ public class CMSService implements ICMSService {
     public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
         NuxeoCommandContext commandCtx = null;
-        
-        if( cmsCtx.getServerInvocation() != null)
+
+        if( cmsCtx.getServerInvocation() != null) {
             commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
-        if( cmsCtx.getServletRequest() != null)       
+        }
+        if( cmsCtx.getServletRequest() != null) {
             commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServletRequest());
+        }
         /*
          * Transmission du mode asynchrone ou non de la mise en cache
          * du résultat de la commande.
@@ -991,18 +989,18 @@ public class CMSService implements ICMSService {
         CMSItem configItem = null;
 
         HttpServletRequest portalRequest = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
-        
+
         boolean forceLiveVersion = false;
         if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
             forceLiveVersion = true;
         }
-                
+
         String requestKey = "osivia.cache.spaceConfig." + publishSpacePath+ "."+ forceLiveVersion;
-        
+
 
         try {
 
-            
+
             CMSItem value = (CMSItem) portalRequest.getAttribute(requestKey);
             if (value != null) {
                 // Has been reloaded since PageResfresh
@@ -1029,7 +1027,7 @@ public class CMSService implements ICMSService {
                 cmsCtx.setForcePublicationInfosScope("superuser_context");
 
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
-                
+
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
 
                 portalRequest.setAttribute(requestKey, configItem);
@@ -1954,33 +1952,6 @@ public class CMSService implements ICMSService {
     @Override
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
         return this.customizer.refreshUserAvatar(cmsCtx, username);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<ListTemplate> getListTemplates(Locale locale) {
-        return this.customizer.getListTemplates(locale);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SortedMap<String, String> getMenuTemplates(Locale locale) {
-        return this.customizer.getMenuTemplates(locale);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<FragmentType> getFragmentTypes(Locale locale) {
-        return this.customizer.getFragmentTypes(locale);
     }
 
 
