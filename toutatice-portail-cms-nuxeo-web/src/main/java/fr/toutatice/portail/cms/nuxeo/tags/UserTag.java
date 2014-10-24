@@ -85,7 +85,12 @@ public class UserTag extends SimpleTagSupport {
             }
 
             // User display name
-            String displayName = person.getDisplayName();
+            String displayName;
+            if ((person != null) && (StringUtils.isNotEmpty(person.getDisplayName()))) {
+                displayName = person.getDisplayName();
+            } else {
+                displayName = this.name;
+            }
 
             // User display container
             Element container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
