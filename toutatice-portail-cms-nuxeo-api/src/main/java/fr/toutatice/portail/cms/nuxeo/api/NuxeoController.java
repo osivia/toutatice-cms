@@ -714,13 +714,14 @@ public class NuxeoController {
 
 
             if ("__inherited".equals(displayLiveVersion)) {
-
                 if (publishSpaceConfig != null) {
                     displayLiveVersion = publishSpaceConfig.getProperties().get("displayLiveVersion");
                 } else {
                     displayLiveVersion = window.getPageProperty(Constants.WINDOW_PROP_VERSION);
                 }
             }
+
+
 
 
             String displayLiveVersionParam = request.getParameter("displayLiveVersion");
@@ -1148,6 +1149,64 @@ public class NuxeoController {
         return null;
     }
 
+    
+    /**
+     * Checks if current path is in edition state.
+     *
+     * @param path the path
+     * @return true, if is in page edition state
+     * @throws CMSException the CMS exception
+     */
+    
+    public boolean isPathInLiveState( String path){
+        
+        if( this.isDisplayingLiveVersion())
+            return true;
+        
+        return isPathInPageEditionState(path);
+    }
+    
+    
+    /**
+     * Checks if current path is in page edition state (web page edition mode)
+     *
+     * @param path the path
+     * @return true, if is in page edition state
+     * @throws CMSException the CMS exception
+     */
+    
+    public boolean isPathInPageEditionState( String originalPath)  {
+
+        try {
+            String path = "";
+
+            // Path might be an ID
+            if (originalPath.startsWith("/")) {
+                path = originalPath;
+            } else {
+                 CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
+                 path = pubInfos.getDocumentPath();
+            }
+
+
+            if (path.equals(this.getNavigationPath())) {
+                // Uniquement en mode web page
+                if (path.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
+                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
+                        return true;
+                    }
+                }
+
+            }
+
+        } catch (CMSException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
+    }
+    
+    
     /**
      * Creates the file link.
      *
@@ -1158,32 +1217,23 @@ public class NuxeoController {
      */
     public String createFileLink(Document doc, String fieldName) {
         try {
+            
+            boolean liveState = isPathInLiveState(doc.getPath());
 
-            if ("ttc:vignette".equals(fieldName)) {
+            if ("ttc:vignette".equals(fieldName) && !liveState) {
                 String url = this.getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8");
                 return url;
 
             } else {
-
                 ResourceURL resourceURL = this.createResourceURL();
                 resourceURL.setResourceID(doc.getId() + "/" + fieldName);
                 resourceURL.setParameter("type", "file");
                 resourceURL.setParameter("docPath", doc.getPath());
                 resourceURL.setParameter("fieldName", fieldName);
 
-                
-                if (doc.getPath().equals(this.getNavigationPath())) {
-                    // Uniquement en mode web page
-                    if( doc.getPath().equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
-                         if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), doc.getPath()) == Level.allowPreviewVersion) {
-                             resourceURL.setParameter("displayLiveVersion", "1");
-                        }
-                    }
-                }               
 
-                if (this.isDisplayingLiveVersion()) {
+                if (liveState) {
                     resourceURL.setParameter("displayLiveVersion", "1");
-
                 }
 
                 // Force to reload resources
@@ -1227,6 +1277,8 @@ public class NuxeoController {
      * @return the string
      */
     public String createAttachedFileLink(String path, String fileIndex) {
+        
+        boolean liveState = isPathInLiveState(path);
 
         ResourceURL resourceURL = this.createResourceURL();
         resourceURL.setResourceID(path + "/" + fileIndex);
@@ -1235,7 +1287,7 @@ public class NuxeoController {
         resourceURL.setParameter("fileIndex", fileIndex);
         resourceURL.setParameter("docPath", path);
 
-        if (this.isDisplayingLiveVersion()) {
+        if (liveState) {
             resourceURL.setParameter("displayLiveVersion", "1");
         }
 
@@ -1291,6 +1343,8 @@ public class NuxeoController {
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
 
+            boolean liveState = isPathInLiveState(path);
+            
             ResourceURL resourceURL = this.createResourceURL();
             resourceURL.setResourceID(path + "/" + fileIndex);
 
@@ -1299,21 +1353,8 @@ public class NuxeoController {
             resourceURL.setParameter("docPath", path);
 
 
-            Document doc = fetchDocument(path);
 
-            String livePath = getLivePath(doc.getPath());
-
-            if (livePath.equals(this.getNavigationPath())) {
-                // Uniquement en mode web page
-                if (livePath.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
-                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), livePath) == Level.allowPreviewVersion) {
-                        resourceURL.setParameter("displayLiveVersion", "1");
-                    }
-                }
-            }
-
-
-            if (this.isDisplayingLiveVersion()) {
+            if (liveState) {
                 resourceURL.setParameter("displayLiveVersion", "1");
             }
 
@@ -1692,14 +1733,8 @@ public class NuxeoController {
 
 
             // Prévisualisation des portlets définis au niveau du template
-            if (path.equals(this.getNavigationPath())) {
-                // Uniquement en mode web page
-                if( path.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
-                     if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
-                        cmsCtx.setDisplayLiveVersion("1");
-                    }
-                }
-                
+            if (isPathInPageEditionState(path)) {
+                 cmsCtx.setDisplayLiveVersion("1");
             }
 
             if (reload) {

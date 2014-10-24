@@ -223,10 +223,17 @@ public class CMSPortlet extends GenericPortlet {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Serve CMS Resource.
      * 
-     * @see javax.portlet.GenericPortlet#serveResource(javax.portlet.ResourceRequest, javax.portlet.ResourceResponse)
+     * IMPORTANT !!!
+     * 
+     * For web page mode, live mode MUST BE computed by the portlet when generating resource URL (displayLiveVersion=1)
+     * 
+     * @param resourceRequest resource request
+     * @param resourceResponse resource response
+     * @throws PortletException the portlet exception
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     @Override
     public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
@@ -303,8 +310,6 @@ public class CMSPortlet extends GenericPortlet {
             }
 
             if ("attachedFile".equals(resourceRequest.getParameter("type"))) {
-
-                // Gestion d'un cache global
 
                 String docPath = resourceRequest.getParameter("docPath");
                 String fileIndex = resourceRequest.getParameter("fileIndex");
