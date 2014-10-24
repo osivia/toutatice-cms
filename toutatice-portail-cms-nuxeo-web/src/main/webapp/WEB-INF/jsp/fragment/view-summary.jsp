@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -9,14 +9,15 @@
 
 
 <div class="links">
-    <ul class="list-unstyled">
-    <c:forEach var="fgt" items="${fgts}">
-    
-        <li>
-            <a href="#${fgt.key}">
-                <span>${fgt.value}</span>
-            </a>
-        </li>
-    </c:forEach>
-</ul>
+	<ul class="list-unstyled">
+		<c:forEach var="fragment" items="${fragments}">
+			<li>
+				<p>
+					<a href="${fragment.key}">
+					    <span>${fragment.value}</span>
+					</a>
+				</p>
+			</li>
+		</c:forEach>
+	</ul>
 </div>

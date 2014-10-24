@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
@@ -14,7 +14,6 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -32,10 +31,10 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SummaryEditableWind
 
 /**
  * @author David Chevrier
- * 
+ *
  */
 public class SummaryFragmentModule implements IFragmentModule {
-    
+
     /** Generic fragment properties */
     public enum GenericProperties {
         uri, regionId, order, title, hideTitle
@@ -60,7 +59,7 @@ public class SummaryFragmentModule implements IFragmentModule {
 
     /**
      * Get singleton instance.
-     * 
+     *
      * @return singleton instance
      */
     public static IFragmentModule getInstance() {
@@ -84,8 +83,6 @@ public class SummaryFragmentModule implements IFragmentModule {
         PortalWindow window = WindowFactory.getWindow(request);
         // Nuxeo path
         String nuxeoPath = window.getProperty(Constants.WINDOW_PROP_URI);
-        // Empty content indicator
-        boolean emptyContent = true;
 
         if (StringUtils.isNotEmpty(nuxeoPath)) {
             nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
@@ -102,31 +99,29 @@ public class SummaryFragmentModule implements IFragmentModule {
                         String region = regionMap.getString(GenericProperties.regionId.name());
                         PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
                         if ((fragments != null) && !fragments.isEmpty()) {
-                            resultFragments.putAll(filterNOrderByRegion(fragments, region));
+                            resultFragments.putAll(this.filterNOrderByRegion(fragments, region));
                         }
                     }
                 }
             }
             if (!resultFragments.isEmpty()) {
-                request.setAttribute("fgts", resultFragments);
-                emptyContent = false;
+                request.setAttribute("fragments", resultFragments);
             }
         }
-
     }
 
     private Map<String, String> filterNOrderByRegion(PropertyList fragments, String region) {
         Map<String, String> resultFgts = new LinkedHashMap<String, String>();
-        
-        PropertyList filteredFragments = filterFragments(fragments, region);
-        PropertyList orderedFragments = orderFragments(filteredFragments);
-        
+
+        PropertyList filteredFragments = this.filterFragments(fragments, region);
+        PropertyList orderedFragments = this.orderFragments(filteredFragments);
+
         for (int index = 0; index < orderedFragments.size(); index++) {
             PropertyMap fragment = orderedFragments.getMap(index);
             if (!fragment.getBoolean(GenericProperties.hideTitle.name())) {
                 String uri = fragment.getString(GenericProperties.uri.name());
                 String title = fragment.getString(GenericProperties.title.name());
-                resultFgts.put(uri, title);
+                resultFgts.put("#" + uri, title);
             }
         }
 
@@ -135,7 +130,7 @@ public class SummaryFragmentModule implements IFragmentModule {
 
 
     private PropertyList filterFragments(PropertyList fragments, String region) {
-        
+
         List<Object> filteredFgts = new ArrayList<Object>(fragments.size());
 
         for (Object fragmentObj : fragments.list()) {
