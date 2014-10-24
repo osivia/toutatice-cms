@@ -41,7 +41,7 @@
         </xsl:copy>
     </xsl:template>
     
-    <xsl:template match="IMG[@class = 'fancybox']">
+    <xsl:template match="IMG[@class = 'enlargeable']">
         <xsl:choose>
             <xsl:when test="parent::a">
                 <xsl:call-template name="image" />
