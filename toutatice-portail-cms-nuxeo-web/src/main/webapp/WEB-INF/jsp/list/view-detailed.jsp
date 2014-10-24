@@ -51,7 +51,7 @@
 		        <!-- Last edition informations -->
 		        <p class="list-group-item-text small">
 		            <span><is:getProperty key="EDITED_BY" /></span>
-                    <ttc:user name="${author}" />
+                    <ttc:user name="${author}" linkable="false" />
                     <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
                     <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
 		        </p>

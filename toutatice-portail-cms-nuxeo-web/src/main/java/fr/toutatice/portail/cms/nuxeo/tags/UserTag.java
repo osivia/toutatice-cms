@@ -10,6 +10,7 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
@@ -44,6 +45,8 @@ public class UserTag extends SimpleTagSupport {
 
     /** User name. */
     private String name;
+    /** Linkable indicator. */
+    private Boolean linkable;
 
 
     /**
@@ -84,9 +87,6 @@ public class UserTag extends SimpleTagSupport {
             // User display name
             String displayName = person.getDisplayName();
 
-            // User profile page URL
-            String profileURL = this.getUserProfilePageURL(nuxeoController, person);
-
             // User display container
             Element container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
 
@@ -96,9 +96,19 @@ public class UserTag extends SimpleTagSupport {
             DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
             container.add(avatar);
 
-            // Link
-            Element link = DOM4JUtils.generateLinkElement(profileURL, null, null, null, displayName);
-            container.add(link);
+            // Text
+            Element text;
+            if (BooleanUtils.isFalse(this.linkable)) {
+                // Span text
+                text = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
+            } else {
+                // User profile page URL
+                String profileURL = this.getUserProfilePageURL(nuxeoController, person);
+
+                // Linkable text
+                text = DOM4JUtils.generateLinkElement(profileURL, null, null, null, displayName);
+            }
+            container.add(text);
 
 
             JspWriter out = pageContext.getOut();
@@ -148,7 +158,6 @@ public class UserTag extends SimpleTagSupport {
         return this.name;
     }
 
-
     /**
      * Setter for name.
      *
@@ -156,6 +165,24 @@ public class UserTag extends SimpleTagSupport {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Getter for linkable.
+     *
+     * @return the linkable
+     */
+    public Boolean getLinkable() {
+        return this.linkable;
+    }
+
+    /**
+     * Setter for linkable.
+     *
+     * @param linkable the linkable to set
+     */
+    public void setLinkable(Boolean linkable) {
+        this.linkable = linkable;
     }
 
 }

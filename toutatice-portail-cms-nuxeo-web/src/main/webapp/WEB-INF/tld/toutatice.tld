@@ -88,6 +88,14 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
+        
+        <attribute>
+            <description>Linkable indicator. Default = true</description>
+            <name>linkable</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
 
     
