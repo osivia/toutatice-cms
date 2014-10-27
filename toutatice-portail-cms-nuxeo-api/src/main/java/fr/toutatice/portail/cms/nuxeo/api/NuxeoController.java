@@ -1158,12 +1158,48 @@ public class NuxeoController {
      * @throws CMSException the CMS exception
      */
     
-    public boolean isPathInLiveState( String path){
+    public boolean isIdOrPathInLiveState( String originalPath){
         
         if( this.isDisplayingLiveVersion())
             return true;
         
+        String path = "";
+        
+        try {
+            // Path might be an ID
+            if (originalPath.startsWith("/")) {
+                path = originalPath;
+            } else {
+                 CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
+                 path = pubInfos.getDocumentPath();
+            }
+
+
+        } catch (CMSException e) {
+            throw new RuntimeException(e);
+        }
+        
+        
         return isPathInPageEditionState(path);
+    }
+    
+    
+    
+    /**
+     * Checks if current doc is in edition state.
+     *
+     * @param path the path
+     * @return true, if is in page edition state
+     * @throws CMSException the CMS exception
+     */
+    
+    
+    public boolean isPathInLiveState(Document doc){
+        
+        if( this.isDisplayingLiveVersion())
+            return true;
+        
+        return isPathInPageEditionState(doc.getPath());
     }
     
     
@@ -1175,20 +1211,11 @@ public class NuxeoController {
      * @throws CMSException the CMS exception
      */
     
-    public boolean isPathInPageEditionState( String originalPath)  {
+ 
+    
+    public boolean isPathInPageEditionState( String path)  {
 
         try {
-            String path = "";
-
-            // Path might be an ID
-            if (originalPath.startsWith("/")) {
-                path = originalPath;
-            } else {
-                 CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
-                 path = pubInfos.getDocumentPath();
-            }
-
-
             if (path.equals(this.getNavigationPath())) {
                 // Uniquement en mode web page
                 if (path.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
@@ -1196,8 +1223,16 @@ public class NuxeoController {
                         return true;
                     }
                 }
-
             }
+            
+            
+            if( this.getRequest() != null)  {
+                EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
+                if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
+                    return true;
+                }
+            }
+            
 
         } catch (CMSException e) {
             throw new RuntimeException(e);
@@ -1205,6 +1240,8 @@ public class NuxeoController {
 
         return false;
     }
+    
+    
     
     
     /**
@@ -1218,7 +1255,7 @@ public class NuxeoController {
     public String createFileLink(Document doc, String fieldName) {
         try {
             
-            boolean liveState = isPathInLiveState(doc.getPath());
+            boolean liveState = isPathInLiveState(doc);
 
             if ("ttc:vignette".equals(fieldName) && !liveState) {
                 String url = this.getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8");
@@ -1278,7 +1315,7 @@ public class NuxeoController {
      */
     public String createAttachedFileLink(String path, String fileIndex) {
         
-        boolean liveState = isPathInLiveState(path);
+        boolean liveState = isIdOrPathInLiveState(path);
 
         ResourceURL resourceURL = this.createResourceURL();
         resourceURL.setResourceID(path + "/" + fileIndex);
@@ -1343,7 +1380,7 @@ public class NuxeoController {
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
 
-            boolean liveState = isPathInLiveState(path);
+            boolean liveState = isIdOrPathInLiveState(path);
             
             ResourceURL resourceURL = this.createResourceURL();
             resourceURL.setResourceID(path + "/" + fileIndex);
