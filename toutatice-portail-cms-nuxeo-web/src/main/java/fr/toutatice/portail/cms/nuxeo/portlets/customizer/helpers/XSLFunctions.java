@@ -508,4 +508,38 @@ public class XSLFunctions {
         return this.link(thumbnailSource);
     }
 
+
+    public String thumbnailClasses(String styles) {
+        String classes;
+        if (StringUtils.isEmpty(styles)) {
+            classes = StringUtils.EMPTY;
+        } else {
+            // String builder
+            StringBuilder builder = new StringBuilder();
+
+            // Style properties
+            Map<String, String> properties = new HashMap<String, String>();
+            for (String style : StringUtils.split(styles, ";")) {
+                String[] property = StringUtils.split(style, ":");
+                if (property.length == 2) {
+                    String key = StringUtils.lowerCase(StringUtils.trim(property[0]));
+                    String value = StringUtils.lowerCase(StringUtils.trim(property[1]));
+                    properties.put(key, value);
+                }
+            }
+
+            // Float
+            String floatValue = properties.get("float");
+            if ("left".equals(floatValue)) {
+                builder.append("pull-left ");
+            } else if ("right".equals(floatValue)) {
+                builder.append("pull-right ");
+            }
+
+            classes = builder.toString();
+        }
+
+        return classes;
+    }
+
 }

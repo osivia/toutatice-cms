@@ -24,12 +24,12 @@
         <xsl:apply-templates select="BODY" />
     </xsl:template>
 
-
     <xsl:template match="/HTML/BODY">
-        <div>
+        <xsl:element name="div">
             <xsl:apply-templates select="node()" />
-        </div>
+        </xsl:element>
     </xsl:template>
+
 
     <xsl:template match="IMG" name="image">
         <xsl:copy>
@@ -48,16 +48,45 @@
             </xsl:when>
             
             <xsl:otherwise>
-                <a class="thumbnail fancybox" rel="gallery">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="bridge:thumbnailSource($bridge,  @src)" />
-                    </xsl:attribute>
-                
-                    <xsl:call-template name="image" />
-                </a>
+                <xsl:element name="a">
+                    <xsl:attribute name="href"><xsl:value-of select="bridge:thumbnailSource($bridge,  @src)" /></xsl:attribute>
+                    <xsl:attribute name="rel">gallery</xsl:attribute>
+                    <xsl:attribute name="class">thumbnail fancybox <xsl:value-of select="bridge:thumbnailClasses($bridge,  @style)" /></xsl:attribute>
+                    
+                    <xsl:copy>
+                        <xsl:apply-templates select="@*|node()" />
+                    
+                        <xsl:attribute name="style"></xsl:attribute>
+                    </xsl:copy>
+                </xsl:element>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    
+    <xsl:template match="VIDEO[@class = 'enlargeable']">
+        <xsl:element name="div">
+            <xsl:attribute name="class">hidden</xsl:attribute>
+            
+            <xsl:element name="div">
+                <xsl:attribute name="id"><xsl:value-of select="generate-id(.)" /></xsl:attribute>
+                
+                <xsl:copy-of select="." />
+            </xsl:element>
+        </xsl:element>
+    
+        <xsl:element name="a">
+            <xsl:attribute name="href">#<xsl:value-of select="generate-id(.)" /></xsl:attribute>
+            <xsl:attribute name="class">thumbnail fancybox_video</xsl:attribute>
+            
+            <xsl:element name="img">
+                <xsl:attribute name="src"><xsl:value-of select="@poster" /></xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
+                <xsl:attribute name="class">img-responsive</xsl:attribute>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
 
     <xsl:template match="@src">
         <xsl:attribute name="src">
