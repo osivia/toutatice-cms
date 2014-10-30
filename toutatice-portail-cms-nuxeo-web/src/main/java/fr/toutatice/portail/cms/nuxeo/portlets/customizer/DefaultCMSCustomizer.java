@@ -1216,7 +1216,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
             // Nuxeo CMS path
-            cmsPath = StringUtils.removeStart(url, "/nuxeo/nxpath");
+            cmsPath = StringUtils.removeStart(url, "/nuxeo/nxpath/");
+            // Remove repository
+            cmsPath = "/" + StringUtils.substringAfter(cmsPath, "/");
         }
 
         if (cmsPath == null) {
