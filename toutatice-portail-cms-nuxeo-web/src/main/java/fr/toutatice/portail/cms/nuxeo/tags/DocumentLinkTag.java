@@ -15,6 +15,7 @@ import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentBean;
 
 /**
  * Nuxeo document link tag.
@@ -26,6 +27,8 @@ public class DocumentLinkTag extends SimpleTagSupport {
 
     /** Document DTO. */
     private DocumentDTO document;
+    /** Nuxeo document link property name. */
+    private String property;
     /** Document display context. */
     private String displayContext;
     /** Picture document indicator. */
@@ -55,18 +58,39 @@ public class DocumentLinkTag extends SimpleTagSupport {
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
         if ((nuxeoController != null) && (this.document != null)) {
-            // Original Nuxeo document
-            Document nuxeoDocument = this.document.getDocument();
-
             // Link
             Link link;
-            if (BooleanUtils.isTrue(this.picture)) {
-                String path = nuxeoDocument.getPath();
-                String url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
-                link = new Link(url, false);
+
+            if (StringUtils.isEmpty(this.property)) {
+                // Original Nuxeo document
+                Document nuxeoDocument = this.document.getDocument();
+
+                if (BooleanUtils.isTrue(this.picture)) {
+                    String path = nuxeoDocument.getPath();
+                    String url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
+                    link = new Link(url, false);
+                } else {
+                    link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(this.displayContext));
+                }
             } else {
-                link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(this.displayContext));
+                // Property value
+                String value = String.valueOf(this.document.getProperties().get(this.property));
+                if (StringUtils.startsWith(value, "/nuxeo/")) {
+                    // Web URL
+                    String url = nuxeoController.transformNuxeoLink(value);
+                    link = new Link(url, false);
+                } else if (StringUtils.startsWith(value, "/")) {
+                    // CMS
+                    link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(value, null));
+                } else {
+                    // Absolute URL
+                    String serverName = nuxeoController.getRequest().getServerName();
+                    String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(value, "://"), "/");
+                    boolean external = StringUtils.isNotBlank(value) && !StringUtils.equals(serverName, urlServerName);
+                    link = new LinkFragmentBean(value, external);
+                }
             }
+
 
             if (StringUtils.isEmpty(this.var)) {
                 JspWriter out = pageContext.getOut();
@@ -80,7 +104,7 @@ public class DocumentLinkTag extends SimpleTagSupport {
 
     /**
      * Getter for document.
-     * 
+     *
      * @return the document
      */
     public DocumentDTO getDocument() {
@@ -89,11 +113,29 @@ public class DocumentLinkTag extends SimpleTagSupport {
 
     /**
      * Setter for document.
-     * 
+     *
      * @param document the document to set
      */
     public void setDocument(DocumentDTO document) {
         this.document = document;
+    }
+
+    /**
+     * Getter for property.
+     *
+     * @return the property
+     */
+    public String getProperty() {
+        return this.property;
+    }
+
+    /**
+     * Setter for property.
+     *
+     * @param property the property to set
+     */
+    public void setProperty(String property) {
+        this.property = property;
     }
 
     /**

@@ -24,6 +24,14 @@
         </attribute>
         
         <attribute>
+            <description>Nuxeo document link property name.</description>
+            <name>property</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
             <description>Document display context.</description>
             <name>displayContext</name>
             <required>false</required>
