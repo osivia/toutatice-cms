@@ -15,7 +15,6 @@ import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentBean;
 
 /**
  * Nuxeo document link tag.
@@ -81,13 +80,13 @@ public class DocumentLinkTag extends SimpleTagSupport {
                     link = new Link(url, false);
                 } else if (StringUtils.startsWith(value, "/")) {
                     // CMS
-                    link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(value, null));
+                    link = nuxeoController.getCMSLinkByPath(value, null);
                 } else {
                     // Absolute URL
                     String serverName = nuxeoController.getRequest().getServerName();
                     String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(value, "://"), "/");
                     boolean external = StringUtils.isNotBlank(value) && !StringUtils.equals(serverName, urlServerName);
-                    link = new LinkFragmentBean(value, external);
+                    link = new Link(value, external);
                 }
             }
 
