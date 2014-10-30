@@ -152,7 +152,12 @@ public class CMSService implements ICMSService {
         properties.put("displayName", displayName);
         properties.put("type", doc.getType());
 
-        CMSItem cmsItem = new CMSItem(path, doc.getString("ttc:webid"), properties, doc);
+        // Domain ID & web ID
+        String domainId = doc.getString("ttc:domainID");
+        String webId = doc.getString("ttc:webid");
+
+        // CMS item
+        CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
 
         // CMS item type
         CMSItemType type = this.customizer.getCMSItemTypes().get(doc.getType());

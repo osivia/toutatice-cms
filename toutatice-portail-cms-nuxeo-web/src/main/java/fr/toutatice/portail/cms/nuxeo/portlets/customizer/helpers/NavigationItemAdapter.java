@@ -249,15 +249,6 @@ public class NavigationItemAdapter {
             // properties.put("partialLoading", "1");
 		}
 
-
-        /* DomainID */
-
-
-            String domainId = (String) doc.getProperties().get("ttc:domainID");
-            if (StringUtils.isNotEmpty(domainId)) {
-            properties.put(IWebIdService.DOMAIN_ID, domainId);
-            }
-
         /* explicitUrl */
 
         String explicitUrl = (String) doc.getProperties().get("ttc:explicitUrl");

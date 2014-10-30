@@ -134,7 +134,17 @@ public interface INuxeoCustomizer {
      * @return transformed link URL
      * @throws Exception
      */
-    String transformLink(CMSServiceCtx ctx, String link) throws Exception;
+    String transformLink(CMSServiceCtx ctx, String link);
+
+
+    /**
+     * Get portal link from Nuxeo or absolute URL.
+     *
+     * @param cmsContext CMS context
+     * @param url Nuxeo or absolute URL
+     * @return link
+     */
+    Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url);
 
 
     /**

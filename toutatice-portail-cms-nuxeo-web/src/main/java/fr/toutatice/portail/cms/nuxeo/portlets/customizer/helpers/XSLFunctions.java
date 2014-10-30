@@ -427,7 +427,7 @@ public class XSLFunctions {
                                     }
                                 }
                                 // In case of pages
-                                return this.nuxeoController.getCMSLinkByPath(this.webIdService.webPathToPageUrl(webpath), null).getUrl();
+                                return this.nuxeoController.getLinkFromNuxeoURL(webpath).getUrl();
                             }
                         }
 

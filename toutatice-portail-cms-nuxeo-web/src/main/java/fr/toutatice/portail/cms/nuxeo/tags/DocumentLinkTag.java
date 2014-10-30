@@ -74,20 +74,7 @@ public class DocumentLinkTag extends SimpleTagSupport {
             } else {
                 // Property value
                 String value = String.valueOf(this.document.getProperties().get(this.property));
-                if (StringUtils.startsWith(value, "/nuxeo/")) {
-                    // Web URL
-                    String url = nuxeoController.transformNuxeoLink(value);
-                    link = new Link(url, false);
-                } else if (StringUtils.startsWith(value, "/")) {
-                    // CMS
-                    link = nuxeoController.getCMSLinkByPath(value, null);
-                } else {
-                    // Absolute URL
-                    String serverName = nuxeoController.getRequest().getServerName();
-                    String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(value, "://"), "/");
-                    boolean external = StringUtils.isNotBlank(value) && !StringUtils.equals(serverName, urlServerName);
-                    link = new Link(value, external);
-                }
+                link = nuxeoController.getLinkFromNuxeoURL(value);
             }
 
 

@@ -26,11 +26,8 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.html.HTMLConstants;
-import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
@@ -58,18 +55,11 @@ public class LinksFragmentModule implements IFragmentModule {
     private static IFragmentModule instance;
 
 
-    /** Web id service. */
-    private final IWebIdService webIdService;
-
-
     /**
      * Private constructor.
      */
     private LinksFragmentModule() {
         super();
-
-        // Web id service
-        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
     }
 
 
@@ -136,24 +126,7 @@ public class LinksFragmentModule implements IFragmentModule {
                                 String href = propertyMap.getString(LinkFragmentBean.HREF_PROPERTY);
                                 if (refURI.equalsIgnoreCase(refURIValue) && StringUtils.isNotBlank(href)) {
                                     // Link
-                                    LinkFragmentBean link;
-                                    if (StringUtils.startsWith(href, "/")) {
-                                        // CMS
-                                        link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(href, null));
-                                    } else if (StringUtils.startsWith(href, "http")) {
-                                        // Absolute URL
-                                        String serverName = nuxeoController.getRequest().getServerName();
-                                        String urlServerName = StringUtils.substringBefore(StringUtils.substringAfter(href, "://"), "/");
-                                        boolean external = !StringUtils.equals(serverName, urlServerName);
-                                        link = new LinkFragmentBean(href, external);
-                                    } else if (StringUtils.isBlank(href)) {
-                                        // Blank URL
-                                        link = new LinkFragmentBean(HTMLConstants.A_HREF_DEFAULT, false);
-                                    } else {
-                                        // Web URL
-                                        String path = this.webIdService.webPathToPageUrl(href);
-                                        link = new LinkFragmentBean(nuxeoController.getCMSLinkByPath(path, null));
-                                    }
+                                    LinkFragmentBean link = new LinkFragmentBean(nuxeoController.getLinkFromNuxeoURL(href));
 
                                     // Title
                                     link.setTitle(propertyMap.getString(LinkFragmentBean.TITLE_PROPERTY));

@@ -68,6 +68,7 @@ import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
@@ -137,15 +138,15 @@ public class NuxeoController {
 
     /** The domain path. */
     String domainPath;
-    
+
     HttpServletRequest servletRequest;
-    
+
     public HttpServletRequest getServletRequest() {
-        return servletRequest;
+        return this.servletRequest;
     }
 
 
-    
+
     public void setServletRequest(HttpServletRequest servletRequest) {
         this.servletRequest = servletRequest;
     }
@@ -1149,7 +1150,7 @@ public class NuxeoController {
         return null;
     }
 
-    
+
     /**
      * Checks if current path is in edition state.
      *
@@ -1157,14 +1158,15 @@ public class NuxeoController {
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */
-    
+
     public boolean isIdOrPathInLiveState( String originalPath){
-        
-        if( this.isDisplayingLiveVersion())
+
+        if( this.isDisplayingLiveVersion()) {
             return true;
-        
+        }
+
         String path = "";
-        
+
         try {
             // Path might be an ID
             if (originalPath.startsWith("/")) {
@@ -1178,13 +1180,13 @@ public class NuxeoController {
         } catch (CMSException e) {
             throw new RuntimeException(e);
         }
-        
-        
-        return isPathInPageEditionState(path);
+
+
+        return this.isPathInPageEditionState(path);
     }
-    
-    
-    
+
+
+
     /**
      * Checks if current doc is in edition state.
      *
@@ -1192,17 +1194,18 @@ public class NuxeoController {
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */
-    
-    
+
+
     public boolean isPathInLiveState(Document doc){
-        
-        if( this.isDisplayingLiveVersion())
+
+        if( this.isDisplayingLiveVersion()) {
             return true;
-        
-        return isPathInPageEditionState(doc.getPath());
+        }
+
+        return this.isPathInPageEditionState(doc.getPath());
     }
-    
-    
+
+
     /**
      * Checks if current path is in page edition state (web page edition mode)
      *
@@ -1210,29 +1213,29 @@ public class NuxeoController {
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */
-    
- 
-    
+
+
+
     public boolean isPathInPageEditionState( String path)  {
 
         try {
             if (path.equals(this.getNavigationPath())) {
                 // Uniquement en mode web page
                 if (path.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
-                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
+                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(this.cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
                         return true;
                     }
                 }
             }
-            
-            
+
+
             if( this.getRequest() != null)  {
                 EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
                 if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
                     return true;
                 }
             }
-            
+
 
         } catch (CMSException e) {
             throw new RuntimeException(e);
@@ -1240,10 +1243,10 @@ public class NuxeoController {
 
         return false;
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * Creates the file link.
      *
@@ -1254,8 +1257,8 @@ public class NuxeoController {
      */
     public String createFileLink(Document doc, String fieldName) {
         try {
-            
-            boolean liveState = isPathInLiveState(doc);
+
+            boolean liveState = this.isPathInLiveState(doc);
 
             if ("ttc:vignette".equals(fieldName) && !liveState) {
                 String url = this.getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8");
@@ -1314,8 +1317,8 @@ public class NuxeoController {
      * @return the string
      */
     public String createAttachedFileLink(String path, String fileIndex) {
-        
-        boolean liveState = isIdOrPathInLiveState(path);
+
+        boolean liveState = this.isIdOrPathInLiveState(path);
 
         ResourceURL resourceURL = this.createResourceURL();
         resourceURL.setResourceID(path + "/" + fileIndex);
@@ -1380,8 +1383,8 @@ public class NuxeoController {
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
 
-            boolean liveState = isIdOrPathInLiveState(path);
-            
+            boolean liveState = this.isIdOrPathInLiveState(path);
+
             ResourceURL resourceURL = this.createResourceURL();
             resourceURL.setResourceID(path + "/" + fileIndex);
 
@@ -1580,6 +1583,24 @@ public class NuxeoController {
 
 
     /**
+     * Get portal link from Nuxeo or absolute URL.
+     *
+     * @param url Nuxeo or absolute URL
+     * @return portal link
+     */
+    public Link getLinkFromNuxeoURL(String url) {
+        // Nuxeo service
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
+        // Nuxeo customizer
+        INuxeoCustomizer nuxeoCustomizer = nuxeoService.getCMSCustomizer();
+
+        // Customizer call
+        return nuxeoCustomizer.getLinkFromNuxeoURL(this.getCMSCtx(), url);
+    }
+
+
+
+    /**
      * Generates a link to the target path.
      *
      * @param path location of the target document
@@ -1770,7 +1791,7 @@ public class NuxeoController {
 
 
             // Prévisualisation des portlets définis au niveau du template
-            if (isPathInPageEditionState(path)) {
+            if (this.isPathInPageEditionState(path)) {
                  cmsCtx.setDisplayLiveVersion("1");
             }
 
@@ -1944,12 +1965,13 @@ public class NuxeoController {
     public String createWebIdLink(String webid, String content) {
         try {
 
-            if (getRequest().getUserPrincipal() == null) {
+            if (this.getRequest().getUserPrincipal() == null) {
                 // Serve anonymous resource by servlet
-                
+
                 String url = this.getRequest().getContextPath() + "/sitepicture?" + "path=" + URLEncoder.encode(webid, "UTF-8");
-                if( content != null)
+                if( content != null) {
                     url += "&content=" + content;
+                }
                 return url;
             }
 
@@ -1998,7 +2020,7 @@ public class NuxeoController {
     public CMSServiceCtx getCMSCtx() {
 
         this.cmsCtx = new CMSServiceCtx();
-        
+
         if( this.getRequest() != null)  {
 
             this.cmsCtx.setRequest(this.getRequest());
@@ -2006,8 +2028,9 @@ public class NuxeoController {
                 this.getResponse())));
         }
 
-        if( this.getServletRequest() != null)
-            this.cmsCtx.setServletRequest(servletRequest);
+        if( this.getServletRequest() != null) {
+            this.cmsCtx.setServletRequest(this.servletRequest);
+        }
 
         this.cmsCtx.setPortletCtx(this.getPortletCtx());
 

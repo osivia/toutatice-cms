@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1129,9 +1130,101 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    public String transformLink(CMSServiceCtx ctx, String link) throws Exception {
+    public String transformLink(CMSServiceCtx ctx, String link) {
         XSLFunctions xslFunctions = new XSLFunctions(this, ctx);
         return xslFunctions.link(NuxeoConnectionProperties.getPublicDomainUri().toString() + link);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url) {
+        // Link
+        Link link;
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+
+        if (StringUtils.startsWith(url, "/nuxeo/")) {
+            // Nuxeo URL
+
+            // CMS path
+            String cmsPath = this.transformNuxeoURL(cmsContext, url);
+            // Portal URL
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, cmsPath, null, null, null, null, null, null, null);
+
+            link = new Link(portalURL, false);
+        } else if (StringUtils.isBlank(url)) {
+            // Empty URL
+            link = new Link("#", false);
+        } else {
+            // Absolute URL
+            boolean external;
+            try {
+                URL urlObject = new URL(url);
+                String serverName = cmsContext.getRequest().getServerName();
+                external = !StringUtils.equals(urlObject.getHost(), serverName);
+            } catch (Exception e) {
+                external = false;
+            }
+            link = new Link(url, external);
+        }
+
+        return link;
+    }
+
+
+    /**
+     * Transform Nuxeo URL into CMS path.
+     *
+     * @param cmsContext CMS
+     * @param url Nuxeo URL
+     * @return CMS path
+     */
+    private String transformNuxeoURL(CMSServiceCtx cmsContext, String url) {
+        // Result CMS path
+        String cmsPath = null;
+
+        if (StringUtils.startsWith(url, "/nuxeo/web/")) {
+            // Nuxeo web path
+            String webPath = StringUtils.removeStart(url, "/nuxeo/web/");
+
+            String[] splittedWebPath = StringUtils.split(webPath, "/");
+            if (splittedWebPath.length > 1) {
+                // Domain ID
+                String domainId = splittedWebPath[0];
+                // Web ID
+                String webId = splittedWebPath[splittedWebPath.length - 1];
+                // Service web ID
+                String serviceWebId = this.getWebIdService().domainAndIdToFetchInfoService(domainId, webId);
+
+                // Document path
+                String path;
+                try {
+                    CMSPublicationInfos pubInfos = this.getCmsService().getPublicationInfos(cmsContext, serviceWebId);
+                    path = pubInfos.getDocumentPath();
+                } catch (CMSException e) {
+                    path = StringUtils.EMPTY;
+                }
+
+                // CMS item
+                CMSItem cmsItem = new CMSItem(path, domainId, webId, null, null);
+
+                cmsPath = this.getWebIdService().itemToPageUrl(cmsContext, cmsItem);
+            }
+        } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
+            // Nuxeo CMS path
+            cmsPath = StringUtils.removeStart(url, "/nuxeo/nxpath");
+        }
+
+        if (cmsPath == null) {
+            // Invalid Nuxeo URL
+            LOGGER.warn("Invalid Nuxeo URL: '" + url + "'.");
+        }
+
+        return cmsPath;
     }
 
 
@@ -1270,44 +1363,34 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-    /*
-     * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getContentWebIdAwarePath(org.osivia.portal.core.cms.CMSServiceCtx)
+    /**
+     * {@inheritDoc}
      */
     @Override
-
     public String getContentWebIdPath(CMSServiceCtx cmsCtx)  {
-
         Document doc = (Document) cmsCtx.getDoc();
 
         String webId = doc.getString("ttc:webid");
-
         String domainId = doc.getString("ttc:domainID");
 
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
-
         // webId and domainId have no signification without each other
         if (StringUtils.isNotEmpty(webId) && StringUtils.isNotEmpty(domainId)) {
-
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
 
 
             Map<String, String> properties = new HashMap<String, String>();
-            if (domainId != null) {
-                properties.put(IWebIdService.DOMAIN_ID, domainId);
-            }
             if (explicitUrl != null) {
                 properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
             }
             if (extension != null) {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
             }
-            CMSItem cmsItem = new CMSItem(doc.getPath(), webId, properties, doc);
+            CMSItem cmsItem = new CMSItem(doc.getPath(), domainId, webId, properties, doc);
 
-			permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx.getControllerContext(),
-					cmsItem);
-
+            permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx, cmsItem);
         }
 
         return permLinkPath;
