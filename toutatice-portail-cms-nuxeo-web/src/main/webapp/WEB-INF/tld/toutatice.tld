@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+<taglib
+    xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
     version="2.0">
 
     <description>Toutatice taglib.</description>
@@ -14,7 +17,7 @@
         <name>documentLink</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.DocumentLinkTag</tag-class>
         <body-content>empty</body-content>
-        
+
         <attribute>
             <description>Document DTO.</description>
             <name>document</name>
@@ -22,7 +25,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
         </attribute>
-        
+
         <attribute>
             <description>Nuxeo document link property name.</description>
             <name>property</name>
@@ -30,7 +33,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Document display context.</description>
             <name>displayContext</name>
@@ -38,7 +41,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Picture document indicator.</description>
             <name>picture</name>
@@ -46,7 +49,15 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Boolean</type>
         </attribute>
-        
+
+        <attribute>
+            <description>Permalink indicator.</description>
+            <name>permalink</name>
+            <required>false</required>
+            <rtexprvalue>false</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+
         <attribute>
             <description>Request variable name.</description>
             <name>var</name>
@@ -63,7 +74,7 @@
         <name>getImageURL</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetImageURLTag</tag-class>
         <body-content>empty</body-content>
-        
+
         <attribute>
             <description>Document DTO.</description>
             <name>document</name>
@@ -80,8 +91,8 @@
             <type>java.lang.String</type>
         </attribute>
     </tag>
-    
-    
+
+
     <tag>
         <description>Get user.</description>
         <display-name>Get user avatar and profile page from his name</display-name>
@@ -96,7 +107,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Linkable indicator. Default = true</description>
             <name>linkable</name>
@@ -106,7 +117,7 @@
         </attribute>
     </tag>
 
-    
+
     <tag>
         <description>Transform Nuxeo document HTML content.</description>
         <display-name>Transform HTML content</display-name>
@@ -130,15 +141,15 @@
             <type>java.lang.String</type>
         </attribute>
     </tag>
-    
-    
+
+
     <tag>
         <description>Get Nuxeo document type icon URL.</description>
         <display-name>Get document icon URL</display-name>
         <name>getDocumentIconURL</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetDocumentIconURLTag</tag-class>
         <body-content>empty</body-content>
-        
+
         <attribute>
             <description>Document DTO.</description>
             <name>document</name>
@@ -147,15 +158,15 @@
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
         </attribute>
     </tag>
-    
-    
+
+
     <tag>
         <description>Format file size.</description>
         <display-name>Format file size</display-name>
         <name>formatFileSize</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.FormatFileSizeTag</tag-class>
         <body-content>empty</body-content>
-        
+
         <attribute>
             <description>File size.</description>
             <name>size</name>
@@ -164,7 +175,7 @@
             <type>java.lang.Long</type>
         </attribute>
     </tag>
-    
+
 
     <tag>
         <description>Add menubar item.</description>
@@ -172,7 +183,7 @@
         <name>addMenubarItem</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.tags.AddMenubarItemTag</tag-class>
         <body-content>empty</body-content>
-        
+
         <attribute>
             <description>Menubar item identifier.</description>
             <name>id</name>
@@ -180,7 +191,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item label internationalization property key.</description>
             <name>labelKey</name>
@@ -188,7 +199,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item order value.</description>
             <name>order</name>
@@ -196,7 +207,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Integer</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item URL.</description>
             <name>url</name>
@@ -204,7 +215,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item onclick event.</description>
             <name>onclick</name>
@@ -212,7 +223,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item HTML class.</description>
             <name>htmlClass</name>
@@ -220,7 +231,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item URL target.</description>
             <name>target</name>
@@ -228,7 +239,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item glyphicon.</description>
             <name>glyphicon</name>
@@ -236,7 +247,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-        
+
         <attribute>
             <description>Menubar item AJAX indicator. Default = true</description>
             <name>ajax</name>

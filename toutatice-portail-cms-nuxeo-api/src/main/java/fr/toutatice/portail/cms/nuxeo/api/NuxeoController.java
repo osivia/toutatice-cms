@@ -29,6 +29,7 @@ import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -144,7 +145,6 @@ public class NuxeoController {
     public HttpServletRequest getServletRequest() {
         return this.servletRequest;
     }
-
 
 
     public void setServletRequest(HttpServletRequest servletRequest) {
@@ -723,8 +723,6 @@ public class NuxeoController {
             }
 
 
-
-
             String displayLiveVersionParam = request.getParameter("displayLiveVersion");
             if (displayLiveVersionParam != null) {
                 displayLiveVersion = displayLiveVersionParam;
@@ -758,13 +756,12 @@ public class NuxeoController {
 
             this.basePath = window.getPageProperty("osivia.cms.basePath");
 
-            if( this.basePath != null) {
+            if (this.basePath != null) {
                 String[] parts = this.basePath.split("/");
-                if( (parts != null) && (parts.length > 0)) {
-                    this.domainPath = "/" + parts[ 1];
+                if ((parts != null) && (parts.length > 0)) {
+                    this.domainPath = "/" + parts[1];
                 }
-             }
-
+            }
 
 
             this.navigationPath = request.getParameter("osivia.cms.path");
@@ -1036,7 +1033,6 @@ public class NuxeoController {
             }
 
 
-
         }
 
         return computedPath;
@@ -1159,9 +1155,9 @@ public class NuxeoController {
      * @throws CMSException the CMS exception
      */
 
-    public boolean isIdOrPathInLiveState( String originalPath){
+    public boolean isIdOrPathInLiveState(String originalPath) {
 
-        if( this.isDisplayingLiveVersion()) {
+        if (this.isDisplayingLiveVersion()) {
             return true;
         }
 
@@ -1172,8 +1168,8 @@ public class NuxeoController {
             if (originalPath.startsWith("/")) {
                 path = originalPath;
             } else {
-                 CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
-                 path = pubInfos.getDocumentPath();
+                CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
+                path = pubInfos.getDocumentPath();
             }
 
 
@@ -1186,7 +1182,6 @@ public class NuxeoController {
     }
 
 
-
     /**
      * Checks if current doc is in edition state.
      *
@@ -1196,9 +1191,9 @@ public class NuxeoController {
      */
 
 
-    public boolean isPathInLiveState(Document doc){
+    public boolean isPathInLiveState(Document doc) {
 
-        if( this.isDisplayingLiveVersion()) {
+        if (this.isDisplayingLiveVersion()) {
             return true;
         }
 
@@ -1215,8 +1210,7 @@ public class NuxeoController {
      */
 
 
-
-    public boolean isPathInPageEditionState( String path)  {
+    public boolean isPathInPageEditionState(String path) {
 
         try {
             if (path.equals(this.getNavigationPath())) {
@@ -1229,7 +1223,7 @@ public class NuxeoController {
             }
 
 
-            if( this.getRequest() != null)  {
+            if (this.getRequest() != null) {
                 EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
                 if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
                     return true;
@@ -1243,8 +1237,6 @@ public class NuxeoController {
 
         return false;
     }
-
-
 
 
     /**
@@ -1393,7 +1385,6 @@ public class NuxeoController {
             resourceURL.setParameter("docPath", path);
 
 
-
             if (liveState) {
                 resourceURL.setParameter("displayLiveVersion", "1");
             }
@@ -1411,9 +1402,9 @@ public class NuxeoController {
 
             return resourceURL.toString();
 
-    } catch (Exception e) {
-        throw this.wrapNuxeoException(e);
-    }
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
     }
 
     /**
@@ -1599,7 +1590,6 @@ public class NuxeoController {
     }
 
 
-
     /**
      * Generates a link to the target path.
      *
@@ -1680,8 +1670,8 @@ public class NuxeoController {
             String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
 
 
-            String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path,
-                    pageParams, localContextualization, displayContext, this.getHideMetaDatas(), null, this.getDisplayLiveVersion(), null);
+            String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams,
+                    localContextualization, displayContext, this.getHideMetaDatas(), null, this.getDisplayLiveVersion(), null);
 
 
             if (url != null) {
@@ -1699,8 +1689,6 @@ public class NuxeoController {
     }
 
 
-
-
     /**
      * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
      *
@@ -1711,10 +1699,10 @@ public class NuxeoController {
 
     public String getContentWebIdPath() {
 
-       INuxeoService nuxeoService = this.getNuxeoCMSService();
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
 
-       String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(this.getCMSCtx());
-       return path;
+        String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(this.getCMSCtx());
+        return path;
     }
 
     /**
@@ -1792,7 +1780,7 @@ public class NuxeoController {
 
             // Prévisualisation des portlets définis au niveau du template
             if (this.isPathInPageEditionState(path)) {
-                 cmsCtx.setDisplayLiveVersion("1");
+                cmsCtx.setDisplayLiveVersion("1");
             }
 
             if (reload) {
@@ -1840,7 +1828,6 @@ public class NuxeoController {
     }
 
 
-
     /**
      * Get the query filter
      *
@@ -1848,14 +1835,14 @@ public class NuxeoController {
      * @return applie live filters to the query
      * @throws Exception the exception
      */
-    public NuxeoQueryFilterContext getQueryFilterContextForPath( String path) {
+    public NuxeoQueryFilterContext getQueryFilterContextForPath(String path) {
 
         NuxeoQueryFilterContext queryCtx = new NuxeoQueryFilterContext();
 
         try {
             CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), path);
 
-            if( pubInfos.isLiveSpace() )    {
+            if (pubInfos.isLiveSpace()) {
                 queryCtx.setState(NuxeoQueryFilterContext.STATE_LIVE);
             }
 
@@ -1875,7 +1862,7 @@ public class NuxeoController {
      * @return the parent path
      * @throws Exception the exception
      */
-    public String getParentPath(String path)  {
+    public String getParentPath(String path) {
         // One level up
         CMSObjectPath parentPath = CMSObjectPath.parse(path).getParent();
         return parentPath.toString();
@@ -1964,15 +1951,30 @@ public class NuxeoController {
      */
     public String createWebIdLink(String webid, String content) {
         try {
+            HttpServletRequest servletRequest = (HttpServletRequest) this.request.getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
+            String rendering = servletRequest.getParameter("_rendering");
 
-            if (this.getRequest().getUserPrincipal() == null) {
+            if ((this.getRequest().getUserPrincipal() == null) || StringUtils.isNotEmpty(rendering)) {
                 // Serve anonymous resource by servlet
-
-                String url = this.getRequest().getContextPath() + "/sitepicture?" + "path=" + URLEncoder.encode(webid, "UTF-8");
-                if( content != null) {
-                    url += "&content=" + content;
+                StringBuilder url = new StringBuilder();
+                if (StringUtils.isNotEmpty(rendering)) {
+                    url.append(this.request.getScheme());
+                    url.append("://");
+                    url.append(this.request.getServerName());
+                    url.append(":");
+                    url.append(this.request.getServerPort());
                 }
-                return url;
+
+                url.append(this.getRequest().getContextPath());
+                url.append("/sitepicture?path=");
+                url.append(URLEncoder.encode(webid, "UTF-8"));
+
+                if (content != null) {
+                    url.append("&content=");
+                    url.append(content);
+                }
+
+                return url.toString();
             }
 
             ResourceURL resourceURL = this.createResourceURL();
@@ -2021,14 +2023,14 @@ public class NuxeoController {
 
         this.cmsCtx = new CMSServiceCtx();
 
-        if( this.getRequest() != null)  {
+        if (this.getRequest() != null) {
 
             this.cmsCtx.setRequest(this.getRequest());
             this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
-                this.getResponse())));
+                    this.getResponse())));
         }
 
-        if( this.getServletRequest() != null) {
+        if (this.getServletRequest() != null) {
             this.cmsCtx.setServletRequest(this.servletRequest);
         }
 
@@ -2043,14 +2045,14 @@ public class NuxeoController {
 
 
         // Preview mode
-        if( this.getRequest() != null)  {
+        if (this.getRequest() != null) {
             EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
             if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
                 this.cmsCtx.setForcedLivePath(editionState.getDocPath());
             }
         }
 
-        if( this.getRequest() != null)  {
+        if (this.getRequest() != null) {
             this.cmsCtx.setPageId(this.getPageId());
         }
         this.cmsCtx.setDoc(this.getCurrentDoc());
@@ -2123,7 +2125,7 @@ public class NuxeoController {
     public Link getUserAvatar(String username) throws CMSException {
         return getCMSService().getUserAvatar(this.getCMSCtx(), username);
 
-	}
+    }
 
     /**
      * Refresh the user avatar (acceded from portlets).

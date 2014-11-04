@@ -10,11 +10,21 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.core.model.portal.Page;
+import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
  * Nuxeo document link tag.
@@ -32,8 +42,14 @@ public class DocumentLinkTag extends SimpleTagSupport {
     private String displayContext;
     /** Picture document indicator. */
     private Boolean picture;
+    /** Permalink indicator. */
+    private Boolean permalink;
     /** Request variable name. */
     private String var;
+
+
+    /** WebId service. */
+    private final IWebIdService webIdService;
 
 
     /**
@@ -41,6 +57,9 @@ public class DocumentLinkTag extends SimpleTagSupport {
      */
     public DocumentLinkTag() {
         super();
+
+        // WebId service
+        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
     }
 
 
@@ -68,6 +87,35 @@ public class DocumentLinkTag extends SimpleTagSupport {
                     String path = nuxeoDocument.getPath();
                     String url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));
                     link = new Link(url, false);
+                } else if (BooleanUtils.isTrue(this.permalink)) {
+                    // Portal controller context
+                    PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+
+                    // Page
+                    Page page = null;
+                    Window window = (Window) nuxeoController.getRequest().getAttribute("osivia.window");
+                    if (window != null) {
+                         page = window.getPage();
+                    }
+
+                    try {
+                        String path = this.document.getPath();
+                        if (PortalObjectUtils.isSpaceSite(page)) {
+                            CMSService cmsService = (CMSService) NuxeoController.getCMSService();
+                            CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+                            CMSItem cmsItem = cmsService.createItem(cmsContext, this.document.getPath(), null, nuxeoDocument);
+
+                            if (StringUtils.isNotEmpty(cmsItem.getDomainId()) && StringUtils.isNotEmpty(cmsItem.getWebId())) {
+                                path = this.webIdService.itemToPageUrl(cmsContext, cmsItem);
+                            }
+                        }
+
+                        String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, null, null, path,
+                                IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                        link = new Link(url, false);
+                    } catch (Exception e) {
+                        link = new Link("#", false);
+                    }
                 } else {
                     link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(this.displayContext));
                 }
@@ -158,6 +206,24 @@ public class DocumentLinkTag extends SimpleTagSupport {
      */
     public void setPicture(Boolean picture) {
         this.picture = picture;
+    }
+
+    /**
+     * Getter for permalink.
+     *
+     * @return the permalink
+     */
+    public Boolean getPermalink() {
+        return this.permalink;
+    }
+
+    /**
+     * Setter for permalink.
+     *
+     * @param permalink the permalink to set
+     */
+    public void setPermalink(Boolean permalink) {
+        this.permalink = permalink;
     }
 
     /**
