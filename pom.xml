@@ -10,7 +10,7 @@
 
 
     <properties>
-        <osivia-portal.version>3.4.0-RC4</osivia-portal.version>
+        <osivia-portal.version>3.4.0-SNAPSHOT</osivia-portal.version>
         <!-- <nuxeo.automation.version>5.6.0-HF29</nuxeo.automation.version> -->
         
         <jboss.portal.version>2.7.2</jboss.portal.version>
