@@ -29,7 +29,6 @@ import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -1924,6 +1923,7 @@ public class NuxeoController {
         }
     }
 
+
     /**
      * Fetch file content.
      *
@@ -1933,14 +1933,12 @@ public class NuxeoController {
      */
     public CMSBinaryContent fetchFileContent(String docPath, String fieldName) {
         try {
-
-
             return getCMSService().getBinaryContent(this.getCMSCtx(), "file", docPath, fieldName);
-
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
     }
+
 
     /**
      * Fetch web url.
@@ -1952,12 +1950,14 @@ public class NuxeoController {
     public String createWebIdLink(String webid, String content) {
         try {
             HttpServletRequest servletRequest = (HttpServletRequest) this.request.getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
-            String rendering = servletRequest.getParameter("_rendering");
 
-            if ((this.getRequest().getUserPrincipal() == null) || StringUtils.isNotEmpty(rendering)) {
+            // Parameterized permalinks indicator
+            Boolean permalinks = (Boolean) servletRequest.getAttribute(InternalConstants.PARAMETERIZED_PERMALINKS_ATTRIBUTE);
+            
+            if ((this.getRequest().getUserPrincipal() == null) || BooleanUtils.isTrue(permalinks)) {
                 // Serve anonymous resource by servlet
                 StringBuilder url = new StringBuilder();
-                if (StringUtils.isNotEmpty(rendering)) {
+                if (BooleanUtils.isTrue(permalinks)) {
                     url.append(this.request.getScheme());
                     url.append("://");
                     url.append(this.request.getServerName());
