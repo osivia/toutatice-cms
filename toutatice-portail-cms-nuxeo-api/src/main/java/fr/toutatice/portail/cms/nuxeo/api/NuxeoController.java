@@ -1949,11 +1949,9 @@ public class NuxeoController {
      */
     public String createWebIdLink(String webid, String content) {
         try {
-            HttpServletRequest servletRequest = (HttpServletRequest) this.request.getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
-
             // Parameterized permalinks indicator
-            Boolean permalinks = (Boolean) servletRequest.getAttribute(InternalConstants.PARAMETERIZED_PERMALINKS_ATTRIBUTE);
-            
+            Boolean permalinks = (Boolean) this.request.getAttribute(InternalConstants.PARAMETERIZED_PERMALINKS_ATTRIBUTE);
+
             if ((this.getRequest().getUserPrincipal() == null) || BooleanUtils.isTrue(permalinks)) {
                 // Serve anonymous resource by servlet
                 StringBuilder url = new StringBuilder();
