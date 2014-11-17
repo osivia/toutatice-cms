@@ -88,6 +88,30 @@
     </xsl:template>
 
 
+    <xsl:template match="VIDEO[@class = 'wivibox']">
+        <xsl:element name="div">
+            <xsl:attribute name="class">hidden</xsl:attribute>
+            
+            <xsl:element name="div">
+                <xsl:attribute name="id"><xsl:value-of select="generate-id(.)" /></xsl:attribute>
+            </xsl:element>
+        </xsl:element>
+    
+        <xsl:element name="a">
+            <xsl:attribute name="href">#<xsl:value-of select="generate-id(.)" /></xsl:attribute>
+            <xsl:attribute name="class">thumbnail fancybox_inline</xsl:attribute>
+            <xsl:attribute name="onclick">launchPlayer('<xsl:value-of select="generate-id(.)" />', '<xsl:value-of select="@src" />')</xsl:attribute>
+            
+            <xsl:element name="img">
+                <xsl:attribute name="src"><xsl:value-of select="@poster" /></xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
+                <xsl:attribute name="class">img-responsive</xsl:attribute>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
+
+
     <xsl:template match="@src">
         <xsl:attribute name="src">
          	<xsl:value-of select="bridge:link($bridge,  .)" />
