@@ -1149,11 +1149,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (StringUtils.startsWith(url, "/nuxeo/")) {
             // Nuxeo URL
+            String nuxeoURL = StringUtils.substringBefore(url, "#");
+            // Anchor
+            String anchor = StringUtils.substringAfter(url, "#");
 
             // CMS path
-            String cmsPath = this.transformNuxeoURL(cmsContext, url);
+            String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
             // Portal URL
             String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, cmsPath, null, null, null, null, null, null, null);
+            if (StringUtils.isNotBlank(anchor)) {
+                portalURL += "#" + anchor;
+            }
 
             link = new Link(portalURL, false);
         } else if (StringUtils.isBlank(url)) {
