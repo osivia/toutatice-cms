@@ -465,6 +465,11 @@ public class VocabSelectorPortlet extends CMSPortlet {
                     }             
                 }
             } else {
+                if( "1".equals(selectorMonoValued))  {
+                    vocab1Id= null;
+                    vocab2Id=null;
+                    vocab3Id=null;
+                }
                 request.setAttribute("vocabsId", new ArrayList<String>());
             }
 
