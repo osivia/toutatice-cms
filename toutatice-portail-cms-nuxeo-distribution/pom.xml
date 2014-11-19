@@ -83,6 +83,17 @@
 			<artifactId>ehcache</artifactId>
 			<version>${ehcache.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>displaytag</groupId>
+			<artifactId>displaytag</artifactId>
+			<version>${displaytag.version}</version>			
+		</dependency>
+		<dependency>
+			<groupId>displaytag</groupId>
+			<artifactId>displaytag-portlet</artifactId>
+			<version>${displaytag.version}</version>
+		</dependency>
 
     </dependencies>
 
@@ -144,8 +155,15 @@
                                 					net.sf.ehcache,
                                 					net.sf.json-lib,
                                 					org.codehaus.jackson,
-                                					aopalliance
-                                					</includeGroupIds>
+                                					aopalliance,
+                                					displaytag
+                                	</includeGroupIds>
+                                	
+                                	<!-- exclude slf4j in conflict with JBP libs -->
+                                	<excludeArtifactIds>
+                                		jcl104-over-slf4j,
+                                		slf4j-log4j12
+                                	</excludeArtifactIds>
                                 </configuration>
                             </execution>
                         </executions>

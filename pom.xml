@@ -19,6 +19,7 @@
         <org.springframework.version>3.2.11.RELEASE</org.springframework.version>
         <json.version>2.4</json.version>
         <jackson.version>1.8.1</jackson.version>
+        <displaytag.version>1.2</displaytag.version>
         
         <apache.httpcomponents.version>4.1</apache.httpcomponents.version>
     
