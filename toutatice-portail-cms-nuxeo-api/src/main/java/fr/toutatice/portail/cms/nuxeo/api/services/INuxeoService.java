@@ -28,6 +28,8 @@ import org.osivia.portal.core.cms.spi.ICMSIntegration;
  */
 public interface INuxeoService extends ICMSIntegration {
 	
+	String MBEAN_NAME = "osivia:service=NuxeoService";
+
 	/**
 	 * Creates the user session.
 	 *

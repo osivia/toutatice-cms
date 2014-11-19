@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.portlet.GenericPortlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
@@ -34,7 +33,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.core.cms.CMSBinaryContent;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
@@ -42,27 +45,49 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 /**
  * Superclass for CMS Portlet.
  */
-public class CMSPortlet extends GenericPortlet {
+public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /** The logger. */
     protected static Log logger = LogFactory.getLog(CMSPortlet.class);
 
     /** The nuxeo navigation service. */
-    INuxeoService nuxeoNavigationService;
+	private final INuxeoService nuxeoService;
+
+	private final ICMSServiceLocator cmsServiceLocator;
+
+	public CMSPortlet() {
+		super();
+
+		cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+		nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+	}
+
+	public ICMSService getCMSService() {
+		return cmsServiceLocator.getCMSService();
+	}
+
 
     /**
-     * Gets the nuxeo navigation service.
-     * 
-     * @return the nuxeo navigation service
-     * @throws Exception the exception
-     */
-    public INuxeoService getNuxeoNavigationService() throws Exception {
+	 * @return the nuxeoService
+	 */
+	public INuxeoService getNuxeoService() {
+		return nuxeoService;
+	}
 
-        if (this.nuxeoNavigationService == null) {
-            this.nuxeoNavigationService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
-        }
 
-        return this.nuxeoNavigationService;
+	/**
+	 * Gets the nuxeo navigation service.
+	 * 
+	 * @return the nuxeo navigation service
+	 * @deprecated see getNuxeoService
+	 * @throws Exception
+	 *             the exception
+	 */
+    @Deprecated
+	public INuxeoService getNuxeoNavigationService() throws Exception {
+
+
+		return this.nuxeoService;
 
     }
 
