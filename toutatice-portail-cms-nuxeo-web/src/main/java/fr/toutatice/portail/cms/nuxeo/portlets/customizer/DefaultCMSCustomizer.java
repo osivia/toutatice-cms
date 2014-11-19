@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -182,7 +183,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Directory service. */
     private IDirectoryService directoryService;
 
-    private Map<String, String> avatarMap = new HashMap<String, String>();
+    /** Avatar map. */
+    private Map<String, String> avatarMap = new ConcurrentHashMap<String, String>();
 
 
     /**
