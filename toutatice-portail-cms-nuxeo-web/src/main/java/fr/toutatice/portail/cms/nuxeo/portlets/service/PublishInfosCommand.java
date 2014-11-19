@@ -117,7 +117,12 @@ public class PublishInfosCommand implements INuxeoCommand {
                 if (infos.containsKey("driveEditURL")) {
                     publiInfos.setDriveEditURL(this.adaptType(String.class, infos.get("driveEditURL")));
                 }
-
+                if (infos.containsKey("canCheckOut")) {
+                    publiInfos.setCanCheckOut(adaptBoolean(infos.get("canCheckOut")));
+                }
+                if (infos.containsKey("canCheckIn")) {
+                    publiInfos.setCanCheckIn(adaptBoolean(infos.get("canCheckIn")));
+                }
  
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {

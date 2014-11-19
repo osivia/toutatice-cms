@@ -48,6 +48,7 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.urls.EcmCommand;
+import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -171,10 +172,9 @@ public class MenuBarFormater {
             }
 
             if ((cmsCtx.getDoc() != null) && !webPageFragment) {
-                this.getDriveEditUrl(cmsCtx, menubar);
-            }
-            if ((cmsCtx.getDoc() != null) && !webPageFragment) {
+                //this.getDriveEditUrl(cmsCtx, menubar);
                 this.getSynchronizeLink(cmsCtx, menubar);
+                this.getCheckInOutLink(cmsCtx, menubar);
             }
 
         } catch (CMSException e) {
@@ -542,33 +542,45 @@ public class MenuBarFormater {
         }
     }
 
-    protected void getDriveEditUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
-        if (cmsCtx.getRequest().getRemoteUser() == null) {
-            return;
-        }
+    /**
+     * 
+     * @param cmsCtx
+     * @param menubar
+     * @throws CMSException
+     */
+//    protected void getDriveEditUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
+//        if (cmsCtx.getRequest().getRemoteUser() == null) {
+//            return;
+//        }
+//
+//        if (!ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+//            return;
+//        }
+//
+//        // Current document
+//        Document document = (Document) cmsCtx.getDoc();
+//        String path = document.getPath();
+//        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+//
+//        if (pubInfos.getDriveEditURL() != null) {
+//            // Internationalization bundle
+//            Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+//
+//            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 4,
+//                    pubInfos.getDriveEditURL(), null, null, null);
+//            driveEditItem.setGlyphicon("halflings play");
+//            driveEditItem.setAjaxDisabled(true);
+//            driveEditItem.setDropdownItem(true);
+//            menubar.add(driveEditItem);
+//        }
+//    }
 
-        if (!ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
-            return;
-        }
-
-        // Current document
-        Document document = (Document) cmsCtx.getDoc();
-        String path = document.getPath();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
-
-        if (pubInfos.getDriveEditURL() != null) {
-            // Internationalization bundle
-            Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-
-            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 4,
-                    pubInfos.getDriveEditURL(), null, null, null);
-            driveEditItem.setGlyphicon("halflings play");
-            driveEditItem.setAjaxDisabled(true);
-            driveEditItem.setDropdownItem(true);
-            menubar.add(driveEditItem);
-        }
-    }
-
+    /**
+     * 
+     * @param cmsCtx
+     * @param menubar
+     * @throws CMSException
+     */
     protected void getSynchronizeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
@@ -590,25 +602,29 @@ public class MenuBarFormater {
         Boolean enableParamter = null;
         String command = null;
         String icon = null;
+        EcmFilesCommand ecmAction = null;
 
         if (pubInfos.isCanSynchronize()) {
             enableParamter = true;
             command = "SYNCHRONIZE";
             icon = "refresh";
+            ecmAction = EcmFilesCommand.synchronizeFolder;
         }
         else if(pubInfos.isCanUnsynchronize()) {
             enableParamter = false;
             command = "UNSYNCHRONIZE";
             icon = "ban-circle";
+            ecmAction = EcmFilesCommand.unsynchronizeFolder;
         }
 
         if (enableParamter != null) {
 
 
 
-            String synchronizeUrl = this.urlFactory.getSynchronizationCommandUrl(
+            
+			String synchronizeUrl = this.urlFactory.getEcmFilesManagementUrl(
 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
-                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), enableParamter);
+                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), ecmAction);
 
 
             MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), MenubarItem.ORDER_PORTLET_GENERIC + 5,
@@ -633,6 +649,74 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
     }
 
+    /**
+     * 
+     * @param cmsCtx
+     * @param menubar
+     * @throws CMSException
+     */
+    protected void getCheckInOutLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
+    	
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        if (!ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+            return;
+        }
+
+        // Current document
+        Document document = (Document) cmsCtx.getDoc();
+        String path = document.getPath();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+
+     // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+        
+        if (pubInfos.isCanCheckOut() || pubInfos.isCanCheckIn()) {
+            
+
+//            String checkOutUrl = this.urlFactory.getEcmFilesManagementUrl(
+//new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+//                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkOut);
+            
+            Map<String, String> requestParameters = new HashMap<String, String>();
+            String openDocumentUrl = cmsService.getEcmUrl(cmsCtx, EcmCommand.openDocument, path, requestParameters);
+            
+            
+			MenubarItem checkOutItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
+					openDocumentUrl , null, "fancyframe_refresh", null);
+            checkOutItem.setGlyphicon("halflings play");
+            checkOutItem.setAjaxDisabled(true);
+            checkOutItem.setDropdownItem(true);
+            menubar.add(checkOutItem);
+        }
+//        else if (pubInfos.isCanCheckIn()) {
+//        	
+//            String checkInUrl = this.urlFactory.getEcmFilesManagementUrl(
+//new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+//                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkIn);
+//            
+//			MenubarItem checkInItem = new MenubarItem("CHECK_IN", bundle.getString("CHECK_IN"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
+//					checkInUrl , null, null, null);
+//            checkInItem.setGlyphicon("halflings record");
+//            checkInItem.setAjaxDisabled(true);
+//            checkInItem.setDropdownItem(true);
+//            menubar.add(checkInItem);
+//            
+//            String checkInUrlAndKeep = this.urlFactory.getEcmFilesManagementUrl(
+//new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+//                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkInAndKeepLocalCopy);
+//            
+//			MenubarItem checkInAndKeepItem = new MenubarItem("CHECK_IN_KEEP", bundle.getString("CHECK_IN_KEEP"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
+//					checkInUrlAndKeep , null, null, null);
+//            checkInAndKeepItem.setGlyphicon("halflings record");
+//            checkInAndKeepItem.setAjaxDisabled(true);
+//            checkInAndKeepItem.setDropdownItem(true);
+//            menubar.add(checkInAndKeepItem);
+//        }
+    }
+    
     /**
      * Get edit CMS content link.
      *

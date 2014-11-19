@@ -46,6 +46,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.EcmCommand;
+import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -74,6 +75,8 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentCheckInCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentCheckOutCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentSetSynchronizationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -1028,7 +1031,7 @@ public class CMSService implements ICMSService {
                  * La mise en cache du résultat de cette méthode
                  * s'effectue de manière asynchrone.
                  */
-                cmsCtx.setAsyncCacheRefreshing(true);
+				// cmsCtx.setAsyncCacheRefreshing(true);
                 cmsCtx.setForcePublicationInfosScope("superuser_context");
 
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
@@ -1039,7 +1042,7 @@ public class CMSService implements ICMSService {
 
             } finally {
                 cmsCtx.setScope(savedScope);
-                cmsCtx.setAsyncCacheRefreshing(false);
+				// cmsCtx.setAsyncCacheRefreshing(false);
                 cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
             }
 
@@ -1689,6 +1692,8 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
         } else if (command == EcmCommand.editFgt) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
+        } else if (command == EcmCommand.openDocument) {
+            url = uri.toString() + "/nxpath/default" + path + "@toutatice_open_document?";            
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         } else if (command == EcmCommand.gotoMediaLibrary) {
@@ -1974,6 +1979,48 @@ public class CMSService implements ICMSService {
         try {
             this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, enable));
 
+            // On force le rechargement du cache de la page
+            cmsCtx.setDisplayLiveVersion("0");
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getEcmFilesUrl(CMSServiceCtx cmsCtx, String pagePath, EcmFilesCommand command) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+        	
+        	if(command.equals(EcmFilesCommand.synchronizeFolder)) {
+        	
+        		this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, true));
+        	}
+        	else if(command.equals(EcmFilesCommand.unsynchronizeFolder)) {
+        		
+        		this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, false));
+        	}
+        	else if(command.equals(EcmFilesCommand.checkOut)) {
+        		
+        		this.executeNuxeoCommand(cmsCtx, new DocumentCheckOutCommand(doc));
+        	}
+        	else if(command.equals(EcmFilesCommand.checkIn)) {
+        		
+        		this.executeNuxeoCommand(cmsCtx, new DocumentCheckInCommand(doc));
+        	}		
+        	
             // On force le rechargement du cache de la page
             cmsCtx.setDisplayLiveVersion("0");
             cmsCtx.setForceReload(true);
