@@ -63,6 +63,7 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>        
 
 	</portlet>
 	
