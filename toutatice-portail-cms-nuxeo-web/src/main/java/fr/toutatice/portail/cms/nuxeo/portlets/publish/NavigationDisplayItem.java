@@ -16,6 +16,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSItem;
 
 /**
@@ -23,6 +25,8 @@ import org.osivia.portal.core.cms.CMSItem;
  */
 public class NavigationDisplayItem {
 
+    /** Item identifier. */
+    private final String id;
     /** The display title of the link. */
     private final String title;
     /** The absolute URL of the link. */
@@ -33,49 +37,61 @@ public class NavigationDisplayItem {
     private final boolean selected;
     /** Current item indicator. */
     private final boolean current;
-    /** CMS item. */
+    /** Navigable item indicator. */
+    private final boolean navigable;
+    /** CMS navigation item. */
     private final CMSItem navItem;
     /** Children. */
     private final List<NavigationDisplayItem> children;
 
 
     /**
-     * Default constructor.
-     */
-	public NavigationDisplayItem() {
-        this(null, "/", false, false, false, null);
-	}
-
-    /**
-     * Canonical constructor.
+     * Constructor.
      *
-     * @param title display title of the link
-     * @param url absolute URL of the link
-     * @param external external link indicator
+     * @param document Nuxeo document
+     * @param link link
      * @param selected selected item indicator
      * @param current current item indicator
-     * @param navItem CMS item
+     * @param navigable navigable item indicator
+     * @param navItem CMS navigation item
      */
-    public NavigationDisplayItem(String title, String url, boolean external, boolean selected, boolean current, CMSItem navItem) {
-		super();
-		this.title = title;
-		this.url = url;
-		this.external = external;
-		this.selected = selected;
+    public NavigationDisplayItem(Document document, Link link, boolean selected, boolean current, boolean navigable, CMSItem navItem) {
+        super();
+        this.id = document.getId();
+        this.title = document.getTitle();
+        this.url = link.getUrl();
+        this.external = link.isExternal();
+        this.selected = selected;
         this.current = current;
-		this.navItem = navItem;
+        this.navigable = navigable;
+        this.navItem = navItem;
         this.children = new ArrayList<NavigationDisplayItem>();
-	}
+    }
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-	public String toString() {
-		return super.toString() + " {" + this.title + ": " + this.url + "}";
-	}
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("NavigationDisplayItem [title=");
+        builder.append(this.title);
+        builder.append(", url=");
+        builder.append(this.url);
+        builder.append("]");
+        return builder.toString();
+    }
 
+
+    /**
+     * Getter for id.
+     *
+     * @return the id
+     */
+    public String getId() {
+        return this.id;
+    }
 
     /**
      * Getter for title.
@@ -115,7 +131,7 @@ public class NavigationDisplayItem {
 
     /**
      * Getter for current.
-     * 
+     *
      * @return the current
      */
     public boolean isCurrent() {
@@ -123,8 +139,17 @@ public class NavigationDisplayItem {
     }
 
     /**
+     * Getter for navigable.
+     *
+     * @return the navigable
+     */
+    public boolean isNavigable() {
+        return this.navigable;
+    }
+
+    /**
      * Getter for navItem.
-     * 
+     *
      * @return the navItem
      */
     public CMSItem getNavItem() {

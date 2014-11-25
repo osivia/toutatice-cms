@@ -1,329 +1,301 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<portlet-app xmlns="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
-   version="2.0">
-   	
-	<portlet>
-	
-	   	<description>Portlet Nuxeo Document PIA</description>
+<portlet-app xmlns="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
+    version="2.0">
+
+    <portlet>
+        <description>Portlet Nuxeo Document PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
         <display-name>Portlet Document Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-   		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms </title>
-			<short-title>Nuxeo Cms Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
-        
 
-        
         <!-- v2.0-SP1 : ajout selecteur -->
-        <supported-public-render-parameter>selectors</supported-public-render-parameter>   
-        
-	</portlet>
-	
-	
-	<portlet>
-	
-	   	<description>Portlet Nuxeo Fragment PIA</description>
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet Nuxeo Fragment PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
         <display-name>Portlet Fragment Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.fragment.ViewFragmentPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-   		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms </title>
-			<short-title>Nuxeo Cms Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
-        
+    </portlet>
 
-	</portlet>
-	
-	
-	<portlet>
-	
-	   	<description>Portlet Nuxeo list</description>
+
+    <portlet>
+        <description>Portlet Nuxeo list</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>
         <display-name>Portlet Liste Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-        
-  		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms </title>
-			<short-title>Nuxeo Cms Liste Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Nuxeo Cms Liste Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
-        
-      <supported-public-render-parameter>selectors</supported-public-render-parameter>
-      
-     
-	</portlet>
-	
-		<portlet>
-	
-	   	<description>Portlet Nuxeo Navigation PIA</description>
+
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet Nuxeo Navigation PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-portalSiteNavigationPortlet</portlet-name>
         <display-name>Portlet Navigation PortalSite Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.portalsite.NavigationPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-        
-  		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms </title>
-			<short-title>Nuxeo  PortalSite Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Nuxeo PortalSite Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
-        
+    </portlet>
 
-	</portlet>
-	
-	
-		<portlet>
-	
-	   	<description>Portlet Nuxeo menu publication PIA</description>
+
+    <portlet>
+        <description>Portlet Nuxeo menu publication PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-name>
         <display-name>Portlet menu publication Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.publish.MenuPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-        
-  		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo publish menu </title>
-			<short-title>Nuxeo  Publish Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS</keywords>
+        <portlet-info>
+            <title>Nuxeo publish menu</title>
+            <short-title>Nuxeo Publish Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
-        
 
-        <supported-public-render-parameter>selectors</supported-public-render-parameter>        
-	</portlet>
-	
-	<portlet>
-	
-	   	<description>Portlet Nuxeo Files</description>
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>dnd-update</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet Nuxeo Files</description>
         <portlet-name>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-name>
         <display-name>Portlet browser files Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-        
-  		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Files browser </title>
-			<short-title>Nuxeo  Files Browser</short-title>
-			<keywords>Portlet,Files</keywords>
+        <portlet-info>
+            <title>Nuxeo Files browser</title>
+            <short-title>Nuxeo Files Browser</short-title>
+            <keywords>Portlet,Files</keywords>
         </portlet-info>
 
-	</portlet>	
-	
-	
-	<portlet>
-	
-	   	<description>Portlet Search</description>
+        <supported-public-render-parameter>dnd-update</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet Search</description>
         <portlet-name>toutatice-portail-cms-nuxeo-searchPortlet</portlet-name>
         <display-name>Portlet search Nuxeo</display-name>
-		
-        <portlet-class> fr.toutatice.portail.cms.nuxeo.portlets.search.SearchPortlet</portlet-class>
-        
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.search.SearchPortlet</portlet-class>
+
         <expiration-cache>180</expiration-cache>
-  		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Search </title>
-			<short-title>Nuxeo  Search </short-title>
-			<keywords>Portlet,Search</keywords>
+        <portlet-info>
+            <title>Nuxeo Search</title>
+            <short-title>Nuxeo Search</short-title>
+            <keywords>Portlet,Search</keywords>
         </portlet-info>
-        
-      <supported-public-render-parameter>osivia.keywords</supported-public-render-parameter>       
-      
-  
-	</portlet>	
-	
-	<portlet>
-	
-	   	<description>Portlet selecteur mots cles PIA</description>
+
+        <supported-public-render-parameter>osivia.keywords</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet selecteur mots cles PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-keywordsSelectorPortlet</portlet-name>
         <display-name>Sélecteur mots cles Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.KeywordsSelectorPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-   		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms Keywords Selector</title>
-			<short-title>Nuxeo Cms Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS,Keywords</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms Keywords Selector</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS,Keywords</keywords>
         </portlet-info>
-       
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        
+    </portlet>
 
-          
-	</portlet>
-	
-	<portlet>
-	
-	   	<description>TTC Portlet selecteur dates</description>
+
+    <portlet>
+        <description>TTC Portlet selecteur dates</description>
         <portlet-name>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-name>
         <display-name>Sélecteur dates Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-   		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms Date Selector</title>
-			<short-title>Nuxeo Cms Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS,Date</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms Date Selector</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS,Date</keywords>
         </portlet-info>
-       
-        <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        
 
-	</portlet>
-	
-	<portlet>
-	
-	   	<description>Portlet selecteur vocabulaire PIA</description>
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+    </portlet>
+
+
+    <portlet>
+        <description>Portlet selecteur vocabulaire PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-name>
         <display-name>Sélecteur vocabulaire Nuxeo</display-name>
-		
+
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet</portlet-class>
-        
+
         <expiration-cache>180</expiration-cache>
-   		        
+
         <supports>
-			<mime-type>text/html</mime-type>
-          	<portlet-mode>view</portlet-mode>
-			<portlet-mode>admin</portlet-mode>
- 		</supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
 
         <supported-locale>en</supported-locale>
-    	<supported-locale>fr</supported-locale>        
+        <supported-locale>fr</supported-locale>
 
-		<portlet-info>
-			<title>Nuxeo Cms Vocabulary Selector</title>
-			<short-title>Nuxeo Cms Portlet</short-title>
-			<keywords>Portlet,Nuxeo,CMS,Vocabularu</keywords>
+        <portlet-info>
+            <title>Nuxeo Cms Vocabulary Selector</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS,Vocabularu</keywords>
         </portlet-info>
-       
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        
+    </portlet>
 
-          
-	</portlet>	
-	
 
-	
-	<public-render-parameter>
+    <public-render-parameter>
         <identifier>selectors</identifier>
         <name>selectors</name>
-	</public-render-parameter>
-	
-	<public-render-parameter>
+    </public-render-parameter>
+
+    <public-render-parameter>
         <identifier>osivia.keywords</identifier>
         <name>osivia.keywords</name>
-	</public-render-parameter>	
-	
+    </public-render-parameter>
 
-		
-	
- </portlet-app>
+    <public-render-parameter>
+        <identifier>dnd-update</identifier>
+        <name>dnd-update</name>
+    </public-render-parameter>
+
+</portlet-app>

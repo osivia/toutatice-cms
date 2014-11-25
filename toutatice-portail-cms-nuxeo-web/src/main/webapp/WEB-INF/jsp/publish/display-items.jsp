@@ -15,15 +15,21 @@
         <c:if test="${child.external}">
             <c:set var="target" value="_blank" />
         </c:if>
-        
+
         <!-- Current item ? -->
         <c:remove var="current" />
         <c:if test="${child.current}">
             <c:set var="current" value="active" />
         </c:if>
+
+        <!-- Navigable item ? -->
+        <c:remove var="navigable" />
+        <c:if test="${child.navigable && not child.current}">
+            <c:set var="navigable" value="droppable" />
+        </c:if>
+
     
-    
-        <li class="list-group-item">
+        <li class="list-group-item ${navigable}" data-id="${child.id}">
             <!-- Button -->
             <c:if test="${not empty child.children}">
                 <button type="button" class="btn btn-default hidden-noscript">
@@ -43,7 +49,7 @@
             <a href="${child.url}" target="${target}" class="list-group-item ${current}">            
                 <span>${child.title}</span>
                 <c:if test="${child.external}">
-                    <span class="glyphicon glyphicon-new-window"></span>
+                    <span class="glyphicons halflings new_window"></span>
                 </c:if>
             </a>
             

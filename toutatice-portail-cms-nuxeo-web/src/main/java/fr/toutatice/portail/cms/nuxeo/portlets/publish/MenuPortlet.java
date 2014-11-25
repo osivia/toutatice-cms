@@ -51,11 +51,13 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.security.CmsPermissionHelper;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
  * Publication menu portlet.
@@ -127,9 +129,34 @@ public class MenuPortlet extends CMSPortlet {
      */
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        if ("admin".equals(request.getPortletMode().toString())) {
+        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View
+
+            if ("drop".equals(action)) {
+                // Drop action
+
+                // Source
+                String sourceId = request.getParameter("sourceId");
+                // Target
+                String targetId = request.getParameter("targetId");
+
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+
+                // Move document command
+                INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
+                nuxeoController.executeNuxeoCommand(command);
+
+                // Update public render parameter for associated portlets refresh
+                response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+            }
+
+        } else if ("admin".equals(request.getPortletMode().toString())) {
+            // Admin
+
             if ("save".equals(action)) {
                 // Save action
 
@@ -344,8 +371,7 @@ public class MenuPortlet extends CMSPortlet {
      * @throws CMSException
      */
     private NavigationDisplayItem getDisplayItem(NuxeoController nuxeoController, CMSServiceCtx cmsContext, int level, int maxLevel, int startLevel,
-            String spacePath,
-            String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws CMSException {
+            String spacePath, String basePath, String nuxeoPath, boolean isParentNavigable, int partialOpenLevels) throws CMSException {
         // TODO : factoriser dans NuxeoController
 
         // CMS service
@@ -369,6 +395,9 @@ public class MenuPortlet extends CMSPortlet {
         boolean selected = false;
         // Current item
         boolean current = false;
+        // Navigable item
+        boolean navigable = "1".equals(navItem.getProperties().get("navigationElement"));
+
 
         if (itemPath != null) {
             if (itemPath.startsWith(navPath) && isParentNavigable) {
@@ -391,18 +420,18 @@ public class MenuPortlet extends CMSPortlet {
         // Navigation display item
         NavigationDisplayItem displayItem;
         if ((level + 1) >= startLevel) {
-            displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(), selected, current, navItem);
+            displayItem = new NavigationDisplayItem(doc, link, selected, current, navigable, navItem);
 
             // Add children
             List<NavigationDisplayItem> displayChildren = this.getDisplayItemChildren(nuxeoController, cmsContext, level, maxLevel, startLevel, spacePath,
-                    basePath, nuxeoPath, partialOpenLevels, navItem, doc, selected);
+                    basePath, nuxeoPath, partialOpenLevels, navigable, doc, selected);
             displayItem.getChildren().addAll(displayChildren);
         } else if (selected) {
             displayItem = null;
 
             // Search selected child
             List<NavigationDisplayItem> displayItemChildren = this.getDisplayItemChildren(nuxeoController, cmsContext, level, maxLevel, startLevel, spacePath,
-                    basePath, nuxeoPath, partialOpenLevels, navItem, doc, selected);
+                    basePath, nuxeoPath, partialOpenLevels, navigable, doc, selected);
 
             for (NavigationDisplayItem displayItemChild : displayItemChildren) {
                 if (displayItemChild.isSelected()) {
@@ -412,7 +441,7 @@ public class MenuPortlet extends CMSPortlet {
             }
 
             if ((displayItem == null) && (level == 0)) {
-                displayItem = new NavigationDisplayItem(doc.getTitle(), link.getUrl(), link.isExternal(), selected, current, navItem);
+                displayItem = new NavigationDisplayItem(doc, link, selected, current, navigable, navItem);
             }
         } else {
             displayItem = null;
@@ -434,14 +463,14 @@ public class MenuPortlet extends CMSPortlet {
      * @param basePath base path
      * @param nuxeoPath Nuxeo path
      * @param partialOpenLevels partial open levels
-     * @param navItem navigation item
+     * @param navigable navigable item indicator
      * @param doc Nuxeo document
      * @param selected selected indicator
      * @return navigation display item children
      * @throws CMSException
      */
     private List<NavigationDisplayItem> getDisplayItemChildren(NuxeoController nuxeoController, CMSServiceCtx cmsContext, int level, int maxLevel,
-            int startLevel, String spacePath, String basePath, String nuxeoPath, int partialOpenLevels, CMSItem navItem, Document doc,
+            int startLevel, String spacePath, String basePath, String nuxeoPath, int partialOpenLevels, boolean navigable, Document doc,
             boolean selected) throws CMSException {
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
@@ -459,7 +488,7 @@ public class MenuPortlet extends CMSPortlet {
             for (CMSItem child : navItems) {
                 if ("1".equals(child.getProperties().get("menuItem"))) {
                     NavigationDisplayItem newItem = this.getDisplayItem(nuxeoController, cmsContext, level + 1, maxLevel, startLevel, spacePath, basePath,
-                            child.getPath(), "1".equals(navItem.getProperties().get("navigationElement")), partialOpenLevels);
+                            child.getPath(), navigable, partialOpenLevels);
                     if (newItem != null) {
                         displayChildren.add(newItem);
                     }

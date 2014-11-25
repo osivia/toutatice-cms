@@ -1,0 +1,68 @@
+//
+// Toutatice CMS - Menu
+// --------------------------------------------------
+
+
+// Bootstrap variables and mixins
+@import "bootstrap/variables.less";
+@import "bootstrap/mixins.less";
+
+
+.nuxeo-publish-navigation {
+    nav > a {
+        margin-bottom: 3px;
+    }
+    
+    ul.list-group {
+        li.list-group-item {
+            position: relative;
+            
+            .btn {
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                z-index: 3;
+                
+                @media screen and (min-width: @screen-sm-min) {
+                    top: 9px;
+                    
+                    font-size: 12px;
+                    padding: 1px 5px;
+                }
+            }
+            
+            a.list-group-item {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                
+                padding-left: 47px;
+                
+                @media screen and (min-width: @screen-sm-min) {
+                    padding-left: 30px;
+                }
+            }
+            
+            &.droppable-active {
+                & > a.list-group-item {
+                    color: @state-info-text;
+                }
+            }
+            
+            &.droppable-hover {
+                & > a.list-group-item {
+                    background-color: @state-info-bg;
+                    color: @state-info-text;
+                }
+            }
+        }
+        
+        ul.list-group {
+            li.list-group-item {
+                .btn {
+                    left: 8px;
+                }
+            }
+        }
+    }
+}

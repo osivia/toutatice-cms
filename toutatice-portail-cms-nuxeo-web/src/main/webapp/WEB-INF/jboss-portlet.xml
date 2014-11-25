@@ -75,7 +75,7 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
+            <link rel="stylesheet" href="/css/generated/menu.min.css" />
             <script type="text/javascript" src="/js/utils.js" />
         </header-content>
         
@@ -96,6 +96,7 @@
 
         <header-content>
             <link rel="stylesheet" href="/css/generated/file-browser.min.css" />
+            <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
             
             <!-- JQuery UI -->
             <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>

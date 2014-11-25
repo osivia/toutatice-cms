@@ -57,7 +57,7 @@ public class GetFolderFilesCommand implements INuxeoCommand {
         nuxeoRequest.append("AND ecm:primaryType != 'Workspace' ");
         nuxeoRequest.append("AND ecm:primaryType != 'WorkspaceRoot' ");
         nuxeoRequest.append("AND ecm:primaryType != 'PortalSite' ");
-        nuxeoRequest.append("ORDER BY ecm:pos");
+        nuxeoRequest.append("ORDER BY ecm:pos ASC");
 
         // Query filter
         NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE,
