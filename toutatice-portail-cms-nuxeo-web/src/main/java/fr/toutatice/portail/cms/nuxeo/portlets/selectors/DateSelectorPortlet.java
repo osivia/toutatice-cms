@@ -178,7 +178,6 @@ public class DateSelectorPortlet extends CMSPortlet {
         }
         
 
-        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal

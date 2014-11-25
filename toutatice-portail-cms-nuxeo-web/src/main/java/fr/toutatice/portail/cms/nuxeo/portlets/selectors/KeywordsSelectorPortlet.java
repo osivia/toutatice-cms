@@ -176,7 +176,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
             if ((keywords != null) && (keywords.size() > occ)) {
 
                 keywords.remove(occ);
-                selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                 
+           
                 res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL

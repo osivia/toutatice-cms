@@ -171,7 +171,6 @@ public class VocabSelectorPortlet extends CMSPortlet {
 				List<String> vocabs = selectors.get(req.getParameter("selectorId"));
 				if((vocabs != null) && (vocabs.size() > 0)){
 					vocabs.clear();
-	                selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));					
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				}
 			}
@@ -251,7 +250,6 @@ public class VocabSelectorPortlet extends CMSPortlet {
                 }
 
 
-		        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
 				String vocab1Id = req.getParameter("vocab1Id");
@@ -290,7 +288,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
 			if ((vocabIds != null) && (vocabIds.size() > occ)) {
 
 				vocabIds.remove(occ);
-				selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
+
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL
