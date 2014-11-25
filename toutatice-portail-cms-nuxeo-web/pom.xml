@@ -54,6 +54,27 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.lesscss</groupId>
+                <artifactId>lesscss-maven-plugin</artifactId>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/less</sourceDirectory>
+                    <outputDirectory>${project.basedir}/src/main/webapp/css/generated</outputDirectory>
+                    <compress>true</compress>
+                    <includes>
+                        <include>*.less</include>
+                    </includes>
+                    <outputFileFormat>{fileName}.min.css</outputFileFormat>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>

@@ -95,8 +95,11 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <link rel="stylesheet" href="/css/generated/file-browser.min.css" />
+            
+            <!-- JQuery UI -->
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
         </header-content>
         
         <portlet-info>
@@ -179,8 +182,10 @@
         <header-content>
             <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
             <script type="text/javascript" src="/js/utils.js" />
-            <link type="text/css" href="/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet" />
-            <script type="text/javascript" src="/js/jquery-ui-1.8.16.custom.min.js"></script>
+            
+            <!-- JQuery UI -->
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
         </header-content>
         
         <portlet-info>

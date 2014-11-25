@@ -59,7 +59,6 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.SubType;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
@@ -847,7 +846,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
             // Sub-types
             Map<String, String> subTypes = pubInfos.getSubTypes();
-            List<SubType> portalDocsToCreate = new ArrayList<SubType>();
+            List<MenuBarCreationSubType> portalDocsToCreate = new ArrayList<MenuBarCreationSubType>();
             Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
             CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
@@ -869,7 +868,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                             // url.append("&fromUrl=").append(portalBaseURL);
 
                             // Sub-type
-                            SubType subType = new SubType();
+                            MenuBarCreationSubType subType = new MenuBarCreationSubType();
                             subType.setDocType(docType);
                             subType.setName(bundle.getString(docType.toUpperCase()));
                             subType.setUrl(url);
@@ -922,7 +921,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 Element row = DOM4JUtils.generateDivElement("row");
                 container.add(row);
 
-                for (SubType subType : portalDocsToCreate) {
+                for (MenuBarCreationSubType subType : portalDocsToCreate) {
                     // Document type
                     String documentType = subType.getDocType();
 
