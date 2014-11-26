@@ -116,8 +116,7 @@ for( int numPage = minPage; numPage < maxPage; numPage++)	{
 	pageURL.setParameter( "currentPage", Integer.toString(numPage));
 	pageURL.setParameter( "currentState", renderRequest.getWindowState().toString());
 	
-	if( selectors != null)
-		pageURL.setParameter( "lastSelectors", selectors);	
+
 	
 	if( currentPage == numPage)	{
 %>

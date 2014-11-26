@@ -63,7 +63,8 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
-        <supported-public-render-parameter>selectors</supported-public-render-parameter>        
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>                   
 
 	</portlet>
 	
@@ -94,7 +95,9 @@
 			<keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
         
-      <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>   
+      
       
      
 	</portlet>
@@ -243,7 +246,7 @@
 			<keywords>Portlet,Nuxeo,CMS,Keywords</keywords>
         </portlet-info>
        
-
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>  
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         
 
@@ -276,7 +279,7 @@
         </portlet-info>
        
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
 
 	</portlet>
 	
@@ -307,6 +310,7 @@
        
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
         
 
           
@@ -318,6 +322,11 @@
         <identifier>selectors</identifier>
         <name>selectors</name>
 	</public-render-parameter>
+	
+	<public-render-parameter>
+        <identifier>lastSelectors</identifier>
+        <name>lastSelectors</name>
+	</public-render-parameter>	
 	
 	<public-render-parameter>
         <identifier>osivia.keywords</identifier>

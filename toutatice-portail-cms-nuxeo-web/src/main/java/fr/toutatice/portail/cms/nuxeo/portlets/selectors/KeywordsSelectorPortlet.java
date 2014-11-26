@@ -103,7 +103,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> keywords = selectors.get(req.getParameter("selectorId"));
                 if ((keywords != null) && (keywords.size() > 0)) {
                     keywords.clear();
-                    selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                     
+                    if( req.getParameter("selectors")!= null)
+                        res.setRenderParameter("lastSelectors", req.getParameter("selectors"));                       
                     res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
                 }
             }
@@ -152,7 +153,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     keywords.add(keyword);
                 }
 
-                selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE)); 
+                if( req.getParameter("selectors")!= null)
+                    res.setRenderParameter("lastSelectors", req.getParameter("selectors"));  
                 res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                 // Réinitialisation des fenetres en mode NORMAL

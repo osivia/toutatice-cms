@@ -171,6 +171,9 @@ public class VocabSelectorPortlet extends CMSPortlet {
 				List<String> vocabs = selectors.get(req.getParameter("selectorId"));
 				if((vocabs != null) && (vocabs.size() > 0)){
 					vocabs.clear();
+					if( req.getParameter("selectors")!= null)
+	                    res.setRenderParameter("lastSelectors", req.getParameter("selectors"));					    
+			
 					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 				}
 			}
@@ -249,6 +252,9 @@ public class VocabSelectorPortlet extends CMSPortlet {
                     vocabIds.add(selectedEntries);
                 }
 
+                String lastSelectors =  req.getParameter("selectors");
+                if(lastSelectors != null)
+                    res.setRenderParameter("lastSelectors", lastSelectors);                     
 
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
@@ -288,8 +294,11 @@ public class VocabSelectorPortlet extends CMSPortlet {
 			if ((vocabIds != null) && (vocabIds.size() > occ)) {
 
 				vocabIds.remove(occ);
-
 				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+				
+                if( req.getParameter("selectors")!= null)
+                    res.setRenderParameter("lastSelectors", req.getParameter("selectors"));                     
+				
 
                 // Réinitialisation des fenetres en mode NORMAL
                 req.setAttribute("osivia.unsetMaxMode", "true");
