@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.RenderMode;
@@ -37,8 +38,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -56,7 +62,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
@@ -90,10 +95,11 @@ public class MenuPortlet extends CMSPortlet {
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
 
-    /** Portal URL factory. */
-    private IPortalUrlFactory portalUrlFactory;
-    /** CMS customizer. */
-    private INuxeoCustomizer customizer;
+
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
+    /** Notifications service. */
+    private INotificationsService notificationsService;
 
 
     /**
@@ -111,16 +117,16 @@ public class MenuPortlet extends CMSPortlet {
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
-        // Portal URL factory
-        this.portalUrlFactory = (IPortalUrlFactory) this.getPortletContext().getAttribute("UrlService");
-        if (this.portalUrlFactory == null) {
-            throw new PortletException("Cannot start TestPortlet due to service unavailability");
-        }
+        // Portlet context
+        PortletContext portletContext = this.getPortletContext();
 
-        // Nuxeo service
-        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        // CMS customizer
-        this.customizer = nuxeoService.getCMSCustomizer();
+        // Bundle factory
+        IInternationalizationService internationalizationService = (IInternationalizationService) portletContext
+                .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+
+        // Notification service
+        this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
     }
 
 
@@ -131,6 +137,14 @@ public class MenuPortlet extends CMSPortlet {
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
         // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
+
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Portal controller context
+        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
 
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
@@ -143,15 +157,24 @@ public class MenuPortlet extends CMSPortlet {
                 // Target
                 String targetId = request.getParameter("targetId");
 
-                // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-
                 // Move document command
                 INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
-                nuxeoController.executeNuxeoCommand(command);
+                try {
+                    nuxeoController.executeNuxeoCommand(command);
 
-                // Update public render parameter for associated portlets refresh
-                response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+                    // Update public render parameter for associated portlets refresh
+                    response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+
+                    // Notification
+                    String message = bundle.getString("MESSAGE_MOVE_SUCCESS");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+                } catch (NuxeoException e) {
+                    // Notification
+                    String message = bundle.getString("MESSAGE_MOVE_ERROR");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                }
+
+
             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {
@@ -213,6 +236,10 @@ public class MenuPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // CMS customizer
+        INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
@@ -232,7 +259,7 @@ public class MenuPortlet extends CMSPortlet {
         request.setAttribute("defaultMaxLevels", DEFAULT_MAX_LEVELS);
 
         // Templates
-        Map<String, String> templates = this.customizer.getMenuTemplates(request.getLocale());
+        Map<String, String> templates = customizer.getMenuTemplates(request.getLocale());
         request.setAttribute("templates", templates);
         String selectedTemplate = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
         request.setAttribute("selectedTemplate", selectedTemplate);

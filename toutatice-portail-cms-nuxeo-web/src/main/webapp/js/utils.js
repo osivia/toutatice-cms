@@ -13,7 +13,7 @@ $JQry(document).ready(function($) {
 		$glyph.toggleClass("chevron-down chevron-right text-muted");
 		
 		// Toggle item children display
-		$children = $this.parent().children("ul");
+		$children = $this.closest("li").children("ul");
 		$children.toggleClass("hidden");
 	});
 });

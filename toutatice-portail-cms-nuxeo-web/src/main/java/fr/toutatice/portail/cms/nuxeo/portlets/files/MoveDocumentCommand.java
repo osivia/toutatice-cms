@@ -3,7 +3,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.files;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.DocRef;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.IdRef;
+import org.osivia.portal.core.page.PageProperties;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
@@ -46,7 +48,12 @@ public class MoveDocumentCommand implements INuxeoCommand {
 
         // Document service
         DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
-        return documentService.move(source, target);
+        Document result = documentService.move(source, target);
+
+        // Reload navigation tree
+        PageProperties.getProperties().setRefreshingPage(true);
+
+        return result;
     }
 
 
