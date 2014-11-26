@@ -1,0 +1,642 @@
+
+
+/* Template listes */
+	
+div.nuxeo-list-normal ul li	{
+	list-style-type: none
+}
+
+div.nuxeo-list-normal ul li	 {
+	list-style-type: none;
+}
+
+div.nuxeo-list-detailed ul li	{
+	list-style-type: none
+}
+
+div.nuxeo-list-detailed ul li p.description	{
+}
+
+div.nuxeo-list-detailed ul li p.detail	{
+	font-style:italic;
+	text-align : right; 
+}
+
+
+div.nuxeo-list-news ul li {
+	list-style-type: none;
+}
+
+
+div.nuxeo-list-news ul li p.list-date	{
+	font-style:italic;
+	text-align : right;	
+}
+
+div.nuxeo-list-editorial ul li 	{
+	padding-bottom:20px;
+}
+
+
+div.nuxeo-list-editorial ul li	{
+	list-style-type: none;
+	margin-left: 0px;
+}
+
+
+
+
+
+div.nuxeo-list-editorial ul li div.vignette	{
+	float:left;
+	width: 100px;
+	margin-right:10px;
+}
+
+div.nuxeo-list-editorial ul li div.vignette img	{
+	max-width: 100px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+div.nuxeo-list-editorial ul li div.vignette-vide	{
+	float:left;
+	width: 100px;
+	height: 60px;
+	margin-right:10px;
+	background-image:url(../img/news.gif);
+	background-position:top center;
+	background-repeat:no-repeat;
+}
+
+
+
+div.nuxeo-list-editorial ul	{
+	list-style-type:none;
+	margin-left: 0px;
+	}
+
+
+a.osivia-link-download	{
+ background: transparent url(../img/download.png) center right no-repeat;
+ padding-right: 18px;
+}
+
+a.osivia-link-external	{
+ background: transparent url(../img/external-small.gif) center right no-repeat;
+ padding-right: 18px;
+}
+
+
+div.nuxeo-list-editorial ul li separateur	{
+	clear:both;
+	display:block;
+}
+
+div.nuxeo-list-editorial ul li {
+	padding: 5px;
+}
+
+
+div.nuxeo-list-detailed ul li p.description	{
+	margin-left: 30px;	
+}
+
+div.nuxeo-list-search {
+	padding-top:10px;
+}
+
+div.nuxeo-list-search ul li	{
+	list-style-type: none;
+	margin-top:10px;
+}
+
+div.nuxeo-list-search ul li	p.description {
+	min-height: 10px; 
+	margin-left:20px
+}
+
+	
+div.pagination	{
+  width:100%;
+  margin-left: auto ;
+  margin-right: auto ;
+  text-align: center;
+}
+
+div.nuxeo-list-permalink	{
+	float: right;	
+}
+
+/* Explorateur de fichiers */
+
+
+div.nuxeo-file-browser .header	{
+	padding: 8px;
+}
+
+
+div.nuxeo-file-browser div.switch-display-mode	{
+	text-align: right;
+}
+
+div.nuxeo-file-browser div.file-detail	{
+	min-height: 80px;
+	padding: 8px;
+}
+
+
+div.nuxeo-file-browser	.nuxeo-file-list .separateur {
+	background: #CECECE;
+	height: 1px;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+div.nuxeo-file-browser div.vignette	{
+	float:left;
+	width: 100px;
+	margin-right:10px;
+}
+
+
+div.nuxeo-file-browser div.vignette img	{
+	max-width: 100px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+
+div.nuxeo-file-browser div.file-detail .main	{
+	float:left;
+	width: 300px;
+	margin-left:10px;	
+}
+
+div.nuxeo-file-browser div.file-detail .main .description	{
+	padding-top:10px;
+}
+
+div.nuxeo-file-browser div.file-detail .detail	{
+	float:left;
+	width: 250px;
+}
+
+div.nuxeo-file-browser div.file-detail dl dt	{
+	width: 100px;
+	display:block;
+	float:left;
+}
+
+div.nuxeo-file-browser div.file-detail dl dd	{
+	font-weight:bold;
+	display:block;
+}
+
+
+
+div.file-actions-menu .ajax-waiting {
+    background-image: url("../img/waiting24.gif");
+    border: 0px;
+    display: block;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -12px;
+    width: 24px;
+    height: 24px;
+}
+
+
+div.nuxeo-file-browser .file-item-selected {
+	background-color: #E4E4EC;
+}
+
+span.file-name {
+	float: left;
+}
+
+div.nuxeo-file-browser div.file-actions {
+    background-image: url("../img/dropdown.png");
+    background-repeat: no-repeat;
+    background-position: 8px 0;
+    height: 18px;
+    visibility: hidden;
+    float: left;
+    width: 40px;
+}
+
+div.file-actions-menu	{
+	position: absolute;
+	visibility: hidden;
+    z-index: 100;	
+    background-color: #F4F4FC;
+ 	background-image: url("../img/dropdown.gif");
+    background-repeat: no-repeat;  
+    border: 1px solid #333333;   
+    padding-top: 20px;
+    padding-bottom: 5px;
+    padding-left: 15px; 
+    padding-right: 10px; 
+    margin-left: 10px; 
+    width: auto; 
+}
+
+div.file-actions-menu .ajax-waiting {
+    background-image: url("../img/waiting24.gif");
+    border: 0px;
+    display: block;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -12px;
+    width: 24px;
+    height: 24px;
+}
+
+
+#portal-container div.file-actions-menu a	{
+	color: #020202;
+    font-weight: 300;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;	
+}
+
+/* Template contenus */
+
+div.nuxeo-docview-short-view	{
+	margin: 10px;
+}
+
+div.nuxeo-docview-main {
+    overflow: hidden;
+}
+
+div.nuxeo-docview-metadata {
+    background-color: #EAEAEA;
+    color: #666666;
+    /*float: right;*/
+    margin-left: 8px;
+    padding: 4px;
+    /*width: 30%;*/
+}
+
+/* Template : Vue compacte */
+
+
+div.nuxeo-docview-short-view img.nuxeo-docview-vignette	{
+	float:left;
+	max-width: 100px;
+	margin-right:10px;
+	padding: 0 0 10px 0;
+}
+
+div.nuxeo-docview-short-view p.nuxeo-docview-description  {
+	font: normal small Arial, Helvetica, sans-serif;
+}
+
+/* Template : Vue détaillée */
+
+div.nuxeo-docview-normal-view div.nuxeo-docview-note	{
+	margin-top:15px;
+}
+
+
+/* Tableaux dans RichTextEditor du champ note:note */
+.nuxeo-docview-note table.toutatice-gris {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid gray;
+}
+.nuxeo-docview-note table.toutatice-gris td {
+	border: thin solid gray;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-gris thead td,table.toutatice-gris tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: gray;
+	font-variant:small-caps;
+	font-size:12px;
+}
+
+.nuxeo-docview-note table.toutatice-bleu-fonce {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid #2f4456;
+}
+.nuxeo-docview-note table.toutatice-bleu-fonce td {
+	border: thin solid #2f4456;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-bleu-fonce thead td,table.toutatice-bleu-fonce tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: #2f4456;
+	font-variant:small-caps;
+	font-size:12px;
+}
+
+.nuxeo-docview-note table.toutatice-bleu-clair {
+	border-collapse: collapse;
+	width: 100%;
+	border: medium solid #659fb2;
+}
+.nuxeo-docview-note table.toutatice-bleu-clair td {
+	border: thin solid #659fb2;
+	padding: 4px;
+}
+.nuxeo-docview-note table.toutatice-bleu-clair thead td,table.toutatice-bleu-clair tfoot td {
+	text-align: center;
+	color: #ffffff;
+	font-weight:bold;
+	border: thin solid #FFFFFF;
+	background-color: #659fb2;
+	font-variant:small-caps;
+	font-size:12px;
+}
+
+/* Template : Vue détaillée annonce */
+
+div.nuxeo-docview-annonce div.nuxeo-docview-normal-view  p.nuxeo-docview-resume  {
+	font-size: 14px;
+    font-weight: bold;
+}
+
+div.nuxeo-docview-annonce div.nuxeo-docview-normal-view img.nuxeo-docview-image	{
+	float:left;
+	max-width: 300px;
+	margin-right:10px;
+}
+
+
+
+/* Navigation publication */
+
+
+
+div.nuxeo-publish-navigation ul a.current {
+	font-size: 14px;
+    font-weight: bold;
+}
+
+div.nuxeo-publish-navigation ul a {
+    text-decoration: none;
+}
+
+
+
+/* Vues de création de document */
+
+.doc-type-detail {
+    display: inline-block;
+}
+
+div.document-types	 .separateur {
+	background: #CECECE;
+	height: 1px;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+div.document-types div.doc-type-detail div.vignette	{
+	width: 100%;
+	margin-top: 2px;
+	margin-bottom: 12px;
+	text-align: center;
+}
+
+
+div.document-types div.doc-type-detail div.vignette img	{
+	max-width: 100px;
+    margin: 0 auto 0 auto;
+}
+
+
+div.document-types div.doc-type-detail .main {
+	width: 140px;
+	margin-left: 5px;
+    margin-right: 5px;	
+}
+
+div.document-types div.doc-type-detail .main .title {
+	text-align: center;
+}
+
+div.document-types div.doc-type-detail .main .title a {
+	color: black;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+div.document-types .more-document-types	{
+	visibility: hidden;
+}
+
+div.document-types .more-document-types	{
+	visibility: hidden;
+}
+
+.vertical-separator {
+	display: inline-block;
+	background: #CECECE;
+    height: 150px;
+	width: 1px;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+/* Commentaires */
+
+.commentsTitle {
+	
+}
+
+.commentsTree {
+	
+}
+
+.commentsTree ul {
+	list-style-type: none;
+}
+
+.commentsTree li:hover {
+	background-color: #abd4fb;
+}
+
+.commentsTree li {
+    padding: 10px 10px 20px 10px;
+}
+
+.commentsTree .authorDate {
+	background: url("../img/icons/comment.gif") no-repeat scroll left top transparent;
+	margin-bottom: 2px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+}
+
+.commentsTree .author {
+	display: inline;
+	font-weight: bold;
+	color: #444444;
+}
+
+.commentsTree .creationDate {
+	display: inline;
+	padding-left: 10px;
+}
+
+.commentsTree .content {
+	white-space:normal;
+}
+
+.add-comment-link {
+	background: url("../img/icons/toggle_plus.png") no-repeat scroll left -2px transparent;
+	font-size: 12px;
+	padding-left:17px;
+}
+
+.child_comment {
+	display: inline;
+	float: right;
+	padding-right: 10px;
+}
+
+#content .child_comment a {
+	font-weight: normal;
+}
+
+#content .delete_comment a {
+	font-weight: normal;
+}
+
+.delete_comment {
+	display: inline;
+	padding-left: 10px;
+	font-weight: normal;
+	float: right;
+	border-left: 1px solid;
+}
+
+.add-comment input,.add-child-comment input {
+	font-size: 11px;
+}
+
+.add-comment-span {
+	font-weight: bold;
+	color: #006699;
+	cursor: pointer;
+}
+
+.add-child-comment-span {
+	color: #006699;
+	cursor: pointer;
+}
+
+.delete-comment {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.add-comment textarea,.add-child-comment textarea,.delete-comment textarea {
+	margin-bottom: 11px;
+}
+
+.errorDateFormat,.contentError {
+	font-weight: bold;
+	color: red;
+}
+
+.commentsTree .delete_comment {
+    display: none;
+}
+.commentsTree .child_comment {
+    display: none;
+}
+
+
+/* Modif-FILEBROWSER-begin */
+
+.delete-file-item {
+	text-align: center;
+    vertical-align: middle;
+}
+
+.portlet-menuitem-nuxeo-add {
+	background:#FFFFF4 url(../img/add.gif) 1px 2px no-repeat;
+}
+
+.portlet-menuitem-nuxeo-delete {
+	background:#FFFFF4 url(../img/delete.gif) 1px 2px no-repeat;
+}
+
+.doc-type-title {
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    text-align: center;
+}
+/* Modif-FILEBROWSER-end */
+	
+
+
+/* Keywords selector */
+
+.nuxeo-keywords-selector .table {
+    display: table;
+    border-spacing: 0 2px;
+}
+
+.nuxeo-keywords-selector .table-row {
+    display: table-row;
+}
+
+.nuxeo-keywords-selector .table-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.nuxeo-keywords-selector .table-cell.input-text {
+	padding-right: 8px;
+}
+
+.nuxeo-keywords-selector .table-cell input[type="text"] {
+	width: 100%;
+}
+
+.nuxeo-keywords-selector .table-cell.input-date input[type="text"] {
+    width: 44%;
+}
+
+.nuxeo-keywords-selector .table-cell input[type="image"] {
+	width: 16px;
+	padding-left: 5px;
+}
+
+.nuxeo-keywords-selector .table-cell a.delete {
+	display: block;
+	background-image: url("../img/delete.gif");
+	background-repeat: no-repeat;
+	background-position: right;
+	height: 16px;
+	width: 16px;
+	padding-left: 5px;
+}
