@@ -473,7 +473,8 @@ public class VocabSelectorPortlet extends CMSPortlet {
                 }
             } else {
                 if( "1".equals(selectorMonoValued))  {
-                    vocab1Id= null;
+                    if( preselect1 == null)
+                        vocab1Id= null;
                     vocab2Id=null;
                     vocab3Id=null;
                 }
