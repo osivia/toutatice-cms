@@ -396,6 +396,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.put("footer", bundle.getString("MENU_TEMPLATE_FOOTER"));
         // JSTree
         templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
+        // Dynatree
+        templates.put("dynatree", bundle.getString("MENU_TEMPLATE_DYNATREE"));
 
         return templates;
     }

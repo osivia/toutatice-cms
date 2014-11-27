@@ -57,19 +57,17 @@
                     
                     <!-- Display name -->
                     <td>
-                        <span class="draggable-cancel">
-                            <a href="${link.url}" target="${target}">${document.title}</a>
-                            
-                            <!-- Size -->
-                            <c:if test="${not empty size}">
-                                <span>(<ttc:formatFileSize size="${size}" />)</span>
-                            </c:if>
-                            
-                            <!-- External -->
-                            <c:if test="${link.external}">
-                                <i class="glyphicons halflings new_window"></i>
-                            </c:if>
-                        </span>
+                        <a href="${link.url}" target="${target}">${document.title}</a>
+                        
+                        <!-- Size -->
+                        <c:if test="${not empty size}">
+                            <span>(<ttc:formatFileSize size="${size}" />)</span>
+                        </c:if>
+                        
+                        <!-- External -->
+                        <c:if test="${link.external}">
+                            <i class="glyphicons halflings new_window"></i>
+                        </c:if>
                     </td>
                     
                     <!-- Last modification -->
@@ -79,9 +77,7 @@
                     
                     <!-- Last contributor -->
                     <td>
-                        <span class="draggable-cancel">
-                            <ttc:user name="${lastContributor}" />
-                        </span>
+                        <ttc:user name="${lastContributor}" />
                     </td>
                 </tr>
             </c:forEach>
