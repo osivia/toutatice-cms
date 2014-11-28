@@ -94,13 +94,18 @@
             
             <xsl:element name="div">
                 <xsl:attribute name="id"><xsl:value-of select="generate-id(.)" /></xsl:attribute>
+                
+                <xsl:element name="div">
+                	<xsl:attribute name="id">VIDEO_<xsl:value-of select="generate-id(.)" /></xsl:attribute>
+                
+            	</xsl:element>
             </xsl:element>
         </xsl:element>
     
         <xsl:element name="a">
             <xsl:attribute name="href">#<xsl:value-of select="generate-id(.)" /></xsl:attribute>
             <xsl:attribute name="class">thumbnail fancybox_wivibox</xsl:attribute>
-            <xsl:attribute name="onclick">launchPlayer('<xsl:value-of select="generate-id(.)" />', '<xsl:value-of select="@src" />')</xsl:attribute>
+            <xsl:attribute name="onclick">launchPlayer('VIDEO_<xsl:value-of select="generate-id(.)" />', '<xsl:value-of select="@src" />')</xsl:attribute>
             
             <xsl:element name="img">
                 <xsl:attribute name="src"><xsl:value-of select="@poster" /></xsl:attribute>
