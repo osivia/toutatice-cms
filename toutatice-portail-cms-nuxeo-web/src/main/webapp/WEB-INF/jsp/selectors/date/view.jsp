@@ -21,8 +21,6 @@
 
 
 <script>
-    var $JQry = jQuery.noConflict();
-
     $JQry(function() {
         var dates = $JQry("#${idDateFrom}, #${idDateTo}").datepicker({
             defaultDate: "+1w",

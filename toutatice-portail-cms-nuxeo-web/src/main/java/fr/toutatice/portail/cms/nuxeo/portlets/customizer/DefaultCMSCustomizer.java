@@ -558,6 +558,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
+    public CMSHandlerProperties getCMSFileBrowser(CMSServiceCtx cmsContext) {
+        Document document = (Document) cmsContext.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, cmsContext.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
+        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(cmsContext));
+        windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
+        windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
+        windowProperties.put("osivia.hideDecorators", "1");
+        windowProperties.put("osivia.ajaxLink", "1");
+
+        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance");
+
+        return linkProps;
+    }
+
+
     /**
      * Get CMS folder player.
      *
@@ -680,7 +700,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if ("UserWorkspace".equals(doc.getType())) {
             // Pas de filtre sur les versions publiées
             ctx.setDisplayLiveVersion("1");
-            return this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+            return this.getCMSFileBrowser(ctx);
         }
 
         if (("DocumentUrlContainer".equals(doc.getType()))) {
@@ -707,7 +727,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     // if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType())) {
                     // Pas de filtre sur les versions publiées
                     ctx.setDisplayLiveVersion("1");
-                    CMSHandlerProperties props = this.createPortletLink(ctx, "toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", doc.getPath());
+                    CMSHandlerProperties props = this.getCMSFileBrowser(ctx);
                     props.getWindowProperties().put("osivia.title", doc.getTitle());
                     return props;
                 }

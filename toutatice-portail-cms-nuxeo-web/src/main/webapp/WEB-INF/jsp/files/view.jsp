@@ -13,6 +13,13 @@
 <c:set var="description" value="${document.properties['dc:description']}" />
 
 
+<div>
+    <a href="<portlet:actionURL />" class="btn btn-warning">
+        <i class="glyphicons bug"></i>
+        <span>Action de test</span>
+    </a>
+</div>
+
 <div class="file-browser table-responsive no-ajax-link">
     <table class="table table-hover">
         <!-- Description -->
@@ -31,7 +38,7 @@
         </thead>
         
         <!-- Table body -->
-        <tbody>
+        <tbody class="no-ajax-link">
             <c:forEach var="document" items="${documents}">
                 <!-- Document properties -->
                 <ttc:documentLink document="${document}" var="link" />

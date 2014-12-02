@@ -1,12 +1,10 @@
-var $JQry = jQuery.noConflict();
-
 
 // Publication menu
-$JQry(document).ready(function($) {
-	$(".nuxeo-publish-navigation .hidden-script").addClass("hidden").removeClass("hidden-script");
+$JQry(document).ready(function() {
+	$JQry(".nuxeo-publish-navigation .hidden-script").addClass("hidden").removeClass("hidden-script");
 	
-	$(".nuxeo-publish-navigation li button").click(function() {
-		$this = $(this);
+	$JQry(".nuxeo-publish-navigation li button").click(function() {
+		$this = $JQry(this);
 		
 		// Toggle button glyphicon
 		$glyph = $this.find(".glyphicons");

@@ -128,9 +128,6 @@
 
 <script>
 
-
-var $JQry = jQuery.noConflict();
-
 $JQry(document).ready(function() {
     
     // Display links JSTree

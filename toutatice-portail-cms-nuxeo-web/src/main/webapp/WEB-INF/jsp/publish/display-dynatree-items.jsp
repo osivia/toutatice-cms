@@ -22,7 +22,7 @@
         </c:if>
         
     
-        <li class="${selected} ${current} ${navigable}" data="id: '${child.id}'">
+        <li class="${selected} ${current} ${navigable}" data="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}">
             <a href="${child.url}">${child.title}</a>
             
             <c:if test="${not empty child.children}">

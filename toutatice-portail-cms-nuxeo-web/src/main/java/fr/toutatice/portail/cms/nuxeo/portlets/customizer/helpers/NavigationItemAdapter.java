@@ -151,7 +151,7 @@ public class NavigationItemAdapter {
             properties.put("pageDisplayMode", "1");
 		}
 
-		
+
         // Theme
         String theme = (String) doc.getProperties().get("ttc:theme");
         if (StringUtils.isNotEmpty(theme)) {
@@ -246,7 +246,7 @@ public class NavigationItemAdapter {
 
 		if("Workspace".equals(doc.getType()))	{
 			properties.put("displayLiveVersion", "1");
-            // properties.put("partialLoading", "1");
+            properties.put("partialLoading", "1");
 		}
 
         /* explicitUrl */

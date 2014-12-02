@@ -8,9 +8,10 @@
 <portlet:defineObjects />
 
 <portlet:actionURL name="drop" var="dropActionURL" />
+<portlet:resourceURL var="lazyLoadingURL" />
 
 
-<div class="nuxeo-publish-navigation" data-dropurl="${dropActionURL}">
+<div class="nuxeo-publish-navigation" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
     <div class="dynatree">
         <c:set var="parent" value="${displayItem}" scope="request" />
         <jsp:include page="display-dynatree-items.jsp" />
