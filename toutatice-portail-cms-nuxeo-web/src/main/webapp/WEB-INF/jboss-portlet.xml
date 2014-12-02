@@ -79,6 +79,10 @@
             <script type="text/javascript" src="/js/utils.js" />
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
             
+            <!-- JQuery UI -->
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
+            
             <!-- Dynatree -->
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
             <link rel="stylesheet" href="/components/jquery.dynatree-1.2.6-dist/skin-vista/ui.dynatree.css" />
@@ -106,6 +110,9 @@
             <!-- JQuery UI -->
             <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
             <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
+            
+            <!-- Dynatree -->
+            <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
         </header-content>
         
         <portlet-info>
