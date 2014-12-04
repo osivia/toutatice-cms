@@ -9,6 +9,7 @@ import java.util.List;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequestDispatcher;
@@ -17,10 +18,20 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.portlet.PortletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -54,6 +65,10 @@ public class FileBrowserPortlet extends CMSPortlet {
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
 
+    /** Bundle factory. */
+    private IBundleFactory bundleFactory;
+    /** Notifications service. */
+    private INotificationsService notificationsService;
     /** Document DAO. */
     private DocumentDAO documentDAO;
 
@@ -73,6 +88,16 @@ public class FileBrowserPortlet extends CMSPortlet {
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
+        // Portlet context
+        PortletContext portletContext = this.getPortletContext();
+
+        // Bundle factory
+        IInternationalizationService internationalizationService = (IInternationalizationService) portletContext
+                .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+
+        // Notification service
+        this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
     }
@@ -86,7 +111,104 @@ public class FileBrowserPortlet extends CMSPortlet {
         // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-        if ("admin".equals(request.getPortletMode().toString())) {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Portal controller context
+        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            // View
+
+            if ("drop".equals(action)) {
+                // Drop action
+
+                // Source
+                String sourceId = request.getParameter("sourceId");
+                // Target
+                String targetId = request.getParameter("targetId");
+
+                // Move document command
+                INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
+                try {
+                    nuxeoController.executeNuxeoCommand(command);
+
+                    // Refresh navigation
+                    request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
+                    // Update public render parameter for associated portlets refresh
+                    response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+
+                    // Notification
+                    String message = bundle.getString("MESSAGE_MOVE_SUCCESS");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+                } catch (NuxeoException e) {
+                    // Notification
+                    String message = bundle.getString("MESSAGE_MOVE_ERROR");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                }
+
+            } else if ("fileUpload".equals(action)) {
+                // File upload
+
+                String parentId = request.getParameter("parentId");
+
+                try {
+                    DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
+                    PortletFileUpload fileUpload = new PortletFileUpload(fileItemFactory);
+                    List<FileItem> fileItems = fileUpload.parseRequest(request);
+
+                    // Nuxeo command
+                    INuxeoCommand command = new UploadFilesCommand(parentId, fileItems);
+                    nuxeoController.executeNuxeoCommand(command);
+
+                    // Refresh navigation
+                    request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
+                    // Notification
+                    String message = bundle.getString("MESSAGE_FILE_UPLOAD_SUCCESS");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+                } catch (FileUploadException e) {
+                    // Notification
+                    String message = bundle.getString("MESSAGE_FILE_UPLOAD_ERROR");
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                }
+
+
+                //
+                // try {
+                // DiskFileItemFactory factory = new DiskFileItemFactory();
+                // PortletFileUpload upload = new PortletFileUpload(factory);
+                // List fileItems = upload.parseRequest(req);
+                // for (Iterator iterator = fileItems.iterator(); iterator.hasNext();)
+                // {
+                // FileItem item = (FileItem)iterator.next();
+                // if (item.getFieldName().equals("File"))
+                // {
+                // fileNames.add("" + item.getName());
+                // fileSizes.add("" + item.getSize());
+                // }
+                // else if (item.getFieldName().equals("Description"))
+                // {
+                // descriptions.add("" + item.getString(req.getCharacterEncoding()));
+                // }
+                // }
+                // }
+                // catch (FileUploadException e)
+                // {
+                // throw new PortletException(e);
+                // }
+                //
+                // request.get
+                //
+                // Object files = request.getParameter("files");
+                // if (files != null) {
+                // System.out.println("files : " + files);
+                // }
+            }
+
+        } else if ("admin".equals(request.getPortletMode().toString())) {
             // Admin
 
             if ("save".equals(action)) {
@@ -108,7 +230,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param request request
      * @param response response
      * @throws PortletException
