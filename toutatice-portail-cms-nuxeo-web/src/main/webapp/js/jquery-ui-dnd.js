@@ -69,12 +69,30 @@ $JQry(function() {
 			autoExpandMS : 500,
 			preventVoidMoves : true,
 
-			onDragEnter : function(node, sourceNode) {
+			onDragEnter : function(node, sourceNode, ui, draggable) {
 				if (!node.data.isFolder) {
 					return false;
 				}
 				
-				return "over";
+				if (node.data.acceptedTypes == undefined) {
+					return false;
+				}
+
+				// Source
+				var $source = $JQry(draggable.helper.context);
+				var sourceType = $source.data("type");
+
+				// Target
+				var targetAcceptedTypes = node.data.acceptedTypes.split(",");
+				
+				var acceptedType = false;
+				jQuery.each(targetAcceptedTypes, function(index, type) {
+					if (sourceType === type) {
+						acceptedType = "over";
+					}
+				});
+				
+				return acceptedType;
 			},
 
 			onDrop : function(node, sourceNode, hitMode, ui, draggable) {

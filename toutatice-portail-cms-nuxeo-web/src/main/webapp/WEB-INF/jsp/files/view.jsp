@@ -67,7 +67,7 @@
                     </c:if>
                 
                 
-                    <tr class="draggable droppable" data-id="${document.id}">
+                    <tr class="draggable droppable" data-id="${document.id}" data-type="${document.type}">
                         <!-- Icon -->
                         <td>
                             <img src="${iconURL}" alt="${typeName}" />

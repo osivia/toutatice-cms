@@ -41,6 +41,8 @@ public class NavigationDisplayItem {
     private final boolean navigable;
     /** CMS navigation item. */
     private final CMSItem navItem;
+    /** Current item accepted types. */
+    private final String[] acceptedTypes;
     /** Children. */
     private final List<NavigationDisplayItem> children;
 
@@ -52,10 +54,9 @@ public class NavigationDisplayItem {
      * @param link link
      * @param selected selected item indicator
      * @param current current item indicator
-     * @param navigable navigable item indicator
      * @param navItem CMS navigation item
      */
-    public NavigationDisplayItem(Document document, Link link, boolean selected, boolean current, boolean navigable, CMSItem navItem) {
+    public NavigationDisplayItem(Document document, Link link, boolean selected, boolean current, CMSItem navItem) {
         super();
         this.id = document.getId();
         this.title = document.getTitle();
@@ -63,9 +64,28 @@ public class NavigationDisplayItem {
         this.external = link.isExternal();
         this.selected = selected;
         this.current = current;
-        this.navigable = navigable;
+        this.navigable = (navItem != null) && (navItem.getType() != null) && (navItem.getType().isNavigable());
         this.navItem = navItem;
+        this.acceptedTypes = this.getAcceptedTypes(navItem);
         this.children = new ArrayList<NavigationDisplayItem>();
+    }
+
+
+    /**
+     * Get accepted types.
+     *
+     * @param item CMS item
+     * @return accepted types
+     */
+    private String[] getAcceptedTypes(CMSItem item) {
+        String[] acceptedTypes = null;
+        if ((item != null) && (item.getType() != null)) {
+            List<String> types = item.getType().getPortalFormSubTypes();
+            if (types != null) {
+                acceptedTypes = types.toArray(new String[types.size()]);
+            }
+        }
+        return acceptedTypes;
     }
 
 
@@ -154,6 +174,15 @@ public class NavigationDisplayItem {
      */
     public CMSItem getNavItem() {
         return this.navItem;
+    }
+
+    /**
+     * Getter for acceptedTypes.
+     *
+     * @return the acceptedTypes
+     */
+    public String[] getAcceptedTypes() {
+        return this.acceptedTypes;
     }
 
     /**

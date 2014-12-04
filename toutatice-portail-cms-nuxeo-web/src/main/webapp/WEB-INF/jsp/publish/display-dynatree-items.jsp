@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 
 <ul>
@@ -21,8 +22,11 @@
             <c:set var="navigable" value="folder" />
         </c:if>
         
+        <!-- Data -->
+        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}'" />
+        
     
-        <li class="${selected} ${current} ${navigable}" data="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}">
+        <li class="${selected} ${current} ${navigable}" data="${data}">
             <a href="${child.url}">${child.title}</a>
             
             <c:if test="${not empty child.children}">

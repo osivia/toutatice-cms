@@ -299,10 +299,8 @@ public class MenuPortlet extends CMSPortlet {
                             Document document = (Document) item.getNativeItem();
                             // Nuxeo document link
                             Link link = nuxeoController.getLink(document, "menu");
-                            // Navigable item
-                            boolean navigable = "1".equals(item.getProperties().get("navigationElement"));
 
-                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, navigable, item);
+                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, item);
                             children.add(navigationDisplayItemChild);
                         }
                     }
@@ -374,6 +372,11 @@ public class MenuPortlet extends CMSPortlet {
         // Path
         printWriter.write("\"path\" : \"");
         printWriter.write(item.getNavItem().getPath());
+        printWriter.write("\", ");
+
+        // Accepted types
+        printWriter.write("\"acceptedTypes\" : \"");
+        printWriter.write(StringUtils.join(item.getAcceptedTypes(), ","));
         printWriter.write("\"");
 
         printWriter.write(" }");
@@ -552,15 +555,12 @@ public class MenuPortlet extends CMSPortlet {
             selected = true;
         }
 
-        // Navigable item
-        boolean navigable = "1".equals(navigationItem.getProperties().get("navigationElement"));
-
 
         // Navigation display item
         NavigationDisplayItem navigationDisplayItem;
 
         if ((level + 1) >= options.getStartLevel()) {
-            navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigable, navigationItem);
+            navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigationItem);
 
             // Add children
             List<NavigationDisplayItem> navigationDisplayChildren = this.getNavigationDisplayItemChildren(nuxeoController, cmsContext, options, navigationItem,
@@ -581,7 +581,7 @@ public class MenuPortlet extends CMSPortlet {
             }
 
             if ((navigationDisplayItem == null) && (level == 0)) {
-                navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigable, navigationItem);
+                navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigationItem);
             }
         } else {
             navigationDisplayItem = null;
