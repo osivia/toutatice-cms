@@ -1,0 +1,2068 @@
+//
+// Toutatice CMS - Menu - Dynatree
+// --------------------------------------------------
+
+
+// Bootstrap variables and mixins
+@import "bootstrap/variables.less";
+@import "bootstrap/mixins.less";
+
+
+@icon-width: 20px;
+@node-padding: 3px;
+
+.menu {
+    .dynatree-container {
+        padding-left: 0;
+        
+        ul {
+            padding-left: @icon-width + @node-padding;
+        }
+        
+        li {
+            display: block;
+        }
+        
+        .dynatree-node {
+            display: block;
+            padding: @node-padding;
+            
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        
+            // Title
+            .dynatree-title {
+                color: @gray;
+                text-decoration: none;
+            }
+            
+            // Temporary title (displayed while loading)
+            &.dynatree-temporary-title {
+                .dynatree-title;
+                
+                margin-left: 2 * @icon-width;
+            }
+
+            // Active node
+            &.dynatree-active, &.active {
+                .dynatree-title, .dynatree-icon {
+                    color: @brand-primary;
+                }
+                .dynatree-title {
+                    font-weight: bold;
+                }
+            }
+
+            // Focused or hover node
+            &.dynatree-focused, &:hover {
+                background-color: fade(@gray-lighter, 20%);
+                cursor: pointer;
+            }
+
+            // Loading or waiting node
+            &.dynatree-loading, &.dynatree-statusnode-wait {
+                &, &.dynatree-expanded {
+                    .dynatree-expander {
+                        color: @brand-info;
+                        
+                        &:before {
+                            content: "\E055"
+                        }
+                    }
+                }
+            }
+
+            // Error node
+            &.dynatree-statusnode-error {
+                .dynatree-title, .dynatree-icon {
+                    color: @brand-danger;
+                }
+                
+                .dynatree-icon:before {
+                    content: "\E197";
+                }
+            }
+            
+            // Node drop accept
+            &.dynatree-drop-accept {
+                padding: @node-padding - 1px; // Ajustment for border width
+                
+                background-color: @state-info-bg;
+                border-width: 1px;
+                border-style: solid;
+                border-color: @state-info-border;
+            }
+            
+            // Node drop reject
+            &.dynatree-drop-reject {
+                background-color: transparent;
+            }
+
+
+            // Icons
+            .dynatree-expander, .dynatree-connector, .dynatree-icon {
+                position: relative;
+                top: 1px;
+                display: inline-block;
+                width: @icon-width;
+                
+                font-family: "Glyphicons Regular";
+                font-style: normal;
+                font-weight: normal;
+                line-height: 1;
+                color: @gray;
+                
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            
+            .dynatree-expander {
+                color: #ccc;
+                cursor: pointer;
+                
+                .transition(@transition: all 300ms ease);
+                
+                // Collapse icon
+                &:before {
+                    content: "\E369";
+                }
+                
+                &:hover {
+                    color: @brand-primary;
+                }
+            }
+            
+            &.dynatree-expanded .dynatree-expander {
+                color: @gray;
+                
+                // Expanded icon
+                &:before {
+                    content: "\E368";
+                }
+                
+                &:hover {
+                    color: @brand-primary;
+                }
+            }
+            
+            .dynatree-icon {
+                color: @gray-light;
+                
+                // File icon
+                &:before {
+                    content: "\E037";
+                }
+            }
+            
+            // Folder icons
+            &.dynatree-folder {
+                // Closed folder icon
+                .dynatree-icon:before {
+                    content: "\E441";
+                }
+                // Opened folder icon
+                &.dynatree-expanded .dynatree-icon:before {
+                    content: "\E145";
+                }
+            }
+            
+            // Other icons
+            &, &.dynatree-folder {
+                &, &.dynatree-expanded {
+                    &.glass .dynatree-icon:before {
+                        content: "\E001"
+                    }
+                    
+                    &.leaf .dynatree-icon:before {
+                        content: "\E002"
+                    }
+                    
+                    &.dog .dynatree-icon:before {
+                        content: "\E003"
+                    }
+                    
+                    &.user .dynatree-icon:before {
+                        content: "\E004"
+                    }
+                    
+                    &.girl .dynatree-icon:before {
+                        content: "\E005"
+                    }
+                    
+                    &.car .dynatree-icon:before {
+                        content: "\E006"
+                    }
+                    
+                    &.user_add .dynatree-icon:before {
+                        content: "\E007"
+                    }
+                    
+                    &.user_remove .dynatree-icon:before {
+                        content: "\E008"
+                    }
+                    
+                    &.film .dynatree-icon:before {
+                        content: "\E009"
+                    }
+                    
+                    &.magic .dynatree-icon:before {
+                        content: "\E010"
+                    }
+                    
+                    &.envelope .dynatree-icon:before {
+                        content: "\2709"
+                    }
+                    
+                    &.camera .dynatree-icon:before {
+                        content: "\E011"
+                    }
+                    
+                    &.heart .dynatree-icon:before {
+                        content: "\E013"
+                    }
+                    
+                    &.beach_umbrella .dynatree-icon:before {
+                        content: "\E014"
+                    }
+                    
+                    &.train .dynatree-icon:before {
+                        content: "\E015"
+                    }
+                    
+                    &.print .dynatree-icon:before {
+                        content: "\E016"
+                    }
+                    
+                    &.bin .dynatree-icon:before {
+                        content: "\E017"
+                    }
+                    
+                    &.music .dynatree-icon:before {
+                        content: "\E018"
+                    }
+                    
+                    &.note .dynatree-icon:before {
+                        content: "\E019"
+                    }
+                    
+                    &.heart_empty .dynatree-icon:before {
+                        content: "\E020"
+                    }
+                    
+                    &.home .dynatree-icon:before {
+                        content: "\E021"
+                    }
+                    
+                    &.snowflake .dynatree-icon:before {
+                        content: "\2744"
+                    }
+                    
+                    &.fire .dynatree-icon:before {
+                        content: "\E023"
+                    }
+                    
+                    &.magnet .dynatree-icon:before {
+                        content: "\E024"
+                    }
+                    
+                    &.parents .dynatree-icon:before {
+                        content: "\E025"
+                    }
+                    
+                    &.binoculars .dynatree-icon:before {
+                        content: "\E026"
+                    }
+                    
+                    &.road .dynatree-icon:before {
+                        content: "\E027"
+                    }
+                    
+                    &.search .dynatree-icon:before {
+                        content: "\E028"
+                    }
+                    
+                    &.cars .dynatree-icon:before {
+                        content: "\E029"
+                    }
+                    
+                    &.notes_2 .dynatree-icon:before {
+                        content: "\E030"
+                    }
+                    
+                    &.pencil .dynatree-icon:before {
+                        content: "\270F"
+                    }
+                    
+                    &.bus .dynatree-icon:before {
+                        content: "\E032"
+                    }
+                    
+                    &.wifi_alt .dynatree-icon:before {
+                        content: "\E033"
+                    }
+                    
+                    &.luggage .dynatree-icon:before {
+                        content: "\E034"
+                    }
+                    
+                    &.old_man .dynatree-icon:before {
+                        content: "\E035"
+                    }
+                    
+                    &.woman .dynatree-icon:before {
+                        content: "\E036"
+                    }
+                    
+                    &.file .dynatree-icon:before {
+                        content: "\E037"
+                    }
+                    
+                    &.coins .dynatree-icon:before {
+                        content: "\E038"
+                    }
+                    
+                    &.airplane .dynatree-icon:before {
+                        content: "\2708"
+                    }
+                    
+                    &.notes .dynatree-icon:before {
+                        content: "\E040"
+                    }
+                    
+                    &.stats .dynatree-icon:before {
+                        content: "\E041"
+                    }
+                    
+                    &.charts .dynatree-icon:before {
+                        content: "\E042"
+                    }
+                    
+                    &.pie_chart .dynatree-icon:before {
+                        content: "\E043"
+                    }
+                    
+                    &.group .dynatree-icon:before {
+                        content: "\E044"
+                    }
+                    
+                    &.keys .dynatree-icon:before {
+                        content: "\E045"
+                    }
+                    
+                    &.calendar .dynatree-icon:before {
+                        content: "\E046"
+                    }
+                    
+                    &.router .dynatree-icon:before {
+                        content: "\E047"
+                    }
+                    
+                    &.camera_small .dynatree-icon:before {
+                        content: "\E048"
+                    }
+                    
+                    &.dislikes .dynatree-icon:before {
+                        content: "\E049"
+                    }
+                    
+                    &.star .dynatree-icon:before {
+                        content: "\E050"
+                    }
+                    
+                    &.link .dynatree-icon:before {
+                        content: "\E051"
+                    }
+                    
+                    &.eye_open .dynatree-icon:before {
+                        content: "\E052"
+                    }
+                    
+                    &.eye_close .dynatree-icon:before {
+                        content: "\E053"
+                    }
+                    
+                    &.alarm .dynatree-icon:before {
+                        content: "\E054"
+                    }
+                    
+                    &.clock .dynatree-icon:before {
+                        content: "\E055"
+                    }
+                    
+                    &.stopwatch .dynatree-icon:before {
+                        content: "\E056"
+                    }
+                    
+                    &.projector .dynatree-icon:before {
+                        content: "\E057"
+                    }
+                    
+                    &.history .dynatree-icon:before {
+                        content: "\E058"
+                    }
+                    
+                    &.truck .dynatree-icon:before {
+                        content: "\E059"
+                    }
+                    
+                    &.cargo .dynatree-icon:before {
+                        content: "\E060"
+                    }
+                    
+                    &.compass .dynatree-icon:before {
+                        content: "\E061"
+                    }
+                    
+                    &.keynote .dynatree-icon:before {
+                        content: "\E062"
+                    }
+                    
+                    &.paperclip .dynatree-icon:before {
+                        content: "\E063"
+                    }
+                    
+                    &.power .dynatree-icon:before {
+                        content: "\E064"
+                    }
+                    
+                    &.lightbulb .dynatree-icon:before {
+                        content: "\E065"
+                    }
+                    
+                    &.tag .dynatree-icon:before {
+                        content: "\E066"
+                    }
+                    
+                    &.tags .dynatree-icon:before {
+                        content: "\E067"
+                    }
+                    
+                    &.cleaning .dynatree-icon:before {
+                        content: "\E068"
+                    }
+                    
+                    &.ruller .dynatree-icon:before {
+                        content: "\E069"
+                    }
+                    
+                    &.gift .dynatree-icon:before {
+                        content: "\E070"
+                    }
+                    
+                    &.umbrella .dynatree-icon:before {
+                        content: "\2602"
+                    }
+                    
+                    &.book .dynatree-icon:before {
+                        content: "\E072"
+                    }
+                    
+                    &.bookmark .dynatree-icon:before {
+                        content: "\E073"
+                    }
+                    
+                    &.wifi .dynatree-icon:before {
+                        content: "\E074"
+                    }
+                    
+                    &.cup .dynatree-icon:before {
+                        content: "\E075"
+                    }
+                    
+                    &.stroller .dynatree-icon:before {
+                        content: "\E076"
+                    }
+                    
+                    &.headphones .dynatree-icon:before {
+                        content: "\E077"
+                    }
+                    
+                    &.headset .dynatree-icon:before {
+                        content: "\E078"
+                    }
+                    
+                    &.warning_sign .dynatree-icon:before {
+                        content: "\E079"
+                    }
+                    
+                    &.signal .dynatree-icon:before {
+                        content: "\E080"
+                    }
+                    
+                    &.retweet .dynatree-icon:before {
+                        content: "\E081"
+                    }
+                    
+                    &.refresh .dynatree-icon:before {
+                        content: "\E082"
+                    }
+                    
+                    &.roundabout .dynatree-icon:before {
+                        content: "\E083"
+                    }
+                    
+                    &.random .dynatree-icon:before {
+                        content: "\E084"
+                    }
+                    
+                    &.heat .dynatree-icon:before {
+                        content: "\E085"
+                    }
+                    
+                    &.repeat .dynatree-icon:before {
+                        content: "\E086"
+                    }
+                    
+                    &.display .dynatree-icon:before {
+                        content: "\E087"
+                    }
+                    
+                    &.log_book .dynatree-icon:before {
+                        content: "\E088"
+                    }
+                    
+                    &.address_book .dynatree-icon:before {
+                        content: "\E089"
+                    }
+                    
+                    &.building .dynatree-icon:before {
+                        content: "\E090"
+                    }
+                    
+                    &.eyedropper .dynatree-icon:before {
+                        content: "\E091"
+                    }
+                    
+                    &.adjust .dynatree-icon:before {
+                        content: "\E092"
+                    }
+                    
+                    &.tint .dynatree-icon:before {
+                        content: "\E093"
+                    }
+                    
+                    &.crop .dynatree-icon:before {
+                        content: "\E094"
+                    }
+                    
+                    &.vector_path_square .dynatree-icon:before {
+                        content: "\E095"
+                    }
+                    
+                    &.vector_path_circle .dynatree-icon:before {
+                        content: "\E096"
+                    }
+                    
+                    &.vector_path_polygon .dynatree-icon:before {
+                        content: "\E097"
+                    }
+                    
+                    &.vector_path_line .dynatree-icon:before {
+                        content: "\E098"
+                    }
+                    
+                    &.vector_path_curve .dynatree-icon:before {
+                        content: "\E099"
+                    }
+                    
+                    &.vector_path_all .dynatree-icon:before {
+                        content: "\E100"
+                    }
+                    
+                    &.font .dynatree-icon:before {
+                        content: "\E101"
+                    }
+                    
+                    &.italic .dynatree-icon:before {
+                        content: "\E102"
+                    }
+                    
+                    &.bold .dynatree-icon:before {
+                        content: "\E103"
+                    }
+                    
+                    &.text_underline .dynatree-icon:before {
+                        content: "\E104"
+                    }
+                    
+                    &.text_strike .dynatree-icon:before {
+                        content: "\E105"
+                    }
+                    
+                    &.text_height .dynatree-icon:before {
+                        content: "\E106"
+                    }
+                    
+                    &.text_width .dynatree-icon:before {
+                        content: "\E107"
+                    }
+                    
+                    &.text_resize .dynatree-icon:before {
+                        content: "\E108"
+                    }
+                    
+                    &.left_indent .dynatree-icon:before {
+                        content: "\E109"
+                    }
+                    
+                    &.right_indent .dynatree-icon:before {
+                        content: "\E110"
+                    }
+                    
+                    &.align_left .dynatree-icon:before {
+                        content: "\E111"
+                    }
+                    
+                    &.align_center .dynatree-icon:before {
+                        content: "\E112"
+                    }
+                    
+                    &.align_right .dynatree-icon:before {
+                        content: "\E113"
+                    }
+                    
+                    &.justify .dynatree-icon:before {
+                        content: "\E114"
+                    }
+                    
+                    &.list .dynatree-icon:before {
+                        content: "\E115"
+                    }
+                    
+                    &.text_smaller .dynatree-icon:before {
+                        content: "\E116"
+                    }
+                    
+                    &.text_bigger .dynatree-icon:before {
+                        content: "\E117"
+                    }
+                    
+                    &.embed .dynatree-icon:before {
+                        content: "\E118"
+                    }
+                    
+                    &.embed_close .dynatree-icon:before {
+                        content: "\E119"
+                    }
+                    
+                    &.table .dynatree-icon:before {
+                        content: "\E120"
+                    }
+                    
+                    &.message_full .dynatree-icon:before {
+                        content: "\E121"
+                    }
+                    
+                    &.message_empty .dynatree-icon:before {
+                        content: "\E122"
+                    }
+                    
+                    &.message_in .dynatree-icon:before {
+                        content: "\E123"
+                    }
+                    
+                    &.message_out .dynatree-icon:before {
+                        content: "\E124"
+                    }
+                    
+                    &.message_plus .dynatree-icon:before {
+                        content: "\E125"
+                    }
+                    
+                    &.message_minus .dynatree-icon:before {
+                        content: "\E126"
+                    }
+                    
+                    &.message_ban .dynatree-icon:before {
+                        content: "\E127"
+                    }
+                    
+                    &.message_flag .dynatree-icon:before {
+                        content: "\E128"
+                    }
+                    
+                    &.message_lock .dynatree-icon:before {
+                        content: "\E129"
+                    }
+                    
+                    &.message_new .dynatree-icon:before {
+                        content: "\E130"
+                    }
+                    
+                    &.inbox .dynatree-icon:before {
+                        content: "\E131"
+                    }
+                    
+                    &.inbox_plus .dynatree-icon:before {
+                        content: "\E132"
+                    }
+                    
+                    &.inbox_minus .dynatree-icon:before {
+                        content: "\E133"
+                    }
+                    
+                    &.inbox_lock .dynatree-icon:before {
+                        content: "\E134"
+                    }
+                    
+                    &.inbox_in .dynatree-icon:before {
+                        content: "\E135"
+                    }
+                    
+                    &.inbox_out .dynatree-icon:before {
+                        content: "\E136"
+                    }
+                    
+                    &.cogwheel .dynatree-icon:before {
+                        content: "\E137"
+                    }
+                    
+                    &.cogwheels .dynatree-icon:before {
+                        content: "\E138"
+                    }
+                    
+                    &.picture .dynatree-icon:before {
+                        content: "\E139"
+                    }
+                    
+                    &.adjust_alt .dynatree-icon:before {
+                        content: "\E140"
+                    }
+                    
+                    &.database_lock .dynatree-icon:before {
+                        content: "\E141"
+                    }
+                    
+                    &.database_plus .dynatree-icon:before {
+                        content: "\E142"
+                    }
+                    
+                    &.database_minus .dynatree-icon:before {
+                        content: "\E143"
+                    }
+                    
+                    &.database_ban .dynatree-icon:before {
+                        content: "\E144"
+                    }
+                    
+                    &.folder_open .dynatree-icon:before {
+                        content: "\E145"
+                    }
+                    
+                    &.folder_plus .dynatree-icon:before {
+                        content: "\E146"
+                    }
+                    
+                    &.folder_minus .dynatree-icon:before {
+                        content: "\E147"
+                    }
+                    
+                    &.folder_lock .dynatree-icon:before {
+                        content: "\E148"
+                    }
+                    
+                    &.folder_flag .dynatree-icon:before {
+                        content: "\E149"
+                    }
+                    
+                    &.folder_new .dynatree-icon:before {
+                        content: "\E150"
+                    }
+                    
+                    &.edit .dynatree-icon:before {
+                        content: "\E151"
+                    }
+                    
+                    &.new_window .dynatree-icon:before {
+                        content: "\E152"
+                    }
+                    
+                    &.check .dynatree-icon:before {
+                        content: "\E153"
+                    }
+                    
+                    &.unchecked .dynatree-icon:before {
+                        content: "\E154"
+                    }
+                    
+                    &.more_windows .dynatree-icon:before {
+                        content: "\E155"
+                    }
+                    
+                    &.show_big_thumbnails .dynatree-icon:before {
+                        content: "\E156"
+                    }
+                    
+                    &.show_thumbnails .dynatree-icon:before {
+                        content: "\E157"
+                    }
+                    
+                    &.show_thumbnails_with_lines .dynatree-icon:before {
+                        content: "\E158"
+                    }
+                    
+                    &.show_lines .dynatree-icon:before {
+                        content: "\E159"
+                    }
+                    
+                    &.playlist .dynatree-icon:before {
+                        content: "\E160"
+                    }
+                    
+                    &.imac .dynatree-icon:before {
+                        content: "\E161"
+                    }
+                    
+                    &.macbook .dynatree-icon:before {
+                        content: "\E162"
+                    }
+                    
+                    &.ipad .dynatree-icon:before {
+                        content: "\E163"
+                    }
+                    
+                    &.iphone .dynatree-icon:before {
+                        content: "\E164"
+                    }
+                    
+                    &.iphone_transfer .dynatree-icon:before {
+                        content: "\E165"
+                    }
+                    
+                    &.iphone_exchange .dynatree-icon:before {
+                        content: "\E166"
+                    }
+                    
+                    &.ipod .dynatree-icon:before {
+                        content: "\E167"
+                    }
+                    
+                    &.ipod_shuffle .dynatree-icon:before {
+                        content: "\E168"
+                    }
+                    
+                    &.ear_plugs .dynatree-icon:before {
+                        content: "\E169"
+                    }
+                    
+                    &.record .dynatree-icon:before {
+                        content: "\E170"
+                    }
+                    
+                    &.step_backward .dynatree-icon:before {
+                        content: "\E171"
+                    }
+                    
+                    &.fast_backward .dynatree-icon:before {
+                        content: "\E172"
+                    }
+                    
+                    &.rewind .dynatree-icon:before {
+                        content: "\E173"
+                    }
+                    
+                    &.play .dynatree-icon:before {
+                        content: "\E174"
+                    }
+                    
+                    &.pause .dynatree-icon:before {
+                        content: "\E175"
+                    }
+                    
+                    &.stop .dynatree-icon:before {
+                        content: "\E176"
+                    }
+                    
+                    &.forward .dynatree-icon:before {
+                        content: "\E177"
+                    }
+                    
+                    &.fast_forward .dynatree-icon:before {
+                        content: "\E178"
+                    }
+                    
+                    &.step_forward .dynatree-icon:before {
+                        content: "\E179"
+                    }
+                    
+                    &.eject .dynatree-icon:before {
+                        content: "\E180"
+                    }
+                    
+                    &.facetime_video .dynatree-icon:before {
+                        content: "\E181"
+                    }
+                    
+                    &.download_alt .dynatree-icon:before {
+                        content: "\E182"
+                    }
+                    
+                    &.mute .dynatree-icon:before {
+                        content: "\E183"
+                    }
+                    
+                    &.volume_down .dynatree-icon:before {
+                        content: "\E184"
+                    }
+                    
+                    &.volume_up .dynatree-icon:before {
+                        content: "\E185"
+                    }
+                    
+                    &.screenshot .dynatree-icon:before {
+                        content: "\E186"
+                    }
+                    
+                    &.move .dynatree-icon:before {
+                        content: "\E187"
+                    }
+                    
+                    &.more .dynatree-icon:before {
+                        content: "\E188"
+                    }
+                    
+                    &.brightness_reduce .dynatree-icon:before {
+                        content: "\E189"
+                    }
+                    
+                    &.brightness_increase .dynatree-icon:before {
+                        content: "\E190"
+                    }
+                    
+                    &.circle_plus .dynatree-icon:before {
+                        content: "\E191"
+                    }
+                    
+                    &.circle_minus .dynatree-icon:before {
+                        content: "\E192"
+                    }
+                    
+                    &.circle_remove .dynatree-icon:before {
+                        content: "\E193"
+                    }
+                    
+                    &.circle_ok .dynatree-icon:before {
+                        content: "\E194"
+                    }
+                    
+                    &.circle_question_mark .dynatree-icon:before {
+                        content: "\E195"
+                    }
+                    
+                    &.circle_info .dynatree-icon:before {
+                        content: "\E196"
+                    }
+                    
+                    &.circle_exclamation_mark .dynatree-icon:before {
+                        content: "\E197"
+                    }
+                    
+                    &.remove .dynatree-icon:before {
+                        content: "\E198"
+                    }
+                    
+                    &.ok .dynatree-icon:before {
+                        content: "\E199"
+                    }
+                    
+                    &.ban .dynatree-icon:before {
+                        content: "\E200"
+                    }
+                    
+                    &.download .dynatree-icon:before {
+                        content: "\E201"
+                    }
+                    
+                    &.upload .dynatree-icon:before {
+                        content: "\E202"
+                    }
+                    
+                    &.shopping_cart .dynatree-icon:before {
+                        content: "\E203"
+                    }
+                    
+                    &.lock .dynatree-icon:before {
+                        content: "\E204"
+                    }
+                    
+                    &.unlock .dynatree-icon:before {
+                        content: "\E205"
+                    }
+                    
+                    &.electricity .dynatree-icon:before {
+                        content: "\E206"
+                    }
+                    
+                    &.ok_2 .dynatree-icon:before {
+                        content: "\E207"
+                    }
+                    
+                    &.remove_2 .dynatree-icon:before {
+                        content: "\E208"
+                    }
+                    
+                    &.cart_out .dynatree-icon:before {
+                        content: "\E209"
+                    }
+                    
+                    &.cart_in .dynatree-icon:before {
+                        content: "\E210"
+                    }
+                    
+                    &.left_arrow .dynatree-icon:before {
+                        content: "\E211"
+                    }
+                    
+                    &.right_arrow .dynatree-icon:before {
+                        content: "\E212"
+                    }
+                    
+                    &.down_arrow .dynatree-icon:before {
+                        content: "\E213"
+                    }
+                    
+                    &.up_arrow .dynatree-icon:before {
+                        content: "\E214"
+                    }
+                    
+                    &.resize_small .dynatree-icon:before {
+                        content: "\E215"
+                    }
+                    
+                    &.resize_full .dynatree-icon:before {
+                        content: "\E216"
+                    }
+                    
+                    &.circle_arrow_left .dynatree-icon:before {
+                        content: "\E217"
+                    }
+                    
+                    &.circle_arrow_right .dynatree-icon:before {
+                        content: "\E218"
+                    }
+                    
+                    &.circle_arrow_top .dynatree-icon:before {
+                        content: "\E219"
+                    }
+                    
+                    &.circle_arrow_down .dynatree-icon:before {
+                        content: "\E220"
+                    }
+                    
+                    &.play_button .dynatree-icon:before {
+                        content: "\E221"
+                    }
+                    
+                    &.unshare .dynatree-icon:before {
+                        content: "\E222"
+                    }
+                    
+                    &.share .dynatree-icon:before {
+                        content: "\E223"
+                    }
+                    
+                    &.chevron-right .dynatree-icon:before {
+                        content: "\E224"
+                    }
+                    
+                    &.chevron-left .dynatree-icon:before {
+                        content: "\E225"
+                    }
+                    
+                    &.bluetooth .dynatree-icon:before {
+                        content: "\E226"
+                    }
+                    
+                    &.euro .dynatree-icon:before {
+                        content: "\20AC"
+                    }
+                    
+                    &.usd .dynatree-icon:before {
+                        content: "\E228"
+                    }
+                    
+                    &.gbp .dynatree-icon:before {
+                        content: "\E229"
+                    }
+                    
+                    &.retweet_2 .dynatree-icon:before {
+                        content: "\E230"
+                    }
+                    
+                    &.moon .dynatree-icon:before {
+                        content: "\E231"
+                    }
+                    
+                    &.sun .dynatree-icon:before {
+                        content: "\2609"
+                    }
+                    
+                    &.cloud .dynatree-icon:before {
+                        content: "\2601"
+                    }
+                    
+                    &.direction .dynatree-icon:before {
+                        content: "\E234"
+                    }
+                    
+                    &.brush .dynatree-icon:before {
+                        content: "\E235"
+                    }
+                    
+                    &.pen .dynatree-icon:before {
+                        content: "\E236"
+                    }
+                    
+                    &.zoom_in .dynatree-icon:before {
+                        content: "\E237"
+                    }
+                    
+                    &.zoom_out .dynatree-icon:before {
+                        content: "\E238"
+                    }
+                    
+                    &.pin .dynatree-icon:before {
+                        content: "\E239"
+                    }
+                    
+                    &.albums .dynatree-icon:before {
+                        content: "\E240"
+                    }
+                    
+                    &.rotation_lock .dynatree-icon:before {
+                        content: "\E241"
+                    }
+                    
+                    &.flash .dynatree-icon:before {
+                        content: "\E242"
+                    }
+                    
+                    &.google_maps .dynatree-icon:before {
+                        content: "\E243"
+                    }
+                    
+                    &.anchor .dynatree-icon:before {
+                        content: "\2693"
+                    }
+                    
+                    &.conversation .dynatree-icon:before {
+                        content: "\E245"
+                    }
+                    
+                    &.chat .dynatree-icon:before {
+                        content: "\E246"
+                    }
+                    
+                    &.male .dynatree-icon:before {
+                        content: "\E247"
+                    }
+                    
+                    &.female .dynatree-icon:before {
+                        content: "\E248"
+                    }
+                    
+                    &.asterisk .dynatree-icon:before {
+                        content: "\002A"
+                    }
+                    
+                    &.divide .dynatree-icon:before {
+                        content: "\00F7"
+                    }
+                    
+                    &.snorkel_diving .dynatree-icon:before {
+                        content: "\E251"
+                    }
+                    
+                    &.scuba_diving .dynatree-icon:before {
+                        content: "\E252"
+                    }
+                    
+                    &.oxygen_bottle .dynatree-icon:before {
+                        content: "\E253"
+                    }
+                    
+                    &.fins .dynatree-icon:before {
+                        content: "\E254"
+                    }
+                    
+                    &.fishes .dynatree-icon:before {
+                        content: "\E255"
+                    }
+                    
+                    &.boat .dynatree-icon:before {
+                        content: "\E256"
+                    }
+                    
+                    &.delete .dynatree-icon:before {
+                        content: "\E257"
+                    }
+                    
+                    &.sheriffs_star .dynatree-icon:before {
+                        content: "\E258"
+                    }
+                    
+                    &.qrcode .dynatree-icon:before {
+                        content: "\E259"
+                    }
+                    
+                    &.barcode .dynatree-icon:before {
+                        content: "\E260"
+                    }
+                    
+                    &.pool .dynatree-icon:before {
+                        content: "\E261"
+                    }
+                    
+                    &.buoy .dynatree-icon:before {
+                        content: "\E262"
+                    }
+                    
+                    &.spade .dynatree-icon:before {
+                        content: "\E263"
+                    }
+                    
+                    &.bank .dynatree-icon:before {
+                        content: "\E264"
+                    }
+                    
+                    &.vcard .dynatree-icon:before {
+                        content: "\E265"
+                    }
+                    
+                    &.electrical_plug .dynatree-icon:before {
+                        content: "\E266"
+                    }
+                    
+                    &.flag .dynatree-icon:before {
+                        content: "\E267"
+                    }
+                    
+                    &.credit_card .dynatree-icon:before {
+                        content: "\E268"
+                    }
+                    
+                    &.keyboard-wireless .dynatree-icon:before {
+                        content: "\E269"
+                    }
+                    
+                    &.keyboard-wired .dynatree-icon:before {
+                        content: "\E270"
+                    }
+                    
+                    &.shield .dynatree-icon:before {
+                        content: "\E271"
+                    }
+                    
+                    &.ring .dynatree-icon:before {
+                        content: "\02DA"
+                    }
+                    
+                    &.cake .dynatree-icon:before {
+                        content: "\E273"
+                    }
+                    
+                    &.drink .dynatree-icon:before {
+                        content: "\E274"
+                    }
+                    
+                    &.beer .dynatree-icon:before {
+                        content: "\E275"
+                    }
+                    
+                    &.fast_food .dynatree-icon:before {
+                        content: "\E276"
+                    }
+                    
+                    &.cutlery .dynatree-icon:before {
+                        content: "\E277"
+                    }
+                    
+                    &.pizza .dynatree-icon:before {
+                        content: "\E278"
+                    }
+                    
+                    &.birthday_cake .dynatree-icon:before {
+                        content: "\E279"
+                    }
+                    
+                    &.tablet .dynatree-icon:before {
+                        content: "\E280"
+                    }
+                    
+                    &.settings .dynatree-icon:before {
+                        content: "\E281"
+                    }
+                    
+                    &.bullets .dynatree-icon:before {
+                        content: "\E282"
+                    }
+                    
+                    &.cardio .dynatree-icon:before {
+                        content: "\E283"
+                    }
+                    
+                    &.t-shirt .dynatree-icon:before {
+                        content: "\E284"
+                    }
+                    
+                    &.pants .dynatree-icon:before {
+                        content: "\E285"
+                    }
+                    
+                    &.sweater .dynatree-icon:before {
+                        content: "\E286"
+                    }
+                    
+                    &.fabric .dynatree-icon:before {
+                        content: "\E287"
+                    }
+                    
+                    &.leather .dynatree-icon:before {
+                        content: "\E288"
+                    }
+                    
+                    &.scissors .dynatree-icon:before {
+                        content: "\E289"
+                    }
+                    
+                    &.bomb .dynatree-icon:before {
+                        content: "\E290"
+                    }
+                    
+                    &.skull .dynatree-icon:before {
+                        content: "\E291"
+                    }
+                    
+                    &.celebration .dynatree-icon:before {
+                        content: "\E292"
+                    }
+                    
+                    &.tea_kettle .dynatree-icon:before {
+                        content: "\E293"
+                    }
+                    
+                    &.french_press .dynatree-icon:before {
+                        content: "\E294"
+                    }
+                    
+                    &.coffee_cup .dynatree-icon:before {
+                        content: "\E295"
+                    }
+                    
+                    &.pot .dynatree-icon:before {
+                        content: "\E296"
+                    }
+                    
+                    &.grater .dynatree-icon:before {
+                        content: "\E297"
+                    }
+                    
+                    &.kettle .dynatree-icon:before {
+                        content: "\E298"
+                    }
+                    
+                    &.hospital .dynatree-icon:before {
+                        content: "\E299"
+                    }
+                    
+                    &.hospital_h .dynatree-icon:before {
+                        content: "\E300"
+                    }
+                    
+                    &.microphone .dynatree-icon:before {
+                        content: "\E301"
+                    }
+                    
+                    &.webcam .dynatree-icon:before {
+                        content: "\E302"
+                    }
+                    
+                    &.temple_christianity_church .dynatree-icon:before {
+                        content: "\E303"
+                    }
+                    
+                    &.temple_islam .dynatree-icon:before {
+                        content: "\E304"
+                    }
+                    
+                    &.temple_hindu .dynatree-icon:before {
+                        content: "\E305"
+                    }
+                    
+                    &.temple_buddhist .dynatree-icon:before {
+                        content: "\E306"
+                    }
+                    
+                    &.bicycle .dynatree-icon:before {
+                        content: "\E307"
+                    }
+                    
+                    &.life_preserver .dynatree-icon:before {
+                        content: "\E308"
+                    }
+                    
+                    &.share_alt .dynatree-icon:before {
+                        content: "\E309"
+                    }
+                    
+                    &.comments .dynatree-icon:before {
+                        content: "\E310"
+                    }
+                    
+                    &.flower .dynatree-icon:before {
+                        content: "\2698"
+                    }
+                    
+                    &.baseball .dynatree-icon:before {
+                        content: "\26BE"
+                    }
+                    
+                    &.rugby .dynatree-icon:before {
+                        content: "\E313"
+                    }
+                    
+                    &.ax .dynatree-icon:before {
+                        content: "\E314"
+                    }
+                    
+                    &.table_tennis .dynatree-icon:before {
+                        content: "\E315"
+                    }
+                    
+                    &.bowling .dynatree-icon:before {
+                        content: "\E316"
+                    }
+                    
+                    &.tree_conifer .dynatree-icon:before {
+                        content: "\E317"
+                    }
+                    
+                    &.tree_deciduous .dynatree-icon:before {
+                        content: "\E318"
+                    }
+                    
+                    &.more_items .dynatree-icon:before {
+                        content: "\E319"
+                    }
+                    
+                    &.sort .dynatree-icon:before {
+                        content: "\E320"
+                    }
+                    
+                    &.filter .dynatree-icon:before {
+                        content: "\E321"
+                    }
+                    
+                    &.gamepad .dynatree-icon:before {
+                        content: "\E322"
+                    }
+                    
+                    &.playing_dices .dynatree-icon:before {
+                        content: "\E323"
+                    }
+                    
+                    &.calculator .dynatree-icon:before {
+                        content: "\E324"
+                    }
+                    
+                    &.tie .dynatree-icon:before {
+                        content: "\E325"
+                    }
+                    
+                    &.wallet .dynatree-icon:before {
+                        content: "\E326"
+                    }
+                    
+                    &.piano .dynatree-icon:before {
+                        content: "\E327"
+                    }
+                    
+                    &.sampler .dynatree-icon:before {
+                        content: "\E328"
+                    }
+                    
+                    &.podium .dynatree-icon:before {
+                        content: "\E329"
+                    }
+                    
+                    &.soccer_ball .dynatree-icon:before {
+                        content: "\E330"
+                    }
+                    
+                    &.blog .dynatree-icon:before {
+                        content: "\E331"
+                    }
+                    
+                    &.dashboard .dynatree-icon:before {
+                        content: "\E332"
+                    }
+                    
+                    &.certificate .dynatree-icon:before {
+                        content: "\E333"
+                    }
+                    
+                    &.bell .dynatree-icon:before {
+                        content: "\E334"
+                    }
+                    
+                    &.candle .dynatree-icon:before {
+                        content: "\E335"
+                    }
+                    
+                    &.pushpin .dynatree-icon:before {
+                        content: "\E336"
+                    }
+                    
+                    &.iphone_shake .dynatree-icon:before {
+                        content: "\E337"
+                    }
+                    
+                    &.pin_flag .dynatree-icon:before {
+                        content: "\E338"
+                    }
+                    
+                    &.turtle .dynatree-icon:before {
+                        content: "\E339"
+                    }
+                    
+                    &.rabbit .dynatree-icon:before {
+                        content: "\E340"
+                    }
+                    
+                    &.globe .dynatree-icon:before {
+                        content: "\E341"
+                    }
+                    
+                    &.briefcase .dynatree-icon:before {
+                        content: "\E342"
+                    }
+                    
+                    &.hdd .dynatree-icon:before {
+                        content: "\E343"
+                    }
+                    
+                    &.thumbs_up .dynatree-icon:before {
+                        content: "\E344"
+                    }
+                    
+                    &.thumbs_down .dynatree-icon:before {
+                        content: "\E345"
+                    }
+                    
+                    &.hand_right .dynatree-icon:before {
+                        content: "\E346"
+                    }
+                    
+                    &.hand_left .dynatree-icon:before {
+                        content: "\E347"
+                    }
+                    
+                    &.hand_up .dynatree-icon:before {
+                        content: "\E348"
+                    }
+                    
+                    &.hand_down .dynatree-icon:before {
+                        content: "\E349"
+                    }
+                    
+                    &.fullscreen .dynatree-icon:before {
+                        content: "\E350"
+                    }
+                    
+                    &.shopping_bag .dynatree-icon:before {
+                        content: "\E351"
+                    }
+                    
+                    &.book_open .dynatree-icon:before {
+                        content: "\E352"
+                    }
+                    
+                    &.nameplate .dynatree-icon:before {
+                        content: "\E353"
+                    }
+                    
+                    &.nameplate_alt .dynatree-icon:before {
+                        content: "\E354"
+                    }
+                    
+                    &.vases .dynatree-icon:before {
+                        content: "\E355"
+                    }
+                    
+                    &.bullhorn .dynatree-icon:before {
+                        content: "\E356"
+                    }
+                    
+                    &.dumbbell .dynatree-icon:before {
+                        content: "\E357"
+                    }
+                    
+                    &.suitcase .dynatree-icon:before {
+                        content: "\E358"
+                    }
+                    
+                    &.file_import .dynatree-icon:before {
+                        content: "\E359"
+                    }
+                    
+                    &.file_export .dynatree-icon:before {
+                        content: "\E360"
+                    }
+                    
+                    &.bug .dynatree-icon:before {
+                        content: "\E361"
+                    }
+                    
+                    &.crown .dynatree-icon:before {
+                        content: "\E362"
+                    }
+                    
+                    &.smoking .dynatree-icon:before {
+                        content: "\E363"
+                    }
+                    
+                    &.cloud-download .dynatree-icon:before {
+                        content: "\E364"
+                    }
+                    
+                    &.cloud-upload .dynatree-icon:before {
+                        content: "\E365"
+                    }
+                    
+                    &.restart .dynatree-icon:before {
+                        content: "\E366"
+                    }
+                    
+                    &.security_camera .dynatree-icon:before {
+                        content: "\E367"
+                    }
+                    
+                    &.expand .dynatree-icon:before {
+                        content: "\E368"
+                    }
+                    
+                    &.collapse .dynatree-icon:before {
+                        content: "\E369"
+                    }
+                    
+                    &.collapse_top .dynatree-icon:before {
+                        content: "\E370"
+                    }
+                    
+                    &.globe_af .dynatree-icon:before {
+                        content: "\E371"
+                    }
+                    
+                    &.global .dynatree-icon:before {
+                        content: "\E372"
+                    }
+                    
+                    &.spray .dynatree-icon:before {
+                        content: "\E373"
+                    }
+                    
+                    &.nails .dynatree-icon:before {
+                        content: "\E374"
+                    }
+                    
+                    &.claw_hammer .dynatree-icon:before {
+                        content: "\E375"
+                    }
+                    
+                    &.classic_hammer .dynatree-icon:before {
+                        content: "\E376"
+                    }
+                    
+                    &.hand_saw .dynatree-icon:before {
+                        content: "\E377"
+                    }
+                    
+                    &.riflescope .dynatree-icon:before {
+                        content: "\E378"
+                    }
+                    
+                    &.electrical_socket_eu .dynatree-icon:before {
+                        content: "\E379"
+                    }
+                    
+                    &.electrical_socket_us .dynatree-icon:before {
+                        content: "\E380"
+                    }
+                    
+                    &.message_forward .dynatree-icon:before {
+                        content: "\E381"
+                    }
+                    
+                    &.coat_hanger .dynatree-icon:before {
+                        content: "\E382"
+                    }
+                    
+                    &.dress .dynatree-icon:before {
+                        content: "\E383"
+                    }
+                    
+                    &.bathrobe .dynatree-icon:before {
+                        content: "\E384"
+                    }
+                    
+                    &.shirt .dynatree-icon:before {
+                        content: "\E385"
+                    }
+                    
+                    &.underwear .dynatree-icon:before {
+                        content: "\E386"
+                    }
+                    
+                    &.log_in .dynatree-icon:before {
+                        content: "\E387"
+                    }
+                    
+                    &.log_out .dynatree-icon:before {
+                        content: "\E388"
+                    }
+                    
+                    &.exit .dynatree-icon:before {
+                        content: "\E389"
+                    }
+                    
+                    &.new_window_alt .dynatree-icon:before {
+                        content: "\E390"
+                    }
+                    
+                    &.video_sd .dynatree-icon:before {
+                        content: "\E391"
+                    }
+                    
+                    &.video_hd .dynatree-icon:before {
+                        content: "\E392"
+                    }
+                    
+                    &.subtitles .dynatree-icon:before {
+                        content: "\E393"
+                    }
+                    
+                    &.sound_stereo .dynatree-icon:before {
+                        content: "\E394"
+                    }
+                    
+                    &.sound_dolby .dynatree-icon:before {
+                        content: "\E395"
+                    }
+                    
+                    &.sound_5_1 .dynatree-icon:before {
+                        content: "\E396"
+                    }
+                    
+                    &.sound_6_1 .dynatree-icon:before {
+                        content: "\E397"
+                    }
+                    
+                    &.sound_7_1 .dynatree-icon:before {
+                        content: "\E398"
+                    }
+                    
+                    &.copyright_mark .dynatree-icon:before {
+                        content: "\E399"
+                    }
+                    
+                    &.registration_mark .dynatree-icon:before {
+                        content: "\E400"
+                    }
+                    
+                    &.radar .dynatree-icon:before {
+                        content: "\E401"
+                    }
+                    
+                    &.skateboard .dynatree-icon:before {
+                        content: "\E402"
+                    }
+                    
+                    &.golf_course .dynatree-icon:before {
+                        content: "\E403"
+                    }
+                    
+                    &.sorting .dynatree-icon:before {
+                        content: "\E404"
+                    }
+                    
+                    &.sort-by-alphabet .dynatree-icon:before {
+                        content: "\E405"
+                    }
+                    
+                    &.sort-by-alphabet-alt .dynatree-icon:before {
+                        content: "\E406"
+                    }
+                    
+                    &.sort-by-order .dynatree-icon:before {
+                        content: "\E407"
+                    }
+                    
+                    &.sort-by-order-alt .dynatree-icon:before {
+                        content: "\E408"
+                    }
+                    
+                    &.sort-by-attributes .dynatree-icon:before {
+                        content: "\E409"
+                    }
+                    
+                    &.sort-by-attributes-alt .dynatree-icon:before {
+                        content: "\E410"
+                    }
+                    
+                    &.compressed .dynatree-icon:before {
+                        content: "\E411"
+                    }
+                    
+                    &.package .dynatree-icon:before {
+                        content: "\E412"
+                    }
+                    
+                    &.cloud_plus .dynatree-icon:before {
+                        content: "\E413"
+                    }
+                    
+                    &.cloud_minus .dynatree-icon:before {
+                        content: "\E414"
+                    }
+                    
+                    &.disk_save .dynatree-icon:before {
+                        content: "\E415"
+                    }
+                    
+                    &.disk_open .dynatree-icon:before {
+                        content: "\E416"
+                    }
+                    
+                    &.disk_saved .dynatree-icon:before {
+                        content: "\E417"
+                    }
+                    
+                    &.disk_remove .dynatree-icon:before {
+                        content: "\E418"
+                    }
+                    
+                    &.disk_import .dynatree-icon:before {
+                        content: "\E419"
+                    }
+                    
+                    &.disk_export .dynatree-icon:before {
+                        content: "\E420"
+                    }
+                    
+                    &.tower .dynatree-icon:before {
+                        content: "\E421"
+                    }
+                    
+                    &.send .dynatree-icon:before {
+                        content: "\E422"
+                    }
+                    
+                    &.git_branch .dynatree-icon:before {
+                        content: "\E423"
+                    }
+                    
+                    &.git_create .dynatree-icon:before {
+                        content: "\E424"
+                    }
+                    
+                    &.git_private .dynatree-icon:before {
+                        content: "\E425"
+                    }
+                    
+                    &.git_delete .dynatree-icon:before {
+                        content: "\E426"
+                    }
+                    
+                    &.git_merge .dynatree-icon:before {
+                        content: "\E427"
+                    }
+                    
+                    &.git_pull_request .dynatree-icon:before {
+                        content: "\E428"
+                    }
+                    
+                    &.git_compare .dynatree-icon:before {
+                        content: "\E429"
+                    }
+                    
+                    &.git_commit .dynatree-icon:before {
+                        content: "\E430"
+                    }
+                    
+                    &.construction_cone .dynatree-icon:before {
+                        content: "\E431"
+                    }
+                    
+                    &.shoe_steps .dynatree-icon:before {
+                        content: "\E432"
+                    }
+                    
+                    &.plus .dynatree-icon:before {
+                        content: "\002B"
+                    }
+                    
+                    &.minus .dynatree-icon:before {
+                        content: "\2212"
+                    }
+                    
+                    &.redo .dynatree-icon:before {
+                        content: "\E435"
+                    }
+                    
+                    &.undo .dynatree-icon:before {
+                        content: "\E436"
+                    }
+                    
+                    &.golf .dynatree-icon:before {
+                        content: "\E437"
+                    }
+                    
+                    &.hockey .dynatree-icon:before {
+                        content: "\E438"
+                    }
+                    
+                    &.pipe .dynatree-icon:before {
+                        content: "\E439"
+                    }
+                    
+                    &.wrench .dynatree-icon:before {
+                        content: "\E440"
+                    }
+                    
+                    &.folder_closed .dynatree-icon:before {
+                        content: "\E441"
+                    }
+                    
+                    &.phone_alt .dynatree-icon:before {
+                        content: "\E442"
+                    }
+                    
+                    &.earphone .dynatree-icon:before {
+                        content: "\E443"
+                    }
+                    
+                    &.floppy_disk .dynatree-icon:before {
+                        content: "\E444"
+                    }
+                    
+                    &.floppy_saved .dynatree-icon:before {
+                        content: "\E445"
+                    }
+                    
+                    &.floppy_remove .dynatree-icon:before {
+                        content: "\E446"
+                    }
+                    
+                    &.floppy_save .dynatree-icon:before {
+                        content: "\E447"
+                    }
+                    
+                    &.floppy_open .dynatree-icon:before {
+                        content: "\E448"
+                    }
+                    
+                    &.translate .dynatree-icon:before {
+                        content: "\E449"
+                    }
+                    
+                    &.fax .dynatree-icon:before {
+                        content: "\E450"
+                    }
+                    
+                    &.factory .dynatree-icon:before {
+                        content: "\E451"
+                    }
+                    
+                    &.shop_window .dynatree-icon:before {
+                        content: "\E452"
+                    }
+                    
+                    &.shop .dynatree-icon:before {
+                        content: "\E453"
+                    }
+                    
+                    &.kiosk .dynatree-icon:before {
+                        content: "\E454"
+                    }
+                    
+                    &.kiosk_wheels .dynatree-icon:before {
+                        content: "\E455"
+                    }
+                    
+                    &.kiosk_light .dynatree-icon:before {
+                        content: "\E456"
+                    }
+                    
+                    &.kiosk_food .dynatree-icon:before {
+                        content: "\E457"
+                    }
+                    
+                    &.transfer .dynatree-icon:before {
+                        content: "\E458"
+                    }
+                    
+                    &.money .dynatree-icon:before {
+                        content: "\E459"
+                    }
+                    
+                    &.header .dynatree-icon:before {
+                        content: "\E460"
+                    }
+                    
+                    &.blacksmith .dynatree-icon:before {
+                        content: "\E461"
+                    }
+                    
+                    &.saw_blade .dynatree-icon:before {
+                        content: "\E462"
+                    }
+                    
+                    &.basketball .dynatree-icon:before {
+                        content: "\E463"
+                    }
+                    
+                    &.server .dynatree-icon:before {
+                        content: "\E464"
+                    }
+                    
+                    &.server_plus .dynatree-icon:before {
+                        content: "\E465"
+                    }
+                    
+                    &.server_minus .dynatree-icon:before {
+                        content: "\E466"
+                    }
+                    
+                    &.server_ban .dynatree-icon:before {
+                        content: "\E467"
+                    }
+                    
+                    &.server_flag .dynatree-icon:before {
+                        content: "\E468"
+                    }
+                    
+                    &.server_lock .dynatree-icon:before {
+                        content: "\E469"
+                    }
+                    
+                    &.server_new .dynatree-icon:before {
+                        content: "\E470"
+                    }
+                }
+            }
+        }
+        
+        // Temporary node (displayed while loading)
+        .dynatree-temporary-node {
+            & > .dynatree-temporary-title {
+                .dynatree-node;
+            }
+            
+            &.active > .dynatree-temporary-title {
+                color: @brand-primary;
+                font-weight: bold;
+            }
+        }
+    }
+}

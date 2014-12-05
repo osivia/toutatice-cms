@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 
-<ul>
+<ul class="dynatree-container">
     <c:forEach var="child" items="${parent.children}">
         <!-- Selected item ? -->
         <c:remove var="selected" />
@@ -23,11 +23,11 @@
         </c:if>
         
         <!-- Data -->
-        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}'" />
+        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${child.navItem.type.glyph}'" />
         
     
-        <li class="${selected} ${current} ${navigable}" data="${data}">
-            <a href="${child.url}">${child.title}</a>
+        <li class="dynatree-temporary-node ${selected} ${current} ${navigable}" data="${data}">
+            <a href="${child.url}" class="dynatree-temporary-title">${child.title}</a>
             
             <c:if test="${not empty child.children}">
                 <c:set var="parent" value="${child}" scope="request" />

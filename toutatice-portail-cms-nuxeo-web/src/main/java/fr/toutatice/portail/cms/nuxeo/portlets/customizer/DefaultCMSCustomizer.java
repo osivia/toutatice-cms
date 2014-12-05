@@ -1295,7 +1295,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // File
         defaultTypes.add(new CMSItemType("File", false, false, false, false, true, new ArrayList<String>(0), null));
         // Note
-        defaultTypes.add(new CMSItemType("Note", false, false, false, false, true, new ArrayList<String>(0), null));
+        defaultTypes.add(new CMSItemType("Note", false, false, false, false, true, new ArrayList<String>(0), null, "notes_2"));
         // Annonce
         defaultTypes.add(new CMSItemType("Annonce", false, false, false, false, true, new ArrayList<String>(0), null));
         // Annonce folder

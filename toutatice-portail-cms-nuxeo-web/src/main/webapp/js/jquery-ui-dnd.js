@@ -61,7 +61,7 @@ $JQry(function() {
 	
 	
 	// Menu Dynatree
-	$JQry(".nuxeo-publish-navigation .dynatree").dynatree({
+	$JQry(".menu .dynatree").dynatree({
 		activeVisible : true,
 		clickFolderMode : 1,
 
@@ -70,14 +70,22 @@ $JQry(function() {
 			preventVoidMoves : true,
 
 			onDragEnter : function(node, sourceNode, ui, draggable) {
+				// Only drop on folders
 				if (!node.data.isFolder) {
 					return false;
 				}
 				
+				// Prevent drop on active node
+				if (node.data.activate) {
+					return false;
+				}
+				
+				// Target node must accept at least one sub-type
 				if (node.data.acceptedTypes == undefined) {
 					return false;
 				}
 
+				
 				// Source
 				var $source = $JQry(draggable.helper.context);
 				var sourceType = $source.data("type");
@@ -104,7 +112,7 @@ $JQry(function() {
 				var targetId = node.data.id;
 
 				// Action URL
-				var $root = $JQry(node.li).closest(".nuxeo-publish-navigation");
+				var $root = $JQry(node.li).closest(".menu");
 				var url = $root.data("dropurl");
 				
 				// AJAX call
@@ -119,7 +127,7 @@ $JQry(function() {
 				new Ajax.Request(url, options);
 			}
 		},
-
+		
 		onActivate : function(node) {
 			if (node.data.target) {
 				window.open(node.data.href, node.data.target);
@@ -130,7 +138,7 @@ $JQry(function() {
 
 		onLazyRead : function(node) {
 			// Lazy loading URL
-			var $root = $JQry(node.li).closest(".nuxeo-publish-navigation");
+			var $root = $JQry(node.li).closest(".menu");
 			var url = $root.data("lazyloadingurl");
 			
 			node.appendAjax({
@@ -141,6 +149,35 @@ $JQry(function() {
 				},
 			})
 		},
+
+		classNames: {
+	        container: "dynatree-container",		// OK
+	        node: "dynatree-node",					// OK
+	        folder: "dynatree-folder",				// OK
+
+	        empty: "dynatree-empty",
+	        vline: "dynatree-vline",
+	        expander: "dynatree-expander",			// OK
+	        connector: "dynatree-connector",		// OK
+	        checkbox: "dynatree-checkbox",
+	        nodeIcon: "dynatree-icon",				// OK
+	        title: "dynatree-title",				// OK
+	        noConnector: "dynatree-no-connector",
+
+	        nodeError: "dynatree-statusnode-error",	// OK
+	        nodeWait: "dynatree-statusnode-wait",	// OK
+	        hidden: "dynatree-hidden",
+	        combinedExpanderPrefix: "dynatree-exp-",
+	        combinedIconPrefix: "dynatree-ico-",
+	        hasChildren: "dynatree-has-children",
+	        active: "dynatree-active",				// OK
+	        selected: "dynatree-selected",
+	        expanded: "dynatree-expanded",
+	        lazy: "dynatree-lazy",
+	        focused: "dynatree-focused",			// OK
+	        partsel: "dynatree-partsel",
+	        lastsib: "dynatree-lastsib"
+	    },
 
 		debugLevel : 0
 	});
@@ -161,7 +198,7 @@ $JQry(function() {
 			$JQry.each(data.files, function(index, file) {
 				var $listItem = $JQry("<div />").addClass("clearfix");
 				
-				var $button =  $JQry("<button />").addClass("btn btn-primary pull-right").text("Upload");
+				var $button =  $JQry("<button />").addClass("btn btn-primary pull-right start").text("Upload");
 				$button.click(function() {
 					data.context = $JQry("<p />").text("Uploading...").replaceAll($JQry(this));
 					data.submit();
@@ -190,6 +227,14 @@ $JQry(function() {
 			console.log("done");
 			
 			data.context.text = "Upload finished.";
+		},
+		
+		stop : function(e, data) {
+			console.log("stop");
+		},
+		
+		processstop : function(e, data) {
+			console.log("processstop");
 		},
 		
 		progressall : function(e, data) {

@@ -105,27 +105,27 @@
 
 
     <!-- File upload -->
-    <div class="panel panel-default">
-        <div class="panel-heading">File upload</div>
-        
-        <div class="panel-body">
-            <form action="${fileUploadActionURL}" method="post" enctype="multipart/form-data" class="file-upload" role="form">
+    <form action="${fileUploadActionURL}" method="post" enctype="multipart/form-data" class="file-upload" role="form">
+        <div class="panel panel-default">
+            <div class="panel-heading">File upload</div>
+            
+            <div class="panel-body">
                 <div class="form-group">
                     <input type="file" name="files[]" multiple="multiple">
                 </div>
                 
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">
+                <div class="form-group fileupload-buttonbar">
+                    <button type="submit" class="btn btn-primary start">
                         <i class="glyphicons halflings upload"></i>
                         <span>Start upload</span>
                     </button>
                     
-                    <button type="reset" class="btn btn-warning">
+                    <button type="reset" class="btn btn-warning cancel">
                         <i class="glyphicons halflings ban-circle"></i>
                         <span>Cancel upload</span>
                     </button>
                     
-                    <button type="button" class="btn btn-danger">
+                    <button type="button" class="btn btn-danger delete">
                         <i class="glyphicons halflings trash"></i>
                         <span>Delete</span>
                     </button>
@@ -136,9 +136,9 @@
                         <div class="progress-bar" role="progressbar"></div>
                     </div>
                 </div>
-            </form>
+            </div>
+            
+            <ul class="file-upload-list list-group files"></ul>
         </div>
-        
-        <ul class="file-upload-list list-group"></ul>
-    </div>
+    </form>
 </div>
