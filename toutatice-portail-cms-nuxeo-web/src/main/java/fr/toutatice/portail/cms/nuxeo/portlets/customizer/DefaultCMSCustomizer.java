@@ -1301,7 +1301,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Annonce folder
         defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, Arrays.asList("Annonce"), null));
         // Contextual link
-        defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, true, new ArrayList<String>(0), null));
+        defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, true, new ArrayList<String>(0), null, "link"));
         // Document URL container
         defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, Arrays.asList("ContextualLink"), null));
 
