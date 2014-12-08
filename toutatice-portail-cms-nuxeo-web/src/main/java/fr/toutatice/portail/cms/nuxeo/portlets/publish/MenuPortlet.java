@@ -345,6 +345,8 @@ public class MenuPortlet extends CMSPortlet {
      * @param item navigation display item
      */
     private void writeNavigationDisplayItem(PrintWriter printWriter, NavigationDisplayItem item) {
+        boolean browsable = (item.getNavItem() != null) && (item.getNavItem().getType() != null) && item.getNavItem().getType().isBrowsable();
+
         printWriter.write("{ ");
 
         // Title
@@ -357,11 +359,11 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write(item.getUrl());
         printWriter.write("\", ");
 
-        // Navigable
+        // Browsable
         printWriter.write("\"isFolder\" : ");
-        printWriter.write(String.valueOf(item.isNavigable()));
+        printWriter.write(String.valueOf(browsable));
         printWriter.write(", \"isLazy\" : ");
-        printWriter.write(String.valueOf(item.isNavigable()));
+        printWriter.write(String.valueOf(browsable));
         printWriter.write(", ");
 
         // Id

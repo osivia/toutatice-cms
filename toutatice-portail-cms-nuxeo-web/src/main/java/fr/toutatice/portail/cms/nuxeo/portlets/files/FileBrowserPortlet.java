@@ -31,6 +31,7 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -53,6 +54,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** File upload notifications duration. */
+    private static final int FILE_UPLOAD_NOTIFICATIONS_DURATION = 1000;
 
     /** Nuxeo path window property name. */
     private static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
@@ -154,6 +158,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 String parentId = request.getParameter("parentId");
 
+                // Notification
+                Notifications notifications;
+
                 try {
                     DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
                     PortletFileUpload fileUpload = new PortletFileUpload(fileItemFactory);
@@ -167,45 +174,15 @@ public class FileBrowserPortlet extends CMSPortlet {
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
 
                     // Notification
-                    String message = bundle.getString("MESSAGE_FILE_UPLOAD_SUCCESS");
-                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+                    notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
+                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_SUCCESS"));
                 } catch (FileUploadException e) {
                     // Notification
-                    String message = bundle.getString("MESSAGE_FILE_UPLOAD_ERROR");
-                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    notifications = new Notifications(NotificationsType.ERROR, FILE_UPLOAD_NOTIFICATIONS_DURATION);
+                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_ERROR"));
                 }
 
-
-                //
-                // try {
-                // DiskFileItemFactory factory = new DiskFileItemFactory();
-                // PortletFileUpload upload = new PortletFileUpload(factory);
-                // List fileItems = upload.parseRequest(req);
-                // for (Iterator iterator = fileItems.iterator(); iterator.hasNext();)
-                // {
-                // FileItem item = (FileItem)iterator.next();
-                // if (item.getFieldName().equals("File"))
-                // {
-                // fileNames.add("" + item.getName());
-                // fileSizes.add("" + item.getSize());
-                // }
-                // else if (item.getFieldName().equals("Description"))
-                // {
-                // descriptions.add("" + item.getString(req.getCharacterEncoding()));
-                // }
-                // }
-                // }
-                // catch (FileUploadException e)
-                // {
-                // throw new PortletException(e);
-                // }
-                //
-                // request.get
-                //
-                // Object files = request.getParameter("files");
-                // if (files != null) {
-                // System.out.println("files : " + files);
-                // }
+                this.notificationsService.addNotifications(portalControllerContext, notifications);
             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {

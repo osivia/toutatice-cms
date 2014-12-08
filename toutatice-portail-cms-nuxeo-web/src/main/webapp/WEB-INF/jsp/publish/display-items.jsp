@@ -22,15 +22,9 @@
             <c:set var="current" value="active" />
         </c:if>
 
-        <!-- Navigable item ? -->
-        <c:remove var="navigable" />
-        <c:if test="${child.navigable && not child.current}">
-            <c:set var="navigable" value="droppable" />
-        </c:if>
-
     
         <li class="list-group-item">
-            <div class="${navigable}" data-id="${child.id}">
+            <div>
                 <!-- Button -->
                 <c:if test="${not empty child.children}">
                     <button type="button" class="btn btn-default hidden-noscript">

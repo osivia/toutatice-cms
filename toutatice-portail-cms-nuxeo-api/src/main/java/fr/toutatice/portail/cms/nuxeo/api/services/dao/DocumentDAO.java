@@ -22,8 +22,12 @@ import java.util.regex.Pattern;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
  * Document data access object service implementation.
@@ -41,6 +45,10 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
     /** Singleton instance. */
     private static DocumentDAO instance;
 
+
+    /** Nuxeo service. */
+    private final INuxeoService nuxeoService;
+
     /** Nuxeo date regex pattern. */
     private final Pattern datePattern;
 
@@ -50,6 +58,9 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      */
     private DocumentDAO() {
         super();
+
+        // Nuxeo service
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
 
         // Nuxeo date regex pattern
         this.datePattern = Pattern.compile(NUXEO_DATE_REGEX);
@@ -83,13 +94,14 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // Path
         dto.setPath(document.getPath());
         // Type
-        dto.setType(document.getType());
+        dto.setType(this.getType(document.getType()));
         // Properties
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
 
         // Original Nuxeo document
         dto.setDocument(document);
+
 
         return dto;
     }
@@ -127,6 +139,22 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         }
 
         return map;
+    }
+
+
+    /**
+     * Get CMS item type.
+     *
+     * @param type document type name
+     * @return CMS item type
+     */
+    private CMSItemType getType(String type) {
+        // CMS customizer
+        INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
+
+        // CMS item types
+        Map<String, CMSItemType> types = cmsCustomizer.getCMSItemTypes();
+        return types.get(type);
     }
 
 }

@@ -69,19 +69,19 @@ $JQry(function() {
 			autoExpandMS : 500,
 			preventVoidMoves : true,
 
-			onDragEnter : function(node, sourceNode, ui, draggable) {
+			onDragEnter : function(targetNode, sourceNode, ui, draggable) {
 				// Only drop on folders
-				if (!node.data.isFolder) {
+				if (!targetNode.data.isFolder) {
 					return false;
 				}
 				
 				// Prevent drop on active node
-				if (node.data.activate) {
+				if (targetNode.data.activate) {
 					return false;
 				}
 				
 				// Target node must accept at least one sub-type
-				if (node.data.acceptedTypes == undefined) {
+				if (targetNode.data.acceptedTypes == undefined) {
 					return false;
 				}
 
@@ -91,7 +91,7 @@ $JQry(function() {
 				var sourceType = $source.data("type");
 
 				// Target
-				var targetAcceptedTypes = node.data.acceptedTypes.split(",");
+				var targetAcceptedTypes = targetNode.data.acceptedTypes.split(",");
 				
 				var acceptedType = false;
 				jQuery.each(targetAcceptedTypes, function(index, type) {
@@ -103,16 +103,16 @@ $JQry(function() {
 				return acceptedType;
 			},
 
-			onDrop : function(node, sourceNode, hitMode, ui, draggable) {
+			onDrop : function(targetNode, sourceNode, hitMode, ui, draggable) {
 				// Source
 				var $source = $JQry(draggable.helper.context);
 				var sourceId = $source.data("id");
 
 				// Target
-				var targetId = node.data.id;
+				var targetId = targetNode.data.id;
 
 				// Action URL
-				var $root = $JQry(node.li).closest(".menu");
+				var $root = $JQry(targetNode.li).closest(".menu");
 				var url = $root.data("dropurl");
 				
 				// AJAX call
@@ -148,38 +148,7 @@ $JQry(function() {
 					"path" : node.data.path
 				},
 			})
-		},
-
-		classNames: {
-	        container: "dynatree-container",		// OK
-	        node: "dynatree-node",					// OK
-	        folder: "dynatree-folder",				// OK
-
-	        empty: "dynatree-empty",
-	        vline: "dynatree-vline",
-	        expander: "dynatree-expander",			// OK
-	        connector: "dynatree-connector",		// OK
-	        checkbox: "dynatree-checkbox",
-	        nodeIcon: "dynatree-icon",				// OK
-	        title: "dynatree-title",				// OK
-	        noConnector: "dynatree-no-connector",
-
-	        nodeError: "dynatree-statusnode-error",	// OK
-	        nodeWait: "dynatree-statusnode-wait",	// OK
-	        hidden: "dynatree-hidden",
-	        combinedExpanderPrefix: "dynatree-exp-",
-	        combinedIconPrefix: "dynatree-ico-",
-	        hasChildren: "dynatree-has-children",
-	        active: "dynatree-active",				// OK
-	        selected: "dynatree-selected",
-	        expanded: "dynatree-expanded",
-	        lazy: "dynatree-lazy",
-	        focused: "dynatree-focused",			// OK
-	        partsel: "dynatree-partsel",
-	        lastsib: "dynatree-lastsib"
-	    },
-
-		debugLevel : 0
+		}
 	});
 	
 	
@@ -187,60 +156,118 @@ $JQry(function() {
 	$JQry(".file-browser .file-upload").fileupload({
 		autoUpload : false,
 		dataType : "json",
+		dropZone : ".drop-zone",
 		
 		add : function(e, data) {
 			var $this = $JQry(this);
 			var $root = $this.closest(".file-browser");
-			var $list = $root.find(".file-upload-list");
+			var $panel = $root.find(".file-upload .panel");
+			var $list = $root.find(".file-upload .file-upload-list");
+			
+			var $cancelGlyph = $JQry(document.createElement("i")).addClass("glyphicons halflings ban-circle");
+			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
+			
 
-			data.context = $JQry("<li />").addClass("list-group-item").appendTo($list);
+			// Display panel
+			$panel.removeClass("hidden");
+			
+			// Context
+			data.context = $JQry(document.createElement("li"))
+			data.context.addClass("template-upload list-group-item")
+			data.context.appendTo($list);
 			
 			$JQry.each(data.files, function(index, file) {
-				var $listItem = $JQry("<div />").addClass("clearfix");
+				// List item
+				var $listItem = $JQry(document.createElement("div"))
+				$listItem.addClass("clearfix");
+				$listItem.appendTo(data.context);
 				
-				var $button =  $JQry("<button />").addClass("btn btn-primary pull-right start").text("Upload");
-				$button.click(function() {
-					data.context = $JQry("<p />").text("Uploading...").replaceAll($JQry(this));
+				// Upload button
+				var $uploadButton =  $JQry(document.createElement("button"))
+				$uploadButton.addClass("start hidden");
+				$uploadButton.click(function() {
 					data.submit();
 				});
-				$button.appendTo($listItem);
+				$uploadButton.appendTo($listItem);
 				
-				$JQry("<p />").text(file.name).appendTo($listItem);
+				// Cancel button
+				var $cancelButton = $JQry(document.createElement("button"));
+				$cancelButton.addClass("cancel btn btn-default pull-right");
+				$cancelButton.append($cancelGlyph);
+				$cancelButton.append($cancelText);
+				$cancelButton.appendTo($listItem);
 				
-				$listItem.appendTo(data.context);
+				// Item content
+				var $content = $JQry(document.createElement("p"));
+				$content.text(file.name);
+				$content.appendTo($listItem);
 			});
 		},
-		
-		submit : function(e, data) {
-			console.log("submit");
-			
-			return true;
-		},
-		
-		send : function(e, data) {
-			console.log("send");
-			
-			return true;
-		},
-		
-		done : function(e, data) {
-			console.log("done");
-			
-			data.context.text = "Upload finished.";
-		},
-		
+
 		stop : function(e, data) {
-			console.log("stop");
+			var $this = $JQry(this);
+			var $root = $this.closest(".file-browser");
+			
+			// Hide panel
+			var $panel = $root.find(".file-upload .panel");
+			$panel.addClass("hidden");
+			
+			// Refresh
+			var url = $root.data("refreshurl");
+			updatePortletContent(this, url);
 		},
-		
-		processstop : function(e, data) {
-			console.log("processstop");
-		},
-		
+
 		progressall : function(e, data) {
 			var progress = parseInt(data.loaded / data.total * 100, 10) + "%";
 			$JQry(".file-browser .progress-bar").css("width", progress);
 		}
 	});
 
+	$JQry(document).bind("dragover", function(e) {
+		e.preventDefault();
+		
+		var $dropZone = $JQry(".drop-zone");
+		var $foundDropZone;
+		var found = false;
+		var node = e.target;
+		var $node;
+		var timeout = window.dropZoneTimeout;
+		
+		if (!timeout) {
+			$dropZone.addClass("in");
+		} else {
+			clearTimeout(timeout);
+		}
+
+		do {
+			$node = $JQry(node);
+			if ($node.hasClass("drop-zone")) {
+				found = true;
+				$foundDropZone = $node;
+				break;
+			}
+			node = node.parentNode;
+		} while (node != null);
+		
+		$dropZone.removeClass("hover");
+		$dropZone.find(".inbox").removeClass("inbox_in");
+		
+		if (found) {
+			$foundDropZone.addClass("hover");
+			$foundDropZone.find(".inbox").addClass("inbox_in");
+		}
+		
+		window.dropZoneTimeout = setTimeout(function() {
+			window.dropZoneTimeout = null;
+			$dropZone.removeClass("in hover");
+		}, 1000);
+	});
+
+	$JQry(document).bind("drop", function(e) {
+		e.preventDefault();
+		
+		var $dropZone = $JQry(".drop-zone");
+		$dropZone.removeClass("in hover");
+	});
+	
 });

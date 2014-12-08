@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
@@ -26,7 +26,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * File browser comparator.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see Comparator
  * @see Document
@@ -39,7 +39,7 @@ public class FileBrowserComparator implements Comparator<Document> {
 
     /**
      * Constructor.
-     * 
+     *
      * @param nuxeoController Nuxeo controller
      */
     public FileBrowserComparator(NuxeoController nuxeoController) {
@@ -52,23 +52,22 @@ public class FileBrowserComparator implements Comparator<Document> {
      * {@inheritDoc}
      */
     public int compare(Document doc1, Document doc2) {
+        // Folderish comparison
         Map<String, CMSItemType> managedTypes = this.nuxeoController.getCMSItemTypes();
-        CMSItemType type1 = managedTypes.get(doc1.getPath());
-        CMSItemType type2 = managedTypes.get(doc2.getPath());
-
+        CMSItemType type1 = managedTypes.get(doc1.getType());
+        CMSItemType type2 = managedTypes.get(doc2.getType());
         if ((type1 != null) && type1.isFolderish()) {
-            if ((type2 != null) && type2.isFolderish()) {
-                return doc1.getTitle().toUpperCase().compareTo(doc2.getTitle().toUpperCase());
-            } else {
+            if ((type2 == null) || !type2.isFolderish()) {
                 return -1;
             }
-        } else {
-            if ((type2 != null) && type2.isFolderish()) {
-                return 1;
-            } else {
-                return doc1.getTitle().toUpperCase().compareTo(doc2.getTitle().toUpperCase());
-            }
+        } else if ((type2 != null) && type2.isFolderish()) {
+            return 1;
         }
+
+        // Title comparison
+        String title1 = doc1.getTitle();
+        String title2 = doc2.getTitle();
+        return title1.compareToIgnoreCase(title2);
     }
 
 }

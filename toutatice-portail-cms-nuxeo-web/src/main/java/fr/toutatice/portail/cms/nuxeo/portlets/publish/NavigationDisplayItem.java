@@ -37,8 +37,6 @@ public class NavigationDisplayItem {
     private final boolean selected;
     /** Current item indicator. */
     private final boolean current;
-    /** Navigable item indicator. */
-    private final boolean navigable;
     /** CMS navigation item. */
     private final CMSItem navItem;
     /** Current item accepted types. */
@@ -64,7 +62,6 @@ public class NavigationDisplayItem {
         this.external = link.isExternal();
         this.selected = selected;
         this.current = current;
-        this.navigable = (navItem != null) && (navItem.getType() != null) && (navItem.getType().isNavigable());
         this.navItem = navItem;
         this.acceptedTypes = this.getAcceptedTypes(navItem);
         this.children = new ArrayList<NavigationDisplayItem>();
@@ -156,15 +153,6 @@ public class NavigationDisplayItem {
      */
     public boolean isCurrent() {
         return this.current;
-    }
-
-    /**
-     * Getter for navigable.
-     *
-     * @return the navigable
-     */
-    public boolean isNavigable() {
-        return this.navigable;
     }
 
     /**

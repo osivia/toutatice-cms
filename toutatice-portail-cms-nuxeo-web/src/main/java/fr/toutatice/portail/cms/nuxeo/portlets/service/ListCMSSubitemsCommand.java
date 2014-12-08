@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
@@ -36,14 +36,13 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.ICMSService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * List CMS sub-items command.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see INuxeoCommand
  */
@@ -59,7 +58,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
 
     /**
      * Constructor.
-     * 
+     *
      * @param parentId current parent identifier
      * @param liveContent live content indicator
      */
@@ -83,15 +82,15 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
         Blob binariesPublishingInfos = (Blob) request.execute();
 
         String publishingInfos = IOUtils.toString(binariesPublishingInfos.getStream(), "UTF-8");
-        return convertPublishingInfos(JSONArray.fromObject(publishingInfos));
+        return this.convertPublishingInfos(JSONArray.fromObject(publishingInfos));
     }
-    
+
     /**
      * Convert the JsonArray returned by command to list of exposed CMSItems.
      * @param publishingInfos
      * @return
      * @throws CMSException
-     * @throws UnsupportedEncodingException 
+     * @throws UnsupportedEncodingException
      */
     private List<CMSItem> convertPublishingInfos(JSONArray publishingInfos) throws CMSException, UnsupportedEncodingException{
         List<CMSItem> cmsItems = new ArrayList<CMSItem>(publishingInfos.size());
@@ -108,7 +107,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
             nxProperties.set("dc:title", documentTitle);
 
             Document poorDocument = new Document(documentId, documentType, null, null, documentPath, null, null, null, null, null, nxProperties, null);
-            
+
             CMSService cmsService = (CMSService) NuxeoController.getCMSService();
             CMSItem cmsItem = cmsService.createItem(this.cmsContext, poorDocument.getPath(), poorDocument.getTitle(), poorDocument);
 
@@ -118,9 +117,9 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
             cmsItem.setBeingModified(Boolean.valueOf(isLiveModifiedFromProxy));
 
             boolean isFolderish = documentWithPublishingStatus.getBoolean("isFolderish");
-            CMSItemType cmsItemType = new CMSItemType(documentType, isFolderish, false, false, false, false, null, null);
+            CMSItemType cmsItemType = new CMSItemType(documentType, isFolderish, false, false, false, false, false, null, null);
             cmsItem.setType(cmsItemType);
-            
+
             cmsItems.add(cmsItem);
         }
         return cmsItems;
@@ -144,7 +143,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
 
     /**
      * Utility method used to return schemas.
-     * 
+     *
      * @return schemas
      */
     private String getSchemas() {

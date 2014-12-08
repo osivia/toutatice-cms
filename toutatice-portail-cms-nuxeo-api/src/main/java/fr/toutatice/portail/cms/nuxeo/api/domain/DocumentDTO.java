@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.core.cms.CMSItemType;
 
 /**
  * Document data transfert object.
@@ -34,7 +35,7 @@ public class DocumentDTO {
     /** Document path. */
     private String path;
     /** Document type. */
-    private String type;
+    private CMSItemType type;
     /** Document properties. */
     private final Map<String, Object> properties;
     /** Document attachments. */
@@ -64,13 +65,21 @@ public class DocumentDTO {
      */
     @Override
     public String toString() {
-        return "DocumentDTO [title=" + this.title + ", path=" + this.path + ", type=" + this.type + "]";
+        StringBuilder builder = new StringBuilder();
+        builder.append("DocumentDTO [title=");
+        builder.append(this.title);
+        builder.append(", path=");
+        builder.append(this.path);
+        builder.append(", type=");
+        builder.append(this.type);
+        builder.append("]");
+        return builder.toString();
     }
 
 
     /**
      * Getter for id.
-     *
+     * 
      * @return the id
      */
     public String getId() {
@@ -127,7 +136,7 @@ public class DocumentDTO {
      *
      * @return the type
      */
-    public String getType() {
+    public CMSItemType getType() {
         return this.type;
     }
 
@@ -136,7 +145,7 @@ public class DocumentDTO {
      *
      * @param type the type to set
      */
-    public void setType(String type) {
+    public void setType(CMSItemType type) {
         this.type = type;
     }
 
@@ -187,7 +196,7 @@ public class DocumentDTO {
 
     /**
      * Getter for document.
-     * 
+     *
      * @return the document
      */
     public Document getDocument() {
@@ -196,7 +205,7 @@ public class DocumentDTO {
 
     /**
      * Setter for document.
-     * 
+     *
      * @param document the document to set
      */
     public void setDocument(Document document) {

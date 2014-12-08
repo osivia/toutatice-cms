@@ -16,17 +16,17 @@
             <c:set var="current" value="active" />
         </c:if>
         
-        <!-- Navigable item ? -->
-        <c:remove var="navigable" />
-        <c:if test="${child.navigable}">
-            <c:set var="navigable" value="folder" />
+        <!-- Browsable item ? -->
+        <c:remove var="browsable" />
+        <c:if test="${child.navItem.type.browsable}">
+            <c:set var="browsable" value="folder" />
         </c:if>
         
         <!-- Data -->
-        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navigable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${child.navItem.type.glyph}'" />
+        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navItem.type.browsable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${child.navItem.type.glyph}'" />
         
     
-        <li class="dynatree-temporary-node ${selected} ${current} ${navigable}" data="${data}">
+        <li class="dynatree-temporary-node ${selected} ${current} ${browsable}" data="${data}">
             <a href="${child.url}" class="dynatree-temporary-title">${child.title}</a>
             
             <c:if test="${not empty child.children}">

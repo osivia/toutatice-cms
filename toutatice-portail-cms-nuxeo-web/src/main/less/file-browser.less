@@ -8,17 +8,87 @@
 @import "bootstrap/mixins.less";
 
 
+
+@file-browser-line-height: floor(@line-height-computed * 1.5);
+
 .file-browser {
 
     th:first-of-type {
         width: 1%;
     }
-    
-    .draggable {
-        cursor: move;
+
+    .table > tbody > tr > td {
+        padding-right: 0;
+        line-height: @file-browser-line-height;
+        vertical-align: middle;
+        
+        &:first-of-type {
+            color: @gray;
+            
+            & > div {
+                height: @file-browser-line-height;
+                width: @file-browser-line-height;
+                
+                border-width: 1px;
+                border-style: solid;
+                border-color: @gray-lighter;
+                border-radius: floor(@file-browser-line-height / 2);
+                
+                text-align: center;
+                
+                &.inverted {
+                    color: @body-bg;
+                    background-color: @gray;
+                    border-style: none;
+                }
+            }
+        }
+        
+        .avatar {
+            height: @file-browser-line-height;
+            max-height: inherit;
+            max-width: inherit;
+        }
     }
-    
+
+
     .droppable-hover {
         background-color: @state-info-bg;
+    }
+    
+    .drop-zone {
+        position: relative;
+        min-height: 140px;
+        
+        .file-upload-shadowbox {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            
+            display: none;
+            margin: 0;
+            padding: 0;
+
+            opacity: 0.6;
+            
+            & > div {
+                padding: 0 @jumbotron-padding;
+            }
+        }
+        
+        &.in {
+            .file-upload-shadowbox {
+                display: block;
+            }
+        }
+        
+        &.hover {
+            .file-upload-shadowbox {
+                background-color: @state-info-bg;
+            }
+        }
     }
 }
