@@ -18,28 +18,27 @@
     }
 
     .table > tbody > tr > td {
-        padding-right: 0;
         line-height: @file-browser-line-height;
         vertical-align: middle;
         
         &:first-of-type {
+            padding-right: 0;
             color: @gray;
             
             & > div {
                 height: @file-browser-line-height;
                 width: @file-browser-line-height;
                 
-                border-width: 1px;
-                border-style: solid;
-                border-color: @gray-lighter;
-                border-radius: floor(@file-browser-line-height / 2);
-                
+//                border-width: 1px;
+//                border-style: solid;
+//                border-color: @gray-lighter;
+
                 text-align: center;
                 
                 &.inverted {
                     color: @body-bg;
                     background-color: @gray;
-                    border-style: none;
+                    border-radius: floor(@file-browser-line-height / 2);
                 }
             }
         }

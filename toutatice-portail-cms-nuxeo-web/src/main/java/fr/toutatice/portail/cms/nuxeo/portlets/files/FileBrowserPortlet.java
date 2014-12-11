@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
@@ -25,6 +27,7 @@ import org.apache.commons.fileupload.portlet.PortletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
@@ -280,6 +283,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(sortedDocuments.size());
                 for (Document sortedDocument : sortedDocuments) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(sortedDocument);
+
+                    if ("File".equals(sortedDocument.getType())) {
+                        this.addMimeType(sortedDocument, documentDTO);
+                    }
+
                     documentsDTO.add(documentDTO);
                 }
                 request.setAttribute("documents", documentsDTO);
@@ -302,4 +310,40 @@ public class FileBrowserPortlet extends CMSPortlet {
         dispatcher.include(request, response);
     }
 
+
+    /**
+     * Add mime-type property.
+     *
+     * @param document Nuxeo document
+     * @param documentDTO document DTO
+     */
+    private void addMimeType(Document document, DocumentDTO documentDTO) {
+        String icon = "file";
+
+        PropertyMap fileContent = document.getProperties().getMap("file:content");
+        if (fileContent != null) {
+            try {
+                MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
+
+                if ("application".equals(mimeType.getPrimaryType())) {
+                    // Application
+
+                    if ("msword".equals(mimeType.getSubType()) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(mimeType.getSubType())) {
+                        // MS Word
+                        icon = "word";
+                    }
+                } else if ("text".equals(mimeType.getPrimaryType())) {
+
+                } else if ("image".equals(mimeType.getPrimaryType())) {
+
+                }
+            } catch (MimeTypeParseException e) {
+                // Do nothing
+            }
+        }
+
+        documentDTO.getProperties().put("mimeTypeIcon", icon);
+    }
+
 }
+

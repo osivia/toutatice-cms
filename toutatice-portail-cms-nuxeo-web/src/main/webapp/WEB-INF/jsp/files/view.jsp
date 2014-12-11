@@ -97,7 +97,15 @@
                             <!-- Icon -->
                             <td>
                                 <div class="${inverted}">
-                                    <i class="glyphicons ${glyph}"></i>
+                                    <c:choose>
+                                        <c:when test="${'File' eq document.type.name}">
+                                            <i class="flaticon flaticon-${document.properties['mimeTypeIcon']}"></i>
+                                        </c:when>
+                                        
+                                        <c:otherwise>
+                                            <i class="glyphicons ${glyph}"></i>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </td>
                             

@@ -110,11 +110,14 @@
         <header-content>
             <link rel="stylesheet" href="/css/generated/file-browser.min.css" />
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
+
+            <!-- Flaticon -->
+            <link rel="stylesheet" href="/components/flaticon/flaticon.css" />
             
             <!-- jQuery UI -->
             <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
             <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
-            
+
             <!-- Dynatree -->
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
             
