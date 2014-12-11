@@ -13,9 +13,16 @@
 
 .file-browser {
 
-    th:first-of-type {
-        width: 1%;
+    th {
+        &:nth-of-type(1) {
+            width: 1%;
+        }
+        
+        &:nth-of-type(3), &:nth-of-type(4) {
+            width: 20%;
+        }
     }
+    
 
     .table > tbody > tr > td {
         line-height: @file-browser-line-height;
@@ -79,6 +86,34 @@
         }
     }
 
+    .draggable-helper {
+        display: block;
+        padding: @padding-base-vertical @padding-base-horizontal;
+        
+        background-color: @brand-primary;
+        border-radius: @border-radius-base;
+        
+        & > div {
+            display: table-cell;
+            line-height: @file-browser-line-height;
+            
+            &:first-of-type {
+                height: @file-browser-line-height;
+                width: @file-browser-line-height;
+                
+                color: @gray;
+                background-color: #fff;
+                border-radius: floor(@file-browser-line-height / 2);
+                text-align: center;
+
+                & ~ div {
+                    padding-left: @padding-base-horizontal;
+                    
+                    color: #fff;
+                }  
+            }
+        }
+    }
 
     .droppable-hover {
         background-color: @state-info-bg;

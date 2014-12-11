@@ -7,8 +7,33 @@ $JQry(function() {
 		addClasses : false,
 		connectToDynatree: true,
 		cursor : "crosshair",
-		cursorAt : {top : -2, left : -2},
-		helper : "clone",
+		cursorAt : {top : 0, left : 0},
+		helper : function(event) {
+			var $target = $JQry(event.target);
+			
+			var $draggable = $target.closest(".draggable");
+			var sourceId = $draggable.data("id");
+			var sourceType = $draggable.data("type");
+			
+			var $draggableChildren = $draggable.children();
+			
+			var $iconCell = $draggableChildren.first();
+			var $icon = $JQry(document.createElement("div")); 
+			$icon.append($iconCell.find("i").clone());
+			
+			var $textCell = $iconCell.next();
+			var $textCellContent = $textCell.find(".content");
+			var $text = $JQry(document.createElement("div")).text($textCellContent.text());
+			
+			// Helper
+			var $helper = $JQry(document.createElement("div"));
+			$helper.addClass("draggable-helper clearfix");
+			$helper.data("id", sourceId);
+			$helper.data("type", sourceType);
+			$helper.append($icon);
+			$helper.append($text);
+			return $helper;
+		},
 		opacity : 0.8,
 		revert : function(dropped) {
 			// Return `true` to let the helper slide back.
