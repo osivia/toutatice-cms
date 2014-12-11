@@ -49,23 +49,31 @@
                     <c:forEach var="document" items="${documents}">
                         <!-- Document properties -->
                         <ttc:documentLink document="${document}" var="link" />
+                        <ttc:documentLink document="${document}" displayContext="download" var="fileLink" />
                         <c:remove var="target" />
                         <c:if test="${link.external}">
                             <c:set var="target" value="_blank" />
                         </c:if>
                         <c:set var="size" value="${document.properties['common:size']}" />
-                        <c:set var="lastContributor" value="${document.properties['dc:lastContributor']}" />
+                        <c:set var="lastContributor"><ttc:user name="${document.properties['dc:lastContributor']}" /></c:set>
+                        
+                        <!-- Date -->
                         <c:set var="date" value="${document.properties['dc:modified']}" />
                         <c:if test="${empty date}">
                             <c:set var="date" value="${document.properties['dc:created']}" />
                         </c:if>
+                        <c:set var="date"><fmt:formatDate value="${date}" type="date" dateStyle="long" /></c:set>
                         
-                        <!-- Navigable item ? -->
+                        <!-- Folderish item ? -->
+                        <c:remove var="folderish" />
+                        <c:if test="${document.type.folderish}">
+                            <c:set var="folderish" value="folderish" />
+                        </c:if>
+                        
+                        <!-- Browsable item ? -->
                         <c:remove var="droppable" />
-                        <c:remove var="inverted" />
-                        <c:if test="${document.type.navigable}">
+                        <c:if test="${document.type.browsable}">
                             <c:set var="droppable" value="droppable" />
-                            <c:set var="inverted" value="inverted" />
                         </c:if>
                     
                         <!-- Accepted types -->
@@ -91,47 +99,74 @@
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
-                    
+ 
                     
                         <tr class="draggable ${droppable}" data-id="${document.id}" data-type="${document.type.name}" data-acceptedTypes="${acceptedTypes}">
                             <!-- Icon -->
                             <td>
-                                <div class="${inverted}">
-                                    <c:choose>
-                                        <c:when test="${'File' eq document.type.name}">
-                                            <i class="flaticon flaticon-${document.properties['mimeTypeIcon']}"></i>
-                                        </c:when>
-                                        
-                                        <c:otherwise>
+                                <c:choose>
+                                    <c:when test="${'File' eq document.type.name}">
+                                        <div class="file">
+                                            <a href="${fileLink.url}" class="thumbnail">
+                                                <i class="flaticon flaticon-${document.properties['mimeTypeIcon']}"></i>
+                                            </a>
+                                        </div>
+                                    </c:when>
+                                    
+                                    <c:otherwise>
+                                        <div class="${folderish}">
                                             <i class="glyphicons ${glyph}"></i>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                             
                             <!-- Display name -->
                             <td>
-                                <a href="${link.url}" target="${target}">${document.title}</a>
-                                
-                                <!-- Size -->
-                                <c:if test="${not empty size}">
-                                    <span>(<ttc:formatFileSize size="${size}" />)</span>
-                                </c:if>
-                                
-                                <!-- External -->
-                                <c:if test="${link.external}">
-                                    <i class="glyphicons halflings new_window"></i>
-                                </c:if>
+                                <div class="cell-container">
+                                    <div class="content">
+		                                <a href="${link.url}" target="${target}">${document.title}</a>
+		                                
+		                                <!-- Size -->
+		                                <c:if test="${not empty size}">
+		                                    <span>(<ttc:formatFileSize size="${size}" />)</span>
+		                                </c:if>
+		                                
+		                                <!-- External -->
+		                                <c:if test="${link.external}">
+		                                    <i class="glyphicons halflings new_window"></i>
+		                                </c:if>
+	                                </div>
+	                                
+	                                <div class="hidden-xs">
+		                                <div class="spacer">${document.title}</div>
+		                                <span>&nbsp;</span>
+	                                </div>
+                                </div>
                             </td>
                             
                             <!-- Last modification -->
                             <td>
-                                <fmt:formatDate value="${date}" type="date" dateStyle="long" />
+                                <div class="cell-container">
+                                    <div class="content">${date}</div>
+                                    
+                                    <div class="hidden-xs">
+	                                    <div class="spacer">${date}</div>
+	                                    <span>&nbsp;</span>
+                                    </div>
+                                </div>
                             </td>
                             
                             <!-- Last contributor -->
                             <td>
-                                <ttc:user name="${lastContributor}" />
+                                <div class="cell-container">
+                                    <div class="content">${lastContributor}</div>
+                                    
+                                    <div class="hidden-xs">
+	                                    <div class="spacer">${lastContributor}</div>
+	                                    <span>&nbsp;</span>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

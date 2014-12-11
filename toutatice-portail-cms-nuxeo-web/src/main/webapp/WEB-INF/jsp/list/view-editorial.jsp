@@ -16,7 +16,7 @@
 	</c:if>
 	<c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
 	<c:set var="iconURL"><ttc:getDocumentIconURL document="${document}" /></c:set>
-	<c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type)}" /></c:set>
+	<c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
 	<c:set var="description" value="${document.properties['dc:description']}" />
 	<c:set var="author" value="${document.properties['dc:creator']}" />
 	<c:set var="date" value="${document.properties['dc:modified']}" />

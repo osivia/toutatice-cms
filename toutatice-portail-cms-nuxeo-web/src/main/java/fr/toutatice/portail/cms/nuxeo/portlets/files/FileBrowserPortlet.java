@@ -324,18 +324,56 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (fileContent != null) {
             try {
                 MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
-
-                if ("application".equals(mimeType.getPrimaryType())) {
+                String primaryType = mimeType.getPrimaryType();
+                String subType = mimeType.getSubType();
+                
+                if ("application".equals(primaryType)) {
                     // Application
-
-                    if ("msword".equals(mimeType.getSubType()) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(mimeType.getSubType())) {
+                    
+                    if ("pdf".equals(subType)) {
+                        // PDF
+                        icon = "pdf";
+                    } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
                         // MS Word
                         icon = "word";
+                    } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
+                        // MS Excel
+                        icon = "excel";
+                    } else if ("vnd.ms-powerpoint".equals(subType) || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
+                        // MS Powerpoint
+                        icon = "powerpoint";
+                    } else if ("vnd.oasis.opendocument.text".equals(subType)) {
+                        // OpenDocument - Text
+                        icon = "odt";
+                    } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
+                        // OpenDocument - Spread sheet
+                        icon = "ods";
+                    } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
+                        // OpenDocument - Presentation
+                        icon = "odp";
+                    } else if ("zip".equals(subType) || "gzip".equals(subType)) {
+                        // Archive
+                        icon = "archive";
                     }
-                } else if ("text".equals(mimeType.getPrimaryType())) {
-
-                } else if ("image".equals(mimeType.getPrimaryType())) {
-
+                } else if ("text".equals(primaryType)) {
+                    // Text
+                    
+                    if ("html".equals(subType) || "xml".equals(subType)) {
+                        // HTML or XML
+                        icon = "xml";
+                    } else {
+                        // Plain text
+                        icon = "text";
+                    }
+                } else if ("image".equals(primaryType)) {
+                    // Image
+                    icon = "image";
+                } else if ("video".equals(primaryType)) {
+                    // Video
+                    icon = "video";
+                } else if ("audio".equals(primaryType)) {
+                    // Audio
+                    icon = "audio";
                 }
             } catch (MimeTypeParseException e) {
                 // Do nothing
