@@ -11,11 +11,6 @@
 <div class="document clearfix">
     <c:choose>
         <c:when test="${not empty document}">
-            <!-- Metadata -->
-            <c:if test="${metadata}">
-                <jsp:include page="metadata.jsp" />
-            </c:if>
-            
             <c:choose>
                 <c:when test="${onlyDescription}">
                     <jsp:include page="only-description.jsp" />
@@ -27,6 +22,11 @@
                     
                     <!-- Document attachments view -->
                     <jsp:include page="attachments.jsp" />
+                    
+                    <!-- Metadata -->
+                    <c:if test="${metadata}">
+                        <jsp:include page="metadata.jsp" />
+                    </c:if>
                     
                     <!-- Document comments view -->
                     <jsp:include page="comments.jsp" />
