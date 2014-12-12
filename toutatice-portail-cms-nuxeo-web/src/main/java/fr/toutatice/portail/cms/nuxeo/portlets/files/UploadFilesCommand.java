@@ -62,6 +62,7 @@ public class UploadFilesCommand implements INuxeoCommand {
             // Document properties
             PropertyMap properties = new PropertyMap();
             properties.set("dc:title", name);
+            properties.set("file:filename", name);
 
             // Create document
             Document document = documentService.createDocument(parent, type, name, properties);
