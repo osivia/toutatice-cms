@@ -7,10 +7,8 @@
 
 <portlet:defineObjects />
 
-<portlet:actionURL name="drop" var="dropActionURL" />
 
-
-<div class="nuxeo-publish-navigation" data-dropurl="${dropActionURL}">
+<div class="nuxeo-publish-navigation">
     <c:choose>
         <c:when test="${not empty displayItem}">
             <c:if test="${not empty displayItem.children}">

@@ -18,26 +18,36 @@
 <c:set var="idDateFrom" value="${namespace}-date-from" />
 <c:set var="idDateTo" value="${namespace}-date-to" />
 
+<!-- Datepicker language -->
+<c:set var="datepickerLanguage" value="${pageContext.response.locale.language}" />
+<c:if test="${'en' ne datepickerLanguage}">
+    <script type="text/javascript" src="${contextPath}/components/jquery-ui-1.11.2.custom/i18n/datepicker-${datepickerLanguage}.js"></script>
+</c:if>
 
 
-<script>
-    $JQry(function() {
-        var dates = $JQry("#${idDateFrom}, #${idDateTo}").datepicker({
-            defaultDate: "+1w",
-            changeMonth: true,
-            numberOfMonths: 1,
-            dateFormat: 'dd/mm/yy',
-            onSelect: function( selectedDate ) {
-                var option = (this.id.indexOf("-date-from", this.id.length - 10) !== -1) ? "minDate" : "maxDate",
-                    instance = $JQry( this ).data( "datepicker" ),
-                    date = $JQry.datepicker.parseDate(
-                        instance.settings.dateFormat ||
-                        $JQry.datepicker._defaults.dateFormat,
-                        selectedDate, instance.settings );
-                dates.not( this ).datepicker( "option", option, date );
-            }
-        });
+<script type="text/javascript">
+$JQry(function() {
+    var dates = $JQry("#${idDateFrom}, #${idDateTo}").datepicker({
+        defaultDate: "+1w",
+        changeMonth: true,
+        numberOfMonths: 1,
+        dateFormat: 'dd/mm/yy',
+        onSelect: function( selectedDate ) {
+            var option = (this.id.indexOf("-date-from", this.id.length - 10) !== -1) ? "minDate" : "maxDate",
+                instance = $JQry( this ).data( "datepicker" ),
+                date = $JQry.datepicker.parseDate(
+                    instance.settings.dateFormat ||
+                    $JQry.datepicker._defaults.dateFormat,
+                    selectedDate, instance.settings );
+            dates.not( this ).datepicker( "option", option, date );
+        },
+        beforeShow: function() {
+            setTimeout(function() {
+            	$JQry('.ui-datepicker').css('z-index', 10);
+            }, 0);
+        }
     });
+});
 </script>
 
 
