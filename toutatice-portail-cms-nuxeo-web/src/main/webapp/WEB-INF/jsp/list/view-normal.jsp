@@ -24,7 +24,7 @@
         </c:if>
         
     
-        <li class="list-group-item list-linked-item">
+        <li class="list-group-item list-group-item-linked">
             <a href="${link.url}" target="${target}" class="list-group-item">
                 <!-- Title -->
 		        <p class="list-group-item-heading">

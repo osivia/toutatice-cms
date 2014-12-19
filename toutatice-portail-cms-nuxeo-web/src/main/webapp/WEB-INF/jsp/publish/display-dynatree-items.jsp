@@ -12,8 +12,10 @@
         
         <!-- Current item ? -->
         <c:remove var="current" />
+        <c:set var="color" value="text-muted" />
         <c:if test="${child.current}">
             <c:set var="current" value="active" />
+            <c:set var="color" value="text-primary" />
         </c:if>
         
         <!-- Browsable item ? -->
@@ -26,8 +28,8 @@
         <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navItem.type.browsable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${child.navItem.type.glyph}'" />
         
     
-        <li class="dynatree-temporary-node ${selected} ${current} ${browsable}" data="${data}">
-            <a href="${child.url}" class="dynatree-temporary-title">${child.title}</a>
+        <li class="dynatree-temporary-node text-muted ${selected} ${current} ${browsable}" data="${data}">
+            <a href="${child.url}" class="dynatree-temporary-title ${color}">${child.title}</a>
             
             <c:if test="${not empty child.children}">
                 <c:set var="parent" value="${child}" scope="request" />

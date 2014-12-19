@@ -75,7 +75,6 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" href="/css/generated/menu.min.css" />
             <link rel="stylesheet" href="/css/generated/menu-dynatree.min.css" />
             <script type="text/javascript" src="/js/utils.js" />
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
@@ -86,7 +85,6 @@
             
             <!-- Dynatree -->
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
-<!--             <link rel="stylesheet" href="/components/jquery.dynatree-1.2.6-dist/skin-vista/ui.dynatree.css" /> -->
             
             <!-- jQuery File Upload -->
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
@@ -123,13 +121,9 @@
             
             <!-- jQuery File Upload -->
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
-<!--             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-audio.js" /> -->
-<!--             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-image.js" /> -->
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-process.js" />
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-ui.js" />
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-validate.js" />
-<!--             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-video.js" /> -->
-<!--             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.iframe-transport.js" /> -->
         </header-content>
         
         <portlet-info>

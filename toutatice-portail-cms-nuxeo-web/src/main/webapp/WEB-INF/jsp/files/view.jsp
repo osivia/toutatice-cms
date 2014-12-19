@@ -67,7 +67,7 @@
                         <!-- Folderish item ? -->
                         <c:remove var="folderish" />
                         <c:if test="${document.type.folderish}">
-                            <c:set var="folderish" value="folderish" />
+                            <c:set var="folderish" value="folderish bg-gray-dark" />
                         </c:if>
                         
                         <!-- Browsable item ? -->
@@ -103,7 +103,7 @@
                     
                         <tr class="draggable ${droppable}" data-id="${document.id}" data-type="${document.type.name}" data-acceptedTypes="${acceptedTypes}">
                             <!-- Icon -->
-                            <td>
+                            <td class="text-gray-dark">
                                 <c:choose>
                                     <c:when test="${'File' eq document.type.name}">
                                         <div class="file">
@@ -204,7 +204,7 @@
             </div>
         </form>
         
-        <div class="file-upload-shadowbox jumbotron">
+        <div class="file-upload-shadowbox jumbotron bg-info-hover">
             <div class="text-center text-middle">
                 <p><is:getProperty key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
                 <p class="h1"><i class="glyphicons inbox"></i></p>

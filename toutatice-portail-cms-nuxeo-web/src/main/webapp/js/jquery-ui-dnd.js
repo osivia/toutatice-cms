@@ -18,7 +18,8 @@ $JQry(function() {
 			var $draggableChildren = $draggable.children();
 			
 			var $iconCell = $draggableChildren.first();
-			var $icon = $JQry(document.createElement("div")); 
+			var $icon = $JQry(document.createElement("div"));
+			$icon.addClass("text-gray-dark");
 			$icon.append($iconCell.find("i").clone());
 			
 			var $textCell = $iconCell.next();
@@ -27,7 +28,7 @@ $JQry(function() {
 			
 			// Helper
 			var $helper = $JQry(document.createElement("div"));
-			$helper.addClass("draggable-helper clearfix");
+			$helper.addClass("draggable-helper bg-primary clearfix");
 			$helper.data("id", sourceId);
 			$helper.data("type", sourceType);
 			$helper.append($icon);
@@ -80,7 +81,7 @@ $JQry(function() {
 			};
 			new Ajax.Request(url, options);
 		},
-		hoverClass : "droppable-hover",
+		hoverClass : "droppable-hover bg-info",
 		tolerance : "pointer"
 	});
 	
@@ -173,7 +174,17 @@ $JQry(function() {
 					"path" : node.data.path
 				},
 			})
-		}
+		},
+		
+		classNames: {
+	        node: "dynatree-node text-muted bg-gray-lighter-alpha-40-hover",
+	        expander: "dynatree-expander text-primary",
+	        title: "dynatree-title text-muted",
+	        nodeError: "dynatree-statusnode-error text-danger",
+	        nodeWait: "dynatree-statusnode-wait text-info",
+	        active: "dynatree-active text-primary",
+	        focused: "dynatree-focused bg-gray-lighter-alpha-40",
+	    }
 	});
 	
 	
@@ -274,17 +285,17 @@ $JQry(function() {
 			node = node.parentNode;
 		} while (node != null);
 		
-		$dropZone.removeClass("hover");
+		$dropZone.removeClass("hover bg-info");
 		$dropZone.find(".inbox").removeClass("inbox_in");
 		
 		if (found) {
-			$foundDropZone.addClass("hover");
+			$foundDropZone.addClass("hover bg-info");
 			$foundDropZone.find(".inbox").addClass("inbox_in");
 		}
 		
 		window.dropZoneTimeout = setTimeout(function() {
 			window.dropZoneTimeout = null;
-			$dropZone.removeClass("in hover");
+			$dropZone.removeClass("in hover bg-info");
 		}, 1000);
 	});
 
@@ -292,7 +303,7 @@ $JQry(function() {
 		e.preventDefault();
 		
 		var $dropZone = $JQry(".drop-zone");
-		$dropZone.removeClass("in hover");
+		$dropZone.removeClass("in hover bg-info");
 	});
 	
 });

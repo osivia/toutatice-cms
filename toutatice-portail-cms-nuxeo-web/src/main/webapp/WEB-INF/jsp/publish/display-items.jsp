@@ -2,7 +2,7 @@
 
 
 <c:if test="${parent.selected || (level <= openLevels)}">
-    <ul class="list-group multi-level">
+    <ul class="list-group list-group-hierarchical">
         <c:set var="childLevel" value="${level + 1}" />
     
         <c:forEach var="child" items="${parent.children}">
@@ -19,7 +19,7 @@
             </c:if>
     
         
-            <li class="list-group-item">
+            <li class="list-group-item list-group-item-linked">
                 <!-- Link -->
                 <a href="${child.url}" target="${target}" class="list-group-item ${current}">            
                     <span>${child.title}</span>

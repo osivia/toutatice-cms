@@ -3,11 +3,6 @@
 // --------------------------------------------------
 
 
-// Bootstrap variables and mixins
-@import "bootstrap/variables.less";
-@import "bootstrap/mixins.less";
-
-
 @icon-width: 20px;
 @node-padding: 3px;
 
@@ -33,8 +28,11 @@
         
             // Title
             .dynatree-title {
-                color: @gray;
                 text-decoration: none;
+                
+                &:hover {
+                    color: inherit;
+                }
             }
             
             // Temporary title (displayed while loading)
@@ -47,7 +45,7 @@
             // Active node
             &.dynatree-active, &.active {
                 .dynatree-title, .dynatree-icon {
-                    color: @brand-primary;
+                    color: inherit;
                 }
                 .dynatree-title {
                     font-weight: bold;
@@ -56,7 +54,6 @@
 
             // Focused or hover node
             &.dynatree-focused, &:hover {
-                background-color: fade(@gray-lighter, 20%);
                 cursor: pointer;
             }
 
@@ -64,8 +61,6 @@
             &.dynatree-loading, &.dynatree-statusnode-wait {
                 &, &.dynatree-expanded {
                     .dynatree-expander {
-                        color: @brand-info;
-                        
                         &:before {
                             content: "\E055";
                         }
@@ -76,7 +71,7 @@
             // Error node
             &.dynatree-statusnode-error {
                 .dynatree-title, .dynatree-icon {
-                    color: @brand-danger;
+                    color: inherit;
                 }
                 
                 .dynatree-icon:before {
@@ -88,10 +83,14 @@
             &.dynatree-drop-accept {
                 padding: @node-padding - 1px; // Ajustment for border width
                 
-                background-color: @state-info-bg;
+//                background-color: @state-info-bg;
                 border-width: 1px;
                 border-style: solid;
-                border-color: @state-info-border;
+//                border-color: @state-info-border;
+
+                &:hover {
+                    background-color: inherit;
+                }
             }
             
             // Node drop reject
@@ -111,44 +110,40 @@
                 font-style: normal;
                 font-weight: normal;
                 line-height: 1;
-                color: @gray;
                 
                 -webkit-font-smoothing: antialiased;
                 -moz-osx-font-smoothing: grayscale;
             }
             
             .dynatree-expander {
-                color: #ccc;
                 cursor: pointer;
                 
-                .transition(@transition: all 300ms ease);
+                -webkit-transition: all 300ms ease;
+                     -o-transition: all 300ms ease;
+                        transition: all 300ms ease;
+                
+                &:not(:hover) {
+                    color: #ccc;
+                }
                 
                 // Collapse icon
                 &:before {
                     content: "\E369";
                 }
-                
-                &:hover {
-                    color: @brand-primary;
-                }
             }
             
             &.dynatree-expanded .dynatree-expander {
-                color: @gray;
+                &:not(:hover) {
+                    color: #555;
+                }
                 
                 // Expanded icon
                 &:before {
                     content: "\E368";
                 }
-                
-                &:hover {
-                    color: @brand-primary;
-                }
             }
             
             .dynatree-icon {
-                color: @gray-light;
-                
                 // File icon
                 &:before {
                     content: "\E037";
@@ -2060,7 +2055,6 @@
             }
             
             &.active > .dynatree-temporary-title {
-                color: @brand-primary;
                 font-weight: bold;
             }
         }
