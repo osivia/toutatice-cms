@@ -17,6 +17,7 @@ import static org.nuxeo.ecm.automation.client.Constants.REQUEST_ACCEPT_HEADER;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.AsyncCallback;
 import org.nuxeo.ecm.automation.client.AutomationClient;
 import org.nuxeo.ecm.automation.client.LoginInfo;
@@ -32,6 +33,8 @@ import org.nuxeo.ecm.automation.client.model.OperationInput;
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public class DefaultSession implements Session {
+	
+	private static final String ABSOLUTE_URL_PREFIX = "http:";
 
     protected final AbstractAutomationClient client;
 
@@ -108,7 +111,17 @@ public class DefaultSession implements Session {
     }
 
     public Blob getFile(String path) throws Exception {
-        Request req = new Request(Request.GET, client.getBaseUrl() + path);
+    	/* 
+    	 * 5.6-6.0 compatibility 
+    	 * FIXME: test 5.6! 
+    	 */
+    	String filePath = StringUtils.EMPTY;
+    	if(path != null && path.contains(ABSOLUTE_URL_PREFIX)){
+    		filePath = path;
+    	} else {
+    		filePath = client.getBaseUrl() + path;
+    	}
+        Request req = new Request(Request.GET, filePath);
         return (Blob) connector.execute(req);
     }
 
