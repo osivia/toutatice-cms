@@ -126,12 +126,15 @@ public class MenuBarFormater {
         PortletRequest request = cmsCtx.getRequest();
 
         // Menubar
-        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+
+        // Current window
+        Window window = (Window) request.getAttribute("osivia.window");
 
         // Check if web page mode layout contains CMS regions and content supports fragments
         // Edition mode is supported by the webpage menu
         boolean webPageFragment = false;
-        if( cmsCtx.getDoc() != null ) {
+        if (PortalObjectUtils.isSpaceSite(window) && (cmsCtx.getDoc() != null)) {
             String webPagePath = (String) request.getAttribute("osivia.cms.webPagePath");
 
             String docLivePath = ContextualizationHelper.getLivePath(((Document) (cmsCtx.getDoc())).getPath());
@@ -186,47 +189,34 @@ public class MenuBarFormater {
     }
 
 
-
     @SuppressWarnings("unchecked")
     protected void adaptDropdowMenu(CMSServiceCtx cmsCtx) throws Exception {
-
         PortletRequest request = cmsCtx.getRequest();
-        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute("osivia.menuBar");
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
         // Duplication bouton ajouter
-
         MenubarItem duplicateItem = null;
         boolean otherItem = false;
-        int indice = -1;
-        int addIndice = -1;
-        for(MenubarItem menuItem : menubar){
-            indice++;
+        for (Object object : menubar) {
+            MenubarItem menuItem = (MenubarItem) object;
             if (menuItem.isDropdownItem()) {
-                if ("ADD".equals(menuItem.getId())) {
-                    duplicateItem = menuItem.clone();
-                    duplicateItem.setDropdownItem(false);
-                    addIndice = indice;
-                } else {
-                    otherItem = true;
-                }
+                otherItem = true;
+            } else if ("ADD".equals(menuItem.getId())) {
+                duplicateItem = menuItem.clone();
+                duplicateItem.setDropdownItem(true);
             }
         }
 
-        if( duplicateItem != null)  {
-            menubar.add(duplicateItem) ;
-
-            // Si uniquement bouton ajouter dans le menu, le supprimer
-
-            if( !otherItem)
-                menubar.remove(addIndice) ;
+        if ((duplicateItem != null) && (otherItem)) {
+            menubar.add(duplicateItem);
         }
     }
+
 
     public void formatContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
         this.formatDefaultContentMenuBar(cmsCtx);
         this.adaptDropdowMenu(cmsCtx);
     }
-
 
 
     /**
@@ -258,8 +248,9 @@ public class MenuBarFormater {
      */
     protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos){
 
-        if( cmsCtx.getDoc() == null)
+        if( cmsCtx.getDoc() == null) {
             return false;
+        }
 
         if( pubInfos.isPublished() && !this.isInLiveMode(cmsCtx, pubInfos)){
             String docPath = (((Document) (cmsCtx.getDoc())).getPath());
@@ -341,7 +332,6 @@ public class MenuBarFormater {
                 // Live version indicator menubar item
                 MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null,
                         null, null, null);
-                liveIndicator.setGlyphicon("notes_2");
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
 
@@ -528,9 +518,7 @@ public class MenuBarFormater {
             // Live content browser popup link
             Map<String, String> properties = new HashMap<String, String>(1);
             properties.put("osivia.browser.path", path);
-            Map<String, String> parameters = new HashMap<String, String>(0);
-            String browserUrl = this.urlFactory.getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, parameters,
-                    true);
+            String browserUrl = this.urlFactory.getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, true);
 
             MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4,
                     browserUrl, null, "fancyframe_refresh", null);
@@ -542,7 +530,7 @@ public class MenuBarFormater {
     }
 
     /**
-     * 
+     *
      * @param cmsCtx
      * @param menubar
      * @throws CMSException
@@ -575,7 +563,7 @@ public class MenuBarFormater {
 //    }
 
     /**
-     * 
+     *
      * @param cmsCtx
      * @param menubar
      * @throws CMSException
@@ -620,7 +608,7 @@ public class MenuBarFormater {
 
 
 
-            
+
 			String synchronizeUrl = this.urlFactory.getEcmFilesManagementUrl(
 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     cmsCtx.getResponse()), pubInfos.getDocumentPath(), ecmAction);
@@ -649,13 +637,13 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
     /**
-     * 
+     *
      * @param cmsCtx
      * @param menubar
      * @throws CMSException
      */
     protected void getCheckInOutLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
-    	
+
         if (cmsCtx.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -671,18 +659,18 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
      // Internationalization bundle
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-        
+
         if (pubInfos.isCanCheckOut() || pubInfos.isCanCheckIn()) {
-            
+
 
 //            String checkOutUrl = this.urlFactory.getEcmFilesManagementUrl(
 //new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 //                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkOut);
-            
+
             Map<String, String> requestParameters = new HashMap<String, String>();
-            String openDocumentUrl = cmsService.getEcmUrl(cmsCtx, EcmCommand.openDocument, path, requestParameters);
-            
-            
+            String openDocumentUrl = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.openDocument, path, requestParameters);
+
+
 			MenubarItem checkOutItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
 					openDocumentUrl , null, "fancyframe_refresh", null);
             checkOutItem.setGlyphicon("halflings play");
@@ -691,22 +679,22 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             menubar.add(checkOutItem);
         }
 //        else if (pubInfos.isCanCheckIn()) {
-//        	
+//
 //            String checkInUrl = this.urlFactory.getEcmFilesManagementUrl(
 //new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 //                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkIn);
-//            
+//
 //			MenubarItem checkInItem = new MenubarItem("CHECK_IN", bundle.getString("CHECK_IN"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
 //					checkInUrl , null, null, null);
 //            checkInItem.setGlyphicon("halflings record");
 //            checkInItem.setAjaxDisabled(true);
 //            checkInItem.setDropdownItem(true);
 //            menubar.add(checkInItem);
-//            
+//
 //            String checkInUrlAndKeep = this.urlFactory.getEcmFilesManagementUrl(
 //new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 //                    cmsCtx.getResponse()), pubInfos.getDocumentPath(), EcmFilesCommand.checkInAndKeepLocalCopy);
-//            
+//
 //			MenubarItem checkInAndKeepItem = new MenubarItem("CHECK_IN_KEEP", bundle.getString("CHECK_IN_KEEP"), MenubarItem.ORDER_PORTLET_GENERIC + 3,
 //					checkInUrlAndKeep , null, null, null);
 //            checkInAndKeepItem.setGlyphicon("halflings record");
@@ -715,7 +703,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 //            menubar.add(checkInAndKeepItem);
 //        }
     }
-    
+
     /**
      * Get edit CMS content link.
      *
@@ -781,7 +769,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     // Menubar item
                     MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick.toString(),
                             "fancyframe_refresh", null);
-                    item.setGlyphicon("halflings edit");
+                    item.setGlyphicon("halflings pencil");
                     item.setAjaxDisabled(true);
                     item.setDropdownItem(true);
                     menubar.add(item);
@@ -894,10 +882,10 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 // url.append("&fromUrl=").append(portalBaseURL);
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, url, onClick.toString(),
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, url, onClick.toString(),
                         "fancyframe_refresh portlet-menuitem-edition add", "nuxeo");
                 item.setGlyphicon("halflings plus");
-                item.setDropdownItem(true);
+                item.setDropdownItem(false);
                 item.setAjaxDisabled(true);
                 menubar.add(item);
             } else if (portalDocsToCreate.size() > 0) {
@@ -952,12 +940,12 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 6, "#" + fancyboxId, fancyOnClick,
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, "#" + fancyboxId, fancyOnClick,
                         "fancybox_inline", null);
                 item.setGlyphicon("halflings plus");
                 item.setAjaxDisabled(true);
                 item.setAssociatedHtml(DOM4JUtils.write(container));
-                item.setDropdownItem(true);
+                item.setDropdownItem(false);
                 menubar.add(item);
             }
         }
@@ -1017,7 +1005,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     // Menubar item
                     MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 20, url, null,
                             "fancybox_inline", null);
-                    item.setGlyphicon("halflings remove");
+                    item.setGlyphicon("halflings trash");
                     item.setAjaxDisabled(true);
                     item.setAssociatedHtml(fancybox);
                     item.setDropdownItem(true);
@@ -1175,43 +1163,43 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
 
-        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, url, null, null, null);
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_GENERIC + 2, url, null, null, null);
         item.setGlyphicon("halflings link");
         item.setAjaxDisabled(true);
         menubar.add(item);
     }
 
 
-    
-   
-    
+
+
+
     protected String computePermaLinkUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-        
+
         String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
 
         String permaLinkURL = this.getUrlFactory().getPermaLink(
                 new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), null, null,
                 permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-        
+
         permaLinkURL = ContextualizationHelper.getLivePath(permaLinkURL);
-        
+
         return permaLinkURL;
     }
-    
-    
+
+
     protected boolean mustDisplayPermalink(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
-        
+
         boolean displayPermaLink = false;
 
         if (WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
             displayPermaLink = true;
         }
-        
+
         // for spaceMenuBar fragment
         if( BooleanUtils.isTrue((Boolean) cmsCtx.getRequest().getAttribute("osivia.cms.forcePermalinkDisplay")))  {
-            displayPermaLink = true;            
+            displayPermaLink = true;
         }
-        
+
         // Current portal
         Portal portal = PortalObjectUtils.getPortal(cmsCtx.getControllerContext());
         // Space site indicator
@@ -1219,9 +1207,9 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         if (spaceSite) {
             displayPermaLink = false;
         }
-        
-        
-        return displayPermaLink;     
+
+
+        return displayPermaLink;
     }
     /**
      * Get permalink link.
@@ -1231,12 +1219,13 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
      * @throws Exception
      */
     protected void getPermaLinkLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
-        
-        if (!mustDisplayPermalink(cmsContext, menubar))
+
+        if (!this.mustDisplayPermalink(cmsContext, menubar)) {
             return;
+        }
 
 
-        String permaLinkURL = computePermaLinkUrl(cmsContext, menubar);
+        String permaLinkURL = this.computePermaLinkUrl(cmsContext, menubar);
 
         if (permaLinkURL != null) {
             this.addPermaLinkItem(cmsContext, menubar, permaLinkURL);
@@ -1268,18 +1257,20 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         // Current document
         Document document = (Document) cmsCtx.getDoc();
 
-        if( document == null)
-        	return;
+        if( document == null) {
+            return;
+        }
 
 
         Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
         EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
-        if ((curState != null) && curState.getBackPageMarker() != null) {
+        if ((curState != null) && (curState.getBackPageMarker() != null)) {
             // Appeler url back
             boolean refresh = false;
-            if( curState.isHasBeenModified())
+            if( curState.isHasBeenModified()) {
                 refresh = true;
+            }
             String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
 
             MenubarItem backItem = new MenubarItem("BACK", bundle.getString("BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,

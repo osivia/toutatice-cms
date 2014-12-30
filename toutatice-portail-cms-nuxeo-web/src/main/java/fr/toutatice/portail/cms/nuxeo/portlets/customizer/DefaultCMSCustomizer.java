@@ -1288,9 +1288,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(new CMSItemType("Workspace", true, false, false, false, false, false, Arrays.asList("File", "Folder", "Note"),
                 "/default/templates/workspace"));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce"), null));
+        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null));
         // Portal page
-        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce"), null));
+        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null));
         // Folder
         defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null));
         // File

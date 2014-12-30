@@ -3,16 +3,12 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
-import java.util.List;
-
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.menubar.MenubarItem;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
@@ -76,11 +72,11 @@ public class SpaceMenubarFragmentModule implements IFragmentModule {
             request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
             nuxeoController.insertContentMenuBarItems();
 
-            List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+            // List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-            if (menubar.isEmpty()) {
+            // if (menubar.isEmpty()) {
                 request.setAttribute("osivia.emptyResponse", "1");
-            }
+            // }
         }
     }
 
