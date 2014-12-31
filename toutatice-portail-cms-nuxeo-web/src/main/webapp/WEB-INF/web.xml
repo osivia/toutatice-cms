@@ -36,6 +36,17 @@
 	</servlet-mapping>
     
     
+   	<servlet>
+		<servlet-name>BinaryServlet</servlet-name>
+		<servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>BinaryServlet</servlet-name>
+		<url-pattern>/binary/*</url-pattern>
+	</servlet-mapping>
+    
+    
     <servlet>
         <servlet-name>AvatarServlet</servlet-name>
         <servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet</servlet-class>

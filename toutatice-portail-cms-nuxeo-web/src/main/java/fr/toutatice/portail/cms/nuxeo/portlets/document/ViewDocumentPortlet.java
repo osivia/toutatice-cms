@@ -56,6 +56,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
@@ -139,6 +140,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             ThumbnailServlet.setPortletContext(this.getPortletContext());
             SitePictureServlet.setPortletContext(this.getPortletContext());
             AvatarServlet.setPortletContext(this.getPortletContext());
+            BinaryServlet.setPortletContext(this.getPortletContext());
         } catch (PortletException e) {
             throw e;
         } catch (Exception e) {

@@ -16,7 +16,9 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
@@ -29,6 +31,7 @@ import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -1146,6 +1149,9 @@ public class NuxeoController {
     }
 
 
+    
+    
+    
     /**
      * Checks if current path is in edition state.
      *
@@ -1179,6 +1185,62 @@ public class NuxeoController {
 
         return this.isPathInPageEditionState(path);
     }
+    
+    
+    
+    /**
+     * Generic binary URL
+     *
+     * @param path the path
+     * @return true, if is in page edition state
+     * @throws CMSException the CMS exception
+     */
+    public static Set<String> delegations = new HashSet<String>();
+    
+
+    public String getBinaryURL(String type, String originalPath,  String index) {
+
+
+        String path = "";
+
+        try {
+
+            // TODO check write and store in request²
+            // TODO store delalgation ticket
+            
+            CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
+            path = pubInfos.getDocumentPath();
+             
+            HttpServletRequest httpRequest = (HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
+            delegations.add( httpRequest.getSession().getId() + path);            
+            
+            boolean liveState = this.isIdOrPathInLiveState(path);
+            boolean refresh = PageProperties.getProperties().isRefreshingPage();
+            
+            // TODO : fetch
+            
+            StringBuffer sb = new StringBuffer();
+            
+            sb.append(this.getRequest().getContextPath() + "/binary?type="+type+"&path="+ URLEncoder.encode(path, "UTF-8")+ "&index="+index);
+            if( index != null)
+                sb.append("&index="+index);            
+            if( liveState)
+                sb.append("&liveState="+liveState);
+            if( refresh)
+                sb.append("&refresh="+refresh);           
+            String url = sb.toString();
+            return url;
+            
+
+
+        } catch (Exception e) {
+            // TODO : add logger
+            return "#";
+        }
+
+    }
+    
+    
 
 
     /**
@@ -1199,6 +1261,9 @@ public class NuxeoController {
         return this.isPathInPageEditionState(doc.getPath());
     }
 
+    
+    
+    
 
     /**
      * Checks if current path is in page edition state (web page edition mode)
@@ -1371,11 +1436,17 @@ public class NuxeoController {
      * @param fileIndex the file index
      * @return the string
      */
+    
+    
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
+            
+            
+            if( "1".equals(System.getProperty("osivia.optimization.ressources")))
+               return getBinaryURL("attachedPicture", path, fileIndex);
 
             boolean liveState = this.isIdOrPathInLiveState(path);
-
+            
             ResourceURL resourceURL = this.createResourceURL();
             resourceURL.setResourceID(path + "/" + fileIndex);
 
@@ -2030,6 +2101,7 @@ public class NuxeoController {
 
         if (this.getServletRequest() != null) {
             this.cmsCtx.setServletRequest(this.servletRequest);
+         
         }
 
         this.cmsCtx.setPortletCtx(this.getPortletCtx());
