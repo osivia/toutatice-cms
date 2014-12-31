@@ -426,16 +426,16 @@ public class MenuBarFormater {
                         modificationIndicator.setStateItem(true);
                         modificationIndicator.setDropdownItem(true);
                         menubar.add(modificationIndicator);
-
-                        // Go to preview menubar item
-                        String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
-                        MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
-                                previewURL, null, null, null);
-                        previewItem.setGlyphicon("halflings eye-open");
-                        previewItem.setAjaxDisabled(true);
-                        previewItem.setDropdownItem(true);
-                        menubar.add(previewItem);
                     }
+
+                    // Go to preview menubar item
+                    String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
+                    MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
+                            previewURL, null, null, null);
+                    previewItem.setGlyphicon("halflings eye-open");
+                    previewItem.setAjaxDisabled(true);
+                    previewItem.setDropdownItem(true);
+                    menubar.add(previewItem);
                 }
             }
         }
