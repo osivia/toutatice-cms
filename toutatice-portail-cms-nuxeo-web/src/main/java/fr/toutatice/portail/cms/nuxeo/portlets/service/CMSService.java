@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.server.UserInterceptor;
+import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
@@ -65,6 +66,7 @@ import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -642,6 +644,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @SuppressWarnings("unchecked")
     public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path, boolean fetchSubItems)
             throws CMSException {
 
@@ -752,6 +755,7 @@ public class CMSService implements ICMSService {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
 
@@ -820,6 +824,7 @@ public class CMSService implements ICMSService {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
 
@@ -901,6 +906,7 @@ public class CMSService implements ICMSService {
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public List<CMSItem> getPortalSubitems(CMSServiceCtx cmsContext, String path) throws CMSException {
         try {
@@ -1332,37 +1338,70 @@ public class CMSService implements ICMSService {
             CMSItem navItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, path);
 
             if (navItem != null) {
-                Map<String, RegionInheritance> inheritance = this.getCMSRegionsInheritance(navItem);
                 Set<String> propagatedRegions = new HashSet<String>();
                 Set<String> lockedRegions = new HashSet<String>();
 
-                // Document regions loop
-                for (Entry<String, RegionInheritance> region : inheritance.entrySet()) {
-                    if (RegionInheritance.LOCKED.equals(region.getValue())) {
-                        // Locked
-                        pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
-                        propagatedRegions.add(region.getKey());
-                        lockedRegions.add(region.getKey());
-                    } else if (!overridedRegions.contains(region.getKey())) {
-                        if (RegionInheritance.NO_INHERITANCE.equals(region.getValue())) {
-                            // No inheritance
-                            pagePropagatedRegions.put(region.getKey(), null);
-                        } else if (RegionInheritance.PROPAGATED.equals(region.getValue())) {
-                            // Propagation
+                // Fetched document
+                Document document = null;
+                boolean fetched = false;
+
+                // Current portal
+                Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+                if (PortalObjectUtils.isSpaceSite(portal)) {
+                    Map<String, RegionInheritance> inheritance = this.getCMSRegionsInheritance(navItem);
+
+                    // Document regions loop
+                    for (Entry<String, RegionInheritance> region : inheritance.entrySet()) {
+                        if (RegionInheritance.LOCKED.equals(region.getValue())) {
+                            // Locked
                             pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
                             propagatedRegions.add(region.getKey());
+                            lockedRegions.add(region.getKey());
+                        } else if (!overridedRegions.contains(region.getKey())) {
+                            if (RegionInheritance.NO_INHERITANCE.equals(region.getValue())) {
+                                // No inheritance
+                                pagePropagatedRegions.put(region.getKey(), null);
+                            } else if (RegionInheritance.PROPAGATED.equals(region.getValue())) {
+                                // Propagation
+                                pagePropagatedRegions.put(region.getKey(), new ArrayList<CMSEditableWindow>());
+                                propagatedRegions.add(region.getKey());
+                            }
+                        }
+                    }
+                } else {
+                    // Fetch
+                    CMSItem item = this.fetchContent(cmsContext, path);
+                    fetched = true;
+
+                    if (item != null) {
+                        document = (Document) item.getNativeItem();
+
+                        // Document fragments loop
+                        PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
+                        for (int i = 0; i < fragments.size(); i++) {
+                            PropertyMap fragment = fragments.getMap(i);
+                            String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
+
+                            if (!propagatedRegions.contains(regionId)) {
+                                // Propagation
+                                pagePropagatedRegions.put(regionId, new ArrayList<CMSEditableWindow>());
+                                propagatedRegions.add(regionId);
+                            }
                         }
                     }
                 }
 
 
                 if (!propagatedRegions.isEmpty()) {
-                    // Fetch
-                    CMSItem item = this.fetchContent(cmsContext, path);
+                    if (!fetched) {
+                        // Fetch
+                        CMSItem item = this.fetchContent(cmsContext, path);
+                        if (item != null) {
+                            document = (Document) item.getNativeItem();
+                        }
+                    }
 
-                    if (item != null) {
-                        Document document = (Document) item.getNativeItem();
-
+                    if (document != null) {
                         // Region windows count
                         int regionWindowsCount = 0;
 
@@ -1654,7 +1693,7 @@ public class CMSService implements ICMSService {
         try {
             if (propertiesToRemove != null) {
 
-                Document docSaved = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
+                this.executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
 
                 // On force le rechargement du cache
                 cmsCtx.setForceReload(true);
@@ -1763,10 +1802,8 @@ public class CMSService implements ICMSService {
 
                 this.executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
 
-                CMSItem content = this.getContent(cmsCtx, pagePath);
-                Document docReloaded = (Document) content.getNativeItem();
-
-
+                // Reload content
+                this.getContent(cmsCtx, pagePath);
             }
         } catch (Exception e) {
             throw new CMSException(e);

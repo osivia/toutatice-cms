@@ -128,13 +128,13 @@ public class MenuBarFormater {
         // Menubar
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-        // Current window
-        Window window = (Window) request.getAttribute("osivia.window");
+        // Current portal
+        Portal portal = PortalObjectUtils.getPortal(cmsCtx.getControllerContext());
 
         // Check if web page mode layout contains CMS regions and content supports fragments
         // Edition mode is supported by the webpage menu
         boolean webPageFragment = false;
-        if (PortalObjectUtils.isSpaceSite(window) && (cmsCtx.getDoc() != null)) {
+        if (PortalObjectUtils.isSpaceSite(portal) && (cmsCtx.getDoc() != null)) {
             String webPagePath = (String) request.getAttribute("osivia.cms.webPagePath");
 
             String docLivePath = ContextualizationHelper.getLivePath(((Document) (cmsCtx.getDoc())).getPath());
