@@ -99,6 +99,9 @@ public class DateSelectorPortlet extends CMSPortlet {
                 List<String> dates = selectors.get(request.getParameter("selectorId"));
                 if ((dates != null) && (dates.size() > 0)) {
                     dates.clear();
+                    if( request.getParameter("selectors")!= null)
+                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));                     
+                    
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
                 }
             }
@@ -173,7 +176,8 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (validation) {
             datesSelector.add(dateFrom + DATES_SEPARATOR + dateTo);
         }
-        selectors.put("selectorChanged", Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
+        if( request.getParameter("selectors")!= null)
+            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));              
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -199,7 +203,8 @@ public class DateSelectorPortlet extends CMSPortlet {
             dateSelectors.remove(occ);
         }
 
-        selectors.put("selectorChanged", Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));
+        if( request.getParameter("selectors")!= null)
+            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));      
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal

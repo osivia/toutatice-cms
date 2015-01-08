@@ -29,7 +29,6 @@
             <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
 
-        <!-- v2.0-SP1 : ajout selecteur -->
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
     </portlet>
 
@@ -57,6 +56,10 @@
             <short-title>Nuxeo Cms Portlet</short-title>
             <keywords>Portlet,Nuxeo,CMS</keywords>
         </portlet-info>
+        
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>
+                     
     </portlet>
 
 
@@ -85,6 +88,7 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>           
     </portlet>
 
 
@@ -224,6 +228,7 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
     </portlet>
 
 
@@ -252,6 +257,7 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
     </portlet>
 
 
@@ -280,14 +286,20 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
     </portlet>
 
 
     <public-render-parameter>
         <identifier>selectors</identifier>
         <name>selectors</name>
-    </public-render-parameter>
-
+	</public-render-parameter>
+	
+	<public-render-parameter>
+        <identifier>lastSelectors</identifier>
+        <name>lastSelectors</name>
+	</public-render-parameter>
+	
     <public-render-parameter>
         <identifier>osivia.keywords</identifier>
         <name>osivia.keywords</name>

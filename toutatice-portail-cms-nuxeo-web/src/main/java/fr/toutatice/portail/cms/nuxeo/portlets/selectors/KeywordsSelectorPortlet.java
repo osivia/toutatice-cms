@@ -114,7 +114,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     List<String> keywords = selectors.get(request.getParameter("selectorId"));
                     if ((keywords != null) && (keywords.size() > 0)) {
                         keywords.clear();
-                        selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                     
+                        if( request.getParameter("selectors")!= null)
+                            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));                       
                         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
                     }
                 }
@@ -153,7 +154,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                         keywords.add(keyword);
                     }
                     
-                    selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE)); 
+                    if( request.getParameter("selectors")!= null)
+                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));  
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                     // Réinitialisation des fenetres en mode NORMAL
@@ -171,7 +173,8 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> keywords = selectors.get(selectorId);
                 if ((keywords != null) && (keywords.size() > occ)) {
                     keywords.remove(occ);
-                    selectors.put("selectorChanged",  Arrays.asList(Constants.PORTLET_VALUE_ACTIVATE));                 
+                    if( request.getParameter("selectors")!= null)
+                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));  
                     
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 

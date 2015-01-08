@@ -30,7 +30,6 @@
 
 
 
-
 <%!public void displayItem(javax.servlet.jsp.JspWriter out, NavigationDisplayItem itemToDisplay, int level,
             int openLevels) throws IOException {
 
@@ -40,9 +39,10 @@
         out.println("<ul class=\"" + cssClass + "\">");
         
         int iChild = 0;
-        int size = itemToDisplay.getChildren().size();
+        int size = itemToDisplay.getChildrens().size();
+        
 
-        for (NavigationDisplayItem child : itemToDisplay.getChildren()) {
+        for (NavigationDisplayItem child : itemToDisplay.getChildrens()) {
             {
                 String target = "";
                 cssClass = "";
@@ -52,11 +52,22 @@
                     cssClass += " osivia-link-external";
                 } 
 
-                
+                String id= null;
     
                 if (child.isSelected()) {
                         cssClass += " current";
 
+                        boolean lastItemSelected = true;
+                        for (NavigationDisplayItem subchild : child.getChildrens()) {
+                            if( subchild.isSelected())
+                                lastItemSelected = false;
+                            
+                        }
+                        
+                        if( lastItemSelected){
+                            id= "selected";
+                        }
+                        
                 }
                 
                 if( level == 0){
@@ -67,16 +78,19 @@
                 }
                 
                 String li = "<li class=\"" + cssClass + "\"";
+                
+                if( id != null)
+                    li += " id=\""+id+"\"";
                 li += ">";
 
                 out.println(li);
 
                 out.println("<a " + target + " class=\"" + cssClass + "\"  href=\"" + child.getUrl() + "\">" + child.getTitle() + "</a>");
 
-                if (child.getChildren().size() > 0) {
-                    if (child.isSelected() || (level + 1 < openLevels)) {
+                if (child.getChildrens().size() > 0) {
+//                    if (child.isSelected() || (level + 1 < openLevels)) {
                         displayItem(out, child, level + 1, openLevels);
-                    }
+//                    }
                 }
 
                 out.println("</li>");
@@ -88,19 +102,15 @@
         out.println("</ul>");
 
     }%>
-
+    
 
 <div class="no-ajax-link">
-<input type="text" onkeyup="jstreeSearch('navtree', this.value)" />
+<input type="text" onkeyup="jstreeSearch('<portlet:namespace/>navtree', this.value)" />
 
-
-<div id="navtreedebug" class="jstree-links">
-<ul>
-</ul>
-</div>
 
 <%
-    NavigationDisplayItem itemToDisplay = (NavigationDisplayItem) request.getAttribute("displayItem");
+    NavigationDisplayItem itemToDisplay = (NavigationDisplayItem) renderRequest.getAttribute("itemToDisplay");
+    NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx");
     int openLevels = (Integer) request.getAttribute("openLevels");
 %>
 
@@ -108,7 +118,7 @@
     if (itemToDisplay != null) {
 %>
 
-<div id="navtree" class="jstree-links">
+<div id="<portlet:namespace/>navtree" class="jstree-nav">
     <%
         displayItem(out, itemToDisplay, 0, openLevels);
     %>
@@ -120,39 +130,9 @@
 
 
 
-
-
-
 </div>
 
 
-<script>
-
-$JQry(document).ready(function() {
-    
-    // Display links JSTree
-    $JQry("#navtreedebug,#navtree").jstree({
-        "core" : {
-            "animation" : 0,
-            "open_parents" : true
-        },
-        "themes" : {
-            "theme" : "default",
-            "dots" : false,
-            "icons" : true
-        },
-        "search" : {
-            "case_insensitive" : true,
-            "show_only_matches" : true
-        },
-        "plugins" : [ "themes", "html_data", "search" ]
-    });
-
-});
-
-
-
-</script>
 
 
 
