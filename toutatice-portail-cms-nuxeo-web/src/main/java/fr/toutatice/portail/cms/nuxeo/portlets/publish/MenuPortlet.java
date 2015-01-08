@@ -345,7 +345,14 @@ public class MenuPortlet extends CMSPortlet {
      * @param item navigation display item
      */
     private void writeNavigationDisplayItem(PrintWriter printWriter, NavigationDisplayItem item) {
-        boolean browsable = (item.getNavItem() != null) && (item.getNavItem().getType() != null) && item.getNavItem().getType().isBrowsable();
+        boolean browsable = false;
+        String glyph = null;
+        if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
+            CMSItemType cmsItemType = item.getNavItem().getType();
+            browsable = cmsItemType.isBrowsable();
+            glyph = cmsItemType.getGlyph();
+        }
+
 
         printWriter.write("{ ");
 
@@ -376,8 +383,16 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write(item.getNavItem().getPath());
         printWriter.write("\", ");
 
+        // Add class
+        if ((glyph != null) && (!glyph.equals("folder_closed"))) {
+            // Accepted types
+            printWriter.write("\"addClass\" : \"");
+            printWriter.write(glyph);
+            printWriter.write("\", ");
+        }
+
         // Accepted types
-        printWriter.write("\"acceptedTypes\" : \"");
+		printWriter.write("\"acceptedTypes\" : \"");
         printWriter.write(StringUtils.join(item.getAcceptedTypes(), ","));
         printWriter.write("\"");
 

@@ -16,7 +16,6 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -825,16 +824,18 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             // ECM base URL
             String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
             // On click action
-            StringBuilder onClick = new StringBuilder();
-            onClick.append("javascript:setCallbackFromEcmParams('");
-            onClick.append(callbackURL);
-            onClick.append("', '");
-            onClick.append(ecmBaseURL);
-            onClick.append("');");
+            StringBuilder builder = new StringBuilder();
+            builder.append("javascript:setCallbackFromEcmParams('");
+            builder.append(callbackURL);
+            builder.append("', '");
+            builder.append(ecmBaseURL);
+            builder.append("');");
+            String onclick = builder.toString();
 
             // Sub-types
             Map<String, String> subTypes = pubInfos.getSubTypes();
-            List<MenuBarCreationSubType> portalDocsToCreate = new ArrayList<MenuBarCreationSubType>();
+            Map<CMSItemType, String> creationTypes = new HashMap<CMSItemType, String>(subTypes.size());
+
             Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
             CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
@@ -843,94 +844,65 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
                         CMSItemType docTypeDef = managedTypes.get(docType);
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
-
                             Map<String, String> requestParameters = new HashMap<String, String>();
                             requestParameters.put("type", docType);
                             String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
 
-                            // Sub-type URL
-                            // StringBuilder url = new StringBuilder();
-                            // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
-                            // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
-                            // url.append("@toutatice_create?type=").append(docType);
-                            // url.append("&fromUrl=").append(portalBaseURL);
-
-                            // Sub-type
-                            MenuBarCreationSubType subType = new MenuBarCreationSubType();
-                            subType.setDocType(docType);
-                            subType.setName(bundle.getString(docType.toUpperCase()));
-                            subType.setUrl(url);
-                            portalDocsToCreate.add(subType);
+                            // CMS item type
+                            CMSItemType cmsItemType = managedTypes.get(docType);
+                            if (cmsItemType != null) {
+                                creationTypes.put(cmsItemType, url);
+                            }
                         }
                     }
                 }
             }
 
 
-            if (portalDocsToCreate.size() == 1) {
+
+            if (creationTypes.size() == 1) {
                 // No fancybox
 
-                Map<String, String> requestParameters = new HashMap<String, String>();
-                requestParameters.put("type", portalDocsToCreate.get(0).getDocType());
-                String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
-
-
-                // StringBuilder url = new StringBuilder();
-                // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
-                // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
-                // url.append("@toutatice_create?type=").append(portalDocsToCreate.get(0).getDocType());
-                // url.append("&fromUrl=").append(portalBaseURL);
+                Entry<CMSItemType, String> entry = creationTypes.entrySet().iterator().next();
+                String url = entry.getValue();
 
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, url, onClick.toString(),
-                        "fancyframe_refresh portlet-menuitem-edition add", "nuxeo");
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, url, onclick,
+                        "fancyframe_refresh", "nuxeo");
                 item.setGlyphicon("halflings plus");
                 item.setDropdownItem(false);
                 item.setAjaxDisabled(true);
                 menubar.add(item);
-            } else if (portalDocsToCreate.size() > 0) {
-                // Context path
-                String contextPath = "/toutatice-portail-cms-nuxeo";
+            } else if (creationTypes.size() > 0) {
                 // Namespace
                 String namespace = cmsCtx.getResponse().getNamespace();
 
                 // Fancybox identifier
                 String fancyboxId = namespace + "_PORTAL_CREATE";
 
+
                 // Container
                 Element container = DOM4JUtils.generateDivElement("container-fluid");
                 DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
 
                 // Title
-                Element title = DOM4JUtils.generateElement(HTMLConstants.P, "lead", bundle.getString("ADD_CONTENT"));
+                Element title = DOM4JUtils.generateElement(HTMLConstants.P, "h3", bundle.getString("ADD_CONTENT"));
                 container.add(title);
 
-                // Row
-                Element row = DOM4JUtils.generateDivElement("row");
-                container.add(row);
+                // List group
+                Element listGroup = DOM4JUtils.generateDivElement("list-group");
+                container.add(listGroup);
 
-                for (MenuBarCreationSubType subType : portalDocsToCreate) {
-                    // Document type
-                    String documentType = subType.getDocType();
+                for (Entry<CMSItemType, String> entry : creationTypes.entrySet()) {
+                    CMSItemType cmsItemType = entry.getKey();
 
-                    // Col
-                    Element col = DOM4JUtils.generateDivElement("col-xs-6");
-                    row.add(col);
+                    // Type name
+                    String name = bundle.getString(StringUtils.upperCase(cmsItemType.getName()));
 
-                    // Thumbnail link
-                    Element thumbnail = DOM4JUtils.generateLinkElement(subType.getUrl(), null, onClick.toString(), "thumbnail fancyframe_refresh", null);
-                    col.add(thumbnail);
-
-                    // Vignette
-                    Element vignette = DOM4JUtils.generateElement(HTMLConstants.IMG, null, null);
-                    DOM4JUtils.addAttribute(vignette, HTMLConstants.SRC, contextPath + "/img/icons/" + documentType.toLowerCase() + "_100.png");
-                    DOM4JUtils.addAttribute(vignette, HTMLConstants.ALT, StringUtils.EMPTY);
-                    thumbnail.add(vignette);
-
-                    // Caption
-                    Element caption = DOM4JUtils.generateDivElement("caption text-center");
-                    caption.setText(bundle.getString(documentType.toUpperCase()));
-                    thumbnail.add(caption);
+                    // List group item
+                    Element listGroupItem = DOM4JUtils.generateLinkElement(entry.getValue(), null, onclick, "list-group-item fancyframe_refresh", name,
+                            cmsItemType.getGlyph());
+                    listGroup.add(listGroupItem);
                 }
 
 

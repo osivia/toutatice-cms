@@ -24,8 +24,14 @@
             <c:set var="browsable" value="folder" />
         </c:if>
         
+        <!-- Glyph -->
+        <c:set var="glyph" value="${child.navItem.type.glyph}" />
+        <c:if test="${'folder_closed' eq glyph}">
+            <c:remove var="glyph" />
+        </c:if>
+        
         <!-- Data -->
-        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navItem.type.browsable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${child.navItem.type.glyph}'" />
+        <c:set var="data" value="id: '${child.id}', path: '${child.navItem.path}', isLazy: ${child.navItem.type.browsable && not child.selected}, acceptedTypes: '${fn:join(child.acceptedTypes, ',')}', addClass: '${current} ${glyph}'" />
         
     
         <li class="dynatree-temporary-node text-muted ${selected} ${current} ${browsable}" data="${data}">
