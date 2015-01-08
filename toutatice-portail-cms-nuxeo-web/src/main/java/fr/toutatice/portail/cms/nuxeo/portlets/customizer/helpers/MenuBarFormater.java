@@ -1191,12 +1191,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
         boolean displayPermaLink = false;
 
-        if (WindowState.MAXIMIZED.equals(cmsCtx.getRequest().getWindowState())) {
-            displayPermaLink = true;
-        }
-
-        // for spaceMenuBar fragment
-        if( BooleanUtils.isTrue((Boolean) cmsCtx.getRequest().getAttribute("osivia.cms.forcePermalinkDisplay")))  {
+        if (ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
             displayPermaLink = true;
         }
 

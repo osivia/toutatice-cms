@@ -115,8 +115,6 @@ public class ViewListPortlet extends CMSPortlet {
     public static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
     /** RSS title window property name. */
     public static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
-    /** Space menu bar window property name. */
-    public static final String SPACE_MENUBAR_WINDOW_PROPERTY = "osivia.showSpaceMenuBar";
     /** Creation parent container path window property name. */
     public static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
     /** Creation content type window property name. */
@@ -358,8 +356,6 @@ public class ViewListPortlet extends CMSPortlet {
                 // RSS title
                 window.setProperty(RSS_TITLE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("rssTitle")));
 
-                 // Space Menu Bar
-                window.setProperty(SPACE_MENUBAR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("showSpaceMenuBar")));
 
                 // Parent container path
                 window.setProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationParentPath")));
@@ -669,16 +665,6 @@ public class ViewListPortlet extends CMSPortlet {
                     }
                 }
 
-                // Space menubar injection
-                if(configuration.isSpaceMenuBar())   {
-                    String navigationPath = nuxeoController.getNavigationPath();
-
-                    if (navigationPath != null) {
-                         Document doc = nuxeoController.fetchDocument(navigationPath);
-                         nuxeoController.setCurrentDoc(doc);
-                         request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
-                    }
-                }
 
                 // Creation item, if parameters are given
                 String dynamicPath = window.getProperty(Constants.WINDOW_PROP_URI);
@@ -835,8 +821,6 @@ public class ViewListPortlet extends CMSPortlet {
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
 
-        // Space Menu Bar
-        configuration.setSpaceMenuBar(BooleanUtils.toBoolean(window.getProperty(SPACE_MENUBAR_WINDOW_PROPERTY)));
 
         return configuration;
     }

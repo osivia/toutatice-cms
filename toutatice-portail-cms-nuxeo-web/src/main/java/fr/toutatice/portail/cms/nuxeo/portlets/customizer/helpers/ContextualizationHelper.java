@@ -3,6 +3,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Page;
@@ -50,19 +51,11 @@ public abstract class ContextualizationHelper {
             if ("1".equals(window.getDeclaredProperty("osivia.cms.contextualization")))
                 return true;
 
-            // Non player items (ex: spaceBar)
-            String basePath = window.getPage().getProperty("osivia.cms.basePath");
-            boolean isPluggedOnSpace = StringUtils.isNotEmpty(basePath);
-
-
-            if (isPluggedOnSpace && cmsCtx.getDoc() != null) {
-                String path = ((Document) cmsCtx.getDoc()).getPath();
-                String navigationPath = cmsCtx.getRequest().getParameter("osivia.cms.path");
-
-                if (StringUtils.equals(getLivePath(path), navigationPath))  {
-                    return true;
-                }
+            // for spaceMenuBar fragment
+            if( BooleanUtils.isTrue((Boolean) cmsCtx.getRequest().getAttribute("osivia.cms.menuBar.forceContextualization")))  {
+               return true;
             }
+           
             
         }
 

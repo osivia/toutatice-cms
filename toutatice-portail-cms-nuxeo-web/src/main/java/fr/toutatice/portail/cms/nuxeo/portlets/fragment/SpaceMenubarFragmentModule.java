@@ -69,7 +69,7 @@ public class SpaceMenubarFragmentModule implements IFragmentModule {
             Document doc = nuxeoController.fetchDocument(navigationPath);
 
             nuxeoController.setCurrentDoc(doc);
-            request.setAttribute("osivia.cms.forcePermalinkDisplay", true);
+            request.setAttribute("osivia.cms.menuBar.forceContextualization", true);
             nuxeoController.insertContentMenuBarItems();
 
             // List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);

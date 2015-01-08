@@ -44,35 +44,12 @@ public class ListConfiguration {
     /** Creation content type. */
     private String creationContentType;
     
-    /**  Menu bar injection. */
-    private boolean spaceMenuBar;
 
     
 
 
 
     
-    /**
-     * Gets the space menu bar.
-     *
-     * @return the space menu bar
-     */
-    public boolean isSpaceMenuBar() {
-        return spaceMenuBar;
-    }
-
-
-    
-    /**
-     * Checks if is space menu bar.
-     *
-     * @param spaceMenuBar the space menu bar
-     */
-    public void setSpaceMenuBar(boolean spaceMenuBar) {
-        this.spaceMenuBar = spaceMenuBar;
-    }
-
-
     /**
      * Default constructor.
      */

@@ -25,10 +25,6 @@
     <c:set var="nuxeoRequestDisplayChecked" value="checked" />
 </c:if>
 
-<c:if test="${configuration.spaceMenuBar}">
-    <c:set var="spaceMenuBarChecked" value="checked" />
-</c:if>
-
 
 
 <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
@@ -216,18 +212,7 @@ return request.toString();
             </div>
         </div>            
         
-        <!-- Menubar -->
-        <div class="form-group">                
-			<label for="menubar-display" class="control-label col-sm-4"><is:getProperty key="LIST_MENUBAR" /></label>
-            <div class="col-sm-8">
-                <div class="checkbox">
-                    <label>
-                        <input id="menubar-display" type="checkbox" name="showSpaceMenuBar" ${spaceMenuBarChecked}>
-                        <span><is:getProperty key="LIST_SPACE_MENUBAR_DISPLAY" /></span>
-                    </label>
-                </div>
-            </div>
-        </div>
+
     </fieldset>
     
     <fieldset>
