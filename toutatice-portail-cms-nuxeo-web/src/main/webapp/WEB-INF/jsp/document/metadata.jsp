@@ -27,24 +27,30 @@
         </div>
     
         <div class="panel-body">
-            <!-- Vignette -->
-            <c:if test="${not empty vignetteURL}">
-                <img src="${vignetteURL}" alt="" class="img-thumbnail pull-left">
-            </c:if>
-            
-            <!-- Author -->
-            <p>
-                <strong><is:getProperty key="AUTHOR" /></strong>
-                <span> : </span>
-                <ttc:user name="${author}"/>
-            </p>
-            
-            <!-- Publication date -->
-            <p>
-                <strong><is:getProperty key="DOCUMENT_PUBLICATION_DATE" /></strong>
-                <span> : </span>
-                <span><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></span>
-            </p>
+            <div class="media">
+                <!-- Vignette -->
+                <c:if test="${not empty vignetteURL}">
+                    <div class="media-left">
+                        <img src="${vignetteURL}" alt="" class="img-responsive">
+                    </div>
+                </c:if>
+                
+                <div class="media-body">
+                    <!-- Author -->
+                    <p>
+                        <strong><is:getProperty key="AUTHOR" /></strong>
+                        <span> : </span>
+                        <ttc:user name="${author}"/>
+                    </p>
+                    
+                    <!-- Publication date -->
+                    <p>
+                        <strong><is:getProperty key="DOCUMENT_PUBLICATION_DATE" /></strong>
+                        <span> : </span>
+                        <span><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></span>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

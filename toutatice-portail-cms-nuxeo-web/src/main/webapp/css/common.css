@@ -13,8 +13,8 @@
 
 /* Document */
 
-.document .metadata .img-thumbnail {
-	height: 60px;
+.document .metadata .media-left img {
+	max-height: 60px;
 }
 
 
