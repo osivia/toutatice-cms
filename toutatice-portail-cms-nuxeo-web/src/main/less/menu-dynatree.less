@@ -6,6 +6,11 @@
 @icon-width: 20px;
 @node-padding: 3px;
 
+@state-hover-bg: #f8f8f8;
+
+@state-accept-bg: #d9edf7;
+@state-accept-border: darken(spin(@state-accept-bg, -10), 7%);
+
 .menu {
     .dynatree-container {
         padding-left: 0;
@@ -55,6 +60,7 @@
             // Focused or hover node
             &.dynatree-focused, &:hover {
                 cursor: pointer;
+                background-color: @state-hover-bg;
             }
 
             // Loading or waiting node
@@ -83,14 +89,10 @@
             &.dynatree-drop-accept {
                 padding: @node-padding - 1px; // Ajustment for border width
                 
-//                background-color: @state-info-bg;
+                background-color: @state-accept-bg;
                 border-width: 1px;
                 border-style: solid;
-//                border-color: @state-info-border;
-
-                &:hover {
-                    background-color: inherit;
-                }
+                border-color: @state-accept-border;
             }
             
             // Node drop reject

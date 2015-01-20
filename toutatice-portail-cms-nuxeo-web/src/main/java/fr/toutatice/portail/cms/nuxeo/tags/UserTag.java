@@ -108,7 +108,7 @@ public class UserTag extends SimpleTagSupport {
                 text = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
             } else {
                 // User profile page URL
-                String profileURL = this.getUserProfilePageURL(nuxeoController, person);
+                String profileURL = this.getUserProfilePageURL(nuxeoController, this.name);
 
                 // Linkable text
                 text = DOM4JUtils.generateLinkElement(profileURL, null, null, null, displayName);
@@ -127,10 +127,10 @@ public class UserTag extends SimpleTagSupport {
      * Get user profile page URL.
      *
      * @param nuxeoController Nuxeo controller
-     * @param person user LDAP person
+     * @param name user name
      * @return user profile page URL
      */
-    private String getUserProfilePageURL(NuxeoController nuxeoController, DirectoryPerson person) {
+    private String getUserProfilePageURL(NuxeoController nuxeoController, String name) {
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
 
@@ -141,7 +141,7 @@ public class UserTag extends SimpleTagSupport {
 
         // Page parameters
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put("uidFichePersonne", person.getUid());
+        parameters.put("uidFichePersonne", name);
 
         String url;
         try {

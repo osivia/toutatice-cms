@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -102,7 +103,6 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // Original Nuxeo document
         dto.setDocument(document);
 
-
         return dto;
     }
 
@@ -123,6 +123,9 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
             if (value instanceof PropertyMap) {
                 PropertyMap propertyMapValue = (PropertyMap) value;
                 map.put(key, this.toMap(propertyMapValue));
+            } else if (value instanceof PropertyList) {
+                PropertyList propertyListValue = (PropertyList) value;
+                map.put(key, propertyListValue.list());
             } else if (value instanceof String) {
                 String stringValue = (String) value;
 

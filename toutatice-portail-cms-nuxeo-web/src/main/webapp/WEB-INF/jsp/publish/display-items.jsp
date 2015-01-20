@@ -11,7 +11,13 @@
             <c:if test="${child.external}">
                 <c:set var="target" value="_blank" />
             </c:if>
-    
+            
+            <!-- Selected item ? -->
+            <c:remove var="selected" />
+            <c:if test="${child.selected}">
+                <c:set var="selected" value="selected" />
+            </c:if>
+            
             <!-- Current item ? -->
             <c:remove var="current" />
             <c:if test="${child.current}">
@@ -21,7 +27,7 @@
         
             <li class="list-group-item list-group-item-linked">
                 <!-- Link -->
-                <a href="${child.url}" target="${target}" class="list-group-item ${current}">            
+                <a href="${child.url}" target="${target}" class="list-group-item ${selected} ${current}">            
                     <span>${child.title}</span>
                     <c:if test="${child.external}">
                         <span class="glyphicons halflings new_window"></span>

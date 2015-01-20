@@ -6,14 +6,12 @@ $JQry(function() {
 	$JQry(".file-browser .draggable").draggable({
 		addClasses : false,
 		connectToDynatree: true,
-		cursor : "crosshair",
 		cursorAt : {top : 0, left : 0},
 		helper : function(event) {
 			var $target = $JQry(event.target);
 			
 			var $draggable = $target.closest(".draggable");
 			var sourceId = $draggable.data("id");
-			var sourceType = $draggable.data("type");
 			
 			var $draggableChildren = $draggable.children();
 			
@@ -30,7 +28,6 @@ $JQry(function() {
 			var $helper = $JQry(document.createElement("div"));
 			$helper.addClass("draggable-helper bg-primary clearfix");
 			$helper.data("id", sourceId);
-			$helper.data("type", sourceType);
 			$helper.append($icon);
 			$helper.append($text);
 			return $helper;
@@ -105,28 +102,8 @@ $JQry(function() {
 				if (targetNode.data.activate) {
 					return false;
 				}
-				
-				// Target node must accept at least one sub-type
-				if (targetNode.data.acceptedTypes == undefined) {
-					return false;
-				}
 
-				
-				// Source
-				var $source = $JQry(draggable.helper.context);
-				var sourceType = $source.data("type");
-
-				// Target
-				var targetAcceptedTypes = targetNode.data.acceptedTypes.split(",");
-				
-				var acceptedType = false;
-				jQuery.each(targetAcceptedTypes, function(index, type) {
-					if (sourceType === type) {
-						acceptedType = "over";
-					}
-				});
-				
-				return acceptedType;
+				return "over";
 			},
 
 			onDrop : function(targetNode, sourceNode, hitMode, ui, draggable) {
@@ -177,13 +154,13 @@ $JQry(function() {
 		},
 		
 		classNames: {
-	        node: "dynatree-node text-muted bg-gray-lighter-alpha-40-hover",
+	        node: "dynatree-node text-muted",
 	        expander: "dynatree-expander text-primary",
 	        title: "dynatree-title text-muted",
 	        nodeError: "dynatree-statusnode-error text-danger",
 	        nodeWait: "dynatree-statusnode-wait text-info",
 	        active: "dynatree-active text-primary",
-	        focused: "dynatree-focused bg-gray-lighter-alpha-40",
+	        focused: "dynatree-focused"
 	    }
 	});
 	

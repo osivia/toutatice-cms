@@ -76,16 +76,6 @@
                             <c:set var="droppable" value="droppable" />
                         </c:if>
                     
-                        <!-- Accepted types -->
-                        <c:remove var="acceptedTypes" />
-                        <c:forEach var="acceptedType" items="${document.type.portalFormSubTypes}" varStatus="status">
-                            <c:if test="${not status.first}">
-                                <c:set var="acceptedTypes" value="${acceptedTypes}," />
-                            </c:if>
-                            
-                            <c:set var="acceptedTypes" value="${acceptedTypes}${acceptedType}" />
-                        </c:forEach>
-                        
                         <!-- Glyph -->
                         <c:set var="glyph" value="${document.type.glyph}" />
                         <c:if test="${empty glyph}">
@@ -101,7 +91,7 @@
                         </c:if>
  
                     
-                        <tr class="draggable ${droppable}" data-id="${document.id}" data-type="${document.type.name}" data-acceptedTypes="${acceptedTypes}">
+                        <tr class="draggable ${droppable}" data-id="${document.id}">
                             <!-- Icon -->
                             <td class="text-gray-dark">
                                 <c:choose>
