@@ -121,14 +121,20 @@ public abstract class EditableWindow {
         propsFilled.put("osivia.ajaxLink", "1");
         propsFilled.put("osivia.hideDecorators", "1");
         propsFilled.put("osivia.hideEmptyPortlet", "1");
-
-		if (BooleanUtils.isTrue(fragment.getBoolean("collapsed"))) {
-			propsFilled.put("osivia.mobileCollapse", String.valueOf(true));
-			propsFilled.put("osivia.bootstrapPanelStyle", String.valueOf(true));
-		} else if (BooleanUtils.isTrue(fragment.getBoolean("hideTitle"))) {
+        
+        if (BooleanUtils.isTrue(fragment.getBoolean("hideTitle"))) {
 			propsFilled.put("osivia.hideTitle", "1");
+			if (BooleanUtils.isTrue(fragment.getBoolean("panel"))) {
+				propsFilled.put("osivia.bootstrapPanelStyle", String.valueOf(true));
+			}
 		} else {
 			propsFilled.put("osivia.hideTitle", "0");
+			if (BooleanUtils.isTrue(fragment.getBoolean("panel"))) {
+				propsFilled.put("osivia.bootstrapPanelStyle", String.valueOf(true));
+				if (BooleanUtils.isTrue(fragment.getBoolean("collapsed"))) {
+					propsFilled.put("osivia.mobileCollapse", String.valueOf(true));
+				}
+			}
         }
 
         if (modeEditionPage) {
