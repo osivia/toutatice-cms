@@ -1,36 +1,55 @@
-
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="internationalization" prefix="is"%>
 
-<%@ page isELIgnored="false" %>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
-
-
-<portlet:defineObjects/>
+<%@ page contentType="text/html" isELIgnored="false"%>
 
 
+<portlet:defineObjects />
 
-	<div>
-		<form method="post" action="<portlet:actionURL/>">
-		
-			<label>Libellé</label><br/>
-			<input type="text" name="libelle" value="${libelle}" size="40"/><br/>
-			<br/>
-		
-			<label>Identifiant sélecteur</label><br/>
-			<input type="text" name="selectorId" value="${selectorId}" size="40"><br/>
-			<br/>
-			<% String monovalue = "";
-				if("1".equals(renderRequest.getAttribute("datesMonoValued")))
-					monovalue = "checked='checked'";	
-			%>
-			<input type="checkbox" name="datesMonoValued" value="1" <%= monovalue %>/>  Sélecteur mono-valué
-			<br/><br/>
-			<input type="submit" name="modifierPrefs"  value="Valider">
-			<input type="submit" name="annuler"  value="Annuler">
-		</form>
-	</div>
-	
-	
+<portlet:actionURL name="save" var="saveAdminURL" />
+
+
+<form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
+    <!-- Label -->
+    <div class="form-group">
+        <label for="selector-label" class="control-label col-sm-3"><is:getProperty key="SELECTOR_LABEL" /></label>
+        <div class="col-sm-9">
+            <input id="selector-label" type="text" name="libelle" value="${libelle}" class="form-control">
+        </div>
+    </div>
+    
+    <!-- Identifier -->
+    <div class="form-group">
+        <label for="selector-id" class="control-label col-sm-3"><is:getProperty key="SELECTOR_IDENTIFIER" /></label>
+        <div class="col-sm-9">
+            <input id="selector-id" type="text" name="selectorId" value="${selectorId}" class="form-control">
+        </div>
+    </div>
+    
+    <!-- Mono-valued indicator -->
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="datesMonoValued" value="1"
+                        <c:if test="${datesMonoValued eq '1'}">checked="checked"</c:if>
+                    >
+                    <span><is:getProperty key="SELECTOR_MONO_VALUED" /></span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <button type="submit" class="btn btn-primary">
+                <i class="glyphicons halflings floppy_disk"></i>
+                <span><is:getProperty key="SAVE" /></span>
+            </button>
+            
+            <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+        </div>
+    </div>
+</form>

@@ -1,24 +1,4 @@
 
-// Publication menu
-$JQry(document).ready(function() {
-	$JQry(".nuxeo-publish-navigation .hidden-script").addClass("hidden").removeClass("hidden-script");
-	
-	$JQry(".nuxeo-publish-navigation li button").click(function() {
-		$this = $JQry(this);
-		
-		// Toggle button glyphicon
-		$glyph = $this.find(".glyphicons");
-		$glyph.toggleClass("chevron-down chevron-right text-muted");
-		
-		// Toggle item children display
-		$children = $this.closest("li").children("ul");
-		$children.toggleClass("hidden");
-	});
-});
-
-
-
-
 
 
 function refreshOnVocabularyChange( selectText, url) {

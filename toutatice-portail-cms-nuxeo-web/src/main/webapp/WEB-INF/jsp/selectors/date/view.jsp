@@ -1,22 +1,21 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="internationalization" prefix="is" %>
 
 <%@ page isELIgnored="false" %>
 
 
 <portlet:defineObjects />
 
-<portlet:actionURL var="addAction">
-    <portlet:param name="action" value="add"/>
-</portlet:actionURL>
-
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
-<c:set var="idDateFrom" value="${namespace}-date-from" />
-<c:set var="idDateTo" value="${namespace}-date-to" />
+<portlet:actionURL var="actionURL">
+    <portlet:param name="action" value="add"/>
+</portlet:actionURL>
+
 
 <!-- Datepicker language -->
 <c:set var="datepickerLanguage" value="${pageContext.response.locale.language}" />
@@ -25,90 +24,74 @@
 </c:if>
 
 
-<script type="text/javascript">
-$JQry(function() {
-    var dates = $JQry("#${idDateFrom}, #${idDateTo}").datepicker({
-        defaultDate: "+1w",
-        changeMonth: true,
-        numberOfMonths: 1,
-        dateFormat: 'dd/mm/yy',
-        onSelect: function( selectedDate ) {
-            var option = (this.id.indexOf("-date-from", this.id.length - 10) !== -1) ? "minDate" : "maxDate",
-                instance = $JQry( this ).data( "datepicker" ),
-                date = $JQry.datepicker.parseDate(
-                    instance.settings.dateFormat ||
-                    $JQry.datepicker._defaults.dateFormat,
-                    selectedDate, instance.settings );
-            dates.not( this ).datepicker( "option", option, date );
-        },
-        beforeShow: function() {
-            setTimeout(function() {
-            	$JQry('.ui-datepicker').css('z-index', 10);
-            }, 0);
-        }
-    });
-});
-</script>
+<c:choose>
+    <c:when test="${datesMonoValued eq '1'}">
+        <c:set var="interval" value="${fn:split(dates[0], '%')}" />
+        <c:set var="dateFrom" value="${interval[0]}" />
+        <c:set var="dateTo" value="${interval[1]}" />
+    
+        <c:set var="glyphicon" value="halflings ok" />
+        <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
+    </c:when>
+    
+    <c:otherwise>
+        <c:set var="glyphicon" value="halflings plus" />
+        <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
+    </c:otherwise>
+</c:choose>
 
 
-<c:if test="${not empty libelle}">
-    <span class="selector-libelle">${libelle}</span>
-</c:if>
+<c:set var="placeholderBegin"><is:getProperty key="BEGIN" /></c:set>
+<c:set var="placeholderEnd"><is:getProperty key="END" /></c:set>
 
 
-<div class="nuxeo-keywords-selector">
-    <form method="post" action="${addAction}">
-        <div class="table">
-            <c:choose>
-                <c:when test='${datesMonoValued == "1"}'>
-                    <!-- Mono-valued -->
-                    <c:set var="interval" value="${fn:split(dates[0], '%')}" />
-                    <c:set var="dateFrom" value="${interval[0]}" />
-                    <c:set var="dateTo" value="${interval[1]}" />
-                    <c:set var="imageSource" value="${contextPath}/img/submit.gif" />
-                    <c:set var="imageTitle" value="Valider" />
-                </c:when>
+<div class="dates-selector">
+    <form action="${actionURL}" method="post" role="form">
+        <!-- Label -->
+        <c:if test="${not empty libelle}">
+            <label>${libelle}</label>
+        </c:if>
+        
+        <!-- Multi-valued items -->
+        <c:if test="${datesMonoValued ne '1'}">
+            <c:forEach var="item" items="${dates}" varStatus="status">
+                <!-- Delete URL -->
+                <portlet:actionURL var="deleteActionURL">
+                    <portlet:param name="action" value="delete"/>
+                    <portlet:param name="occ" value="${status.count}"/>
+                </portlet:actionURL>
                 
-                <c:otherwise>
-                    <!-- Multi-valued -->
-                    <c:set var="imageSource" value="${contextPath}/img/add.gif" />
-                    <c:set var="imageTitle" value="Ajouter" />
-                        
-                    <c:forEach var="item" items="${dates}" varStatus="status">
-                        <c:set var="interval" value="${fn:split(item, '%')}" />
-                        <portlet:actionURL var="deleteAction">
-                            <portlet:param name="action" value="delete"/>
-                            <portlet:param name="occ" value="${status.count}"/>
-                        </portlet:actionURL>
-                        
-                        <div class="table-row">
-                            <div class="table-cell">Du ${interval[0]} au ${interval[1]}</div>
-                            <div class="table-cell">                                
-                                <a href="${deleteAction}" class="delete" title="Supprimer"></a>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </c:otherwise>
-            </c:choose>
+                <!-- Dates interval -->
+                <c:set var="interval" value="${fn:split(item, '%')}" />
+                
+                <!-- Item -->
+                <p class="text-right clearfix">
+                    <span class="form-control-static pull-left">${interval[0]} - ${interval[1]}</span>
+                    
+                    <a href="${deleteActionURL}" class="btn btn-default">
+                        <i class="glyphicons halflings trash"></i>
+                    </a>
+                </p>
+            </c:forEach>
+        </c:if>
+        
+        <!-- Inputs -->
+        <div>
+            <div class="media">
+                <div class="media-left">
+                    <input id="${namespace}-date-from" type="date" name="${namespace}-date-from" value="${dateFrom}" placeholder="${placeholderBegin}" class="form-control">
+                </div>
             
-            <div class="table-row">
-                <div class="table-cell input-date">
-                    <input type="text" id="${idDateFrom}" name="${idDateFrom}" value="${dateFrom}" />
-                    <input type="text" id="${idDateTo}" name="${idDateTo}" value="${dateTo}" />
-                </div>
-                <div class="table-cell">
-                    <portlet:actionURL var="addAction">
-                        <portlet:param name="action" value="add"/>
-                    </portlet:actionURL>
-                        
-                    <input type="image" src="${imageSource}" title="${imageTitle}" />
+                <div class="media-body">
+                    <input id="${namespace}-date-to" type="date" name="${namespace}-date-to" value="${dateTo}" placeholder="${placeholderEnd}" class="form-control">
                 </div>
                 
-                <c:if test='${datesMonoValued == "1"}'>
-                    <div class="table-cell">
-                        <input type="image" src="${contextPath}/img/delete.gif" onclick="clearText(this)" title="Effacer" />
-                    </div>
-                </c:if>
+                <div class="media-right">
+                    <button type="submit" class="btn btn-default">
+                        <i class="glyphicons ${glyphicon}"></i>
+                        <span class="sr-only">${title}</span>
+                    </button>
+                </div>
             </div>
         </div>
     </form>

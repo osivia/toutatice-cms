@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -15,7 +15,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 
 /**
  * Portlet de sélection par dates.
- * 
+ *
  * @see CMSPortlet
  */
 public class DateSelectorPortlet extends CMSPortlet {
@@ -73,51 +72,51 @@ public class DateSelectorPortlet extends CMSPortlet {
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
+        if ("admin".equals(request.getPortletMode().toString())) {
+            // Admin
 
-        if ("admin".equals(request.getPortletMode().toString()) && (request.getParameter("modifierPrefs") != null)) {
-            if (request.getParameter("selectorId").length() > 0) {
-                window.setProperty("osivia.selectorId", request.getParameter("selectorId"));
-            } else if (window.getProperty("osivia.selectorId") != null) {
-                window.setProperty("osivia.selectorId", null);
-            }
+            // Current action
+            String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-            if (request.getParameter("libelle").length() > 0) {
-                window.setProperty("osivia.libelle", request.getParameter("libelle"));
-            } else if (window.getProperty("osivia.libelle") != null) {
-                window.setProperty("osivia.libelle", null);
-            }
+            if ("save".equals(action)) {
+                // Save
 
-            if ("1".equals(request.getParameter("datesMonoValued"))) {
-                window.setProperty("osivia.datesMonoValued", "1");
-            } else if (window.getProperty("osivia.datesMonoValued") != null) {
-                window.setProperty("osivia.datesMonoValued", null);
-            }
+                if (request.getParameter("selectorId").length() > 0) {
+                    window.setProperty("osivia.selectorId", request.getParameter("selectorId"));
+                } else if (window.getProperty("osivia.selectorId") != null) {
+                    window.setProperty("osivia.selectorId", null);
+                }
 
-            /* Initialisation des dates suite à configuration. */
-            Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-            if (selectors != null) {
-                List<String> dates = selectors.get(request.getParameter("selectorId"));
-                if ((dates != null) && (dates.size() > 0)) {
-                    dates.clear();
-                    if( request.getParameter("selectors")!= null)
-                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));                     
-                    
-                    response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                if (request.getParameter("libelle").length() > 0) {
+                    window.setProperty("osivia.libelle", request.getParameter("libelle"));
+                } else if (window.getProperty("osivia.libelle") != null) {
+                    window.setProperty("osivia.libelle", null);
+                }
+
+                if ("1".equals(request.getParameter("datesMonoValued"))) {
+                    window.setProperty("osivia.datesMonoValued", "1");
+                } else if (window.getProperty("osivia.datesMonoValued") != null) {
+                    window.setProperty("osivia.datesMonoValued", null);
+                }
+
+                /* Initialisation des dates suite à configuration. */
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                if (selectors != null) {
+                    List<String> dates = selectors.get(request.getParameter("selectorId"));
+                    if ((dates != null) && (dates.size() > 0)) {
+                        dates.clear();
+                        if (request.getParameter("selectors") != null) {
+                            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                        }
+
+                        response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                    }
                 }
             }
 
             response.setPortletMode(PortletMode.VIEW);
             response.setWindowState(WindowState.NORMAL);
-        }
-
-
-        if ("admin".equals(request.getPortletMode().toString()) && (request.getParameter("annuler") != null)) {
-            response.setPortletMode(PortletMode.VIEW);
-            response.setWindowState(WindowState.NORMAL);
-        }
-
-
-        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+        } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View mode
 
             // Action parameter
@@ -141,7 +140,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Utility method used to add dates.
-     * 
+     *
      * @param request action request
      * @param response action response
      * @param selectorId selector identifier
@@ -176,8 +175,9 @@ public class DateSelectorPortlet extends CMSPortlet {
         if (validation) {
             datesSelector.add(dateFrom + DATES_SEPARATOR + dateTo);
         }
-        if( request.getParameter("selectors")!= null)
-            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));              
+        if( request.getParameter("selectors")!= null) {
+            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+        }
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -187,7 +187,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Utility method used to delete dates.
-     * 
+     *
      * @param request action request
      * @param response action response
      * @param selectorId selector identifier
@@ -203,8 +203,9 @@ public class DateSelectorPortlet extends CMSPortlet {
             dateSelectors.remove(occ);
         }
 
-        if( request.getParameter("selectors")!= null)
-            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));      
+        if( request.getParameter("selectors")!= null) {
+            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+        }
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
         // Reset window mode to normal
@@ -215,7 +216,7 @@ public class DateSelectorPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param req request
      * @param res response
      * @throws PortletException

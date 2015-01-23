@@ -3,15 +3,17 @@
    "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
 
 <portlet-app>
+
+    <!-- Document -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-viewDocumentPortlet</portlet-name>
 
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
+        
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <link rel="stylesheet" href="/css/document.min.css" />
         </header-content>
         
         <portlet-info>
@@ -22,15 +24,14 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- List -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>
 
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
-        <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-        </header-content>
         
         <portlet-info>
             <icon>
@@ -40,6 +41,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Portal site navigation -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-portalSiteNavigationPortlet</portlet-name>
 
@@ -51,10 +54,6 @@
             <trans-attribute>Required</trans-attribute>
         </transaction>
 
-        <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-        </header-content>
-        
         <portlet-info>
             <icon>
                 <small-icon>/img/portlet_icon.png</small-icon>
@@ -63,6 +62,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Menu -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-name>
 
@@ -75,18 +76,18 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" href="/css/generated/menu-dynatree.min.css" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <!-- JQuery UI -->
+            <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            
+            <!-- Drag & drop -->
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
             
-            <!-- JQuery UI -->
-            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
-            <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
-            
             <!-- Dynatree -->
+            <link rel="stylesheet" href="/css/generated/menu-dynatree.min.css" />
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
             
-            <!-- jQuery File Upload -->
+            <!-- jQuery File Upload (Drag & drop dependency) -->
             <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
         </header-content>
         
@@ -98,6 +99,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- File browser -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-fileBrowserPortlet</portlet-name>
 
@@ -106,17 +109,19 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" href="/css/generated/file-browser.min.css" />
+            <link rel="stylesheet" href="/css/file-browser.min.css" />
+            
+            <!-- Drag & drop -->
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
 
             <!-- Flaticon -->
             <link rel="stylesheet" href="/components/flaticon/flaticon.css" />
             
             <!-- jQuery UI -->
-            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
             <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
 
-            <!-- Dynatree -->
+            <!-- Dynatree (JavaScript link with menu) -->
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
             
             <!-- jQuery File Upload -->
@@ -134,6 +139,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Search -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-searchPortlet</portlet-name>
 
@@ -145,10 +152,6 @@
             <trans-attribute>Required</trans-attribute>
         </transaction>
 
-        <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-        </header-content>
-        
         <portlet-info>
             <icon>
                 <small-icon>/img/portlet_icon.png</small-icon>
@@ -157,6 +160,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Fragment -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
 
@@ -176,6 +181,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Keywords selector -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-keywordsSelectorPortlet</portlet-name>
 
@@ -184,8 +191,7 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <link rel="stylesheet" href="/css/selector.min.css" />
         </header-content>
         
         <portlet-info>
@@ -196,6 +202,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Date selector -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-dateSelectorPortlet</portlet-name>
 
@@ -204,12 +212,12 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <link rel="stylesheet" href="/css/selector.min.css" />
             
-            <!-- JQuery UI -->
-            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            <!-- JQuery UI (Datepicker) -->
             <link rel="stylesheet" href="/components/jquery-ui-1.11.2.custom/jquery-ui.min.css" />
+            <script type="text/javascript" src="/components/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+            <script type="text/javascript" src="/js/datepicker-integration.js"></script>
         </header-content>
         
         <portlet-info>
@@ -220,6 +228,8 @@
         </portlet-info>
     </portlet>
 
+
+    <!-- Vocabulary selector -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-vocabSelectorPortlet</portlet-name>
 
@@ -228,10 +238,9 @@
         </transaction>
 
         <header-content>
-            <link rel="stylesheet" type="text/css" href="/css/common.css" title="" media="screen" />
-            <script type="text/javascript" src="/js/utils.js" />
+            <link rel="stylesheet" href="/css/selector.min.css" />
         </header-content>
-        
+
         <portlet-info>
             <icon>
                 <small-icon>/img/portlet_icon.png</small-icon>

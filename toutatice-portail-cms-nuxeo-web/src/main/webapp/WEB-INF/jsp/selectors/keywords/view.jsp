@@ -8,72 +8,66 @@
 
 <portlet:defineObjects />
 
-<portlet:actionURL var="selectorActionURL" />
+<c:set var="namespace"><portlet:namespace /></c:set>
+
+<portlet:actionURL var="actionURL" />
 
 
-<c:if test="${not empty libelle}">
-    <span class="selector-libelle">${libelle}</span>
-</c:if>
+<c:choose>
+    <c:when test="${keywordMonoValued eq '1'}">
+        <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
+        <c:set var="name" value="monoAdd" />
+        <c:set var="glyphicon" value="halflings ok" />
+        <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
+        <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
+    </c:when>
+    
+    <c:otherwise>
+        <c:set var="textValue" value="${keyword}" />
+        <c:set var="name" value="add" />
+        <c:set var="glyphicon" value="halflings plus" />
+        <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
+        <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORD_PLACEHOLDER" /></c:set>
+    </c:otherwise>
+</c:choose>
 
-<div class="nuxeo-keywords-selector">
-    <form method="post" action="${selectorActionURL}">
-        <div class="table">
-            <c:choose>
-                <c:when test='${keywordMonoValued == "1"}'>
-                    <!-- Mono-valued -->
-                    <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
-                    <c:set var="name" value="monoAdd" />
-                    <c:set var="glyphicon" value="halflings ok" />
-                    <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
-                    <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
-                </c:when>
+
+<div class="keywords-selector">
+    <form action="${actionURL}" method="post" role="form">
+        <!-- Label -->
+        <c:if test="${not empty libelle}">
+            <label>${libelle}</label>
+        </c:if>
+            
+        <!-- Multi-valued items -->
+        <c:if test="${keywordMonoValued ne '1'}">
+            <c:forEach var="item" items="${keywords}" varStatus="status">
+                <!-- Delete URL -->
+                <portlet:actionURL var="deleteActionURL">
+                    <portlet:param name="action" value="delete"/>
+                    <portlet:param name="occ" value="${status.count}"/>
+                </portlet:actionURL>
                 
-                <c:otherwise>
-                    <!-- Multi-valued -->
-                    <c:set var="textValue" value="${keyword}" />
-                    <c:set var="name" value="add" />
-                    <c:set var="glyphicon" value="halflings plus" />
-                    <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
-                    <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORD_PLACEHOLDER" /></c:set>
-                        
-                    <c:forEach var="item" items="${keywords}" varStatus="status">
-                        <portlet:actionURL var="deleteActionURL">
-                            <portlet:param name="action" value="delete"/>
-                            <portlet:param name="occ" value="${status.count}"/>
-                        </portlet:actionURL>
+                <!-- Item -->
+                <p class="text-right clearfix">
+                    <span class="form-control-static pull-left">${item}</span>
                     
-                        <div class="form-group">
-                            <div class="input-group">
-                                <input type="text" value="${item}" class="form-control" disabled="disabled">
-                                <span class="input-group-btn">
-                                    <a href="${deleteActionURL}" class="btn btn-default" title='<is:getProperty key="SELECTOR_DELETE" />' data-toggle="tooltip" data-placement="bottom">
-                                        <span class="glyphicons halflings remove"></span>
-                                    </a>
-                                </span>
-                            </div>
-                        </div>
-                    </c:forEach>                
-                </c:otherwise>
-            </c:choose>
+                    <a href="${deleteActionURL}" class="btn btn-default">
+                        <i class="glyphicons halflings trash"></i>
+                    </a>
+                </p>
+            </c:forEach>
+        </c:if>
             
-            
-            <div class="form-group">
-                <label class="sr-only" for="${namespace}-selector-input">Select</label>
-                <div class="input-group">
-                    <input id="${namespace}-selector-input" type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
-                    <span class="input-group-btn">
-                        <button type="submit" name="${name}" class="btn btn-default" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                            <span class="glyphicons ${glyphicon}"></span>
-                        </button>
-                        
-                        <c:if test='${keywordMonoValued == "1"}'>
-                            <button type="submit" name="clear" class="btn btn-default" title='<is:getProperty key="SELECTOR_CLEAR" />' data-toggle="tooltip" data-placement="bottom">
-                                <span class="glyphicons delete"></span>
-                            </button>
-                        </c:if>
-                    </span>
-                </div>
-            </div>   
+        <!-- Input -->
+        <div class="input-group">
+            <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
+            <span class="input-group-btn">
+                <button type="submit" name="${name}" class="btn btn-default">
+                    <i class="glyphicons ${glyphicon}"></i>
+                    <span class="sr-only">${title}</span>
+                </button>
+            </span>
         </div>
     </form>
 </div>
