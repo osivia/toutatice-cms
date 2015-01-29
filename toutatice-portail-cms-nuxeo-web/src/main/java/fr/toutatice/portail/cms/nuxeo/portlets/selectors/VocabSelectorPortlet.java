@@ -12,13 +12,12 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +35,6 @@ import javax.portlet.WindowState;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
@@ -81,11 +79,11 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
             res = StringUtils.replace(id, OTHER_ENTRIES_CHOICE, othersLabel);
 
-        } else { 
+        } else {
 
             String[] tokens = id.split("/", 2);
 
-            if (tokens.length > 0 && preselect1==null) {
+            if ((tokens.length > 0) && (StringUtils.isEmpty(preselect1))) {
                 VocabularyEntry child = vocab.getChild(tokens[0]);
                 res += child.getLabel();
             }
@@ -93,8 +91,9 @@ public class VocabSelectorPortlet extends CMSPortlet {
             if (tokens.length > 1) {
                 VocabularyEntry childVocab = vocab.getChild(tokens[0]);
                 if (childVocab != null) {
-                    if(res.length() > 0)
+                    if(res.length() > 0) {
                         res += "/" ;
+                    }
                     res += getLabel(res, tokens[1], childVocab, null);
                 }
             }
@@ -105,125 +104,121 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
 
 
-
-	public void processAction(ActionRequest req, ActionResponse res) throws IOException, PortletException {
-
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+	public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
 		logger.debug("processAction ");
 
-		PortalWindow window = WindowFactory.getWindow(req);
+        // Current window
+		PortalWindow window = WindowFactory.getWindow(request);
+        // Current action
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
 
-		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("modifierPrefs") != null)) {
+        if ("admin".equals(request.getPortletMode().toString())) {
+            // Admin
 
-			if( req.getParameter("selectorId").length() > 0) {
-                window.setProperty("osivia.selectorId", req.getParameter("selectorId"));
-            } else if (window.getProperty("osivia.selectorId") != null) {
-                window.setProperty("osivia.selectorId", null);
-            }
+            if ("save".equals(action)) {
+                // Save
 
-			if( req.getParameter("libelle").length() > 0) {
-                window.setProperty("osivia.libelle", req.getParameter("libelle"));
-            } else if (window.getProperty("osivia.libelle") != null) {
-                window.setProperty("osivia.libelle", null);
-            }
-
-
-			for(int niveau = 1; niveau < (NB_NIVEAUX + 1); niveau++){
-
-				if( req.getParameter("vocabName" + String.valueOf(niveau)).length() > 0) {
-                    window.setProperty("osivia.vocabName" + String.valueOf(niveau), req.getParameter("vocabName" + String.valueOf(niveau)));
-                } else if (window.getProperty("osivia.vocabName" + String.valueOf(niveau)) != null) {
-                    window.setProperty("osivia.vocabName" + String.valueOf(niveau), null);
+                if (request.getParameter("selectorId").length() > 0) {
+                    window.setProperty("osivia.selectorId", request.getParameter("selectorId"));
+                } else if (window.getProperty("osivia.selectorId") != null) {
+                    window.setProperty("osivia.selectorId", null);
                 }
 
-			}
-			
-            
-            if( req.getParameter("preselect1").length() > 0)
-                window.setProperty("osivia.preselect1", req.getParameter("preselect1"));
-            else if (window.getProperty("osivia.preselect1") != null)
-                window.setProperty("osivia.preselect1", null);
-            
-            
-			
+                if (request.getParameter("libelle").length() > 0) {
+                    window.setProperty("osivia.libelle", request.getParameter("libelle"));
+                } else if (window.getProperty("osivia.libelle") != null) {
+                    window.setProperty("osivia.libelle", null);
+                }
 
-			if("1".equals(req.getParameter("selectorMonoValued"))) {
-                window.setProperty("osivia.selectorMonoValued", "1");
-            } else if (window.getProperty("osivia.selectorMonoValued") != null) {
-                window.setProperty("osivia.selectorMonoValued", null);
+                for (int niveau = 1; niveau < (NB_NIVEAUX + 1); niveau++) {
+                    if (request.getParameter("vocabName" + String.valueOf(niveau)).length() > 0) {
+                        window.setProperty("osivia.vocabName" + String.valueOf(niveau), request.getParameter("vocabName" + String.valueOf(niveau)));
+                    } else if (window.getProperty("osivia.vocabName" + String.valueOf(niveau)) != null) {
+                        window.setProperty("osivia.vocabName" + String.valueOf(niveau), null);
+                    }
+                }
+
+                if (request.getParameter("preselect1").length() > 0) {
+                    window.setProperty("osivia.preselect1", request.getParameter("preselect1"));
+                } else if (window.getProperty("osivia.preselect1") != null) {
+                    window.setProperty("osivia.preselect1", null);
+                }
+
+                if ("1".equals(request.getParameter("selectorMonoValued"))) {
+                    window.setProperty("osivia.selectorMonoValued", "1");
+                } else if (window.getProperty("osivia.selectorMonoValued") != null) {
+                    window.setProperty("osivia.selectorMonoValued", null);
+                }
+
+                if ("1".equals(request.getParameter("othersOption"))) {
+                    window.setProperty("osivia.othersOption", "1");
+                } else if (window.getProperty("osivia.othersOption") != null) {
+                    window.setProperty("osivia.othersOption", null);
+                }
+
+                if ((request.getParameter("othersLabel") != null) && (request.getParameter("othersLabel").length() > 0)) {
+                    window.setProperty("osivia.othersLabel", request.getParameter("othersLabel"));
+                } else if (window.getProperty("osivia.othersLabel") != null) {
+                    window.setProperty("osivia.othersLabel", null);
+                }
+
+                // Initialisation du vocabulaire parent suite à éventuel changement de configuration.
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                if (selectors != null) {
+                    List<String> vocabs = selectors.get(request.getParameter("selectorId"));
+                    if ((vocabs != null) && (vocabs.size() > 0)) {
+                        vocabs.clear();
+                        if (request.getParameter("selectors") != null) {
+                            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                        }
+                        response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                    }
+                }
             }
 
-			if("1".equals(req.getParameter("othersOption"))) {
-                window.setProperty("osivia.othersOption", "1");
-            } else if (window.getProperty("osivia.othersOption") != null) {
-                window.setProperty("osivia.othersOption", null);
-            }
-
-			if((req.getParameter("othersLabel") != null) && (req.getParameter("othersLabel").length() > 0)) {
-                window.setProperty("osivia.othersLabel", req.getParameter("othersLabel"));
-            } else if (window.getProperty("osivia.othersLabel") != null) {
-                window.setProperty("osivia.othersLabel", null);
-            }
-
-
-			/* Initialisation du vocabulaire parent suite à éventuel changement de configuration. */
-			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
-			if(selectors != null){
-				List<String> vocabs = selectors.get(req.getParameter("selectorId"));
-				if((vocabs != null) && (vocabs.size() > 0)){
-					vocabs.clear();
-                    if( req.getParameter("selectors")!= null)
-                        res.setRenderParameter("lastSelectors", req.getParameter("selectors"));                     
-					res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-				}
-			}
-
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-
-		if ("admin".equals(req.getPortletMode().toString()) && (req.getParameter("annuler") != null)) {
-
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
-		}
-
-		// Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
-		if ("view".equals(req.getPortletMode().toString())
-				&& (((req.getParameter("add.x") != null) || (req.getParameter("add") != null))
-						||(req.getParameter("monovaluedSubmit") != null))) {
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        } else if ("view".equals(request.getPortletMode().toString())
+				&& (((request.getParameter("add.x") != null) || (request.getParameter("add") != null))
+						||(request.getParameter("monovaluedSubmit") != null))) {
+            // Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
 
 			// Set public parameter
 			String selectorId = window.getProperty("osivia.selectorId");
 			if (selectorId != null) {
 
-				Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+				Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
 				List<String> vocabIds = selectors.get(selectorId);
 				if (vocabIds == null) {
 					vocabIds = new ArrayList<String>();
 					selectors.put(selectorId, vocabIds);
 				}
 
-				String[] selectedVocabsEntries = { req.getParameter("vocab1Id"), req.getParameter("vocab2Id"),
-						req.getParameter("vocab3Id") };
+				String[] selectedVocabsEntries = { request.getParameter("vocab1Id"), request.getParameter("vocab2Id"),
+						request.getParameter("vocab3Id") };
 
 				String separator = "";
 				int index = 0;
 				String selectedEntries = "";
-				
+
                 String preselect = window.getProperty("osivia.preselect1");
                 if( preselect != null)  {
-                    
+
                     // If preselection is set, controls if 2nd item is selected
-                    if(StringUtils.isNotEmpty(req.getParameter("vocab2Id")))    {
-                        selectedVocabsEntries = new String[] { preselect, req.getParameter("vocab2Id"),
-                                req.getParameter("vocab3Id") };
-                    }   else
+                    if(StringUtils.isNotEmpty(request.getParameter("vocab2Id")))    {
+                        selectedVocabsEntries = new String[] { preselect, request.getParameter("vocab2Id"),
+                                request.getParameter("vocab3Id") };
+                    } else {
                         // If no item selected, remove selection
                         selectedVocabsEntries = new String[0];
+                    }
 
                 }
-				
+
 				for (String selectedVocabEntry : selectedVocabsEntries) {
 
 					if (index > 0) {
@@ -240,7 +235,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
 				}
 
-				if (req.getParameter("monovaluedSubmit") != null) {
+				if (request.getParameter("monovaluedSubmit") != null) {
 					/*
 					 * On ne conserve qu'une valeur dans le cas d'un
 					 * sélecteur mono-valué.
@@ -252,70 +247,72 @@ public class VocabSelectorPortlet extends CMSPortlet {
                 }
 
 
-                String lastSelectors =  req.getParameter("selectors");
-                if(lastSelectors != null)
-                    res.setRenderParameter("lastSelectors", lastSelectors);                     
-				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                String lastSelectors =  request.getParameter("selectors");
+                if(lastSelectors != null) {
+                    response.setRenderParameter("lastSelectors", lastSelectors);
+                }
+				response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-				String vocab1Id = req.getParameter("vocab1Id");
+				String vocab1Id = request.getParameter("vocab1Id");
 				if(StringUtils.isNotEmpty(vocab1Id)) {
-                    res.setRenderParameter("vocab1Id", vocab1Id);
+                    response.setRenderParameter("vocab1Id", vocab1Id);
                 }
 
-				String vocab2Id = req.getParameter("vocab2Id");
+				String vocab2Id = request.getParameter("vocab2Id");
 				if( vocab2Id != null) {
-                    res.setRenderParameter("vocab2Id", vocab2Id);
+                    response.setRenderParameter("vocab2Id", vocab2Id);
                 }
 
-				String vocab3Id = req.getParameter("vocab3Id");
+				String vocab3Id = request.getParameter("vocab3Id");
 				if( vocab3Id != null) {
-                    res.setRenderParameter("vocab3Id", vocab3Id);
+                    response.setRenderParameter("vocab3Id", vocab3Id);
                 }
 
 
 				// Réinitialisation des fenetres en mode NORMAL
-				req.setAttribute("osivia.unsetMaxMode", "true");
+				request.setAttribute("osivia.unsetMaxMode", "true");
 
 			}
 
-			res.setPortletMode(PortletMode.VIEW);
-			res.setWindowState(WindowState.NORMAL);
+			response.setPortletMode(PortletMode.VIEW);
+			response.setWindowState(WindowState.NORMAL);
 		}
 
 		// Delete
-		if ("view".equals(req.getPortletMode().toString()) && "delete".equals(req.getParameter("action"))) {
-			int occ = new Integer(req.getParameter("occ"));
+		if ("view".equals(request.getPortletMode().toString()) && "delete".equals(request.getParameter("action"))) {
+			int occ = new Integer(request.getParameter("occ"));
 
-			Map<String, List<String>> selectors = PageSelectors.decodeProperties(req.getParameter("selectors"));
+			Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
 			String selectorId = window.getProperty("osivia.selectorId");
 
 			List<String> vocabIds = selectors.get(selectorId);
 			if ((vocabIds != null) && (vocabIds.size() > occ)) {
 
 				vocabIds.remove(occ);
-				
-				res.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-	               if( req.getParameter("selectors")!= null)
-	                    res.setRenderParameter("lastSelectors", req.getParameter("selectors"));                     
-				
+
+				response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+	               if( request.getParameter("selectors")!= null) {
+                    response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                }
+
 
                 // Réinitialisation des fenetres en mode NORMAL
-                req.setAttribute("osivia.unsetMaxMode", "true");
+                request.setAttribute("osivia.unsetMaxMode", "true");
 			}
 
-			String vocab1Id = req.getParameter("vocab1Id");
+			String vocab1Id = request.getParameter("vocab1Id");
 			if( vocab1Id != null) {
-                res.setRenderParameter("vocab1Id", vocab1Id);
+                response.setRenderParameter("vocab1Id", vocab1Id);
             }
 
-			String vocab2Id = req.getParameter("vocab2Id");
+			String vocab2Id = request.getParameter("vocab2Id");
 			if( vocab2Id != null) {
-                res.setRenderParameter("vocab2Id", vocab2Id);
+                response.setRenderParameter("vocab2Id", vocab2Id);
             }
 
-			String vocab3Id = req.getParameter("vocab3Id");
+			String vocab3Id = request.getParameter("vocab3Id");
 			if( vocab3Id != null) {
-                res.setRenderParameter("vocab3Id", vocab3Id);
+                response.setRenderParameter("vocab3Id", vocab3Id);
             }
 
 		}
@@ -354,12 +351,13 @@ public class VocabSelectorPortlet extends CMSPortlet {
 			req.setAttribute("vocabName" + String.valueOf(niveau), vocabName);
 
 		}
-		
+
 	      String preselect = window.getProperty("osivia.preselect1");
-	        if (preselect == null)
-	            preselect = "";
+	        if (preselect == null) {
+                preselect = "";
+            }
 	        req.setAttribute("preselect1" , preselect);
-	        
+
 
 
 		String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
@@ -385,7 +383,11 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
 	}
 
-	@SuppressWarnings("unchecked")
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
 			PortletSecurityException, IOException {
 
@@ -438,11 +440,12 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
 
 			String vocab1Id = request.getParameter("vocab1Id");
-			
+
             String preselect1 = window.getProperty("osivia.preselect1");
-            if( StringUtils.isNotEmpty(preselect1))
+            if( StringUtils.isNotEmpty(preselect1)) {
                 vocab1Id= preselect1;
-			
+            }
+
 			String vocab2Id = request.getParameter("vocab2Id");
 			String vocab3Id = request.getParameter("vocab3Id");
 
@@ -454,8 +457,8 @@ public class VocabSelectorPortlet extends CMSPortlet {
             if (curSelect != null) {
                 request.setAttribute("vocabsId", curSelect);
                 if( "1".equals(selectorMonoValued))  {
-                    
-                    
+
+
                     if( curSelect.size() > 0)   {
                         String[] tokens = curSelect.get( 0).split("/");
                         if( tokens.length > 0)  {
@@ -467,25 +470,26 @@ public class VocabSelectorPortlet extends CMSPortlet {
                         if( tokens.length > 2)  {
                             vocab3Id = tokens[2];
                         }
-                                                
-                    }             
+
+                    }
                 }
             } else {
-                
+
                 if( "1".equals(selectorMonoValued))  {
-                    if( preselect1 == null)
+                    if( preselect1 == null) {
                         vocab1Id= null;
+                    }
                     vocab2Id=null;
                     vocab3Id=null;
-                }                
+                }
                 request.setAttribute("vocabsId", new ArrayList<String>());
             }
 
 			request.setAttribute("vocab1Id", vocab1Id);
 			request.setAttribute("vocab2Id", vocab2Id);
 			request.setAttribute("vocab3Id", vocab3Id);
-			
-            request.setAttribute("preselect1", preselect1);     			
+
+            request.setAttribute("preselect1", preselect1);
 
 			request.setAttribute("vocabName2", vocabName2);
 			request.setAttribute("vocabName3", vocabName3);

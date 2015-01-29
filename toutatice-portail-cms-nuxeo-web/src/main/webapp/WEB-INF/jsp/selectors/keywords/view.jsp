@@ -54,6 +54,7 @@
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
                         <i class="glyphicons halflings trash"></i>
+                        <span class="sr-only"><is:getProperty key="DELETE" /></span>
                     </a>
                 </p>
             </c:forEach>

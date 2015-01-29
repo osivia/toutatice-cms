@@ -81,6 +81,10 @@
             <taglib-uri>toutatice</taglib-uri>
             <taglib-location>/WEB-INF/tld/toutatice.tld</taglib-location>
         </taglib>
+        <taglib>
+            <taglib-uri>vocabulary-selector</taglib-uri>
+            <taglib-location>/WEB-INF/tld/vocabulary-selector.tld</taglib-location>
+        </taglib>
     </jsp-config>
 	
 </web-app>

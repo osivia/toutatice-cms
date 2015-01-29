@@ -70,6 +70,7 @@
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
                         <i class="glyphicons halflings trash"></i>
+                        <span class="sr-only"><is:getProperty key="DELETE" /></span>
                     </a>
                 </p>
             </c:forEach>
@@ -79,11 +80,11 @@
         <div>
             <div class="media">
                 <div class="media-left">
-                    <input id="${namespace}-date-from" type="date" name="${namespace}-date-from" value="${dateFrom}" placeholder="${placeholderBegin}" class="form-control">
+                    <input id="${namespace}-date-from" type="text" name="${namespace}-date-from" value="${dateFrom}" placeholder="${placeholderBegin}" class="form-control">
                 </div>
             
                 <div class="media-body">
-                    <input id="${namespace}-date-to" type="date" name="${namespace}-date-to" value="${dateTo}" placeholder="${placeholderEnd}" class="form-control">
+                    <input id="${namespace}-date-to" type="text" name="${namespace}-date-to" value="${dateTo}" placeholder="${placeholderEnd}" class="form-control">
                 </div>
                 
                 <div class="media-right">

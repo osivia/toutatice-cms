@@ -2,25 +2,22 @@
 // Required JQuery UI with widgets modules
 
 $JQry(function() {
-	$JQry("input[type='date']").datepicker({
+	$JQry(".dates-selector input").datepicker({
 		changeMonth : true,
+		changeYear : true,
 		dateFormat : "dd/mm/yy",
 		numberOfMonths : 1,
+		selectOtherMonths : true,
 
 		beforeShow : function(input, inst) {
-			setTimeout(function() {
-				// z-index
-				inst.dpDiv.css("z-index", 10);
-				
-				// Form
-				var $title = inst.dpDiv.find(".ui-datepicker-title");
-				$title.addClass("form-inline");
-				$title.children("select").addClass("form-control");
-				$title.children("span").addClass("form-control-static");
-			}, 0);
+			customizeRendering(inst);
 		},
 		
-		onSelect : function(dateText, inst) {
+		onChangeMonthYear : function(year, month, inst) {
+			customizeRendering(inst);
+		},
+		
+		onClose : function(dateText, inst) {
 			var fromSuffix = "-date-from";
 			var toSuffix = "-date-to";
 			
@@ -38,3 +35,32 @@ $JQry(function() {
 		}
 	});
 });
+
+
+function customizeRendering(inst) {
+	setTimeout(function() {
+		// z-index
+		inst.dpDiv.css("z-index", 10);
+		
+		// Header
+		var $header = inst.dpDiv.find(".ui-datepicker-header");
+		
+		// Previous button
+		var $previous = $header.find(".ui-datepicker-prev");
+		$previous.addClass("btn btn-default pull-left");
+		$previous.find("span").remove();
+		$previous.append($JQry(document.createElement("i")).addClass("glyphicons halflings circle-arrow-left"));
+		
+		// Next button
+		var $next = $header.find(".ui-datepicker-next");
+		$next.addClass("btn btn-default pull-right");
+		$next.find("span").remove();
+		$next.append($JQry(document.createElement("i")).addClass("glyphicons halflings circle-arrow-right"));
+		
+		// Form
+		var $title = $header.find(".ui-datepicker-title");
+		$title.addClass("form-inline text-overflow");
+		$title.children("select").addClass("form-control");
+		$title.children("span").addClass("form-control-static");
+	}, 0);
+} 
