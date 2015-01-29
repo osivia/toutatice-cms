@@ -84,7 +84,7 @@
             <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
             
             <!-- Dynatree -->
-            <link rel="stylesheet" href="/css/generated/menu-dynatree.min.css" />
+            <link rel="stylesheet" href="/css/menu-dynatree.min.css" />
             <script type="text/javascript" src="/components/jquery.dynatree-1.2.6-dist/jquery.dynatree.min.js" />
             
             <!-- jQuery File Upload (Drag & drop dependency) -->
