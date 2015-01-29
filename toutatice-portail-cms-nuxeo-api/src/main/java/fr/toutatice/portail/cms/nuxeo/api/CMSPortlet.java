@@ -284,160 +284,16 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
                 resourceResponse.setProperty("Location", doc.getString("clink:link"));
                 resourceResponse.getPortletOutputStream().close();
-            }
-
-
-            // Téléchargement d'un fichier présent dans un document externe
-            /* Fichier, image "contenue dans un document - propriété spécifique du document (ex: annonce:image) */
-            if ("file".equals(resourceRequest.getParameter("type"))) {
-
-                String docPath = resourceRequest.getParameter("docPath");
-                String fieldName = resourceRequest.getParameter("fieldName");
-                String filename = resourceRequest.getParameter("filename");
-
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
-
-                ctx.setStreamingSupport(true);
-
-
-                CMSBinaryContent content = ctx.fetchFileContent(docPath, fieldName);
-                
-                // Redirection vers portlet de streaming
-                if( content.getStream() != null)  {
-                    
-                    resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-                            String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-                    String idLargeFile = "" + System.currentTimeMillis();
-                    
-
-                    CMSBinaryContent.largeFile.put(idLargeFile, content);
-                    
-                    resourceResponse.setProperty("Location", "/toutatice-portail-cms-nuxeo/streaming?idLargeFile=" + idLargeFile);
-                    resourceResponse.getPortletOutputStream().close();  
-                    
-                    return;
-                 }                
-
-                if (StringUtils.isEmpty(filename)) {
-                    filename = content.getName();
-                }
-
-                // Les headers doivent être positionnées avant la réponse
-                resourceResponse.setContentType(content.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-
-                ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(), 4096);
-
-                resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-
-                resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-            }
-
-            if ("attachedFile".equals(resourceRequest.getParameter("type"))) {
-
-                String docPath = resourceRequest.getParameter("docPath");
-                String fileIndex = resourceRequest.getParameter("fileIndex");
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
-
-
-                CMSBinaryContent content = ResourceUtil.getCMSBinaryContent(ctx, docPath, fileIndex);
-
-                // Les headers doivent être positionnées avant la réponse
-                resourceResponse.setContentType(content.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
-
-                ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(), 4096);
-
-
-                resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-                resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-            }
-
-
-            // v.0.27 : ajout blob
-            if ("blob".equals(resourceRequest.getParameter("type"))) {
-
-                // Gestion d'un cache global
-
-                String docPath = resourceRequest.getParameter("docPath");
-                String blobIndex = resourceRequest.getParameter("blobIndex");
-
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
+            }  
+            
+            // Tous les autres cas sont dépréciés
+            resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
+            return;
 
 
 
-                CMSBinaryContent content = ResourceUtil.getBlobHolderContent(ctx, docPath, blobIndex);
-
-
-                // Les headers doivent être positionnées avant la réponse
-                resourceResponse.setContentType(content.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
-
-                ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(), 4096);
-
-
-                resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-                resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-            }
-
-            /* Image "contenue" dans le document - propriété ttc:images */
-            if ("attachedPicture".equals(resourceRequest.getParameter("type"))) {
-
-
-                String docPath = resourceRequest.getParameter("docPath");
-                String pictureIndex = resourceRequest.getParameter("pictureIndex");
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
-
-                CMSBinaryContent content = ctx.fetchAttachedPicture(docPath, pictureIndex);
-
-                // Les headers doivent être positionnées avant la réponse
-                resourceResponse.setContentType(content.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
-
-                ResourceUtil.copy(new FileInputStream(content.getFile()), resourceResponse.getPortletOutputStream(), 4096);
-
-
-                resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-                resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-            }
-
-            /* Image externe au document - "objet nuxeo */
-            if ("picture".equals(resourceRequest.getParameter("type"))) {
-
-
-                // Gestion d'un cache global
-
-                String docPath = resourceRequest.getParameter("docPath");
-                String content = resourceRequest.getParameter("content");
-
-                NuxeoController ctx = new NuxeoController(resourceRequest, null, this.getPortletContext());
-
-
-                // V 1.0.19
-                /* TOCHECK si on peut mettre en commentaire */
-                // V2 suppression a valider
-                /*
-                 * if( !"1".equals( resourceRequest.getParameter("displayLiveVersion"))) {
-                 * Document doc = fetchLinkedDocument(ctx, docPath);
-                 * docPath = doc.getPath();
-                 * }
-                 */
-                CMSBinaryContent picture = ctx.fetchPicture(docPath, content);
-
-                // Les headers doivent être positionnées avant la réponse
-                resourceResponse.setContentType(picture.getMimeType());
-                resourceResponse.setProperty("Content-Disposition", "attachment; filename=\"" + picture.getName() + "\"");
-
-                ResourceUtil.copy(new FileInputStream(picture.getFile()), resourceResponse.getPortletOutputStream(), 4096);
-
-
-                resourceResponse.setProperty("Cache-Control", "max-age=" + resourceResponse.getCacheControl().getExpirationTime());
-                resourceResponse.setProperty("Last-Modified", this.formatResourceLastModified());
-            }
+            
+            
 
 
         } catch (NuxeoException e) {

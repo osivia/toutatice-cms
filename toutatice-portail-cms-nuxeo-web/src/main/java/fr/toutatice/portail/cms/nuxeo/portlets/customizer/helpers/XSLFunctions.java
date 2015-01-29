@@ -117,6 +117,7 @@ public class XSLFunctions {
         this.portalControllerContext = new PortalControllerContext(portletContext, request, response);
         // Nuxeo controller
         this.nuxeoController = new NuxeoController(request, response, portletContext);
+        this.nuxeoController.setCurrentDoc((Document) cmsContext.getDoc());
 
         // Nuxeo base URIs
         this.nuxeoBaseURIs = this.getNuxeoBaseURIs();

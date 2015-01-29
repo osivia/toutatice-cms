@@ -147,6 +147,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 			}			
 
 		}
+		
+		getCMSCustomizer().sessionDestroyed(sessionEvent);
 
 	}
 

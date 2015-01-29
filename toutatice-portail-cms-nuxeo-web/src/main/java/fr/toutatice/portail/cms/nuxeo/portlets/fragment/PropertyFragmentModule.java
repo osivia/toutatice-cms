@@ -129,6 +129,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 
             // Fetch Nuxeo document
             Document document = nuxeoController.fetchDocument(nuxeoPath);
+            nuxeoController.setCurrentDoc(document);            
 
             // Title
             if (StringUtils.isNotBlank(document.getTitle())) {

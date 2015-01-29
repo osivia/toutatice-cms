@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,6 +51,8 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.BinaryDelegation;
+import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -236,6 +239,14 @@ public class NuxeoController {
 
 
     boolean streamingSupport = false;
+    
+    String forcedLivePath = null;
+
+
+    
+    public String getForcedLivePath() {
+        return forcedLivePath;
+    }
 
 
     public boolean isStreamingSupport() {
@@ -780,6 +791,27 @@ public class NuxeoController {
                     this.reloadResource = true;
                 }
             }
+            
+            
+            // Preview mode
+            if (this.getRequest() != null) {
+                
+                EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
+                if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
+                    forcedLivePath = editionState.getDocPath();
+                }   else    {
+                
+                    
+                    // mode web page
+                    String webPageEditionPath = (String) this.getRequest().getAttribute("osivia.cms.webPageEditionPath"); 
+                    if( webPageEditionPath != null) {
+                            forcedLivePath = editionState.getDocPath();
+                        }
+                    }
+
+                
+            }
+            
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1195,53 +1227,20 @@ public class NuxeoController {
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */
-    public static Set<String> delegations = new HashSet<String>();
-    
+     
 
-    public String getBinaryURL(String type, String originalPath,  String index) {
-
-
-        String path = "";
-
+    public String getBinaryURL(BinaryDescription binary) {
+        
+        
         try {
-
-            // TODO check write and store in request²
-            // TODO store delalgation ticket
-            
-            CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), originalPath);
-            path = pubInfos.getDocumentPath();
-             
-            HttpServletRequest httpRequest = (HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST);
-            delegations.add( httpRequest.getSession().getId() + path);            
-            
-            boolean liveState = this.isIdOrPathInLiveState(path);
-            boolean refresh = PageProperties.getProperties().isRefreshingPage();
-            
-            // TODO : fetch
-            
-            StringBuffer sb = new StringBuffer();
-            
-            sb.append(this.getRequest().getContextPath() + "/binary?type="+type+"&path="+ URLEncoder.encode(path, "UTF-8")+ "&index="+index);
-            if( index != null)
-                sb.append("&index="+index);            
-            if( liveState)
-                sb.append("&liveState="+liveState);
-            if( refresh)
-                sb.append("&refresh="+refresh);           
-            String url = sb.toString();
-            return url;
-            
-
-
-        } catch (Exception e) {
-            // TODO : add logger
-            return "#";
+            return getCMSService().getBinaryResourceURL(this.getCMSCtx(), binary).getUrl();
+        } catch (CMSException e) {
+            throw new RuntimeException(e);
         }
-
+        
     }
     
     
-
 
     /**
      * Checks if current doc is in edition state.
@@ -1313,36 +1312,13 @@ public class NuxeoController {
      */
     public String createFileLink(Document doc, String fieldName) {
         try {
+            
 
-            boolean liveState = this.isPathInLiveState(doc);
-
-            if ("ttc:vignette".equals(fieldName) && !liveState) {
-                String url = this.getRequest().getContextPath() + "/thumbnail?" + "path=" + URLEncoder.encode(doc.getPath(), "UTF-8");
-                return url;
-
-            } else {
-                ResourceURL resourceURL = this.createResourceURL();
-                resourceURL.setResourceID(doc.getId() + "/" + fieldName);
-                resourceURL.setParameter("type", "file");
-                resourceURL.setParameter("docPath", doc.getPath());
-                resourceURL.setParameter("fieldName", fieldName);
-
-
-                if (liveState) {
-                    resourceURL.setParameter("displayLiveVersion", "1");
-                }
-
-                // Force to reload resources
-                if (PageProperties.getProperties().isRefreshingPage()) {
-                    resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-                }
-
-                // ne marche pas : bug JBP
-                // resourceURL.setCacheability(ResourceURL.PORTLET);
-                resourceURL.setCacheability(ResourceURL.PAGE);
-
-                return resourceURL.toString();
-            }
+               BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, doc.getPath());
+               binary.setFieldName(fieldName);
+               binary.setDocument(doc);
+               return getBinaryURL(binary);
+  
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
@@ -1373,30 +1349,12 @@ public class NuxeoController {
      * @return the string
      */
     public String createAttachedFileLink(String path, String fileIndex) {
+        
 
-        boolean liveState = this.isIdOrPathInLiveState(path);
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, path);
+            binary.setIndex(fileIndex);
+            return getBinaryURL(binary);
 
-        ResourceURL resourceURL = this.createResourceURL();
-        resourceURL.setResourceID(path + "/" + fileIndex);
-
-        resourceURL.setParameter("type", "attachedFile");
-        resourceURL.setParameter("fileIndex", fileIndex);
-        resourceURL.setParameter("docPath", path);
-
-        if (liveState) {
-            resourceURL.setParameter("displayLiveVersion", "1");
-        }
-
-        // Force to reload resources
-        if (PageProperties.getProperties().isRefreshingPage()) {
-            resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-        }
-
-        // ne marche pas : bug JBP
-        // resourceURL.setCacheability(ResourceURL.PORTLET);
-        resourceURL.setCacheability(ResourceURL.PAGE);
-
-        return resourceURL.toString();
     }
 
 
@@ -1409,24 +1367,11 @@ public class NuxeoController {
      */
     public String createAttachedBlobLink(String path, String blobIndex) {
 
-        ResourceURL resourceURL = this.createResourceURL();
-        resourceURL.setResourceID(path + "/" + blobIndex);
 
-        resourceURL.setParameter("type", "blob");
-        resourceURL.setParameter("blobIndex", blobIndex);
-        resourceURL.setParameter("docPath", path);
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
+            binary.setIndex(blobIndex);                
+           return getBinaryURL(binary);
 
-        // Force to reload resources
-        if (PageProperties.getProperties().isRefreshingPage()) {
-            resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-        }
-
-
-        // ne marche pas : bug JBP
-        // resourceURL.setCacheability(ResourceURL.PORTLET);
-        resourceURL.setCacheability(ResourceURL.PAGE);
-
-        return resourceURL.toString();
     }
 
     /**
@@ -1442,35 +1387,12 @@ public class NuxeoController {
         try {
             
             
-            if( "1".equals(System.getProperty("osivia.optimization.ressources")))
-               return getBinaryURL("attachedPicture", path, fileIndex);
 
-            boolean liveState = this.isIdOrPathInLiveState(path);
-            
-            ResourceURL resourceURL = this.createResourceURL();
-            resourceURL.setResourceID(path + "/" + fileIndex);
+                BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_PICTURE, path);
+                binary.setDocument(getCurrentDoc());
+                binary.setIndex(fileIndex);                
+               return getBinaryURL(binary);
 
-            resourceURL.setParameter("type", "attachedPicture");
-            resourceURL.setParameter("pictureIndex", fileIndex);
-            resourceURL.setParameter("docPath", path);
-
-
-            if (liveState) {
-                resourceURL.setParameter("displayLiveVersion", "1");
-            }
-
-
-            // Force to reload resources
-            if (PageProperties.getProperties().isRefreshingPage()) {
-                resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-            }
-
-
-            // ne marche pas : bug JBP
-            // resourceURL.setCacheability(ResourceURL.PORTLET);
-            resourceURL.setCacheability(ResourceURL.PAGE);
-
-            return resourceURL.toString();
 
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
@@ -1485,25 +1407,12 @@ public class NuxeoController {
      * @return the string
      */
     public String createPictureLink(String path, String content) {
+        
 
-        ResourceURL resourceURL = this.createResourceURL();
-        resourceURL.setResourceID(path + "/" + content);
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
+            binary.setContent(content);
+            return getBinaryURL(binary);
 
-        resourceURL.setParameter("type", "picture");
-        resourceURL.setParameter("content", content);
-        resourceURL.setParameter("docPath", path);
-
-        // Force to reload resources
-        if (PageProperties.getProperties().isRefreshingPage()) {
-            resourceURL.setParameter("refresh", "" + System.currentTimeMillis());
-        }
-
-
-        // ne marche pas : bug JBP
-        // resourceURL.setCacheability(ResourceURL.PORTLET);
-        resourceURL.setCacheability(ResourceURL.PAGE);
-
-        return resourceURL.toString();
     }
 
 
@@ -1558,7 +1467,13 @@ public class NuxeoController {
 
     public Object executeNuxeoCommand(final INuxeoCommand command) {
 
-        NuxeoCommandContext ctx = new NuxeoCommandContext(this.portletCtx, this.request);
+        NuxeoCommandContext ctx;
+        if( this.request != null)
+             ctx = new NuxeoCommandContext(this.portletCtx, this.request);
+        else if( this.servletRequest != null)
+            ctx = new NuxeoCommandContext(this.portletCtx, this.servletRequest);  
+        else
+            ctx = new NuxeoCommandContext(this.portletCtx);
 
         ctx.setAuthType(this.getAuthType());
         ctx.setAuthProfil(this.getScopeProfil());
@@ -2089,6 +2004,8 @@ public class NuxeoController {
      * @return the CMS ctx
      */
     public CMSServiceCtx getCMSCtx() {
+        
+        try {
 
         this.cmsCtx = new CMSServiceCtx();
 
@@ -2101,8 +2018,10 @@ public class NuxeoController {
 
         if (this.getServletRequest() != null) {
             this.cmsCtx.setServletRequest(this.servletRequest);
-         
-        }
+         }  else    {
+             if( this.getRequest() != null)
+                 this.cmsCtx.setServletRequest( (HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST));
+         }
 
         this.cmsCtx.setPortletCtx(this.getPortletCtx());
 
@@ -2114,13 +2033,7 @@ public class NuxeoController {
         this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
 
 
-        // Preview mode
-        if (this.getRequest() != null) {
-            EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
-            if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                this.cmsCtx.setForcedLivePath(editionState.getDocPath());
-            }
-        }
+        this.cmsCtx.setForcedLivePath(this.getForcedLivePath());
 
         if (this.getRequest() != null) {
             this.cmsCtx.setPageId(this.getPageId());
@@ -2136,10 +2049,24 @@ public class NuxeoController {
 
         if (this.reloadResource) {
             this.cmsCtx.setForceReload(true);
+        }   else   {
+            // servlet ressource
+            if( this.getServletRequest() != null)   {
+                String refresh = this.getServletRequest().getParameter("refresh");
+                if (BooleanUtils.toBoolean(refresh))  {
+                    this.cmsCtx.setForceReload(true);
+                }
+            }
+            
         }
         this.cmsCtx.setStreamingSupport(this.streamingSupport);
+        
+
 
         return this.cmsCtx;
+        } catch( Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
 

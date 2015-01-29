@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -50,6 +51,8 @@ import org.osivia.portal.api.urls.EcmCommand;
 import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.BinaryDelegation;
+import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSConfigurationItem;
 import org.osivia.portal.core.cms.CMSEditableWindow;
@@ -64,12 +67,14 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
+import org.osivia.portal.core.cms.spi.ICMSIntegration;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -575,7 +580,7 @@ public class CMSService implements ICMSService {
                         String size = map.getString("length");
 
 
-                        if((size != null) && (Long.parseLong(size)> 1000000L)) {
+                        if((size != null) && (Long.parseLong(size)> 100000L)) {
                             //Activation du mode streaming
                             cmd.setStreamingSupport(true);
                             // Pas de cache en mode streaming
@@ -1845,6 +1850,9 @@ public class CMSService implements ICMSService {
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
+            
+            // force reload ressources       
+            refreshBinaryResource(cmsCtx, pagePath);                   
 
 
         } catch (Exception e) {
@@ -2011,6 +2019,32 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
+    public Link getBinaryResourceURL(CMSServiceCtx cmsCtx, BinaryDescription binary) throws CMSException    {
+        return this.customizer.getBinaryResourceURL(cmsCtx, binary);        
+    }
+
+    
+    @Override
+    public BinaryDelegation validateBinaryDelegation(CMSServiceCtx cmsCtx, String path) {
+        return this.customizer.validateBinaryDelegation(cmsCtx, path);   
+
+    }
+    
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String refreshBinaryResource(CMSServiceCtx cmsCtx, String path)  {
+        return this.customizer.refreshBinaryResource(cmsCtx, path);      
+    }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setSynchronization(CMSServiceCtx cmsCtx, String pagePath, Boolean enable) throws CMSException {
 
         cmsCtx.setDisplayLiveVersion("1");
@@ -2074,5 +2108,7 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
+
+
 
 }
