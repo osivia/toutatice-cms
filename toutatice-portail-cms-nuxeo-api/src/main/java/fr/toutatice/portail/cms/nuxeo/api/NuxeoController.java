@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -84,9 +84,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
 /**
  * Nuxeo controller.
- *
+ * 
  * Main entry point for nuxeo calls / data manipulation from within a cms portlet
- *
+ * 
  */
 public class NuxeoController {
 
@@ -173,7 +173,7 @@ public class NuxeoController {
 
     /**
      * Gets the domain path.
-     *
+     * 
      * @return the domain path
      */
     public String getDomainPath() {
@@ -182,7 +182,7 @@ public class NuxeoController {
 
     /**
      * Gets the parent path to create.
-     *
+     * 
      * @return the parent path to create
      */
     public String getParentPathToCreate() {
@@ -191,7 +191,7 @@ public class NuxeoController {
 
     /**
      * Sets the parent path to create.
-     *
+     * 
      * @param parentPathToCreate the new parent path to create
      */
     public void setParentPathToCreate(String parentPathToCreate) {
@@ -213,7 +213,7 @@ public class NuxeoController {
 
     /**
      * Gets the menu root path.
-     *
+     * 
      * @return the menu root path
      */
     public String getMenuRootPath() {
@@ -239,11 +239,10 @@ public class NuxeoController {
 
 
     boolean streamingSupport = false;
-    
+
     String forcedLivePath = null;
 
 
-    
     public String getForcedLivePath() {
         return forcedLivePath;
     }
@@ -268,7 +267,7 @@ public class NuxeoController {
 
     /**
      * WebId service used to transform urls
-     *
+     * 
      * @return the service
      */
     public IWebIdService getWebIdService() {
@@ -284,7 +283,7 @@ public class NuxeoController {
 
     /**
      * Gets the current doc.
-     *
+     * 
      * @return the current doc
      */
     public Document getCurrentDoc() {
@@ -293,7 +292,7 @@ public class NuxeoController {
 
     /**
      * Sets the current doc.
-     *
+     * 
      * @param currentDoc the new current doc
      */
     public void setCurrentDoc(Document currentDoc) {
@@ -303,7 +302,7 @@ public class NuxeoController {
 
     /**
      * Gets the space path.
-     *
+     * 
      * @return the space path
      */
     public String getSpacePath() {
@@ -312,7 +311,7 @@ public class NuxeoController {
 
     /**
      * Sets the space path.
-     *
+     * 
      * @param spacePath the new space path
      */
     public void setSpacePath(String spacePath) {
@@ -321,7 +320,7 @@ public class NuxeoController {
 
     /**
      * Gets the base path.
-     *
+     * 
      * @return the base path
      */
     public String getBasePath() {
@@ -331,7 +330,7 @@ public class NuxeoController {
 
     /**
      * Gets the navigation path.
-     *
+     * 
      * @return the navigation path
      */
     public String getNavigationPath() {
@@ -340,7 +339,7 @@ public class NuxeoController {
 
     /**
      * path reel de contenu.
-     *
+     * 
      * @return the content path
      */
     public String getContentPath() {
@@ -350,7 +349,7 @@ public class NuxeoController {
 
     /**
      * path de navigation du contenu.
-     *
+     * 
      * @return the item navigation path
      */
     public String getItemNavigationPath() {
@@ -360,7 +359,7 @@ public class NuxeoController {
 
     /**
      * Gets the display context.
-     *
+     * 
      * @return the display context
      */
     public String getDisplayContext() {
@@ -369,7 +368,7 @@ public class NuxeoController {
 
     /**
      * Sets the display context.
-     *
+     * 
      * @param displayContext the new display context
      */
     public void setDisplayContext(String displayContext) {
@@ -379,7 +378,7 @@ public class NuxeoController {
 
     /**
      * Gets the hide meta datas.
-     *
+     * 
      * @return the hide meta datas
      */
     public String getHideMetaDatas() {
@@ -388,7 +387,7 @@ public class NuxeoController {
 
     /**
      * Sets the hide meta datas.
-     *
+     * 
      * @param hideMetaDatas the new hide meta datas
      */
     public void setHideMetaDatas(String hideMetaDatas) {
@@ -400,7 +399,7 @@ public class NuxeoController {
 
     /**
      * Sets the page marker.
-     *
+     * 
      * @param pageMarker the new page marker
      */
     public void setPageMarker(String pageMarker) {
@@ -409,7 +408,7 @@ public class NuxeoController {
 
     /**
      * Gets the display live version.
-     *
+     * 
      * @return the display live version
      */
     public String getDisplayLiveVersion() {
@@ -418,7 +417,7 @@ public class NuxeoController {
 
     /**
      * Sets the display live version.
-     *
+     * 
      * @param displayLiveVersion the new display live version
      */
     public void setDisplayLiveVersion(String displayLiveVersion) {
@@ -427,7 +426,7 @@ public class NuxeoController {
 
     /**
      * Checks if is displaying live version.
-     *
+     * 
      * @return true, if is displaying live version
      */
     public boolean isDisplayingLiveVersion() {
@@ -441,7 +440,7 @@ public class NuxeoController {
 
     /**
      * Gets the force publication infos scope.
-     *
+     * 
      * @return the force publication infos scope
      */
     public String getForcePublicationInfosScope() {
@@ -450,7 +449,7 @@ public class NuxeoController {
 
     /**
      * Sets the force publication infos scope.
-     *
+     * 
      * @param forcePublicationInfosScope the new force publication infos scope
      */
     public void setForcePublicationInfosScope(String forcePublicationInfosScope) {
@@ -460,7 +459,7 @@ public class NuxeoController {
 
     /**
      * Gets the scope.
-     *
+     * 
      * @return the scope
      */
     public String getScope() {
@@ -480,7 +479,7 @@ public class NuxeoController {
 
     /**
      * Gets the cache type.
-     *
+     * 
      * @return the cache type
      */
     public int getCacheType() {
@@ -489,7 +488,7 @@ public class NuxeoController {
 
     /**
      * Sets the cache type.
-     *
+     * 
      * @param cacheType the new cache type
      */
     public void setCacheType(int cacheType) {
@@ -498,7 +497,7 @@ public class NuxeoController {
 
     /**
      * Gets the scope profil.
-     *
+     * 
      * @return the scope profil
      */
     private ProfilBean getScopeProfil() {
@@ -507,7 +506,7 @@ public class NuxeoController {
 
     /**
      * Sets the scope profil.
-     *
+     * 
      * @param scopeProfil the new scope profil
      */
     private void setScopeProfil(ProfilBean scopeProfil) {
@@ -525,7 +524,7 @@ public class NuxeoController {
 
     /**
      * Checks if is asynchronous updates.
-     *
+     * 
      * @return true, if is asynchronous updates
      */
     public boolean isAsynchronousUpdates() {
@@ -534,7 +533,7 @@ public class NuxeoController {
 
     /**
      * Sets the asynchronous updates.
-     *
+     * 
      * @param asynchronousUpdates the new asynchronous updates
      */
     public void setAsynchronousUpdates(boolean asynchronousUpdates) {
@@ -543,7 +542,7 @@ public class NuxeoController {
 
     /**
      * Gets the cache time out.
-     *
+     * 
      * @return the cache time out
      */
     public long getCacheTimeOut() {
@@ -552,7 +551,7 @@ public class NuxeoController {
 
     /**
      * Sets the cache time out.
-     *
+     * 
      * @param cacheTimeOut the new cache time out
      */
     public void setCacheTimeOut(long cacheTimeOut) {
@@ -562,8 +561,8 @@ public class NuxeoController {
 
     /**
      * Set the current scope for furthers nuxeo requests
-     *
-     *
+     * 
+     * 
      * @param scope the new scope
      * @throws Exception the exception
      */
@@ -593,7 +592,7 @@ public class NuxeoController {
 
     /**
      * Gets the auth type.
-     *
+     * 
      * @return the auth type
      */
     public int getAuthType() {
@@ -602,7 +601,7 @@ public class NuxeoController {
 
     /**
      * Sets the auth type.
-     *
+     * 
      * @param authType the new auth type
      */
     public void setAuthType(int authType) {
@@ -611,7 +610,7 @@ public class NuxeoController {
 
     /**
      * Gets the nuxeo connection props.
-     *
+     * 
      * @return the nuxeo connection props
      */
     public NuxeoConnectionProperties getNuxeoConnectionProps() {
@@ -623,7 +622,7 @@ public class NuxeoController {
 
     /**
      * Gets the portal ctx.
-     *
+     * 
      * @return the portal ctx
      */
     public PortalControllerContext getPortalCtx() {
@@ -637,7 +636,7 @@ public class NuxeoController {
 
     /**
      * Gets the request.
-     *
+     * 
      * @return the request
      */
     public PortletRequest getRequest() {
@@ -646,7 +645,7 @@ public class NuxeoController {
 
     /**
      * Gets the response.
-     *
+     * 
      * @return the response
      */
     public PortletResponse getResponse() {
@@ -655,7 +654,7 @@ public class NuxeoController {
 
     /**
      * Gets the portlet ctx.
-     *
+     * 
      * @return the portlet ctx
      */
     public PortletContext getPortletCtx() {
@@ -665,7 +664,7 @@ public class NuxeoController {
 
     /**
      * Instantiates a new nuxeo controller.
-     *
+     * 
      * @param request the request
      * @param response the response
      * @param portletCtx the portlet ctx
@@ -791,27 +790,27 @@ public class NuxeoController {
                     this.reloadResource = true;
                 }
             }
-            
-            
+
+
             // Preview mode
             if (this.getRequest() != null) {
-                
+
                 EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
                 if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
                     forcedLivePath = editionState.getDocPath();
-                }   else    {
-                
-                    
-                    // mode web page
-                    String webPageEditionPath = (String) this.getRequest().getAttribute("osivia.cms.webPageEditionPath"); 
-                    if( webPageEditionPath != null) {
-                            forcedLivePath = editionState.getDocPath();
-                        }
-                    }
+                } else {
 
-                
+
+                    // mode web page
+                    String webPageEditionPath = (String) this.getRequest().getAttribute("osivia.cms.webPageEditionPath");
+                    if (webPageEditionPath != null) {
+                        forcedLivePath = editionState.getDocPath();
+                    }
+                }
+
+
             }
-            
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -840,7 +839,7 @@ public class NuxeoController {
 
     /**
      * Sets the doc type to create.
-     *
+     * 
      * @param property the new doc type to create
      */
     public void setDocTypeToCreate(String property) {
@@ -849,7 +848,7 @@ public class NuxeoController {
 
     /**
      * Gets the navigation item.
-     *
+     * 
      * @return the navigation item
      * @throws Exception the exception
      */
@@ -878,7 +877,7 @@ public class NuxeoController {
 
     /**
      * Gets the navigation scope.
-     *
+     * 
      * @return the navigation scope
      */
     public String getNavigationScope() {
@@ -887,7 +886,7 @@ public class NuxeoController {
 
     /**
      * Instantiates a new nuxeo controller.
-     *
+     * 
      * @param portletCtx the portlet ctx
      */
     public NuxeoController(PortletContext portletCtx) {
@@ -898,7 +897,7 @@ public class NuxeoController {
 
     /**
      * Gets the portal url factory.
-     *
+     * 
      * @return the portal url factory
      */
     public IPortalUrlFactory getPortalUrlFactory() {
@@ -911,7 +910,7 @@ public class NuxeoController {
 
     /**
      * Gets the nuxeo command service.
-     *
+     * 
      * @return the nuxeo command service
      * @throws Exception the exception
      */
@@ -928,7 +927,7 @@ public class NuxeoController {
 
     /**
      * Gets the profil manager.
-     *
+     * 
      * @return the profil manager
      * @throws Exception the exception
      */
@@ -943,7 +942,7 @@ public class NuxeoController {
 
     /**
      * Gets the formatter.
-     *
+     * 
      * @return the formatter
      * @throws Exception the exception
      */
@@ -959,7 +958,7 @@ public class NuxeoController {
 
     /**
      * Get Nuxeo CMS service instance.
-     *
+     * 
      * @return Nuxeo CMS service instance
      */
     public INuxeoService getNuxeoCMSService() {
@@ -975,7 +974,7 @@ public class NuxeoController {
 
     /**
      * Gets the page id.
-     *
+     * 
      * @return the page id
      */
     public String getPageId() {
@@ -995,7 +994,7 @@ public class NuxeoController {
 
     /**
      * Gets the computed path.
-     *
+     * 
      * @param portletPath the portlet path
      * @return the computed path
      */
@@ -1076,7 +1075,7 @@ public class NuxeoController {
 
     /**
      * Transform html content from nuxeo (note:note)
-     *
+     * 
      * @param htmlContent the html content
      * @return the string
      * @throws Exception the exception
@@ -1093,7 +1092,7 @@ public class NuxeoController {
 
     /**
      * Transform Nuxeo link URL
-     *
+     * 
      * @param link Nuxeo link URL
      * @return transformed Nuxeo link URL
      */
@@ -1109,7 +1108,7 @@ public class NuxeoController {
 
     /**
      * Format scope list (for user interface)
-     *
+     * 
      * @param selectedScope the selected scope
      * @return the string
      * @throws Exception the exception
@@ -1129,7 +1128,7 @@ public class NuxeoController {
 
     /**
      * Format request filtering policy list.
-     *
+     * 
      * @param selectedRequestFilteringPolicy the selected request filtering policy
      * @return the string
      * @throws Exception the exception
@@ -1149,7 +1148,7 @@ public class NuxeoController {
 
     /**
      * Format display live version list.
-     *
+     * 
      * @param selectedVersion the selected version
      * @return the string
      * @throws Exception the exception
@@ -1168,7 +1167,7 @@ public class NuxeoController {
 
     /**
      * Creates the resource url.
-     *
+     * 
      * @return the resource url
      */
     private ResourceURL createResourceURL() {
@@ -1181,12 +1180,9 @@ public class NuxeoController {
     }
 
 
-    
-    
-    
     /**
      * Checks if current path is in edition state.
-     *
+     * 
      * @param path the path
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
@@ -1217,56 +1213,33 @@ public class NuxeoController {
 
         return this.isPathInPageEditionState(path);
     }
-    
-    
-    
+
+
     /**
      * Generic binary URL
-     *
+     * 
      * @param path the path
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */
-     
+
 
     public String getBinaryURL(BinaryDescription binary) {
-        
-        
+
+
         try {
             return getCMSService().getBinaryResourceURL(this.getCMSCtx(), binary).getUrl();
         } catch (CMSException e) {
             throw new RuntimeException(e);
         }
-        
-    }
-    
-    
 
-    /**
-     * Checks if current doc is in edition state.
-     *
-     * @param path the path
-     * @return true, if is in page edition state
-     * @throws CMSException the CMS exception
-     */
-
-
-    public boolean isPathInLiveState(Document doc) {
-
-        if (this.isDisplayingLiveVersion()) {
-            return true;
-        }
-
-        return this.isPathInPageEditionState(doc.getPath());
     }
 
-    
-    
-    
+
 
     /**
      * Checks if current path is in page edition state (web page edition mode)
-     *
+     * 
      * @param path the path
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
@@ -1275,28 +1248,22 @@ public class NuxeoController {
 
     public boolean isPathInPageEditionState(String path) {
 
-        try {
-            if (path.equals(this.getNavigationPath())) {
-                // Uniquement en mode web page
-                if (path.equals(this.getRequest().getAttribute("osivia.cms.webPagePath"))) {
-                    if (CmsPermissionHelper.getCurrentPageSecurityLevel(this.cmsCtx.getControllerContext(), path) == Level.allowPreviewVersion) {
-                        return true;
-                    }
-                }
+
+        if (path.equals(this.getNavigationPath())) {
+            // Uniquement en mode web page
+            if (path.equals(this.getRequest().getAttribute("osivia.cms.webPageEditionPath"))) {
+                return true;
             }
-
-
-            if (this.getRequest() != null) {
-                EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
-                if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                    return true;
-                }
-            }
-
-
-        } catch (CMSException e) {
-            throw new RuntimeException(e);
         }
+
+
+        if (this.getRequest() != null) {
+            EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
+            if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
+                return true;
+            }
+        }
+
 
         return false;
     }
@@ -1304,7 +1271,7 @@ public class NuxeoController {
 
     /**
      * Creates the file link.
-     *
+     * 
      * @param doc the doc
      * @param fieldName the field name
      * @return the string
@@ -1312,13 +1279,10 @@ public class NuxeoController {
      */
     public String createFileLink(Document doc, String fieldName) {
         try {
-            
-
-               BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, doc.getPath());
-               binary.setFieldName(fieldName);
-               binary.setDocument(doc);
-               return getBinaryURL(binary);
-  
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, doc.getPath());
+            binary.setFieldName(fieldName);
+            binary.setDocument(doc);
+            return getBinaryURL(binary);
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
@@ -1326,7 +1290,7 @@ public class NuxeoController {
 
     /**
      * Creates the external link.
-     *
+     * 
      * @param doc the doc
      * @return the string
      */
@@ -1343,57 +1307,48 @@ public class NuxeoController {
 
     /**
      * Creates the attached file link.
-     *
+     * 
      * @param path the path
      * @param fileIndex the file index
      * @return the string
      */
     public String createAttachedFileLink(String path, String fileIndex) {
-        
-
-            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, path);
-            binary.setIndex(fileIndex);
-            return getBinaryURL(binary);
+        BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, path);
+        binary.setIndex(fileIndex);
+        return getBinaryURL(binary);
 
     }
 
 
     /**
      * Creates the attached blob link.
-     *
+     * 
      * @param path the path
      * @param blobIndex the blob index
      * @return the string
      */
     public String createAttachedBlobLink(String path, String blobIndex) {
-
-
-            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
-            binary.setIndex(blobIndex);                
-           return getBinaryURL(binary);
+        BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
+        binary.setIndex(blobIndex);
+        return getBinaryURL(binary);
 
     }
 
     /**
      * Creates the attached picture link.
-     *
+     * 
      * @param path the path
      * @param fileIndex the file index
      * @return the string
      */
-    
-    
+
+
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
-            
-            
-
-                BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_PICTURE, path);
-                binary.setDocument(getCurrentDoc());
-                binary.setIndex(fileIndex);                
-               return getBinaryURL(binary);
-
-
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_PICTURE, path);
+            binary.setDocument(getCurrentDoc());
+            binary.setIndex(fileIndex);
+            return getBinaryURL(binary);
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
@@ -1401,24 +1356,21 @@ public class NuxeoController {
 
     /**
      * Creates the picture link.
-     *
+     * 
      * @param path the path
      * @param content the content
      * @return the string
      */
     public String createPictureLink(String path, String content) {
-        
-
-            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
-            binary.setContent(content);
-            return getBinaryURL(binary);
-
+        BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
+        binary.setContent(content);
+        return getBinaryURL(binary);
     }
 
 
     /**
      * Creates the permalink.
-     *
+     * 
      * @param path the path
      * @return the string
      * @throws Exception the exception
@@ -1434,7 +1386,7 @@ public class NuxeoController {
 
     /**
      * Gets the nuxeo public base uri.
-     *
+     * 
      * @return the nuxeo public base uri
      */
     public URI getNuxeoPublicBaseUri() {
@@ -1447,7 +1399,7 @@ public class NuxeoController {
 
     /**
      * Display nuxeo error messages
-     *
+     * 
      * @param e the e
      * @throws Exception the exception
      */
@@ -1459,7 +1411,7 @@ public class NuxeoController {
 
     /**
      * Execute a nuxeo command.
-     *
+     * 
      * @param command the command
      * @return the object returned by the command
      * @throws Exception the exception
@@ -1468,10 +1420,10 @@ public class NuxeoController {
     public Object executeNuxeoCommand(final INuxeoCommand command) {
 
         NuxeoCommandContext ctx;
-        if( this.request != null)
-             ctx = new NuxeoCommandContext(this.portletCtx, this.request);
-        else if( this.servletRequest != null)
-            ctx = new NuxeoCommandContext(this.portletCtx, this.servletRequest);  
+        if (this.request != null)
+            ctx = new NuxeoCommandContext(this.portletCtx, this.request);
+        else if (this.servletRequest != null)
+            ctx = new NuxeoCommandContext(this.portletCtx, this.servletRequest);
         else
             ctx = new NuxeoCommandContext(this.portletCtx);
 
@@ -1508,7 +1460,7 @@ public class NuxeoController {
     /**
      * Start nuxeo service.
      * Must be called during portlet initialization
-     *
+     * 
      * @throws Exception the exception
      */
     public void startNuxeoService() {
@@ -1521,7 +1473,7 @@ public class NuxeoController {
 
     /**
      * Stop nuxeo service.
-     *
+     * 
      * @throws Exception the exception
      */
     public void stopNuxeoService() {
@@ -1534,7 +1486,7 @@ public class NuxeoController {
 
     /**
      * Gets the link.
-     *
+     * 
      * @param doc the doc
      * @return the link
      * @throws Exception the exception
@@ -1547,7 +1499,7 @@ public class NuxeoController {
 
     /**
      * Gets the link.
-     *
+     * 
      * @param doc the doc
      * @param displayContext the display context
      * @return the link
@@ -1560,7 +1512,7 @@ public class NuxeoController {
 
     /**
      * Get portal link from Nuxeo or absolute URL.
-     *
+     * 
      * @param url Nuxeo or absolute URL
      * @return portal link
      */
@@ -1577,7 +1529,7 @@ public class NuxeoController {
 
     /**
      * Generates a link to the target path.
-     *
+     * 
      * @param path location of the target document
      * @param displayContext associates specific behaviour to the link
      * @return the CMS link by path
@@ -1607,7 +1559,7 @@ public class NuxeoController {
 
     /**
      * Generates a link to the target document.
-     *
+     * 
      * @param doc nuxeo target document
      * @param displayContext specific behaviour
      * @param linkContextualization type of contextualisation {@link IPortalUrlFactory}
@@ -1676,9 +1628,9 @@ public class NuxeoController {
 
     /**
      * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
-     *
+     * 
      * if no webId is defined, returns original path
-     *
+     * 
      * @return the content web id path
      */
 
@@ -1692,7 +1644,7 @@ public class NuxeoController {
 
     /**
      * Insert content menubar items.
-     *
+     * 
      * @throws Exception the exception
      */
     public void insertContentMenuBarItems() {
@@ -1707,7 +1659,7 @@ public class NuxeoController {
 
     /**
      * Get Nuxeo comments service instance.
-     *
+     * 
      * @return Nuxeo comments service instance
      */
     public INuxeoCommentsService getNuxeoCommentsService() {
@@ -1722,7 +1674,7 @@ public class NuxeoController {
 
     /**
      * Get Nuxeo document comments HTML formatted content.
-     *
+     * 
      * @return comments HTML formatted content
      * @throws CMSException the CMS exception
      */
@@ -1739,7 +1691,7 @@ public class NuxeoController {
 
     /**
      * Get CMS item types.
-     *
+     * 
      * @return CMS item types
      */
     public Map<String, CMSItemType> getCMSItemTypes() {
@@ -1750,7 +1702,7 @@ public class NuxeoController {
 
     /**
      * Fetch a document by its path.
-     *
+     * 
      * @param path the path
      * @param reload force reloading of the document (no cache)
      * @return the document
@@ -1784,7 +1736,7 @@ public class NuxeoController {
 
     /**
      * Fetch a document by its path.
-     *
+     * 
      * @param path the path
      * @return the fetched document
      * @throws Exception the exception
@@ -1796,7 +1748,7 @@ public class NuxeoController {
 
     /**
      * Get the live identifier for a specified path.
-     *
+     * 
      * @param path path to fetch
      * @return nuxeo id of the document
      * @throws Exception the exception
@@ -1815,7 +1767,7 @@ public class NuxeoController {
 
     /**
      * Get the query filter
-     *
+     * 
      * @param path path to fetch
      * @return applie live filters to the query
      * @throws Exception the exception
@@ -1841,8 +1793,8 @@ public class NuxeoController {
 
     /**
      * Computes the parent path for a specifed path
-     *
-     *
+     * 
+     * 
      * @param path the path
      * @return the parent path
      * @throws Exception the exception
@@ -1857,7 +1809,7 @@ public class NuxeoController {
     /**
      * Computes live path for current document
      * (may differs from original path in case of a proxy).
-     *
+     * 
      * @param path the path
      * @return the live path
      */
@@ -1873,7 +1825,7 @@ public class NuxeoController {
 
     /**
      * Fetch attached picture .
-     *
+     * 
      * @param docPath path of the document
      * @param pictureIndex picture range
      * @return the CMS binary content
@@ -1893,7 +1845,7 @@ public class NuxeoController {
 
     /**
      * Fetch picture.
-     *
+     * 
      * @param docPath the doc path
      * @param content the content
      * @return the CMS binary content
@@ -1912,7 +1864,7 @@ public class NuxeoController {
 
     /**
      * Fetch file content.
-     *
+     * 
      * @param docPath the doc path
      * @param fieldName the field name
      * @return the CMS binary content
@@ -1928,7 +1880,7 @@ public class NuxeoController {
 
     /**
      * Fetch web url.
-     *
+     * 
      * @param webid the web id
      * @param content some options
      * @return the resource
@@ -1984,7 +1936,7 @@ public class NuxeoController {
 
     /**
      * Gets the CMS service.
-     *
+     * 
      * @return the CMS service
      */
     public static ICMSService getCMSService() {
@@ -2000,71 +1952,70 @@ public class NuxeoController {
 
     /**
      * Gets the CMS ctx.
-     *
+     * 
      * @return the CMS ctx
      */
     public CMSServiceCtx getCMSCtx() {
-        
+
         try {
 
-        this.cmsCtx = new CMSServiceCtx();
+            this.cmsCtx = new CMSServiceCtx();
 
-        if (this.getRequest() != null) {
+            if (this.getRequest() != null) {
 
-            this.cmsCtx.setRequest(this.getRequest());
-            this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
-                    this.getResponse())));
-        }
-
-        if (this.getServletRequest() != null) {
-            this.cmsCtx.setServletRequest(this.servletRequest);
-         }  else    {
-             if( this.getRequest() != null)
-                 this.cmsCtx.setServletRequest( (HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST));
-         }
-
-        this.cmsCtx.setPortletCtx(this.getPortletCtx());
-
-        if (this.response instanceof RenderResponse) {
-            this.cmsCtx.setResponse((RenderResponse) this.response);
-        }
-        this.cmsCtx.setScope(this.getScope());
-        this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
-        this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
-
-
-        this.cmsCtx.setForcedLivePath(this.getForcedLivePath());
-
-        if (this.getRequest() != null) {
-            this.cmsCtx.setPageId(this.getPageId());
-        }
-        this.cmsCtx.setDoc(this.getCurrentDoc());
-        this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
-        this.cmsCtx.setDisplayContext(this.displayContext);
-
-        this.cmsCtx.setCreationType(this.docTypeToCreate);
-        if (this.parentPathToCreate != null) {
-            this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
-        }
-
-        if (this.reloadResource) {
-            this.cmsCtx.setForceReload(true);
-        }   else   {
-            // servlet ressource
-            if( this.getServletRequest() != null)   {
-                String refresh = this.getServletRequest().getParameter("refresh");
-                if (BooleanUtils.toBoolean(refresh))  {
-                    this.cmsCtx.setForceReload(true);
-                }
+                this.cmsCtx.setRequest(this.getRequest());
+                this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this
+                        .getRequest(), this.getResponse())));
             }
-            
-        }
-        this.cmsCtx.setStreamingSupport(this.streamingSupport);
-        
+
+            if (this.getServletRequest() != null) {
+                this.cmsCtx.setServletRequest(this.servletRequest);
+            } else {
+                if (this.getRequest() != null)
+                    this.cmsCtx.setServletRequest((HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST));
+            }
+
+            this.cmsCtx.setPortletCtx(this.getPortletCtx());
+
+            if (this.response instanceof RenderResponse) {
+                this.cmsCtx.setResponse((RenderResponse) this.response);
+            }
+            this.cmsCtx.setScope(this.getScope());
+            this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
+            this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
 
 
-        return this.cmsCtx;
-        } catch( Exception e){
+            this.cmsCtx.setForcedLivePath(this.getForcedLivePath());
+
+            if (this.getRequest() != null) {
+                this.cmsCtx.setPageId(this.getPageId());
+            }
+            this.cmsCtx.setDoc(this.getCurrentDoc());
+            this.cmsCtx.setHideMetaDatas(this.getHideMetaDatas());
+            this.cmsCtx.setDisplayContext(this.displayContext);
+
+            this.cmsCtx.setCreationType(this.docTypeToCreate);
+            if (this.parentPathToCreate != null) {
+                this.cmsCtx.setCreationPath(this.getComputedPath(this.parentPathToCreate));
+            }
+
+            if (this.reloadResource) {
+                this.cmsCtx.setForceReload(true);
+            } else {
+                // servlet ressource
+                if (this.getServletRequest() != null) {
+                    String refresh = this.getServletRequest().getParameter("refresh");
+                    if (BooleanUtils.toBoolean(refresh)) {
+                        this.cmsCtx.setForceReload(true);
+                    }
+                }
+
+            }
+            this.cmsCtx.setStreamingSupport(this.streamingSupport);
+
+
+            return this.cmsCtx;
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -2072,7 +2023,7 @@ public class NuxeoController {
 
     /**
      * Gets the document configuration.
-     *
+     * 
      * @param doc the doc
      * @return the document configuration
      * @throws Exception the exception
@@ -2088,7 +2039,7 @@ public class NuxeoController {
 
     /**
      * Gets the debug infos.
-     *
+     * 
      * @return the debug infos
      */
     public String getDebugInfos() {
@@ -2114,7 +2065,7 @@ public class NuxeoController {
 
     /**
      * Get the user avatar (acceded from portlets).
-     *
+     * 
      * @param username
      * @return a link to the avatar
      * @throws CMSException
@@ -2126,7 +2077,7 @@ public class NuxeoController {
 
     /**
      * Refresh the user avatar (acceded from portlets).
-     *
+     * 
      * @param username
      * @return a timestamp
      * @throws CMSException
@@ -2137,7 +2088,7 @@ public class NuxeoController {
 
     /**
      * Get a person
-     *
+     * 
      * @param uid of the person
      * @return the person
      */
