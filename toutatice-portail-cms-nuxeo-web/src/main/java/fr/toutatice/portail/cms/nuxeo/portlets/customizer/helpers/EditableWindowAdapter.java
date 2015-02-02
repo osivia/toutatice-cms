@@ -19,6 +19,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CriteriaListEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
@@ -48,6 +49,8 @@ public class EditableWindowAdapter {
         this.addType("fgt.zoom", new ZoomEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "zoom_Frag_"));
 
         this.addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+        
+        this.addType("fgt.criteria_list", new CriteriaListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "criteria_liste_Frag_"));
         
         this.addType("fgt.summary", new SummaryEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "summary_Frag_"));
 
