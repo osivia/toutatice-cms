@@ -27,14 +27,14 @@
     <div class="btn-toolbar pull-right" role="toolbar">
         <div class="btn-group btn-group-sm">
             <!-- Reply -->
-            <a href="#${namespace}-reply-comment-${currentComment.id}" class="btn btn-default" data-toggle="collapse">
+            <a href="#${namespace}-reply-comment-${currentComment.id}" class="btn btn-default no-ajax-link" data-toggle="collapse">
                 <i class="glyphicons chat"></i>
                 <span><is:getProperty key="REPLY" /></span>
             </a>
             
             <!-- Delete -->
             <c:if test="${currentComment.deletable}">
-                <a href="#${namespace}-delete-comment-${currentComment.id}" class="btn btn-default fancybox_inline" title="${deleteTitle}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#${namespace}-delete-comment-${currentComment.id}" class="btn btn-default fancybox_inline no-ajax-link" title="${deleteTitle}" data-toggle="tooltip" data-placement="bottom">
                     <i class="glyphicons halflings remove"></i>
                 </a>
             </c:if>

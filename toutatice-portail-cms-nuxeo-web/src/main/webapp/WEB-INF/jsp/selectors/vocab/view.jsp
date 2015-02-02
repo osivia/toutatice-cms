@@ -90,7 +90,9 @@ function refreshOnVocabularyChange(selectText, url) {
             </c:choose>
             
         
-            <div class="form-group">
+            <div
+                <c:if test="${not empty vocab1Id and not empty vocabName2}">class="form-group"</c:if>
+            >
                 <div class="media">
                     <div
                         <c:if test="${not empty vocab1Id and empty vocab2Id and (selectorMonoValued ne '1')}">class="media-body"</c:if>
@@ -146,7 +148,9 @@ function refreshOnVocabularyChange(selectText, url) {
                 </c:choose>
                 
             
-                <div class="form-group">
+                <div
+                    <c:if test="${not empty vocab2Id and not empty vocabName3}">class="form-group"</c:if>
+                >
                     <div class="media">
                         <div
                             <c:if test="${not empty vocab2Id and empty vocab3Id and (selectorMonoValued ne '1')}">class="media-body"</c:if>
@@ -205,7 +209,7 @@ function refreshOnVocabularyChange(selectText, url) {
                 </c:choose>
                 
             
-                <div class="form-group">
+                <div>
                     <div class="media">
                         <div
                             <c:if test="${not empty vocab3Id and (selectorMonoValued ne '1')}">class="media-body"</c:if>
