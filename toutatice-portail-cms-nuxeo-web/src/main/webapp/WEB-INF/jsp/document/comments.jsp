@@ -33,7 +33,7 @@
                 
                 
                 <div class="list-group-item">
-                    <a href="#${namespace}-add-comment" class="btn btn-default" data-toggle="collapse">
+                    <a href="#${namespace}-add-comment" class="btn btn-default no-ajax-link" data-toggle="collapse">
                         <i class="glyphicons comments"></i>
                         <span><is:getProperty key="COMMENT_ADD" /></span>
                     </a>

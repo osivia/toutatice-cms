@@ -256,5 +256,30 @@
             <type>java.lang.Boolean</type>
         </attribute>
     </tag>
+    
+    
+    <tag>
+        <description>Get vocabulary label.</description>
+        <display-name>Get vocabulary label</display-name>
+        <name>vocabularyLabel</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.GetVocabularyLabelTag</tag-class>
+        <body-content>empty</body-content>
+    
+        <attribute>
+            <description>Vocabulary name.</description>
+            <name>name</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Vocabulary key.</description>
+            <name>key</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
 
 </taglib>

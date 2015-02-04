@@ -129,7 +129,7 @@ public class AvatarServlet extends HttpServlet {
 
             NuxeoController ctx = new NuxeoController(portletCtx);
 
-            ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+            ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
             ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
             Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(username));

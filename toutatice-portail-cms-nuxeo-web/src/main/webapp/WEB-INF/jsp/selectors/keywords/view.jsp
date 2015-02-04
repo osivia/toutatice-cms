@@ -61,14 +61,16 @@
         </c:if>
             
         <!-- Input -->
-        <div class="input-group">
-            <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
-            <span class="input-group-btn">
-                <button type="submit" name="${name}" class="btn btn-default">
-                    <i class="glyphicons ${glyphicon}"></i>
-                    <span class="sr-only">${title}</span>
-                </button>
-            </span>
+        <div class="form-group">
+            <div class="input-group">
+                <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
+                <span class="input-group-btn">
+                    <button type="submit" name="${name}" class="btn btn-default">
+                        <i class="glyphicons ${glyphicon}"></i>
+                        <span class="sr-only">${title}</span>
+                    </button>
+                </span>
+            </div>
         </div>
     </form>
 </div>
