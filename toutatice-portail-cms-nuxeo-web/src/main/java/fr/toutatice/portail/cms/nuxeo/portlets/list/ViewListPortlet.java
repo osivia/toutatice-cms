@@ -612,6 +612,10 @@ public class ViewListPortlet extends CMSPortlet {
                 request.setAttribute("nbPages", pagesCount);
 
 
+                // Total size
+                request.setAttribute("totalSize", documents.getTotalSize());
+
+
                 // Permalink
                 if (StringUtils.isNotBlank(configuration.getPermalinkReference())) {
                     String reference = configuration.getPermalinkReference();

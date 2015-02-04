@@ -77,7 +77,7 @@
         </c:if>
         
         <!-- Inputs -->
-        <div>
+        <div class="form-group">
             <div class="media">
                 <div class="media-left">
                     <input id="${namespace}-date-from" type="text" name="${namespace}-date-from" value="${dateFrom}" placeholder="${placeholderBegin}" class="form-control">

@@ -27,7 +27,6 @@ import java.util.TreeSet;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -67,14 +66,12 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
-import org.osivia.portal.core.cms.spi.ICMSIntegration;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -255,10 +252,9 @@ public class CMSService implements ICMSService {
 
         NuxeoCommandContext commandCtx = null;
 
-        if( cmsCtx.getServerInvocation() != null) {
+        if (cmsCtx.getServerInvocation() != null) {
             commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
-        }
-        if( cmsCtx.getServletRequest() != null) {
+        } else if (cmsCtx.getServletRequest() != null) {
             commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServletRequest());
         }
 

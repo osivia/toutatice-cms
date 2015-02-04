@@ -57,20 +57,22 @@ public class FormatFileSizeTag extends SimpleTagSupport {
         // Bundle
         Bundle bundle = BUNDLE_FACTORY.getBundle(locale);
 
-        // Factor
-        int factor = Double.valueOf(Math.log10(this.size) / Math.log10(UNIT_FACTOR)).intValue();
-        // Factorized size
-        double factorizedSize = this.size / Math.pow(UNIT_FACTOR, factor);
-        // Unit
-        String unit = bundle.getString(UNITS[factor]);
-        // Number format
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-        numberFormat.setMaximumFractionDigits(1);
+        if (this.size > 0) {
+            // Factor
+            int factor = Double.valueOf(Math.log10(this.size) / Math.log10(UNIT_FACTOR)).intValue();
+            // Factorized size
+            double factorizedSize = this.size / Math.pow(UNIT_FACTOR, factor);
+            // Unit
+            String unit = bundle.getString(UNITS[factor]);
+            // Number format
+            NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
+            numberFormat.setMaximumFractionDigits(1);
 
-        JspWriter out = pageContext.getOut();
-        out.write(numberFormat.format(factorizedSize));
-        out.write(" ");
-        out.write(unit);
+            JspWriter out = pageContext.getOut();
+            out.write(numberFormat.format(factorizedSize));
+            out.write(" ");
+            out.write(unit);
+        }
     }
 
 
