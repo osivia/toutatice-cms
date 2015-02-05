@@ -167,9 +167,9 @@ public class MenuBarFormater {
                 this.getAdministrationLink(cmsCtx, menubar);
             }
 
-            if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
-                this.getBackLink( cmsCtx,  menubar);
-            }
+//            if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
+//                this.getBackLink( cmsCtx,  menubar);
+//            }
 
             if ((cmsCtx.getDoc() != null) && !webPageFragment) {
                 //this.getDriveEditUrl(cmsCtx, menubar);
@@ -1200,53 +1200,6 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
     }
 
-
-    /**
-     * Get back link.
-     *
-     * @param cmsCtx CMS context
-     * @param menubar menubar
-     * @throws Exception
-     */
-    protected void getBackLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
-        if (cmsCtx.getRequest().getRemoteUser() == null) {
-            return;
-        }
-
-        if ( !ContextualizationHelper.isCurrentDocContextualized(cmsCtx))    {
-            return;
-        }
-
-        // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse());
-
-        // Current document
-        Document document = (Document) cmsCtx.getDoc();
-
-        if( document == null) {
-            return;
-        }
-
-
-        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-
-        EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
-        if ((curState != null) && (curState.getBackPageMarker() != null)) {
-            // Appeler url back
-            boolean refresh = false;
-            if( curState.isHasBeenModified()) {
-                refresh = true;
-            }
-            String backUrl =  this.urlFactory.getBackUrl(portalControllerContext, refresh);
-
-            MenubarItem backItem = new MenubarItem("BACK", bundle.getString("BACK"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, backUrl,
-                    null, null, null);
-            backItem.setGlyphicon("halflings arrow-left");
-            backItem.setAjaxDisabled(true);
-            backItem.setFirstItem(true);
-            menubar.add(backItem);
-        }
-    }
 
 
 
