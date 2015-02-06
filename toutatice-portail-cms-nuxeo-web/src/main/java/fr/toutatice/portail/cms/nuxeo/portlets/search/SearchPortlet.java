@@ -49,7 +49,6 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
@@ -144,8 +143,6 @@ public class SearchPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 

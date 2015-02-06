@@ -76,35 +76,37 @@
                 </ul>
                 
                 <!-- Pagination -->
-                <div class="text-center">
-                    <ul class="pagination pagination-sm">
-                        <c:forEach var="index" begin="${minPage}" end="${maxPage}">
-                            <c:choose>
-                                <c:when test="${index == currentPage}">
-                                    <li class="active">
-                                        <a>
-                                            <span>${index + 1}</span>
-                                            <span class="sr-only">(current)</span>
-                                        </a>
-                                    </li>
-                                </c:when>
-                                
-                                <c:otherwise>
-                                    <portlet:renderURL var="pageURL">
-                                        <portlet:param name="keywords" value="${keywords}" />
-                                        <portlet:param name="currentPage" value="${index}" />
-                                    </portlet:renderURL>
+                <c:if test="${maxPage > 0}">
+                    <div class="text-center">
+                        <ul class="pagination pagination-sm">
+                            <c:forEach var="index" begin="${minPage}" end="${maxPage}">
+                                <c:choose>
+                                    <c:when test="${index == currentPage}">
+                                        <li class="active">
+                                            <a>
+                                                <span>${index + 1}</span>
+                                                <span class="sr-only">(current)</span>
+                                            </a>
+                                        </li>
+                                    </c:when>
                                     
-                                    <li>
-                                        <a href="${pageURL}">
-                                            <span>${index + 1}</span>
-                                        </a>
-                                    </li>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:forEach>
-                    </ul>
-                </div>
+                                    <c:otherwise>
+                                        <portlet:renderURL var="pageURL">
+                                            <portlet:param name="keywords" value="${keywords}" />
+                                            <portlet:param name="currentPage" value="${index}" />
+                                        </portlet:renderURL>
+                                        
+                                        <li>
+                                            <a href="${pageURL}">
+                                                <span>${index + 1}</span>
+                                            </a>
+                                        </li>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
             </div>
         </div>
     </div>
