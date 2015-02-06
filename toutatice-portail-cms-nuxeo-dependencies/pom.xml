@@ -68,12 +68,7 @@
 			<artifactId>spring-context-support</artifactId>
 			<version>${org.springframework.version}</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>displaytag</groupId>
-			<artifactId>displaytag</artifactId>
-			<version>${displaytag.version}</version>			
-		</dependency>
+        
     </dependencies>
 
 </project>
