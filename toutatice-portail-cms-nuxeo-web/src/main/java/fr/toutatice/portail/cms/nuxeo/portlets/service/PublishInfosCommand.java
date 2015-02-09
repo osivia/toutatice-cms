@@ -58,6 +58,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		this.path = path;
 	}
 
+	@Override
 	public CMSPublicationInfos execute(Session automationSession) throws Exception {
 		CMSPublicationInfos publiInfos = null;
 
@@ -123,6 +124,13 @@ public class PublishInfosCommand implements INuxeoCommand {
                 if (infos.containsKey("canCheckIn")) {
                     publiInfos.setCanCheckIn(adaptBoolean(infos.get("canCheckIn")));
                 }
+
+				/* Infos from notifications */
+
+				if (infos.containsKey("subscription_status")) {
+					publiInfos.setSubscriptionStatus(CMSPublicationInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
+
+				}
  
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
@@ -164,6 +172,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 		return decodedSubTypes;
 	}
 
+	@Override
 	public String getId() {
 		return "PublishInfosCommand" + StringUtils.removeEnd(path, ".proxy");
 	}

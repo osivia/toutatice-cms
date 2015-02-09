@@ -52,6 +52,7 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSPublicationInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
@@ -175,6 +176,9 @@ public class MenuBarFormater {
                 //this.getDriveEditUrl(cmsCtx, menubar);
                 this.getSynchronizeLink(cmsCtx, menubar);
                 this.getCheckInOutLink(cmsCtx, menubar);
+
+                // follow
+				this.getSubscribeLink(cmsCtx, menubar);
             }
 
         } catch (CMSException e) {
@@ -208,6 +212,7 @@ public class MenuBarFormater {
         if ((duplicateItem != null) && (otherItem)) {
             menubar.add(duplicateItem);
         }
+
     }
 
 
@@ -632,6 +637,54 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
         }
 
+    }
+
+	protected void getSubscribeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
+		
+        // Current document
+        Document document = (Document) cmsCtx.getDoc();
+        String path = document.getPath();
+		CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+		SubscriptionStatus subscriptionStatus = pubInfos.getSubscriptionStatus();
+		
+		if(subscriptionStatus != SubscriptionStatus.no_subscriptions) {
+	        // Internationalization bundle
+	        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+			
+	    	String url = "";
+			MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, MenubarItem.ORDER_PORTLET_GENERIC + 10, url, null, null, null);
+
+			subscribeItem.setAjaxDisabled(true);
+			subscribeItem.setDropdownItem(false);
+			
+			
+
+			if(subscriptionStatus == SubscriptionStatus.can_subscribe) {
+
+				url = this.urlFactory.getSubscriptionUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), path,
+						false);
+
+				subscribeItem.setUrl(url);
+				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
+			}
+			else if(subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
+
+				url = this.urlFactory.getSubscriptionUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()), path,
+						true);
+
+				subscribeItem.setUrl(url);
+				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
+			}
+			else if(subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
+				subscribeItem.setClassName("disabled");
+			}
+
+			menubar.add(subscribeItem);
+		}
     }
 
     /**
