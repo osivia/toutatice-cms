@@ -118,7 +118,8 @@ public class AvatarServlet extends HttpServlet {
         return inputFormater.format(new Date(System.currentTimeMillis()));
     }
 
-    public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
+    @Override
+	public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
 
         OutputStream output = theResponse.getOutputStream();
         try {
@@ -129,7 +130,7 @@ public class AvatarServlet extends HttpServlet {
 
             NuxeoController ctx = new NuxeoController(portletCtx);
 
-            ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
             ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
             Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(username));
