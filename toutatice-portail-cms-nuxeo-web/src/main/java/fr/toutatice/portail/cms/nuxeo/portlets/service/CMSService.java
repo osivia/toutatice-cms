@@ -79,8 +79,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentCheckInCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentCheckOutCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentSetSynchronizationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NotificationsSubscribe;
@@ -1739,8 +1737,6 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
         } else if (command == EcmCommand.editFgt) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
-        } else if (command == EcmCommand.openDocument) {
-            url = uri.toString() + "/nxpath/default" + path + "@toutatice_open_document?";
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         } else if (command == EcmCommand.gotoMediaLibrary) {
@@ -2085,14 +2081,6 @@ public class CMSService implements ICMSService {
         	else if(command.equals(EcmFilesCommand.unsynchronizeFolder)) {
 
         		this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, false));
-        	}
-        	else if(command.equals(EcmFilesCommand.checkOut)) {
-
-        		this.executeNuxeoCommand(cmsCtx, new DocumentCheckOutCommand(doc));
-        	}
-        	else if(command.equals(EcmFilesCommand.checkIn)) {
-
-        		this.executeNuxeoCommand(cmsCtx, new DocumentCheckInCommand(doc));
         	}
 
             // On force le rechargement du cache de la page
