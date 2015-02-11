@@ -21,7 +21,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">
-                <i class="glyphicons tags"></i>
+                <i class="halflings halflings-tags"></i>
                 <span><is:getProperty key="METADATA" /></span>
             </h3>
         </div>

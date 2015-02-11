@@ -78,7 +78,7 @@
                 
                 <li>
                     <a href="${startUrl}">
-                        <i class="glyphicons fast_backward"></i>
+                        <i class="halflings halflings-step-backward"></i>
                     </a>
                 </li>
             </c:if>
@@ -86,7 +86,7 @@
             <!-- Left -->
             <li class="${leftClass}">
                 <a href="${leftUrl}">
-                    <i class="glyphicons step_backward"></i>
+                    <i class="halflings halflings-triangle-left"></i>
                 </a>
             </li>
             
@@ -94,7 +94,7 @@
             <c:if test="${min > 0}">
                 <li class="disabled">
                     <a href="#">
-                        <i class="glyphicons more"></i>
+                        <i class="halflings halflings-option-horizontal"></i>
                     </a>
                 </li>
             </c:if>
@@ -133,7 +133,7 @@
             <c:if test="${max < (nbPages - 1)}">
                 <li class="disabled">
                     <a href="#">
-                        <i class="glyphicons more"></i>
+                        <i class="halflings halflings-option-horizontal"></i>
                     </a>
                 </li>
             </c:if>
@@ -141,7 +141,7 @@
             <!-- Right -->
             <li class="${rightClass}">
                 <a href="${rightUrl}">
-                    <i class="glyphicons step_forward"></i>
+                    <i class="halflings halflings-triangle-right"></i>
                 </a>
             </li>
         </ul>

@@ -350,7 +350,7 @@ public class MenuPortlet extends CMSPortlet {
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
             CMSItemType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
-            glyph = cmsItemType.getGlyph();
+            glyph = StringUtils.substringAfter(cmsItemType.getGlyph(), "glyphicons-");
         }
 
 
@@ -384,7 +384,7 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write("\", ");
 
         // Add class
-        if ((glyph != null) && (!glyph.equals("folder_closed"))) {
+        if ((glyph != null) && (!glyph.contains("folder"))) {
             // Accepted types
             printWriter.write("\"addClass\" : \"");
             printWriter.write(glyph);

@@ -30,7 +30,7 @@
                 <a href="${child.url}" target="${target}" class="list-group-item ${selected} ${current}">            
                     <span>${child.title}</span>
                     <c:if test="${child.external}">
-                        <span class="glyphicons halflings new_window"></span>
+                        <span class="halflings halflings-new-window"></span>
                     </c:if>
                 </a>
                     

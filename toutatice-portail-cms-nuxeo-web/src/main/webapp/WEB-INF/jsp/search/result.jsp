@@ -26,7 +26,7 @@
                     <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
                     <span class="input-group-btn">
                         <button type="submit" class="btn btn-default" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
-                            <span class="glyphicons halflings search"></span>
+                            <span class="halflings halflings-search"></span>
                         </button>
                     </span>
                 </div>
@@ -60,15 +60,16 @@
                             <div>
                                 <a href="${result.link.url}">
                                     <span>${result.title}</span>
-                                
-                                    <c:if test="${result.link.downloadable}">
-                                        <span class="glyphicon glyphicon-download"></span>
-                                    </c:if>
-                                
-                                    <c:if test="${result.link.external}">
-                                        <span class="glyphicon glyphicon-new-window"></span>
-                                    </c:if>
                                 </a>
+                                
+                                <c:if test="${result.link.downloadable}">
+                                    <i class="halflings halflings-download-alt"></i>
+                                </c:if>
+                            
+                                <c:if test="${result.link.external}">
+                                    <i class="halflings halflings-new-window"></i>
+                                </c:if>
+                                
                                 <p>${result.description}</p>
                             </div>
                         </li>

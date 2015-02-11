@@ -8,7 +8,7 @@
 <portlet:defineObjects />
 
 
-<p class="lead text-danger">
-    <i class="glyphicons halflings exclamation-sign"></i>
+<p class="text-danger">
+    <i class="halflings halflings-exclamation-sign"></i>
     <span><is:getProperty key="MESSAGE_PATH_UNDEFINED" /></span>
 </p>

@@ -28,14 +28,14 @@
         <div class="btn-group btn-group-sm">
             <!-- Reply -->
             <a href="#${namespace}-reply-comment-${currentComment.id}" class="btn btn-default no-ajax-link" data-toggle="collapse">
-                <i class="glyphicons chat"></i>
+                <i class="glyphicons glyphicons-chat"></i>
                 <span><is:getProperty key="REPLY" /></span>
             </a>
             
             <!-- Delete -->
             <c:if test="${currentComment.deletable}">
                 <a href="#${namespace}-delete-comment-${currentComment.id}" class="btn btn-default fancybox_inline no-ajax-link" title="${deleteTitle}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons halflings remove"></i>
+                    <i class="halflings halflings-remove"></i>
                 </a>
             </c:if>
         </div>
@@ -88,7 +88,7 @@
                     <p><is:getProperty key="COMMENT_SUPPRESSION_CONFIRM_MESSAGE" /></p>
                     <div class="text-center">
                         <button type="submit" class="btn btn-warning">
-                            <i class="glyphicons halflings warning-sign"></i>
+                            <i class="halflings halflings-alert"></i>
                             <span><is:getProperty key="YES" /></span>
                         </button>
                         <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="NO" /></button>

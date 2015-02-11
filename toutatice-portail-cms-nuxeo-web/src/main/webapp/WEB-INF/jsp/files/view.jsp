@@ -48,7 +48,7 @@
                 <tbody class="no-ajax-link">
                     <c:forEach var="document" items="${documents}">
                         <!-- Document properties -->
-                        <ttc:documentLink document="${document}" var="link" />
+                        <ttc:documentLink document="${document}" displayContext="fileExplorer" var="link" />
                         <ttc:documentLink document="${document}" displayContext="download" var="fileLink" />
                         <c:remove var="target" />
                         <c:if test="${link.external}">
@@ -81,11 +81,11 @@
                         <c:if test="${empty glyph}">
                             <c:choose>
                                 <c:when test="${document.type.navigable}">
-                                    <c:set var="glyph" value="folder_closed" />
+                                    <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
                                 </c:when>
                                 
                                 <c:otherwise>
-                                    <c:set var="glyph" value="file" />
+                                    <c:set var="glyph" value="glyphicons glyphicons-file" />
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
@@ -105,7 +105,7 @@
                                     
                                     <c:otherwise>
                                         <div class="${folderish}">
-                                            <i class="glyphicons ${glyph}"></i>
+                                            <i class="${glyph}"></i>
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
@@ -124,7 +124,7 @@
 		                                
 		                                <!-- External -->
 		                                <c:if test="${link.external}">
-		                                    <i class="glyphicons halflings new_window"></i>
+		                                    <i class="halflings halflings-new-window"></i>
 		                                </c:if>
 	                                </div>
 	                                
@@ -173,12 +173,12 @@
                 <div class="panel-body">
                     <div class="form-group fileupload-buttonbar">
                         <button type="submit" class="btn btn-primary start">
-                            <i class="glyphicons halflings upload"></i>
+                            <i class="halflings halflings-upload"></i>
                             <span><is:getProperty key="FILE_BROWSER_START_UPLOAD" /></span>
                         </button>
                         
                         <button type="reset" class="btn btn-default cancel">
-                            <i class="glyphicons halflings ban-circle"></i>
+                            <i class="halflings halflings-ban-circle"></i>
                             <span><is:getProperty key="CANCEL" /></span>
                         </button>
                     </div>
@@ -197,7 +197,7 @@
         <div class="file-upload-shadowbox jumbotron bg-info-hover">
             <div class="text-center text-middle">
                 <p><is:getProperty key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
-                <p class="h1"><i class="glyphicons inbox"></i></p>
+                <p class="h1"><i class="glyphicons glyphicons-inbox"></i></p>
             </div>
         </div>
     </div>

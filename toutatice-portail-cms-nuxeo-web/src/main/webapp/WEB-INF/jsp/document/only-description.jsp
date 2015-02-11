@@ -24,7 +24,7 @@
     <!-- Continuation button -->
     <div class="btn-toolbar pull-right">
         <a href="${documentURL}" class="btn btn-default">
-            <i class="glyphicons play_button"></i>
+            <i class="halflings halflings-play-circle"></i>
             <span><is:getProperty key="CONTINUATION" />...</span>
         </a>
     </div>

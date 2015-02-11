@@ -20,12 +20,12 @@
 		    
 		        <!-- Downloadable -->
 		        <c:if test="${link.downloadable}">
-		            <i class="glyphicons download_alt"></i>
+		            <i class="halflings halflings-download-alt"></i>
 		        </c:if>
 		        
 		        <!-- External -->
 		        <c:if test="${link.external}">
-		            <i class="glyphicons new_window_alt"></i>
+		            <i class="halflings halflings-new-window"></i>
 		        </c:if>
 		    </a>
         </li>

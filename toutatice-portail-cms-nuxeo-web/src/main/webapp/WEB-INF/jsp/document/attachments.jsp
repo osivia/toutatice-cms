@@ -11,7 +11,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <i class="glyphicons halflings uni-paperclip"></i>
+                    <i class="halflings halflings-glyph-paperclip"></i>
                     <span><is:getProperty key="ATTACHMENTS" /></span>
                 </h3>
             </div>
@@ -19,7 +19,7 @@
             <div class="list-group">
                 <c:forEach var="attachment" items="${document.attachments}">
                     <a href="${attachment.url}" class="list-group-item">
-                        <i class="glyphicons halflings file"></i>
+                        <i class="halflings halflings-file"></i>
                         <span>${attachment.name}</span>
                     </a>
                 </c:forEach>

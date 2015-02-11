@@ -14,7 +14,7 @@
 <c:set var="fileSize" value="${document.properties['file:content']['length']}" />
 
 
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="download_alt" />
+<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="halflings halflings-download-alt" />
 
 <div class="file">
     <p>

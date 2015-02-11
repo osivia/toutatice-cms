@@ -9,9 +9,9 @@
 
 
 <c:if test="${not empty permaLinkURL}">
-    <ttc:addMenubarItem id="PERMALINK" labelKey="PERMALINK" order="0" url="${permaLinkURL}" glyphicon="link" ajax="false" />
+    <ttc:addMenubarItem id="PERMALINK" labelKey="PERMALINK" order="0" url="${permaLinkURL}" glyphicon="halflings halflings-link" ajax="false" />
 </c:if>
 
 <c:if test="${not empty rssLinkURL}">
-    <ttc:addMenubarItem id="RSS" labelKey="RSS" order="2" url="${rssLinkURL}" glyphicon="social rss" ajax="false" />
+    <ttc:addMenubarItem id="RSS" labelKey="RSS" order="2" url="${rssLinkURL}" glyphicon="social social-rss" ajax="false" />
 </c:if>

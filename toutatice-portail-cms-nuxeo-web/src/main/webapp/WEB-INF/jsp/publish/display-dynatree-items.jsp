@@ -25,8 +25,8 @@
         </c:if>
         
         <!-- Glyph -->
-        <c:set var="glyph" value="${child.navItem.type.glyph}" />
-        <c:if test="${'folder_closed' eq glyph}">
+        <c:set var="glyph" value="${fn:substringAfter(child.navItem.type.glyph, 'glyphicons-')}" />
+        <c:if test="${fn:contains(glyph, 'folder')}">
             <c:remove var="glyph" />
         </c:if>
         

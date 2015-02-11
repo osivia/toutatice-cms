@@ -24,7 +24,7 @@
                     </c:if>
                     <li class="visible-xs">
                         <a href="${displayItem.url}" class="${current}">            
-                            <i class="glyphicons halflings home"></i>
+                            <i class="halflings halflings-home"></i>
                             <span class=sr-only>${displayItem.title}</span>
                         </a>
                     </li>
@@ -49,7 +49,7 @@
     
         <c:otherwise>
             <p class="text-danger">
-                <i class="glyphicons halflings exclamation-sign"></i>
+                <i class="halflings halflings-exclamation-sign"></i>
                 <span><is:getProperty key="MESSAGE_PATH_UNDEFINED" /></span>
             </p>
         </c:otherwise>
