@@ -30,7 +30,7 @@
     <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
         <fieldset>
             <legend>
-                <i class="glyphicons halflings cog"></i>
+                <i class="halflings halflings-cog"></i>
                 <span><is:getProperty key="LIST_REQUEST_CONFIGURATION" /></span>
             </legend>
     
@@ -38,7 +38,7 @@
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <a href="#bean-shell-example" class="no-ajax-link" data-toggle="collapse">
-                        <i class="glyphicons halflings info-sign"></i>
+                        <i class="halflings halflings-info-sign"></i>
                         <span><is:getProperty key="LIST_BEAN_SHELL_EXAMPLE" /></span>
                     </a>
                 </div>
@@ -141,7 +141,7 @@
         
         <fieldset>
             <legend>
-                <i class="glyphicons display"></i>
+                <i class="glyphicons glyphicons-display"></i>
                 <span><is:getProperty key="LIST_DISPLAY_CONFIGURATION" /></span>
             </legend>
     
@@ -217,7 +217,7 @@
         
         <fieldset>
             <legend>
-                <i class="glyphicons social rss"></i>
+                <i class="social social-rss"></i>
                 <span><is:getProperty key="LIST_PERMALINK_RSS_CONFIGURATION" /></span>
             </legend>
         
@@ -248,7 +248,7 @@
         
         <fieldset>
             <legend>
-                <i class="glyphicons halflings plus-sign"></i>
+                <i class="halflings halflings-plus-sign"></i>
                 <span><is:getProperty key="LIST_CONTENT_CREATION_CONFIGURATION" /></span>
             </legend>
         
@@ -274,7 +274,7 @@
             <div class="row">
                 <div class="col-sm-offset-4 col-sm-8">
                     <button type="submit" class="btn btn-primary navbar-btn">
-                        <i class="glyphicons halflings floppy_disk"></i>
+                        <i class="halflings halflings-floppy-disk"></i>
                         <span><is:getProperty key="SAVE" /></span>
                     </button>
                     

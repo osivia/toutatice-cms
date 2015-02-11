@@ -83,17 +83,6 @@
 			<artifactId>ehcache</artifactId>
 			<version>${ehcache.version}</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>displaytag</groupId>
-			<artifactId>displaytag</artifactId>
-			<version>${displaytag.version}</version>			
-		</dependency>
-		<dependency>
-			<groupId>displaytag</groupId>
-			<artifactId>displaytag-portlet</artifactId>
-			<version>${displaytag.version}</version>
-		</dependency>
 
     </dependencies>
 

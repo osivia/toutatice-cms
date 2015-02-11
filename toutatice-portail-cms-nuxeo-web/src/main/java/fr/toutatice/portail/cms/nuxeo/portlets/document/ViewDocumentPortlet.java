@@ -43,6 +43,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -78,8 +79,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
-    /** Display metadata indicator window property name. */
-    public static final String METADATA_WINDOW_PROPERTY = "osivia.document.metadata";
+    /** Hide metadata indicator window property name. */
+    public static final String METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
 
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
@@ -173,9 +174,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 String onlyDescription = request.getParameter("onlyDescription");
                 window.setProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY, onlyDescription);
 
-                // Display metadata indicator
-                String metadata = request.getParameter("metadata");
-                window.setProperty(METADATA_WINDOW_PROPERTY, metadata);
+                // Hide metadata indicator
+                boolean displayMetadata = BooleanUtils.toBoolean(request.getParameter("metadata"));
+                window.setProperty(METADATA_WINDOW_PROPERTY, BooleanUtils.toString(displayMetadata, null, "1"));
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -243,7 +244,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         request.setAttribute("onlyDescription", onlyDescription);
 
         // Display metadata indicator
-        boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY));
+        boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY), null, "1");
         request.setAttribute("metadata", metadata);
 
         response.setContentType("text/html");
@@ -281,7 +282,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // Display metadata indicator
-                boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY));
+                boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY), null, "1");
                 request.setAttribute("metadata", metadata);
 
                 // Fetch document

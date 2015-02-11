@@ -1,18 +1,15 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
@@ -45,7 +42,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -264,7 +260,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return user pages loader
      */
-    public UserPagesLoader getUserPagesLoader()	{
+    public UserPagesLoader getUserPagesLoader() {
         if (this.userPagesLoader == null) {
             this.userPagesLoader = new UserPagesLoader(this.portletCtx, this, this.cmsService);
         }
@@ -563,7 +559,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
         // JSS V3.1 : incompatible avec refresh CMS de type portlets
         // windowProperties.put("osivia.title", "Liste de liens");
@@ -582,7 +578,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, cmsContext.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(cmsContext));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -613,7 +609,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -642,7 +638,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -669,8 +665,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
-        //windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        // windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -694,7 +690,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, uid);
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -774,7 +770,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             Documents configs = null;
             try {
 
-               configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);
+                configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);
 
             } catch (Exception e) {
                 // Can't get confs
@@ -820,8 +816,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Document doc = (Document) ctx.getDoc();
 
         this.getNuxeoConnectionProps();
-        String externalUrl =  NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/"
-                + doc.getId() + "/view_documents";
+        String externalUrl = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents";
 
         // Par défaut, lien direct sur Nuxeo
         return externalUrl;
@@ -1305,28 +1300,35 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Workspace
         defaultTypes.add(new CMSItemType("Workspace", true, false, false, false, false, false, Arrays.asList("File", "Folder", "Note"),
-                "/default/templates/workspace", "wallet"));
+                "/default/templates/workspace", "glyphicons glyphicons-wallet"));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null, "global"));
+        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null,
+                "glyphicons glyphicons-global"));
         // Portal page
-        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null, "more_items"));
+        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null,
+                "glyphicons glyphicons-more-items"));
         // Folder
-        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null, "folder_closed"));
+        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null,
+                "glyphicons glyphicons-folder-closed"));
         // File
-        defaultTypes.add(new CMSItemType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "file"));
+        defaultTypes.add(new CMSItemType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
         // Note
-        defaultTypes.add(new CMSItemType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "notes_2"));
+        defaultTypes.add(new CMSItemType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-notes-2"));
         // Annonce
-        defaultTypes.add(new CMSItemType("Annonce", false, false, false, false, false, true, new ArrayList<String>(0), null, "pen"));
-        // Annonce folder
-        defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, false, Arrays.asList("Annonce"), null, "pen"));
-        // Contextual link
-        defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "link"));
-        // Document URL container
         defaultTypes
-                .add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, false, Arrays.asList("ContextualLink"), null, "folder_closed"));
+                .add(new CMSItemType("Annonce", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-newspaper"));
+        // Annonce folder
+        defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, false, Arrays.asList("Annonce"), null,
+                "glyphicons glyphicons-newspaper"));
+        // Contextual link
+        defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
+                "glyphicons glyphicons-link"));
+        // Document URL container
+        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, false, Arrays.asList("ContextualLink"), null,
+                "glyphicons glyphicons-folder-closed"));
         // Ordered folder
-        defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null, "folder_closed"));
+        defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
+                "glyphicons glyphicons-folder-closed"));
 
         return defaultTypes;
     }
@@ -1418,7 +1420,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    public String getContentWebIdPath(CMSServiceCtx cmsCtx)  {
+    public String getContentWebIdPath(CMSServiceCtx cmsCtx) {
         Document doc = (Document) cmsCtx.getDoc();
 
         String webId = doc.getString("ttc:webid");
@@ -1668,19 +1670,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         } catch (Exception e) {
             throw new CMSException(e);
         }
-    }
-
-
-    /**
-     * Compute metadata display indicator string value from CMS context.
-     *
-     * @param cmsContext CMS context
-     * @return metadata display indicator
-     */
-    public String computeMetadataDisplayIndicator(CMSServiceCtx cmsContext) {
-        Boolean hideMetadata = BooleanUtils.toBooleanObject(cmsContext.getHideMetaDatas(), "1", "0", null);
-        boolean metadataDisplay = BooleanUtils.isNotTrue(hideMetadata);
-        return String.valueOf(metadataDisplay);
     }
 
 

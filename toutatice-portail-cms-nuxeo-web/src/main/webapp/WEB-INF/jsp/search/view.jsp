@@ -29,7 +29,7 @@ function onSubmitSearch(form) {
                 <input id="${namespace}-search-input" type="text" name="keywords" class="form-control" placeholder='<is:getProperty key="SEARCH_PLACEHOLDER" />'>
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-default" title='<is:getProperty key="SEARCH_TITLE" />' data-toggle="tooltip" data-placement="bottom">
-                        <span class="glyphicons halflings search"></span>
+                        <span class="halflings halflings-search"></span>
                     </button>
                 </span>
             </div>

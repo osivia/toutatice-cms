@@ -59,7 +59,7 @@ public class ListEditableWindow extends EditableWindow {
         properties.put(ViewListPortlet.NUXEO_REQUEST_WINDOW_PROPERTY, mapListe.getString("request"));
         properties.put(ViewListPortlet.BEAN_SHELL_WINDOW_PROPERTY, String.valueOf(true));
         properties.put(ViewListPortlet.SCOPE_WINDOW_PROPERTY, null);
-        properties.put(ViewListPortlet.METADATA_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
+        properties.put(ViewListPortlet.METADATA_WINDOW_PROPERTY, "1");
         properties.put(ViewListPortlet.NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
 
         if (mapListe.getBoolean("allContents")) {

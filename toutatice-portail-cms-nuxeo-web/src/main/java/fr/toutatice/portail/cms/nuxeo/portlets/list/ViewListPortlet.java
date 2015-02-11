@@ -78,7 +78,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 /**
  * List portlet.
@@ -97,8 +96,8 @@ public class ViewListPortlet extends CMSPortlet {
     public static final String CONTENT_FILTER_WINDOW_PROPERTY = InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY;
     /** Scope window property name. */
     public static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
-    /** Metadata display indicator window property name. */
-    public static final String METADATA_DISPLAY_WINDOW_PROPERTY = ViewDocumentPortlet.METADATA_WINDOW_PROPERTY;
+    /** Hide metadata indicator window property name. */
+    public static final String METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
     /** Nuxeo request display indicator window property name. */
     public static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
     /** Results limit window property name. */
@@ -329,8 +328,9 @@ public class ViewListPortlet extends CMSPortlet {
                 // Scope
                 window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
 
-                // Metadata display
-                window.setProperty(METADATA_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("metadataDisplay")));
+                // Hide metadata indicator
+                boolean displayMetadata = BooleanUtils.toBoolean(request.getParameter("metadataDisplay"));
+                window.setProperty(METADATA_WINDOW_PROPERTY, BooleanUtils.toString(displayMetadata, null, "1"));
 
                 // Nuxeo request display
                 window.setProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoRequestDisplay")));
@@ -793,7 +793,7 @@ public class ViewListPortlet extends CMSPortlet {
         configuration.setScope(window.getProperty(SCOPE_WINDOW_PROPERTY));
 
         // Metadata display
-        configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_DISPLAY_WINDOW_PROPERTY)));
+        configuration.setMetadataDisplay(BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY), null, "1"));
 
         // Nuxeo request display
         configuration.setNuxeoRequestDisplay(BooleanUtils.toBoolean(window.getProperty(NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY)));

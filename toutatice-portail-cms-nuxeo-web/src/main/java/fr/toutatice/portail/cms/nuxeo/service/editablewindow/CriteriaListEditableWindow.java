@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -32,7 +32,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet;
 public class CriteriaListEditableWindow extends EditableWindow {
 
     public static final String CRITERIA_LIST_SCHEMA = "crtlistfgt:criteriaListFragment";
-    
+
     protected static final String CRITERIA_SEPARATOR = " and ";
     protected static final String CRITERION_LIST_SEPARATOR = ",";
     protected static final String CRITERION_EQUAL = " = ";
@@ -55,7 +55,7 @@ public class CriteriaListEditableWindow extends EditableWindow {
         PropertyMap displayCriteria = (PropertyMap) mapList.get("displayCriteria");
 
         /* Request */
-        String request = buildRequest(requestCriteria);
+        String request = this.buildRequest(requestCriteria);
         properties.put(ViewListPortlet.NUXEO_REQUEST_WINDOW_PROPERTY, request);
 
         /* Display */
@@ -66,7 +66,7 @@ public class CriteriaListEditableWindow extends EditableWindow {
         /* Technical */
         properties.put(ViewListPortlet.BEAN_SHELL_WINDOW_PROPERTY, String.valueOf(false));
         properties.put(ViewListPortlet.SCOPE_WINDOW_PROPERTY, null);
-        properties.put(ViewListPortlet.METADATA_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
+        properties.put(ViewListPortlet.METADATA_WINDOW_PROPERTY, "1");
         properties.put(ViewListPortlet.NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
 
         properties.put(ViewListPortlet.CONTENT_FILTER_WINDOW_PROPERTY, null);
@@ -90,33 +90,33 @@ public class CriteriaListEditableWindow extends EditableWindow {
         String searchArea = (String) requestCriteria.get("searchArea");
         String order = (String) requestCriteria.get("order");
 
-        String docTypesCriterion = getDocTypesCriterion(new StringBuffer(), docTypes);
-        String keyWordsCriterion = getKeyWordsCriterion(new StringBuffer(), keyWords, docTypes.isEmpty());
-        String searchAreaCriterion = getSearchAreaCriterion(new StringBuffer(), searchArea, currentDocId, currentSpaceId, docTypes.isEmpty() && keyWords.isEmpty());
-        String orderCriterion = getOrderCriterion(new StringBuffer(), order);
+        String docTypesCriterion = this.getDocTypesCriterion(new StringBuffer(), docTypes);
+        String keyWordsCriterion = this.getKeyWordsCriterion(new StringBuffer(), keyWords, docTypes.isEmpty());
+        String searchAreaCriterion = this.getSearchAreaCriterion(new StringBuffer(), searchArea, currentDocId, currentSpaceId, docTypes.isEmpty() && keyWords.isEmpty());
+        String orderCriterion = this.getOrderCriterion(new StringBuffer(), order);
 
         StringBuffer clause = new StringBuffer().append(docTypesCriterion).append(keyWordsCriterion).append(searchAreaCriterion).append(orderCriterion);
 
         return clause.toString();
     }
-    
+
     protected String getDocTypesCriterion(StringBuffer docTypesCriterion, PropertyList docTypes){
         if (!docTypes.isEmpty()) {
-            docTypesCriterion.append(" ecm:primaryType in (").append(generateQuotedList(new StringBuffer(), docTypes)).append(")");
+            docTypesCriterion.append(" ecm:primaryType in (").append(this.generateQuotedList(new StringBuffer(), docTypes)).append(")");
         }
         return docTypesCriterion.toString();
     }
-    
+
     protected String getKeyWordsCriterion(StringBuffer keyWordsCriterion, PropertyList keyWords, boolean firstCriterion){
         if (!keyWords.isEmpty()) {
             if(!firstCriterion){
                 keyWordsCriterion.append(CRITERIA_SEPARATOR);
             }
-            keyWordsCriterion.append("ttc:keywords in (").append(generateQuotedList(new StringBuffer(), keyWords)).append(")");
+            keyWordsCriterion.append("ttc:keywords in (").append(this.generateQuotedList(new StringBuffer(), keyWords)).append(")");
         }
         return keyWordsCriterion.toString();
     }
-    
+
     protected String getSearchAreaCriterion(StringBuffer searchAreaCriterion, String searchArea, String currentDocId, String currentSpaceId, boolean firstCriterion){
         if (StringUtils.isNotBlank(searchArea)) {
             if(!firstCriterion){
@@ -134,7 +134,7 @@ public class CriteriaListEditableWindow extends EditableWindow {
         }
         return searchAreaCriterion.toString();
     }
-    
+
     protected String getOrderCriterion(StringBuffer orderCriterion, String order){
         if (StringUtils.isNotBlank(order)) {
             orderCriterion.append(" order by ").append(order);
@@ -143,7 +143,7 @@ public class CriteriaListEditableWindow extends EditableWindow {
     }
 
     /**
-     * 
+     *
      * @return a quoted list of properties with "," separator.
      */
     protected StringBuffer generateQuotedList(StringBuffer criterion, PropertyList properties) {

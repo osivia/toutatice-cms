@@ -25,9 +25,7 @@
             <c:set var="contentClass" value="col-xs-12 col-md-8" />
             
             <div class="col-xs-12 col-md-4">
-                <p>
-                    <img src="${imageURL}" alt="" class="img-thumbnail">
-                </p>
+                <img src="${imageURL}" alt="" class="img-responsive">
             </div>
         </c:if>
         

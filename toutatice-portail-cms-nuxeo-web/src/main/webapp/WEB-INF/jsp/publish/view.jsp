@@ -23,10 +23,12 @@
                     </c:if>
                 
                     <!-- Navigation home link -->
-                    <a href="${displayItem.url}" class="btn btn-default btn-block visible-xs ${current}">
-                        <i class="glyphicons halflings home"></i>
-                        <span>${displayItem.title}</span>
-                    </a>
+                    <p class="visible-xs">
+                        <a href="${displayItem.url}" class="btn btn-default btn-block ${current}">
+                            <i class="halflings halflings-home"></i>
+                            <span>${displayItem.title}</span>
+                        </a>
+                    </p>
                 
                     <!-- Menu -->
                     <c:set var="parent" value="${displayItem}" scope="request" />
@@ -37,8 +39,8 @@
         </c:when>
     
         <c:otherwise>
-            <p class="lead text-danger">
-                <i class="glyphicons halflings exclamation-sign"></i>
+            <p class="text-danger">
+                <i class="halflings halflings-exclamation-sign"></i>
                 <span><is:getProperty key="MESSAGE_PATH_UNDEFINED" /></span>
             </p>
         </c:otherwise>

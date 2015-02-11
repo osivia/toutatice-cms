@@ -168,9 +168,6 @@ public class MenuBarFormater {
                 this.getAdministrationLink(cmsCtx, menubar);
             }
 
-//            if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
-//                this.getBackLink( cmsCtx,  menubar);
-//            }
 
             if ((cmsCtx.getDoc() != null) && !webPageFragment) {
 				this.getDriveEditUrl(cmsCtx, menubar);
@@ -294,7 +291,7 @@ public class MenuBarFormater {
 
             // Menubar item
             MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 3, url, null, null, "nuxeo");
-            item.setGlyphicon("halflings new_window");
+            item.setGlyphicon("halflings halflings-new-window");
             item.setAjaxDisabled(true);
             item.setDropdownItem(true);
             menuBar.add(item);
@@ -341,7 +338,7 @@ public class MenuBarFormater {
                     // OnLIne workflow pending indicator menubar item
                     MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"),
                             MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, null, null);
-                    pendingIndicator.setGlyphicon("history");
+                    pendingIndicator.setGlyphicon("glyphicons glyphicons-history");
                     pendingIndicator.setStateItem(true);
                     menubar.add(pendingIndicator);
                 }
@@ -369,7 +366,7 @@ public class MenuBarFormater {
                                 String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
                                 MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, publishURL,
                                         null, null, null);
-                                publishItem.setGlyphicon("halflings ok-circle");
+                                publishItem.setGlyphicon("halflings halflings-ok-circle");
                                 publishItem.setAjaxDisabled(true);
                                 publishItem.setDropdownItem(true);
                                 menubar.add(publishItem);
@@ -381,7 +378,7 @@ public class MenuBarFormater {
                             String askPublishURL = this.getContributionService().getAskPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
                             MenubarItem askPublishItem = new MenubarItem("ASK_PUBLISH", bundle.getString("ASK_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
                                     askPublishURL, null, null, null);
-                            askPublishItem.setGlyphicon("chat");
+                            askPublishItem.setGlyphicon("glyphicons glyphicons-user-conversation");
                             askPublishItem.setAjaxDisabled(true);
                             askPublishItem.setDropdownItem(true);
                             menubar.add(askPublishItem);
@@ -391,7 +388,7 @@ public class MenuBarFormater {
                             String cancelAskPublishURL = this.getContributionService().getCancelPublishingAskContributionURL(portalControllerContext, pubInfos.getDocumentPath());
                             MenubarItem cancelAskPublishItem = new MenubarItem("CANCEL_ASK_PUBLISH", bundle.getString("CANCEL_ASK_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
                                     cancelAskPublishURL, null, null, null);
-                            cancelAskPublishItem.setGlyphicon("halflings remove-circle");
+                            cancelAskPublishItem.setGlyphicon("glyphicons glyphicons-user-ban");
                             cancelAskPublishItem.setAjaxDisabled(true);
                             cancelAskPublishItem.setDropdownItem(true);
                             menubar.add(cancelAskPublishItem);
@@ -403,7 +400,7 @@ public class MenuBarFormater {
                         String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
                         MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, proxyURL,
                             null, null, null);
-                        proxyItem.setGlyphicon("halflings eye-close");
+                        proxyItem.setGlyphicon("halflings halflings-eye-close");
                         proxyItem.setAjaxDisabled(true);
                         proxyItem.setDropdownItem(true);
                         menubar.add(proxyItem);
@@ -414,7 +411,7 @@ public class MenuBarFormater {
                         String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
                         MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
                                 unpublishURL, null, null, null);
-                        unpublishItem.setGlyphicon("halflings remove-circle");
+                        unpublishItem.setGlyphicon("halflings halflings-remove-circle");
                         unpublishItem.setAjaxDisabled(true);
                         unpublishItem.setDropdownItem(true);
                         menubar.add(unpublishItem);
@@ -424,7 +421,7 @@ public class MenuBarFormater {
                         // Current modification indicator
                         MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"),
                                 MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, null, null);
-                        modificationIndicator.setGlyphicon("halflings warning-sign");
+                        modificationIndicator.setGlyphicon("halflings halflings-alert");
                         modificationIndicator.setStateItem(true);
                         modificationIndicator.setDropdownItem(true);
                         menubar.add(modificationIndicator);
@@ -434,7 +431,7 @@ public class MenuBarFormater {
                     String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
                     MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
                             previewURL, null, null, null);
-                    previewItem.setGlyphicon("halflings eye-open");
+                    previewItem.setGlyphicon("halflings halflings-eye-open");
                     previewItem.setAjaxDisabled(true);
                     previewItem.setDropdownItem(true);
                     menubar.add(previewItem);
@@ -455,7 +452,7 @@ public class MenuBarFormater {
         String validateUrl = this.getContributionService().getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
         MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12, validateUrl,
                 null, null, null);
-        validateItem.setGlyphicon("halflings ok-circle");
+        validateItem.setGlyphicon("halflings halflings-ok-circle");
         validateItem.setAjaxDisabled(true);
         validateItem.setDropdownItem(true);
         menubar.add(validateItem);
@@ -463,7 +460,7 @@ public class MenuBarFormater {
         String rejectUrl = this.getContributionService().getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
         MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 13, rejectUrl,
                 null, null, null);
-        rejectItem.setGlyphicon("halflings remove-circle");
+        rejectItem.setGlyphicon("halflings halflings-remove-circle");
         rejectItem.setAjaxDisabled(true);
         rejectItem.setDropdownItem(true);
         menubar.add(rejectItem);
@@ -524,7 +521,7 @@ public class MenuBarFormater {
 
             MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 4,
                     browserUrl, null, "fancyframe_refresh", null);
-            browserItem.setGlyphicon("halflings search");
+            browserItem.setGlyphicon("halflings halflings-search");
             browserItem.setAjaxDisabled(true);
             browserItem.setDropdownItem(true);
             menubar.add(browserItem);
@@ -596,13 +593,13 @@ public class MenuBarFormater {
         if (pubInfos.isCanSynchronize()) {
             enableParamter = true;
             command = "SYNCHRONIZE";
-            icon = "refresh";
+            icon = "halflings halflings-refresh";
             ecmAction = EcmFilesCommand.synchronizeFolder;
         }
         else if(pubInfos.isCanUnsynchronize()) {
             enableParamter = false;
             command = "UNSYNCHRONIZE";
-            icon = "ban-circle";
+            icon = "halflings halflings-ban-circle";
             ecmAction = EcmFilesCommand.unsynchronizeFolder;
         }
 
@@ -618,7 +615,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
             MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), MenubarItem.ORDER_PORTLET_GENERIC + 5,
                     synchronizeUrl, null, null, null);
-            synchronizeItem.setGlyphicon("halflings "+icon);
+            synchronizeItem.setGlyphicon(icon);
             synchronizeItem.setAjaxDisabled(true);
             synchronizeItem.setDropdownItem(true);
             menubar.add(synchronizeItem);
@@ -629,7 +626,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
             MenubarItem rootUrlItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), MenubarItem.ORDER_PORTLET_GENERIC + 5, rootUrl,
                     null, null, null);
-            rootUrlItem.setGlyphicon("halflings backward");
+            rootUrlItem.setGlyphicon("halflings halflings-step-backward");
             rootUrlItem.setAjaxDisabled(true);
             rootUrlItem.setDropdownItem(true);
             menubar.add(rootUrlItem);
@@ -751,7 +748,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     // Menubar item
                     MenubarItem item = new MenubarItem("EDIT", editLabel, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, onClick.toString(),
                             "fancyframe_refresh", null);
-                    item.setGlyphicon("halflings pencil");
+                    item.setGlyphicon("halflings halflings-pencil");
                     item.setAjaxDisabled(true);
                     item.setDropdownItem(true);
                     menubar.add(item);
@@ -852,7 +849,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 // Menubar item
                 MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, url, onclick,
                         "fancyframe_refresh", "nuxeo");
-                item.setGlyphicon("halflings plus");
+                item.setGlyphicon("halflings halflings-plus");
                 item.setDropdownItem(false);
                 item.setAjaxDisabled(true);
                 menubar.add(item);
@@ -864,9 +861,13 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 String fancyboxId = namespace + "_PORTAL_CREATE";
 
 
+                // Fancybox container
+                Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+
                 // Container
                 Element container = DOM4JUtils.generateDivElement("container-fluid");
                 DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
+                fancyboxContainer.add(container);
 
                 // Title
                 Element title = DOM4JUtils.generateElement(HTMLConstants.P, "h3", bundle.getString("ADD_CONTENT"));
@@ -897,9 +898,9 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 // Menubar item
                 MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, "#" + fancyboxId, fancyOnClick,
                         "fancybox_inline", null);
-                item.setGlyphicon("halflings plus");
+                item.setGlyphicon("halflings halflings-plus");
                 item.setAjaxDisabled(true);
-                item.setAssociatedHtml(DOM4JUtils.write(container));
+                item.setAssociatedHtml(DOM4JUtils.write(fancyboxContainer));
                 item.setDropdownItem(false);
                 menubar.add(item);
             }
@@ -960,7 +961,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     // Menubar item
                     MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 20, url, null,
                             "fancybox_inline", null);
-                    item.setGlyphicon("halflings trash");
+                    item.setGlyphicon("halflings halflings-trash");
                     item.setAjaxDisabled(true);
                     item.setAssociatedHtml(fancybox);
                     item.setDropdownItem(true);
@@ -981,9 +982,13 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
      * @return fancybox HTML data
      */
     private String generateDeleteConfirmationFancybox(Map<String, String> properties, Bundle bundle, String fancyboxId, String actionURL) {
+        // Fancybox container
+        Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+
         // Container
         Element container = DOM4JUtils.generateDivElement("container-fluid");
         DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
+        fancyboxContainer.add(container);
 
         // Form
         Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "text-center", null, null, AccessibilityRoles.FORM);
@@ -1005,8 +1010,8 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         }
 
         // OK button
-        Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default btn-warning", bundle.getString("YES"), "halflings warning-sign",
-                null);
+        Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default btn-warning", bundle.getString("YES"),
+                "halflings halflings-alert", null);
         DOM4JUtils.addAttribute(okButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         form.add(okButton);
 
@@ -1016,13 +1021,13 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "closeFancybox()");
         form.add(cancelButton);
 
-        return DOM4JUtils.write(container);
+        return DOM4JUtils.write(fancyboxContainer);
     }
 
 
     protected void addContextualizationLinkItem(List<MenubarItem> menuBar, String displayName, String url) throws Exception {
         MenubarItem item = new MenubarItem("CONTEXTUALIZE", "Espace " + displayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url, null, null, null);
-        item.setGlyphicon("halflings share");
+        item.setGlyphicon("halflings halflings-level-up");
         item.setAjaxDisabled(true);
         menuBar.add(item);
     }
@@ -1119,7 +1124,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
 
         MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), MenubarItem.ORDER_PORTLET_GENERIC + 2, url, null, null, null);
-        item.setGlyphicon("halflings link");
+        item.setGlyphicon("halflings halflings-link");
         item.setAjaxDisabled(true);
         menubar.add(item);
     }

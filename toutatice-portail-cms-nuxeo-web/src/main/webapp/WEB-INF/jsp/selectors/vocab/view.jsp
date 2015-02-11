@@ -29,13 +29,13 @@ function refreshOnVocabularyChange(selectText, url) {
 <c:choose>
     <c:when test="${selectorMonoValued eq '1'}">
         <c:set var="name" value="monoAdd" />
-        <c:set var="glyphicon" value="halflings ok" />
+        <c:set var="glyphicon" value="halflings halflings-ok" />
         <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
         <c:set var="name" value="add" />
-        <c:set var="glyphicon" value="halflings plus" />
+        <c:set var="glyphicon" value="halflings halflings-plus" />
         
     </c:otherwise>
 </c:choose>
@@ -66,7 +66,7 @@ function refreshOnVocabularyChange(selectText, url) {
                     <span class="form-control-static pull-left"><vs:label id="${item}" entry="${vocab1}" othersLabel="${othersLabel}" preselect="${preselect1}" /></span>
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
-                        <i class="glyphicons halflings trash"></i>
+                        <i class="halflings halflings-trash"></i>
                         <span class="sr-only"><is:getProperty key="DELETE" /></span>
                     </a>
                 </p>
@@ -115,7 +115,7 @@ function refreshOnVocabularyChange(selectText, url) {
                     <c:if test="${not empty vocab1Id and empty vocab2Id and (selectorMonoValued ne '1')}">
                         <div class="media-right">
                             <button type="submit" name="add" class="btn btn-default">
-                                <i class="glyphicons halflings plus"></i>
+                                <i class="halflings halflings-plus"></i>
                                 <span class="sr-only">${title}</span>
                             </button>
                         </div>
@@ -171,7 +171,7 @@ function refreshOnVocabularyChange(selectText, url) {
                         <c:if test="${not empty vocab2Id and empty vocab3Id and (selectorMonoValued ne '1')}">
                             <div class="media-right">
                                 <button type="submit" name="add" class="btn btn-default">
-                                    <i class="glyphicons halflings plus"></i>
+                                    <i class="halflings halflings-plus"></i>
                                     <span class="sr-only">${title}</span>
                                 </button>
                             </div>
@@ -230,7 +230,7 @@ function refreshOnVocabularyChange(selectText, url) {
                         <c:if test="${not empty vocab3Id and (selectorMonoValued ne '1')}">
                             <div class="media-right">
                                 <button type="submit" name="add" class="btn btn-default">
-                                    <i class="glyphicons halflings plus"></i>
+                                    <i class="halflings halflings-plus"></i>
                                     <span class="sr-only">${title}</span>
                                 </button>
                             </div>

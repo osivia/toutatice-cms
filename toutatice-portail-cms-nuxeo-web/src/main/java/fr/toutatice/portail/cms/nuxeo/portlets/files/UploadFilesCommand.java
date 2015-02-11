@@ -1,16 +1,16 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.fileupload.FileItem;
+import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Blob;
-import org.nuxeo.ecm.automation.client.model.DocRef;
+import org.nuxeo.ecm.automation.client.model.Blobs;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.IdRef;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.StreamBlob;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -44,37 +44,40 @@ public class UploadFilesCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
-        // Parent document reference
-        DocRef parent = new IdRef(this.parentId);
-        // Document type
-        String type = "File";
-
-        // Documents
-        List<Document> documents = new ArrayList<Document>(this.fileItems.size());
-
-        // Document service
-        DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
-
-        for (FileItem fileItem : this.fileItems) {
-            // Document name
-            String name = fileItem.getName();
-
-            // Document properties
-            PropertyMap properties = new PropertyMap();
-            properties.set("dc:title", name);
-            properties.set("file:filename", name);
-
-            // Create document
-            Document document = documentService.createDocument(parent, type, name, properties);
-
-            // Add blob
-            Blob blob = new StreamBlob(fileItem.getInputStream(), name, fileItem.getContentType());
-            documentService.setBlob(document, blob);
-
-            documents.add(document);
+    	
+    	List<Document> documents = new ArrayList<Document>(this.fileItems.size());
+        
+        Blobs blobs = getBlobsList(this.fileItems);
+        
+        OperationRequest operationRequest = nuxeoSession.newRequest("FileManager.Import").setInput(blobs);
+        operationRequest.setContextProperty("currentDocument", parentId);
+        
+        Documents nxDocuments = (Documents) operationRequest.execute();	
+        if(nxDocuments != null && !nxDocuments.list().isEmpty()){
+        	documents.addAll(nxDocuments.list());
         }
-
+        
         return documents;
+        
+    }
+    
+    /**
+     * Build a blobs list from input files items.
+     * 
+     * @param fileItems
+     * @return blobs list
+     * @throws IOException 
+     */
+    public Blobs getBlobsList(List<FileItem> fileItems) throws IOException{
+        Blobs blobs = new Blobs();
+        
+        for (FileItem fileItem : fileItems) {
+            String name = fileItem.getName();
+            Blob blob = new StreamBlob(fileItem.getInputStream(), name, fileItem.getContentType());
+            blobs.add(blob);
+        }
+        
+        return blobs;
     }
 
 

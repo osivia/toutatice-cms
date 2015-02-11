@@ -71,6 +71,8 @@ public class UserTag extends SimpleTagSupport {
         // Directory service
         IDirectoryService directoryService = DIRECTORY_SERVICE_LOCATOR.getDirectoryService();
 
+        JspWriter out = pageContext.getOut();
+
         if ((nuxeoController != null) && (directoryService != null)) {
             // User LDAP person
             DirectoryPerson person = directoryService.getPerson(this.name);
@@ -116,9 +118,10 @@ public class UserTag extends SimpleTagSupport {
             container.add(text);
 
 
-            JspWriter out = pageContext.getOut();
             HTMLWriter htmlWriter = new HTMLWriter(out);
             htmlWriter.write(container);
+        } else {
+            out.write(this.name);
         }
     }
 

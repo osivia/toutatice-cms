@@ -30,12 +30,12 @@
         <c:set var="dateFrom" value="${interval[0]}" />
         <c:set var="dateTo" value="${interval[1]}" />
     
-        <c:set var="glyphicon" value="halflings ok" />
+        <c:set var="glyphicon" value="halflings halflings-ok" />
         <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
-        <c:set var="glyphicon" value="halflings plus" />
+        <c:set var="glyphicon" value="halflings halflings-plus" />
         <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
     </c:otherwise>
 </c:choose>
@@ -69,7 +69,7 @@
                     <span class="form-control-static pull-left">${interval[0]} - ${interval[1]}</span>
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
-                        <i class="glyphicons halflings trash"></i>
+                        <i class="halflings halflings-trash"></i>
                         <span class="sr-only"><is:getProperty key="DELETE" /></span>
                     </a>
                 </p>
@@ -89,7 +89,7 @@
                 
                 <div class="media-right">
                     <button type="submit" class="btn btn-default">
-                        <i class="glyphicons ${glyphicon}"></i>
+                        <i class="${glyphicon}"></i>
                         <span class="sr-only">${title}</span>
                     </button>
                 </div>

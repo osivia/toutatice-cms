@@ -18,7 +18,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <i class="glyphicons conversation"></i>                
+                    <i class="glyphicons glyphicons-conversation"></i>                
                     <span><is:getProperty key="COMMENTS" /></span>
                 </h3>
             </div>
@@ -34,7 +34,7 @@
                 
                 <div class="list-group-item">
                     <a href="#${namespace}-add-comment" class="btn btn-default no-ajax-link" data-toggle="collapse">
-                        <i class="glyphicons comments"></i>
+                        <i class="glyphicons glyphicons-chat"></i>
                         <span><is:getProperty key="COMMENT_ADD" /></span>
                     </a>
                     

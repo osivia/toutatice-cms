@@ -115,7 +115,7 @@ $JQry(document).ready(function() {
     <div class="row">
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
-                <i class="glyphicons halflings floppy_disk"></i>
+                <i class="halflings halflings-floppy-disk"></i>
                 <span><is:getProperty key="SAVE" /></span>
             </button>
             

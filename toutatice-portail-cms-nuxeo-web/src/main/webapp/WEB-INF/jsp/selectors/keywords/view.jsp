@@ -17,7 +17,7 @@
     <c:when test="${keywordMonoValued eq '1'}">
         <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
         <c:set var="name" value="monoAdd" />
-        <c:set var="glyphicon" value="halflings ok" />
+        <c:set var="glyphicon" value="halflings halflings-ok" />
         <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
         <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
     </c:when>
@@ -25,7 +25,7 @@
     <c:otherwise>
         <c:set var="textValue" value="${keyword}" />
         <c:set var="name" value="add" />
-        <c:set var="glyphicon" value="halflings plus" />
+        <c:set var="glyphicon" value="halflings halflings-plus" />
         <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
         <c:set var="placeholder"><is:getProperty key="SELECTOR_KEYWORD_PLACEHOLDER" /></c:set>
     </c:otherwise>
@@ -53,7 +53,7 @@
                     <span class="form-control-static pull-left">${item}</span>
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
-                        <i class="glyphicons halflings trash"></i>
+                        <i class="halflings halflings-trash"></i>
                         <span class="sr-only"><is:getProperty key="DELETE" /></span>
                     </a>
                 </p>
@@ -66,7 +66,7 @@
                 <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
                 <span class="input-group-btn">
                     <button type="submit" name="${name}" class="btn btn-default">
-                        <i class="glyphicons ${glyphicon}"></i>
+                        <i class="${glyphicon}"></i>
                         <span class="sr-only">${title}</span>
                     </button>
                 </span>

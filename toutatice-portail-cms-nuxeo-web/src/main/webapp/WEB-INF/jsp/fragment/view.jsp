@@ -12,8 +12,8 @@
     <c:when test="${not empty fragmentType}">
         <!-- Message -->
         <c:if test="${not empty messageKey}">
-            <p class="lead text-danger">
-	            <i class="glyphicons halflings exclamation-sign"></i>
+            <p class="text-danger">
+	            <i class="halflings halflings-exclamation-sign"></i>
 	            <span><is:getProperty key="${messageKey}" /></span>
 	        </p>
         </c:if>
@@ -25,8 +25,8 @@
     </c:when>
     
     <c:otherwise>
-        <p class="lead text-danger">
-            <i class="glyphicons halflings exclamation-sign"></i>
+        <p class="text-danger">
+            <i class="halflings halflings-exclamation-sign"></i>
             <span><is:getProperty key="FRAGMENT_MESSAGE_NOT_CONFIGURED" /></span>
         </p>
     </c:otherwise>
