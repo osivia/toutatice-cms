@@ -39,7 +39,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -542,7 +541,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
         // JSS V3.1 : incompatible avec refresh CMS de type portlets
         // windowProperties.put("osivia.title", "Liste de liens");
@@ -561,7 +560,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, cmsContext.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(cmsContext));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -592,7 +591,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -621,7 +620,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -649,7 +648,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         // windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
@@ -673,7 +672,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.computeMetadataDisplayIndicator(ctx));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, uid);
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -1488,19 +1487,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         } catch (Exception e) {
             throw new CMSException(e);
         }
-    }
-
-
-    /**
-     * Compute metadata display indicator string value from CMS context.
-     *
-     * @param cmsContext CMS context
-     * @return metadata display indicator
-     */
-    public String computeMetadataDisplayIndicator(CMSServiceCtx cmsContext) {
-        Boolean hideMetadata = BooleanUtils.toBooleanObject(cmsContext.getHideMetaDatas(), "1", "0", null);
-        boolean metadataDisplay = BooleanUtils.isNotTrue(hideMetadata);
-        return String.valueOf(metadataDisplay);
     }
 
 }

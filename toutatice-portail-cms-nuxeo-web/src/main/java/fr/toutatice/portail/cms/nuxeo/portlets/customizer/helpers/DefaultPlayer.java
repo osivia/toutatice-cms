@@ -23,6 +23,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
@@ -64,7 +65,7 @@ public class DefaultPlayer implements IPlayer {
     @Override
     public CMSHandlerProperties play(CMSServiceCtx cmsContext, Document document, Map<String, String> windowProperties) throws Exception {
         windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
-        windowProperties.put("osivia.document.metadata", this.customizer.computeMetadataDisplayIndicator(cmsContext));
+        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
         windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -74,6 +75,16 @@ public class DefaultPlayer implements IPlayer {
         linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewDocumentPortletInstance");
 
         return linkProps;
+    }
+
+
+    /**
+     * Getter for customizer.
+     * 
+     * @return the customizer
+     */
+    public DefaultCMSCustomizer getCustomizer() {
+        return customizer;
     }
 
 }
