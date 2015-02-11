@@ -14,7 +14,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.search;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
@@ -51,7 +49,8 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 
 /**
@@ -72,10 +71,12 @@ public class SearchPortlet extends CMSPortlet {
     private IPortalUrlFactory portalUrlFactory;
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
+    /** Document DAO. */
+    private DocumentDAO documentDAO;
 
 
     /**
-     * Default constructor.
+     * Constructor.
      */
     public SearchPortlet() {
         super();
@@ -99,6 +100,9 @@ public class SearchPortlet extends CMSPortlet {
         IInternationalizationService internationalizationService = (IInternationalizationService) this.getPortletContext().getAttribute(
                 Constants.INTERNATIONALIZATION_SERVICE_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+
+        // Document DAO
+        this.documentDAO = DocumentDAO.getInstance();
     }
 
 
@@ -197,12 +201,20 @@ public class SearchPortlet extends CMSPortlet {
                 // Search command execution
                 SearchCommand command = new SearchCommand(queryFilter, path, keywords, currentPage);
                 PaginableDocuments docs = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
-                List<SearchResultVO> results = this.toViewObjects(nuxeoController, docs);
+
+                // Result list
+                List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(docs.size());
+                for (Document document : docs) {
+                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    documentsDTO.add(documentDTO);
+                }
+
                 int minPage = Math.max(0, currentPage - docs.getPageSize());
                 int maxPage = Math.min(currentPage + docs.getPageSize(), docs.getPageCount()) - 1;
 
+                request.setAttribute("nuxeoController", nuxeoController);
                 request.setAttribute("keywords", keywords);
-                request.setAttribute("results", results);
+                request.setAttribute("documents", documentsDTO);
                 request.setAttribute("totalSize", docs.getTotalSize());
                 request.setAttribute("currentPage", currentPage);
                 request.setAttribute("minPage", minPage);
@@ -249,35 +261,6 @@ public class SearchPortlet extends CMSPortlet {
         } catch (Exception e) {
             throw new PortletException(e);
         }
-    }
-
-
-    /**
-     * Convert Nuxeo documents to view objects.
-     *
-     * @param nuxeoController Nuxeo controller
-     * @param documents Nuxeo documents
-     * @return view objects
-     */
-    private List<SearchResultVO> toViewObjects(NuxeoController nuxeoController, PaginableDocuments documents) {
-        List<SearchResultVO> results = new ArrayList<SearchResultVO>(documents.getPageSize());
-
-        for (Document document : documents) {
-            String title = document.getTitle();
-            String icon = nuxeoController.getRequest().getContextPath() + Formater.formatSpecificIcon(document);
-            Link link = nuxeoController.getLink(document);
-            String description;
-            try {
-                description = Formater.formatDescription(document);
-            } catch (ParseException e) {
-                description = null;
-            }
-
-            SearchResultVO result = new SearchResultVO(title, icon, link, description);
-            results.add(result);
-        }
-
-        return results;
     }
 
 }

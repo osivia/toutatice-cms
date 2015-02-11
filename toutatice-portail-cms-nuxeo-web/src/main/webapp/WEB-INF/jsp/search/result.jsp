@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -18,7 +19,7 @@
 
 <div class="row nuxeo-results-search">
     <!-- Search form -->
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <form action="${searchActionURL}" method="post" class="form" role="search">
             <div class="form-group">
                 <label class="sr-only" for="${namespace}-search-input"><is:getProperty key="SEARCH" /></label>
@@ -35,11 +36,11 @@
     </div>
 
     <!-- Search result -->
-    <div class="col-lg-8">
+    <div class="col-lg-9">
         <div class="panel panel-default">
             <div class="panel-body">
                 <!-- Indicator -->
-                <p>
+                <p class="text-muted">
                     <span>${totalSize} </span>
                     <c:choose>
                         <c:when test="${totalSize > 1}">
@@ -51,27 +52,43 @@
                         </c:otherwise>
                     </c:choose>
                 </p>
-            
+                
                 <!-- List -->
                 <ul class="list-unstyled no-ajax-link">
-                    <c:forEach var="result" items="${results}">
+                    <c:forEach var="document" items="${documents}">
+                        <!-- Document properties -->
+        
+                        <!-- Link -->
+                        <ttc:documentLink document="${document}" var="link" />
+                
+                        <!-- Description -->
+                        <c:set var="description" value="${document.properties['dc:description']}" />
+                    
+                    
+                    
                         <li>
-                            <img src="${result.icon}" alt="icon" class="pull-left">
+                            <!-- Title -->
                             <div>
-                                <a href="${result.link.url}">
-                                    <span>${result.title}</span>
+                                <a href="${link.url}"
+                                    <c:if test="${link.external}">target="_blank"</c:if>
+                                >
+                                    <i class="${document.type.glyph}"></i>
+                                    <span>${document.title}</span>
                                 </a>
                                 
-                                <c:if test="${result.link.downloadable}">
+                                <!-- Downloadable -->
+                                <c:if test="${link.downloadable}">
                                     <i class="halflings halflings-download-alt"></i>
                                 </c:if>
-                            
-                                <c:if test="${result.link.external}">
+                                
+                                <!-- External -->
+                                <c:if test="${link.external}">
                                     <i class="halflings halflings-new-window"></i>
                                 </c:if>
-                                
-                                <p>${result.description}</p>
                             </div>
+                            
+                            <!-- Description -->
+                            <p>${description}</p>
                         </li>
                     </c:forEach>
                 </ul>
