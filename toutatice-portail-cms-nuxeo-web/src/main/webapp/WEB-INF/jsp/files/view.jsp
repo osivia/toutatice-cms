@@ -26,7 +26,9 @@
 
 
 <div class="file-browser" data-dropurl="${dropActionURL}" data-refreshurl="${refreshURL}">
-    <div class="drop-zone">
+    <div
+        <c:if test="${editable}">class="drop-zone"</c:if>
+    >
         <div class="table-responsive no-ajax-link">
             <table class="table">
                 <!-- Description -->
@@ -166,39 +168,41 @@
     
     
         <!-- File upload -->
-        <form action="${fileUploadActionURL}" method="post" enctype="multipart/form-data" class="file-upload" role="form">
-            <input type="file" name="files[]" class="hidden" multiple="multiple">
-        
-            <div class="panel panel-default hidden">
-                <div class="panel-body">
-                    <div class="form-group fileupload-buttonbar">
-                        <button type="submit" class="btn btn-primary start">
-                            <i class="halflings halflings-upload"></i>
-                            <span><is:getProperty key="FILE_BROWSER_START_UPLOAD" /></span>
-                        </button>
-                        
-                        <button type="reset" class="btn btn-default cancel">
-                            <i class="halflings halflings-ban-circle"></i>
-                            <span><is:getProperty key="CANCEL" /></span>
-                        </button>
-                    </div>
-                        
-                    <div class="form-group">
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar"></div>
+        <c:if test="${editable}">
+            <form action="${fileUploadActionURL}" method="post" enctype="multipart/form-data" class="file-upload" role="form">
+                <input type="file" name="files[]" class="hidden" multiple="multiple">
+            
+                <div class="panel panel-default hidden">
+                    <div class="panel-body">
+                        <div class="form-group fileupload-buttonbar">
+                            <button type="submit" class="btn btn-primary start">
+                                <i class="halflings halflings-upload"></i>
+                                <span><is:getProperty key="FILE_BROWSER_START_UPLOAD" /></span>
+                            </button>
+                            
+                            <button type="reset" class="btn btn-default cancel">
+                                <i class="halflings halflings-ban-circle"></i>
+                                <span><is:getProperty key="CANCEL" /></span>
+                            </button>
+                        </div>
+                            
+                        <div class="form-group">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"></div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <ul class="file-upload-list list-group files"></ul>
                 </div>
-                
-                <ul class="file-upload-list list-group files"></ul>
+            </form>
+            
+            <div class="file-upload-shadowbox jumbotron bg-info-hover">
+                <div class="text-center">
+                    <p><is:getProperty key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
+                    <p class="h1"><i class="glyphicons glyphicons-inbox"></i></p>
+                </div>
             </div>
-        </form>
-        
-        <div class="file-upload-shadowbox jumbotron bg-info-hover">
-            <div class="text-center text-middle">
-                <p><is:getProperty key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
-                <p class="h1"><i class="glyphicons glyphicons-inbox"></i></p>
-            </div>
-        </div>
+        </c:if>
     </div>
 </div>

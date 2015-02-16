@@ -110,7 +110,7 @@ public class UserTag extends SimpleTagSupport {
                 text = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
             } else {
                 // User profile page URL
-                String profileURL = this.getUserProfilePageURL(nuxeoController, this.name);
+                String profileURL = this.getUserProfilePageURL(nuxeoController, this.name, displayName);
 
                 // Linkable text
                 text = DOM4JUtils.generateLinkElement(profileURL, null, null, null, displayName);
@@ -131,24 +131,28 @@ public class UserTag extends SimpleTagSupport {
      *
      * @param nuxeoController Nuxeo controller
      * @param name user name
+     * @param displayName user display name
      * @return user profile page URL
      */
-    private String getUserProfilePageURL(NuxeoController nuxeoController, String name) {
+    private String getUserProfilePageURL(NuxeoController nuxeoController, String name, String displayName) {
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
 
         // Page properties
         Map<String, String> properties = new HashMap<String, String>();
+        properties.put("osivia.hideTitle", "1");
         properties.put("osivia.ajaxLink", "1");
         properties.put("theme.dyna.partial_refresh_enabled", "true");
+        properties.put("uidFichePersonne", name);
 
         // Page parameters
-        Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put("uidFichePersonne", name);
+        Map<String, String> parameters = new HashMap<String, String>(0);
+
 
         String url;
         try {
-            url = PORTAL_URL_FACTORY.getStartPageUrl(portalControllerContext, "userprofile", "/default/templates/userprofile", properties, parameters);
+            url = PORTAL_URL_FACTORY.getStartPortletInNewPage(portalControllerContext, "myprofile", displayName,
+                    "toutatice-identite-fichepersonne-portailPortletInstance", properties, parameters);
         } catch (PortalException e) {
             url = StringUtils.EMPTY;
         }

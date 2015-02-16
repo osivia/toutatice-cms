@@ -4,30 +4,8 @@
 <%@ page isELIgnored="false" %>
 
 
-<ul>
+<ul class="list-unstyled">
     <c:forEach var="document" items="${documents}">
-        <!-- Document properties -->
-        <ttc:documentLink document="${document}" var="link" />
-        <c:remove var="target" />
-        <c:if test="${link.external}">
-            <c:set var="target" value="_blank" />
-        </c:if>
-    
-    
-        <li>
-            <a href="${link.url}" target="${target}">
-		        <span>${document.title}</span>
-		    
-		        <!-- Downloadable -->
-		        <c:if test="${link.downloadable}">
-		            <i class="halflings halflings-download-alt"></i>
-		        </c:if>
-		        
-		        <!-- External -->
-		        <c:if test="${link.external}">
-		            <i class="halflings halflings-new-window"></i>
-		        </c:if>
-		    </a>
-        </li>
+        <li><ttc:title document="${document}" /></li>
     </c:forEach>
 </ul>
