@@ -661,7 +661,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 						false);
 
 				subscribeItem.setUrl(url);
-				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
 				subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
 			}
 			else if(subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
@@ -670,11 +670,11 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 						true);
 
 				subscribeItem.setUrl(url);
-				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
 				subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 			}
 			else if(subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
-				subscribeItem.setGlyphicon("flag");
+				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
 				subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
 				subscribeItem.setClassName("disabled");
 			}
