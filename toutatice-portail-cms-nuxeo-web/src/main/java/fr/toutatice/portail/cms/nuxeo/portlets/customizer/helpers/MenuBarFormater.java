@@ -1044,11 +1044,24 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
 
-    protected void addContextualizationLinkItem(List<MenubarItem> menuBar, String displayName, String url) throws Exception {
-        MenubarItem item = new MenubarItem("CONTEXTUALIZE", "Espace " + displayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url, null, null, null);
+    /**
+     * Add contextualization link item.
+     * 
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     * @param displayName space display name
+     * @param url contextualization link URL
+     * @throws Exception
+     */
+    protected void addContextualizationLinkItem(CMSServiceCtx cmsContext, List<MenubarItem> menubar, String displayName, String url) throws Exception {
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+
+        MenubarItem item = new MenubarItem("CONTEXTUALIZE", bundle.getString("CONTEXTUALIZE_SPACE", displayName), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
+                url, null, null, null);
         item.setGlyphicon("halflings halflings-level-up");
         item.setAjaxDisabled(true);
-        menuBar.add(item);
+        menubar.add(item);
     }
 
 
@@ -1114,16 +1127,12 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             }
 
             if (spaceDisplayName != null) {
-
-
                 String url = this.urlFactory.getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
                         currentPage.getId().toString(PortalObjectPath.CANONICAL_FORMAT), (((Document) (cmsCtx.getDoc())).getPath()), null,
                         IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, null, null, null, null, null);
 
-                this.addContextualizationLinkItem(menuBar, spaceDisplayName, url);
-
+                this.addContextualizationLinkItem(cmsCtx, menuBar, spaceDisplayName, url);
             }
-
         }
 
         return;
