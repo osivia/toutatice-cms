@@ -643,7 +643,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 		CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 		SubscriptionStatus subscriptionStatus = pubInfos.getSubscriptionStatus();
 
-		if(subscriptionStatus != SubscriptionStatus.no_subscriptions) {
+		if(subscriptionStatus != null && subscriptionStatus != SubscriptionStatus.no_subscriptions) {
 	        // Internationalization bundle
 	        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
