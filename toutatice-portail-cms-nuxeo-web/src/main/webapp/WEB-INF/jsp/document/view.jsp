@@ -21,7 +21,9 @@
                     <jsp:include page="dispatch.jsp" />
                     
                     <!-- Document attachments view -->
-                    <jsp:include page="attachments.jsp" />
+                    <c:if test="${attachments}">
+                        <jsp:include page="attachments.jsp" />
+                    </c:if>
                     
                     <!-- Metadata -->
                     <c:if test="${metadata}">

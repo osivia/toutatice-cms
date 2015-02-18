@@ -80,7 +80,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
     /** Hide metadata indicator window property name. */
-    public static final String METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
+    public static final String HIDE_METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
+    /** Hide attachment indicator window property name. */
+    public static final String HIDE_ATTACHMENTS_WINDOW_PROPERTY = "osivia.document.hideAttachments";
 
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
@@ -176,7 +178,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 // Hide metadata indicator
                 boolean displayMetadata = BooleanUtils.toBoolean(request.getParameter("metadata"));
-                window.setProperty(METADATA_WINDOW_PROPERTY, BooleanUtils.toString(displayMetadata, null, "1"));
+                window.setProperty(HIDE_METADATA_WINDOW_PROPERTY, BooleanUtils.toString(displayMetadata, null, "1"));
+
+                // Hide attachments indicator
+                boolean displayAttachments = BooleanUtils.toBoolean(request.getParameter("attachments"));
+                window.setProperty(HIDE_ATTACHMENTS_WINDOW_PROPERTY, BooleanUtils.toString(displayAttachments, null, "1"));
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -244,8 +250,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
         request.setAttribute("onlyDescription", onlyDescription);
 
         // Display metadata indicator
-        boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY), null, "1");
+        boolean metadata = BooleanUtils.toBoolean(window.getProperty(HIDE_METADATA_WINDOW_PROPERTY), null, "1");
         request.setAttribute("metadata", metadata);
+
+        // Display attachments indicator
+        boolean attachments = BooleanUtils.toBoolean(window.getProperty(HIDE_ATTACHMENTS_WINDOW_PROPERTY), null, "1");
+        request.setAttribute("attachments", attachments);
 
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
@@ -282,8 +292,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // Display metadata indicator
-                boolean metadata = BooleanUtils.toBoolean(window.getProperty(METADATA_WINDOW_PROPERTY), null, "1");
+                boolean metadata = BooleanUtils.toBoolean(window.getProperty(HIDE_METADATA_WINDOW_PROPERTY), null, "1");
                 request.setAttribute("metadata", metadata);
+
+                // Display attachments indicator
+                boolean attachments = BooleanUtils.toBoolean(window.getProperty(HIDE_ATTACHMENTS_WINDOW_PROPERTY), null, "1");
+                request.setAttribute("attachments", attachments);
 
                 // Fetch document
                 Document document = nuxeoController.fetchDocument(path);
@@ -304,7 +318,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     nuxeoController.insertContentMenuBarItems();
 
                     // Attachments
-                    this.generateAttachments(nuxeoController, document, documentDTO);
+                    if (attachments) {
+                        this.generateAttachments(nuxeoController, document, documentDTO);
+                    }
 
                     // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {

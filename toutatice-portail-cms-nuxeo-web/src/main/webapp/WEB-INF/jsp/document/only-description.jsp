@@ -11,18 +11,24 @@
 
 
 <div class="only-description">
-    <!-- Vignette -->
-    <c:if test="${not empty vignetteURL}">
-        <img src="${vignetteURL}" alt="" class="img-thumbnail pull-left">
-    </c:if>
-    
-    <!-- Description -->
-    <c:if test="${not empty description}">
-        <p class="lead">${description}</p>
-    </c:if>
+    <div class="media">
+        <!-- Vignette -->
+        <c:if test="${not empty vignetteURL}">
+            <div class="media-left">
+                <img src="${vignetteURL}" alt="" class="media-object">
+            </div>
+        </c:if>
+        
+        <!-- Description -->
+        <c:if test="${not empty description}">
+            <div class="media-body">
+                <p class="lead">${description}</p>
+            </div>
+        </c:if>
+    </div>
     
     <!-- Continuation button -->
-    <div class="btn-toolbar pull-right">
+    <div class="text-right">
         <a href="${documentURL}" class="btn btn-default">
             <i class="halflings halflings-play-circle"></i>
             <span><is:getProperty key="CONTINUATION" />...</span>
