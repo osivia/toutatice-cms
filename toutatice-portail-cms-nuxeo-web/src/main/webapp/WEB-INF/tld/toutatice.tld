@@ -11,6 +11,39 @@
     <short-name>ttc</short-name>
 
 
+
+    <tag>
+        <description>Get document title.</description>
+        <display-name>Document title</display-name>
+        <name>title</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.DocumentTitleTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document link indicator. Default = true.</description>
+            <name>link</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document type icon indicator. Default = false.</description>
+            <name>icon</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+    </tag>
+
     <tag>
         <description>Get document link.</description>
         <display-name>Document link</display-name>
@@ -134,7 +167,7 @@
         </attribute>
 
         <attribute>
-            <description>Linkable indicator. Default = true</description>
+            <description>Linkable indicator. Default = true.</description>
             <name>linkable</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
@@ -274,7 +307,7 @@
         </attribute>
 
         <attribute>
-            <description>Menubar item AJAX indicator. Default = true</description>
+            <description>Menubar item AJAX indicator. Default = true.</description>
             <name>ajax</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>

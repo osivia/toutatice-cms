@@ -266,6 +266,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Publication informations
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+                boolean editable = publicationInfos.isEditableByUser();
+                request.setAttribute("editable", editable);
 
                 // Fetch Nuxeo children documents
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());
@@ -293,7 +295,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("documents", documentsDTO);
 
                 // Insert standard menu bar for content item
-                nuxeoController.insertContentMenuBarItems();
+                if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+                    nuxeoController.insertContentMenuBarItems();
+                }
             } catch (NuxeoException e) {
                 PortletErrorHandler.handleGenericErrors(response, e);
             } catch (Exception e) {

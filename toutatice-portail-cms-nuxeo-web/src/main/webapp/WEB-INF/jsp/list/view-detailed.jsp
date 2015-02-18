@@ -7,56 +7,48 @@
 <%@ page isELIgnored="false" %>
 
 
-<ul class="list-group">
-    <c:forEach var="document" items="${documents}">
+<ul class="list-unstyled">
+    <c:forEach var="document" items="${documents}" varStatus="status">
         <!-- Document properties -->
-        <ttc:documentLink document="${document}" var="link" />
-        <c:remove var="target" />
-        <c:if test="${link.external}">
-            <c:set var="target" value="_blank" />
-        </c:if>
-        <c:set var="iconURL"><ttc:getDocumentIconURL document="${document}"/></c:set>
-        <c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
+        
+        <!-- Description -->
         <c:set var="description" value="${document.properties['dc:description']}" />
+
+        <!-- Author -->
         <c:set var="author" value="${document.properties['dc:creator']}" />
-        <c:set var="date" value="${document.properties['dc:modified']}" />
+        
+        <!-- Date -->
+        <c:set var="date" value="${document.properties['dc:issued']}" />
+        <c:if test="${empty date}">
+            <c:set var="date" value="${document.properties['dc:modified']}" />
+        </c:if>
         <c:if test="${empty date}">
             <c:set var="date" value="${document.properties['dc:created']}" />
         </c:if>
     
-    
-        <li class="list-group-item list-group-item-linked">
-            <a href="${link.url}" target="${target}" class="list-group-item">
-		        <!-- Title -->
-		        <h3 class="h4 list-group-item-heading">
-		            <img src="${iconURL}" alt="${typeName}" />
-		
-		            <span>${document.title}</span>
-		        
-		            <!-- Downloadable -->
-		            <c:if test="${link.downloadable}">
-		                <i class="halflings halflings-download-alt"></i>
-		            </c:if>
-		            
-		            <!-- External -->
-		            <c:if test="${link.external}">
-		                <i class="halflings halflings-new-window"></i>
-		            </c:if>
-		        </h3>
-		        
-		        <!-- Description -->
-		        <p class="list-group-item-text">
-		            <span>${description}</span>
-		        </p>
-		        
-		        <!-- Last edition informations -->
-		        <p class="list-group-item-text small">
-		            <span><is:getProperty key="EDITED_BY" /></span>
-                    <ttc:user name="${author}" linkable="false" />
-                    <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
-                    <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
-		        </p>
-		    </a>
+        
+        <li>
+            <!-- Title -->
+            <p><ttc:title document="${document}" icon="true" /></p>
+            
+            <!-- Description -->
+            <c:if test="${not empty description}">
+                <p>${description}</p>
+            </c:if>
+            
+            <!-- Informations -->
+            <p class="text-muted">
+                <span><is:getProperty key="EDITED_BY" /></span>
+                <ttc:user name="${author}" linkable="true" />
+                <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+                <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+            </p>
+            
+            
+            <!-- Separator -->
+            <c:if test="${not status.last}">
+                <hr>
+            </c:if>
         </li>
     </c:forEach>
 </ul>

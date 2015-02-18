@@ -1672,8 +1672,4 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
     }
 
-
- 
- 
-
 }

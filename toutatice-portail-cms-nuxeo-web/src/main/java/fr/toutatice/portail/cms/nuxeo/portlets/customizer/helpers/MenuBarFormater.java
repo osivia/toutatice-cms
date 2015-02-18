@@ -554,7 +554,7 @@ public class MenuBarFormater {
 
 			MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), MenubarItem.ORDER_PORTLET_GENERIC + 4,
 					pubInfos.getDriveEditURL(), null, null, null);
-			driveEditItem.setGlyphicon("halflings play");
+            driveEditItem.setGlyphicon("halflings halflings-play");
 			driveEditItem.setAjaxDisabled(true);
 			driveEditItem.setDropdownItem(true);
 			menubar.add(driveEditItem);
@@ -636,24 +636,24 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
 	protected void getSubscribeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
-		
+
         // Current document
         Document document = (Document) cmsCtx.getDoc();
         String path = document.getPath();
 		CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 		SubscriptionStatus subscriptionStatus = pubInfos.getSubscriptionStatus();
-		
+
 		if(subscriptionStatus != SubscriptionStatus.no_subscriptions) {
 	        // Internationalization bundle
 	        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
-			
+
 	    	String url = "";
 			MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, MenubarItem.ORDER_PORTLET_GENERIC + 10, url, null, null, null);
 
 			subscribeItem.setAjaxDisabled(true);
 			subscribeItem.setDropdownItem(false);
-			
-			
+
+
 
 			if(subscriptionStatus == SubscriptionStatus.can_subscribe) {
 
@@ -661,7 +661,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 						false);
 
 				subscribeItem.setUrl(url);
-				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                subscribeItem.setGlyphicon("halflings halflings-flag");
 				subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
 			}
 			else if(subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
@@ -670,11 +670,11 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 						true);
 
 				subscribeItem.setUrl(url);
-				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                subscribeItem.setGlyphicon("halflings halflings-flag");
 				subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 			}
 			else if(subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
-				subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                subscribeItem.setGlyphicon("halflings halflings-flag");
 				subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
 				subscribeItem.setClassName("disabled");
 			}
@@ -1025,11 +1025,24 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
     }
 
 
-    protected void addContextualizationLinkItem(List<MenubarItem> menuBar, String displayName, String url) throws Exception {
-        MenubarItem item = new MenubarItem("CONTEXTUALIZE", "Espace " + displayName, MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1, url, null, null, null);
+    /**
+     * Add contextualization link item.
+     *
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     * @param displayName space display name
+     * @param url contextualization link URL
+     * @throws Exception
+     */
+    protected void addContextualizationLinkItem(CMSServiceCtx cmsContext, List<MenubarItem> menubar, String displayName, String url) throws Exception {
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+
+        MenubarItem item = new MenubarItem("CONTEXTUALIZE", bundle.getString("CONTEXTUALIZE_SPACE", displayName), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 1,
+                url, null, null, null);
         item.setGlyphicon("halflings halflings-level-up");
         item.setAjaxDisabled(true);
-        menuBar.add(item);
+        menubar.add(item);
     }
 
 
@@ -1095,16 +1108,12 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             }
 
             if (spaceDisplayName != null) {
-
-
                 String url = this.urlFactory.getCMSUrl(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
                         currentPage.getId().toString(PortalObjectPath.CANONICAL_FORMAT), (((Document) (cmsCtx.getDoc())).getPath()), null,
                         IPortalUrlFactory.CONTEXTUALIZATION_PORTAL, null, null, null, null, null);
 
-                this.addContextualizationLinkItem(menuBar, spaceDisplayName, url);
-
+                this.addContextualizationLinkItem(cmsCtx, menuBar, spaceDisplayName, url);
             }
-
         }
 
         return;
@@ -1166,6 +1175,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
         return displayPermaLink;
     }
+
     /**
      * Get permalink link.
      *
@@ -1188,9 +1198,6 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
 
     }
-
-
-
 
 
     /**
