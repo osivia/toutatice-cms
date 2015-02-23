@@ -24,7 +24,7 @@ import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
-
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 
 public class SearchCommand implements INuxeoCommand{
@@ -32,7 +32,7 @@ public class SearchCommand implements INuxeoCommand{
 	String path;
 	String keywords;
 	int pageNumber;
-
+	
 	NuxeoQueryFilterContext queryCtx;
 	
 	public SearchCommand( NuxeoQueryFilterContext queryCtx, String path,String keywords, int pageNumber) {
@@ -83,8 +83,9 @@ public class SearchCommand implements INuxeoCommand{
 			
 		request.set("query", "SELECT * FROM Document " + filteredRequest);
 
-		request.set("pageSize", 5);
+		request.set("pageSize", CommandConstants.PAGE_PROVIDER_DEFAULT_PAGE_SIZE);
 		request.set("page", pageNumber);
+		request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
 		
 
 		request.setHeader(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());

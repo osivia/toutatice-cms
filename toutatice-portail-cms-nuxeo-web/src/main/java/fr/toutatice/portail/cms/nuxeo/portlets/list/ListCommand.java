@@ -24,6 +24,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 
 
 public class ListCommand implements INuxeoCommand {
@@ -55,6 +56,7 @@ public class ListCommand implements INuxeoCommand {
 		request =  nuxeoSession.newRequest("Document.PageProvider");
 		request.set("pageSize", pageSize);
 		request.set("page", pageNumber);
+		request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
 		
 		// Insertion du filtre sur les élements publiés
 		NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( displayLiveVersion ? NuxeoQueryFilterContext.STATE_LIVE : NuxeoQueryFilterContext.STATE_DEFAULT, portalPolicyFilter);
