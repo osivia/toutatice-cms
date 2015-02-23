@@ -26,6 +26,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PictureEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SliderListEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SummaryEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
@@ -51,6 +52,8 @@ public class EditableWindowAdapter {
         this.addType("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
         
         this.addType("fgt.criteria_list", new CriteriaListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "criteria_liste_Frag_"));
+        
+        this.addType("fgt.slider_list", new SliderListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "slider_liste_Frag_"));
         
         this.addType("fgt.summary", new SummaryEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "summary_Frag_"));
 

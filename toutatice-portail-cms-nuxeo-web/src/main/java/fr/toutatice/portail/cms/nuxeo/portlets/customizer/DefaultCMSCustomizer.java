@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +35,6 @@ import java.util.regex.Pattern;
 
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -58,7 +56,6 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -77,12 +74,9 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.page.PageProperties;
-import org.osivia.portal.core.security.CmsPermissionHelper;
-import org.osivia.portal.core.security.CmsPermissionHelper.Level;
 import org.osivia.portal.core.web.IWebIdService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -112,6 +106,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SliderTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
@@ -137,9 +132,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String LIST_TEMPLATE_DETAILED = "detailed";
     /** List template editorial. */
     public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
+    /** List template slider. */
+    public static final String LIST_TEMPLATE_SLIDER = "slider";
 
     /** Default schemas. */
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
+    /** Images schemas. */
+    public static final String SLIDER_SCHEMAS = "dublincore, toutatice, picture, annonce";
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
@@ -260,7 +259,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return user pages loader
      */
-    public UserPagesLoader getUserPagesLoader() {
+    public UserPagesLoader getUserPagesLoader()	{
         if (this.userPagesLoader == null) {
             this.userPagesLoader = new UserPagesLoader(this.portletCtx, this, this.cmsService);
         }
@@ -350,7 +349,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.add(new ListTemplate(LIST_TEMPLATE_DETAILED, bundle.getString("LIST_TEMPLATE_DETAILED"), DEFAULT_SCHEMAS));
         // Editorial
         templates.add(new ListTemplate(LIST_TEMPLATE_EDITORIAL, bundle.getString("LIST_TEMPLATE_EDITORIAL"), DEFAULT_SCHEMAS));
-
+        // Slider
+        ListTemplate slider = new ListTemplate(LIST_TEMPLATE_SLIDER, bundle.getString("LIST_TEMPLATE_SLIDER"), SLIDER_SCHEMAS);
+        slider.setModule(new SliderTemplateModule());
+        templates.add(slider);    
+        
         return templates;
     }
 
