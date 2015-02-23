@@ -19,6 +19,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.PathRef;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
@@ -42,7 +43,7 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
     /** Le type de configuration cherché. */
     private WebConfigurationType type;
 
-
+    // FIXME (dch): better to work with domain id.
     /**
      * Constructor.
      *
@@ -62,16 +63,16 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
      */
 	@Override
     public Object execute(Session session) throws Exception {
-        OperationRequest request = session.newRequest("Document.Query");
-
-        String nuxeoRequest = "( ecm:path STARTSWITH '" + this.domainPath + "'  " + "AND  (wconf:type = '" + this.type.getTypeName()
-                + "') AND (wconf:enabled=1) )";
-        request.set("query", "SELECT * FROM Document WHERE " + nuxeoRequest + " ORDER BY wconf:order");
-
-		String navigationSchemas = BASIC_NAVIGATION_SCHEMAS;
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
+	    
+        OperationRequest request = session.newRequest("Context.GetWebConfigurations");
+        request.set("domainPath", this.domainPath);
+        request.set("confType", this.type.getTypeName());
+        
+        String navigationSchemas = BASIC_NAVIGATION_SCHEMAS;
+        request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
 
         return request.execute();
+
 	}
 
 
