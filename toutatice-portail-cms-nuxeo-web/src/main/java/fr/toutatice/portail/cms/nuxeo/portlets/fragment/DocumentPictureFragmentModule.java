@@ -109,7 +109,7 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
             nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
 
             // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(nuxeoController.getNavigationPath());
+            Document document = nuxeoController.fetchDocument(nuxeoPath);
             nuxeoController.setCurrentDoc(document);
             
             
