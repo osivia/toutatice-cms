@@ -13,8 +13,10 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -108,6 +110,44 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
 
     /**
+     * Convert property list to list.
+     *
+     * @param propertyList property list
+     * @return list
+     */
+    private List<Object> toList(PropertyList propertyList) {
+        List<Object> list = new ArrayList<Object>(propertyList.size());
+
+        int index = 0;
+        for (Object object : propertyList.list()) {
+            if (object instanceof PropertyMap) {
+                PropertyMap propertyMapValue = (PropertyMap) object;
+                list.add(this.toMap(propertyMapValue));
+            } else if (object instanceof PropertyList) {
+                PropertyList propertyListValue = (PropertyList) object;
+                list.add(this.toList(propertyListValue));
+            } else if (object instanceof String) {
+                String stringValue = (String) object;
+
+                Matcher dateMatcher = this.datePattern.matcher(stringValue);
+                if (dateMatcher.matches()) {
+                    Date date = propertyList.getDate(index);
+                    list.add(date);
+                } else {
+                    list.add(stringValue);
+                }
+            } else {
+                list.add(object);
+            }
+
+            index++;
+        }
+
+        return list;
+    }
+
+
+    /**
      * Convert property map to map.
      *
      * @param propertyMap property map
@@ -125,7 +165,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 map.put(key, this.toMap(propertyMapValue));
             } else if (value instanceof PropertyList) {
                 PropertyList propertyListValue = (PropertyList) value;
-                map.put(key, propertyListValue.list());
+                map.put(key, this.toList(propertyListValue));
             } else if (value instanceof String) {
                 String stringValue = (String) value;
 
