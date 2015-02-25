@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
@@ -177,6 +178,7 @@ public class MenuBarFormater {
 				this.getSubscribeLink(cmsCtx, menubar);
             }
 
+            this.getRefreshLink(cmsCtx, menubar);
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
                 // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
@@ -643,7 +645,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 		CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
 		SubscriptionStatus subscriptionStatus = pubInfos.getSubscriptionStatus();
 
-		if(subscriptionStatus != null && subscriptionStatus != SubscriptionStatus.no_subscriptions) {
+		if((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
 	        // Internationalization bundle
 	        Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
 
@@ -1184,19 +1186,57 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
      * @throws Exception
      */
     protected void getPermaLinkLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
-
         if (!this.mustDisplayPermalink(cmsContext, menubar)) {
             return;
         }
 
-
         String permaLinkURL = this.computePermaLinkUrl(cmsContext, menubar);
-
         if (permaLinkURL != null) {
             this.addPermaLinkItem(cmsContext, menubar, permaLinkURL);
         }
+    }
 
 
+    /**
+     * Add refresh link.
+     *
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     * @param url refresh URL
+     */
+    protected void addRefreshLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar, String url) {
+        // Bundle
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+
+        MenubarItem item = new MenubarItem("REFRESH", bundle.getString("REFRESH"), MenubarItem.ORDER_PORTLET_GENERIC + 20, url, null, "visible-xs", null);
+        item.setGlyphicon("halflings halflings-repeat");
+        item.setAjaxDisabled(true);
+        menubar.add(item);
+    }
+
+
+    /**
+     * Get refresh link.
+     *
+     * @param cmsContext CMS context
+     * @param menubar current menubar
+     */
+    protected void getRefreshLink(CMSServiceCtx cmsContext, List<MenubarItem> menubar) {
+        // Portlet context
+        PortletContext portletContext = cmsContext.getPortletCtx();
+        // Request
+        PortletRequest request = cmsContext.getRequest();
+        // Response
+        RenderResponse response = cmsContext.getResponse();
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(portletContext, request, response);
+
+        // Refresh URL
+        String url = this.urlFactory.getRefreshPageUrl(portalControllerContext);
+        if (url != null) {
+            this.addRefreshLink(cmsContext, menubar, url);
+        }
     }
 
 
