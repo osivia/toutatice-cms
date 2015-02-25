@@ -3,6 +3,16 @@
 // --------------------------------------------------
 
 
+// Define the breakpoints at which your layout will change, adapting to different screen sizes.
+@screen-sm-min:              768px;
+@screen-md-min:              992px;
+@screen-lg-min:              1200px;
+@screen-xs-max:              (@screen-sm-min - 1);
+@screen-sm-max:              (@screen-md-min - 1);
+@screen-md-max:              (@screen-lg-min - 1);
+
+
+
 @icon-width: 20px;
 @node-padding: 3px;
 
@@ -10,6 +20,8 @@
 
 @state-accept-bg: #d9edf7;
 @state-accept-border: darken(spin(@state-accept-bg, -10), 7%);
+
+
 
 .menu {
     .dynatree-container {
@@ -30,6 +42,12 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        
+        
+            @media screen and (max-width: @screen-xs-max) {
+                padding: @node-padding + 1px;
+            }
+        
         
             // Title
             .dynatree-title {
@@ -68,7 +86,8 @@
                 &, &.dynatree-expanded {
                     .dynatree-expander {
                         &:before {
-                            content: "\E055";
+                            font-family: "Glyphicons Halflings";
+                            content: "\231B";  // halflings-hourglass
                         }
                     }
                 }
@@ -116,7 +135,7 @@
                 -webkit-font-smoothing: antialiased;
                 -moz-osx-font-smoothing: grayscale;
             }
-            
+
             .dynatree-expander {
                 cursor: pointer;
                 
@@ -164,7 +183,7 @@
                 }
             }
             
-            // Other icons
+            // Other icons (glyphicons only)
             &, &.dynatree-folder {
                 &, &.dynatree-expanded {
                     &.glass .dynatree-icon:before {
