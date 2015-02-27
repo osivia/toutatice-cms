@@ -107,17 +107,22 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
             
             // Computed path
             nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
-
-            // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(nuxeoPath);
-            nuxeoController.setCurrentDoc(document);
-            
             
             if (StringUtils.startsWith(nuxeoPath, "/nuxeo/")) {
+                /* Case of visual web fragment:
+                 * current document is current PortalSite or PortalPage.
+                 */
+                setAsCurrentDocNGet(nuxeoController, nuxeoController.getNavigationPath());
+                
                 // Portal path
                 String portalPath = nuxeoController.transformNuxeoLink(nuxeoPath);
                 request.setAttribute("imageSource", portalPath);
             } else {
+                /* Case of visual configured fragments (in page template):
+                 * current document the one given by path property.
+                 */
+                Document document = setAsCurrentDocNGet(nuxeoController, nuxeoPath);
+                
                 // Title
                 if (StringUtils.isNotBlank(document.getTitle())) {
                     response.setTitle(document.getTitle());
@@ -158,6 +163,18 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
         } else {
             request.setAttribute("messageKey", "MESSAGE_PATH_UNDEFINED");
         }
+    }
+    
+    /**
+     * Set document in NuxeoController as currentDocument.
+     * @param nuxeoController
+     * @param path of document
+     * @return document with input path
+     */
+    protected Document setAsCurrentDocNGet(NuxeoController nuxeoController, String path){
+        Document document = nuxeoController.fetchDocument(path);
+        nuxeoController.setCurrentDoc(document);
+        return document;
     }
 
 
