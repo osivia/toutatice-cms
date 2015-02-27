@@ -8,14 +8,10 @@
 <script src="${pageContext.request.contextPath}/bxslider/jquery.bxslider.min.js"></script>
 <link href="${pageContext.request.contextPath}/bxslider/jquery.bxslider.css" rel="stylesheet" />
 
-<script type="text/javascript">
-	var temporisation = ${timer}*1000;
-</script>
-
-<script src="${pageContext.request.contextPath}/js/bxslider-integration.js"></script>
+<script src="${pageContext.request.contextPath}/js/bxslider-fragment-integration.js"></script>
 
 <div class="bxslider-container">
-    <ul class="list-unstyled bxslider clearfix">
+    <ul class="list-unstyled bxfgtSlider clearfix" data-timer="${timer}">
         <c:forEach var="document" items="${documents}" varStatus="status">
             <li class="bxslider-slide">
                 <article class="clearfix">
