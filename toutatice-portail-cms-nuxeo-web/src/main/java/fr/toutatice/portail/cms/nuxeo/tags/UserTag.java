@@ -105,7 +105,7 @@ public class UserTag extends SimpleTagSupport {
 
             // Text
             Element text;
-            if (BooleanUtils.isFalse(this.linkable)) {
+            if (BooleanUtils.isFalse(this.linkable) || person == null) {
                 // Span text
                 text = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
             } else {
