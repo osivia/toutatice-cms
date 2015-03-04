@@ -1739,6 +1739,8 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
+        } else if (command == EcmCommand.shareDocument) {
+        	url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
         } else if (command == EcmCommand.gotoMediaLibrary) {
 
             Document mediaLibrary;

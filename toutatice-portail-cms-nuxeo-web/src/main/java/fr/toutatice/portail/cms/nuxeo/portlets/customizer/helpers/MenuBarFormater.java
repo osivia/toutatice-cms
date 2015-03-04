@@ -159,6 +159,11 @@ public class MenuBarFormater {
             if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
                 this.getEditLink(cmsCtx, menubar);
             }
+            
+            //if ((cmsCtx.getDoc() != null)  && !webPageFragment) {
+            //    this.getEmailLink(cmsCtx, menubar);
+            //}
+            
 
             this.getCreateLink(cmsCtx, menubar);
 
@@ -317,6 +322,10 @@ public class MenuBarFormater {
         Document document = (Document) (cmsCtx.getDoc());
         String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
+        
+        Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
+        CMSItemType containerDocType = managedTypes.get(document.getType());
+        
 
         if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
             // Internationalization bundle
@@ -408,15 +417,30 @@ public class MenuBarFormater {
                         menubar.add(proxyItem);
                     }
                 } else {
+                	 
                     if (pubInfos.isUserCanValidate()) {
-                        // Unpublish menubar item
-                        String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-                        MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
-                                unpublishURL, null, null, null);
-                        unpublishItem.setGlyphicon("halflings halflings-remove-circle");
-                        unpublishItem.setAjaxDisabled(true);
-                        unpublishItem.setDropdownItem(true);
-                        menubar.add(unpublishItem);
+                    	// user can not unpublish root documents like portalsite, blogsite, website, ...
+                    	if(!containerDocType.isRootType()) {
+	                        // Unpublish menubar item
+	                        String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+	                        MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+	                                unpublishURL, null, null, null);
+	                        unpublishItem.setGlyphicon("halflings halflings-remove-circle");
+	                        unpublishItem.setAjaxDisabled(true);
+	                        unpublishItem.setDropdownItem(true);
+	                        menubar.add(unpublishItem);
+                    	}
+                    	else {
+	                        MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 12,
+	                                null, null, null, null);
+	                        unpublishItem.setGlyphicon("halflings halflings-remove-circle");
+	                        unpublishItem.setAjaxDisabled(true);
+	                        unpublishItem.setDropdownItem(true);
+	                        unpublishItem.setDisabled(true);
+	                        unpublishItem.setTooltip(bundle.getString("CANNOT_UNPUBLISH_ROOT"));
+	                        
+	                        menubar.add(unpublishItem);
+                    	}
                     }
 
                     if (pubInfos.isBeingModified()) {
@@ -637,6 +661,8 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
     }
 
+
+    
 	protected void getSubscribeLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws CMSException {
 
         // Current document
@@ -674,11 +700,14 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 				subscribeItem.setUrl(url);
                 subscribeItem.setGlyphicon("halflings halflings-flag");
 				subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
+				subscribeItem.setActive(true);
 			}
 			else if(subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+				subscribeItem.setUrl("#");
                 subscribeItem.setGlyphicon("halflings halflings-flag");
 				subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
-				subscribeItem.setClassName("disabled");
+				subscribeItem.setActive(true);
+				subscribeItem.setDisabled(true);
 			}
 
 			menubar.add(subscribeItem);
@@ -761,6 +790,76 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
 
 
     /**
+     * Get e-mail link.
+     *
+     * @param cmsCtx CMS context
+     * @param menubar menubar
+     * @throws Exception
+     */
+    protected void getEmailLink(CMSServiceCtx cmsCtx, List<MenubarItem> menubar) throws Exception {
+        if (cmsCtx.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        // Publication infos
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+
+        if (this.isRemoteProxy(cmsCtx, pubInfos)) {
+            return;
+        }
+
+            if ( ContextualizationHelper.isCurrentDocContextualized(cmsCtx)) {
+
+                    // Internationalization bundle
+                    Bundle bundle = this.bundleFactory.getBundle(cmsCtx.getRequest().getLocale());
+
+                    // Portal controller context
+//                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
+//                            cmsCtx.getResponse());
+                    // Callback URL
+//                    String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+                    // Portal base URL
+                    // String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
+                    // ECM base URL
+//                    String ecmBaseURL = this.cmsService.getEcmDomain(cmsCtx);
+
+                    Map<String, String> requestParameters = new HashMap<String, String>();
+                    String url = this.cmsService.getEcmUrl(cmsCtx, EcmCommand.shareDocument, pubInfos.getDocumentPath(), requestParameters);
+
+                    // URL
+                    // StringBuilder url = new StringBuilder();
+                    // url.append(NuxeoConnectionProperties.getPublicBaseUri().toString());
+                    // url.append("/nxpath/default").append(pubInfos.getDocumentPath());
+                    // url.append("@toutatice_edit?fromUrl=").append(portalBaseURL);
+
+                    // On click action
+//                    StringBuilder onClick = new StringBuilder();
+//                    onClick.append("javascript:setCallbackFromEcmParams('");
+//                    onClick.append(callbackURL);
+//                    onClick.append("', '");
+//                    onClick.append(ecmBaseURL);
+//                    onClick.append("');");
+
+//                    String editLabel = null;
+//                    if( !pubInfos.isLiveSpace() && !this.isInLiveMode( cmsCtx, pubInfos) && pubInfos.isBeingModified()) {
+//                        editLabel = bundle.getString("EDIT_LIVE_VERSION");
+//                    } else {
+//                        editLabel = bundle.getString("EDIT");
+//                    }
+
+                    // Menubar item
+                    MenubarItem item = new MenubarItem("SHARE_BY_EMAIL",bundle.getString("SHARE_BY_EMAIL"), MenubarItem.ORDER_PORTLET_SPECIFIC_CMS + 2, url, null,
+                            "fancyframe_refresh", null);
+                    item.setGlyphicon("glyphicons glyphicons-message-full");
+                    item.setAjaxDisabled(true);
+                    item.setDropdownItem(true);
+                    menubar.add(item);
+                }
+            
+
+    }
+    
+    /**
      * Get create CMS content link.
      *
      * @param cmsCtx CMS context
@@ -799,7 +898,9 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             // Callback URL
             // String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
             // Test ergo JSS
-            String callbackURL = this.urlFactory.getRefreshPageUrl(portalControllerContext);
+            String callbackURL = this.urlFactory.getRefreshPageUrl(portalControllerContext, true);
+            
+            //callbackURL += "&ecmActionReturn=_NOTIFKEY_&newPageId=_NEWID_";
 
             // Portal base URL
             // String portalBaseURL = this.urlFactory.getBasePortalUrl(portalControllerContext);
@@ -878,6 +979,9 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                 // List group
                 Element listGroup = DOM4JUtils.generateDivElement("list-group");
                 container.add(listGroup);
+                
+                String onclickAdd = "javascript:closeFancybox();" + onclick;
+                
 
                 for (Entry<CMSItemType, String> entry : creationTypes.entrySet()) {
                     CMSItemType cmsItemType = entry.getKey();
@@ -886,19 +990,14 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
                     String name = bundle.getString(StringUtils.upperCase(cmsItemType.getName()));
 
                     // List group item
-                    Element listGroupItem = DOM4JUtils.generateLinkElement(entry.getValue(), null, onclick, "list-group-item fancyframe_refresh", name,
+                    Element listGroupItem = DOM4JUtils.generateLinkElement(entry.getValue(), null, onclickAdd, "list-group-item fancyframe_refresh", name,
                             cmsItemType.getGlyph());
                     listGroup.add(listGroupItem);
                 }
 
 
-                // Fancybox callback URL : refresh all page
-                String fancyCallbackURL = this.urlFactory.getRefreshPageUrl(portalControllerContext);
-                // Fancybox onclick action
-                String fancyOnClick = "setCallbackParams(null, '" + fancyCallbackURL + "')";
-
                 // Menubar item
-                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, "#" + fancyboxId, fancyOnClick,
+                MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), MenubarItem.ORDER_PORTLET_GENERIC, "#" + fancyboxId, onclick,
                         "fancybox_inline", null);
                 item.setGlyphicon("halflings halflings-plus");
                 item.setAjaxDisabled(true);
@@ -1196,7 +1295,6 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
         }
     }
 
-
     /**
      * Add refresh link.
      *
@@ -1238,6 +1336,7 @@ new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(),
             this.addRefreshLink(cmsContext, menubar, url);
         }
     }
+
 
 
     /**
