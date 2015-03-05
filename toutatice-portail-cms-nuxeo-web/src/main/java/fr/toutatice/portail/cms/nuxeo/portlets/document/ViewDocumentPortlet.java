@@ -318,9 +318,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     nuxeoController.insertContentMenuBarItems();
 
                     // Attachments
-                    if (attachments) {
-                        this.generateAttachments(nuxeoController, document, documentDTO);
-                    }
+                    this.generateAttachments(nuxeoController, document, documentDTO);
 
                     // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {

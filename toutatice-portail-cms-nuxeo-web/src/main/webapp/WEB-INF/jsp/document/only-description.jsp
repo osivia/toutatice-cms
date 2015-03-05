@@ -29,8 +29,8 @@
     
     <!-- Continuation button -->
     <div class="text-right">
-        <a href="${documentURL}" class="btn btn-default">
-            <i class="halflings halflings-play-circle"></i>
+        <a href="${documentURL}" class="btn btn-default btn-sm">
+            <i class="halflings halflings-zoom-in"></i>
             <span><is:getProperty key="CONTINUATION" />...</span>
         </a>
     </div>

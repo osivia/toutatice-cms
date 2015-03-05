@@ -132,6 +132,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String LIST_TEMPLATE_DETAILED = "detailed";
     /** List template editorial. */
     public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
+    /** List template contextual links. */
+    public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";
     /** List template slider. */
     public static final String LIST_TEMPLATE_SLIDER = "slider";
 
@@ -191,10 +193,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Avatar map. */
     private Map<String, String> avatarMap = new ConcurrentHashMap<String, String>();
-    
+
     /** binary map. */
     private Map<String, String> binaryMap = new ConcurrentHashMap<String, String>();
-    
+
     /** binary delegation */
     public static Map<String, Map<String,BinaryDelegation>> delegations = new ConcurrentHashMap<String, Map<String,BinaryDelegation>>() ;
 
@@ -349,11 +351,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.add(new ListTemplate(LIST_TEMPLATE_DETAILED, bundle.getString("LIST_TEMPLATE_DETAILED"), DEFAULT_SCHEMAS));
         // Editorial
         templates.add(new ListTemplate(LIST_TEMPLATE_EDITORIAL, bundle.getString("LIST_TEMPLATE_EDITORIAL"), DEFAULT_SCHEMAS));
+        // Contextual links
+        templates.add(new ListTemplate(LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
         // Slider
         ListTemplate slider = new ListTemplate(LIST_TEMPLATE_SLIDER, bundle.getString("LIST_TEMPLATE_SLIDER"), SLIDER_SCHEMAS);
         slider.setModule(new SliderTemplateModule());
-        templates.add(slider);    
-        
+        templates.add(slider);
+
         return templates;
     }
 
@@ -411,10 +415,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.put("horizontal", bundle.getString("MENU_TEMPLATE_HORIZONTAL"));
         // Footer
         templates.put("footer", bundle.getString("MENU_TEMPLATE_FOOTER"));
-        // JSTree
-        templates.put("jstree", bundle.getString("MENU_TEMPLATE_JSTREE"));
-        // Dynatree
-        templates.put("dynatree", bundle.getString("MENU_TEMPLATE_DYNATREE"));
+        // Fancytree with lazy loading
+        templates.put("fancytree-lazy", bundle.getString("MENU_TEMPLATE_FANCYTREE_LAZY"));
+        // Fancytree with filter
+        templates.put("fancytree-filter", bundle.getString("MENU_TEMPLATE_FANCYTREE_FILTER"));
 
         return templates;
     }
@@ -557,7 +561,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public CMSHandlerProperties getCMSUrlContainerPlayer(CMSServiceCtx ctx) throws CMSException {
         Map<String, String> windowProperties = new HashMap<String, String>();
         windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(ctx, true));
-        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_EDITORIAL);
+        windowProperties.put("osivia.cms.style", CMSCustomizer.LIST_TEMPLATE_CONTEXTUAL_LINKS);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
@@ -897,11 +901,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if ("File".equals(doc.getType()) && ("download".equals(ctx.getDisplayContext()))) {
                 PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
                 if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
-                    
+
                     // Nuxeo controller
                     NuxeoController nuxeoCtl =  new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
                     nuxeoCtl.setCurrentDoc(doc);
-                        
+
                     url = nuxeoCtl.createFileLink(doc, "file:content");
                     downloadable = true;
                 }
@@ -1303,7 +1307,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Workspace
         defaultTypes.add(new CMSItemType("Workspace", true, false, false, false, false, false, Arrays.asList("File", "Folder", "Note"),
-                "/default/templates/workspace", "glyphicons glyphicons-wallet",true));
+                "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
         // Portal site
         defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage"), null,
                 "glyphicons glyphicons-global", true));
@@ -1485,8 +1489,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return avatarTime;
     }
-    
-    
+
+
 
     /**
      * Checks if current doc is in edition state.
@@ -1497,7 +1501,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
 
 
-    
+
     public boolean isPathInLiveState(CMSServiceCtx cmsCtx, Document doc) {
 
         if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
@@ -1516,7 +1520,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the binary delegation
      */
     public BinaryDelegation validateBinaryDelegation(CMSServiceCtx cmsCtx, String path) {
-        
+
         String id = cmsCtx.getServletRequest().getSession().getId();
         Map<String, BinaryDelegation> delegationMap = delegations.get(id);
         if( delegationMap != null){
@@ -1524,7 +1528,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
         return null;
     }
-    
+
     /**
      * Gets the binary resource url.
      *
@@ -1537,56 +1541,63 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String src = "";
 
-             
+
             String path = "";
-            
+
             boolean liveState = false;
-            
+
             BinaryDelegation delegation = new BinaryDelegation();
-            
+
             try {
-                
-                
+
+
                 if( binary.getDocument() != null  )    {
                     Document doc = (Document) binary.getDocument();
-                    
+
                     path = doc.getPath();
                     liveState = this.isPathInLiveState(cmsCtx, doc);
                     delegation.setGrantedAccess(true);
                  }   else    {
                     path = binary.getPath();
                 }
-                
-                
+
+
                 path = StringUtils.removeEnd(path, ".proxy");
-                
+
                 delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
-                
-                Map<String, BinaryDelegation> delegationMap = getUserDelegation(cmsCtx);
-                delegationMap.put( path, delegation);            
-               
+
+                Map<String, BinaryDelegation> delegationMap = this.getUserDelegation(cmsCtx);
+                delegationMap.put( path, delegation);
+
 
                 boolean refresh = PageProperties.getProperties().isRefreshingPage();
-                
-                
+
+
                 StringBuffer sb = new StringBuffer();
-                
+
                 sb.append(BINARY_SERVLET + "?type="+binary.getType().name()+"&path="+ URLEncoder.encode(path, "UTF-8"));
-                if( binary.getIndex() != null)
-                    sb.append("&index="+binary.getIndex());            
-                if( liveState)
+                if( binary.getIndex() != null) {
+                    sb.append("&index="+binary.getIndex());
+                }
+                if( liveState) {
                     sb.append("&liveState="+liveState);
-                if( binary.getContent() != null)
-                    sb.append("&content="+binary.getContent());   
-                if( binary.getFieldName() != null)
-                    sb.append("&fieldName="+binary.getFieldName() );               
-                if( refresh)
-                    sb.append("&refresh="+refresh);           
-                if( cmsCtx.getScope() != null)
-                    sb.append("&scope="+cmsCtx.getScope()); 
-                if( cmsCtx.getForcePublicationInfosScope() != null)
-                    sb.append("&fscope="+cmsCtx.getForcePublicationInfosScope());                 
-                
+                }
+                if( binary.getContent() != null) {
+                    sb.append("&content="+binary.getContent());
+                }
+                if( binary.getFieldName() != null) {
+                    sb.append("&fieldName="+binary.getFieldName() );
+                }
+                if( refresh) {
+                    sb.append("&refresh="+refresh);
+                }
+                if( cmsCtx.getScope() != null) {
+                    sb.append("&scope="+cmsCtx.getScope());
+                }
+                if( cmsCtx.getForcePublicationInfosScope() != null) {
+                    sb.append("&fscope="+cmsCtx.getForcePublicationInfosScope());
+                }
+
                 String binaryTimeStamp = this.binaryMap.get(path);
                 if (binaryTimeStamp == null) {
                     // if not defined, set ie
@@ -1596,28 +1607,28 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // timestamp is concated in the url to control the client cache
                 sb.append("&t=");
                 sb.append(binaryTimeStamp.toString());
-                
+
                 src = sb.toString();
-                
+
 
 
             } catch (Exception e) {
                 new CMSException(e);
             }
-            
+
 
 
         return new Link(src, false);
     }
 
-    
+
     /**
      * Gets the user delegation.
      *
      * @param cmsCtx the cms ctx
      * @return the user delegation
      */
-    
+
     private Map<String, BinaryDelegation> getUserDelegation(CMSServiceCtx cmsCtx) {
         String id = cmsCtx.getServletRequest().getSession().getId();
         Map<String, BinaryDelegation> delegationMap = delegations.get(id);
@@ -1627,19 +1638,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
         return delegationMap;
     }
-    
+
     @Override
     public void sessionDestroyed(HttpSessionEvent sessionEvent) {
         delegations.remove(sessionEvent.getSession().getId());
     }
-    
+
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        
+
     }
 
 
-    
+
     public String refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
 
         // renew the timestamp and map it to the user

@@ -350,7 +350,7 @@ public class MenuPortlet extends CMSPortlet {
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
             CMSItemType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
-            glyph = StringUtils.substringAfter(cmsItemType.getGlyph(), "glyphicons-");
+            glyph = cmsItemType.getGlyph();
         }
 
 
@@ -367,9 +367,9 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write("\", ");
 
         // Browsable
-        printWriter.write("\"isFolder\" : ");
+        printWriter.write("\"folder\" : ");
         printWriter.write(String.valueOf(browsable));
-        printWriter.write(", \"isLazy\" : ");
+        printWriter.write(", \"lazy\" : ");
         printWriter.write(String.valueOf(browsable));
         printWriter.write(", ");
 
@@ -383,18 +383,15 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write(item.getNavItem().getPath());
         printWriter.write("\", ");
 
-        // Add class
+        // Glyph
         if ((glyph != null) && (!glyph.contains("folder"))) {
-            // Accepted types
-            printWriter.write("\"addClass\" : \"");
+            printWriter.write("\"iconclass\" : \"");
             printWriter.write(glyph);
             printWriter.write("\", ");
         }
 
-        // Accepted types
-		printWriter.write("\"acceptedTypes\" : \"");
-        printWriter.write(StringUtils.join(item.getAcceptedTypes(), ","));
-        printWriter.write("\"");
+        // Extra classes
+        printWriter.write("\"extraClasses\" : \"text-muted\"");
 
         printWriter.write(" }");
     }

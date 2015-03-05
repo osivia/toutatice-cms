@@ -12,8 +12,9 @@
 
 
 <div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
-    <div class="dynatree">
+    <div class="fancytree fancytree-lazy">
         <c:set var="parent" value="${displayItem}" scope="request" />
-        <jsp:include page="display-dynatree-items.jsp" />
+        <c:set var="lazy" value="true" scope="request" />
+        <jsp:include page="display-fancytree-items.jsp" />
     </div>
 </div>

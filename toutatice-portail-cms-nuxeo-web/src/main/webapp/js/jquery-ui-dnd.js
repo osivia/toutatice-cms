@@ -5,7 +5,7 @@ $JQry(function() {
 	// File browser draggable items
 	$JQry(".file-browser .draggable").draggable({
 		addClasses : false,
-		connectToDynatree: true,
+		connectToFancytree : true,
 		cursorAt : {top : 0, left : 0},
 		helper : function(event) {
 			var $target = $JQry(event.target);
@@ -83,42 +83,51 @@ $JQry(function() {
 	});
 	
 	
-	// Menu Dynatree
-	$JQry(".menu .dynatree").dynatree({
+	// Fancytree lazy, with drag & drop
+	$JQry(".fancytree.fancytree-lazy").fancytree({
 		activeVisible : true,
-		clickFolderMode : 1,
+		extensions : ["dnd", "glyph"],
+		tabbable : false,
+		titlesTabbable : true,
+		toggleEffect : false,
 
 		dnd : {
 			autoExpandMS : 500,
+			preventRecursiveMoves : true,
 			preventVoidMoves : true,
-
-			onDragEnter : function(targetNode, sourceNode, ui, draggable) {
+			
+			draggable : {
+				scroll : false
+			},
+			
+			dragEnter : function(targetNode, data) {
 				// Only drop on folders
-				if (!targetNode.data.isFolder) {
+				if (!targetNode.folder) {
 					return false;
 				}
 				
 				// Prevent drop on active node
-				if (targetNode.data.activate) {
+				if (targetNode.data.current) {
 					return false;
 				}
 
 				return "over";
 			},
-
-			onDrop : function(targetNode, sourceNode, hitMode, ui, draggable) {
+			
+			dragDrop : function(targetNode, data) {
 				// Source
-				var $source = $JQry(draggable.helper.context);
+				var $source = $JQry(data.draggable.helper.context);
 				var sourceId = $source.data("id");
 
 				// Target
 				var targetId = targetNode.data.id;
 
 				// Action URL
-				var $root = $JQry(targetNode.li).closest(".menu");
+				var $root = targetNode.tree.$div.closest(".menu");
 				var url = $root.data("dropurl");
 				
 				// AJAX call
+				var container = null;
 				var options = {
 					requestHeaders : [ "ajax", "true", "bilto" ],
 					method : "post",
@@ -127,41 +136,56 @@ $JQry(function() {
 						onAjaxSuccess(t, null);
 					}
 				};
-				new Ajax.Request(url, options);
+				var eventToStop = null;
+				var callerId = null;
+				directAjaxCall(container, options, url, eventToStop, callerId);
 			}
 		},
 		
-		onActivate : function(node) {
-			if (node.data.target) {
-				window.open(node.data.href, node.data.target);
-			} else {
-				window.location.href = node.data.href;
+		glyph : {
+			map : {
+				doc : "glyphicons glyphicons-file",
+				docOpen: "glyphicons glyphicons-file",
+				checkbox: "halflings halflings-unchecked",
+				checkboxSelected: "halflings halflings-check",
+				checkboxUnknown: "halflings halflings-share",
+				error: "halflings halflings-exclamation-sign",
+				expanderClosed: "glyphicons glyphicons-collapse text-primary-hover",
+				expanderLazy: "glyphicons glyphicons-collapse text-primary-hover",
+				expanderOpen: "glyphicons glyphicons-expand text-primary-hover",
+				folder: "glyphicons glyphicons-folder-closed",
+				folderOpen: "glyphicons glyphicons-folder-open",
+				loading: "halflings halflings-hourglass text-info"
 			}
 		},
-
-		onLazyRead : function(node) {
+		
+		activate : function(event, data) {
+			var node = data.node;
+			if (node.data.href) {
+				if (node.data.target) {
+					window.open(node.data.href, node.data.target);
+				} else {
+					window.location.href = node.data.href;
+				}
+			}
+		},
+		
+		lazyLoad : function(event, data) {
+			var node = data.node;
+			
 			// Lazy loading URL
-			var $root = $JQry(node.li).closest(".menu");
+			var $root = node.tree.$div.closest(".menu");
 			var url = $root.data("lazyloadingurl");
 			
-			node.appendAjax({
+			data.result = {
 				url : url,
 				data : {
 					"action" : "lazyLoading",
 					"path" : node.data.path
 				},
-			})
-		},
-		
-		classNames: {
-	        node: "dynatree-node text-muted",
-	        expander: "dynatree-expander text-primary",
-	        title: "dynatree-title text-muted",
-	        nodeError: "dynatree-statusnode-error text-danger",
-	        nodeWait: "dynatree-statusnode-wait text-info",
-	        active: "dynatree-active text-primary",
-	        focused: "dynatree-focused"
-	    }
+				cache : false
+			};
+		}
 	});
 	
 	
