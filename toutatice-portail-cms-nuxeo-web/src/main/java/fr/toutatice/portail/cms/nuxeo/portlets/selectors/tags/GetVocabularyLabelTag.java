@@ -48,8 +48,10 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
         String label = VocabSelectorPortlet.getLabel(this.othersLabel, this.id, this.entry, this.preselect);
 
         // JSP writer
-        JspWriter out = pageContext.getOut();
-        out.write(label);
+        if (label != null) {
+            JspWriter out = pageContext.getOut();
+            out.write(label);
+        }
     }
 
 

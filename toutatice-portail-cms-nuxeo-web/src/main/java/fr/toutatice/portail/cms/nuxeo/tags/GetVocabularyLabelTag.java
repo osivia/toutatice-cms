@@ -13,7 +13,7 @@ import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 
 /**
  * Get vocabulary label tag.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see SimpleTagSupport
  */
@@ -46,17 +46,19 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
         if (nuxeoController != null) {
-            String label = VocabularyHelper.getVocabularyLabel(nuxeoController, name, key);
+            String label = VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, this.key);
 
-            JspWriter out = pageContext.getOut();
-            out.write(label);
+            if (label != null) {
+                JspWriter out = pageContext.getOut();
+                out.write(label);
+            }
         }
     }
 
 
     /**
      * Setter for name.
-     * 
+     *
      * @param name the name to set
      */
     public void setName(String name) {
@@ -65,7 +67,7 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
 
     /**
      * Setter for key.
-     * 
+     *
      * @param key the key to set
      */
     public void setKey(String key) {
