@@ -1,18 +1,15 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
@@ -56,6 +53,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSConfigurationItem;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -303,7 +301,7 @@ public class CMSService implements ICMSService {
                     } else if ("superuser_context".equals(scope)) {
                         commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                         commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-                    } else if("superuser_no_cache".equals(scope)){
+                    } else if ("superuser_no_cache".equals(scope)) {
                         commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                         commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
                     } else {
@@ -551,15 +549,15 @@ public class CMSService implements ICMSService {
     }
 
 
-
     private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
         CMSBinaryContent content = null;
         String savedScope = cmsCtx.getScope();
         try {
-            /* Si un scope a été posé dans la portlet appelant la resource,
+            /*
+             * Si un scope a été posé dans la portlet appelant la resource,
              * on applique celui-ci.
              */
-            if(StringUtils.isNotEmpty(savedScope)){
+            if (StringUtils.isNotEmpty(savedScope)) {
                 cmsCtx.setForcePublicationInfosScope(savedScope);
             }
             CMSItem document = this.fetchContent(cmsCtx, docPath);
@@ -570,14 +568,14 @@ public class CMSService implements ICMSService {
 
                 FileContentCommand cmd = new FileContentCommand((Document) document.getNativeItem(), fieldName);
 
-                if( cmsCtx.isStreamingSupport())    {
+                if (cmsCtx.isStreamingSupport()) {
                     PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
-                    if((map != null) && !map.isEmpty()){
+                    if ((map != null) && !map.isEmpty()) {
                         String size = map.getString("length");
 
 
-                        if((size != null) && (Long.parseLong(size)> 100000L)) {
-                            //Activation du mode streaming
+                        if ((size != null) && (Long.parseLong(size) > 100000L)) {
+                            // Activation du mode streaming
                             cmd.setStreamingSupport(true);
                             // Pas de cache en mode streaming
                             cmsCtx.setScope("superuser_no_cache");
@@ -585,9 +583,7 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx,
-                        (cmd));
-
+                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (cmd));
 
 
             }
@@ -932,7 +928,7 @@ public class CMSService implements ICMSService {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
      */
     @Override
@@ -949,14 +945,14 @@ public class CMSService implements ICMSService {
                   * l'utilisateur (il remplit en ce sens un testeur de droits car
                   * les informations retournées sont faites selon ces derniers).
                   * Cependant, il est possible de forcer son exécution avec
-                  * un autre modepar l'intermédiaire d'une vairiable du CMS Service
+                  * un autre mode par l'intermédiaire d'une vairiable du CMS Service
                   * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
                   */
                 if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
                     // In anonymous mode, publicationsInfos are shared
-                    if( ctx.getServerInvocation() != null){
+                    if (ctx.getServerInvocation() != null) {
                         ServerInvocation invocation = ctx.getServerInvocation();
                         User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
                         if (user == null) {
@@ -1004,6 +1000,33 @@ public class CMSService implements ICMSService {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CMSExtendedDocumentInfos getExtendedDocumentInfos(CMSServiceCtx ctx, String path) throws CMSException {
+
+        CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
+
+        try {
+            
+            docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
+
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (Exception e) {
+
+            if (!(e instanceof CMSException)) {
+                throw new CMSException(e);
+            } else {
+                throw (CMSException) e;
+            }
+        }
+
+
+        return docInfos;
+    }
+
     @Override
     public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
         CMSItem configItem = null;
@@ -1015,7 +1038,7 @@ public class CMSService implements ICMSService {
             forceLiveVersion = true;
         }
 
-        String requestKey = "osivia.cache.spaceConfig." + publishSpacePath+ "."+ forceLiveVersion;
+        String requestKey = "osivia.cache.spaceConfig." + publishSpacePath + "." + forceLiveVersion;
 
 
         try {
@@ -1043,7 +1066,7 @@ public class CMSService implements ICMSService {
                  * La mise en cache du résultat de cette méthode
                  * s'effectue de manière asynchrone.
                  */
-				// cmsCtx.setAsyncCacheRefreshing(true);
+                // cmsCtx.setAsyncCacheRefreshing(true);
                 cmsCtx.setForcePublicationInfosScope("superuser_context");
 
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
@@ -1054,7 +1077,7 @@ public class CMSService implements ICMSService {
 
             } finally {
                 cmsCtx.setScope(savedScope);
-				// cmsCtx.setAsyncCacheRefreshing(false);
+                // cmsCtx.setAsyncCacheRefreshing(false);
                 cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
             }
 
@@ -1092,7 +1115,6 @@ public class CMSService implements ICMSService {
             }
         }
     }
-
 
 
     @Override
@@ -1846,9 +1868,9 @@ public class CMSService implements ICMSService {
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
-            
-            // force reload ressources       
-            refreshBinaryResource(cmsCtx, pagePath);                   
+
+            // force reload ressources
+            refreshBinaryResource(cmsCtx, pagePath);
 
 
         } catch (Exception e) {
@@ -1891,7 +1913,7 @@ public class CMSService implements ICMSService {
         try {
             this.executeNuxeoCommand(cmsCtx, new AskSetOnLineCommand(doc));
 
-         // On force le rechargement du cache de la page
+            // On force le rechargement du cache de la page
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
@@ -1914,7 +1936,7 @@ public class CMSService implements ICMSService {
         try {
             this.executeNuxeoCommand(cmsCtx, new CancelWorkflowCommand(doc, "toutatice_online_approbation"));
 
-         // On force le rechargement du cache de la page
+            // On force le rechargement du cache de la page
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
@@ -1950,7 +1972,7 @@ public class CMSService implements ICMSService {
         try {
             this.executeNuxeoCommand(cmsCtx, new ValidationPublishCommand(doc, accept));
 
-         // On force le rechargement du cache de la page
+            // On force le rechargement du cache de la page
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
@@ -2015,28 +2037,27 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public Link getBinaryResourceURL(CMSServiceCtx cmsCtx, BinaryDescription binary) throws CMSException    {
-        return this.customizer.getBinaryResourceURL(cmsCtx, binary);        
+    public Link getBinaryResourceURL(CMSServiceCtx cmsCtx, BinaryDescription binary) throws CMSException {
+        return this.customizer.getBinaryResourceURL(cmsCtx, binary);
     }
 
-    
+
     @Override
     public BinaryDelegation validateBinaryDelegation(CMSServiceCtx cmsCtx, String path) {
-        return this.customizer.validateBinaryDelegation(cmsCtx, path);   
+        return this.customizer.validateBinaryDelegation(cmsCtx, path);
 
     }
-    
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String refreshBinaryResource(CMSServiceCtx cmsCtx, String path)  {
-        return this.customizer.refreshBinaryResource(cmsCtx, path);      
+    public String refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
+        return this.customizer.refreshBinaryResource(cmsCtx, path);
     }
-    
-    
+
+
     /**
      * {@inheritDoc}
      */
@@ -2076,14 +2097,14 @@ public class CMSService implements ICMSService {
 
         try {
 
-        	if(command.equals(EcmFilesCommand.synchronizeFolder)) {
+            if (command.equals(EcmFilesCommand.synchronizeFolder)) {
 
-        		this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, true));
-        	}
-        	else if(command.equals(EcmFilesCommand.unsynchronizeFolder)) {
+                this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, true));
+                
+            } else if (command.equals(EcmFilesCommand.unsynchronizeFolder)) {
 
-        		this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, false));
-        	}
+                this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, false));
+            }
 
             // On force le rechargement du cache de la page
             cmsCtx.setDisplayLiveVersion("0");
@@ -2097,31 +2118,31 @@ public class CMSService implements ICMSService {
         }
     }
 
-	@Override
-	public void subscribe(CMSServiceCtx cmsCtx, String cmsPath, boolean unsubscribe) throws CMSException {
+    @Override
+    public void subscribe(CMSServiceCtx cmsCtx, String cmsPath, boolean unsubscribe) throws CMSException {
 
-		cmsCtx.setDisplayLiveVersion("1");
+        cmsCtx.setDisplayLiveVersion("1");
 
-		CMSItem cmsItem = this.getContent(cmsCtx, cmsPath);
-		Document doc = (Document) cmsItem.getNativeItem();
+        CMSItem cmsItem = this.getContent(cmsCtx, cmsPath);
+        Document doc = (Document) cmsItem.getNativeItem();
 
-		try {
-			if (unsubscribe) {
-				this.executeNuxeoCommand(cmsCtx, new NotificationsUnsubscribe(doc));
-			} else {
-				this.executeNuxeoCommand(cmsCtx, new NotificationsSubscribe(doc));
-			}
+        try {
+            if (unsubscribe) {
+                this.executeNuxeoCommand(cmsCtx, new NotificationsUnsubscribe(doc));
+            } else {
+                this.executeNuxeoCommand(cmsCtx, new NotificationsSubscribe(doc));
+            }
 
-			// On force le rechargement du cache de la page
-			cmsCtx.setDisplayLiveVersion("0");
-			cmsCtx.setForceReload(true);
-			this.getContent(cmsCtx, cmsPath);
-			cmsCtx.setForceReload(false);
+            // On force le rechargement du cache de la page
+            cmsCtx.setDisplayLiveVersion("0");
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, cmsPath);
+            cmsCtx.setForceReload(false);
 
-		} catch (Exception e) {
-			throw new CMSException(e);
-		}
-	}
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
 
 
 }
