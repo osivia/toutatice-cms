@@ -33,7 +33,6 @@
     
 
         <c:set var="parent" value="${displayItem}" scope="request" />
-        <c:set var="level" value="1" scope="request" />
         <jsp:include page="display-fancytree-items.jsp" />
     </div>
 </div>
