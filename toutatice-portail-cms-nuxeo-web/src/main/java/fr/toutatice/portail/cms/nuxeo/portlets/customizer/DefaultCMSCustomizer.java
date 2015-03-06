@@ -911,7 +911,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 }
             }
 
-            if ("ContextualLink".equals(doc.getType())) {
+            if ("ContextualLink".equals(doc.getType()) && (!"document".equals(ctx.getDisplayContext()))) {
                 url = this.createPortletDelegatedExternalLink(ctx);
                 externalLink = true;
             }

@@ -21,7 +21,7 @@
         <div class="form-group">
             <label for="open-levels" class="control-label col-sm-4"><is:getProperty key="MENU_OPEN_LEVELS" /></label>
             <div class="col-sm-8">
-                <input id="open-levels" type="text" name="openLevels" value="${openLevels}" class="form-control" />
+                <input id="open-levels" type="number" name="openLevels" value="${openLevels}" class="form-control" />
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_OPEN_LEVELS_HELP" args="${defaultOpenLevels}" /></span>
             </div>
         </div>
@@ -30,7 +30,7 @@
         <div class="form-group">
             <label for="start-level" class="control-label col-sm-4"><is:getProperty key="MENU_START_LEVEL" /></label>
             <div class="col-sm-8">
-                <input id="start-level" type="text" name="startLevel" value="${startLevel}" class="form-control" />
+                <input id="start-level" type="number" name="startLevel" value="${startLevel}" class="form-control" />
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_START_LEVEL_HELP" /></span>
             </div>
         </div>
@@ -39,7 +39,7 @@
         <div class="form-group">
             <label for="max-levels" class="control-label col-sm-4"><is:getProperty key="MENU_MAX_LEVELS" /></label>
             <div class="col-sm-8">
-                <input id="max-levels" type="text" name="maxLevels" value="${maxLevels}" class="form-control" />
+                <input id="max-levels" type="number" name="maxLevels" value="${maxLevels}" class="form-control" />
                 <span class="help-block"><is:getProperty key="MESSAGE_MENU_MAX_LEVELS_HELP" args="${defaultMaxLevels}" /></span>
             </div>
         </div>

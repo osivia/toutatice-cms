@@ -13,7 +13,7 @@
             <!-- Document properties -->
             
             <!-- URL -->
-            <c:set var="url"><ttc:documentLink document="${document}" displayContext="detailedView" /></c:set>
+            <c:set var="url"><ttc:documentLink document="${document}" displayContext="document" /></c:set>
             
             <!-- Vignette -->
             <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
