@@ -89,15 +89,6 @@
                     <i class="halflings halflings-triangle-left"></i>
                 </a>
             </li>
-            
-            <!-- More left -->
-            <c:if test="${min > 0}">
-                <li class="disabled">
-                    <a href="#">
-                        <i class="halflings halflings-option-horizontal"></i>
-                    </a>
-                </li>
-            </c:if>
         
             <c:forEach var="page" begin="${min}" end="${max}">
                 <c:set var="url" value="#" />
@@ -128,15 +119,6 @@
                     </a>
                 </li>
             </c:forEach>
-            
-            <!-- More right -->
-            <c:if test="${max < (nbPages - 1)}">
-                <li class="disabled">
-                    <a href="#">
-                        <i class="halflings halflings-option-horizontal"></i>
-                    </a>
-                </li>
-            </c:if>
             
             <!-- Right -->
             <li class="${rightClass}">
