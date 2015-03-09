@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -48,10 +48,10 @@ import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSPublicationInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
@@ -663,8 +663,8 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsCtx.getDoc();
         String path = document.getPath();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
-        SubscriptionStatus subscriptionStatus = pubInfos.getSubscriptionStatus();
+        CMSExtendedDocumentInfos docInfos = this.cmsService.getExtendedDocumentInfos(cmsCtx, path);
+        SubscriptionStatus subscriptionStatus = docInfos.getSubscriptionStatus();
 
         if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
             // Internationalization bundle

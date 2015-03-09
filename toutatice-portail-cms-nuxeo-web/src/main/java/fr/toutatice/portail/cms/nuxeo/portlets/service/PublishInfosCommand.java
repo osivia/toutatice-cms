@@ -117,13 +117,6 @@ public class PublishInfosCommand implements INuxeoCommand {
                     publiInfos.setDriveEditURL(this.adaptType(String.class, infos.get("driveEditURL")));
                 }
 
-				/* Infos from notifications */
-
-				if (infos.containsKey("subscription_status")) {
-					publiInfos.setSubscriptionStatus(CMSPublicationInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
-
-				}
- 
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
 				if (StringUtils.isNotEmpty(publishSpacePath)) {
 					publiInfos.setPublishSpacePath(publishSpacePath);

@@ -25,6 +25,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -60,9 +61,9 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
         Blob infosAsBlob = (Blob) request.execute();
 
         if (infosAsBlob != null) {
-            
+
             docInfos = new CMSExtendedDocumentInfos();
-            //Default behaviour
+            // Default behaviour
             docInfos.setIsOnlineTaskPending(Boolean.FALSE);
             docInfos.setCanUserValidateOnlineTask(Boolean.FALSE);
             docInfos.setIsUserOnlineTaskInitiator(Boolean.FALSE);
@@ -73,13 +74,20 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
             Iterator<?> iterator = infosContent.iterator();
             while (iterator.hasNext()) {
                 JSONObject infos = (JSONObject) iterator.next();
-                String taskName = infos.getString("taskName");
 
-                if ("validate-online".equals(taskName)) {
-                    docInfos.setIsOnlineTaskPending(infos.getBoolean("isTaskPending"));
-                    docInfos.setCanUserValidateOnlineTask(infos.getBoolean("canManageTask"));
-                    docInfos.setIsUserOnlineTaskInitiator(infos.getBoolean("isTaskInitiator"));
-                } 
+                if (infos.containsKey("taskName")) {
+                    String taskName = infos.getString("taskName");
+
+                    if ("validate-online".equals(taskName)) {
+                        docInfos.setIsOnlineTaskPending(infos.getBoolean("isTaskPending"));
+                        docInfos.setCanUserValidateOnlineTask(infos.getBoolean("canManageTask"));
+                        docInfos.setIsUserOnlineTaskInitiator(infos.getBoolean("isTaskInitiator"));
+                    }
+                }
+
+                if (infos.containsKey("subscription_status")) {
+                    docInfos.setSubscriptionStatus(CMSExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
+                }
 
             }
 
