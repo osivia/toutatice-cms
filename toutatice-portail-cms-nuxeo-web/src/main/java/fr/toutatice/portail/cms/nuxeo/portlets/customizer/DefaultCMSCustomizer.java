@@ -35,6 +35,8 @@ import java.util.regex.Pattern;
 
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceURL;
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -1551,6 +1553,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             try {
 
 
+                String portalName = null;
+                ServerInvocation invocation = cmsCtx.getServerInvocation();
+                Boolean isAdmin = false;
+
+                if (invocation != null) {
+                    portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
+                    isAdmin = (Boolean) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
+                }
+                
+                
+                
+                
+                
                 if( binary.getDocument() != null  )    {
                     Document doc = (Document) binary.getDocument();
 
@@ -1560,8 +1575,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                  }   else    {
                     path = binary.getPath();
                 }
+                
+                Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+                delegation.setSubject(subject);
 
+                delegation.setAdmin(isAdmin);
 
+                
                 path = StringUtils.removeEnd(path, ".proxy");
 
                 delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
@@ -1576,6 +1596,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 StringBuffer sb = new StringBuffer();
 
                 sb.append(BINARY_SERVLET + "?type="+binary.getType().name()+"&path="+ URLEncoder.encode(path, "UTF-8"));
+                
+                if( portalName != null)
+                    sb.append("&portalName="+portalName);
+                
                 if( binary.getIndex() != null) {
                     sb.append("&index="+binary.getIndex());
                 }

@@ -1,33 +1,31 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PathRef;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 
 
 /**
  * Return all the navigation items.
- *
+ * 
  * @author Jean-Sébastien Steux
  * @see INuxeoCommand
  */
@@ -46,7 +44,7 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
     // FIXME (dch): better to work with domain id.
     /**
      * Constructor.
-     *
+     * 
      * @param domainPath current site domain path
      * @param type configuration type
      */
@@ -61,33 +59,39 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
     /**
      * {@inheritDoc}
      */
-	@Override
+    @Override
     public Object execute(Session session) throws Exception {
-	    
-        OperationRequest request = session.newRequest("Context.GetWebConfigurations");
-        request.set("domainPath", this.domainPath);
-        request.set("confType", this.type.getTypeName());
-        
-        String navigationSchemas = BASIC_NAVIGATION_SCHEMAS;
-        request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
 
-        return request.execute();
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
 
-	}
+            OperationRequest request = session.newRequest("Context.GetWebConfigurations");
+            request.set("domainPath", this.domainPath);
+            request.set("confType", this.type.getTypeName());
+
+            String navigationSchemas = BASIC_NAVIGATION_SCHEMAS;
+            request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
+
+            return request.execute();
+        }
+
+
+        return new Documents();
+
+    }
 
 
     /**
      * {@inheritDoc}
      */
-	@Override
+    @Override
     public String getId() {
         return "WebConfigurationQueryCommand/" + this.domainPath + "/" + this.type.toString();
-	};
+    };
 
 
     /**
      * Configuration types enumeration.
-     *
+     * 
      * @author Jean-Sébastien Steux
      */
     public enum WebConfigurationType {
@@ -110,7 +114,7 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
 
         /**
          * Constructor.
-         *
+         * 
          * @param typeName type name
          */
         private WebConfigurationType(String typeName) {
@@ -120,7 +124,7 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
 
         /**
          * Getter for typeName.
-         *
+         * 
          * @return the typeName
          */
         public String getTypeName() {

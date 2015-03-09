@@ -318,6 +318,11 @@ public class NuxeoCommandContext {
         super();
         this.ctx = ctx;
         this.request = servletRequest;
+        
+        Boolean isAdmin = (Boolean) servletRequest.getAttribute("osivia.isAdmin");
+
+        if( Boolean.TRUE.equals(isAdmin))
+            this.administrator = true;
     }
 
 

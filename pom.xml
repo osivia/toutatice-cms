@@ -54,6 +54,12 @@
             <!-- JBoss -->
             <dependency>
                 <groupId>jboss</groupId>
+                <artifactId>jboss-j2ee</artifactId>
+                <version>${jboss.version}</version>
+                <scope>provided</scope>
+            </dependency>            
+            <dependency>
+                <groupId>jboss</groupId>
                 <artifactId>jboss-system</artifactId>
                 <version>${jboss.version}</version>
                 <scope>provided</scope>
@@ -178,6 +184,11 @@
         </dependency>
         
         <!-- JBoss -->
+        <dependency>
+            <groupId>jboss</groupId>
+            <artifactId>jboss-j2ee</artifactId>
+        </dependency>            
+      
         <dependency>
             <groupId>jboss</groupId>
             <artifactId>jboss-system</artifactId>

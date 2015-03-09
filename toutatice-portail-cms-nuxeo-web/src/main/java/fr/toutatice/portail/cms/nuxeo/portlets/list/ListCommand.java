@@ -16,12 +16,14 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
@@ -56,7 +58,9 @@ public class ListCommand implements INuxeoCommand {
 		request =  nuxeoSession.newRequest("Document.PageProvider");
 		request.set("pageSize", pageSize);
 		request.set("page", pageNumber);
-		request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
+		
+		if( NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60))
+		  request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
 		
 		// Insertion du filtre sur les élements publiés
 		NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( displayLiveVersion ? NuxeoQueryFilterContext.STATE_LIVE : NuxeoQueryFilterContext.STATE_DEFAULT, portalPolicyFilter);

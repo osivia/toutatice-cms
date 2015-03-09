@@ -36,12 +36,14 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSBinaryContent;
+import org.osivia.portal.core.page.PageProperties;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -50,11 +52,11 @@ import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Portlet unifié de gestion de ressources :
  * 
- * suppose que les droits ait élé calculés en amont, avec un délégation.
+ * suppose que les droits ait élé calculés en amont. Un mécanisme de délégation permet d'éviter un nouveau contrôle de droits.
  *
  * @author Jean-Sébastien Steux
  */
@@ -183,6 +185,16 @@ public class BinaryServlet extends HttpServlet
      * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
+        
+        
+        // réinitialisation des propriétes des windows
+        PageProperties.getProperties().init();
+        
+        String portalName = theRequest.getParameter("portalName");
+        if( portalName == null)
+            portalName = "default";
+        PageProperties.getProperties().getPagePropertiesMap().put(Constants.PORTAL_NAME, portalName);
+        
 
         OutputStream output = theResponse.getOutputStream();
         try {
@@ -222,7 +234,13 @@ public class BinaryServlet extends HttpServlet
                     ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                     ctx.setForcePublicationInfosScope("superuser_context");
                 }
-            }
+                
+                theRequest.setAttribute("osivia.isAdmin", delegation.isAdmin());       
+                
+                PageProperties.getProperties().setBinarySubject(delegation.getSubject());       
+             }
+            
+            
 
             if( scope != null)  {
                 ctx.setScope(scope);
@@ -281,8 +299,10 @@ public class BinaryServlet extends HttpServlet
                 String message = "Resource BinaryServlet " + theRequest.getParameterMap() + " not found (error 404).";
                 logger.error(message);
                 theResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                theRequest.setAttribute("osivia.no_redirection", "1");
             } else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
                 theResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                theRequest.setAttribute("osivia.no_redirection", "1");
             }
 
        } catch(Exception e) {
