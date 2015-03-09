@@ -25,7 +25,6 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
