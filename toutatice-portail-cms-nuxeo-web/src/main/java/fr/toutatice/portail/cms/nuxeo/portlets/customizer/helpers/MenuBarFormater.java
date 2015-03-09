@@ -55,9 +55,11 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.tags.GetAttachmentURLTag;
 
 /**
  * Menubar associée aux contenus.
@@ -117,11 +119,28 @@ public class MenuBarFormater {
      */
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
+        
         if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
             return;
         }
 
         PortletRequest request = cmsCtx.getRequest();
+        
+        CMSExtendedDocumentInfos extendedInfos = new CMSExtendedDocumentInfos();
+        
+        if(  NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)){
+             if( cmsCtx.getDoc() != null) {
+                if(ContextualizationHelper.isCurrentDocContextualized(cmsCtx))  {
+                    if (cmsCtx.getRequest().getRemoteUser() != null) {
+                         extendedInfos = this.cmsService.getExtendedDocumentInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
+                       
+                    }
+                }
+            }
+        }   
+         
+        request.setAttribute("osivia.extendedInfos", extendedInfos);
+        
 
         // Menubar
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
@@ -320,7 +339,8 @@ public class MenuBarFormater {
         Document document = (Document) (cmsCtx.getDoc());
         String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
-        CMSExtendedDocumentInfos extendedInfos = this.cmsService.getExtendedDocumentInfos(cmsCtx, path);
+        
+        CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsCtx.getRequest().getAttribute("osivia.extendedInfos");
 
         Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
         CMSItemType containerDocType = managedTypes.get(document.getType());
@@ -342,7 +362,7 @@ public class MenuBarFormater {
                         null, null, null);
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
-                if (extendedInfos.isOnlineTaskPending()) {
+                if (extendedInfos != null && extendedInfos.isOnlineTaskPending()) {
                     // OnLIne workflow pending indicator menubar item
                     MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"),
                             MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, null, null);
@@ -663,8 +683,10 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsCtx.getDoc();
         String path = document.getPath();
-        CMSExtendedDocumentInfos docInfos = this.cmsService.getExtendedDocumentInfos(cmsCtx, path);
-        SubscriptionStatus subscriptionStatus = docInfos.getSubscriptionStatus();
+        
+        CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsCtx.getRequest().getAttribute("osivia.extendedInfos");        
+
+        SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
         if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
             // Internationalization bundle
