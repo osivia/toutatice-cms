@@ -43,6 +43,7 @@
                         <th><is:getProperty key="FILE_BROWSER_NAME" /></th>
                         <th><is:getProperty key="FILE_BROWSER_DATE" /></th>
                         <th><is:getProperty key="FILE_BROWSER_LAST_CONTRIBUTOR" /></th>
+                        <th><is:getProperty key="FILE_BROWSER_SIZE" /></th>
                     </tr>
                 </thead>
                 
@@ -119,14 +120,11 @@
                                     <div class="content">
 		                                <a href="${link.url}" target="${target}">${document.title}</a>
 		                                
-		                                <!-- Size -->
-		                                <c:if test="${not empty size}">
-		                                    <span>(<ttc:formatFileSize size="${size}" />)</span>
-		                                </c:if>
-		                                
 		                                <!-- External -->
 		                                <c:if test="${link.external}">
-		                                    <i class="halflings halflings-new-window"></i>
+                                            <small>
+		                                        <i class="halflings halflings-new-window"></i>
+                                            </small>
 		                                </c:if>
 	                                </div>
 	                                
@@ -136,7 +134,7 @@
 	                                </div>
                                 </div>
                             </td>
-                            
+
                             <!-- Last modification -->
                             <td>
                                 <div class="cell-container">
@@ -159,6 +157,14 @@
 	                                    <span>&nbsp;</span>
                                     </div>
                                 </div>
+                            </td>
+                            
+                            <!-- Size -->
+                            <td>
+                                <c:choose>
+                                    <c:when test="${size gt 0}"><ttc:formatFileSize size="${size}" /></c:when>
+                                    <c:otherwise>&ndash;</c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>

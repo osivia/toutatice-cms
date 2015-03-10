@@ -57,6 +57,8 @@ public class FormatFileSizeTag extends SimpleTagSupport {
         // Bundle
         Bundle bundle = BUNDLE_FACTORY.getBundle(locale);
 
+        JspWriter out = pageContext.getOut();
+
         if (this.size > 0) {
             // Factor
             int factor = Double.valueOf(Math.log10(this.size) / Math.log10(UNIT_FACTOR)).intValue();
@@ -68,10 +70,12 @@ public class FormatFileSizeTag extends SimpleTagSupport {
             NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
             numberFormat.setMaximumFractionDigits(1);
 
-            JspWriter out = pageContext.getOut();
             out.write(numberFormat.format(factorizedSize));
-            out.write(" ");
+            out.write("&nbsp;");
             out.write(unit);
+        } else {
+            out.write("0&nbsp;");
+            out.write(bundle.getString(UNITS[0]));
         }
     }
 
