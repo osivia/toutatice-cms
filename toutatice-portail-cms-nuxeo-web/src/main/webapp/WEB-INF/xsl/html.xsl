@@ -35,7 +35,7 @@
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" />
 
-            <xsl:if test="not(ancestor::* [@class = 'no-format'])">
+            <xsl:if test="not(ancestor::* [@class = 'no-format']) and not(ancestor::TABLE)">
                 <xsl:attribute name="class"><xsl:value-of select="@class" /> img-responsive</xsl:attribute>
             </xsl:if>
         </xsl:copy>
@@ -43,7 +43,7 @@
     
     <xsl:template match="IMG[@class = 'enlargeable']">
         <xsl:choose>
-            <xsl:when test="parent::a">
+            <xsl:when test="parent::A">
                 <xsl:call-template name="image" />
             </xsl:when>
             
