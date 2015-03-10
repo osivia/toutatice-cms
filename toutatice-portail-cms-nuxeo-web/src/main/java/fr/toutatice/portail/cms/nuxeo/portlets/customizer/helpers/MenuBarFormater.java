@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -56,10 +56,10 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.cms.nuxeo.tags.GetAttachmentURLTag;
 
 /**
  * Menubar associée aux contenus.
@@ -119,28 +119,28 @@ public class MenuBarFormater {
      */
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsCtx) throws Exception {
-        
+
         if ((cmsCtx.getDoc() == null) && (cmsCtx.getCreationPath() == null)) {
             return;
         }
 
         PortletRequest request = cmsCtx.getRequest();
-        
+
         CMSExtendedDocumentInfos extendedInfos = new CMSExtendedDocumentInfos();
-        
+
         if(  NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)){
              if( cmsCtx.getDoc() != null) {
                 if(ContextualizationHelper.isCurrentDocContextualized(cmsCtx))  {
                     if (cmsCtx.getRequest().getRemoteUser() != null) {
                          extendedInfos = this.cmsService.getExtendedDocumentInfos(cmsCtx, (((Document) (cmsCtx.getDoc())).getPath()));
-                       
+
                     }
                 }
             }
-        }   
-         
+        }
+
         request.setAttribute("osivia.extendedInfos", extendedInfos);
-        
+
 
         // Menubar
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
@@ -339,7 +339,7 @@ public class MenuBarFormater {
         Document document = (Document) (cmsCtx.getDoc());
         String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsCtx, path);
-        
+
         CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsCtx.getRequest().getAttribute("osivia.extendedInfos");
 
         Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
@@ -362,7 +362,7 @@ public class MenuBarFormater {
                         null, null, null);
                 liveIndicator.setStateItem(true);
                 menubar.add(liveIndicator);
-                if (extendedInfos != null && extendedInfos.isOnlineTaskPending()) {
+                if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
                     // OnLIne workflow pending indicator menubar item
                     MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"),
                             MenubarItem.ORDER_PORTLET_SPECIFIC_CMS, null, null, null, null);
@@ -683,8 +683,8 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsCtx.getDoc();
         String path = document.getPath();
-        
-        CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsCtx.getRequest().getAttribute("osivia.extendedInfos");        
+
+        CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsCtx.getRequest().getAttribute("osivia.extendedInfos");
 
         SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
@@ -1253,16 +1253,35 @@ public class MenuBarFormater {
     }
 
 
-    protected String computePermaLinkUrl(CMSServiceCtx cmsCtx, List<MenubarItem> menuBar) throws Exception {
+    /**
+     * Compute permalink URL.
+     *
+     * @param cmsContext CMS context
+     * @param menubar menubar
+     * @return permalink URL
+     * @throws Exception
+     */
+    protected String computePermaLinkUrl(CMSServiceCtx cmsContext, List<MenubarItem> menubar) throws Exception {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        // Request
+        PortletRequest request = cmsContext.getRequest();
 
-        String permLinkPath = this.customizer.getContentWebIdPath(cmsCtx);
+        // Selectors parameters
+        Map<String, String> parameters = null;
+        String selectors = request.getParameter("selectors");
+        if (selectors != null) {
+            parameters = new HashMap<String, String>();
+            Map<String, List<String>> decodedSelectors = PageSelectors.decodeProperties(selectors);
+            parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
+        }
 
-        String permaLinkURL = this.getUrlFactory().getPermaLink(new PortalControllerContext(cmsCtx.getPortletCtx(), cmsCtx.getRequest(), cmsCtx.getResponse()),
-                null, null, permLinkPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        // Path
+        String path = this.customizer.getContentWebIdPath(cmsContext);
 
-        permaLinkURL = ContextualizationHelper.getLivePath(permaLinkURL);
-
-        return permaLinkURL;
+        // URL
+        String url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        return ContextualizationHelper.getLivePath(url);
     }
 
 
