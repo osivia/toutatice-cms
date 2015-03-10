@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.tags;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.jsp.JspException;
@@ -45,6 +46,8 @@ public class AddMenubarItemTag extends SimpleTagSupport {
     private String glyphicon;
     /** Menubar item AJAX indicator. */
     private Boolean ajax;
+    /** Menubar item data attributes. */
+    private Map<String, String> data;
 
 
     /**
@@ -86,6 +89,9 @@ public class AddMenubarItemTag extends SimpleTagSupport {
             MenubarItem item = new MenubarItem(this.id, title, orderInt, this.url, this.onclick, this.htmlClass, this.target);
             item.setGlyphicon(this.glyphicon);
             item.setAjaxDisabled(BooleanUtils.isFalse(this.ajax));
+            if (this.data != null) {
+                item.getData().putAll(this.data);
+            }
 
             menubar.add(item);
         }
@@ -250,7 +256,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
 
     /**
      * Getter for ajax.
-     * 
+     *
      * @return the ajax
      */
     public Boolean getAjax() {
@@ -259,11 +265,29 @@ public class AddMenubarItemTag extends SimpleTagSupport {
 
     /**
      * Setter for ajax.
-     * 
+     *
      * @param ajax the ajax to set
      */
     public void setAjax(Boolean ajax) {
         this.ajax = ajax;
+    }
+
+    /**
+     * Getter for data.
+     * 
+     * @return the data
+     */
+    public Map<String, String> getData() {
+        return this.data;
+    }
+
+    /**
+     * Setter for data.
+     * 
+     * @param data the data to set
+     */
+    public void setData(Map<String, String> data) {
+        this.data = data;
     }
 
 }

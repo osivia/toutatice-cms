@@ -313,6 +313,14 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Boolean</type>
         </attribute>
+        
+        <attribute>
+            <description>Menubar item data attributes.</description>
+            <name>data</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.util.Map</type>
+        </attribute>
     </tag>
     
     
