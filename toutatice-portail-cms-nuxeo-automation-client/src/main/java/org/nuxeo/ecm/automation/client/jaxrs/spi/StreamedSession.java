@@ -34,7 +34,6 @@ public class StreamedSession extends DefaultSession {
 
     
     public Blob getStreamedFile(String url) throws Exception {
-    	// TODO valider comportement identique nx 5.6 et nx6
         Request req = new StreamedRequest(Request.GET,  url);
         return (Blob) connector.execute(req);
     }

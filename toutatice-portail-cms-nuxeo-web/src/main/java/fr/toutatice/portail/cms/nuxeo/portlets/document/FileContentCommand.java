@@ -32,6 +32,7 @@ import org.nuxeo.ecm.automation.client.model.StreamBlob;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 
 
 public class FileContentCommand implements INuxeoCommand {
@@ -76,7 +77,16 @@ public class FileContentCommand implements INuxeoCommand {
 		
 		if( streamingSupport) {
 		    
-		    StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(pathFile);
+		    String url = null;
+		    
+		    if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+		        url= pathFile;
+		    } else    {
+		        url = session.getClient().getBaseUrl() + pathFile;
+		    }
+
+		    
+		    StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
 		    
 		    CMSBinaryContent content = new CMSBinaryContent();
             
