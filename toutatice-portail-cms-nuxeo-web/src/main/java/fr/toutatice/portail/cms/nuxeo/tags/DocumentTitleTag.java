@@ -30,6 +30,8 @@ public class DocumentTitleTag extends SimpleTagSupport {
     private DocumentDTO document;
     /** Document link indicator. */
     private Boolean link;
+    /** Document link display context. */
+    private String displayContext;
     /** Document icon indicator. */
     private Boolean icon;
 
@@ -73,7 +75,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
             container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
 
             // Document link
-            Link documentLink = nuxeoController.getLink(this.document.getDocument());
+            Link documentLink = nuxeoController.getLink(this.document.getDocument(), this.displayContext);
             // Document link target
             String target = null;
             if (documentLink.isExternal()) {
@@ -119,6 +121,15 @@ public class DocumentTitleTag extends SimpleTagSupport {
      */
     public void setLink(Boolean link) {
         this.link = link;
+    }
+
+    /**
+     * Setter for displayContext.
+     *
+     * @param displayContext the displayContext to set
+     */
+    public void setDisplayContext(String displayContext) {
+        this.displayContext = displayContext;
     }
 
     /**
