@@ -20,7 +20,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
  * Document title tag.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see SimpleTagSupport
  */
@@ -57,8 +57,8 @@ public class DocumentTitleTag extends SimpleTagSupport {
 
         // Document glyphicon
         String glyphicon = null;
-        if (BooleanUtils.isTrue(icon)) {
-            CMSItemType type = document.getType();
+        if (BooleanUtils.isTrue(this.icon)) {
+            CMSItemType type = this.document.getType();
             if (type != null) {
                 glyphicon = type.getGlyph();
             }
@@ -67,8 +67,8 @@ public class DocumentTitleTag extends SimpleTagSupport {
 
         // Document title
         Element container;
-        if (BooleanUtils.isFalse(link) || (nuxeoController == null)) {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, document.getTitle(), glyphicon, null);
+        if (BooleanUtils.isFalse(this.link) || (nuxeoController == null)) {
+            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, this.document.getTitle(), glyphicon, null);
         } else {
             container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
 
@@ -80,12 +80,12 @@ public class DocumentTitleTag extends SimpleTagSupport {
                 target = "_blank";
             }
 
-            Element linkElement = DOM4JUtils.generateLinkElement(documentLink.getUrl(), target, null, null, document.getTitle(), glyphicon);
+            Element linkElement = DOM4JUtils.generateLinkElement(documentLink.getUrl(), target, null, null, this.document.getTitle(), glyphicon);
             container.add(linkElement);
 
             // External indicator
             if (documentLink.isExternal()) {
-                Element externalElement = DOM4JUtils.generateElement(HTMLConstants.SMALL, null, null, "halflings halflings-new-window", null);
+                Element externalElement = DOM4JUtils.generateElement(HTMLConstants.SMALL, null, null, "glyphicons glyphicons-new-window-alt", null);
                 container.add(externalElement);
             }
 
@@ -105,7 +105,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
 
     /**
      * Setter for document.
-     * 
+     *
      * @param document the document to set
      */
     public void setDocument(DocumentDTO document) {
@@ -114,7 +114,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
 
     /**
      * Setter for link.
-     * 
+     *
      * @param link the link to set
      */
     public void setLink(Boolean link) {
@@ -123,7 +123,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
 
     /**
      * Setter for icon.
-     * 
+     *
      * @param icon the icon to set
      */
     public void setIcon(Boolean icon) {

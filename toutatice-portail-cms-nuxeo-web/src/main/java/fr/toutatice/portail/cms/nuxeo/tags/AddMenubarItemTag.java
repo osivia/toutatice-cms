@@ -15,6 +15,7 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
 
 /**
@@ -86,8 +87,8 @@ public class AddMenubarItemTag extends SimpleTagSupport {
             }
 
             // Menubar item
-            MenubarItem item = new MenubarItem(this.id, title, orderInt, this.url, this.onclick, this.htmlClass, this.target);
-            item.setGlyphicon(this.glyphicon);
+            MenubarItem item = new MenubarItem(this.id, title, this.glyphicon, MenubarGroup.SPECIFIC, orderInt, this.url, this.target, this.onclick,
+                    this.htmlClass);
             item.setAjaxDisabled(BooleanUtils.isFalse(this.ajax));
             if (this.data != null) {
                 item.getData().putAll(this.data);
@@ -274,7 +275,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
 
     /**
      * Getter for data.
-     * 
+     *
      * @return the data
      */
     public Map<String, String> getData() {
@@ -283,7 +284,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
 
     /**
      * Setter for data.
-     * 
+     *
      * @param data the data to set
      */
     public void setData(Map<String, String> data) {
