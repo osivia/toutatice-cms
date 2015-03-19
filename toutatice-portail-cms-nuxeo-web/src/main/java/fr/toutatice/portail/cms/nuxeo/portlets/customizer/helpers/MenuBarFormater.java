@@ -957,8 +957,7 @@ public class MenuBarFormater {
                     MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "halflings halflings-trash", parent, 20, null, null, null,
-                            "fancybox_inline");
+                    MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "halflings halflings-trash", parent, 20, null, null, null, null);
                     item.setAjaxDisabled(true);
                     item.setDivider(true);
 
@@ -986,6 +985,8 @@ public class MenuBarFormater {
                         // URL
                         String url = "#" + fancyboxId;
                         item.setUrl(url);
+
+                        item.setHtmlClasses("fancybox_inline");
                     }
 
                     menubar.add(item);
