@@ -49,7 +49,7 @@
                         <div class="text-right">
                             <a href="${url}" class="btn btn-default btn-sm">
                                 <i class="halflings halflings-zoom-in"></i>
-                                <span><is:getProperty key="CONTINUATION" /></span>
+                                <span><is:getProperty key="DETAIL" /></span>
                             </a>
                         </div>
                     </div>

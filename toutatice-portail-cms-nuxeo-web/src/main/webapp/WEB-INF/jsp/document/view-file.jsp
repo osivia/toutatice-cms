@@ -12,11 +12,16 @@
 <c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
 <c:set var="fileName" value="${document.properties['file:filename']}" />
 <c:set var="fileSize" value="${document.properties['file:content']['length']}" />
+<c:set var="description" value="${document.properties['dc:description']}" />
 
 
 <ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="halflings halflings-download-alt" />
 
 <div class="file">
+    <c:if test="${not empty description}">
+        <p>${description}</p>
+    </c:if>
+
     <p>
         <img src="${iconURL}" alt="${typeName}">
         <a href="${documentURL}">${fileName}</a>
