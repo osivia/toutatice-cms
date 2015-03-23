@@ -514,7 +514,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put("osivia.document.metadata", String.valueOf(false));
-        windowProperties.put("osivia.title", "Annonces " + doc.getTitle());
+        windowProperties.put("osivia.title", doc.getTitle());
 
         CMSHandlerProperties linkProps = new CMSHandlerProperties();
         linkProps.setWindowProperties(windowProperties);
