@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -928,7 +928,7 @@ public class CMSService implements ICMSService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.osivia.portal.core.cms.ICMSService#getPublicationInfos(org.osivia.portal.core.cms.CMSServiceCtx, java.lang.String)
      */
     @Override
@@ -1009,7 +1009,7 @@ public class CMSService implements ICMSService {
         CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
         try {
-            
+
             docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
 
         } catch (NuxeoException e) {
@@ -1166,39 +1166,39 @@ public class CMSService implements ICMSService {
     @Override
     public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath, String navigationScope)
             throws CMSException {
+        List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
+
+        // Working path
+        String workingPath;
+        if (path == null) {
+            workingPath = sitePath;
+        } else {
+            workingPath = path;
+        }
+
+
+        boolean editionMode = false;
+        if ("1".equals(cmsContext.getDisplayLiveVersion())) {
+            editionMode = true;
+        }
+
+
+        // Inherited regions
+        Map<String, List<CMSEditableWindow>> inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
+                editionMode);
+        for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+            if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+                // Add inherited region windows
+                windows.addAll(inheritedWindows);
+            }
+        }
+        int windowsCount = windows.size();
+
+
         try {
-            // Working path
-            String workingPath;
-            if (path == null) {
-                workingPath = sitePath;
-            } else {
-                workingPath = path;
-            }
-
-
+            // Fetch document
             CMSItem pageItem = this.fetchContent(cmsContext, workingPath);
-
-            List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
-
-            boolean editionMode = false;
-            if ("1".equals(cmsContext.getDisplayLiveVersion())) {
-                editionMode = true;
-            }
-
             Document document = (Document) pageItem.getNativeItem();
-
-
-            // Inherited regions
-            Map<String, List<CMSEditableWindow>> inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath,
-                    navigationScope, editionMode);
-            for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
-                if (CollectionUtils.isNotEmpty(inheritedWindows)) {
-                    // Add inherited region windows
-                    windows.addAll(inheritedWindows);
-                }
-            }
-            int windowsCount = windows.size();
-
 
             if (publishSpacePath != null) {
                 // Fragments
@@ -1233,13 +1233,17 @@ public class CMSService implements ICMSService {
                     }
                 }
             }
-
-            return windows;
         } catch (CMSException e) {
-            throw e;
+            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+                // Do nothing
+            } else {
+                throw e;
+            }
         } catch (Exception e) {
             throw new CMSException(e);
         }
+
+        return windows;
     }
 
 
@@ -1870,7 +1874,7 @@ public class CMSService implements ICMSService {
             cmsCtx.setForceReload(false);
 
             // force reload ressources
-            refreshBinaryResource(cmsCtx, pagePath);
+            this.refreshBinaryResource(cmsCtx, pagePath);
 
 
         } catch (Exception e) {
@@ -2100,7 +2104,7 @@ public class CMSService implements ICMSService {
             if (command.equals(EcmFilesCommand.synchronizeFolder)) {
 
                 this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, true));
-                
+
             } else if (command.equals(EcmFilesCommand.unsynchronizeFolder)) {
 
                 this.executeNuxeoCommand(cmsCtx, new DocumentSetSynchronizationCommand(doc, false));
