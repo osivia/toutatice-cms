@@ -1327,13 +1327,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes
                 .add(new CMSItemType("Annonce", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-newspaper"));
         // Annonce folder
-        defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, false, Arrays.asList("Annonce"), null,
+        defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, true, Arrays.asList("Annonce"), null,
                 "glyphicons glyphicons-newspaper"));
         // Contextual link
         defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
                 "glyphicons glyphicons-link"));
         // Document URL container
-        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, false, Arrays.asList("ContextualLink"), null,
+        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, true, Arrays.asList("ContextualLink"), null,
                 "glyphicons glyphicons-folder-closed"));
         // Ordered folder
         defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
@@ -1561,11 +1561,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
                     isAdmin = (Boolean) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
                 }
-                
-                
-                
-                
-                
+
+
+
+
+
                 if( binary.getDocument() != null  )    {
                     Document doc = (Document) binary.getDocument();
 
@@ -1575,13 +1575,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                  }   else    {
                     path = binary.getPath();
                 }
-                
+
                 Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
                 delegation.setSubject(subject);
 
                 delegation.setAdmin(isAdmin);
 
-                
+
                 path = StringUtils.removeEnd(path, ".proxy");
 
                 delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
@@ -1596,10 +1596,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 StringBuffer sb = new StringBuffer();
 
                 sb.append(BINARY_SERVLET + "?type="+binary.getType().name()+"&path="+ URLEncoder.encode(path, "UTF-8"));
-                
-                if( portalName != null)
+
+                if( portalName != null) {
                     sb.append("&portalName="+portalName);
-                
+                }
+
                 if( binary.getIndex() != null) {
                     sb.append("&index="+binary.getIndex());
                 }
