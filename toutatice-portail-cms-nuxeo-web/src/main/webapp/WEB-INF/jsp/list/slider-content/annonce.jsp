@@ -4,6 +4,7 @@
 <c:set var="imageURL">
 	<ttc:getImageURL document="${doc}" property="annonce:image" />
 </c:set>
+<ttc:documentLink document="${doc}" var="link" />
 
 <div class="media">
 	<c:if test="${not empty imageURL}">
@@ -15,7 +16,13 @@
 	<div class="media-body">
 		<!-- Title -->
 		<h3 class="media-heading">
-				<span>${doc.title}</span>
-		</h3>
+            <a href="${link.url}"
+                <c:if test="${link.external}">target="_blank"</c:if>> <span>${doc.title}</span>
+            </a>
+
+            <c:if test="${link.external}">
+                <i class="glyphicons halflings new_window"></i>
+            </c:if>
+        </h3>
 	</div>
 </div>
