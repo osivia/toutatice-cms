@@ -15,6 +15,8 @@ public class ListConfiguration {
     private String nuxeoRequest;
     /** BeanShell interpretation indicator. */
     private boolean beanShell;
+    /** Indicates if request is done with ElasticSearch (since NUxeo 6.0) */
+    private boolean useES;
     /** Version. */
     private String version;
     /** Content filter. */
@@ -93,6 +95,25 @@ public class ListConfiguration {
     public void setBeanShell(boolean beanShell) {
         this.beanShell = beanShell;
     }
+    
+    /**
+     * Getter for useES.
+     * 
+     * @return the useES
+     */
+    public boolean isUseES() {
+        return useES;
+    }
+
+    /**
+     * Setter for useES.
+     * 
+     * @param useES the useES to set
+     */
+    public void setUseES(boolean useES) {
+        this.useES = useES;
+    }
+
 
     /**
      * Getter for version.

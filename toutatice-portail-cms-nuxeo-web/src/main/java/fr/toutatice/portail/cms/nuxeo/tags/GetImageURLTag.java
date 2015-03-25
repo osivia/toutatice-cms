@@ -8,6 +8,7 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 
@@ -53,7 +54,9 @@ public class GetImageURLTag extends SimpleTagSupport {
             Document nuxeoDocument = this.document.getDocument();
 
             PropertyMap map = nuxeoDocument.getProperties().getMap(this.property);
-            if ((map != null) && (map.getString("data") != null)) {
+            // We test on name in case of document is fetch from ElasticSearch
+            // cause in this case, data (complex value), is not returned
+            if ((map != null) && ((map.getString("data") != null) || (StringUtils.isNotBlank(map.getString("name"))))) {
                 String url = nuxeoController.createFileLink(nuxeoDocument, this.property);
 
                 JspWriter out = pageContext.getOut();

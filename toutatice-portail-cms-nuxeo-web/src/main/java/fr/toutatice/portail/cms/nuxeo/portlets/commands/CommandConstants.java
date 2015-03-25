@@ -21,7 +21,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.commands;
 public interface CommandConstants {
     
     /** Enable no limit on Page Provider commands. */
-    int PAGE_PROVIDER_UNLIMITED_MAX_RESULTS = -1;
+    String PAGE_PROVIDER_UNLIMITED_MAX_RESULTS = "-1";
     /** Dafult page size for Page Provider commands. */
     int PAGE_PROVIDER_DEFAULT_PAGE_SIZE = 5;
 

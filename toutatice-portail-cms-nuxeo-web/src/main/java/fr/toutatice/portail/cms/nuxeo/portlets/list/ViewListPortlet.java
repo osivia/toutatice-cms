@@ -90,6 +90,8 @@ public class ViewListPortlet extends CMSPortlet {
     public static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
     /** Bean Shell interpretation indicator window property name. */
     public static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
+    /** Use of ElasticSearch indicator window property */
+    public static final String USE_ES_WINDOW_PROPERTY = "osivia.useES";
     /** Version window property name. */
     public static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
     /** Content filter window property name. */
@@ -257,7 +259,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                     // Nuxeo command
                     INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), 0, resultsLimit, schemas,
-                            configuration.getContentFilter());
+                            configuration.getContentFilter(), configuration.isUseES());
 
                     // Nuxeo documents
                     PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
@@ -318,6 +320,9 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
+                
+                // Use of ElasticSearch
+                window.setProperty(USE_ES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("useES")));
 
                 // Version
                 window.setProperty(VERSION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("displayLiveVersion")));
@@ -568,7 +573,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // Nuxeo command
                 INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,
-                        configuration.getContentFilter());
+                        configuration.getContentFilter(), configuration.isUseES());
 
                 // Nuxeo documents
                 PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
@@ -782,6 +787,9 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Bean Shell interpretation
         configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
+        
+        // Use of ElasticSearch
+        configuration.setUseES(BooleanUtils.toBoolean(window.getProperty(USE_ES_WINDOW_PROPERTY)));
 
         // Version
         configuration.setVersion(window.getProperty(VERSION_WINDOW_PROPERTY));

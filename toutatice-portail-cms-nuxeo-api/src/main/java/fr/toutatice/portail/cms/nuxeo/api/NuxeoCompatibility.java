@@ -1,18 +1,23 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.BooleanUtils;
 
 
 public class NuxeoCompatibility {
 
     private static boolean versionChecked = false;
+    /** Indicator of ElasticSearch status checked. */
+    private static boolean esChecked = false;
+
     private static int currentVersion = 99;
+    /** Indicator of ElasticSearch activation. */
+    private static boolean isESActivated = false;
 
     public static int VERSION_60 = 60;
 
     public static boolean isVersionGreaterOrEqualsThan(int versionNumber) {
         if (versionChecked == false) {
-//            versionChecked = true;
+            versionChecked = true;
             String nuxeoVersion = System.getProperty("nuxeo.version");
             if (nuxeoVersion != null) {
                 currentVersion = Integer.parseInt(nuxeoVersion);
@@ -29,4 +34,18 @@ public class NuxeoCompatibility {
 
     }
 
+    /**
+     * @return true if ElasticSearch can be used by Portal
+     *         (since Nuxeo 6.0).
+     */
+    public static boolean canUseES() {
+        if (!esChecked) {
+            boolean isNxVersionOk = isVersionGreaterOrEqualsThan(VERSION_60);
+            if (isNxVersionOk) {
+                isESActivated = BooleanUtils.toBoolean(System.getProperty("nuxeo.es.activated"));
+            }
+            esChecked = true;
+        }
+        return isESActivated;
+    }
 }

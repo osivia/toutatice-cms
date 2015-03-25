@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.Constants;
@@ -33,6 +35,7 @@ import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
@@ -54,6 +57,9 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 	/** Récupérer aussi les versions en cours de travail */
     private boolean forceLiveVersion;
+    
+    /** Possibility to use ElasticSearch (available from Nuxeo 6.0) */
+    private boolean useES = false;
 
     public final static String basicNavigationSchemas = "dublincore,common, toutatice, regions";
 
@@ -62,6 +68,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 		this.publishSpaceConfig = publishSpaceConfig;
         this.forceLiveVersion = forceLiveVersion;
+        this.useES = NuxeoCompatibility.canUseES();
 	}
 
 	public static String  computeNavPath(String path){
@@ -73,10 +80,17 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 
 	@Override
     public Object execute(Session session) throws Exception {
+	    
+	    boolean canUseES = useES && BooleanUtils.toBoolean(this.publishSpaceConfig.getProperties().get("useES"));
 
 		OperationRequest request;
-
-		request = session.newRequest("Document.Query");
+		
+		if(canUseES){
+		    request = session.newRequest("Document.QueryES");
+		} else {
+		    request = session.newRequest("Document.Query");
+		}
+		
 
 		// TODO : gerer le PortalVirtualPage de maniere générique
 
@@ -87,10 +101,14 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
             live = true;
 
 		String uuid =  ((Document)this.publishSpaceConfig.getNativeItem()).getId();
-		
-
-
 		String path = this.publishSpaceConfig.getPath();
+		
+		String parentCriteria = "ecm:path STARTSWITH";
+//		if(canUseES){
+//		    parentCriteria = "ecm:ancestorId = ";
+//		    path = uuid;
+//		}
+		
 
 		//String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
 
@@ -99,7 +117,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		//  2 - le 'ecm:path =' pose des problemes de perfs quand il est compibné avec un OR ecm:path startswith -> fetch specifique pour récuperer la racine
 		//  3 - suppression cas particulier PortalVirtualPage
 
-		String nuxeoRequest = "( ecm:path STARTSWITH '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
+		String nuxeoRequest = "( " + parentCriteria  + " '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
 
 
         NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(live? NuxeoQueryFilterContext.STATE_LIVE: NuxeoQueryFilterContext.STATE_DEFAULT, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER );
@@ -119,10 +137,14 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		String extraNavigationSchemas = System.getProperty("nuxeo.navigationSchemas");
 
 		if( extraNavigationSchemas != null)
-            navigationSchemas += ", " + extraNavigationSchemas;
+            navigationSchemas += "," + extraNavigationSchemas;
 
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
-
+		if(canUseES){
+		    request.set(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
+		} else {
+		    request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
+		}
+		
 		//request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
 		// Build navItems
 		Map<String, NavigationItem> navItems = new HashMap<String, NavigationItem>();

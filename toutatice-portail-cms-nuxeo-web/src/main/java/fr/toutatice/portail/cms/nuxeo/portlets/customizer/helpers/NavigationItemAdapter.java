@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
@@ -239,6 +240,14 @@ public class NavigationItemAdapter {
 			if( (contextualizeExternalContents != null) && "true".equals(contextualizeExternalContents) ) {
 	            properties.put("contextualizeExternalContents", "1");
 	        }
+		}
+		
+		/*
+		 * Use of ElasticSearch on PortalSites
+		 */
+		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath()) && "PortalSite".equals(doc.getType())) {
+		    Boolean useES = doc.getProperties().getBoolean("ttc:useES");
+		    properties.put("useES", String.valueOf(useES));
 		}
 
 

@@ -17,6 +17,10 @@
     <c:set var="beanShellChecked" value="checked" />
 </c:if>
 
+<c:if test="${configuration.useES}">
+    <c:set var="useESChecked" value="checked" />
+</c:if>
+
 <c:if test="${configuration.metadataDisplay}">
     <c:set var="metadataDisplayChecked" value="checked" />
 </c:if>
@@ -109,6 +113,12 @@
                         <label>
                             <input type="checkbox" name="beanShell" ${beanShellChecked}>
                             <span><is:getProperty key="LIST_BEAN_SHELL" /></span>
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="useES" ${useESChecked}>
+                            <span><is:getProperty key="LIST_USE_ES" /></span>
                         </label>
                     </div>
                 </div>
