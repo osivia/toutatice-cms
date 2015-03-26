@@ -42,6 +42,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1531,116 +1532,105 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return null;
     }
 
+
     /**
-     * Gets the binary resource url.
+     * Gets the binary resource URL.
      *
-     * @param cmsCtx the cms ctx
-     * @param binary the binary
-     * @return the binary resource url
-     * @throws CMSException the CMS exception
+     * @param cmsCtx CMS context
+     * @param binary binary description
+     * @return the binary resource URL
      */
     public Link getBinaryResourceURL(CMSServiceCtx cmsCtx, BinaryDescription binary) throws CMSException {
+        String src = StringUtils.EMPTY;
+        String path = StringUtils.EMPTY;
+        boolean liveState = false;
 
-        String src = "";
+        BinaryDelegation delegation = new BinaryDelegation();
 
+        try {
+            String portalName = null;
+            ServerInvocation invocation = cmsCtx.getServerInvocation();
+            Boolean isAdmin = false;
 
-            String path = "";
-
-            boolean liveState = false;
-
-            BinaryDelegation delegation = new BinaryDelegation();
-
-            try {
-
-
-                String portalName = null;
-                ServerInvocation invocation = cmsCtx.getServerInvocation();
-                Boolean isAdmin = false;
-
-                if (invocation != null) {
-                    portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
-                    isAdmin = (Boolean) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
-                }
-
-
-
-
-
-                if( binary.getDocument() != null  )    {
-                    Document doc = (Document) binary.getDocument();
-
-                    path = doc.getPath();
-                    liveState = this.isPathInLiveState(cmsCtx, doc);
-                    delegation.setGrantedAccess(true);
-                 }   else    {
-                    path = binary.getPath();
-                }
-
-                Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-                delegation.setSubject(subject);
-
-                delegation.setAdmin(isAdmin);
-
-
-                path = StringUtils.removeEnd(path, ".proxy");
-
-                delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
-
-                Map<String, BinaryDelegation> delegationMap = this.getUserDelegation(cmsCtx);
-                delegationMap.put( path, delegation);
-
-
-                boolean refresh = PageProperties.getProperties().isRefreshingPage();
-
-
-                StringBuffer sb = new StringBuffer();
-
-                sb.append(BINARY_SERVLET + "?type="+binary.getType().name()+"&path="+ URLEncoder.encode(path, "UTF-8"));
-
-                if( portalName != null) {
-                    sb.append("&portalName="+portalName);
-                }
-
-                if( binary.getIndex() != null) {
-                    sb.append("&index="+binary.getIndex());
-                }
-                if( liveState) {
-                    sb.append("&liveState="+liveState);
-                }
-                if( binary.getContent() != null) {
-                    sb.append("&content="+binary.getContent());
-                }
-                if( binary.getFieldName() != null) {
-                    sb.append("&fieldName="+binary.getFieldName() );
-                }
-                if( refresh) {
-                    sb.append("&refresh="+refresh);
-                }
-                if( cmsCtx.getScope() != null) {
-                    sb.append("&scope="+cmsCtx.getScope());
-                }
-                if( cmsCtx.getForcePublicationInfosScope() != null) {
-                    sb.append("&fscope="+cmsCtx.getForcePublicationInfosScope());
-                }
-
-                String binaryTimeStamp = this.binaryMap.get(path);
-                if (binaryTimeStamp == null) {
-                    // if not defined, set ie
-                    binaryTimeStamp = this.refreshBinaryResource(cmsCtx, path);
-                }
-
-                // timestamp is concated in the url to control the client cache
-                sb.append("&t=");
-                sb.append(binaryTimeStamp.toString());
-
-                src = sb.toString();
-
-
-
-            } catch (Exception e) {
-                new CMSException(e);
+            if (invocation != null) {
+                portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
+                isAdmin = (Boolean) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
             }
 
+
+            if (binary.getDocument() != null) {
+                Document doc = (Document) binary.getDocument();
+
+                path = doc.getPath();
+                liveState = this.isPathInLiveState(cmsCtx, doc);
+                delegation.setGrantedAccess(true);
+            } else {
+                path = binary.getPath();
+            }
+
+            Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+            delegation.setSubject(subject);
+
+            delegation.setAdmin(isAdmin);
+
+            path = StringUtils.removeEnd(path, ".proxy");
+
+            delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
+
+            Map<String, BinaryDelegation> delegationMap = this.getUserDelegation(cmsCtx);
+            delegationMap.put(path, delegation);
+
+            boolean refresh = PageProperties.getProperties().isRefreshingPage();
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(BINARY_SERVLET).append("?type=").append(binary.getType().name()).append("&path=").append(URLEncoder.encode(path, "UTF-8"));
+
+            if (portalName != null) {
+                sb.append("&portalName=").append(portalName);
+            }
+
+            if (binary.getIndex() != null) {
+                sb.append("&index=").append(binary.getIndex());
+            }
+            if (liveState) {
+                sb.append("&liveState=").append(liveState);
+            }
+            if (binary.getContent() != null) {
+                sb.append("&content=").append(binary.getContent());
+            }
+            if (binary.getFieldName() != null) {
+                sb.append("&fieldName=").append(binary.getFieldName());
+            }
+            if (binary.getFileName() != null) {
+                sb.append("&fileName=").append(URLEncoder.encode(binary.getFileName(), CharEncoding.UTF_8));
+            }
+            if (refresh) {
+                sb.append("&refresh=").append(refresh);
+            }
+            if (cmsCtx.getScope() != null) {
+                sb.append("&scope=").append(cmsCtx.getScope());
+            }
+            if (cmsCtx.getForcePublicationInfosScope() != null) {
+                sb.append("&fscope=").append(cmsCtx.getForcePublicationInfosScope());
+            }
+
+            String binaryTimeStamp = this.binaryMap.get(path);
+            if (binaryTimeStamp == null) {
+                // if not defined, set ie
+                binaryTimeStamp = this.refreshBinaryResource(cmsCtx, path);
+            }
+
+            // timestamp is concated in the url to control the client cache
+            sb.append("&t=");
+            sb.append(binaryTimeStamp.toString());
+
+            src = sb.toString();
+
+
+        } catch (Exception e) {
+            new CMSException(e);
+        }
 
 
         return new Link(src, false);

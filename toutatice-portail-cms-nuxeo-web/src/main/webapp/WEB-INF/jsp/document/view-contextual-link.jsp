@@ -28,7 +28,7 @@
     <p>${description}</p>
     
     <p>
-        <a href="${link.url}" target="${target}">
+        <a href="${clink}" target="${target}">
             <span>${clink}</span>
         </a>
         

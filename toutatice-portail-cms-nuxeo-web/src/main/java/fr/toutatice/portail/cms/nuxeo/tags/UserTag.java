@@ -37,7 +37,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 public class UserTag extends SimpleTagSupport {
 
     /** Portal URL factory. */
-    private static final IPortalUrlFactory PORTAL_URL_FACTORY = Locator.findMBean(IPortalUrlFactory.class, "osivia:service=UrlFactory");
+    private static final IPortalUrlFactory PORTAL_URL_FACTORY = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
     /** Directory service locator. */
     private static final IDirectoryServiceLocator DIRECTORY_SERVICE_LOCATOR = Locator.findMBean(IDirectoryServiceLocator.class,
             IDirectoryServiceLocator.MBEAN_NAME);
@@ -105,7 +105,7 @@ public class UserTag extends SimpleTagSupport {
 
             // Text
             Element text;
-            if (BooleanUtils.isFalse(this.linkable) || person == null) {
+            if (BooleanUtils.isFalse(this.linkable) || (person == null)) {
                 // Span text
                 text = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
             } else {

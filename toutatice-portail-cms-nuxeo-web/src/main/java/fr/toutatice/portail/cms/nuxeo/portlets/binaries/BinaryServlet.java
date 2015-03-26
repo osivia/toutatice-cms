@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -25,8 +25,6 @@ import java.util.TimeZone;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,27 +33,23 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.page.PageProperties;
 
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
-
 /**
  * Portlet unifié de gestion de ressources :
- * 
+ *
  * suppose que les droits ait élé calculés en amont. Un mécanisme de délégation permet d'éviter un nouveau contrôle de droits.
  *
  * @author Jean-Sébastien Steux
@@ -63,7 +57,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 public class BinaryServlet extends HttpServlet
 
-{    /** The logger. */
+{
+
+    /** The logger. */
     protected static Log logger = LogFactory.getLog(BinaryServlet.class);
 
     /** The Constant serialVersionUID. */
@@ -91,7 +87,7 @@ public class BinaryServlet extends HttpServlet
             while ((bytesread = inputStream.read(b)) != -1) {
                 outputStream.write(b, 0, bytesread);
                 bytesBuffered += bytesread;
-                if (bytesBuffered > 1024 * 1024) { // flush after 1MB
+                if (bytesBuffered > (1024 * 1024)) { // flush after 1MB
                     bytesBuffered = 0;
                 }
             }
@@ -142,8 +138,9 @@ public class BinaryServlet extends HttpServlet
             inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
             try {
                 Date originalDate = inputFormater.parse(sOriginalDate);
-                if (System.currentTimeMillis() < originalDate.getTime() + BINARY_TIMEOUT * 1000)
+                if (System.currentTimeMillis() < (originalDate.getTime() + (BINARY_TIMEOUT * 1000))) {
                     isExpired = false;
+                }
             } catch (Exception e) {
 
             }
@@ -164,11 +161,12 @@ public class BinaryServlet extends HttpServlet
     public boolean serveResourceByCache(HttpServletRequest resourceRequest, HttpServletResponse resourceResponse) throws PortletException, IOException {
 
         String sOriginalDate = resourceRequest.getHeader("if-modified-since");
-        if (sOriginalDate == null)
+        if (sOriginalDate == null) {
             sOriginalDate = resourceRequest.getHeader("If-Modified-Since");
+        }
 
-        if (!isResourceExpired(sOriginalDate)) { // validation
-                                                 // request
+        if (!this.isResourceExpired(sOriginalDate)) { // validation
+            // request
 
             // resourceResponse.setContentLength(0);
             resourceResponse.sendError(HttpServletResponse.SC_NOT_MODIFIED);
@@ -181,26 +179,31 @@ public class BinaryServlet extends HttpServlet
         return false;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
+    @Override
     public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
-        
-        
+
+
         // réinitialisation des propriétes des windows
         PageProperties.getProperties().init();
-        
+
         String portalName = theRequest.getParameter("portalName");
-        if( portalName == null)
+        if (portalName == null) {
             portalName = "default";
+        }
         PageProperties.getProperties().getPagePropertiesMap().put(Constants.PORTAL_NAME, portalName);
-        
+
 
         OutputStream output = theResponse.getOutputStream();
         try {
 
-            if (serveResourceByCache(theRequest, theResponse))
+            if (this.serveResourceByCache(theRequest, theResponse)) {
                 return;
+            }
 
 
             String docPath = theRequest.getParameter("path");
@@ -210,7 +213,7 @@ public class BinaryServlet extends HttpServlet
 
             ctx.setServletRequest(theRequest);
 
-            BinaryDelegation delegation = ctx.getCMSService().validateBinaryDelegation(ctx.getCMSCtx(), docPath);
+            BinaryDelegation delegation = NuxeoController.getCMSService().validateBinaryDelegation(ctx.getCMSCtx(), docPath);
 
 
             String index = theRequest.getParameter("index");
@@ -222,8 +225,9 @@ public class BinaryServlet extends HttpServlet
 
 
             String sLiveState = theRequest.getParameter("liveState");
-            if (BooleanUtils.toBoolean(sLiveState))
+            if (BooleanUtils.toBoolean(sLiveState)) {
                 ctx.setDisplayLiveVersion("1");
+            }
 
             ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
 
@@ -234,22 +238,19 @@ public class BinaryServlet extends HttpServlet
                     ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                     ctx.setForcePublicationInfosScope("superuser_context");
                 }
-                
-                theRequest.setAttribute("osivia.isAdmin", delegation.isAdmin());       
-                
-                PageProperties.getProperties().setBinarySubject(delegation.getSubject());       
-             }
-            
-            
 
-            if( scope != null)  {
+                theRequest.setAttribute("osivia.isAdmin", delegation.isAdmin());
+
+                PageProperties.getProperties().setBinarySubject(delegation.getSubject());
+            }
+
+            if (scope != null) {
                 ctx.setScope(scope);
             }
-            
-            if( forcedScope != null)  {
+
+            if (forcedScope != null) {
                 ctx.setForcePublicationInfosScope(forcedScope);
             }
-            
 
             ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
@@ -272,9 +273,8 @@ public class BinaryServlet extends HttpServlet
 
                 // Redirection vers portlet de streaming
                 if (content.getStream() != null) {
-
                     theResponse.setContentType(content.getMimeType());
-                    theResponse.setHeader("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
+                    theResponse.setHeader("Content-Disposition", this.getHeaderContentDisposition(theRequest, content));
                     theResponse.setBufferSize(8192);
 
                     streamBigFile(content.getStream(), output, 8192);
@@ -285,15 +285,11 @@ public class BinaryServlet extends HttpServlet
 
             // Les headers doivent être positionnées avant la réponse
             theResponse.setContentType(content.getMimeType());
-            theResponse.setHeader("Content-Disposition", "attachment; filename=\"" + content.getName() + "\"");
-
+            theResponse.setHeader("Content-Disposition", this.getHeaderContentDisposition(theRequest, content));
             theResponse.setHeader("Cache-Control", "max-age=" + BINARY_TIMEOUT);
-
-            theResponse.setHeader("Last-Modified", formatResourceLastModified());
-
+            theResponse.setHeader("Last-Modified", this.formatResourceLastModified());
 
             ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
-
         } catch (NuxeoException e) {
             if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
                 String message = "Resource BinaryServlet " + theRequest.getParameterMap() + " not found (error 404).";
@@ -305,14 +301,34 @@ public class BinaryServlet extends HttpServlet
                 theRequest.setAttribute("osivia.no_redirection", "1");
             }
 
-       } catch(Exception e) {
-           throw new ServletException(e);
-       }    
-           finally {
-       
+        } catch (Exception e) {
+            throw new ServletException(e);
+        } finally {
+
             output.close();
         }
+    }
 
+
+    /**
+     * Get header content disposition value.
+     *
+     * @param request HTTP servlet request
+     * @param content CMS binary content
+     * @return content disposition
+     */
+    private String getHeaderContentDisposition(HttpServletRequest request, CMSBinaryContent content) {
+        String fileName = request.getParameter("fileName");
+        if (fileName == null) {
+            fileName = content.getName();
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("attachment; filename=\"");
+        builder.append(fileName);
+        builder.append("\"");
+
+        return builder.toString();
     }
 
 }
