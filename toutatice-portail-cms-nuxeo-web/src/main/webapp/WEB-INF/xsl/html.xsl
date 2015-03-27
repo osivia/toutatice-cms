@@ -36,7 +36,18 @@
             <xsl:apply-templates select="@*|node()" />
 
             <xsl:if test="not(ancestor::* [@class = 'no-format']) and not(ancestor::TABLE)">
-                <xsl:attribute name="class"><xsl:value-of select="@class" /> img-responsive</xsl:attribute>
+                <xsl:attribute name="class">
+                    <xsl:value-of select="@class" />
+                    <xsl:text> img-responsive</xsl:text>
+                    
+                    <!-- Reprise des contenus TinyMCE pour Nuxeo < 6.0 -->
+                    <xsl:if test="contains(ancestor::* [contains(@style, 'text-align')][1]/@style, 'text-align: center;')">
+                        <xsl:text> center-block</xsl:text>
+                    </xsl:if>
+                    <xsl:if test="contains(ancestor::* [contains(@style, 'text-align')][1]/@style, 'text-align: right;')">
+                        <xsl:text> right-block</xsl:text>
+                    </xsl:if>
+                </xsl:attribute>
             </xsl:if>
         </xsl:copy>
     </xsl:template>
