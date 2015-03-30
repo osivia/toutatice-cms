@@ -24,5 +24,10 @@ public interface CommandConstants {
     String PAGE_PROVIDER_UNLIMITED_MAX_RESULTS = "-1";
     /** Dafult page size for Page Provider commands. */
     int PAGE_PROVIDER_DEFAULT_PAGE_SIZE = 5;
+    
+    /** Characteristic of Publish Spaces */
+    String PUBLISH_SPACE_CHARACTERISTIC = "TTCPublishSpace";
+    /** Indicator of comments on Publish Spaces */
+    String COMMENTS_ENABLED_INDICATOR = "spaceCommentable";
 
 }

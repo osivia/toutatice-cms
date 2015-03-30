@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -39,6 +39,8 @@ import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
@@ -58,7 +60,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
@@ -328,7 +332,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         // Publication infos
                         CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
-                        if (publicationInfos.isCommentableByUser()) {
+                        boolean commentsEnabled = areCommentsEnabled(cmsService, publicationInfos, cmsContext);
+                        if (commentsEnabled && publicationInfos.isCommentableByUser()) {
                             documentDTO.setCommentable(true);
 
                             // Comments
@@ -396,6 +401,30 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CommentDTO commentDTO = this.commentDAO.toDTO(jsonComment);
             documentDTO.getComments().add(commentDTO);
         }
+    }
+
+    /**
+     * @param cmsService
+     * @param publicationInfos
+     * @param cmsContext
+     * @return true if publish space of document
+     *         allows comments
+     * @throws CMSException
+     */
+    protected boolean areCommentsEnabled(ICMSService cmsService, CMSPublicationInfos publicationInfos, CMSServiceCtx cmsContext) throws CMSException {
+        boolean enable = true;
+        
+        String publishSpacePath = publicationInfos.getPublishSpacePath();
+        CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
+        
+        Document space = (Document) spaceConfig.getNativeItem();
+        boolean isPublishSpace = CMSItemAdapter.docHasFacet(space, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+        
+        if(isPublishSpace){
+            enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
+        }
+        
+        return enable;
     }
 
 }

@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletContext;
@@ -24,6 +25,7 @@ import javax.portlet.PortletContext;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSItem;
@@ -59,6 +61,21 @@ public class CMSItemAdapter {
         if (path.endsWith(".proxy"))
             result = result.substring(0, result.length() - 6);
         return result;
+    }
+    
+    /**
+     * @param doc
+     * @param facet
+     * @return true if document has the given facet.
+     */
+    public static boolean docHasFacet(Document doc, String facet){
+        boolean has = false;
+        PropertyList facets = doc.getFacets();
+        if(facets != null){
+            List<Object> facetsList = facets.list();
+            has = facetsList.contains(facet);
+        }
+        return has;
     }
 
 

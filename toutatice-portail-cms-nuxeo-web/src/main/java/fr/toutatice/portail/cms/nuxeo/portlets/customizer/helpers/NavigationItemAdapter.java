@@ -20,13 +20,13 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.web.IWebIdService;
 
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
@@ -243,11 +243,15 @@ public class NavigationItemAdapter {
 		}
 		
 		/*
-		 * Use of ElasticSearch on PortalSites
+		 * Use of ElasticSearch on PublishSpaces 
+		 * and possibility to comment inside
 		 */
-		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath()) && "PortalSite".equals(doc.getType())) {
+		if (isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
 		    Boolean useES = doc.getProperties().getBoolean("ttc:useES");
 		    properties.put("useES", String.valueOf(useES));
+		    
+		    Boolean spaceCommentable = doc.getProperties().getBoolean("ttcs:spaceCommentable");
+		    properties.put("spaceCommentable", String.valueOf(spaceCommentable));
 		}
 
 
@@ -274,6 +278,20 @@ public class NavigationItemAdapter {
 			properties.put("menuItem", "1");
 		}
 		*/
+	}
+	
+	/**
+	 * @param publishSpaceNavigationItem
+	 * @param publishSpaceItem
+	 * @param doc
+	 * @return true if current document is a publish space.
+	 */
+	public boolean isCurrentDocPublishSpace(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem, Document doc){
+	    boolean isPublishSpace = publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath());
+	    if(isPublishSpace){
+	        isPublishSpace = CMSItemAdapter.docHasFacet(doc, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+	    }
+	    return isPublishSpace;
 	}
 
 }
