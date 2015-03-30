@@ -413,17 +413,23 @@ public class ViewDocumentPortlet extends CMSPortlet {
      */
     protected boolean areCommentsEnabled(ICMSService cmsService, CMSPublicationInfos publicationInfos, CMSServiceCtx cmsContext) throws CMSException {
         boolean enable = true;
-        
+
         String publishSpacePath = publicationInfos.getPublishSpacePath();
-        CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
-        
-        Document space = (Document) spaceConfig.getNativeItem();
-        boolean isPublishSpace = CMSItemAdapter.docHasFacet(space, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
-        
-        if(isPublishSpace){
-            enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
+        if (StringUtils.isBlank(publishSpacePath)) {
+            /* Case where currentDoc is PublishSpace */
+            publishSpacePath = publicationInfos.getDocumentPath();
         }
-        
+
+        if (StringUtils.isNotBlank(publishSpacePath)) {
+            CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
+
+            Document space = (Document) spaceConfig.getNativeItem();
+            boolean isPublishSpace = CMSItemAdapter.docHasFacet(space, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+
+            if (isPublishSpace) {
+                enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
+            }
+        }
         return enable;
     }
 
