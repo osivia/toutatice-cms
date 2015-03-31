@@ -26,6 +26,7 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +71,7 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -774,14 +776,18 @@ public class CMSService implements ICMSService {
 
 
             Map<String, NavigationItem> navItems = null;
+            
+            boolean forceLiveVersion = false;
+            if ("1".equals(cmsCtx.getDisplayLiveVersion()) || "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"))) {
+                forceLiveVersion = true;
+            }
 
-            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+            boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
+            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
+            
+            if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
-                boolean forceLiveVersion = false;
-                if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
-                    forceLiveVersion = true;
-                }
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
                         forceLiveVersion)));
             }
@@ -840,15 +846,18 @@ public class CMSService implements ICMSService {
 
 
             Map<String, NavigationItem> navItems = null;
-
-            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
-                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
+            
+            boolean forceLiveVersion = false;
+            if ("1".equals(cmsCtx.getDisplayLiveVersion()) || "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"))) {
+                forceLiveVersion = true;
+            }
+            
+            boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
+            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
+            
+            if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
-                boolean forceLiveVersion = false;
-                if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
-                    forceLiveVersion = true;
-                }
-
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
                         forceLiveVersion)));
             }
