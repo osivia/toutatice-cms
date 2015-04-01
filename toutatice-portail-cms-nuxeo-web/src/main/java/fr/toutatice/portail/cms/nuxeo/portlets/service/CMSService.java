@@ -693,7 +693,7 @@ public class CMSService implements ICMSService {
             cmsCtx.setScope("superuser_context");
 
 
-            do {
+            while (pathToCheck.contains(publishSpaceConfig.getPath())) {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
                 if ((navItem != null) && (fetchSubItems && navItem.isUnfetchedChildren())) {
@@ -704,18 +704,19 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-                pathToCheck = parentPath.toString();
-
-                if (navItem == null) {
+                  if (navItem == null) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
                     if (!idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
                     }
                 }
+                
+                  CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+                  pathToCheck = parentPath.toString();
+
+            }
 
 
-            } while (pathToCheck.contains(publishSpaceConfig.getPath()));
 
 
             if ((idsToFetch.size() > 0) || fetchRoot)
@@ -856,7 +857,7 @@ public class CMSService implements ICMSService {
             boolean refreshing = PageProperties.getProperties().isRefreshingPage();
             
             if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
-                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
+                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
             } else {
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
                         forceLiveVersion)));
