@@ -415,7 +415,7 @@ public class MenuBarFormater {
                 editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
 
                 // Forget old state
-                // this.contributionService.removeWindowEditionState(portalControllerContext);
+                this.contributionService.removeWindowEditionState(portalControllerContext);
             }
 
             // Do not insert any action for remote proxy

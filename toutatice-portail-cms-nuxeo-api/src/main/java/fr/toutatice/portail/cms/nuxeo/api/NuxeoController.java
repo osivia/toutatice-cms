@@ -1251,7 +1251,8 @@ public class NuxeoController {
         if (this.getRequest() != null) {
             EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
             if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                return true;
+                if( editionState.getDocPath().equals(path))
+                    return true;
             }
         }
 
