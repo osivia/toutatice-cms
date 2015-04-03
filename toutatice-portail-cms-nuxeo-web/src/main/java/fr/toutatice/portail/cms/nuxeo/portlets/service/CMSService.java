@@ -973,6 +973,12 @@ public class CMSService implements ICMSService {
                     }
                 }
 
+                String navigationRefferer = ctx.getCmsReferrerNavigationPath();
+                
+                //logger.warn("navigationRefferer" + navigationRefferer);
+                
+                
+                
                 pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
                 if (pubInfos != null) {
