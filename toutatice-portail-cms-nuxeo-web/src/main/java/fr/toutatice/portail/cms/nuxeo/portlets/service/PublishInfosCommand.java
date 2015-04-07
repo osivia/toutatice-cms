@@ -44,6 +44,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -51,11 +52,15 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 public class PublishInfosCommand implements INuxeoCommand {
 
 	protected static Log logger = LogFactory.getLog(PublishInfosCommand.class);
-
+	
 	private final String path;
+	private String navigationPath;
+	private String displayLiveVersion;
 
-	public PublishInfosCommand(String path) {
+	public PublishInfosCommand(String navigationPath, String path, String displayLiveVersion) {
 		this.path = path;
+		this.navigationPath = navigationPath;
+		this.displayLiveVersion = displayLiveVersion;
 	}
 
 	@Override
@@ -66,6 +71,10 @@ public class PublishInfosCommand implements INuxeoCommand {
 		
         if (path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
             request.set("webid", path.replaceAll(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO, ""));
+            if(StringUtils.isNotBlank(navigationPath)){
+                request.set("navigationPath", navigationPath);
+                request.set("displayLiveVersion", displayLiveVersion);
+            }
         }
 		else {
 		    request.set("path", path);
@@ -159,7 +168,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 	@Override
 	public String getId() {
-		return "PublishInfosCommand" + StringUtils.removeEnd(path, ".proxy");
+	    String id = "PublishInfosCommand" + StringUtils.removeEnd(path, ".proxy");
+	    if(StringUtils.isNotBlank(navigationPath)){
+	        id = "PublishInfosCommand/" + this.displayLiveVersion + "/" + this.navigationPath + "/" + path; 
+	    }
+		return id; 
 	}
 
 	/**

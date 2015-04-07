@@ -1619,10 +1619,16 @@ public class NuxeoController {
             Map<String, String> pageParams = new HashMap<String, String>();
 
             String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
-
+            
+            String displayLiveVersion = this.getDisplayLiveVersion();
+            
+            if(path.startsWith(IWebIdService.PREFIX_WEBPATH)){
+                if( doc.getPath().equals( cmsCtx.getForcedLivePath()))
+                        displayLiveVersion = "1";
+                }
 
             String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams,
-                    localContextualization, displayContext, this.getHideMetaDatas(), null, this.getDisplayLiveVersion(), null);
+                    localContextualization, displayContext, this.getHideMetaDatas(), null, displayLiveVersion, null);
 
 
             if (url != null) {

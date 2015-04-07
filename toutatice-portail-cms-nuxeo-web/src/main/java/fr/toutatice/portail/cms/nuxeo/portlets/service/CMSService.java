@@ -972,14 +972,11 @@ public class CMSService implements ICMSService {
                         }
                     }
                 }
-
-                String navigationRefferer = ctx.getCmsReferrerNavigationPath();
                 
-                //logger.warn("navigationRefferer" + navigationRefferer);
+                String cmsReferrerNavigationPath = ctx.getCmsReferrerNavigationPath();
+                String displayLiveVersion = ctx.getDisplayLiveVersion();
                 
-                
-                
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(cmsReferrerNavigationPath, path, displayLiveVersion)));
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();
