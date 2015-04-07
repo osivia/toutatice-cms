@@ -73,31 +73,31 @@
                         </dl>
     
     <pre>
-    StringBuilder request = new StringBuilder();
+    StringBuilder nuxeoRequest = new StringBuilder();
     
-    request.append("ecm:path STARTSWITH '").append(navigationPath).append("' ");
+    nuxeoRequest.append("ecm:path STARTSWITH '").append(navigationPath).append("' ");
     
     // Format search by title
     if (param.get("title") != null) {
-        request.append("AND ").append(NXQLFormater.formatTextSearch("dc:title", params.get("title"))).append(" ");
+        nuxeoRequest.append("AND ").append(NXQLFormater.formatTextSearch("dc:title", params.get("title"))).append(" ");
     }
     
     // Format search by dates
     if (params.get("datesId") != null) {
-        request.append("AND ").append(NXQLFormater.formatDateSearch("dc:created", params.get("datesId"))).append(" ");
+        nuxeoRequest.append("AND ").append(NXQLFormater.formatDateSearch("dc:created", params.get("datesId"))).append(" ");
     }
     
     // Format search by nature
     if (params.get("nature") != null) {
-        request.append("AND ").append(NXQLFormater.formatVocabularySearch("dc:nature", params.get("nature"))).append(" ");
+        nuxeoRequest.append("AND ").append(NXQLFormater.formatVocabularySearch("dc:nature", params.get("nature"))).append(" ");
     }
     
     // Get childrens
-    request.append("AND ecm:parentId = '").append(navigationPubInfos.getLiveId()).append("' ");
+    nuxeoRequest.append("AND ecm:parentId = '").append(navigationPubInfos.getLiveId()).append("' ");
     
-    request.append("ORDER BY dc:modified DESC");
+    nuxeoRequest.append("ORDER BY dc:modified DESC");
     
-    return request.toString();
+    return nuxeoRequest.toString();
     </pre>
                     </div>
                 </div>

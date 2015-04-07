@@ -12,17 +12,6 @@
 <portlet:actionURL var="actionURL" />
 
 
-<script type="text/javascript">
-function refreshOnVocabularyChange(selectText, url) {
-    url = url.replace("SELECTED_VALUE", encodeURIComponent(selectText.options[selectText.selectedIndex].value));
-    updatePortletContent(selectText, url);
-    return false;
-}
-</script>
-
-
-<c:set var="othersLabel" value="${requestScope['osivia.othersLabel']}" />
-
 <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
 
 

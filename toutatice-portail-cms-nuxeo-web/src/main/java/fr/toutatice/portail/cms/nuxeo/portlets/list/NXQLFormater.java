@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
@@ -27,7 +27,6 @@ import javax.portlet.PortletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -159,7 +158,9 @@ public class NXQLFormater {
                     vocabNames.add(vocab.toString());
                 }
 
-                VocabularyEntry vocabEntry = VocabularyHelper.getVocabularyEntry((NuxeoController) portletRequest.getAttribute("ctx"), vocabNames);
+
+                NuxeoController nuxeoController = (NuxeoController) portletRequest.getAttribute("nuxeoController");
+                VocabularyEntry vocabEntry = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabNames);
 
 
                 // Récupération du dernier vocabulaire sélectionné avant l'entrée "Autres"

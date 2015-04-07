@@ -18,7 +18,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -114,8 +113,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     List<String> keywords = selectors.get(request.getParameter("selectorId"));
                     if ((keywords != null) && (keywords.size() > 0)) {
                         keywords.clear();
-                        if( request.getParameter("selectors")!= null)
-                            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));                       
+                        if( request.getParameter("selectors")!= null) {
+                            response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                        }                       
                         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
                     }
                 }
@@ -154,8 +154,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                         keywords.add(keyword);
                     }
                     
-                    if( request.getParameter("selectors")!= null)
-                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));  
+                    if( request.getParameter("selectors")!= null) {
+                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                    }  
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
                     // Réinitialisation des fenetres en mode NORMAL
@@ -173,8 +174,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> keywords = selectors.get(selectorId);
                 if ((keywords != null) && (keywords.size() > occ)) {
                     keywords.remove(occ);
-                    if( request.getParameter("selectors")!= null)
-                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));  
+                    if( request.getParameter("selectors")!= null) {
+                        response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                    }  
                     
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 

@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
@@ -33,8 +30,6 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
@@ -46,73 +41,50 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 
-
-
-
-
 /**
- * Portlet de selection de liste par vocabulaire
+ * Vocabulary selector portlet.
+ *
+ * @see CMSPortlet
  */
-
 public class VocabSelectorPortlet extends CMSPortlet {
 
-	private static Log logger = LogFactory.getLog(VocabSelectorPortlet.class);
+    /** Other entries choice, used for NXQL request generation. */
+    public static final String OTHER_ENTRIES_CHOICE = "othersVocabEntries";
 
-	public static String DELETE_PREFIX = "delete_";
-	public static String OTHER_ENTRIES_CHOICE = "othersVocabEntries";
+    /** Selector identifier window property name. */
+    private static final String SELECTOR_ID_WINDOW_PROPERTY = "osivia.selectorId";
+    /** Selector label window property name. */
+    private static final String SELECTOR_LABEL_WINDOW_PROPERTY = "osivia.libelle";
+    /** Vocabulary name window property name prefix. */
+    private static final String VOCABULARY_NAME_WINDOW_PROPERTY_PREFIX = "osivia.vocabName";
+    /** Hierarchical vocabulary preselection level 1 window property name. */
+    private static final String VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY = "osivia.preselect1";
+    /** Mono-valued selector window property name. */
+    private static final String MONOVALUED_SELECTOR_WINDOW_PROPERTY = "osivia.selectorMonoValued";
+    /** Others option indicator window property name. */
+    private static final String OTHERS_OPTION_WINDOW_PROPERTY = "osivia.othersOption";
+    /** Others label window property name. */
+    private static final String OTHERS_LABEL_WINDOW_PROPERTY = "osivia.othersLabel";
 
-	public static int NB_NIVEAUX = 3;
+    /** Hierarchical vocabulary max level. */
+    private static final int MAX_LEVEL = 3;
 
-	/**
-	 * Permet d'exprimer le label d'un composant sur plusieurs niveaux : cle1/cle2/cle3
-	 *
-	 * @param label
-	 * @param id
-	 * @param vocab
-	 * @return
-	 */
-	public static String getLabel(String othersLabel, String id, VocabularyEntry vocab, String preselect1) {
-        String res = "";
 
-        if (id.contains(OTHER_ENTRIES_CHOICE)
-                && StringUtils.isNotEmpty(othersLabel)) {
-
-            res = StringUtils.replace(id, OTHER_ENTRIES_CHOICE, othersLabel);
-
-        } else {
-
-            String[] tokens = id.split("/", 2);
-
-            if ((tokens.length > 0) && (StringUtils.isEmpty(preselect1))) {
-                VocabularyEntry child = vocab.getChild(tokens[0]);
-                res += child.getLabel();
-            }
-
-            if (tokens.length > 1) {
-                VocabularyEntry childVocab = vocab.getChild(tokens[0]);
-                if (childVocab != null) {
-                    if(res.length() > 0) {
-                        res += "/" ;
-                    }
-                    res += getLabel(res, tokens[1], childVocab, null);
-                }
-            }
-        }
-
-        return res;
+    /**
+     * Constructor.
+     */
+    public VocabSelectorPortlet() {
+        super();
     }
-
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-	public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
-		logger.debug("processAction ");
-
+    public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
         // Current window
-		PortalWindow window = WindowFactory.getWindow(request);
+        PortalWindow window = WindowFactory.getWindow(request);
         // Current action
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
@@ -122,49 +94,35 @@ public class VocabSelectorPortlet extends CMSPortlet {
             if ("save".equals(action)) {
                 // Save
 
-                if (request.getParameter("selectorId").length() > 0) {
-                    window.setProperty("osivia.selectorId", request.getParameter("selectorId"));
-                } else if (window.getProperty("osivia.selectorId") != null) {
-                    window.setProperty("osivia.selectorId", null);
+                // Selector identifier
+                window.setProperty(SELECTOR_ID_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("selectorId")));
+
+                // Selector label
+                window.setProperty(SELECTOR_LABEL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("libelle")));
+
+                // Vocabulary names
+                for (int level = 1; level < (MAX_LEVEL + 1); level++) {
+                    // Request parameter name
+                    String parameter = "vocabName" + String.valueOf(level);
+
+                    // Window property name
+                    String property = VOCABULARY_NAME_WINDOW_PROPERTY_PREFIX + String.valueOf(level);
+
+                    window.setProperty(property, StringUtils.trimToNull(request.getParameter(parameter)));
                 }
 
-                if (request.getParameter("libelle").length() > 0) {
-                    window.setProperty("osivia.libelle", request.getParameter("libelle"));
-                } else if (window.getProperty("osivia.libelle") != null) {
-                    window.setProperty("osivia.libelle", null);
-                }
+                // Preselection level 1
+                window.setProperty(VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("preselect1")));
 
-                for (int niveau = 1; niveau < (NB_NIVEAUX + 1); niveau++) {
-                    if (request.getParameter("vocabName" + String.valueOf(niveau)).length() > 0) {
-                        window.setProperty("osivia.vocabName" + String.valueOf(niveau), request.getParameter("vocabName" + String.valueOf(niveau)));
-                    } else if (window.getProperty("osivia.vocabName" + String.valueOf(niveau)) != null) {
-                        window.setProperty("osivia.vocabName" + String.valueOf(niveau), null);
-                    }
-                }
+                // Mono-valued selector indicator
+                window.setProperty(MONOVALUED_SELECTOR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("selectorMonoValued")));
 
-                if (request.getParameter("preselect1").length() > 0) {
-                    window.setProperty("osivia.preselect1", request.getParameter("preselect1"));
-                } else if (window.getProperty("osivia.preselect1") != null) {
-                    window.setProperty("osivia.preselect1", null);
-                }
+                // Others option indicator
+                window.setProperty(OTHERS_OPTION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("othersOption")));
 
-                if ("1".equals(request.getParameter("selectorMonoValued"))) {
-                    window.setProperty("osivia.selectorMonoValued", "1");
-                } else if (window.getProperty("osivia.selectorMonoValued") != null) {
-                    window.setProperty("osivia.selectorMonoValued", null);
-                }
+                // Others label
+                window.setProperty(OTHERS_LABEL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("othersLabel")));
 
-                if ("1".equals(request.getParameter("othersOption"))) {
-                    window.setProperty("osivia.othersOption", "1");
-                } else if (window.getProperty("osivia.othersOption") != null) {
-                    window.setProperty("osivia.othersOption", null);
-                }
-
-                if ((request.getParameter("othersLabel") != null) && (request.getParameter("othersLabel").length() > 0)) {
-                    window.setProperty("osivia.othersLabel", request.getParameter("othersLabel"));
-                } else if (window.getProperty("osivia.othersLabel") != null) {
-                    window.setProperty("osivia.othersLabel", null);
-                }
 
                 // Initialisation du vocabulaire parent suite à éventuel changement de configuration.
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
@@ -183,340 +141,314 @@ public class VocabSelectorPortlet extends CMSPortlet {
             response.setPortletMode(PortletMode.VIEW);
             response.setWindowState(WindowState.NORMAL);
         } else if ("view".equals(request.getPortletMode().toString())
-				&& (((request.getParameter("add.x") != null) || (request.getParameter("add") != null))
-						||(request.getParameter("monovaluedSubmit") != null))) {
+                && (((request.getParameter("add.x") != null) || (request.getParameter("add") != null)) || (request.getParameter("monovaluedSubmit") != null))) {
             // Pour supporter le mode Ajax, il faut également test le add sans l'extension '.x'
 
-			// Set public parameter
-			String selectorId = window.getProperty("osivia.selectorId");
-			if (selectorId != null) {
+            // Set public parameter
+            String selectorId = window.getProperty(SELECTOR_ID_WINDOW_PROPERTY);
+            if (selectorId != null) {
+                Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                List<String> vocabIds = selectors.get(selectorId);
+                if (vocabIds == null) {
+                    vocabIds = new ArrayList<String>();
+                    selectors.put(selectorId, vocabIds);
+                }
 
-				Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-				List<String> vocabIds = selectors.get(selectorId);
-				if (vocabIds == null) {
-					vocabIds = new ArrayList<String>();
-					selectors.put(selectorId, vocabIds);
-				}
+                String[] selectedVocabsEntries = {request.getParameter("vocab1Id"), request.getParameter("vocab2Id"), request.getParameter("vocab3Id")};
 
-				String[] selectedVocabsEntries = { request.getParameter("vocab1Id"), request.getParameter("vocab2Id"),
-						request.getParameter("vocab3Id") };
+                String separator = "";
+                int index = 0;
+                String selectedEntries = "";
 
-				String separator = "";
-				int index = 0;
-				String selectedEntries = "";
-
-                String preselect = window.getProperty("osivia.preselect1");
-                if( preselect != null)  {
-
+                String preselect = window.getProperty(VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY);
+                if (preselect != null) {
                     // If preselection is set, controls if 2nd item is selected
-                    if(StringUtils.isNotEmpty(request.getParameter("vocab2Id")))    {
-                        selectedVocabsEntries = new String[] { preselect, request.getParameter("vocab2Id"),
-                                request.getParameter("vocab3Id") };
+                    if (StringUtils.isNotEmpty(request.getParameter("vocab2Id"))) {
+                        selectedVocabsEntries = new String[]{preselect, request.getParameter("vocab2Id"), request.getParameter("vocab3Id")};
                     } else {
                         // If no item selected, remove selection
                         selectedVocabsEntries = new String[0];
                     }
-
                 }
 
-				for (String selectedVocabEntry : selectedVocabsEntries) {
-
-					if (index > 0) {
+                for (String selectedVocabEntry : selectedVocabsEntries) {
+                    if (index > 0) {
                         separator = "/";
                     }
 
-					if (StringUtils.isNotEmpty(selectedVocabEntry)) {
+                    if (StringUtils.isNotEmpty(selectedVocabEntry)) {
 
-						selectedEntries += separator + selectedVocabEntry;
+                        selectedEntries += separator + selectedVocabEntry;
 
-					}
+                    }
 
-					index++;
+                    index++;
+                }
 
-				}
-
-				if (request.getParameter("monovaluedSubmit") != null) {
-					/*
-					 * On ne conserve qu'une valeur dans le cas d'un
-					 * sélecteur mono-valué.
-					 */
-					vocabIds.clear();
-				}
-				if(StringUtils.isNotEmpty(selectedEntries)) {
+                if (request.getParameter("monovaluedSubmit") != null) {
+                    /*
+                     * On ne conserve qu'une valeur dans le cas d'un
+                     * sélecteur mono-valué.
+                     */
+                    vocabIds.clear();
+                }
+                if (StringUtils.isNotEmpty(selectedEntries)) {
                     vocabIds.add(selectedEntries);
                 }
 
 
-                String lastSelectors =  request.getParameter("selectors");
-                if(lastSelectors != null) {
+                String lastSelectors = request.getParameter("selectors");
+                if (lastSelectors != null) {
                     response.setRenderParameter("lastSelectors", lastSelectors);
                 }
-				response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
-				String vocab1Id = request.getParameter("vocab1Id");
-				if(StringUtils.isNotEmpty(vocab1Id)) {
+                String vocab1Id = request.getParameter("vocab1Id");
+                if (StringUtils.isNotEmpty(vocab1Id)) {
                     response.setRenderParameter("vocab1Id", vocab1Id);
                 }
 
-				String vocab2Id = request.getParameter("vocab2Id");
-				if( vocab2Id != null) {
+                String vocab2Id = request.getParameter("vocab2Id");
+                if (vocab2Id != null) {
                     response.setRenderParameter("vocab2Id", vocab2Id);
                 }
 
-				String vocab3Id = request.getParameter("vocab3Id");
-				if( vocab3Id != null) {
+                String vocab3Id = request.getParameter("vocab3Id");
+                if (vocab3Id != null) {
                     response.setRenderParameter("vocab3Id", vocab3Id);
                 }
 
 
-				// Réinitialisation des fenetres en mode NORMAL
-				request.setAttribute("osivia.unsetMaxMode", "true");
+                // Réinitialisation des fenetres en mode NORMAL
+                request.setAttribute("osivia.unsetMaxMode", "true");
+            }
 
-			}
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        }
 
-			response.setPortletMode(PortletMode.VIEW);
-			response.setWindowState(WindowState.NORMAL);
-		}
+        // Delete
+        if ("view".equals(request.getPortletMode().toString()) && "delete".equals(request.getParameter("action"))) {
+            int occ = new Integer(request.getParameter("occ"));
 
-		// Delete
-		if ("view".equals(request.getPortletMode().toString()) && "delete".equals(request.getParameter("action"))) {
-			int occ = new Integer(request.getParameter("occ"));
+            Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+            String selectorId = window.getProperty(SELECTOR_ID_WINDOW_PROPERTY);
 
-			Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-			String selectorId = window.getProperty("osivia.selectorId");
+            List<String> vocabIds = selectors.get(selectorId);
+            if ((vocabIds != null) && (vocabIds.size() > occ)) {
+                vocabIds.remove(occ);
 
-			List<String> vocabIds = selectors.get(selectorId);
-			if ((vocabIds != null) && (vocabIds.size() > occ)) {
-
-				vocabIds.remove(occ);
-
-				response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
-	               if( request.getParameter("selectors")!= null) {
+                response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                if (request.getParameter("selectors") != null) {
                     response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
                 }
 
 
                 // Réinitialisation des fenetres en mode NORMAL
                 request.setAttribute("osivia.unsetMaxMode", "true");
-			}
+            }
 
-			String vocab1Id = request.getParameter("vocab1Id");
-			if( vocab1Id != null) {
+            String vocab1Id = request.getParameter("vocab1Id");
+            if (vocab1Id != null) {
                 response.setRenderParameter("vocab1Id", vocab1Id);
             }
 
-			String vocab2Id = request.getParameter("vocab2Id");
-			if( vocab2Id != null) {
+            String vocab2Id = request.getParameter("vocab2Id");
+            if (vocab2Id != null) {
                 response.setRenderParameter("vocab2Id", vocab2Id);
             }
 
-			String vocab3Id = request.getParameter("vocab3Id");
-			if( vocab3Id != null) {
+            String vocab3Id = request.getParameter("vocab3Id");
+            if (vocab3Id != null) {
                 response.setRenderParameter("vocab3Id", vocab3Id);
             }
-
-		}
-
-	}
+        }
+    }
 
 
-	@RenderMode(name = "admin")
-	public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+    /**
+     * Admin view display.
+     *
+     * @param req request
+     * @param res response
+     * @throws PortletException
+     * @throws IOException
+     */
+    @RenderMode(name = "admin")
+    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
+        res.setContentType("text/html");
+        PortletRequestDispatcher rd = null;
 
-		res.setContentType("text/html");
-		PortletRequestDispatcher rd = null;
+        PortalWindow window = WindowFactory.getWindow(req);
 
-		PortalWindow window = WindowFactory.getWindow(req);
-
-		String libelle = window.getProperty("osivia.libelle");
-		if (libelle == null) {
+        String libelle = window.getProperty(SELECTOR_LABEL_WINDOW_PROPERTY);
+        if (libelle == null) {
             libelle = "";
         }
-		req.setAttribute("libelle", libelle);
+        req.setAttribute("libelle", libelle);
 
-
-		String selectorId = window.getProperty("osivia.selectorId");
-		if (selectorId == null) {
+        String selectorId = window.getProperty(SELECTOR_ID_WINDOW_PROPERTY);
+        if (selectorId == null) {
             selectorId = "";
         }
-		req.setAttribute("selectorId", selectorId);
+        req.setAttribute("selectorId", selectorId);
 
-
-		for(int niveau = 1; niveau < (NB_NIVEAUX + 1); niveau++){
-
-			String vocabName = window.getProperty("osivia.vocabName" + String.valueOf(niveau));
-			if (vocabName == null) {
+        for (int niveau = 1; niveau < (MAX_LEVEL + 1); niveau++) {
+            String vocabName = window.getProperty(VOCABULARY_NAME_WINDOW_PROPERTY_PREFIX + String.valueOf(niveau));
+            if (vocabName == null) {
                 vocabName = "";
             }
-			req.setAttribute("vocabName" + String.valueOf(niveau), vocabName);
+            req.setAttribute("vocabName" + String.valueOf(niveau), vocabName);
+        }
 
-		}
+        String preselect = window.getProperty(VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY);
+        if (preselect == null) {
+            preselect = "";
+        }
+        req.setAttribute("preselect1", preselect);
 
-	      String preselect = window.getProperty("osivia.preselect1");
-	        if (preselect == null) {
-                preselect = "";
-            }
-	        req.setAttribute("preselect1" , preselect);
-
-
-
-		String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
-		if(selectorMonoValued == null) {
+        String selectorMonoValued = window.getProperty(MONOVALUED_SELECTOR_WINDOW_PROPERTY);
+        if (selectorMonoValued == null) {
             selectorMonoValued = "0";
         }
-		req.setAttribute("selectorMonoValued", selectorMonoValued);
+        req.setAttribute("selectorMonoValued", selectorMonoValued);
 
-		String othersOption = window.getProperty("osivia.othersOption");
-		if(othersOption == null) {
+        String othersOption = window.getProperty(OTHERS_OPTION_WINDOW_PROPERTY);
+        if (othersOption == null) {
             othersOption = "0";
         }
-		req.setAttribute("othersOption", othersOption);
+        req.setAttribute("othersOption", othersOption);
 
-		String othersLabel = window.getProperty("osivia.othersLabel");
-		if (othersLabel == null) {
+        String othersLabel = window.getProperty("osivia.othersLabel");
+        if (othersLabel == null) {
             othersLabel = "";
         }
-		req.setAttribute("othersLabel", othersLabel);
+        req.setAttribute("othersLabel", othersLabel);
 
-		rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/admin.jsp");
-		rd.include(req, res);
-
-	}
+        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/admin.jsp");
+        rd.include(req, res);
+    }
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-	protected void doView(RenderRequest request, RenderResponse response) throws PortletException,
-			PortletSecurityException, IOException {
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        try {
+            response.setContentType("text/html");
 
-		logger.debug("doView");
+            // Window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-		try {
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            request.setAttribute("nuxeoController", nuxeoController);
 
-			response.setContentType("text/html");
+            // Selector label
+            request.setAttribute("libelle", window.getProperty(SELECTOR_LABEL_WINDOW_PROPERTY));
 
-			PortalWindow window = WindowFactory.getWindow(request);
-			request.setAttribute("window", window);
-
-			String libelle = window.getProperty("osivia.libelle");
-			request.setAttribute("libelle", libelle);
-
-			String selectorId = window.getProperty("osivia.selectorId");
-			if (selectorId == null) {
-				response.getWriter().print("<h2>Identifiant non défini</h2>");
-				response.getWriter().close();
-				return;
-
-			}
-
-			List<String> vocabs = new ArrayList<String>();
-
-			String selectorMonoValued = window.getProperty("osivia.selectorMonoValued");
-			request.setAttribute("selectorMonoValued", selectorMonoValued);
-
-			String vocabName1 = window.getProperty("osivia.vocabName1");
-			if (vocabName1 == null) {
-				response.getWriter().print("<h2>Vocabulaire non défini</h2>");
-				response.getWriter().close();
-				return;
-
-			}
-
-			vocabs.add(vocabName1);
-
-
-			String vocabName2 = window.getProperty("osivia.vocabName2");
-			if( vocabName2 != null){
-			    vocabs.add(vocabName2);
-			}
-
-			String vocabName3 = window.getProperty("osivia.vocabName3");
-			if( vocabName3 != null){
-			    vocabs.add(vocabName3);
-			}
-
-
-
-			String vocab1Id = request.getParameter("vocab1Id");
-
-            String preselect1 = window.getProperty("osivia.preselect1");
-            if( StringUtils.isNotEmpty(preselect1)) {
-                vocab1Id= preselect1;
+            // Selector identifier
+            String selectorId = window.getProperty(SELECTOR_ID_WINDOW_PROPERTY);
+            if (selectorId == null) {
+                response.getWriter().print("<h2>Identifiant non défini</h2>");
+                response.getWriter().close();
+                return;
             }
 
-			String vocab2Id = request.getParameter("vocab2Id");
-			String vocab3Id = request.getParameter("vocab3Id");
+            List<String> vocabs = new ArrayList<String>();
+
+            // Mono-valued selector indicator
+            String selectorMonoValued = window.getProperty(MONOVALUED_SELECTOR_WINDOW_PROPERTY);
+            request.setAttribute("selectorMonoValued", selectorMonoValued);
+
+            // Vocabulary level 1
+            String vocabName1 = window.getProperty("osivia.vocabName1");
+            if (vocabName1 == null) {
+                response.getWriter().print("<h2>Vocabulaire non défini</h2>");
+                response.getWriter().close();
+                return;
+            }
+            vocabs.add(vocabName1);
+
+            // Hierarchical vocabulary level 2
+            String vocabName2 = window.getProperty("osivia.vocabName2");
+            if (vocabName2 != null) {
+                vocabs.add(vocabName2);
+            }
+
+            // Hierarchical vocabulary level 3
+            String vocabName3 = window.getProperty("osivia.vocabName3");
+            if (vocabName3 != null) {
+                vocabs.add(vocabName3);
+            }
 
 
+            String vocab1Id = request.getParameter("vocab1Id");
 
-			// Get public parameter
+            String preselect1 = window.getProperty(VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY);
+            if (StringUtils.isNotEmpty(preselect1)) {
+                vocab1Id = preselect1;
+            }
+
+            String vocab2Id = request.getParameter("vocab2Id");
+            String vocab3Id = request.getParameter("vocab3Id");
+
+
+            // Get public parameter
             Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-            List<String> curSelect = selectors.get(selectorId) ;
+            List<String> curSelect = selectors.get(selectorId);
             if (curSelect != null) {
                 request.setAttribute("vocabsId", curSelect);
-                if( "1".equals(selectorMonoValued))  {
-
-
-                    if( curSelect.size() > 0)   {
-                        String[] tokens = curSelect.get( 0).split("/");
-                        if( tokens.length > 0)  {
+                if ("1".equals(selectorMonoValued)) {
+                    if (curSelect.size() > 0) {
+                        String[] tokens = curSelect.get(0).split("/");
+                        if (tokens.length > 0) {
                             vocab1Id = tokens[0];
                         }
-                        if( tokens.length > 1)  {
+                        if (tokens.length > 1) {
                             vocab2Id = tokens[1];
                         }
-                        if( tokens.length > 2)  {
+                        if (tokens.length > 2) {
                             vocab3Id = tokens[2];
                         }
-
                     }
                 }
             } else {
-
-                if( "1".equals(selectorMonoValued))  {
-                    if( preselect1 == null) {
-                        vocab1Id= null;
+                if ("1".equals(selectorMonoValued)) {
+                    if (preselect1 == null) {
+                        vocab1Id = null;
                     }
-                    vocab2Id=null;
-                    vocab3Id=null;
+                    vocab2Id = null;
+                    vocab3Id = null;
                 }
                 request.setAttribute("vocabsId", new ArrayList<String>());
             }
 
-			request.setAttribute("vocab1Id", vocab1Id);
-			request.setAttribute("vocab2Id", vocab2Id);
-			request.setAttribute("vocab3Id", vocab3Id);
-
+            request.setAttribute("vocab1Id", vocab1Id);
+            request.setAttribute("vocab2Id", vocab2Id);
+            request.setAttribute("vocab3Id", vocab3Id);
             request.setAttribute("preselect1", preselect1);
+            request.setAttribute("vocabName2", vocabName2);
+            request.setAttribute("vocabName3", vocabName3);
 
-			request.setAttribute("vocabName2", vocabName2);
-			request.setAttribute("vocabName3", vocabName3);
-
-
-			NuxeoController ctx = new NuxeoController(request, response, this.getPortletContext());
-
+            VocabularyEntry vocab = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabs);
+            request.setAttribute("vocab1", vocab);
 
 
-
-			VocabularyEntry vocab = VocabularyHelper.getVocabularyEntry(ctx, vocabs);
-			request.setAttribute("vocab1", vocab);
-
-			this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/view.jsp")
-					.include(request, response);
-
-		} catch (NuxeoException e) {
-			PortletErrorHandler.handleGenericErrors(response, e);
-		}
-
-		catch (Exception e) {
-			if (!(e instanceof PortletException)) {
-                throw new PortletException(e);
+            // Others option
+            if ("1".equals(window.getProperty(OTHERS_OPTION_WINDOW_PROPERTY))) {
+                request.setAttribute("othersLabel", window.getProperty(OTHERS_LABEL_WINDOW_PROPERTY));
             }
-		}
 
-		logger.debug("doView end");
-	}
+            this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/view.jsp").include(request, response);
+        } catch (NuxeoException e) {
+            PortletErrorHandler.handleGenericErrors(response, e);
+        } catch (PortletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
+    }
 
 }
