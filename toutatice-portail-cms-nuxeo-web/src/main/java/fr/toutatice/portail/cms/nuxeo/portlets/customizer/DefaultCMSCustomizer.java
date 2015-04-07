@@ -1309,17 +1309,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<CMSItemType> defaultTypes = new ArrayList<CMSItemType>();
 
         // Workspace
-        defaultTypes.add(new CMSItemType("Workspace", true, false, false, false, false, false, Arrays.asList("File", "OrderedFolder", "Note", "DocumentUrlContainer","AnnonceFolder","PictureBook"),
-                "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
+        defaultTypes.add(new CMSItemType("Workspace", true, false, false, false, false, false, Arrays.asList("File", "OrderedFolder", "Note",
+                "DocumentUrlContainer", "AnnonceFolder", "PictureBook"), "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
         // Portal site
-        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage","Picture","ContextualLink"), null,
-                "glyphicons glyphicons-global", true));
+        defaultTypes.add(new CMSItemType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Annonce", "PortalPage", "Picture",
+                "ContextualLink"), null, "glyphicons glyphicons-global", true));
         // Portal page
-        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce", "PortalPage","Picture","ContextualLink"), null,
-                "glyphicons glyphicons-more-items"));
+        defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Annonce", "PortalPage", "Picture",
+                "ContextualLink"), null, "glyphicons glyphicons-more-items"));
         // Ordered folder
-        defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "OrderedFolder", "Note", "Picture", "ContextualLink"), null,
-                "glyphicons glyphicons-folder-closed"));
+        defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "OrderedFolder", "Note", "Picture",
+                "ContextualLink"), null, "glyphicons glyphicons-folder-closed"));
         // File
         defaultTypes.add(new CMSItemType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
         // Note
@@ -1335,17 +1335,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 "glyphicons glyphicons-link"));
         // Document URL container
         defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, false, false, false, true, Arrays.asList("ContextualLink"), null,
-                "glyphicons glyphicons-folder-closed"));
+                "glyphicons glyphicons-bookmark"));
         // Picture book
         defaultTypes.add(new CMSItemType("PictureBook", true, false, true, true, false, true, Arrays.asList("Picture", "PictureBook"), null,
                 "glyphicons glyphicons-picture"));
         // Picture
-        defaultTypes
-                .add(new CMSItemType("Picture", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-picture"));        
-
+        defaultTypes.add(new CMSItemType("Picture", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-picture"));
         // Folder
-        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note", "Picture", "ContextualLink"), null,
-                "glyphicons glyphicons-folder-closed"));
+        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note", "Picture", "ContextualLink"),
+                null, "glyphicons glyphicons-folder-closed"));
 
         return defaultTypes;
     }
