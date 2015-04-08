@@ -68,6 +68,7 @@ $JQry(function() {
 			var url = $root.data("dropurl");
 
 			// AJAX call
+			var container = null;
 			var options = {
 				requestHeaders : [ "ajax", "true", "bilto" ],
 				method : "post",
@@ -76,7 +77,9 @@ $JQry(function() {
 					onAjaxSuccess(t, null);
 				}
 			};
-			new Ajax.Request(url, options);
+			var eventToStop = null;
+			var callerId = null;
+			directAjaxCall(container, options, url, eventToStop, callerId);
 		},
 		hoverClass : "droppable-hover bg-info",
 		tolerance : "pointer"
