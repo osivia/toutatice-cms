@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
@@ -1251,8 +1252,9 @@ public class NuxeoController {
         if (this.getRequest() != null) {
             EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
             if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                if( editionState.getDocPath().equals(path))
+                if( editionState.getDocPath().equals(path)) {
                     return true;
+                }
             }
         }
 
@@ -1592,8 +1594,8 @@ public class NuxeoController {
                     this.getResponse())));
             handlerCtx.setPortletCtx(this.getPortletCtx());
             handlerCtx.setRequest(this.getRequest());
-            if (this.response instanceof RenderResponse) {
-                handlerCtx.setResponse((RenderResponse) this.response);
+            if (this.response instanceof MimeResponse) {
+                handlerCtx.setResponse((MimeResponse) this.response);
             }
             handlerCtx.setScope(this.getScope());
             handlerCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
@@ -1998,8 +2000,8 @@ public class NuxeoController {
 
             this.cmsCtx.setPortletCtx(this.getPortletCtx());
 
-            if (this.response instanceof RenderResponse) {
-                this.cmsCtx.setResponse((RenderResponse) this.response);
+            if (this.response instanceof MimeResponse) {
+                this.cmsCtx.setResponse((MimeResponse) this.response);
             }
             this.cmsCtx.setScope(this.getScope());
             this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());

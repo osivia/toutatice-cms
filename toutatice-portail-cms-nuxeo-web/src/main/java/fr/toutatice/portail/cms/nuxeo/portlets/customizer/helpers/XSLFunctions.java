@@ -22,11 +22,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 
@@ -110,7 +109,7 @@ public class XSLFunctions {
         // Request
         PortletRequest request = cmsContext.getRequest();
         // Response
-        RenderResponse response = cmsContext.getResponse();
+        MimeResponse response = cmsContext.getResponse();
 
 
         // Portal controller context
@@ -221,16 +220,8 @@ public class XSLFunctions {
      * @throws WindowStateException
      */
     public String maximizedLink() throws WindowStateException {
-        PortletURL portletUrl = null;
-
-        if (this.cmsContext.getResponse() instanceof RenderResponse) {
-            portletUrl = this.cmsContext.getResponse().createRenderURL();
-        } else if (this.cmsContext.getResponse() instanceof ResourceResponse) {
-            portletUrl = ((ResourceResponse) this.cmsContext.getResponse()).createRenderURL();
-        }
-
+        PortletURL portletUrl = this.cmsContext.getResponse().createRenderURL();
         portletUrl.setWindowState(WindowState.MAXIMIZED);
-
         return portletUrl.toString();
     }
 
