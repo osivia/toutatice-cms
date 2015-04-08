@@ -21,6 +21,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -32,6 +33,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -39,6 +41,8 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
  * List CMS sub-items command.
@@ -48,12 +52,15 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  */
 public class ListCMSSubitemsCommand implements INuxeoCommand {
 
+    /** Nuxeo service. */
+    private final INuxeoService nuxeoService;
+
     /** Current parent identifier. */
     private final String parentId;
     /** Live content indicator. */
     private final boolean liveContent;
     /** CMS Context */
-    private CMSServiceCtx cmsContext;
+    private final CMSServiceCtx cmsContext;
 
 
     /**
@@ -64,6 +71,10 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      */
     public ListCMSSubitemsCommand(CMSServiceCtx cmsContext, String parentId, boolean liveContent) {
         super();
+
+        // Nuxeo service
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+
         this.cmsContext = cmsContext;
         this.parentId = parentId;
         this.liveContent = liveContent;
@@ -73,6 +84,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<CMSItem> execute(Session nuxeoSession) throws Exception {
         // Fetch live tree with publishing infos
         OperationRequest request = nuxeoSession.newRequest("Fetch.PublishingStatusChildren");
@@ -116,9 +128,8 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
             cmsItem.setPublished(Boolean.valueOf(isPublished));
             cmsItem.setBeingModified(Boolean.valueOf(isLiveModifiedFromProxy));
 
-            boolean isFolderish = documentWithPublishingStatus.getBoolean("isFolderish");
-            CMSItemType cmsItemType = new CMSItemType(documentType, isFolderish, false, false, false, false, false, null, null);
-            cmsItem.setType(cmsItemType);
+            CMSItemType type = this.getType(documentType);
+            cmsItem.setType(type);
 
             cmsItems.add(cmsItem);
         }
@@ -129,6 +140,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getId() {
         StringBuilder id = new StringBuilder();
         id.append(this.getClass().getCanonicalName());
@@ -138,6 +150,22 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
         id.append(this.liveContent);
         id.append("]");
         return id.toString();
+    }
+
+
+    /**
+     * Get CMS item type.
+     *
+     * @param type document type name
+     * @return CMS item type
+     */
+    private CMSItemType getType(String type) {
+        // CMS customizer
+        INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
+
+        // CMS item types
+        Map<String, CMSItemType> types = cmsCustomizer.getCMSItemTypes();
+        return types.get(type);
     }
 
 
