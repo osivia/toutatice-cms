@@ -12,6 +12,7 @@ $JQry(function() {
 			
 			var $draggable = $target.closest(".draggable");
 			var sourceId = $draggable.data("id");
+			var sourceType = $draggable.data("type");
 			
 			var $draggableChildren = $draggable.children();
 			
@@ -28,31 +29,37 @@ $JQry(function() {
 			var $helper = $JQry(document.createElement("div"));
 			$helper.addClass("draggable-helper bg-primary clearfix");
 			$helper.data("id", sourceId);
+			$helper.data("type", sourceType);
 			$helper.append($icon);
 			$helper.append($text);
 			return $helper;
 		},
 		opacity : 0.8,
-		revert : function(dropped) {
-			// Return `true` to let the helper slide back.
-			if (typeof dropped === "boolean") {
-				// dropped == true, when dropped over a simple, valid droppable target.
-				// false, when dropped outside a drop target.
-				return !dropped;
-			}
-			
-			// Drop comes from another tree. Default behavior is to assume a valid drop, since we are over a drop-target.
-			// Therefore we have to make an extra check, if the target node was rejected by a Dynatree callback.
-			var helper = $JQry.ui.ddmanager && $JQry.ui.ddmanager.current && $JQry.ui.ddmanager.current.helper;
-			var isRejected = helper && helper.hasClass("dynatree-drop-reject");
-			return isRejected;
-		},
+		revert : "invalid",
 		revertDuration : 200
 	});
 
 	
 	// File browser droppable items
 	$JQry(".file-browser .droppable").droppable({
+		accept : function(draggable) {
+			// Source
+			var $source = $JQry(draggable);
+			var sourceType = $source.data("type");
+
+			// Target
+			var $target = $JQry(this);
+			var targetAcceptedTypes = $target.data("acceptedtypes").split(",");
+			
+			var acceptedType = false;
+			jQuery.each(targetAcceptedTypes, function(index, type) {
+				if (sourceType === type) {
+					acceptedType = true;
+				}
+			});
+			
+			return acceptedType;
+		},
 		addClasses : false,
 		drop : function(event, ui) {
 			// Source
@@ -114,7 +121,27 @@ $JQry(function() {
 					return false;
 				}
 
-				return "over";
+				// Target node must accept at least one sub-type
+				if (targetNode.data.acceptedtypes == undefined) {
+					return false;
+				}
+
+				
+				// Source
+				var $source = $JQry(data.draggable.helper.context);
+				var sourceType = $source.data("type");
+
+				// Target
+				var targetAcceptedTypes = targetNode.data.acceptedtypes.split(",");
+				
+				var acceptedType = false;
+				jQuery.each(targetAcceptedTypes, function(index, type) {
+					if (sourceType === type) {
+						acceptedType = "over";
+					}
+				});
+				
+				return acceptedType;
 			},
 			
 			dragDrop : function(targetNode, data) {

@@ -6,7 +6,7 @@
     <c:if test="${not parent.selected}">class="hidden-script"</c:if>
 >
     <c:forEach var="child" items="${parent.children}">
-        <li data-retain="${child.selected}"
+        <li data-retain="${child.selected}" data-acceptedtypes="${fn:join(child.acceptedTypes, ',')}"
             <c:choose>
                 <c:when test="${child.current}">class="text-primary"</c:when>
                 <c:otherwise>class="text-muted"</c:otherwise>
