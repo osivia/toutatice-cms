@@ -488,9 +488,31 @@ public class ViewListPortlet extends CMSPortlet {
                 nuxeoRequest = configuration.getNuxeoRequest();
             }
 
+
+            
             // BeanShell
             if (configuration.isBeanShell()) {
+                
+                String orginalRequest = nuxeoRequest;
+                
+
                 nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
+                
+                /* many request (almost templates) generate null values which are not accepted bu Nuxeo
+                 * It's due to the fact that they expect to be run in contextualized mode
+                 * Instead of generatig an exception, it's better to return a null value
+                 * */
+                
+                if( nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*"))  {
+                    // Is it a contextualization error
+                    if(  nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*"))  {
+                        nuxeoRequest = null;
+                    }
+                     
+                }
+                
+
+                
             }
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
