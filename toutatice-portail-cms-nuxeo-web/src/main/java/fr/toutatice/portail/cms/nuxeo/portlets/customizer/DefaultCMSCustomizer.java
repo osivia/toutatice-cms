@@ -901,7 +901,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (!"detailedView".equals(ctx.getDisplayContext())) {
             // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-            if ("File".equals(doc.getType()) && ("download".equals(ctx.getDisplayContext()))) {
+            if (("File".equals(doc.getType()) || "Audio".equals(doc.getType()) || "Video".equals(doc.getType()))
+                    && ("download".equals(ctx.getDisplayContext()))) {
                 PropertyMap attachedFileProperties = doc.getProperties().getMap("file:content");
                 if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
 
@@ -1322,6 +1323,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 "ContextualLink"), null, "glyphicons glyphicons-folder-closed"));
         // File
         defaultTypes.add(new CMSItemType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
+        // Audio file
+        defaultTypes.add(new CMSItemType("Audio", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-headphones"));
+        // Video file
+        defaultTypes.add(new CMSItemType("Video", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-film"));
         // Note
         defaultTypes.add(new CMSItemType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-notes-2"));
         // Annonce

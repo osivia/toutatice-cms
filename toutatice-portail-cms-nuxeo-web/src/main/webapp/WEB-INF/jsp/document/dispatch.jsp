@@ -11,7 +11,7 @@
         <jsp:include page="view-annonce.jsp" />
     </c:when>
     
-    <c:when test="${'File' eq type}">
+    <c:when test="${('File' eq type) or ('Audio' eq type) or ('Video' eq type)}">
         <jsp:include page="view-file.jsp" />
     </c:when>
     
