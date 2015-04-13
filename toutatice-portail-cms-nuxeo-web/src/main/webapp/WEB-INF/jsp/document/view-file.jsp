@@ -36,8 +36,10 @@
         </div>
     </div>
     
-    <!-- Audio player -->
     <c:if test="${('Audio' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'audio/'))}">
+        <!-- Audio player -->
+        <hr>
+        
         <div>
             <audio src="${documentURL}" controls="controls" preload="metadata" class="img-responsive">
                 <source src="${documentURL}" type="${mimeType}">
@@ -45,8 +47,10 @@
         </div>
     </c:if>
     
-    <!-- Video player -->
     <c:if test="${('Video' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'video/'))}">
+        <!-- Video player -->
+        <hr>
+    
         <div class="embed-responsive embed-responsive-16by9">
             <video src="${documentURL}" controls="controls" preload="metadata" class="embed-responsive-item">
                 <source src="${documentURL}" type="${mimeType}">
