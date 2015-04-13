@@ -419,7 +419,7 @@ public class XSLFunctions {
                                     }
                                 }
                                 // In case of pages
-                                return this.nuxeoController.getLinkFromNuxeoURL(webpath).getUrl();
+                                return this.nuxeoController.getLinkFromNuxeoURL(query).getUrl();
                             }
                         }
 
