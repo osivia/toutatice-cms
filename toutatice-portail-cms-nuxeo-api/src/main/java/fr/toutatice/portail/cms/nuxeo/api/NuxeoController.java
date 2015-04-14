@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
+import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.Session;
@@ -61,6 +62,8 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
+import org.osivia.portal.core.page.PageProperties;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.web.IWebIdService;
@@ -1619,15 +1622,20 @@ public class NuxeoController {
             Page page = window.getPage();
 
             Map<String, String> pageParams = new HashMap<String, String>();
-
-            String path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
             
+
             String displayLiveVersion = this.getDisplayLiveVersion();
             
-            if(path.startsWith(IWebIdService.PREFIX_WEBPATH)){
-                if( doc.getPath().equals( cmsCtx.getForcedLivePath()))
-                        displayLiveVersion = "1";
-                }
+            String path = doc.getPath();
+            
+            // On ne sait pas gérer les webid des proxys distants (comment résoudre l'ambiguité si plusieurs proxys)
+            // Du coup, on ne gère les webids que pour les portails web
+            // Il reste une ambiguité si 2 publications distantes vers un portail web
+            // A revoir dans la version 4.2
+            
+            if (PortalObjectUtils.isSpaceSite(page.getPortal())) {
+                    path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
+            }
 
             String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams,
                     localContextualization, displayContext, this.getHideMetaDatas(), null, displayLiveVersion, null);

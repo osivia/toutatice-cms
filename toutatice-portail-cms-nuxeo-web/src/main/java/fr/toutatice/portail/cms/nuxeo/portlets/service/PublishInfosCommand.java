@@ -73,13 +73,15 @@ public class PublishInfosCommand implements INuxeoCommand {
             request.set("webid", path.replaceAll(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO, ""));
             if(StringUtils.isNotBlank(navigationPath)){
                 request.set("navigationPath", navigationPath);
-                request.set("displayLiveVersion", displayLiveVersion);
+            }
+            if(StringUtils.isNotBlank(displayLiveVersion)){
+                request.set("displayLiveVersion", displayLiveVersion);         
             }
         }
-		else {
-		    request.set("path", path);
-		}
-		
+        else {
+            request.set("path", path);
+        }
+        
 		
 		Blob binariesInfos = (Blob) request.execute();
 
@@ -169,9 +171,10 @@ public class PublishInfosCommand implements INuxeoCommand {
 	@Override
 	public String getId() {
 	    String id = "PublishInfosCommand" + StringUtils.removeEnd(path, ".proxy");
-	    if(StringUtils.isNotBlank(navigationPath)){
+	    
+        if (path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
 	        id = "PublishInfosCommand/" + this.displayLiveVersion + "/" + this.navigationPath + "/" + path; 
-	    }
+       }
 		return id; 
 	}
 

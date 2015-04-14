@@ -1207,6 +1207,7 @@ public class MenuBarFormater {
         // Request
         PortletRequest request = cmsContext.getRequest();
 
+        
         // Selectors parameters
         Map<String, String> parameters = null;
         String selectors = request.getParameter("selectors");
@@ -1215,9 +1216,22 @@ public class MenuBarFormater {
             Map<String, List<String>> decodedSelectors = PageSelectors.decodeProperties(selectors);
             parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
         }
+        
 
-        // Path
-        String path = this.customizer.getContentWebIdPath(cmsContext);
+        
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();        
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+        
+        // On ne sait pas gérer les webid des proxys distants (comment résoudre l'ambiguité si plusieurs proxys)
+        // Du coup, on ne les gère que pour les portails web
+        // A revoir dans la version 4.2
+        
+        if( !this.isRemoteProxy(cmsContext, pubInfos ))
+              path =  this.customizer.getContentWebIdPath(cmsContext);
+
+        
 
         // URL
         String url;
@@ -1228,7 +1242,6 @@ public class MenuBarFormater {
         }
         return ContextualizationHelper.getLivePath(url);
     }
-
 
     /**
      * Get permalink display indicator.

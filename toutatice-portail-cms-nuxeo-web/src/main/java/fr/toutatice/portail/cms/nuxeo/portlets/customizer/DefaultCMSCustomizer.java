@@ -47,11 +47,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
 import org.jboss.portal.core.model.portal.PortalObjectContainer;
 import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
+import org.jboss.portal.core.model.portal.Window;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
@@ -1204,8 +1206,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // CMS path
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
+            
+            String currentPagePath = null;
+            if( cmsContext.getRequest() != null)    {
+                Window window = (Window) cmsContext.getRequest().getAttribute("osivia.window");
+                if (window != null) {
+                    Page page = window.getPage();
+                    if (page != null) {
+                        currentPagePath = page.getId().toString(PortalObjectPath.CANONICAL_FORMAT);
+                    }
+                }
+            }
+            
+
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, cmsPath, null, null, null, null, null, null, null);
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null, null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
@@ -1256,12 +1271,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 String serviceWebId = this.getWebIdService().domainAndIdToFetchInfoService(domainId, webId);
 
                 // Document path
-                String path;
+                String path = null;
                 try {
+                    
                     CMSPublicationInfos pubInfos = this.getCmsService().getPublicationInfos(cmsContext, serviceWebId);
                     path = pubInfos.getDocumentPath();
                 } catch (CMSException e) {
-                    path = StringUtils.EMPTY;
+                    //path = StringUtils.EMPTY;
+                    // keep null path
                 }
 
                 // CMS item
