@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
@@ -34,132 +31,140 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 
-
+/**
+ * File content command.
+ *
+ * @see INuxeoCommand
+ */
 public class FileContentCommand implements INuxeoCommand {
 
-	Document document;
-	String docPath;
-	String fieldName;
-	
-	/** special resources such as avatar need to be reloaded without cache. Add a timestamp to force reload in nuxeo. */
+    Document document;
+    String docPath;
+    String fieldName;
+
+    /** special resources such as avatar need to be reloaded without cache. Add a timestamp to force reload in nuxeo. */
     String timestamp;
-	boolean streamingSupport = false;
-	
+    boolean streamingSupport = false;
+
     public FileContentCommand(Document document, String fieldName) {
-		super();
-		this.document = document;
-		this.docPath = null;
-		this.fieldName = fieldName;
-	}
-	
-	public FileContentCommand(String docPath, String fieldName) {
-		super();
-		this.document = null;
-		this.docPath = docPath;
-		this.fieldName = fieldName;
-	}
-	
+        super();
+        this.document = document;
+        this.docPath = null;
+        this.fieldName = fieldName;
+    }
+
+    public FileContentCommand(String docPath, String fieldName) {
+        super();
+        this.document = null;
+        this.docPath = docPath;
+        this.fieldName = fieldName;
+    }
+
     public void setStreamingSupport(boolean streamingSupport) {
         this.streamingSupport = streamingSupport;
     }
 
-	
-	public Object execute( Session session)	throws Exception {
 
-		if (document == null) {
-			document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
-					.set("value", docPath).execute();
-		}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object execute(Session session) throws Exception {
+        if (this.document == null) {
+            this.document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", this.docPath).execute();
+        }
 
-		PropertyMap map = document.getProperties().getMap(fieldName);
+        PropertyMap map = this.document.getProperties().getMap(this.fieldName);
 
-		String pathFile = map.getString("data");
-		
-		if( streamingSupport) {
-		    
-		    String url = null;
-		    
-		    if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-		        url= pathFile;
-		    } else    {
-		        url = session.getClient().getBaseUrl() + pathFile;
-		    }
+        String pathFile = map.getString("data");
 
-		    
-		    StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
-		    
-		    CMSBinaryContent content = new CMSBinaryContent();
-            
-            String fileName = blob.getFileName();
-            if( fileName == null || "null".equals(fileName)){
-                
-                // Pb. sur l'upload, on prend le nom du document
-                fileName = document.getTitle();
+        if (this.streamingSupport) {
+            String url = null;
+
+            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+                url = pathFile;
+            } else {
+                url = session.getClient().getBaseUrl() + pathFile;
             }
 
+
+            StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
+
+            CMSBinaryContent content = new CMSBinaryContent();
+
+            String fileName = blob.getFileName();
+            if ((fileName == null) || "null".equals(fileName)) {
+
+                // Pb. sur l'upload, on prend le nom du document
+                fileName = this.document.getTitle();
+            }
+
+
+            // File size
+            Long fileSize = this.document.getProperties().getLong("common:size");
+
             content.setName(fileName);
+            content.setFileSize(fileSize);
             content.setMimeType(blob.getMimeType());
             content.setStream(blob.getStream());
             content.setLongLiveSession(session);
 
-            return content;		    
+            return content;
+        }
 
-		}
+        // download the file from its remote location
+        FileBlob blob = (FileBlob) session.getFile(pathFile);
 
-		// download the file from its remote location
-		FileBlob blob = (FileBlob) session.getFile(pathFile);
-		
 
-	     
-	 	/* Construction résultat */
+        /* Construction résultat */
 
-			InputStream in = new FileInputStream(blob.getFile());
+        InputStream in = new FileInputStream(blob.getFile());
 
-			File tempFile = File.createTempFile("tempFile", ".tmp");
-            tempFile.deleteOnExit();
-			
-			OutputStream out = new FileOutputStream(tempFile);
-			
+        File tempFile = File.createTempFile("tempFile", ".tmp");
+        tempFile.deleteOnExit();
 
-			try {
-				byte[] b = new byte[1000000];
-				int i = -1;
-				while ((i = in.read(b)) != -1) {
-					out.write(b, 0, i);
-				}
-				out.flush();
-			} finally {
-				in.close();
-				out.close();
-			}
+        OutputStream out = new FileOutputStream(tempFile);
 
-			blob.getFile().delete();
-			
-			CMSBinaryContent content = new CMSBinaryContent();
-			
-			// JSS v 1.0.10 : traitement nom fichier à null
-			
-			String fileName = blob.getFileName();
-			if( fileName == null || "null".equals(fileName)){
-				
-				// Pb. sur l'upload, on prend le nom du document
-				fileName = document.getTitle();
-			}
 
-			content.setName(fileName);
-			content.setFile(tempFile);
-			content.setMimeType(blob.getMimeType());
+        try {
+            byte[] b = new byte[1000000];
+            int i = -1;
+            while ((i = in.read(b)) != -1) {
+                out.write(b, 0, i);
+            }
+            out.flush();
+        } finally {
+            in.close();
+            out.close();
+        }
 
-			return content;
-	
-	};		
-	
+        blob.getFile().delete();
+
+        CMSBinaryContent content = new CMSBinaryContent();
+
+        // JSS v 1.0.10 : traitement nom fichier à null
+
+        String fileName = blob.getFileName();
+        if ((fileName == null) || "null".equals(fileName)) {
+
+            // Pb. sur l'upload, on prend le nom du document
+            fileName = this.document.getTitle();
+        }
+
+        content.setName(fileName);
+        content.setFile(tempFile);
+        content.setMimeType(blob.getMimeType());
+
+        return content;
+
+    };
+
 
     /**
      * @return the timestamp
      */
     public String getTimestamp() {
-        return timestamp;
+        return this.timestamp;
     }
 
 
@@ -170,20 +175,21 @@ public class FileContentCommand implements INuxeoCommand {
         this.timestamp = timestamp;
     }
 
+    @Override
     public String getId() {
-		String id = "FileContentCommand";
-		if(document == null){
-			id += docPath;
-		}else{
-			id += document;
-		}
-
-        if (timestamp != null) {
-            id += timestamp;
+        String id = "FileContentCommand";
+        if (this.document == null) {
+            id += this.docPath;
+        } else {
+            id += this.document;
         }
 
-		return id += "/"+fieldName;
-	};		
+        if (this.timestamp != null) {
+            id += this.timestamp;
+        }
+
+        return id += "/" + this.fieldName;
+    };
 
 
 }

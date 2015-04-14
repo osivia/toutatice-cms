@@ -277,10 +277,13 @@ public class BinaryServlet extends HttpServlet
                     theResponse.setHeader("Content-Disposition", this.getHeaderContentDisposition(theRequest, content));
                     theResponse.setBufferSize(8192);
 
+                    if ((content.getFileSize() != null) && (content.getFileSize() < Integer.MAX_VALUE)) {
+                        theResponse.setContentLength(content.getFileSize().intValue());
+                    }
+
                     streamBigFile(content.getStream(), output, 8192);
                     return;
                 }
-
             }
 
             // Les headers doivent être positionnées avant la réponse
@@ -300,11 +303,9 @@ public class BinaryServlet extends HttpServlet
                 theResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 theRequest.setAttribute("osivia.no_redirection", "1");
             }
-
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
-
             output.close();
         }
     }
