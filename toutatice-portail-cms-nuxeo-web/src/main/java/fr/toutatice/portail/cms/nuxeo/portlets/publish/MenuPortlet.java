@@ -300,7 +300,7 @@ public class MenuPortlet extends CMSPortlet {
                             // Nuxeo document link
                             Link link = nuxeoController.getLink(document, "menu");
 
-                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, item);
+                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, false, item);
                             children.add(navigationDisplayItemChild);
                         }
                     }
@@ -552,6 +552,9 @@ public class MenuPortlet extends CMSPortlet {
         boolean selected = false;
         // Current item indicator
         boolean current = false;
+        // Fetched children indicator
+        Boolean unfetchedChildren = BooleanUtils.toBooleanObject(navigationItem.getProperties().get("unfetchedChildren"));
+        boolean fetchedChildren = BooleanUtils.isFalse(unfetchedChildren);
 
         if (StringUtils.startsWith(options.getCurrentPath(), navigationItem.getPath())) {
             selected = true;
@@ -574,18 +577,18 @@ public class MenuPortlet extends CMSPortlet {
         NavigationDisplayItem navigationDisplayItem;
 
         if ((level + 1) >= options.getStartLevel()) {
-            navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigationItem);
+            navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, fetchedChildren, navigationItem);
 
             // Add children
             List<NavigationDisplayItem> navigationDisplayChildren = this.getNavigationDisplayItemChildren(nuxeoController, cmsContext, options, navigationItem,
-                    level, selected);
+                    level, (selected || fetchedChildren));
             navigationDisplayItem.getChildren().addAll(navigationDisplayChildren);
         } else if (selected) {
             navigationDisplayItem = null;
 
             // Search selected child
             List<NavigationDisplayItem> navigationDisplayChildren = this.getNavigationDisplayItemChildren(nuxeoController, cmsContext, options, navigationItem,
-                    level, selected);
+                    level, true);
 
             for (NavigationDisplayItem displayItemChild : navigationDisplayChildren) {
                 if (displayItemChild.isSelected()) {
@@ -595,7 +598,7 @@ public class MenuPortlet extends CMSPortlet {
             }
 
             if ((navigationDisplayItem == null) && (level == 0)) {
-                navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, navigationItem);
+                navigationDisplayItem = new NavigationDisplayItem(document, link, selected, current, fetchedChildren, navigationItem);
             }
         } else {
             navigationDisplayItem = null;
@@ -613,12 +616,12 @@ public class MenuPortlet extends CMSPortlet {
      * @param options menu options
      * @param navigationItem recursive navigation item
      * @param level recursive level
-     * @param selected selected item indicator
+     * @param loaded required loading even in lazy mode indicator
      * @return navigation display item children
      * @throws CMSException
      */
     private List<NavigationDisplayItem> getNavigationDisplayItemChildren(NuxeoController nuxeoController, CMSServiceCtx cmsContext, MenuOptions options,
-            CMSItem navigationItem, int level, boolean selected) throws CMSException {
+            CMSItem navigationItem, int level, boolean loaded) throws CMSException {
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
         // Nuxeo document
@@ -627,7 +630,7 @@ public class MenuPortlet extends CMSPortlet {
         // Navigation display item children
         List<NavigationDisplayItem> navigationDisplayItemChildren;
 
-        if ((!options.isLazy() && (level < options.getMaxLevels())) || (options.isLazy() && selected)) {
+        if ((!options.isLazy() && (level < options.getMaxLevels())) || (options.isLazy() && loaded)) {
             List<CMSItem> navigationItemChildren = cmsService.getPortalNavigationSubitems(cmsContext, options.getBasePath(), navigationItem.getPath());
             navigationDisplayItemChildren = new ArrayList<NavigationDisplayItem>(navigationItemChildren.size());
 

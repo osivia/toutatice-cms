@@ -710,7 +710,7 @@ public class CMSService implements ICMSService {
                         idsToFetch.add(doc.getId());
                     }
                 }
-                
+
                   CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
                   pathToCheck = parentPath.toString();
 
@@ -777,7 +777,7 @@ public class CMSService implements ICMSService {
 
 
             Map<String, NavigationItem> navItems = null;
-            
+
             boolean forceLiveVersion = false;
             if ("1".equals(cmsCtx.getDisplayLiveVersion()) || "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"))) {
                 forceLiveVersion = true;
@@ -785,7 +785,7 @@ public class CMSService implements ICMSService {
 
             boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
             boolean refreshing = PageProperties.getProperties().isRefreshingPage();
-            
+
             if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
@@ -847,15 +847,15 @@ public class CMSService implements ICMSService {
 
 
             Map<String, NavigationItem> navItems = null;
-            
+
             boolean forceLiveVersion = false;
             if ("1".equals(cmsCtx.getDisplayLiveVersion()) || "1".equals(publishSpaceConfig.getProperties().get("displayLiveVersion"))) {
                 forceLiveVersion = true;
             }
-            
+
             boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
             boolean refreshing = PageProperties.getProperties().isRefreshingPage();
-            
+
             if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
             } else {
@@ -880,9 +880,13 @@ public class CMSService implements ICMSService {
                         CMSItem item = navChild.getAdaptedCMSItem();
                         if (item == null) {
                             if (navChild.getMainDoc() != null) {
-                                navChild.setAdaptedCMSItem(this.createNavigationItem(cmsCtx, childNavPath, ((Document) navChild.getMainDoc()).getTitle(),
-                                        (Document) navChild.getMainDoc(), publishSpacePath));
+                                item = this.createNavigationItem(cmsCtx, childNavPath, ((Document) navChild.getMainDoc()).getTitle(),
+                                        (Document) navChild.getMainDoc(), publishSpacePath);
+                                navChild.setAdaptedCMSItem(item);
                             }
+                        }
+                        if (item != null) {
+                            item.getProperties().put("unfetchedChildren", BooleanUtils.toStringTrueFalse(navChild.isUnfetchedChildren()));
                         }
 
                         childrens.add(navChild.getAdaptedCMSItem());
@@ -972,10 +976,10 @@ public class CMSService implements ICMSService {
                         }
                     }
                 }
-                
+
                 String cmsReferrerNavigationPath = ctx.getCmsReferrerNavigationPath();
                 String displayLiveVersion = ctx.getDisplayLiveVersion();
-                
+
                 pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(cmsReferrerNavigationPath, path, displayLiveVersion)));
 
                 if (pubInfos != null) {

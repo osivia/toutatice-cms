@@ -37,6 +37,8 @@ public class NavigationDisplayItem {
     private final boolean selected;
     /** Current item indicator. */
     private final boolean current;
+    /** Fetched children indicator. */
+    private final boolean fetchedChildren;
     /** CMS navigation item. */
     private final CMSItem navItem;
     /** Current item accepted types. */
@@ -52,9 +54,10 @@ public class NavigationDisplayItem {
      * @param link link
      * @param selected selected item indicator
      * @param current current item indicator
+     * @param fetchedChildren fetched children indicator
      * @param navItem CMS navigation item
      */
-    public NavigationDisplayItem(Document document, Link link, boolean selected, boolean current, CMSItem navItem) {
+    public NavigationDisplayItem(Document document, Link link, boolean selected, boolean current, boolean fetchedChildren, CMSItem navItem) {
         super();
         this.id = document.getId();
         this.title = document.getTitle();
@@ -62,6 +65,7 @@ public class NavigationDisplayItem {
         this.external = link.isExternal();
         this.selected = selected;
         this.current = current;
+        this.fetchedChildren = fetchedChildren;
         this.navItem = navItem;
         this.acceptedTypes = this.getAcceptedTypes(navItem);
         this.children = new ArrayList<NavigationDisplayItem>();
@@ -153,6 +157,15 @@ public class NavigationDisplayItem {
      */
     public boolean isCurrent() {
         return this.current;
+    }
+
+    /**
+     * Getter for fetchedChildren.
+     *
+     * @return the fetchedChildren
+     */
+    public boolean isFetchedChildren() {
+        return this.fetchedChildren;
     }
 
     /**

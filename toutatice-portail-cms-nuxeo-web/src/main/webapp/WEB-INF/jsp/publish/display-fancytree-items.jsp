@@ -16,7 +16,7 @@
             <c:if test="${child.navItem.type.browsable}">data-folder="true"</c:if>
             <c:if test="${not empty child.navItem.type.glyph and not fn:contains(child.navItem.type.glyph, 'folder')}">data-iconclass="${child.navItem.type.glyph}"</c:if>
             
-            <c:if test="${lazy}">data-lazy="${child.navItem.type.browsable && not child.selected}" data-id="${child.id}" data-path="${child.navItem.path}" data-current="${child.current}"</c:if>
+            <c:if test="${lazy}">data-lazy="${child.navItem.type.browsable && not child.selected && not child.fetchedChildren}" data-id="${child.id}" data-path="${child.navItem.path}" data-current="${child.current}"</c:if>
         >
             <!-- Node -->
             <a href="${child.url}">${child.title}</a>
