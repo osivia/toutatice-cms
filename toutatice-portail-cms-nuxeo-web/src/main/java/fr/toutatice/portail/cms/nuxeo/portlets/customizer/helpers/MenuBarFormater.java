@@ -13,10 +13,13 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -54,6 +57,7 @@ import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.core.cms.CMSItemTypeComparator;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
@@ -859,7 +863,9 @@ public class MenuBarFormater {
 
             // Sub-types
             Map<String, String> subTypes = pubInfos.getSubTypes();
-            Map<CMSItemType, String> creationTypes = new HashMap<CMSItemType, String>(subTypes.size());
+            Comparator<CMSItemType> comparator = new CMSItemTypeComparator(bundle);
+            SortedMap<CMSItemType, String> folderishTypes = new TreeMap<CMSItemType, String>(comparator);
+            SortedMap<CMSItemType, String> notFolderishTypes = new TreeMap<CMSItemType, String>(comparator);
 
             Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
             CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
@@ -869,25 +875,36 @@ public class MenuBarFormater {
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
                         CMSItemType docTypeDef = managedTypes.get(docType);
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
-                            Map<String, String> requestParameters = new HashMap<String, String>();
-                            requestParameters.put("type", docType);
-                            String url = this.cmsService.getEcmUrl(cmsContext, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
-
                             // CMS item type
                             CMSItemType cmsItemType = managedTypes.get(docType);
                             if (cmsItemType != null) {
-                                creationTypes.put(cmsItemType, url);
+                                // URL
+                                Map<String, String> requestParameters = new HashMap<String, String>();
+                                requestParameters.put("type", docType);
+                                String url = this.cmsService.getEcmUrl(cmsContext, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
+
+                                if (cmsItemType.isFolderish()) {
+                                    folderishTypes.put(cmsItemType, url);
+                                } else {
+                                    notFolderishTypes.put(cmsItemType, url);
+                                }
                             }
                         }
                     }
                 }
             }
 
-
-            if (creationTypes.size() == 1) {
+            int size = folderishTypes.size() + notFolderishTypes.size();
+            if (size == 1) {
                 // Direct link
 
-                Entry<CMSItemType, String> entry = creationTypes.entrySet().iterator().next();
+                Entry<CMSItemType, String> entry;
+                if (folderishTypes.size() == 1) {
+                    entry = folderishTypes.entrySet().iterator().next();
+                } else {
+                    entry = notFolderishTypes.entrySet().iterator().next();
+                }
+
                 String url = entry.getValue();
 
                 // Menubar item
@@ -896,14 +913,15 @@ public class MenuBarFormater {
                 item.setAjaxDisabled(true);
 
                 menubar.add(item);
-            } else if (creationTypes.size() > 0) {
+            } else if (size > 0) {
                 // Dropdown menu
                 MenubarDropdown dropdown = new MenubarDropdown("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.CMS, 2);
                 this.menubarService.addDropdown(portalControllerContext, dropdown);
 
                 int order = 1;
+                boolean divider = false;
 
-                for (Entry<CMSItemType, String> entry : creationTypes.entrySet()) {
+                for (Entry<CMSItemType, String> entry : folderishTypes.entrySet()) {
                     CMSItemType cmsItemType = entry.getKey();
                     String url = entry.getValue();
 
@@ -919,6 +937,27 @@ public class MenuBarFormater {
                     menubar.add(item);
 
                     order++;
+                    divider = true;
+                }
+
+                for (Entry<CMSItemType, String> entry : notFolderishTypes.entrySet()) {
+                    CMSItemType cmsItemType = entry.getKey();
+                    String url = entry.getValue();
+
+                    // Type name
+                    String typeName = StringUtils.upperCase(cmsItemType.getName());
+                    String name = bundle.getString(typeName);
+
+                    // Menubar item
+                    MenubarItem item = new MenubarItem("ADD_" + typeName, name, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
+                            "fancyframe_refresh");
+                    item.setAjaxDisabled(true);
+                    item.setDivider(divider);
+
+                    menubar.add(item);
+
+                    order++;
+                    divider = false;
                 }
             }
         }

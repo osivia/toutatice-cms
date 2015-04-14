@@ -26,7 +26,6 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.urls.Link;
-import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -191,8 +190,8 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the timestamp associated with the refresh event
      */
     String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
-    
-    
+
+
 
     /**
      * Get templates list.
