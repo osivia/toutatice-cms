@@ -18,12 +18,8 @@
                 <div class="alert alert-info">${nuxeoRequest}</div>
             </c:if>
         
-        
             <!-- Documents -->
-            <div class="no-ajax-link">
-                <jsp:include page="view-${style}.jsp" />
-            </div>
-            
+            <jsp:include page="view-${style}.jsp" />
             
             <!-- Pagination -->
             <jsp:include page="pagination.jsp" />
