@@ -604,6 +604,20 @@ public class MenuPortlet extends CMSPortlet {
             navigationDisplayItem = null;
         }
 
+
+        // Last selected indicator
+        if (selected && !current) {
+            boolean lastSelected = true;
+            for (NavigationDisplayItem item : navigationDisplayItem.getChildren()) {
+                if (item.isSelected()) {
+                    lastSelected = false;
+                    break;
+                }
+            }
+            navigationDisplayItem.setLastSelected(lastSelected);
+        }
+
+
         return navigationDisplayItem;
     }
 

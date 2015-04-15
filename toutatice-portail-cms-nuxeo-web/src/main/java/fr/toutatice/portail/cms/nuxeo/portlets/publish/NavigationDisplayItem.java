@@ -27,9 +27,9 @@ public class NavigationDisplayItem {
 
     /** Item identifier. */
     private final String id;
-    /** The display title of the link. */
+    /** Display title. */
     private final String title;
-    /** The absolute URL of the link. */
+    /** Absolute URL. */
     private final String url;
     /** External link indicator. */
     private final boolean external;
@@ -45,6 +45,9 @@ public class NavigationDisplayItem {
     private final String[] acceptedTypes;
     /** Children. */
     private final List<NavigationDisplayItem> children;
+
+    /** Last selected indicator. */
+    private boolean lastSelected;
 
 
     /**
@@ -193,6 +196,24 @@ public class NavigationDisplayItem {
      */
     public List<NavigationDisplayItem> getChildren() {
         return this.children;
+    }
+
+    /**
+     * Getter for lastSelected.
+     * 
+     * @return the lastSelected
+     */
+    public boolean isLastSelected() {
+        return this.lastSelected;
+    }
+
+    /**
+     * Setter for lastSelected.
+     * 
+     * @param lastSelected the lastSelected to set
+     */
+    public void setLastSelected(boolean lastSelected) {
+        this.lastSelected = lastSelected;
     }
 
 }

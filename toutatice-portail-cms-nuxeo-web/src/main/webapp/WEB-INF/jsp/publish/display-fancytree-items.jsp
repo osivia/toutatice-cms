@@ -8,7 +8,7 @@
     <c:forEach var="child" items="${parent.children}">
         <li data-retain="${child.selected}" data-acceptedtypes="${fn:join(child.acceptedTypes, ',')}"
             <c:choose>
-                <c:when test="${child.current}">class="text-primary"</c:when>
+                <c:when test="${child.current or child.lastSelected}">class="text-primary"</c:when>
                 <c:otherwise>class="text-muted"</c:otherwise>
             </c:choose>
             

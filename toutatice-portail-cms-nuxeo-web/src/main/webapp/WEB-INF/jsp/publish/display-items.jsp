@@ -20,7 +20,7 @@
             
             <!-- Current item ? -->
             <c:remove var="current" />
-            <c:if test="${child.current}">
+            <c:if test="${child.current or child.lastSelected}">
                 <c:set var="current" value="active" />
             </c:if>
     
