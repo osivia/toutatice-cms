@@ -19,7 +19,9 @@
             </c:if>
         
             <!-- Documents -->
-            <jsp:include page="view-${style}.jsp" />
+            <div class="no-ajax-link">
+                <jsp:include page="view-${style}.jsp" />
+            </div>
             
             <!-- Pagination -->
             <jsp:include page="pagination.jsp" />

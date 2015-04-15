@@ -10,7 +10,7 @@
 
 <script src="${pageContext.request.contextPath}/js/bxslider-fragment-integration.js"></script>
 
-<div class="bxslider-container no-ajax-link">
+<div class="bxslider-container">
     <ul class="list-unstyled bxfgtSlider clearfix" data-timer="${timer}">
         <c:forEach var="document" items="${documents}" varStatus="status">
             <li class="bxslider-slide">

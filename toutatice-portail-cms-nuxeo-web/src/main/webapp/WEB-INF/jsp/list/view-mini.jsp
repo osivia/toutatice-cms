@@ -4,7 +4,7 @@
 <%@ page isELIgnored="false" %>
 
 
-<ul class="list-unstyled no-ajax-link">
+<ul class="list-unstyled">
     <c:forEach var="document" items="${documents}">
         <li><ttc:title document="${document}" /></li>
     </c:forEach>
