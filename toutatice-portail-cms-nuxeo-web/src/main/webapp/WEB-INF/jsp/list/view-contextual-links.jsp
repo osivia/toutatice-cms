@@ -7,7 +7,7 @@
 <%@ page isELIgnored="false" %>
 
 
-<div class="contextual-links">
+<div class="contextual-links no-ajax-link">
     <div class="row">
         <c:forEach var="document" items="${documents}" varStatus="status">
             <!-- Document properties -->

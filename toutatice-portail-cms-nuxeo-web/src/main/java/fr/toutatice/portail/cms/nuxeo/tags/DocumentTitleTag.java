@@ -82,7 +82,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
                 target = "_blank";
             }
 
-            Element linkElement = DOM4JUtils.generateLinkElement(documentLink.getUrl(), target, null, null, this.document.getTitle(), glyphicon);
+            Element linkElement = DOM4JUtils.generateLinkElement(documentLink.getUrl(), target, null, "no-ajax-link", this.document.getTitle(), glyphicon);
             container.add(linkElement);
 
             // External indicator

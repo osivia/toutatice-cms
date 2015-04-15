@@ -7,7 +7,7 @@
 <%@ page isELIgnored="false" %>
 
 
-<ul class="list-unstyled">
+<ul class="list-unstyled no-ajax-link">
     <c:forEach var="document" items="${documents}" varStatus="status">
         <!-- Document properties -->
         
