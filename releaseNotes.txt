@@ -1,5 +1,23 @@
-Version 3.6.0
+Version 4.0.0
 ================
+16/04/2015
+
+Content
+------------
+|evol] global improvment of ergonomics on the actions on the menubar (submenu add, edit, share)
+[evol] improvment of ergonomics on mobile devices
+[evol] user can follow a document (e-mail notifications)
+[evol] new display of picturebooks
+[evol] new display of the print mode
+[evol] each tab keep his own navigation history
+[evol] first integration of Nuxeo's Elastic search on lists, navigation elements, and on init on global navigation
+|evol] webpages / new fragments slider and easy-to-use query list
+[evol] webpages / configurations can be set globally (not in a single domain)
+[evol] smarter integration of the back button in navigation and between portlet actions
+|evol] Drag n drop on filebrowser in ajax with a waiter
+[evol] first step of integration with webIds and remote publication
+[evol] refactoring of pictures management on a common servlet (improve cache and performance)
+[evol] TLD for portlets : Spring, SpringMVC, Displaytag
 
 Version 3.5.0
 ================
