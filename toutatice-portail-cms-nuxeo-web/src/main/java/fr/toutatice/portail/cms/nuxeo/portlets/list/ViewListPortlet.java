@@ -503,7 +503,7 @@ public class ViewListPortlet extends CMSPortlet {
                  * Instead of generatig an exception, it's better to return a null value
                  * */
                 
-                if( nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*"))  {
+                if( nuxeoRequest != null && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*"))  {
                     // Is it a contextualization error
                     if(  nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*"))  {
                         nuxeoRequest = null;
