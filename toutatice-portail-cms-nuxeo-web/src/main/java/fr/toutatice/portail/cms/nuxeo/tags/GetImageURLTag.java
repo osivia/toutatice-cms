@@ -54,9 +54,8 @@ public class GetImageURLTag extends SimpleTagSupport {
             Document nuxeoDocument = this.document.getDocument();
 
             PropertyMap map = nuxeoDocument.getProperties().getMap(this.property);
-            // We test on name in case of document is fetch from ElasticSearch
-            // cause in this case, data (complex value), is not returned
-            if ((map != null) && ((map.getString("data") != null) || (StringUtils.isNotBlank(map.getString("name"))))) {
+            
+            if (map != null) {
                 String url = nuxeoController.createFileLink(nuxeoDocument, this.property);
 
                 JspWriter out = pageContext.getOut();
