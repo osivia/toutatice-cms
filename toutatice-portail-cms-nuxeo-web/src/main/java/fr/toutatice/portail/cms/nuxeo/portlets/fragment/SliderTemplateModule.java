@@ -22,10 +22,12 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.ITemplateModule;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SliderListEditableWindow;
 
 
 /**
@@ -52,7 +54,12 @@ public class SliderTemplateModule implements ITemplateModule {
     @Override
     public void doView(PortalControllerContext portalControllerContext, PortalWindow window, RenderRequest request, RenderResponse response)
             throws PortletException {
-        request.setAttribute(SLIDER_DOC_TYPE, window.getProperty(SLIDER_DOC_TYPE));
+        /* Value filled for EditableWindows */
+        String docType = window.getProperty(SLIDER_DOC_TYPE);
+        if(StringUtils.isBlank(docType)){
+           docType = SliderListEditableWindow.ALL_DOC_TYPES;
+        }
+        request.setAttribute(SLIDER_DOC_TYPE, docType);
         request.setAttribute(SLIDER_TIMER, window.getProperty(SLIDER_TIMER));
     }
 

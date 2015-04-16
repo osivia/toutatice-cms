@@ -6,7 +6,7 @@ var fgtSlider;
 /* Function done during fgtSlider instanciation */
 function setTemporisation(){
 	var time = jQuery(".bxfgtSlider").data("timer");
-	if(typeof time === 'undefined'){
+	if((typeof time === 'undefined') || (time == "")){
 		time = 6000;
 	} else {
 		time = time*1000;
