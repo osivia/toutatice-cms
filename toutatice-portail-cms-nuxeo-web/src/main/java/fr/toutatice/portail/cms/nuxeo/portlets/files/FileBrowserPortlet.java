@@ -294,6 +294,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 }
                 request.setAttribute("documents", documentsDTO);
 
+                response.setTitle(document.getTitle());
+
                 // Insert standard menu bar for content item
                 if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
                     nuxeoController.insertContentMenuBarItems();
@@ -330,10 +332,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                 MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
                 String primaryType = mimeType.getPrimaryType();
                 String subType = mimeType.getSubType();
-                
+
                 if ("application".equals(primaryType)) {
                     // Application
-                    
+
                     if ("pdf".equals(subType)) {
                         // PDF
                         icon = "pdf";
@@ -361,7 +363,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     }
                 } else if ("text".equals(primaryType)) {
                     // Text
-                    
+
                     if ("html".equals(subType) || "xml".equals(subType)) {
                         // HTML or XML
                         icon = "xml";

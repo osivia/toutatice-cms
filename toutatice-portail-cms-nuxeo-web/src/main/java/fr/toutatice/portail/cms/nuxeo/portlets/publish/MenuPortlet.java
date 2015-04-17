@@ -346,10 +346,12 @@ public class MenuPortlet extends CMSPortlet {
      */
     private void writeNavigationDisplayItem(PrintWriter printWriter, NavigationDisplayItem item) {
         boolean browsable = false;
+        String acceptedTypes = null;
         String glyph = null;
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
             CMSItemType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
+            acceptedTypes = StringUtils.join(cmsItemType.getPortalFormSubTypes(), ",");
             glyph = cmsItemType.getGlyph();
         }
 
@@ -382,6 +384,13 @@ public class MenuPortlet extends CMSPortlet {
         printWriter.write("\"path\" : \"");
         printWriter.write(item.getNavItem().getPath());
         printWriter.write("\", ");
+
+        // Accepted types
+        if (acceptedTypes != null) {
+            printWriter.write("\"acceptedtypes\" : \"");
+            printWriter.write(acceptedTypes);
+            printWriter.write("\", ");
+        }
 
         // Glyph
         if ((glyph != null) && (!glyph.contains("folder"))) {
@@ -567,6 +576,9 @@ public class MenuPortlet extends CMSPortlet {
             current = true;
         }
 
+        // Primary path selected indicator
+        boolean primaryPathSelected = (selected && !current);
+
         if (StringUtils.startsWith(options.getAuxiliaryPath(), navigationItem.getPath())
                 && !StringUtils.equals(options.getAuxiliaryPath(), navigationItem.getPath())) {
             selected = true;
@@ -606,7 +618,7 @@ public class MenuPortlet extends CMSPortlet {
 
 
         // Last selected indicator
-        if (selected && !current) {
+        if (primaryPathSelected) {
             boolean lastSelected = true;
             for (NavigationDisplayItem item : navigationDisplayItem.getChildren()) {
                 if (item.isSelected()) {

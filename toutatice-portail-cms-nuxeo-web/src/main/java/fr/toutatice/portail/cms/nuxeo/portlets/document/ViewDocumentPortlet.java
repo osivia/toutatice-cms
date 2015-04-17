@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -31,6 +31,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -281,6 +282,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
+            // Theme
+            String theme = window.getPageProperty(ThemeConstants.PORTAL_PROP_THEME);
+            request.setAttribute("theme", theme);
+
             // Path
             String path = window.getProperty(PATH_WINDOW_PROPERTY);
             // Computed path
@@ -332,7 +337,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         // Publication infos
                         CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
-                        boolean commentsEnabled = areCommentsEnabled(cmsService, publicationInfos, cmsContext);
+                        boolean commentsEnabled = this.areCommentsEnabled(cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
                             documentDTO.setCommentable(true);
 

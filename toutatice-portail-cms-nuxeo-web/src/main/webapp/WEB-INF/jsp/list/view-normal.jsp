@@ -25,15 +25,19 @@
         
     
         <li>
-            <!-- Title -->
-            <p><ttc:title document="${document}" icon="true" /></p>
-            
-            <!-- Informations -->
-            <p class="text-muted">
-                <span><is:getProperty key="EDITED_BY" /></span>
-                <ttc:user name="${author}" linkable="true" />
-                <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
-                <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+            <p>
+                <!-- Title -->
+                <ttc:title document="${document}" icon="true" />
+                
+                <br>
+                
+                <!-- Informations -->
+                <span class="text-muted">
+                    <span><is:getProperty key="EDITED_BY" /></span>
+                    <ttc:user name="${author}" linkable="true" />
+                    <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+                    <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+                </span>
             </p>
         </li>
     </c:forEach>
