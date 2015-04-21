@@ -8,6 +8,8 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.apache.commons.lang.StringUtils;
+
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 
@@ -46,7 +48,41 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
         if (nuxeoController != null) {
-            String label = VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, this.key);
+        	
+        	StringBuilder sb = new StringBuilder("");
+        	String[] keys ;
+        	if(StringUtils.contains(this.key, "[")) {
+        		String[] substringsBetween = StringUtils.substringsBetween(this.key, "[", "]");
+        		keys = StringUtils.split(substringsBetween[0], ",");
+        	}
+        	else {
+        		keys = new String[1];
+        		keys[0] = this.key;
+        	}
+        	
+        	for(int i =0; i<keys.length; i++) {
+        		
+        		if(i>0) {
+        			sb.append(", ");
+        		}
+        		
+        		keys[i] = StringUtils.trim(keys[i]);
+        		
+        		if(StringUtils.contains(keys[i], "/")) {
+        			String[] subKeys = StringUtils.split(keys[i], "/");
+        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[0])));
+        			sb.append(" / ");
+        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name,subKeys[1])));
+        			
+        		}
+        		else {
+        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
+        		}
+        		
+        	}
+        	
+        	
+            String label = sb.toString();
 
             if (label != null) {
                 JspWriter out = pageContext.getOut();
