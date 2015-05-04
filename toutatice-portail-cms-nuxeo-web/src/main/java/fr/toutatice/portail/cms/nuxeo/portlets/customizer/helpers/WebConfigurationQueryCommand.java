@@ -16,8 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Documents;
-import org.nuxeo.ecm.automation.client.model.PathRef;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
@@ -61,22 +59,29 @@ public class WebConfigurationQueryCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session session) throws Exception {
+        OperationRequest request;
 
         if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-
-            OperationRequest request = session.newRequest("Context.GetWebConfigurations");
+            request = session.newRequest("Context.GetWebConfigurations");
             request.set("domainPath", this.domainPath);
             request.set("confType", this.type.getTypeName());
 
-            String navigationSchemas = BASIC_NAVIGATION_SCHEMAS;
-            request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
+        } else {
+            request = session.newRequest("Document.Query");
 
-            return request.execute();
+            StringBuilder builder = new StringBuilder();
+            builder.append("SELECT * FROM Document WHERE ( ecm:path STARTSWITH '");
+            builder.append(this.domainPath);
+            builder.append("' AND (wconf:type = '");
+            builder.append(this.type.getTypeName());
+            builder.append("') AND (wconf:enabled=1)) ORDER BY wconf:order");
+
+            request.set("query", builder.toString());
         }
 
+        request.setHeader(Constants.HEADER_NX_SCHEMAS, BASIC_NAVIGATION_SCHEMAS);
 
-        return new Documents();
-
+        return request.execute();
     }
 
 

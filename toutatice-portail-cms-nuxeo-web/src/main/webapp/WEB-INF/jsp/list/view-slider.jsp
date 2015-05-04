@@ -5,10 +5,8 @@
 <%@ page isELIgnored="false"%>
 
 
-<script src="${pageContext.request.contextPath}/bxslider/jquery.bxslider.min.js"></script>
-<link href="${pageContext.request.contextPath}/bxslider/jquery.bxslider.css" rel="stylesheet" />
-
 <script src="${pageContext.request.contextPath}/js/bxslider-fragment-integration.js"></script>
+
 
 <div class="bxslider-container">
     <ul class="list-unstyled bxfgtSlider clearfix" data-timer="${timer}">
