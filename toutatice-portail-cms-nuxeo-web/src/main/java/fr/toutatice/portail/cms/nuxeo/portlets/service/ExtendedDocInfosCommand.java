@@ -19,6 +19,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -87,6 +88,29 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
                 if (infos.containsKey("subscription_status")) {
                     docInfos.setSubscriptionStatus(CMSExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
                 }
+                
+                if (infos.containsKey("lockStatus")) {
+                    docInfos.setLockStatus(CMSExtendedDocumentInfos.LockStatus.valueOf(infos.get("lockStatus").toString()));
+                    
+                    if (infos.containsKey("lockOwner")) {
+                    	docInfos.setLockOwner(infos.get("lockOwner").toString());
+                    }
+                }
+                
+                /* Infos from Drive */
+                if (infos.containsKey("canSynchronize")) {
+                	docInfos.setCanSynchronize(BooleanUtils.toBoolean(infos.get("canSynchronize").toString()));
+                }
+                if (infos.containsKey("canUnsynchronize")) {
+                	docInfos.setCanUnsynchronize(BooleanUtils.toBoolean(infos.get("canUnsynchronize").toString()));
+                }
+                if (infos.containsKey("synchronizationRootPath")) {
+                	docInfos.setSynchronizationRootPath(infos.get("synchronizationRootPath").toString());
+                }
+                if (infos.containsKey("driveEditURL")) {
+                	docInfos.setDriveEditURL(infos.get("driveEditURL").toString());
+                }
+
 
             }
 

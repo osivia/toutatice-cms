@@ -44,7 +44,6 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -112,20 +111,6 @@ public class PublishInfosCommand implements INuxeoCommand {
                 }
                 if (infos.containsKey("parentSpaceID")) {
                     publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
-                }
-
-                /* Infos from Drive */
-                if (infos.containsKey("canSynchronize")) {
-                    publiInfos.setCanSynchronize(adaptBoolean(infos.get("canSynchronize")));
-                }
-                if (infos.containsKey("canUnsynchronize")) {
-                    publiInfos.setCanUnsynchronize(adaptBoolean(infos.get("canUnsynchronize")));
-                }
-                if (infos.containsKey("synchronizationRootPath")) {
-                    publiInfos.setSynchronizationRootPath(this.adaptType(String.class, infos.get("synchronizationRootPath")));
-                }
-                if (infos.containsKey("driveEditURL")) {
-                    publiInfos.setDriveEditURL(this.adaptType(String.class, infos.get("driveEditURL")));
                 }
 
 				String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
