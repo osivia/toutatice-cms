@@ -25,6 +25,7 @@ import java.util.SortedMap;
 import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
@@ -228,5 +229,12 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @throws CMSException
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
+    
+    
+    /**
+     * Define ECM commands
+     * @return
+     */
+    Map<String, EcmCommand> getEcmCommands();
 
 }

@@ -62,10 +62,13 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.IDirectoryService;
+import org.osivia.portal.api.ecm.EcmCommand;
+import org.osivia.portal.api.ecm.EcmCommonCommands;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -117,6 +120,12 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 
 /**
  * Default CMS customizer.
@@ -195,6 +204,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Directory service. */
     private IDirectoryService directoryService;
+    
+    /** Notification service */
+    private INotificationsService notificationsService;
+    
+    /** Internationalization service */
+    private IInternationalizationService internationalizationService;
 
     /** Avatar map. */
     private Map<String, String> avatarMap = new ConcurrentHashMap<String, String>();
@@ -1416,8 +1431,39 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public void setDirectoryService(IDirectoryService directoryService) {
         this.directoryService = directoryService;
     }
+    
+    
 
     /**
+	 * @return the notificationsService
+	 */
+	public INotificationsService getNotificationsService() {
+		return notificationsService;
+	}
+
+	/**
+	 * @param notificationsService the notificationsService to set
+	 */
+	public void setNotificationsService(INotificationsService notificationsService) {
+		this.notificationsService = notificationsService;
+	}
+
+	/**
+	 * @return the internationalizationService
+	 */
+	public IInternationalizationService getInternationalizationService() {
+		return internationalizationService;
+	}
+
+	/**
+	 * @param internationalizationService the internationalizationService to set
+	 */
+	public void setInternationalizationService(
+			IInternationalizationService internationalizationService) {
+		this.internationalizationService = internationalizationService;
+	}
+
+	/**
      * Getter for portletCtx.
      *
      * @return the portletCtx
@@ -1728,5 +1774,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             throw new CMSException(e);
         }
     }
+
+	/* (non-Javadoc)
+	 * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getEcmCommands()
+	 */
+	@Override
+	public Map<String, EcmCommand> getEcmCommands() {
+		
+		Map<String, EcmCommand> commands = new HashMap<String, EcmCommand>();
+		
+		commands.put(EcmCommonCommands.lock.name(), new LockCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(getNotificationsService(), getInternationalizationService()));
+		
+		commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(getNotificationsService(), getInternationalizationService()));
+		
+		commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(getNotificationsService(), getInternationalizationService()));
+		
+
+		return commands;
+	}
 
 }

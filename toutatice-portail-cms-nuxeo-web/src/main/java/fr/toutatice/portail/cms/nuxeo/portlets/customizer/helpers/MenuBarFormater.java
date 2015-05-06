@@ -26,6 +26,8 @@ import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
@@ -37,6 +39,8 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.api.ecm.EcmCommonCommands;
+import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.html.AccessibilityRoles;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
@@ -49,11 +53,10 @@ import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.urls.EcmCommand;
-import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -82,6 +85,10 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
  */
 public class MenuBarFormater {
 
+
+    /** Logger. */
+    private static final Log LOGGER = LogFactory.getLog(MenuBarFormater.class);
+	
     /** Menubar CMS edition dropdown menu identifier. */
     private static final String CMS_EDITION_DROPDOWN_MENU_ID = "CMS_EDITION";
     /** Menubar share dropdown menu identifier. */
@@ -132,6 +139,7 @@ public class MenuBarFormater {
      * Format content menubar.
      *
      * @param cmsContext CMS context
+     * @throws PortalException 
      */
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext) throws CMSException {
@@ -208,11 +216,15 @@ public class MenuBarFormater {
 
 
             if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle);
-                this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle);
+                this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
                 // follow
-                this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle);
+                this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
+                // lock
+                this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -220,11 +232,14 @@ public class MenuBarFormater {
             } else {
                 throw e;
             }
-        }
+	    } 
     }
 
 
-    /**
+
+
+
+	/**
      * Format content menubar.
      *
      * @param cmsCtx
@@ -616,7 +631,7 @@ public class MenuBarFormater {
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
      */
-    protected void getDriveEditUrl(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+    protected void getDriveEditUrl(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
@@ -629,13 +644,12 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
 
-        if (pubInfos.getDriveEditURL() != null) {
+        if (extendedInfos.getDriveEditURL() != null) {
             MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
             MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "halflings halflings-play", parent, 4,
-                    pubInfos.getDriveEditURL(), null, null, null);
+            		extendedInfos.getDriveEditURL(), null, null, null);
             driveEditItem.setAjaxDisabled(true);
 
             menubar.add(driveEditItem);
@@ -649,8 +663,10 @@ public class MenuBarFormater {
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
+     * @throws PortalException 
      */
-    protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+    protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, 
+    		Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
@@ -663,36 +679,44 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
 
-        Boolean enableParamter = null;
+        Boolean active = null;
         String command = null;
         String icon = null;
-        EcmFilesCommand ecmAction = null;
+        EcmCommonCommands ecmAction = null;
 
-        if (pubInfos.isCanSynchronize()) {
-            enableParamter = true;
+        if (extendedInfos.isCanSynchronize()) {
+            active = true;
             command = "SYNCHRONIZE";
             icon = "halflings halflings-refresh";
-            ecmAction = EcmFilesCommand.synchronizeFolder;
-        } else if (pubInfos.isCanUnsynchronize()) {
-            enableParamter = false;
+            ecmAction = EcmCommonCommands.synchronizeFolder;
+        } else if (extendedInfos.isCanUnsynchronize()) {
+            active = false;
             command = "UNSYNCHRONIZE";
             icon = "halflings halflings-ban-circle";
-            ecmAction = EcmFilesCommand.unsynchronizeFolder;
+            ecmAction = EcmCommonCommands.unsynchronizeFolder;
         }
 
         MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-        if (enableParamter != null) {
-            String synchronizeURL = this.urlFactory.getEcmFilesManagementUrl(portalControllerContext, pubInfos.getDocumentPath(), ecmAction);
+        if (active != null) {
+			try {
+				String synchronizeURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, ecmAction);
+				
+	            MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), icon, parent, 5, synchronizeURL, null, null, null);
+	            synchronizeItem.setAjaxDisabled(true);
+	            synchronizeItem.setActive(active);
 
-            MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), icon, parent, 5, synchronizeURL, null, null, null);
-            synchronizeItem.setAjaxDisabled(true);
+	            menubar.add(synchronizeItem);
+	            
+				
+			} catch (PortalException e) {
+				LOGGER.warn(e.getMessage());
+			}
 
-            menubar.add(synchronizeItem);
-        } else if (pubInfos.getSynchronizationRootPath() != null) {
-            String rootURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getSynchronizationRootPath(), null, null, null, null, null,
+
+        } else if (extendedInfos.getSynchronizationRootPath() != null) {
+            String rootURL = this.urlFactory.getCMSUrl(portalControllerContext, null, extendedInfos.getSynchronizationRootPath(), null, null, null, null, null,
                     null, null);
 
             MenubarItem rootURLItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), null, parent, 5, rootURL, null, null, null);
@@ -709,48 +733,112 @@ public class MenuBarFormater {
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
+     * @throws PortalException 
      */
-    protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+    protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, 
+    		Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
         // Current document
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
 
-        CMSExtendedDocumentInfos extendedInfos = (CMSExtendedDocumentInfos) cmsContext.getRequest().getAttribute("osivia.extendedInfos");
 
         SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
         if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
             String url = "";
 
-            MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, MenubarGroup.GENERIC, 10, url, null, null, null);
-            subscribeItem.setAjaxDisabled(true);
-
-            if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
-                url = this.urlFactory.getSubscriptionUrl(portalControllerContext, path, false);
-
-                subscribeItem.setUrl(url);
-                subscribeItem.setGlyphicon("halflings halflings-flag");
-                subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
-            } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
-                url = this.urlFactory.getSubscriptionUrl(portalControllerContext, path, true);
-
-                subscribeItem.setUrl(url);
-                subscribeItem.setGlyphicon("halflings halflings-flag");
-                subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
-                subscribeItem.setActive(true);
-            } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
-                subscribeItem.setUrl("#");
-                subscribeItem.setGlyphicon("halflings halflings-flag");
-                subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
-                subscribeItem.setActive(true);
-                subscribeItem.setDisabled(true);
+            try {
+            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+	            MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 10, url, null, null, null);
+	            subscribeItem.setAjaxDisabled(true);
+	
+	            if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
+	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
+	
+	                subscribeItem.setUrl(url);
+	                subscribeItem.setGlyphicon("halflings halflings-flag");
+	                subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
+	            } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
+	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
+	
+	                subscribeItem.setUrl(url);
+	                subscribeItem.setGlyphicon("halflings halflings-flag");
+	                subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
+	                subscribeItem.setActive(true);
+	            } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+	                subscribeItem.setUrl("#");
+	                subscribeItem.setGlyphicon("halflings halflings-flag");
+	                subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
+	                //subscribeItem.setActive(true);
+	                subscribeItem.setDisabled(true);
+	            }
+	
+	            menubar.add(subscribeItem);
+	            
             }
-
-            menubar.add(subscribeItem);
+            catch(PortalException ex) {
+            	LOGGER.warn(ex.getMessage());
+            }
         }
     }
 
+    /**
+	 * @param portalControllerContext
+	 * @param cmsContext
+	 * @param menubar
+	 * @param bundle
+	 * @param extendedInfos
+	 */
+	private void getLockLink(PortalControllerContext portalControllerContext,
+			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+			CMSExtendedDocumentInfos extendedInfos) {
+		
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();
+
+
+        LockStatus lockStatus = extendedInfos.getLockStatus();
+
+        if ((lockStatus != null) && (lockStatus != LockStatus.no_lock)) {
+            String url = "";
+
+            try {
+            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+	            MenubarItem lockItem = new MenubarItem("LOCK_URL", null, null, parent, 12, url, null, null, null);
+	            lockItem.setAjaxDisabled(true);
+	
+	            if (lockStatus == LockStatus.can_lock) {
+	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.lock);
+	
+	                lockItem.setUrl(url);
+	                lockItem.setGlyphicon("glyphicons glyphicons-lock");
+	                lockItem.setTitle(bundle.getString("LOCK_ACTION"));
+	            } else if (lockStatus == LockStatus.can_unlock) {
+	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unlock);
+	
+	                lockItem.setUrl(url);
+	                lockItem.setGlyphicon("glyphicons glyphicons-unlock");
+	                lockItem.setTitle(bundle.getString("UNLOCK_ACTION"));
+	                lockItem.setActive(true);
+	            } else if (lockStatus == LockStatus.locked) {
+	                lockItem.setUrl("#");
+	                lockItem.setGlyphicon("glyphicons glyphicons-lock");
+	                lockItem.setTitle(bundle.getString("LOCKED"));
+	                //lockItem.setActive(true);
+	                lockItem.setDisabled(true);
+	            }
+	
+	            menubar.add(lockItem);
+	            
+            }
+            catch(PortalException ex) {
+            	LOGGER.warn(ex.getMessage());
+            }
+        }
+		
+	}
 
     /**
      * Get edit CMS content link.
@@ -784,7 +872,7 @@ public class MenuBarFormater {
                     String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
 
                     Map<String, String> requestParameters = new HashMap<String, String>();
-                    String url = this.cmsService.getEcmUrl(cmsContext, EcmCommand.editDocument, pubInfos.getDocumentPath(), requestParameters);
+                    String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, pubInfos.getDocumentPath(), requestParameters);
 
                     // On click action
                     StringBuilder onClick = new StringBuilder();
@@ -881,7 +969,7 @@ public class MenuBarFormater {
                                 // URL
                                 Map<String, String> requestParameters = new HashMap<String, String>();
                                 requestParameters.put("type", docType);
-                                String url = this.cmsService.getEcmUrl(cmsContext, EcmCommand.createDocument, pubInfos.getDocumentPath(), requestParameters);
+                                String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.createDocument, pubInfos.getDocumentPath(), requestParameters);
 
                                 if (cmsItemType.isFolderish()) {
                                     folderishTypes.put(cmsItemType, url);

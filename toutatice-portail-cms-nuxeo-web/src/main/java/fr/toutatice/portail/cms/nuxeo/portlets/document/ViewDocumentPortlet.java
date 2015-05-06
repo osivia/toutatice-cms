@@ -37,7 +37,11 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
+import org.osivia.portal.api.ecm.EcmCommand;
+import org.osivia.portal.api.ecm.IEcmCommandervice;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -140,10 +144,25 @@ public class ViewDocumentPortlet extends CMSPortlet {
             cmsService.setCustomizer(customizer);
             customizer.setCmsService(cmsService);
 
+
+            
             // Directory service locator
             IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
             customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
 
+            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
+            customizer.setInternationalizationService(internationalizationService);
+            INotificationsService notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+            customizer.setNotificationsService(notificationsService);
+            
+            // ECM command services
+            IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
+            
+            for(EcmCommand command : customizer.getEcmCommands().values()) {
+            	ecmCmdService.registerCommand(command.getCommandName(), command);
+            }
+            
+            
             // v1.0.16
             ThumbnailServlet.setPortletContext(this.getPortletContext());
             SitePictureServlet.setPortletContext(this.getPortletContext());
