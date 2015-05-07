@@ -7,6 +7,7 @@ $JQry(function() {
 		addClasses : false,
 		connectToFancytree : true,
 		cursorAt : {top : 0, left : 0},
+		distance : 10,
 		helper : function(event) {
 			var $target = $JQry(event.target);
 			
