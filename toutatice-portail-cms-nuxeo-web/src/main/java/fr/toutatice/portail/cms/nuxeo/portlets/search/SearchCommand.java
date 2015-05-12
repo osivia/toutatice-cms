@@ -61,7 +61,13 @@ public class SearchCommand implements INuxeoCommand{
 	public Object execute( Session nuxeoSession)	throws Exception {
 		
 		
-		OperationRequest request =  nuxeoSession.newRequest("Document.PageProvider");
+        OperationRequest request;
+
+        if (NuxeoCompatibility.canUseES()) {
+            request = generateESRequest(nuxeoSession);
+        } else {
+            request = generateVCSRequest(nuxeoSession);
+        }
 		
 		String searchQuery = "";
 		
@@ -84,19 +90,34 @@ public class SearchCommand implements INuxeoCommand{
 			
 		request.set("query", "SELECT * FROM Document " + filteredRequest);
 
-		request.set("pageSize", CommandConstants.PAGE_PROVIDER_DEFAULT_PAGE_SIZE);
-		request.set("page", pageNumber);
-		if( NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60))
-		    request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
-		
 
-		request.setHeader(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());
 
 		PaginableDocuments result = (PaginableDocuments) request.execute();
 		
 		return result;
 
 	}
+	
+	   protected OperationRequest generateESRequest(Session session) throws Exception {
+	        OperationRequest request = session.newRequest("Document.QueryES");
+	        request.set("pageSize", CommandConstants.PAGE_PROVIDER_DEFAULT_PAGE_SIZE);
+	        request.set("currentPageIndex", pageNumber);
+	        request.set(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());
+	        return request;		   
+	   }
+	   
+	    protected OperationRequest generateVCSRequest(Session session) throws Exception {
+			OperationRequest request =  session.newRequest("Document.PageProvider");	    	
+			request.set("pageSize", CommandConstants.PAGE_PROVIDER_DEFAULT_PAGE_SIZE);
+			request.set("page", pageNumber);	
+			request.setHeader(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());		
+			
+			if( NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60))
+			    request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
+			
+			 return request;		
+	    	
+	    }
 
 	public String getId() {
 
