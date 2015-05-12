@@ -58,34 +58,47 @@
                     <!-- Link -->
                     <ttc:documentLink document="${document}" var="link" />
             
+                    <!-- Vignette -->
+                    <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+            
                     <!-- Description -->
                     <c:set var="description" value="${document.properties['dc:description']}" />
                 
                 
                 
-                    <li>
-                        <!-- Title -->
-                        <div>
-                            <a href="${link.url}"
-                                <c:if test="${link.external}">target="_blank"</c:if>
-                            >
-                                <i class="${document.type.glyph}"></i>
-                                <span>${document.title}</span>
-                            </a>
-                            
-                            <!-- Downloadable -->
-                            <c:if test="${link.downloadable}">
-                                <i class="halflings halflings-download-alt"></i>
-                            </c:if>
-                            
-                            <!-- External -->
-                            <c:if test="${link.external}">
-                                <i class="halflings halflings-new-window"></i>
-                            </c:if>
-                        </div>
+                    <li class="media">
+                        <c:if test="${not empty vignetteURL}">
+                            <div class="media-left">
+                                <p>
+                                    <img src="${vignetteURL}" alt="">
+                                </p>
+                            </div>
+                        </c:if>
                         
-                        <!-- Description -->
-                        <p>${description}</p>
+                        <div class="media-body">
+                            <!-- Title -->
+                            <div>
+                                <a href="${link.url}"
+                                    <c:if test="${link.external}">target="_blank"</c:if>
+                                >
+                                    <i class="${document.type.glyph}"></i>
+                                    <span>${document.title}</span>
+                                </a>
+                                
+                                <!-- Downloadable -->
+                                <c:if test="${link.downloadable}">
+                                    <i class="halflings halflings-download-alt"></i>
+                                </c:if>
+                                
+                                <!-- External -->
+                                <c:if test="${link.external}">
+                                    <i class="halflings halflings-new-window"></i>
+                                </c:if>
+                            </div>
+                            
+                            <!-- Description -->
+                            <p>${description}</p>
+                        </div>
                     </li>
                 </c:forEach>
             </ul>
@@ -125,3 +138,4 @@
         </div>
     </div>
 </div>
+
