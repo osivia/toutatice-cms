@@ -40,7 +40,6 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 
     public Object execute(Session session) throws Exception {
 
-
         OperationRequest request;
         if (this.useES) {
             request = getESRequest(session);
@@ -50,6 +49,9 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
 
         // v2.0.9 : suite demande Marc
         String bufferedRequest = "ttc:isPreloadedOnLogin = 1 AND ecm:mixinType = 'Space' AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView')) AND (ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 )";
+        
+        bufferedRequest = bufferedRequest.concat(" AND ((ecm:path STARTSWITH '/default-domain/UserWorkspaces' AND dc:creator = '"+session.getLogin().getUsername()+"') OR NOT (ecm:path STARTSWITH '/default-domain/UserWorkspaces'))");
+        
         request.set("query", "SELECT * FROM Document WHERE " + bufferedRequest.toString() + " ORDER BY ttc:tabOrder");
 
         Documents children = (Documents) request.execute();

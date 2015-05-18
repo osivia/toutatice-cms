@@ -30,6 +30,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
 /**
  * Préchargement des pages au login de l'utilisateur
@@ -41,34 +42,45 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavig
  * @author jeanseb
  *
  */
-public class UserPagesLoader { 
+public class UserPagesLoader {
 
 	CMSService CMSService;
 
-	public UserPagesLoader(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+	public UserPagesLoader(PortletContext portletCtx,
+			DefaultCMSCustomizer customizer, CMSService cmsService) {
 		super();
 		CMSService = cmsService;
 	}
 
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)  throws Exception {	
+	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)
+			throws Exception {
 
-
-		Documents children = (Documents) CMSService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand());
 
 		// Conversion en CMSItem
 		List<CMSPage> pages = new ArrayList<CMSPage>();
-		
-		for (Document child : children) {
-			String spacePath = DocumentPublishSpaceNavigationCommand.computeNavPath(child.getPath());
-			
-			CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx, spacePath, child.getTitle(), child, spacePath);
-			
-			CMSPage userPage = new CMSPage();
-			userPage.setPublishSpace(publishSpace);
-			
-			//userPage.setParentPath("/default/multi2");
-			
-			pages.add(userPage);
+
+		if (cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal() != null) {
+			String userName = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal().getName();
+
+			// Vérifier l'init de l'espace perso avant de calculer des pages
+			CMSService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(
+					userName));
+
+			Documents children = (Documents) CMSService.executeNuxeoCommand(
+					cmsCtx, new UserPagesPreloadCommand());
+
+			for (Document child : children) {
+				String spacePath = DocumentPublishSpaceNavigationCommand
+						.computeNavPath(child.getPath());
+
+				CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx,
+						spacePath, child.getTitle(), child, spacePath);
+
+				CMSPage userPage = new CMSPage();
+				userPage.setPublishSpace(publishSpace);
+
+				pages.add(userPage);
+			}
 		}
 
 		return pages;

@@ -28,10 +28,7 @@ public class GetUserProfileCommand  implements INuxeoCommand{
 	
     private String username;
 
-    public GetUserProfileCommand() {
-
-    }
-
+    
     public GetUserProfileCommand(String username) {
         this.username = username;
     }
@@ -51,8 +48,8 @@ public class GetUserProfileCommand  implements INuxeoCommand{
 	}
 
 	public String getId() {
+		
         return "GetUserProfileCommand/".concat(username);
 	}
-	
 
 }
