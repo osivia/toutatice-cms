@@ -16,19 +16,15 @@
                     <!-- Title -->
                     <h3 class="hidden"><is:getProperty key="MENU_TITLE_DEFAULT" /></h3>
             
-                    <!-- Current item ? -->
-                    <c:remove var="current" />
-                    <c:if test="${displayItem.current}">
-                        <c:set var="current" value="btn-primary" />
-                    </c:if>
-                
                     <!-- Navigation home link -->
-                    <p class="visible-xs">
-                        <a href="${displayItem.url}" class="btn btn-default btn-block ${current}">
-                            <i class="halflings halflings-home"></i>
-                            <span>${displayItem.title}</span>
-                        </a>
-                    </p>
+                    <c:if test="${not displayItem.current}">
+                        <p class="visible-xs">
+                            <a href="${displayItem.url}" class="btn btn-link">
+                                <i class="halflings halflings-home"></i>
+                                <span>${displayItem.title}</span>
+                            </a>
+                        </p>
+                    </c:if>
                 
                     <!-- Menu -->
                     <c:set var="parent" value="${displayItem}" scope="request" />

@@ -415,7 +415,6 @@ public class XSLFunctions {
                                             String[] param = element.split("=");
                                             String webId = this.webIdService.webPathToFetchInfoService(webpath);
                                             return this.nuxeoController.createPictureLink(webId, param[1]);
-                                            //return this.nuxeoController.createWebIdLink(webId, param[1]);
                                         }
                                     }
                                 }

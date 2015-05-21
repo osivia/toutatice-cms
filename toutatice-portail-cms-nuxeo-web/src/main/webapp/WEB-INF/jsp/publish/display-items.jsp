@@ -1,17 +1,12 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 
+<c:set var="childLevel" value="${level + 1}" />
+
+
 <c:if test="${parent.selected || (level <= openLevels)}">
     <ul class="list-group list-group-hierarchical">
-        <c:set var="childLevel" value="${level + 1}" />
-    
         <c:forEach var="child" items="${parent.children}">
-            <!-- External link ? -->
-            <c:remove var="target" />
-            <c:if test="${child.external}">
-                <c:set var="target" value="_blank" />
-            </c:if>
-            
             <!-- Selected item ? -->
             <c:remove var="selected" />
             <c:if test="${child.selected}">
@@ -27,10 +22,13 @@
         
             <li class="list-group-item list-group-item-linked">
                 <!-- Link -->
-                <a href="${child.url}" target="${target}" class="list-group-item ${selected} ${current}">            
+                <a href="${child.url}" class="list-group-item ${selected} ${current}"
+                    <c:if test="${child.external}">target="_blank"</c:if>
+                >            
                     <span>${child.title}</span>
+                    
                     <c:if test="${child.external}">
-                        <span class="halflings halflings-new-window"></span>
+                        <small><i class="halflings halflings-new-window"></i></small>
                     </c:if>
                 </a>
                     

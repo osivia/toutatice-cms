@@ -18,29 +18,34 @@
                 <!-- Menu -->
                 <ul class="list-inline">
                     <!-- Home -->
-                    <c:remove var="current" />
-                    <c:if test="${displayItem.current}">
-                        <c:set var="current" value="active" />
-                    </c:if>
                     <li class="visible-xs">
-                        <a href="${displayItem.url}" class="${current}">            
+                        <a href="${displayItem.url}"
+                            <c:if test="${displayItem.current}">class="active"</c:if>
+                        >            
                             <i class="halflings halflings-home"></i>
                             <span class=sr-only>${displayItem.title}</span>
                         </a>
                     </li>
-                
-                
+
+
                     <!-- Children -->
                     <c:forEach var="child" items="${displayItem.children}">
-                        <c:remove var="selected" />
-                        <c:if test="${child.selected}">
-                            <c:set var="selected" value="active" />
-                        </c:if>
-        
                         <li>
-                            <a href="${child.url}" class="${selected}">            
+                            <a href="${child.url}"
+                                <c:if test="${child.selected}">class="active"</c:if>
+                            >            
                                 <span>${child.title}</span>
                             </a>
+                            
+                            
+                            <!-- Sub-menu -->
+                            <c:if test="${child.selected and not empty child.children}">
+                                <div class="visible-xs">
+                                    <c:set var="parent" value="${child}" scope="request" />
+                                    <c:set var="level" value="2" scope="request" />
+                                    <jsp:include page="display-horizontal-items.jsp" />
+                                </div>
+                            </c:if>
                         </li>
                     </c:forEach>
                 </ul>

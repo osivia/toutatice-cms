@@ -17,56 +17,65 @@
 <c:set var="searchPlaceholder"><is:getProperty key="SEARCH_PLACEHOLDER" /></c:set>
 
 
-<div class="row nuxeo-results-search">
+<div class="nuxeo-results-search">
     <!-- Search form -->
-    <div class="col-lg-3">
-        <form action="${searchActionURL}" method="post" class="form" role="search">
-            <div class="form-group">
-                <label class="sr-only" for="${namespace}-search-input"><is:getProperty key="SEARCH" /></label>
-                <div class="input-group">
-                    <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
-                    <span class="input-group-btn">
-                        <button type="submit" class="btn btn-default" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
-                            <span class="halflings halflings-search"></span>
-                        </button>
-                    </span>
-                </div>
+    <form action="${searchActionURL}" method="post" class="form" role="search">
+        <div class="form-group">
+            <label class="sr-only" for="${namespace}-search-input"><is:getProperty key="SEARCH" /></label>
+            <div class="input-group">
+                <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
+                        <span class="halflings halflings-search"></span>
+                    </button>
+                </span>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 
     <!-- Search result -->
-    <div class="col-lg-9">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <!-- Indicator -->
-                <p class="text-muted">
-                    <span>${totalSize} </span>
-                    <c:choose>
-                        <c:when test="${totalSize > 1}">
-                            <is:getProperty key="SEARCH_RESULTS_INDICATOR" />
-                        </c:when>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <!-- Indicator -->
+            <p class="text-muted">
+                <span>${totalSize} </span>
+                <c:choose>
+                    <c:when test="${totalSize > 1}">
+                        <is:getProperty key="SEARCH_RESULTS_INDICATOR" />
+                    </c:when>
+                    
+                    <c:otherwise>
+                        <is:getProperty key="SEARCH_RESULT_INDICATOR" />
+                    </c:otherwise>
+                </c:choose>
+            </p>
+            
+            <!-- List -->
+            <ul class="list-unstyled no-ajax-link">
+                <c:forEach var="document" items="${documents}">
+                    <!-- Document properties -->
+    
+                    <!-- Link -->
+                    <ttc:documentLink document="${document}" var="link" />
+            
+                    <!-- Vignette -->
+                    <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+            
+                    <!-- Description -->
+                    <c:set var="description" value="${document.properties['dc:description']}" />
+                
+                
+                
+                    <li class="media">
+                        <c:if test="${not empty vignetteURL}">
+                            <div class="media-left">
+                                <p>
+                                    <img src="${vignetteURL}" alt="">
+                                </p>
+                            </div>
+                        </c:if>
                         
-                        <c:otherwise>
-                            <is:getProperty key="SEARCH_RESULT_INDICATOR" />
-                        </c:otherwise>
-                    </c:choose>
-                </p>
-                
-                <!-- List -->
-                <ul class="list-unstyled no-ajax-link">
-                    <c:forEach var="document" items="${documents}">
-                        <!-- Document properties -->
-        
-                        <!-- Link -->
-                        <ttc:documentLink document="${document}" var="link" />
-                
-                        <!-- Description -->
-                        <c:set var="description" value="${document.properties['dc:description']}" />
-                    
-                    
-                    
-                        <li>
+                        <div class="media-body">
                             <!-- Title -->
                             <div>
                                 <a href="${link.url}"
@@ -89,43 +98,44 @@
                             
                             <!-- Description -->
                             <p>${description}</p>
-                        </li>
-                    </c:forEach>
-                </ul>
-                
-                <!-- Pagination -->
-                <c:if test="${maxPage > 0}">
-                    <div class="text-center">
-                        <ul class="pagination pagination-sm">
-                            <c:forEach var="index" begin="${minPage}" end="${maxPage}">
-                                <c:choose>
-                                    <c:when test="${index == currentPage}">
-                                        <li class="active">
-                                            <a>
-                                                <span>${index + 1}</span>
-                                                <span class="sr-only">(current)</span>
-                                            </a>
-                                        </li>
-                                    </c:when>
+                        </div>
+                    </li>
+                </c:forEach>
+            </ul>
+            
+            <!-- Pagination -->
+            <c:if test="${maxPage > 0}">
+                <div class="text-center">
+                    <ul class="pagination pagination-sm">
+                        <c:forEach var="index" begin="${minPage}" end="${maxPage}">
+                            <c:choose>
+                                <c:when test="${index == currentPage}">
+                                    <li class="active">
+                                        <a>
+                                            <span>${index + 1}</span>
+                                            <span class="sr-only">(current)</span>
+                                        </a>
+                                    </li>
+                                </c:when>
+                                
+                                <c:otherwise>
+                                    <portlet:renderURL var="pageURL">
+                                        <portlet:param name="keywords" value="${keywords}" />
+                                        <portlet:param name="currentPage" value="${index}" />
+                                    </portlet:renderURL>
                                     
-                                    <c:otherwise>
-                                        <portlet:renderURL var="pageURL">
-                                            <portlet:param name="keywords" value="${keywords}" />
-                                            <portlet:param name="currentPage" value="${index}" />
-                                        </portlet:renderURL>
-                                        
-                                        <li>
-                                            <a href="${pageURL}">
-                                                <span>${index + 1}</span>
-                                            </a>
-                                        </li>
-                                    </c:otherwise>
-                                </c:choose>
-                            </c:forEach>
-                        </ul>
-                    </div>
-                </c:if>
-            </div>
+                                    <li>
+                                        <a href="${pageURL}">
+                                            <span>${index + 1}</span>
+                                        </a>
+                                    </li>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:if>
         </div>
     </div>
 </div>
+

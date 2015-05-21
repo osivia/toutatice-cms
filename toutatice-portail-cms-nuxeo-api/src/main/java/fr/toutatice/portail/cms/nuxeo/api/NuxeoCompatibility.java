@@ -13,6 +13,8 @@ public class NuxeoCompatibility {
     /** Indicator of ElasticSearch activation. */
     private static boolean isESActivated = false;
 
+    public static int VERSION_58 = 58;
+
     public static int VERSION_60 = 60;
 
     public static boolean isVersionGreaterOrEqualsThan(int versionNumber) {

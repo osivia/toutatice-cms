@@ -1658,7 +1658,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             delegation.setAdmin(isAdmin);
 
-            path = StringUtils.removeEnd(path, ".proxy");
+            if(  StringUtils.endsWith(path, ".proxy") && !StringUtils.endsWith(path, ".remote.proxy"))
+            	path = StringUtils.removeEnd(path, ".proxy");
 
             delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
 
