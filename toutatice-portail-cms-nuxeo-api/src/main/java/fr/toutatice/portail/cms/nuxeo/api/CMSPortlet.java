@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -30,8 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.path.IBrowserService;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
@@ -41,51 +44,65 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
  * Superclass for CMS Portlet.
+ * 
+ * @see PortalGenericPortlet
  */
 public abstract class CMSPortlet extends PortalGenericPortlet {
 
-    /** The logger. */
-    protected static Log logger = LogFactory.getLog(CMSPortlet.class);
+    /** Logger. */
+    protected final Log logger;
 
     /** The nuxeo navigation service. */
-	private final INuxeoService nuxeoService;
-
-	private final ICMSServiceLocator cmsServiceLocator;
-
-	public CMSPortlet() {
-		super();
-
-		this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
-		this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
-	}
-
-	public ICMSService getCMSService() {
-		return this.cmsServiceLocator.getCMSService();
-	}
+    private final INuxeoService nuxeoService;
+    /** CMS service locator. */
+    private final ICMSServiceLocator cmsServiceLocator;
+    /** Documents browser service. */
+    private final IBrowserService browserService;
 
 
     /**
-	 * @return the nuxeoService
-	 */
-	public INuxeoService getNuxeoService() {
-		return this.nuxeoService;
-	}
+     * Constructor.
+     */
+    public CMSPortlet() {
+        super();
+        this.logger = LogFactory.getLog(CMSPortlet.class);
+        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+        this.browserService = Locator.findMBean(IBrowserService.class, IBrowserService.MBEAN_NAME);
+    }
 
 
-	/**
-	 * Gets the nuxeo navigation service.
-	 *
-	 * @return the nuxeo navigation service
-	 * @deprecated see getNuxeoService
-	 * @throws Exception
-	 *             the exception
-	 */
+    /**
+     * Get CMS service.
+     * 
+     * @return CMS service
+     */
+    public ICMSService getCMSService() {
+        return this.cmsServiceLocator.getCMSService();
+    }
+
+
+    /**
+     * Get Nuxeo service.
+     * 
+     * @return Nuxeo service
+     */
+    public INuxeoService getNuxeoService() {
+        return this.nuxeoService;
+    }
+
+
+    /**
+     * Gets the nuxeo navigation service.
+     *
+     * @return the nuxeo navigation service
+     * @deprecated see getNuxeoService
+     * @throws Exception
+     *             the exception
+     */
     @Deprecated
-	public INuxeoService getNuxeoNavigationService() throws Exception {
-
-
-		return this.nuxeoService;
-
+    public INuxeoService getNuxeoNavigationService() throws Exception {
+        return this.nuxeoService;
     }
 
 
@@ -98,19 +115,15 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     @Override
     public void init(PortletConfig config) throws PortletException {
-
         super.init(config);
-
 
         try {
             new NuxeoController(this.getPortletContext()).startNuxeoService();
-
         } catch (Exception e) {
             throw new PortletException(e);
         }
-
-
     }
+
 
     /**
      * Performs nuxeo service .
@@ -119,11 +132,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     @Override
     public void destroy() {
-
         try {
             // Destruction des threads éventuels
             new NuxeoController(this.getPortletContext()).stopNuxeoService();
-
         } catch (Exception e) {
             logger.error(e);
         }
@@ -131,18 +142,18 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         super.destroy();
     }
 
+
     /**
      * Format resource last modified.
      *
      * @return the string
      */
     public String formatResourceLastModified() {
-
-
         SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
         inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
         return inputFormater.format(new Date(System.currentTimeMillis()));
     }
+
 
     /**
      * Checks if resource has expired.
@@ -151,26 +162,22 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * @param resourceResponse the resource response
      * @return true, if is resource expired
      */
-
     public boolean isResourceExpired(String sOriginalDate, ResourceResponse resourceResponse, String refreshMs) {
-
         boolean isExpired = true;
 
         if (sOriginalDate != null) {
-
             SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, yyyy-MM-dd'T'HH:mm:ss.SS'Z'", Locale.ENGLISH);
 
             inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
             try {
                 Date originalDate = inputFormater.parse(sOriginalDate);
                 if (System.currentTimeMillis() < (originalDate.getTime() + (resourceResponse.getCacheControl().getExpirationTime() * 1000))) {
-
                     if ((refreshMs == null) || (Long.parseLong(refreshMs) < originalDate.getTime())) {
                         isExpired = false;
                     }
                 }
             } catch (Exception e) {
-
+                // Do nothing
             }
         }
 
@@ -188,21 +195,17 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public boolean serveResourceByCache(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
-
         String sOriginalDate = resourceRequest.getProperty("if-modified-since");
         if (sOriginalDate == null) {
             sOriginalDate = resourceRequest.getProperty("If-Modified-Since");
         }
 
-        if (!this.isResourceExpired(sOriginalDate, resourceResponse, resourceRequest.getParameter("refresh"))) { // validation
-            // request
+        if (!this.isResourceExpired(sOriginalDate, resourceResponse, resourceRequest.getParameter("refresh"))) {
+            // validation
 
-            // resourceResponse.setContentLength(0);
             resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_MODIFIED));
             resourceResponse.setProperty("Last-Modified", sOriginalDate);
 
-            // au moins un caractère
-            // resourceResponse.getPortletOutputStream().write(' ');
             resourceResponse.getPortletOutputStream().close();
 
             return true;
@@ -246,6 +249,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         }
     }
 
+
     /**
      * Serve CMS Resource.
      *
@@ -279,6 +283,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
                 resourceResponse.setProperty("Location", document.getString("clink:link"));
                 resourceResponse.getPortletOutputStream().close();
+            } else if ("fancytreeLazyLoading".equals(resourceRequest.getResourceID())) {
+                // Fancytree lazy-loading
+                serveResourceFancytreeLazyLoading(resourceRequest, resourceResponse);
             } else {
                 // Tous les autres cas sont dépréciés
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
@@ -288,6 +295,26 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         } catch (PortletException e) {
             throw e;
         } catch (Exception e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    protected void serveResourceFancytreeLazyLoading(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(getPortletContext(), request, response);
+
+        try {
+            String data = this.browserService.browse(portalControllerContext);
+
+            // Content type
+            response.setContentType("application/json");
+
+            // Content
+            PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
+            printWriter.write(data);
+            printWriter.close();
+        } catch (PortalException e) {
             throw new PortletException(e);
         }
     }

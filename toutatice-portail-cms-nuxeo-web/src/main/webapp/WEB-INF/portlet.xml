@@ -288,6 +288,27 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
     </portlet>
+    
+    
+    <!-- Move document -->
+    <portlet>
+        <description>Move document portlet</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-move</portlet-name>
+        <display-name>Move document</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>Move document</title>
+        </portlet-info>
+    </portlet>
 
 
     <public-render-parameter>

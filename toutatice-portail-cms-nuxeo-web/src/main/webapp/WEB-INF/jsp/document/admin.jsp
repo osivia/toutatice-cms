@@ -58,7 +58,10 @@
     <!-- Buttons -->
     <div class="form-group">
         <div class="col-sm-offset-4 col-sm-8">
-            <button type="submit" class="btn btn-default btn-primary"><is:getProperty key="SAVE" /></button>
+            <button type="submit" class="btn btn-primary">
+                <i class="glyphicons glyphicons-floppy-disk"></i>
+                <span><is:getProperty key="SAVE" /></span>
+            </button>
             <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
         </div>
     </div>

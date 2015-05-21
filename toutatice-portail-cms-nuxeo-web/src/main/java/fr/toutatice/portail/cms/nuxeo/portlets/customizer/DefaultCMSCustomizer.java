@@ -96,6 +96,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
@@ -338,6 +339,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             this.editableWindowAdapter = new EditableWindowAdapter();
         }
         return this.editableWindowAdapter;
+    }
+
+
+    /**
+     * Get browser adapter.
+     * 
+     * @return browser adapter
+     */
+    public BrowserAdapter getBrowserAdapter() {
+        return BrowserAdapter.getInstance(this.cmsService);
     }
 
 
@@ -1760,6 +1771,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.bundleFactory;
     }
 
+    
+
+    
+    
 
     /**
      * {@inheritDoc}

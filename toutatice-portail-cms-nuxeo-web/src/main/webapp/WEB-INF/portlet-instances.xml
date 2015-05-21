@@ -204,5 +204,28 @@
             </security-constraint>
         </instance>
     </deployment>
+    
+    <!-- Move document -->
+    <deployment>
+        <if-exists>overwrite</if-exists>
+        <instance>
+            <instance-id>toutatice-portail-cms-nuxeo-move-portlet-instance</instance-id>
+            <portlet-ref>toutatice-portail-cms-nuxeo-move</portlet-ref>
+            <display-name xml:lang="en">Move document</display-name>
+            <display-name xml:lang="fr">Déplacement du document</display-name>
+            <security-constraint>
+                <policy-permission>
+                    <action-name>view</action-name>
+                    <unchecked />
+                </policy-permission>
+            </security-constraint>
+            <preferences>
+                <preference>
+                    <name>hide</name>
+                    <value>true</value>
+                </preference>
+            </preferences>
+        </instance>
+    </deployment>
 
 </deployments>

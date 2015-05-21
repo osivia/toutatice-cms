@@ -66,9 +66,11 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
@@ -189,42 +191,41 @@ public class MenuBarFormater {
         }
 
         try {
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                this.getPermaLinkLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                this.getContextualizationLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                this.getChangeModeLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
-
+            // Live version browser
             this.getLiveContentBrowserLink(portalControllerContext, cmsContext, menubar, bundle);
 
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                this.getEditLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
-
+            // Creation
             this.getCreateLink(portalControllerContext, cmsContext, menubar, bundle);
 
             if ((cmsContext.getDoc() != null) && !webPageFragment) {
+                // Permalink
+                this.getPermaLinkLink(portalControllerContext, cmsContext, menubar, bundle);
+
+                // Contextualization
+                this.getContextualizationLink(portalControllerContext, cmsContext, menubar, bundle);
+
+                // Change edition mode
+                this.getChangeModeLink(portalControllerContext, cmsContext, menubar, bundle);
+                // Edition
+                this.getEditLink(portalControllerContext, cmsContext, menubar, bundle);
+                // Move
+                this.getMoveLink(portalControllerContext, cmsContext, menubar, bundle);
+                // Suppression
                 this.getDeleteLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
+
+                // Nuxeo administration
                 this.getAdministrationLink(portalControllerContext, cmsContext, menubar, bundle);
-            }
 
-
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
+                // Nuxeo drive edit
                 this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                // follow
+                // Follow
                 this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 
-                // lock
+                // Lock
                 this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -236,10 +237,7 @@ public class MenuBarFormater {
     }
 
 
-
-
-
-	/**
+    /**
      * Format content menubar.
      *
      * @param cmsCtx
@@ -370,7 +368,7 @@ public class MenuBarFormater {
             MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
             // Menubar item
-            MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE_IN_NUXEO"), null, parent, 3, url, "nuxeo", null, null);
+            MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE_IN_NUXEO"), null, parent, 4, url, "nuxeo", null, null);
             item.setAjaxDisabled(true);
 
             menubar.add(item);
@@ -641,14 +639,10 @@ public class MenuBarFormater {
             return;
         }
 
-        // Current document
-        Document document = (Document) cmsContext.getDoc();
-        String path = document.getPath();
-
         if (extendedInfos.getDriveEditURL() != null) {
             MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "halflings halflings-play", parent, 4,
+            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "halflings halflings-play", parent, 5,
             		extendedInfos.getDriveEditURL(), null, null, null);
             driveEditItem.setAjaxDisabled(true);
 
@@ -892,11 +886,74 @@ public class MenuBarFormater {
                     MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("EDIT", editLabel, "halflings halflings-pencil", parent, 2, url, null, onClick.toString(),
+                    MenubarItem item = new MenubarItem("EDIT", editLabel, "halflings halflings-pencil", parent, 1, url, null, onClick.toString(),
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
                     menubar.add(item);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Get move link.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param cmsContext CMS context
+     * @param menubar menubar
+     * @param bundle internationalization bundle
+     * @throws CMSException
+     */
+    protected void getMoveLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+            throws CMSException {
+        if (cmsContext.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        if (document != null) {
+            // Publication infos
+            CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+
+            if (this.isRemoteProxy(cmsContext, pubInfos)) {
+                return;
+            }
+
+            if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
+                        portalControllerContext.getPortletCtx());
+
+                // CMS item type
+                CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+
+                if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+                    // Move document popup URL
+                    String moveDocumentURL;
+                    try {
+                        Map<String, String> properties = new HashMap<String, String>();
+                        properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
+                        properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
+                        properties.put(MoveDocumentPortlet.ACCEPTED_TYPE_WINDOW_PROPERTY, cmsItemType.getName());
+
+                        moveDocumentURL = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+                                properties, true);
+                    } catch (PortalException e) {
+                        moveDocumentURL = null;
+                    }
+
+                    if (moveDocumentURL != null) {
+                        MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+
+                        MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "halflings halflings-move", parent, 2, moveDocumentURL, null,
+                                null, "fancyframe_refresh");
+                        item.setAjaxDisabled(true);
+
+                        menubar.add(item);
+                    }
                 }
             }
         }

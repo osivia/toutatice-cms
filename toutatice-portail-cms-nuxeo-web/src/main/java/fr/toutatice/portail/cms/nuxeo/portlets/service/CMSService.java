@@ -82,6 +82,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
@@ -1014,6 +1015,24 @@ public class CMSService implements ICMSService {
         return pubInfos;
 
     }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<CMSItem> getWorkspaces(CMSServiceCtx cmsContext, boolean userWorkspaces, boolean administrator) throws CMSException {
+        BrowserAdapter browserAdapter = this.customizer.getBrowserAdapter();
+
+        List<CMSItem> workspaces;
+        if (userWorkspaces) {
+            workspaces = browserAdapter.getUserWorkspaces(cmsContext);
+        } else {
+            workspaces = browserAdapter.getWorkspaces(cmsContext, administrator);
+        }
+        return workspaces;
+    }
+
 
     /**
      * {@inheritDoc}
@@ -2104,7 +2123,5 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
-
-
 
 }
