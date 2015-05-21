@@ -226,6 +226,9 @@ public class MenuBarFormater {
                 
                 // Lock
                 this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
+                // Manage
+                this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -237,7 +240,7 @@ public class MenuBarFormater {
     }
 
 
-    /**
+	/**
      * Format content menubar.
      *
      * @param cmsCtx
@@ -834,6 +837,55 @@ public class MenuBarFormater {
 		
 	}
 
+
+	/**
+	 * Get Administrations links 
+	 * @param portalControllerContext
+	 * @param cmsContext
+	 * @param menubar
+	 * @param bundle
+	 * @throws CMSException 
+	 */
+	private void getManageLink(PortalControllerContext portalControllerContext,
+			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+		
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();
+        // Publication infos
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+        
+        
+        if(document.getType().equals("Workspace") && pubInfos.isManageableByUser()) {
+        	
+            try {
+            	
+        		Map<String, String> windowProperties = new HashMap<String, String>();
+        		windowProperties.put("osivia.ajaxLink", "1");
+        		windowProperties.put("theme.dyna.partial_refresh_enabled", "true");
+        		windowProperties.put("action", "consulterRole");
+        		windowProperties.put("workspacePath", document.getPath());
+        		
+        		String url = urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-workspace-gestionworkspace-portailPortletInstance", windowProperties, false);
+            	
+            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+
+				MenubarItem manageMembersItem = new MenubarItem("MANAGE_MEMBERS", null, null, parent, 15, url, null, null, null);
+	            manageMembersItem.setAjaxDisabled(true);
+
+                manageMembersItem.setGlyphicon("glyphicons glyphicons-group");
+                manageMembersItem.setTitle(bundle.getString("MANAGE_MEMBERS_ACTION"));
+           
+	            menubar.add(manageMembersItem);
+	            
+            }
+            catch(PortalException ex) {
+            	LOGGER.warn(ex.getMessage());
+            }
+        }
+
+	}
+	
     /**
      * Get edit CMS content link.
      *

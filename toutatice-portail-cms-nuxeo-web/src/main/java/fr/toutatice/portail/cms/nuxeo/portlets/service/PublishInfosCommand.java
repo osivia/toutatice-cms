@@ -97,6 +97,7 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
+				publiInfos.setManageableByUser(adaptBoolean(infos.get("manageableByUser")));
 				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
 				publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
