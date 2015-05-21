@@ -8,7 +8,6 @@
 
 <portlet:defineObjects />
 
-<c:set var="contextPath" value="${pageContext.request.contextPath}" />
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
@@ -18,9 +17,9 @@
 
 
 <!-- Datepicker language -->
-<c:set var="datepickerLanguage" value="${pageContext.response.locale.language}" />
+<c:set var="datepickerLanguage" value="${fn:toLowerCase(pageContext.response.locale.language)}" />
 <c:if test="${'en' ne datepickerLanguage}">
-    <script type="text/javascript" src="${contextPath}/components/jquery-ui-1.11.2.custom/i18n/datepicker-${datepickerLanguage}.js"></script>
+    <script type="text/javascript" src="/osivia-portal-custom-web-assets/components/jquery-ui/i18n/datepicker-${datepickerLanguage}.js"></script>
 </c:if>
 
 
