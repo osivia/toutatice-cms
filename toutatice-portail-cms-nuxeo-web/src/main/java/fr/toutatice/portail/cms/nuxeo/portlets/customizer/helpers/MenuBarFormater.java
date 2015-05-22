@@ -1382,10 +1382,21 @@ public class MenuBarFormater {
      */
     protected void addPermaLinkItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             String url) throws CMSException {
+        // Fancybox identifier
+        String id = cmsContext.getResponse().getNamespace() + "_PERMALINK_DISPLAY";
+
+        // Fancybox HTML content
+        String htmlContent = this.generatePermalinkFancybox(bundle, id, url);
+
+
+        // Parent dropdown menu
         MenubarDropdown parent = this.getShareDropdown(portalControllerContext, bundle);
 
-        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "halflings halflings-link", parent, 1, url, null, null, null);
+        // Menubar item
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "halflings halflings-link", parent, 1, "#" + id, null, null,
+                "fancybox_inline");
         item.setAjaxDisabled(true);
+        item.setAssociatedHTML(htmlContent);
 
         menubar.add(item);
     }
@@ -1490,6 +1501,65 @@ public class MenuBarFormater {
         if (url != null) {
             this.addPermaLinkItem(portalControllerContext, cmsContext, menubar, bundle, url);
         }
+    }
+
+
+    /**
+     * Generate permalink fancybox HTML content.
+     *
+     * @param bundle internationalization bundle
+     * @param id fancybox identifier
+     * @param url permalink URL
+     * @return HTML content
+     */
+    private String generatePermalinkFancybox(Bundle bundle, String id, String url) {
+        // Fancybox container
+        Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+
+        // Container
+        Element container = DOM4JUtils.generateDivElement("container-fluid");
+        DOM4JUtils.addAttribute(container, HTMLConstants.ID, id);
+        fancyboxContainer.add(container);
+
+        // Form
+        Element form = DOM4JUtils.generateDivElement("form-horizontal");
+        container.add(form);
+
+        // Form group #1
+        Element formGroup1 = DOM4JUtils.generateDivElement("form-group");
+        form.add(formGroup1);
+
+        // Label
+        Element label = DOM4JUtils.generateElement(HTMLConstants.LABEL, "control-label col-sm-2", bundle.getString("PERMALINK"));
+        formGroup1.add(label);
+
+        // Link col
+        Element linkCol = DOM4JUtils.generateDivElement("col-sm-10");
+        formGroup1.add(linkCol);
+
+        // Form control static
+        Element formControlStatic = DOM4JUtils.generateElement(HTMLConstants.P, "form-control-static", null);
+        linkCol.add(formControlStatic);
+
+        // Link
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", url);
+        formControlStatic.add(link);
+
+        // Form group #2
+        Element formGroup2 = DOM4JUtils.generateDivElement("form-group");
+        form.add(formGroup2);
+
+        // Button col
+        Element buttonCol = DOM4JUtils.generateDivElement("col-sm-offset-2 col-sm-10");
+        formGroup2.add(buttonCol);
+
+        // Close button
+        Element button = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CLOSE"));
+        DOM4JUtils.addAttribute(button, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(button, HTMLConstants.ONCLICK, "closeFancybox()");
+        buttonCol.add(button);
+
+        return DOM4JUtils.write(fancyboxContainer);
     }
 
 
