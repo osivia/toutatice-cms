@@ -940,26 +940,6 @@ public class MenuBarFormater {
     }
     
     /**
-     * Get link to remote publishing tasks.
-     * 
-     * @param portalControllerContext
-     * @param cmsContext
-     * @param menubar
-     * @param bundle
-     * @param extendedInfos
-     * @throws CMSException 
-     */
-    private void getRemotePublishingWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-        
-        Document document = (Document) cmsContext.getDoc();
-        String path = document.getPath();
-        
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
-        
-    }
-	
-    /**
      * Get edit CMS content link.
      *
      * @param portalControllerContext portal controller context
