@@ -84,6 +84,10 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
                         docInfos.setIsUserOnlineTaskInitiator(infos.getBoolean("isTaskInitiator"));
                     }
                 }
+                
+                if(infos.containsKey("isValidationWfRunning")){
+                    docInfos.setIsValidationWorkflowRunning(infos.getBoolean("isValidationWfRunning"));
+                }
 
                 if (infos.containsKey("subscription_status")) {
                     docInfos.setSubscriptionStatus(CMSExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));

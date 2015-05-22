@@ -25,6 +25,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -220,7 +221,7 @@ public class MenuBarFormater {
                 this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
+                
                 // Follow
                 this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 
@@ -229,6 +230,10 @@ public class MenuBarFormater {
                 
                 // Manage
                 this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
+                
+                // Validation workflow(s)
+                this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -885,6 +890,74 @@ public class MenuBarFormater {
         }
 
 	}
+	
+	/**
+     * Get link to validation workflow tasks.
+     * 
+     * @param portalControllerContext
+     * @param cmsContext
+     * @param menubar
+     * @param bundle
+     * @param extendedInfos
+     */
+    private void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+        
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();
+        
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+        
+        if(pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)){
+        
+            Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
+            String url = StringUtils.EMPTY;
+            
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
+            
+            if(BooleanUtils.isTrue(isValidationWfRunning)){
+                // Access to current validation workflow task
+                Map<String, String> requestParameters = new HashMap<String, String>();
+                String followWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
+                
+                validationWfItem.setUrl(followWfURL);
+                validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
+                
+            } else {
+                // We can start a validation workflow
+                Map<String, String> requestParameters = new HashMap<String, String>();
+                String startWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);
+                
+                validationWfItem.setUrl(startWfURL);
+                validationWfItem.setTitle(bundle.getString("START_VALIDATION_WF"));
+            }
+            
+            menubar.add(validationWfItem);
+        
+        }
+        
+    }
+    
+    /**
+     * Get link to remote publishing tasks.
+     * 
+     * @param portalControllerContext
+     * @param cmsContext
+     * @param menubar
+     * @param bundle
+     * @param extendedInfos
+     * @throws CMSException 
+     */
+    private void getRemotePublishingWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+        
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();
+        
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+        
+    }
 	
     /**
      * Get edit CMS content link.

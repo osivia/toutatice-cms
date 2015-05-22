@@ -1801,6 +1801,10 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         } else if (command == EcmViews.shareDocument) {
         	url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
+        } else if (command == EcmViews.startValidationWf) {
+            url = uri.toString() + "/nxpath/default" + path + "@choose_wf?";
+        } else if (command == EcmViews.followWfValidation) {
+            url = uri.toString() + "/nxpath/default" + path + "@current_task?";
         } else if (command == EcmViews.gotoMediaLibrary) {
 
             Document mediaLibrary;
@@ -2123,5 +2127,7 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
+
+
 
 }
