@@ -312,9 +312,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                 FileBrowserSortCriteria criteria;
                 String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
                 if (StringUtils.isEmpty(sort)) {
-                    criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-                    
-                    if (criteria == null) {
+                    Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+                    if ((attribute != null) && (attribute instanceof FileBrowserSortCriteria)) {
+                        criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+                    } else {
                         criteria = new FileBrowserSortCriteria();
                         if (ordered) {
                             criteria.setSort("index");
