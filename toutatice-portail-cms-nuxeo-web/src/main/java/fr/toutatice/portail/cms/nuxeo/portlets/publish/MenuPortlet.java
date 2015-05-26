@@ -565,22 +565,19 @@ public class MenuPortlet extends CMSPortlet {
         Boolean unfetchedChildren = BooleanUtils.toBooleanObject(navigationItem.getProperties().get("unfetchedChildren"));
         boolean fetchedChildren = BooleanUtils.isFalse(unfetchedChildren);
 
-        if (StringUtils.startsWith(options.getCurrentPath(), navigationItem.getPath())) {
+
+        if (this.isSelected(options.getCurrentPath(), navigationItem.getPath())) {
             selected = true;
 
             if (StringUtils.equals(options.getCurrentPath(), navigationItem.getPath())) {
                 current = true;
             }
-        } else if (StringUtils.equals(options.getCurrentPath(), document.getPath())) {
-            selected = true;
-            current = true;
         }
 
         // Primary path selected indicator
         boolean primaryPathSelected = (selected && !current);
 
-        if (StringUtils.startsWith(options.getAuxiliaryPath(), navigationItem.getPath())
-                && !StringUtils.equals(options.getAuxiliaryPath(), navigationItem.getPath())) {
+        if (this.isSelected(options.getAuxiliaryPath(), navigationItem.getPath()) && !StringUtils.equals(options.getAuxiliaryPath(), navigationItem.getPath())) {
             selected = true;
         }
 
@@ -760,6 +757,32 @@ public class MenuPortlet extends CMSPortlet {
         }
 
         return new MenuOptions(basePath, currentPath, auxiliaryPath, openLevels, startLevel, maxLevels);
+    }
+
+
+    /**
+     * Check if item is selected regarding paths.
+     * 
+     * @param currentPath current path, may be null
+     * @param itemPath item path
+     * @return true if item is selected
+     */
+    private boolean isSelected(String currentPath, String itemPath) {
+        boolean selected = StringUtils.startsWith(currentPath, itemPath);
+
+        if (selected) {
+            String[] splittedCurrentPath = StringUtils.split(currentPath, "/");
+            String[] splittedItemPath = StringUtils.split(itemPath, "/");
+
+            for (int i = 0; i < Math.min(splittedCurrentPath.length, splittedItemPath.length); i++) {
+                if (!StringUtils.equals(splittedCurrentPath[i], splittedItemPath[i])) {
+                    selected = false;
+                    break;
+                }
+            }
+        }
+
+        return selected;
     }
 
 }
