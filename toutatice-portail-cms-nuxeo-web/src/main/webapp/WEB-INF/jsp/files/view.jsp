@@ -13,6 +13,46 @@
 
 <portlet:renderURL var="refreshURL" />
 
+<portlet:renderURL var="sortByIndexURL">
+    <portlet:param name="sort" value="index" />
+    
+    <c:if test="${(criteria.sort eq 'index') and not criteria.alternative}">
+        <portlet:param name="alt" value="true" />
+    </c:if>
+</portlet:renderURL>
+
+<portlet:renderURL var="sortByNameURL">
+    <portlet:param name="sort" value="name" />
+    
+    <c:if test="${(criteria.sort eq 'name') and not criteria.alternative}">
+        <portlet:param name="alt" value="true" />
+    </c:if>
+</portlet:renderURL>
+
+<portlet:renderURL var="sortByDateURL">
+    <portlet:param name="sort" value="date" />
+    
+    <c:if test="${(criteria.sort eq 'date') and not criteria.alternative}">
+        <portlet:param name="alt" value="true" />
+    </c:if>
+</portlet:renderURL>
+
+<portlet:renderURL var="sortByContributorURL">
+    <portlet:param name="sort" value="contributor" />
+    
+    <c:if test="${(criteria.sort eq 'contributor') and not criteria.alternative}">
+        <portlet:param name="alt" value="true" />
+    </c:if>
+</portlet:renderURL>
+
+<portlet:renderURL var="sortBySizeURL">
+    <portlet:param name="sort" value="size" />
+    
+    <c:if test="${(criteria.sort eq 'size') and not criteria.alternative}">
+        <portlet:param name="alt" value="true" />
+    </c:if>
+</portlet:renderURL>
+
 <portlet:actionURL name="drop" var="dropActionURL" />
 
 <portlet:actionURL name="fileUpload" var="fileUploadActionURL">
@@ -29,7 +69,7 @@
     <div
         <c:if test="${editable}">class="drop-zone"</c:if>
     >
-        <div class="table-responsive no-ajax-link">
+        <div class="table-responsive">
             <table class="table">
                 <!-- Description -->
                 <c:if test="${not empty description}">
@@ -39,11 +79,69 @@
                 <!-- Table head -->
                 <thead>
                     <tr>
-                        <th></th>
-                        <th><is:getProperty key="FILE_BROWSER_NAME" /></th>
-                        <th><is:getProperty key="FILE_BROWSER_DATE" /></th>
-                        <th><is:getProperty key="FILE_BROWSER_LAST_CONTRIBUTOR" /></th>
-                        <th><is:getProperty key="FILE_BROWSER_SIZE" /></th>
+                        <c:if test="${ordered}">
+                            <th class="small">
+                                <a href="${sortByIndexURL}">
+                                    <span>#</span>
+                                    <c:if test="${criteria.sort eq 'index'}">
+                                        <c:choose>
+                                            <c:when test="${criteria.alternative}"><i class="halflings halflings-sort-by-attributes-alt"></i></c:when>
+                                            <c:otherwise><i class="halflings halflings-sort-by-attributes"></i></c:otherwise>
+                                        </c:choose>
+                                    </c:if>
+                                </a>
+                            </th>
+                        </c:if>
+                    
+                        <th class="small"></th>
+                        
+                        <th>
+                            <a href="${sortByNameURL}">
+                                <span><is:getProperty key="FILE_BROWSER_NAME" /></span>
+                                <c:if test="${criteria.sort eq 'name'}">
+                                    <c:choose>
+                                        <c:when test="${criteria.alternative}"><i class="halflings halflings-sort-by-attributes-alt"></i></c:when>
+                                        <c:otherwise><i class="halflings halflings-sort-by-attributes"></i></c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                            </a>
+                        </th>
+                        
+                        <th class="medium">
+                            <a href="${sortByDateURL}">
+                                <span><is:getProperty key="FILE_BROWSER_DATE" /></span>
+                                <c:if test="${criteria.sort eq 'date'}">
+                                    <c:choose>
+                                        <c:when test="${criteria.alternative}"><i class="halflings halflings-sort-by-attributes-alt"></i></c:when>
+                                        <c:otherwise><i class="halflings halflings-sort-by-attributes"></i></c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                            </a>
+                        </th>
+                        
+                        <th class="medium">
+                            <a href="${sortByContributorURL}">
+                                <span><is:getProperty key="FILE_BROWSER_LAST_CONTRIBUTOR" /></span>
+                                <c:if test="${criteria.sort eq 'contributor'}">
+                                    <c:choose>
+                                        <c:when test="${criteria.alternative}"><i class="halflings halflings-sort-by-attributes-alt"></i></c:when>
+                                        <c:otherwise><i class="halflings halflings-sort-by-attributes"></i></c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                            </a>
+                        </th>
+                        
+                        <th class="small">
+                            <a href="${sortBySizeURL}">
+                                <span><is:getProperty key="FILE_BROWSER_SIZE" /></span>
+                                <c:if test="${criteria.sort eq 'size'}">
+                                    <c:choose>
+                                        <c:when test="${criteria.alternative}"><i class="halflings halflings-sort-by-attributes-alt"></i></c:when>
+                                        <c:otherwise><i class="halflings halflings-sort-by-attributes"></i></c:otherwise>
+                                    </c:choose>
+                                </c:if>
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 
@@ -105,8 +203,13 @@
  
                     
                         <tr class="draggable ${droppable}" data-id="${document.id}" data-type="${document.type.name}" data-acceptedTypes="${acceptedTypes}">
+                            <!-- Index -->
+                            <c:if test="${ordered}">
+                                <td>${document.index}</td>
+                            </c:if>
+                            
                             <!-- Icon -->
-                            <td class="text-gray-dark">
+                            <td class="icon text-gray-dark">
                                 <c:choose>
                                     <c:when test="${'File' eq document.type.name}">
                                         <div class="file">

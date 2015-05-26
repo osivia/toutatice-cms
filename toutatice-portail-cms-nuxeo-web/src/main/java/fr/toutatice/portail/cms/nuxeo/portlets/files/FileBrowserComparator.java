@@ -17,12 +17,10 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
 import java.util.Comparator;
-import java.util.Map;
+import java.util.Date;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.CMSItemType;
-
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * File browser comparator.
@@ -31,43 +29,119 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  * @see Comparator
  * @see Document
  */
-public class FileBrowserComparator implements Comparator<Document> {
+public class FileBrowserComparator implements Comparator<FileBrowserItem> {
 
-    /** Nuxeo controller. */
-    private final NuxeoController nuxeoController;
+    /** Sort criteria. */
+    private final FileBrowserSortCriteria criteria;
 
 
     /**
      * Constructor.
      *
-     * @param nuxeoController Nuxeo controller
+     * @param criteria sort criteria
      */
-    public FileBrowserComparator(NuxeoController nuxeoController) {
+    public FileBrowserComparator(FileBrowserSortCriteria criteria) {
         super();
-        this.nuxeoController = nuxeoController;
+        this.criteria = criteria;
     }
 
 
     /**
      * {@inheritDoc}
      */
-    public int compare(Document doc1, Document doc2) {
+    @Override
+    public int compare(FileBrowserItem item1, FileBrowserItem item2) {
+        int result = 0;
+
+
         // Folderish comparison
-        Map<String, CMSItemType> managedTypes = this.nuxeoController.getCMSItemTypes();
-        CMSItemType type1 = managedTypes.get(doc1.getType());
-        CMSItemType type2 = managedTypes.get(doc2.getType());
-        if ((type1 != null) && type1.isFolderish()) {
-            if ((type2 == null) || !type2.isFolderish()) {
-                return -1;
-            }
-        } else if ((type2 != null) && type2.isFolderish()) {
-            return 1;
+        CMSItemType type1 = item1.getType();
+        boolean folderish1 = (type1 != null) && type1.isFolderish();
+        CMSItemType type2 = item2.getType();
+        boolean folderish2 = (type2 != null) && type2.isFolderish();
+        
+        if (folderish1 && !folderish2) {
+            result = -1;
+        } else if (!folderish1 && folderish2) {
+            result = 1;
         }
 
-        // Title comparison
-        String title1 = doc1.getTitle();
-        String title2 = doc2.getTitle();
-        return title1.compareToIgnoreCase(title2);
+
+        // Attribute comparison
+        if (result == 0) {
+            String sort = criteria.getSort();
+
+            if ("index".equals(sort)) {
+                result = this.compare(item1.getIndex(), item2.getIndex());
+            } else if ("name".equals(sort)) {
+                result = this.compare(item1.getTitle(), item2.getTitle());
+            } else if ("date".equals(sort)) {
+                Date date1 = (Date) item1.getProperties().get("dc:modified");
+                if (date1 == null) {
+                    date1 = (Date) item1.getProperties().get("dc:created");
+                }
+
+                Date date2 = (Date) item2.getProperties().get("dc:modified");
+                if (date2 == null) {
+                    date2 = (Date) item2.getProperties().get("dc:created");
+                }
+
+                result = this.compare(date1, date2);
+            } else if ("contributor".equals(sort)) {
+                String contributor1 = (String) item1.getProperties().get("dc:lastContributor");
+                String contributor2 = (String) item2.getProperties().get("dc:lastContributor");
+                result = this.compare(contributor1, contributor2);
+            } else if ("size".equals(sort)) {
+                long size1 = 0;
+                String sizeProperty1 = (String) item1.getProperties().get("common:size");
+                if (sizeProperty1 != null) {
+                    size1 = Long.valueOf(sizeProperty1);
+                }
+
+                long size2 = 0;
+                String sizeProperty2 = (String) item2.getProperties().get("common:size");
+                if (sizeProperty2 != null) {
+                    size2 = Long.valueOf(sizeProperty2);
+                }
+
+                result = this.compare(size1, size2);
+            } else {
+                result = 0;
+            }
+
+
+            // Alternative sort
+            if (this.criteria.isAlternative()) {
+                result = -result;
+            }
+        }
+
+
+        return result;
+    }
+
+
+    /**
+     * Compare two attributes.
+     * 
+     * @param object1 object #1
+     * @param object2 object #2
+     * @return comparison value
+     */
+    private <T extends Comparable<T>> int compare(T object1, T object2) {
+        int result;
+        if (object1 == null) {
+            result = -1;
+        } else if (object2 == null) {
+            result = 1;
+        } else if ((object1 instanceof String) && (object2 instanceof String)) {
+            String string1 = (String) object1;
+            String string2 = (String) object2;
+            result = string1.compareToIgnoreCase(string2);
+        } else {
+            result = object1.compareTo(object2);
+        }
+        return result;
     }
 
 }

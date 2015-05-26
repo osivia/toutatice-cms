@@ -26,7 +26,7 @@ import org.osivia.portal.core.cms.CMSItemType;
  *
  * @author Cédric Krommenhoek
  */
-public class DocumentDTO {
+public class DocumentDTO implements Cloneable {
 
     /** Document identifier. */
     private String id;
@@ -57,6 +57,25 @@ public class DocumentDTO {
         this.properties = new HashMap<String, Object>();
         this.attachments = new ArrayList<DocumentAttachmentDTO>();
         this.comments = new ArrayList<CommentDTO>();
+    }
+
+
+    /**
+     * Constructor.
+     * 
+     * @param documentDTO document DTO
+     */
+    protected DocumentDTO(DocumentDTO documentDTO) {
+        this();
+        this.id = documentDTO.id;
+        this.title = documentDTO.title;
+        this.path = documentDTO.path;
+        this.type = documentDTO.type;
+        this.properties.putAll(documentDTO.properties);
+        this.attachments.addAll(documentDTO.attachments);
+        this.commentable = documentDTO.commentable;
+        this.comments.addAll(documentDTO.comments);
+        this.document = documentDTO.document;
     }
 
 

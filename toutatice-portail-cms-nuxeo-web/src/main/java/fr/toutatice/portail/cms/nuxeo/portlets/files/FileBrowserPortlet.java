@@ -24,7 +24,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -63,6 +66,12 @@ public class FileBrowserPortlet extends CMSPortlet {
 
     /** Nuxeo path window property name. */
     private static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
+    /** Sort criteria request parameter name. */
+    private static final String SORT_CRITERIA_REQUEST_PARAMETER = "sort";
+    /** Alternative sort request parameter name. */
+    private static final String ALTERNATIVE_SORT_REQUEST_PARAMETER = "alt";
+    /** Sort criteria principal scope attribute name. */
+    private static final String SORT_CRITERIA_PRINCIPAL_ATTRIBUTE = "osivia.fileBrowser.sortCriteria";
 
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/files/admin.jsp";
@@ -247,6 +256,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
             try {
+                // Controller context
+                ControllerContext controllerContext = (ControllerContext) request.getAttribute("osivia.controller");
+
                 // Nuxeo controller
                 NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
                 request.setAttribute("nuxeoController", nuxeoController);
@@ -260,9 +272,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 path = nuxeoController.getComputedPath(path);
 
                 // Fetch current Nuxeo document
-                Document document = nuxeoController.fetchDocument(path);
-                nuxeoController.setCurrentDoc(document);
-                request.setAttribute("document", this.documentDAO.toDTO(document));
+                Document currentDocument = nuxeoController.fetchDocument(path);
+                nuxeoController.setCurrentDoc(currentDocument);
+                request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
 
                 // Publication informations
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
@@ -273,28 +285,64 @@ public class FileBrowserPortlet extends CMSPortlet {
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());
                 Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
 
-                // Sorted documents
-                List<Document> sortedDocuments = documents.list();
-                CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(document.getType());
-                if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
-                    Comparator<Document> comparator = new FileBrowserComparator(nuxeoController);
-                    Collections.sort(sortedDocuments, comparator);
-                }
 
                 // Documents DTO
-                List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(sortedDocuments.size());
-                for (Document sortedDocument : sortedDocuments) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(sortedDocument);
+                int index = 1;
+                List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
+                for (Document document : documents) {
+                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
+                    fileBrowserItem.setIndex(index++);
 
-                    if ("File".equals(sortedDocument.getType())) {
-                        this.addMimeType(sortedDocument, documentDTO);
+                    if ("File".equals(document.getType())) {
+                        this.addMimeType(document, fileBrowserItem);
                     }
 
-                    documentsDTO.add(documentDTO);
+                    fileBrowserItems.add(fileBrowserItem);
                 }
-                request.setAttribute("documents", documentsDTO);
 
-                response.setTitle(document.getTitle());
+
+                // Ordered indicator
+                CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
+                boolean ordered = ((cmsItemType != null) && cmsItemType.isOrdered());
+                request.setAttribute("ordered", ordered);
+
+
+                // Sort criteria
+                FileBrowserSortCriteria criteria;
+                String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
+                if (StringUtils.isEmpty(sort)) {
+                    criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+                    
+                    if (criteria == null) {
+                        criteria = new FileBrowserSortCriteria();
+                        if (ordered) {
+                            criteria.setSort("index");
+                        } else {
+                            criteria.setSort("name");
+                        }
+
+                        controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
+                    }
+                } else {
+                    boolean alternative = BooleanUtils.toBoolean(request.getParameter(ALTERNATIVE_SORT_REQUEST_PARAMETER));
+
+                    criteria = new FileBrowserSortCriteria();
+                    criteria.setSort(sort);
+                    criteria.setAlternative(alternative);
+
+                    controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
+                }
+                request.setAttribute("criteria", criteria);
+
+
+                // Sort documents
+                Comparator<FileBrowserItem> comparator = new FileBrowserComparator(criteria);
+                Collections.sort(fileBrowserItems, comparator);
+                request.setAttribute("documents", fileBrowserItems);
+
+
+                response.setTitle(currentDocument.getTitle());
 
                 // Insert standard menu bar for content item
                 if (WindowState.MAXIMIZED.equals(request.getWindowState())) {

@@ -18,6 +18,10 @@ $JQry(function() {
 			var $draggableChildren = $draggable.children();
 			
 			var $iconCell = $draggableChildren.first();
+			if (!$iconCell.hasClass("icon")) {
+				$iconCell = $iconCell.next();
+			}
+			
 			var $icon = $JQry(document.createElement("div"));
 			$icon.addClass("text-gray-dark");
 			$icon.append($iconCell.find("i").clone());

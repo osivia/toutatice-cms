@@ -18,11 +18,11 @@
 .file-browser {
 
     th {
-        &:nth-of-type(1), &:nth-of-type(5) {
+        &.small {
             width: 1%;
         }
         
-        &:nth-of-type(3), &:nth-of-type(4) {
+        &.medium {
             width: 20%;
         }
     }
@@ -32,7 +32,7 @@
         line-height: @file-browser-line-height;
         vertical-align: middle;
         
-        &:first-of-type {
+        &.icon {
             padding-right: 0;
             
             & > div {
