@@ -80,7 +80,7 @@
                 <thead>
                     <tr>
                         <c:if test="${ordered}">
-                            <th class="small">
+                            <th class="table-col-small">
                                 <a href="${sortByIndexURL}">
                                     <span>#</span>
                                     <c:if test="${criteria.sort eq 'index'}">
@@ -93,7 +93,7 @@
                             </th>
                         </c:if>
                     
-                        <th class="small"></th>
+                        <th class="table-col-small"></th>
                         
                         <th>
                             <a href="${sortByNameURL}">
@@ -107,7 +107,7 @@
                             </a>
                         </th>
                         
-                        <th class="medium">
+                        <th class="table-col-medium">
                             <a href="${sortByDateURL}">
                                 <span><is:getProperty key="FILE_BROWSER_DATE" /></span>
                                 <c:if test="${criteria.sort eq 'date'}">
@@ -119,7 +119,7 @@
                             </a>
                         </th>
                         
-                        <th class="medium">
+                        <th class="table-col-medium">
                             <a href="${sortByContributorURL}">
                                 <span><is:getProperty key="FILE_BROWSER_LAST_CONTRIBUTOR" /></span>
                                 <c:if test="${criteria.sort eq 'contributor'}">
@@ -131,7 +131,7 @@
                             </a>
                         </th>
                         
-                        <th class="small">
+                        <th class="table-col-small">
                             <a href="${sortBySizeURL}">
                                 <span><is:getProperty key="FILE_BROWSER_SIZE" /></span>
                                 <c:if test="${criteria.sort eq 'size'}">
