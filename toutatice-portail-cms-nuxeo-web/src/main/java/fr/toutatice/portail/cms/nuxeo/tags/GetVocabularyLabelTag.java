@@ -9,6 +9,13 @@ import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.StringUtils;
+import org.dom4j.Element;
+import org.dom4j.io.HTMLWriter;
+import org.osivia.portal.api.html.DOM4JUtils;
+import org.osivia.portal.api.html.HTMLConstants;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
@@ -44,50 +51,56 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
         PageContext pageContext = (PageContext) this.getJspContext();
         // Request
         ServletRequest request = pageContext.getRequest();
-        // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
-        if (nuxeoController != null) {
-        	
-        	StringBuilder sb = new StringBuilder("");
-        	String[] keys ;
-        	if(StringUtils.contains(this.key, "[")) {
-        		String[] substringsBetween = StringUtils.substringsBetween(this.key, "[", "]");
-        		keys = StringUtils.split(substringsBetween[0], ",");
-        	}
-        	else {
-        		keys = new String[1];
-        		keys[0] = this.key;
-        	}
-        	
-        	for(int i =0; i<keys.length; i++) {
-        		
-        		if(i>0) {
-        			sb.append(", ");
-        		}
-        		
-        		keys[i] = StringUtils.trim(keys[i]);
-        		
-        		if(StringUtils.contains(keys[i], "/")) {
-        			String[] subKeys = StringUtils.split(keys[i], "/");
-        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[0])));
-        			sb.append(" / ");
-        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name,subKeys[1])));
-        			
-        		}
-        		else {
-        			sb.append(StringUtils.clean(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
-        		}
-        		
-        	}
-        	
-        	
-            String label = sb.toString();
+        JspWriter out = pageContext.getOut();
 
-            if (label != null) {
-                JspWriter out = pageContext.getOut();
+        try {
+            // Nuxeo controller
+            NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+
+            if (nuxeoController != null) {
+                StringBuilder sb = new StringBuilder("");
+                String[] keys;
+                if (StringUtils.contains(this.key, "[")) {
+                    String[] substringsBetween = StringUtils.substringsBetween(this.key, "[", "]");
+                    keys = StringUtils.split(substringsBetween[0], ",");
+                } else {
+                    keys = new String[1];
+                    keys[0] = this.key;
+                }
+
+                for (int i = 0; i < keys.length; i++) {
+                    if (i > 0) {
+                        sb.append(", ");
+                    }
+
+                    keys[i] = StringUtils.trim(keys[i]);
+
+                    if (StringUtils.contains(keys[i], "/")) {
+                        String[] subKeys = StringUtils.split(keys[i], "/");
+                        sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[0])));
+                        sb.append(" / ");
+                        sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[1])));
+                    } else {
+                        sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
+                    }
+                }
+
+                String label = sb.toString();
+
                 out.write(label);
             }
+        } catch (Exception e) {
+            // Error
+            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                    IInternationalizationService.MBEAN_NAME);
+            Bundle bundle = internationalizationService.getBundleFactory(this.getClass().getClassLoader()).getBundle(request.getLocale());
+
+            Element span = DOM4JUtils.generateElement(HTMLConstants.SPAN, "text-danger", bundle.getString("ERROR_GENERIC_MESSAGE"));
+
+            // Write
+            HTMLWriter htmlWriter = new HTMLWriter(out);
+            htmlWriter.write(span);
         }
     }
 
