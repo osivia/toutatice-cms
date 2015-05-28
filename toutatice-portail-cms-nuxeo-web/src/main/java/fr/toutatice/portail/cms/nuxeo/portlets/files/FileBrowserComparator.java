@@ -53,27 +53,26 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
     public int compare(FileBrowserItem item1, FileBrowserItem item2) {
         int result = 0;
 
+        String sort = this.criteria.getSort();
 
-        // Folderish comparison
-        CMSItemType type1 = item1.getType();
-        boolean folderish1 = (type1 != null) && type1.isFolderish();
-        CMSItemType type2 = item2.getType();
-        boolean folderish2 = (type2 != null) && type2.isFolderish();
-        
-        if (folderish1 && !folderish2) {
-            result = -1;
-        } else if (!folderish1 && folderish2) {
-            result = 1;
-        }
+        if ("index".equals(sort)) {
+            result = this.compare(item1.getIndex(), item2.getIndex());
+        } else {
+            // Folderish comparison
+            CMSItemType type1 = item1.getType();
+            boolean folderish1 = (type1 != null) && type1.isFolderish();
+            CMSItemType type2 = item2.getType();
+            boolean folderish2 = (type2 != null) && type2.isFolderish();
+
+            if (folderish1 && !folderish2) {
+                return -1;
+            } else if (!folderish1 && folderish2) {
+                return 1;
+            }
 
 
-        // Attribute comparison
-        if (result == 0) {
-            String sort = criteria.getSort();
-
-            if ("index".equals(sort)) {
-                result = this.compare(item1.getIndex(), item2.getIndex());
-            } else if ("name".equals(sort)) {
+            // Attribute comparison
+            if ("name".equals(sort)) {
                 result = this.compare(item1.getTitle(), item2.getTitle());
             } else if ("date".equals(sort)) {
                 Date date1 = (Date) item1.getProperties().get("dc:modified");
@@ -108,14 +107,13 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
             } else {
                 result = 0;
             }
-
-
-            // Alternative sort
-            if (this.criteria.isAlternative()) {
-                result = -result;
-            }
         }
 
+
+        // Alternative sort
+        if (this.criteria.isAlternative()) {
+            result = -result;
+        }
 
         return result;
     }
@@ -123,7 +121,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
 
     /**
      * Compare two attributes.
-     * 
+     *
      * @param object1 object #1
      * @param object2 object #2
      * @return comparison value
