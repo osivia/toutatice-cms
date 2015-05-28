@@ -9,15 +9,11 @@ import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.StringUtils;
-import org.dom4j.Element;
-import org.dom4j.io.HTMLWriter;
-import org.osivia.portal.api.html.DOM4JUtils;
-import org.osivia.portal.api.html.HTMLConstants;
-import org.osivia.portal.api.internationalization.Bundle;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
-import org.osivia.portal.api.locator.Locator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 
 /**
@@ -27,6 +23,9 @@ import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
  * @see SimpleTagSupport
  */
 public class GetVocabularyLabelTag extends SimpleTagSupport {
+
+    /** Log. */
+    private final Log log;
 
     /** Vocabulary name. */
     private String name;
@@ -39,6 +38,7 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
      */
     public GetVocabularyLabelTag() {
         super();
+        this.log = LogFactory.getLog(this.getClass());
     }
 
 
@@ -47,14 +47,11 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
      */
     @Override
     public void doTag() throws JspException, IOException {
-        // Context
-        PageContext pageContext = (PageContext) this.getJspContext();
-        // Request
-        ServletRequest request = pageContext.getRequest();
-
-        JspWriter out = pageContext.getOut();
-
         try {
+            // Context
+            PageContext pageContext = (PageContext) this.getJspContext();
+            // Request
+            ServletRequest request = pageContext.getRequest();
             // Nuxeo controller
             NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
@@ -88,19 +85,11 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
 
                 String label = sb.toString();
 
+                JspWriter out = pageContext.getOut();
                 out.write(label);
             }
-        } catch (Exception e) {
-            // Error
-            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                    IInternationalizationService.MBEAN_NAME);
-            Bundle bundle = internationalizationService.getBundleFactory(this.getClass().getClassLoader()).getBundle(request.getLocale());
-
-            Element span = DOM4JUtils.generateElement(HTMLConstants.SPAN, "text-danger", bundle.getString("ERROR_GENERIC_MESSAGE"));
-
-            // Write
-            HTMLWriter htmlWriter = new HTMLWriter(out);
-            htmlWriter.write(span);
+        } catch (NuxeoException e) {
+            log.error(e.getMessage() + " ; name=" + this.name + ", key=" + this.key);
         }
     }
 
