@@ -84,7 +84,9 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
             			
             			sb.append(" / ");
             			VocabularyEntry child = parent.getChild(subKeys[1]);
-            			sb.append(StringUtils.clean(child.getLabel()));
+            			if(child != null) {
+            				sb.append(StringUtils.clean(child.getLabel()));
+            			}
                     	
                     } else {
                         sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));

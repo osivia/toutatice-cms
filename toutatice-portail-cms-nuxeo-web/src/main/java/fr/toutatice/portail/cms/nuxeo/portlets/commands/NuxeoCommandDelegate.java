@@ -34,7 +34,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
  *
  */
 public class NuxeoCommandDelegate implements INuxeoCommand {
-
+	
 	EcmCommand command;
 	
 	Document doc;
@@ -73,11 +73,14 @@ public class NuxeoCommandDelegate implements INuxeoCommand {
 			throw new AutomationException("L'opération" + command.getCommandName() + " n'est pas reconnue.");
 		}
 
+
 		return doc;
 	}
 
 	public String getId() {
-		return command.getRealCommand() + "/" + doc.getPath() + "/" + this;
+		
+		return command.getCommandName();
+		
 	};
 
 }
