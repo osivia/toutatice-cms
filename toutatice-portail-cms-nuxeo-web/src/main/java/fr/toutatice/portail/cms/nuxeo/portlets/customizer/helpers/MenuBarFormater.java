@@ -960,7 +960,7 @@ public class MenuBarFormater {
 
 	/**
      * Get link to validation workflow tasks.
-     *
+     * 
      * @param portalControllerContext
      * @param cmsContext
      * @param menubar
@@ -985,12 +985,15 @@ public class MenuBarFormater {
 
                 MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
                 MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
+                
+                String onClick = generateCallbackParams(portalControllerContext, cmsContext);
+                validationWfItem.setOnclick(onClick);
 
                 if (BooleanUtils.isTrue(isValidationWfRunning)) {
                     // Access to current validation workflow task
                     Map<String, String> requestParameters = new HashMap<String, String>();
                     String followWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
-
+                    
                     validationWfItem.setUrl(followWfURL);
                     validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
 
@@ -1009,6 +1012,28 @@ public class MenuBarFormater {
 
         }
 
+    }
+
+
+    /**
+     * @param portalControllerContext
+     * @param cmsContext
+     * @return the on click action for a document refresh
+     */
+    private String generateCallbackParams(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext) {
+        // Callback URL
+        String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+        // ECM base URL
+        String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
+
+        // On click action
+        StringBuilder onClick = new StringBuilder();
+        onClick.append("javascript:setCallbackFromEcmParams('");
+        onClick.append(callbackURL);
+        onClick.append("', '");
+        onClick.append(ecmBaseURL);
+        onClick.append("');");
+        return onClick.toString();
     }
 
     /**

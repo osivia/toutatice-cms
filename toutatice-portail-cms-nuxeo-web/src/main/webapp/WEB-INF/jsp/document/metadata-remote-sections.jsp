@@ -10,6 +10,8 @@
 	<c:set var="remote_sections"
 		value="${doc.properties['rsi:remoteSections']}" />
 		
+		<c:if test="${not empty remote_sections}">
+		
 			<dt><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></dt>
 			<span>
 				<c:forEach items="${remote_sections}" var="remote_section">
@@ -22,6 +24,7 @@
 					</dd>
 				</c:forEach>
 			</span>
-
+			
+        </c:if>
 
 </c:if>

@@ -82,10 +82,10 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
             			VocabularyEntry parent = vocabularyEntryRoot.getChild(subKeys[0]);
             			sb.append(StringUtils.clean(parent.getLabel()));
             			
-            			sb.append(" / ");
             			VocabularyEntry child = parent.getChild(subKeys[1]);
-            			if(child != null) {
-            				sb.append(StringUtils.clean(child.getLabel()));
+            			if(child != null){
+            			    sb.append(" / ");
+            			    sb.append(StringUtils.clean(child.getLabel()));
             			}
                     	
                     } else {
