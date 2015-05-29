@@ -16,7 +16,7 @@
 <c:set var="mimeType" value="${document.properties['file:content']['mime-type']}" />
 
 
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="halflings halflings-download-alt" />
+<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="glyphicons glyphicons-download-alt" />
 
 <div class="file">
     <c:if test="${not empty description}">

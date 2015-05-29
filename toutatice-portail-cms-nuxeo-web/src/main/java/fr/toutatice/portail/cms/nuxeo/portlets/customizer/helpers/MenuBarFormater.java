@@ -93,11 +93,13 @@ public class MenuBarFormater {
 
     /** Logger. */
     private static final Log LOGGER = LogFactory.getLog(MenuBarFormater.class);
-	
+
     /** Menubar CMS edition dropdown menu identifier. */
     private static final String CMS_EDITION_DROPDOWN_MENU_ID = "CMS_EDITION";
     /** Menubar share dropdown menu identifier. */
     private static final String SHARE_DROPDOWN_MENU_ID = "SHARE";
+    /** Menubar other options dropdown menu identifier. */
+    private static final String OTHER_OPTIONS_DROPDOWN_MENU_ID = "OTHER_OPTIONS";
 
     /** Menubar service. */
     private final IMenubarService menubarService;
@@ -144,7 +146,7 @@ public class MenuBarFormater {
      * Format content menubar.
      *
      * @param cmsContext CMS context
-     * @throws PortalException 
+     * @throws PortalException
      */
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext) throws CMSException {
@@ -223,22 +225,21 @@ public class MenuBarFormater {
                 this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
                 // Follow
                 this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
                 // Lock
                 this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
                 // Manage
                 this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
-                
+
                 // Validation workflow(s)
                 this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
                 // Remote publishing
                 this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -246,7 +247,7 @@ public class MenuBarFormater {
             } else {
                 throw e;
             }
-	    } 
+	    }
     }
 
 
@@ -349,6 +350,27 @@ public class MenuBarFormater {
 
 
     /**
+     * Get menubar other options dropdown menu.
+     *
+     * @param portalControllerContext portal controller context
+     * @param bundle internationalization bundle
+     * @return menubar dropdown menu
+     */
+    protected MenubarDropdown getOtherOptionsDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
+        MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, OTHER_OPTIONS_DROPDOWN_MENU_ID);
+
+        if (dropdown == null) {
+            dropdown = new MenubarDropdown(OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"), "glyphicons glyphicons-option-vertical",
+                    MenubarGroup.GENERIC, 40);
+            dropdown.setReducible(false);
+            this.menubarService.addDropdown(portalControllerContext, dropdown);
+        }
+
+        return dropdown;
+    }
+
+
+    /**
      * Get optional Nuxeo administration link.
      *
      * @param portalControllerContext portal controller context
@@ -378,11 +400,12 @@ public class MenuBarFormater {
             String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + pubInfos.getLiveId() + "/view_documents";
 
             // Parent
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
 
             // Menubar item
-            MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE_IN_NUXEO"), null, parent, 4, url, "nuxeo", null, null);
+            MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE_IN_NUXEO"), null, parent, 21, url, "nuxeo", null, null);
             item.setAjaxDisabled(true);
+            item.setDivider(true);
 
             menubar.add(item);
         }
@@ -426,7 +449,7 @@ public class MenuBarFormater {
                 editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
 
                 // Live version indicator menubar item
-                MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -2, "label label-info");
+                MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12, "label label-info");
                 liveIndicator.setGlyphicon("halflings halflings-pencil visible-xs-inline-block");
                 liveIndicator.setState(true);
 
@@ -434,7 +457,7 @@ public class MenuBarFormater {
 
                 if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
                     // Online workflow pending indicator menubar item
-                    MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"), MenubarGroup.CMS, -1,
+                    MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"), MenubarGroup.CMS, -11,
                             "label label-warning");
                     pendingIndicator.setGlyphicon("glyphicons glyphicons-history");
                     pendingIndicator.setState(true);
@@ -482,7 +505,8 @@ public class MenuBarFormater {
                             // Publish menubar item
                             String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
 
-                            MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "halflings halflings-ok", parent, 12, publishURL,
+                            MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok-2", parent, 12,
+                                    publishURL,
                                     null, null, null);
                             publishItem.setAjaxDisabled(true);
                             publishItem.setDivider(true);
@@ -591,15 +615,15 @@ public class MenuBarFormater {
             List<MenubarItem> menubar, MenubarContainer parent, Bundle bundle) throws CMSException {
         // Validate
         String validateURL = this.getContributionService().getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "halflings halflings-ok", parent, 13,
+        MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-ok-2", parent, 13,
                 validateURL, null, null, null);
         validateItem.setAjaxDisabled(true);
         menubar.add(validateItem);
 
         // Reject
         String rejectURL = this.getContributionService().getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "halflings halflings-remove", parent, 14, rejectURL,
-                null, null, null);
+        MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "glyphicons glyphicons-remove-2", parent, 14,
+                rejectURL, null, null, null);
         rejectItem.setAjaxDisabled(true);
         menubar.add(rejectItem);
     }
@@ -658,8 +682,8 @@ public class MenuBarFormater {
 
             MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "halflings halflings-search", parent, 3,
-                    browserURL, null, null, "fancyframe_refresh");
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-search", parent,
+                    3, browserURL, null, null, "fancyframe_refresh");
             browserItem.setAjaxDisabled(true);
 
             menubar.add(browserItem);
@@ -685,9 +709,9 @@ public class MenuBarFormater {
         }
 
         if (extendedInfos.getDriveEditURL() != null) {
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
 
-            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "halflings halflings-play", parent, 5,
+            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 13,
             		extendedInfos.getDriveEditURL(), null, null, null);
             driveEditItem.setAjaxDisabled(true);
 
@@ -702,9 +726,9 @@ public class MenuBarFormater {
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
-     * @throws PortalException 
+     * @throws PortalException
      */
-    protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, 
+    protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar,
     		Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
@@ -719,46 +743,45 @@ public class MenuBarFormater {
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
 
-        Boolean active = null;
         String command = null;
         String icon = null;
         EcmCommonCommands ecmAction = null;
 
         if (extendedInfos.isCanSynchronize()) {
-            active = true;
-            command = "SYNCHRONIZE";
-            icon = "halflings halflings-refresh";
+            command = "SYNCHRONIZE_ACTION";
+            icon = "glyphicons glyphicons-refresh";
             ecmAction = EcmCommonCommands.synchronizeFolder;
         } else if (extendedInfos.isCanUnsynchronize()) {
-            active = false;
-            command = "UNSYNCHRONIZE";
-            icon = "halflings halflings-ban-circle";
+            command = "UNSYNCHRONIZE_ACTION";
+            icon = "glyphicons glyphicons-ban";
             ecmAction = EcmCommonCommands.unsynchronizeFolder;
+
+            // Synchronized indicator menubar item
+            MenubarItem synchronizedIndicator = new MenubarItem("SYNCHRONIZED", null, MenubarGroup.CMS, -2, "label label-success");
+            synchronizedIndicator.setGlyphicon("halflings halflings-refresh");
+            synchronizedIndicator.setTooltip(bundle.getString("SYNCHRONIZED"));
+            synchronizedIndicator.setState(true);
+            menubar.add(synchronizedIndicator);
         }
 
-        MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+        MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
 
-        if (active != null) {
+        if (command != null) {
 			try {
 				String synchronizeURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, ecmAction);
-				
-	            MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), icon, parent, 5, synchronizeURL, null, null, null);
+
+                MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), icon, parent, 12, synchronizeURL, null, null, null);
 	            synchronizeItem.setAjaxDisabled(true);
-	            synchronizeItem.setActive(active);
 
 	            menubar.add(synchronizeItem);
-	            
-				
 			} catch (PortalException e) {
 				LOGGER.warn(e.getMessage());
 			}
-
-
         } else if (extendedInfos.getSynchronizationRootPath() != null) {
             String rootURL = this.urlFactory.getCMSUrl(portalControllerContext, null, extendedInfos.getSynchronizationRootPath(), null, null, null, null, null,
                     null, null);
 
-            MenubarItem rootURLItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), null, parent, 5, rootURL, null, null, null);
+            MenubarItem rootURLItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), null, parent, 12, rootURL, null, null, null);
             rootURLItem.setAjaxDisabled(true);
 
             menubar.add(rootURLItem);
@@ -772,9 +795,9 @@ public class MenuBarFormater {
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
-     * @throws PortalException 
+     * @throws PortalException
      */
-    protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, 
+    protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar,
     		Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
         // Current document
@@ -788,33 +811,40 @@ public class MenuBarFormater {
             String url = "";
 
             try {
-            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
-	            MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 10, url, null, null, null);
+                MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+                MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 11, url, null, null, null);
 	            subscribeItem.setAjaxDisabled(true);
-	
+                subscribeItem.setDivider(true);
+
 	            if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
 	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
-	
+
 	                subscribeItem.setUrl(url);
-	                subscribeItem.setGlyphicon("halflings halflings-flag");
+                    subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
 	                subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
 	            } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
 	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
-	
+
 	                subscribeItem.setUrl(url);
-	                subscribeItem.setGlyphicon("halflings halflings-flag");
+                    subscribeItem.setGlyphicon("glyphicons glyphicons-ban");
 	                subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
-	                subscribeItem.setActive(true);
+
+                    // Subscribed indicator menubar item
+                    MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3,
+                            "label label-success");
+                    subscribedIndicator.setGlyphicon("halflings halflings-flag");
+                    subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
+                    subscribedIndicator.setState(true);
+                    menubar.add(subscribedIndicator);
 	            } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
 	                subscribeItem.setUrl("#");
-	                subscribeItem.setGlyphicon("halflings halflings-flag");
+                    subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
 	                subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
-	                //subscribeItem.setActive(true);
 	                subscribeItem.setDisabled(true);
 	            }
-	
+
 	            menubar.add(subscribeItem);
-	            
+
             }
             catch(PortalException ex) {
             	LOGGER.warn(ex.getMessage());
@@ -832,7 +862,7 @@ public class MenuBarFormater {
 	private void getLockLink(PortalControllerContext portalControllerContext,
 			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
 			CMSExtendedDocumentInfos extendedInfos) {
-		
+
         // Current document
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
@@ -844,82 +874,81 @@ public class MenuBarFormater {
             String url = "";
 
             try {
-            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
-	            MenubarItem lockItem = new MenubarItem("LOCK_URL", null, null, parent, 12, url, null, null, null);
+                MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+                MenubarItem lockItem = new MenubarItem("LOCK_URL", null, null, parent, 14, url, null, null, null);
 	            lockItem.setAjaxDisabled(true);
-	
+
 	            if (lockStatus == LockStatus.can_lock) {
 	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.lock);
-	
+
 	                lockItem.setUrl(url);
 	                lockItem.setGlyphicon("glyphicons glyphicons-lock");
 	                lockItem.setTitle(bundle.getString("LOCK_ACTION"));
 	            } else if (lockStatus == LockStatus.can_unlock) {
 	                url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unlock);
-	
+
 	                lockItem.setUrl(url);
 	                lockItem.setGlyphicon("glyphicons glyphicons-unlock");
 	                lockItem.setTitle(bundle.getString("UNLOCK_ACTION"));
-	                lockItem.setActive(true);
+
+                    // Locked indicator menubar item
+                    MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
+                    lockedIndicator.setGlyphicon("halflings halflings-glyph-lock");
+                    lockedIndicator.setTooltip(bundle.getString("LOCKED"));
+                    lockedIndicator.setState(true);
+                    menubar.add(lockedIndicator);
 	            } else if (lockStatus == LockStatus.locked) {
 	                lockItem.setUrl("#");
 	                lockItem.setGlyphicon("glyphicons glyphicons-lock");
-	                lockItem.setTitle(bundle.getString("LOCKED"));
-	                //lockItem.setActive(true);
+                    lockItem.setTitle(bundle.getString("INHERITED_LOCK"));
 	                lockItem.setDisabled(true);
 	            }
-	
+
 	            menubar.add(lockItem);
-	            
+
             }
             catch(PortalException ex) {
             	LOGGER.warn(ex.getMessage());
             }
         }
-		
+
 	}
 
 
 	/**
-	 * Get Administrations links 
+	 * Get Administrations links
 	 * @param portalControllerContext
 	 * @param cmsContext
 	 * @param menubar
 	 * @param bundle
-	 * @throws CMSException 
+	 * @throws CMSException
 	 */
 	private void getManageLink(PortalControllerContext portalControllerContext,
 			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
-		
+
         // Current document
         Document document = (Document) cmsContext.getDoc();
         String path = document.getPath();
         // Publication infos
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
-        
-        
-        if(document.getType().equals("Workspace") && pubInfos.isManageableByUser()) {
-        	
+
+        if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             try {
-            	
         		Map<String, String> windowProperties = new HashMap<String, String>();
         		windowProperties.put("osivia.ajaxLink", "1");
         		windowProperties.put("theme.dyna.partial_refresh_enabled", "true");
         		windowProperties.put("action", "consulterRole");
         		windowProperties.put("workspacePath", document.getPath());
-        		
-        		String url = urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-workspace-gestionworkspace-portailPortletInstance", windowProperties, false);
-            	
-            	MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-				MenubarItem manageMembersItem = new MenubarItem("MANAGE_MEMBERS", null, null, parent, 15, url, null, null, null);
+        		String url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-workspace-gestionworkspace-portailPortletInstance", windowProperties, false);
+
+                MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+
+                MenubarItem manageMembersItem = new MenubarItem("MANAGE_MEMBERS", bundle.getString("MANAGE_MEMBERS_ACTION"), "glyphicons glyphicons-group",
+                        parent, 22, url, null, null, null);
 	            manageMembersItem.setAjaxDisabled(true);
 
-                manageMembersItem.setGlyphicon("glyphicons glyphicons-group");
-                manageMembersItem.setTitle(bundle.getString("MANAGE_MEMBERS_ACTION"));
-           
 	            menubar.add(manageMembersItem);
-	            
             }
             catch(PortalException ex) {
             	LOGGER.warn(ex.getMessage());
@@ -928,17 +957,17 @@ public class MenuBarFormater {
         }
 
     }
-	
+
 	/**
      * Get link to validation workflow tasks.
-     * 
+     *
      * @param portalControllerContext
      * @param cmsContext
      * @param menubar
      * @param bundle
      * @param extendedInfos
      */
-	protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+    protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) throws CMSException {
 
         Document document = (Document) cmsContext.getDoc();
@@ -984,7 +1013,7 @@ public class MenuBarFormater {
 
     /**
      * Get link to remote publishing tasks.
-     * 
+     *
      * @param portalControllerContext
      * @param cmsContext
      * @param menubar
@@ -1081,7 +1110,7 @@ public class MenuBarFormater {
                     MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("EDIT", editLabel, "halflings halflings-pencil", parent, 1, url, null, onClick.toString(),
+                    MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
@@ -1094,7 +1123,7 @@ public class MenuBarFormater {
 
     /**
      * Get move link.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS context
      * @param menubar menubar
@@ -1143,7 +1172,7 @@ public class MenuBarFormater {
                     if (moveDocumentURL != null) {
                         MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-                        MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "halflings halflings-move", parent, 2, moveDocumentURL, null,
+                        MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL, null,
                                 null, "fancyframe_refresh");
                         item.setAjaxDisabled(true);
 
@@ -1336,7 +1365,7 @@ public class MenuBarFormater {
                     MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "halflings halflings-trash", parent, 20, null, null, null, null);
+                    MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "glyphicons glyphicons-bin", parent, 20, null, null, null, null);
                     item.setAjaxDisabled(true);
                     item.setDivider(true);
 
@@ -1536,7 +1565,7 @@ public class MenuBarFormater {
         MenubarDropdown parent = this.getShareDropdown(portalControllerContext, bundle);
 
         // Menubar item
-        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "halflings halflings-link", parent, 1, "#" + id, null, null,
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", parent, 1, "#" + id, null, null,
                 "fancybox_inline");
         item.setAjaxDisabled(true);
         item.setAssociatedHTML(htmlContent);
@@ -1558,7 +1587,7 @@ public class MenuBarFormater {
         // Request
         PortletRequest request = cmsContext.getRequest();
 
-        
+
         // Selectors parameters
         Map<String, String> parameters = null;
         String selectors = request.getParameter("selectors");
@@ -1567,22 +1596,23 @@ public class MenuBarFormater {
             Map<String, List<String>> decodedSelectors = PageSelectors.decodeProperties(selectors);
             parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
         }
-        
 
-        
+
+
         // Document
         Document document = (Document) cmsContext.getDoc();
-        String path = document.getPath();        
+        String path = document.getPath();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
-        
+
         // On ne sait pas gérer les webid des proxys distants (comment résoudre l'ambiguité si plusieurs proxys)
         // Du coup, on ne les gère que pour les portails web
         // A revoir dans la version 4.2
-        
-        if( !this.isRemoteProxy(cmsContext, pubInfos ))
-              path =  this.customizer.getContentWebIdPath(cmsContext);
 
-        
+        if( !this.isRemoteProxy(cmsContext, pubInfos )) {
+            path =  this.customizer.getContentWebIdPath(cmsContext);
+        }
+
+
 
         // URL
         String url;
