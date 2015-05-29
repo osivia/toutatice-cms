@@ -61,6 +61,8 @@ public class VocabSelectorPortlet extends CMSPortlet {
     private static final String VOCABULARY_PRESELECTION_1_WINDOW_PROPERTY = "osivia.preselect1";
     /** Mono-valued selector window property name. */
     private static final String MONOVALUED_SELECTOR_WINDOW_PROPERTY = "osivia.selectorMonoValued";
+    /** Multi level vocabulary */
+	private static final String MULTILEVEL_SELECTOR_WINDOW_PROPERTY = "osivia.selectorMultiLevel";
     /** Others option indicator window property name. */
     private static final String OTHERS_OPTION_WINDOW_PROPERTY = "osivia.othersOption";
     /** Others label window property name. */
@@ -117,6 +119,9 @@ public class VocabSelectorPortlet extends CMSPortlet {
                 // Mono-valued selector indicator
                 window.setProperty(MONOVALUED_SELECTOR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("selectorMonoValued")));
 
+                // Multi-level selector indicator
+                window.setProperty(MULTILEVEL_SELECTOR_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("selectorMultiLevel")));
+                
                 // Others option indicator
                 window.setProperty(OTHERS_OPTION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("othersOption")));
 
@@ -312,6 +317,12 @@ public class VocabSelectorPortlet extends CMSPortlet {
             selectorMonoValued = "0";
         }
         req.setAttribute("selectorMonoValued", selectorMonoValued);
+        
+        String selectorMultiLevel = window.getProperty(MULTILEVEL_SELECTOR_WINDOW_PROPERTY);
+        if (selectorMultiLevel == null) {
+            selectorMultiLevel = "0";
+        }
+        req.setAttribute("selectorMultiLevel", selectorMultiLevel);        
 
         String othersOption = window.getProperty(OTHERS_OPTION_WINDOW_PROPERTY);
         if (othersOption == null) {
@@ -362,6 +373,10 @@ public class VocabSelectorPortlet extends CMSPortlet {
             String selectorMonoValued = window.getProperty(MONOVALUED_SELECTOR_WINDOW_PROPERTY);
             request.setAttribute("selectorMonoValued", selectorMonoValued);
 
+            // Multi-level selector indicator
+            String selectorMultiLevel = window.getProperty(MULTILEVEL_SELECTOR_WINDOW_PROPERTY);
+            request.setAttribute("selectorMultiLevel", selectorMultiLevel);
+            
             // Vocabulary level 1
             String vocabName1 = window.getProperty("osivia.vocabName1");
             if (vocabName1 == null) {
@@ -401,7 +416,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
             if (curSelect != null) {
                 request.setAttribute("vocabsId", curSelect);
                 if ("1".equals(selectorMonoValued)) {
-                    if (curSelect.size() > 0) {
+                    if (curSelect.size() > 0 && !("1".equals(selectorMultiLevel))) {
                         String[] tokens = curSelect.get(0).split("/");
                         if (tokens.length > 0) {
                             vocab1Id = tokens[0];
@@ -432,16 +447,25 @@ public class VocabSelectorPortlet extends CMSPortlet {
             request.setAttribute("vocabName2", vocabName2);
             request.setAttribute("vocabName3", vocabName3);
 
-            VocabularyEntry vocab = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabs);
+            VocabularyEntry vocab;
+            String path = "/WEB-INF/jsp/selectors/vocab/view.jsp";
+
+            if("1".equals(selectorMultiLevel)) {
+            	path = "/WEB-INF/jsp/selectors/vocab/view-multilevel.jsp";
+            	vocab = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabs, true);
+            }
+            else {
+            	vocab = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabs, false);
+            }
+            
             request.setAttribute("vocab1", vocab);
-
-
+            
             // Others option
             if ("1".equals(window.getProperty(OTHERS_OPTION_WINDOW_PROPERTY))) {
                 request.setAttribute("othersLabel", window.getProperty(OTHERS_LABEL_WINDOW_PROPERTY));
             }
 
-            this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/vocab/view.jsp").include(request, response);
+			this.getPortletContext().getRequestDispatcher(path).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (PortletException e) {

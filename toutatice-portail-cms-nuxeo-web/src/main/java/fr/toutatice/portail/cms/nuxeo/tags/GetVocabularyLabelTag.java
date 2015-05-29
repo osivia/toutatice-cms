@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 
 /**
@@ -74,10 +75,17 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
                     keys[i] = StringUtils.trim(keys[i]);
 
                     if (StringUtils.contains(keys[i], "/")) {
-                        String[] subKeys = StringUtils.split(keys[i], "/");
-                        sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[0])));
-                        sb.append(" / ");
-                        sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, subKeys[1])));
+            			String[]subKeys = StringUtils.split(keys[i], "/");
+            			
+            			VocabularyEntry vocabularyEntryRoot = VocabularyHelper.getVocabularyEntry(nuxeoController, this.name, true);
+            			
+            			VocabularyEntry parent = vocabularyEntryRoot.getChild(subKeys[0]);
+            			sb.append(StringUtils.clean(parent.getLabel()));
+            			
+            			sb.append(" / ");
+            			VocabularyEntry child = parent.getChild(subKeys[1]);
+            			sb.append(StringUtils.clean(child.getLabel()));
+                    	
                     } else {
                         sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
                     }

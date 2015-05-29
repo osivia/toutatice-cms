@@ -47,11 +47,12 @@ public class VocabularyHelper {
      * Call the vocabulary commands
      *
      * @param ctx the ctx
-     * @param vocabularyNames the vocabulary names
+     * @param vocabularyNames the vocabulary name
+     * @param multiLevel true if voc is multi level : parent/child
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames)  {
+    private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames, boolean multiLevel)  {
 
         NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
 
@@ -60,7 +61,7 @@ public class VocabularyHelper {
         vocabCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
         vocabCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-        VocabularyEntry vocab = (VocabularyEntry) vocabCtx.executeNuxeoCommand(new VocabularyLoaderCommand(vocabularyNames));
+        VocabularyEntry vocab = (VocabularyEntry) vocabCtx.executeNuxeoCommand(new VocabularyLoaderCommand(vocabularyNames, multiLevel));
 
         return vocab;
     }
@@ -96,7 +97,7 @@ public class VocabularyHelper {
      */
     public static String getVocabularyLabel(NuxeoController ctx, List<String> vocabs, String key) {
 
-        VocabularyEntry vocab = callCommand(ctx, vocabs);
+        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
 
         if (vocab != null) {
             VocabularyEntry child = vocab.getChild(key);
@@ -124,6 +125,19 @@ public class VocabularyHelper {
         return getVocabularyEntry(ctx, vocabs, key);
     }
 
+    
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabs the vocabs
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs)  {
+        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
+        return vocab;
+    }
 
     /**
      * Gets the vocabulary entry.
@@ -135,11 +149,24 @@ public class VocabularyHelper {
      * @throws Exception the exception
      */
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, String key)  {
-        VocabularyEntry vocab = callCommand(ctx, vocabs);
+        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
         return vocab;
     }
     
-    
+    /**
+     * Gets the vocabulary entry.
+     *
+     * @param ctx the ctx
+     * @param vocabularyName the vocabulary name
+     * @return the vocabulary entry
+     * @throws Exception the exception
+     */
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, Boolean multiLevel)  {
+        List<String> vocabs = new ArrayList<String>();
+        vocabs.add(vocabularyName);
+        return getVocabularyEntry(ctx, vocabs, multiLevel);
+    }
+
     
     
     /**
@@ -153,7 +180,7 @@ public class VocabularyHelper {
     public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName)  {
         List<String> vocabs = new ArrayList<String>();
         vocabs.add(vocabularyName);
-        return getVocabularyEntry(ctx, vocabs);
+        return getVocabularyEntry(ctx, vocabs, false);
     }
 
 
@@ -162,11 +189,12 @@ public class VocabularyHelper {
      *
      * @param ctx the ctx
      * @param vocabs the vocabs
+     * @param multiLevel true if voc is multi level : parent/child
      * @return the vocabulary entry
      * @throws Exception the exception
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs)  {
-        VocabularyEntry vocab = callCommand(ctx, vocabs);
+    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, Boolean multiLevel)  {
+        VocabularyEntry vocab = callCommand(ctx, vocabs, multiLevel);
         return vocab;
     }
     
@@ -184,15 +212,19 @@ public class VocabularyHelper {
 
         /** The string vocab names. */
         String stringVocabNames = null;
+        
+        boolean multiLevel = false;
 
         /**
          * Instantiates a new vocabulary loader command.
          *
          * @param vocabNames the vocab names
+         * @param multiLevel true if voc is multi level : parent/child
          */
-        public VocabularyLoaderCommand(List<String> vocabNames) {
+        public VocabularyLoaderCommand(List<String> vocabNames, boolean multiLevel) {
             super();
             this.vocabNames = vocabNames;
+            this.multiLevel = multiLevel;
 
             stringVocabNames = "";
             for (String vocab : vocabNames) {
@@ -224,10 +256,18 @@ public class VocabularyHelper {
                     JSONObject vocabulary = (JSONObject) itr.next();
                     String key = vocabulary.getString("key");
                     String label = vocabulary.getString("value");
+                    String parentId = null;
+                    if(vocabulary.containsKey("parent")) {
+                    	parentId = vocabulary.getString("parent");
+                    }
+                    
                     if (label.startsWith("label.directories"))
                         label = key;
                     String DecodedLabel = URLDecoder.decode(label, "UTF-8");
+
                     entry = new VocabularyEntry(key, DecodedLabel);
+
+                    
                     JSONArray children = null;
                     if (vocabulary.has("children")) {
                         children = vocabulary.getJSONArray("children");
@@ -236,13 +276,18 @@ public class VocabularyHelper {
                         }
                     }
 
-                    parent.getChildren().put(entry.getId(), entry);
+                    if(multiLevel == true && parentId != null) {
+                    	VocabularyEntry parentVoc = parent.getChildren().get(parentId);
+                    	parentVoc.getChildren().put(entry.getId(), entry);
+                    }
+                    else {
+                    	parent.getChildren().put(entry.getId(), entry);
+                    }
                 }
             }
 
             return entry;
         }
-
 
         /**
          * Checks if is a child.
@@ -323,6 +368,7 @@ public class VocabularyHelper {
             return stringVocabNames;
         }
     }
+
 
 
 }

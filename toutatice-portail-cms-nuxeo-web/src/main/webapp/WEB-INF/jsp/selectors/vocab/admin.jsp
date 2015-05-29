@@ -57,6 +57,20 @@ $JQry(document).ready(function() {
         </div>
     </div>
     
+    <!-- Multi level vocabulary -->
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="selectorMultiLevel" value="1"
+                        <c:if test="${selectorMultiLevel eq '1'}">checked="checked"</c:if>
+                    >
+                    <span><is:getProperty key="SELECTOR_MULTI_LEVEL_VOCAB" /></span>
+                </label>
+            </div>
+        </div>
+    </div>    
+    
     <!-- Option "others" -->
     <div class="form-group">
         <label for="selector-other" class="control-label col-sm-3"><is:getProperty key="SELECTOR_OTHERS" /></label>
