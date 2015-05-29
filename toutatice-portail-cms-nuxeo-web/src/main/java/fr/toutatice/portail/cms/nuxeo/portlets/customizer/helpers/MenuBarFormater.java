@@ -236,6 +236,9 @@ public class MenuBarFormater {
                 // Validation workflow(s)
                 this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 
+                // Remote publishing
+                this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
@@ -935,43 +938,48 @@ public class MenuBarFormater {
      * @param bundle
      * @param extendedInfos
      */
-    private void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+	protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-        
+
         Document document = (Document) cmsContext.getDoc();
-        String path = document.getPath();
-        
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
-        
-        if(pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)){
-        
-            Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
-            String url = StringUtils.EMPTY;
-            
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
-            MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
-            
-            if(BooleanUtils.isTrue(isValidationWfRunning)){
-                // Access to current validation workflow task
-                Map<String, String> requestParameters = new HashMap<String, String>();
-                String followWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
-                
-                validationWfItem.setUrl(followWfURL);
-                validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
-                
-            } else {
-                // We can start a validation workflow
-                Map<String, String> requestParameters = new HashMap<String, String>();
-                String startWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);
-                
-                validationWfItem.setUrl(startWfURL);
-                validationWfItem.setTitle(bundle.getString("START_VALIDATION_WF"));
+
+        if (!DocumentHelper.isFolder(document) && !DocumentConstants.APPROVED_DOC_STATE.equals(document.getState())) {
+
+            String path = document.getPath();
+
+            CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+
+            if (pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+
+                Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
+                String url = StringUtils.EMPTY;
+
+                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
+
+                if (BooleanUtils.isTrue(isValidationWfRunning)) {
+                    // Access to current validation workflow task
+                    Map<String, String> requestParameters = new HashMap<String, String>();
+                    String followWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
+
+                    validationWfItem.setUrl(followWfURL);
+                    validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
+
+                } else {
+                    // We can start a validation workflow
+                    Map<String, String> requestParameters = new HashMap<String, String>();
+                    String startWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);
+
+                    validationWfItem.setUrl(startWfURL);
+                    validationWfItem.setTitle(bundle.getString("START_VALIDATION_WF"));
+                }
+
+                menubar.add(validationWfItem);
+
             }
-            
-            menubar.add(validationWfItem);
-        
+
         }
-        
+
     }
 
     /**
