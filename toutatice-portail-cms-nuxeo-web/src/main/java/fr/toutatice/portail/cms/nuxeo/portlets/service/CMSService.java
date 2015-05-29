@@ -83,6 +83,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCo
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
@@ -1805,6 +1806,10 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@choose_wf?";
         } else if (command == EcmViews.followWfValidation) {
             url = uri.toString() + "/nxpath/default" + path + "@current_task?";
+        } else if (command == EcmViews.remotePublishing) {
+            url = uri.toString() + "/nxpath/default" + path + "@remote_publishing?";
+        } else if (command == EcmViews.validateRemotePublishing) {
+            url = uri.toString() + "/nxpath/default" + path + "@validate_remote_publishing?";
         } else if (command == EcmViews.gotoMediaLibrary) {
 
             Document mediaLibrary;
@@ -1924,18 +1929,32 @@ public class CMSService implements ICMSService {
 
     @Override
     public void unpublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        String reloadPagePath = pagePath;
+        
+        // To consider remote proxy case
+        cmsCtx.setDisplayLiveVersion("0");
+        CMSItem cmsPublishedItem = this.getContent(cmsCtx, pagePath);
+        Document publishedDoc = (Document) cmsPublishedItem.getNativeItem();
+        String publishedDocPath = CMSItemAdapter.computeNavPath(publishedDoc.getPath());
 
         cmsCtx.setDisplayLiveVersion("1");
-
         CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
         Document doc = (Document) cmsItem.getNativeItem();
+        
+        Document inputDoc = doc;
+        if(!publishedDocPath.equals(doc.getPath())){
+            // Remote proxy
+            inputDoc = publishedDoc;
+            reloadPagePath = StringUtils.substringBeforeLast(pagePath, "/");
+            cmsCtx.setDisplayLiveVersion("0");
+        }
 
         try {
-            this.executeNuxeoCommand(cmsCtx, new SetOffLineCommand(doc));
+            this.executeNuxeoCommand(cmsCtx, new SetOffLineCommand(inputDoc));
 
             // On force le rechargement du cache de la page
             cmsCtx.setForceReload(true);
-            this.getContent(cmsCtx, pagePath);
+            this.getContent(cmsCtx, reloadPagePath);
             cmsCtx.setForceReload(false);
 
         } catch (Exception e) {

@@ -157,8 +157,7 @@
             <type>java.lang.Integer</type>
         </attribute>
     </tag>
-
-
+    
     <tag>
         <description>Get user.</description>
         <display-name>Get user avatar and profile page from his name</display-name>
@@ -207,6 +206,23 @@
             <type>java.lang.String</type>
         </attribute>
     </tag>
+    
+     <tag>
+    	<description>Transform Nuxeo link into Portal link.</description>
+    	<display-name>Transform Nuxeo link</display-name>
+    	<name>transformNxLink</name>
+    	<tag-class>fr.toutatice.portail.cms.nuxeo.tags.TransformNuxeoLinkTag</tag-class>
+    	<body-content>empty</body-content>
+    	
+    	<attribute>
+    		<description>Nuxeo Link.</description>
+    		<name>link</name>
+    		<required>true</required>
+    		<rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+    	</attribute>
+    </tag>
+    
 
 
     <tag>

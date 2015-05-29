@@ -98,10 +98,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 				publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 				publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
 				publiInfos.setManageableByUser(adaptBoolean(infos.get("manageableByUser")));
+				publiInfos.setRemotePublishable(adaptBoolean(infos.get("isRemotePublishable")));
 				publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
 				publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
 				publiInfos.setPublished(adaptBoolean(infos.get("published")));
-				publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
+				publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxies")));
 				publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
 				publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
 				publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));

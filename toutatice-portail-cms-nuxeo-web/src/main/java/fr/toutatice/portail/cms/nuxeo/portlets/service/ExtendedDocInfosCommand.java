@@ -63,10 +63,6 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
         if (infosAsBlob != null) {
 
             docInfos = new CMSExtendedDocumentInfos();
-            // Default behaviour
-            docInfos.setIsOnlineTaskPending(Boolean.FALSE);
-            docInfos.setCanUserValidateOnlineTask(Boolean.FALSE);
-            docInfos.setIsUserOnlineTaskInitiator(Boolean.FALSE);
 
             String infosContentStr = IOUtils.toString(infosAsBlob.getStream(), "UTF-8");
             JSONArray infosContent = JSONArray.fromObject(infosContentStr);
@@ -74,11 +70,13 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
             Iterator<?> iterator = infosContent.iterator();
             while (iterator.hasNext()) {
                 JSONObject infos = (JSONObject) iterator.next();
-
+                
+                // DCH: FIXME: abstract task infos (like name)
                 if (infos.containsKey("taskName")) {
                     String taskName = infos.getString("taskName");
-
-                    if ("validate-online".equals(taskName)) {
+                    
+                    if (StringUtils.isNotBlank(taskName)) {
+                        docInfos.setTaskName(taskName);
                         docInfos.setIsOnlineTaskPending(infos.getBoolean("isTaskPending"));
                         docInfos.setCanUserValidateOnlineTask(infos.getBoolean("canManageTask"));
                         docInfos.setIsUserOnlineTaskInitiator(infos.getBoolean("isTaskInitiator"));
