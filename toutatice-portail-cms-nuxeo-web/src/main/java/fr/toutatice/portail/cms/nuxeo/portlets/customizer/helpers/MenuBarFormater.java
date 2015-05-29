@@ -949,7 +949,7 @@ public class MenuBarFormater {
 
             CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
 
-            if (pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+            if (pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
                 Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
                 String url = StringUtils.EMPTY;
@@ -965,7 +965,7 @@ public class MenuBarFormater {
                     validationWfItem.setUrl(followWfURL);
                     validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
 
-                } else {
+                } else if (pubInfos.isEditableByUser()) {
                     // We can start a validation workflow
                     Map<String, String> requestParameters = new HashMap<String, String>();
                     String startWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);

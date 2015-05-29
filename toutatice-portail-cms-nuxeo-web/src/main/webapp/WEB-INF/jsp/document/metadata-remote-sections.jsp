@@ -9,25 +9,19 @@
 
 	<c:set var="remote_sections"
 		value="${doc.properties['rsi:remoteSections']}" />
-	
-	<c:if test="${not empty remote_sections}">
-		<p>
-			<strong><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></strong> <span>
-				: </span>
+		
+			<dt><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></dt>
 			<span>
 				<c:forEach items="${remote_sections}" var="remote_section">
-					<c:set var="sectionURL"><ttc:transformNxLink link="${remote_section.sectionURL}" /></c:set>
-					<p>
-						<a href="${sectionURL}"><span
-							class="label label-default">${remote_section.sectionPath}</span></a>
-						<span class="label label-primary">${remote_section.version}</span>
+					<c:set var="proxyURL"><ttc:transformNxLink link="${remote_section.proxyURL}" /></c:set>
+					<dd>
+						<a href="${proxyURL}"><span>${remote_section.sectionTitle}</span></a>
 						<c:if test="${remote_section.pending}">
 							<i class="glyphicons clock"></i>
 						</c:if>
-					</p>
+					</dd>
 				</c:forEach>
 			</span>
-		</p>
-	</c:if>
+
 
 </c:if>
