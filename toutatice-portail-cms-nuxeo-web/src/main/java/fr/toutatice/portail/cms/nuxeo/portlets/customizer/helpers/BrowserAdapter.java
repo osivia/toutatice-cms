@@ -3,8 +3,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.portlet.PortletRequest;
-
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.cms.CMSException;
@@ -23,6 +23,10 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
  * @author Cédric Krommenhoek
  */
 public class BrowserAdapter {
+
+    /** User workspaces principal attribute name. */
+    protected static final String USER_WORKSPACES_PRINCIPAL_ATTRIBUTE = "osivia.browser.userWorkspaces";
+
 
     /** Singleton instance. */
     private static BrowserAdapter instance;
@@ -97,45 +101,64 @@ public class BrowserAdapter {
 
     /**
      * Get user workspaces.
-     * 
+     *
      * @param cmsContext CMS context
      * @return user workspaces
      * @throws CMSException
      */
     public List<CMSItem> getUserWorkspaces(CMSServiceCtx cmsContext) throws CMSException {
-        // Request
-        PortletRequest request = cmsContext.getRequest();
-
-        // User name
-        String userName = null;
-        if (request.getUserPrincipal() != null) {
-            userName = request.getUserPrincipal().getName();
-        }
+        // Server invocation
+        ServerInvocation invocation = cmsContext.getServerInvocation();
 
         List<CMSItem> workspaces;
 
-        if (userName == null) {
-            workspaces = new ArrayList<CMSItem>(0);
-        } else {
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, cmsContext.getResponse(), cmsContext.getPortletCtx());
+        Object attribute = invocation.getAttribute(Scope.PRINCIPAL_SCOPE, USER_WORKSPACES_PRINCIPAL_ATTRIBUTE);
+        if ((attribute != null) && (attribute instanceof List<?>)) {
+            List<?> list = (List<?>) attribute;
+            workspaces = new ArrayList<CMSItem>(list.size());
 
-            // Query
-            String query = this.getUserWorkspacesQuery(userName);
-            // Schemas
-            String schemas = this.getWorkspacesSchemas();
-            // Portal policy filter
-            String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
-
-            INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
-            Documents documents = (Documents) nuxeoController.executeNuxeoCommand(nuxeoCommand);
-
-            workspaces = new ArrayList<CMSItem>(documents.size());
-            for (Document document : documents.list()) {
-                CMSItem workspace = this.cmsService.createItem(cmsContext, document.getPath(), document.getTitle(), document);
-                workspaces.add(workspace);
+            for (Object object : list) {
+                if (object instanceof CMSItem) {
+                    CMSItem workspace = (CMSItem) object;
+                    workspaces.add(workspace);
+                }
             }
+        } else {
+            // User name
+            String userName = null;
+            if (invocation.getServerContext().getClientRequest().getUserPrincipal() != null) {
+                userName = invocation.getServerContext().getClientRequest().getUserPrincipal().getName();
+            }
+
+            if (userName == null) {
+                workspaces = new ArrayList<CMSItem>(0);
+            } else {
+                // Query
+                String query = this.getUserWorkspacesQuery(userName);
+                // Schemas
+                String schemas = this.getWorkspacesSchemas();
+                // Portal policy filter
+                String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
+
+                try {
+                    INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
+                    Documents documents = (Documents) this.cmsService.executeNuxeoCommand(cmsContext, nuxeoCommand);
+
+                    workspaces = new ArrayList<CMSItem>(documents.size());
+                    for (Document document : documents.list()) {
+                        CMSItem workspace = this.cmsService.createItem(cmsContext, document.getPath(), document.getTitle(), document);
+                        workspaces.add(workspace);
+                    }
+                } catch (CMSException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new CMSException(e);
+                }
+            }
+
+            invocation.setAttribute(Scope.PRINCIPAL_SCOPE, USER_WORKSPACES_PRINCIPAL_ATTRIBUTE, workspaces);
         }
+
 
         return workspaces;
     }
@@ -163,7 +186,7 @@ public class BrowserAdapter {
 
     /**
      * Get user workspaces query.
-     * 
+     *
      * @param userName user name
      * @return query
      */

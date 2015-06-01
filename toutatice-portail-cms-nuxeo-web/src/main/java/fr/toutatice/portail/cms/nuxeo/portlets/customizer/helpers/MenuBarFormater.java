@@ -195,6 +195,23 @@ public class MenuBarFormater {
             }
         }
 
+
+        // Check if current item is in user workspaces
+        boolean userWorkspace = false;
+        if (cmsContext.getDoc() != null) {
+            Document document = (Document) cmsContext.getDoc();
+            String path = document.getPath() + "/";
+
+            List<CMSItem> userWorkspaces = this.cmsService.getWorkspaces(cmsContext, true, false);
+            for (CMSItem cmsItem : userWorkspaces) {
+                if (StringUtils.startsWith(path, cmsItem.getPath() + "/")) {
+                    userWorkspace = true;
+                    break;
+                }
+            }
+        }
+
+
         try {
             // Live version browser
             this.getLiveContentBrowserLink(portalControllerContext, cmsContext, menubar, bundle);
@@ -226,20 +243,21 @@ public class MenuBarFormater {
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                // Follow
-                this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                if (!userWorkspace) {
+                    // Follow
+                    this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                // Lock
-                this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                    // Lock
+                    this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                // Manage
-                this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
+                    // Manage
+                    this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
 
-                // Validation workflow(s)
-                this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                // Remote publishing
-                this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
+                    // Validation workflow(s)
+                    this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                    // Remote publishing
+                    this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                }
             }
         } catch (CMSException e) {
             if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
