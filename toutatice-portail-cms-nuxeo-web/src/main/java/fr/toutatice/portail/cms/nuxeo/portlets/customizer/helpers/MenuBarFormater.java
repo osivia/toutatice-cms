@@ -1615,6 +1615,49 @@ public class MenuBarFormater {
 
         menubar.add(item);
     }
+    /**
+     * Add e-mail link.
+     *
+     * @param portalControllerContext portal controller context
+     * @param cmsContext CMS context
+     * @param menubar menubar items
+     * @param bundle internationalization bundle
+     * @throws CMSException
+     */
+    private void addEmailLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+            throws CMSException {
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+        // Publication infos
+        CMSPublicationInfos pubInfos = this.getCmsService().getPublicationInfos(cmsContext, document.getPath());
+
+        if (pubInfos.isLiveSpace()) {
+
+	        Map<String, String> requestParameters = new HashMap<String, String>();
+	        String url = this.getCmsService().getEcmUrl(cmsContext, EcmViews.shareDocument, pubInfos.getDocumentPath(), requestParameters);
+
+	        // Callback URL
+	        String callbackURL = this.getUrlFactory().getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+	        // ECM base URL
+	        String ecmBaseURL = this.getCmsService().getEcmDomain(cmsContext);
+
+	        // On click action
+	        StringBuilder onClick = new StringBuilder();
+	        onClick.append("javascript:setCallbackFromEcmParams('");
+	        onClick.append(callbackURL);
+	        onClick.append("', '");
+	        onClick.append(ecmBaseURL);
+	        onClick.append("');");
+
+	        MenubarDropdown parent = this.getShareDropdown(portalControllerContext, bundle);
+
+            MenubarItem item = new MenubarItem("SHARE_BY_EMAIL", bundle.getString("SHARE_EMAIL"), "social social-e-mail", parent, 2, url, null,
+                    onClick.toString(), "fancyframe_refresh");
+	        item.setAjaxDisabled(true);
+
+	        menubar.add(item);
+        }
+    }
 
 
     /**
@@ -1716,6 +1759,8 @@ public class MenuBarFormater {
         String url = this.computePermaLinkUrl(portalControllerContext, cmsContext, menubar, bundle);
         if (url != null) {
             this.addPermaLinkItem(portalControllerContext, cmsContext, menubar, bundle, url);
+            
+            this.addEmailLink(portalControllerContext, cmsContext, menubar, bundle);
         }
     }
 
