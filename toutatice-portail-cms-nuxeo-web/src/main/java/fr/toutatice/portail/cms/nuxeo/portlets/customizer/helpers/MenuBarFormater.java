@@ -1014,6 +1014,7 @@ public class MenuBarFormater {
                     
                     validationWfItem.setUrl(followWfURL);
                     validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
+                    menubar.add(validationWfItem);
 
                 } else if (pubInfos.isEditableByUser()) {
                     // We can start a validation workflow
@@ -1022,9 +1023,8 @@ public class MenuBarFormater {
 
                     validationWfItem.setUrl(startWfURL);
                     validationWfItem.setTitle(bundle.getString("START_VALIDATION_WF"));
+                    menubar.add(validationWfItem);
                 }
-
-                menubar.add(validationWfItem);
 
             }
 
