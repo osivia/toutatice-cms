@@ -1942,7 +1942,8 @@ public class CMSService implements ICMSService {
         Document doc = (Document) cmsItem.getNativeItem();
         
         Document inputDoc = doc;
-        if(!publishedDocPath.equals(doc.getPath())){
+        boolean isRemoteProxy = !publishedDocPath.equals(doc.getPath());
+        if(isRemoteProxy){
             // Remote proxy
             inputDoc = publishedDoc;
             reloadPagePath = StringUtils.substringBeforeLast(pagePath, "/");

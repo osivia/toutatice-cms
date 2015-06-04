@@ -575,7 +575,7 @@ public class MenuBarFormater {
                     menubar.add(unpublishItem);
                 }
 
-                if (pubInfos.isBeingModified()) {
+                if (!this.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                     // Current modification indicator
                     MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);
                     modificationIndicator.setGlyphicon("halflings halflings-alert");

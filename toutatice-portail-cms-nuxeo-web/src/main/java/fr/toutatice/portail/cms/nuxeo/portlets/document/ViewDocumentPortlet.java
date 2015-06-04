@@ -29,13 +29,16 @@ import javax.portlet.WindowState;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
@@ -60,9 +63,12 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
@@ -105,6 +111,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private DocumentDAO documentDAO;
     /** Document comment DAO. */
     private CommentDAO commentDAO;
+    /** Document published documents DAO. */
+    private RemotePublishedDocumentDAO publishedDocumentsDAO;
 
 
     /**
@@ -136,6 +144,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // DAO
             this.documentDAO = DocumentDAO.getInstance();
             this.commentDAO = CommentDAO.getInstance();
+            this.publishedDocumentsDAO = RemotePublishedDocumentDAO.getInstance();
 
             // CMS service
             CMSService cmsService = new CMSService(this.getPortletContext());
@@ -347,6 +356,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                     // Attachments
                     this.generateAttachments(nuxeoController, document, documentDTO);
+                    
+                    // Remote Published documents 
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO);
 
                     // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
@@ -455,6 +467,40 @@ public class ViewDocumentPortlet extends CMSPortlet {
             }
         }
         return enable;
+    }
+    
+    /**
+     * Get remote published documents.
+     * 
+     * @param nuxeoController
+     * @param document
+     * @param documentDTO
+     */
+    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO){
+
+        int cacheType = nuxeoController.getCacheType();
+        int authType = nuxeoController.getAuthType();
+        
+        try {
+
+            nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+
+            GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(document);
+            JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
+
+            for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
+
+                JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
+                RemotePublishedDocumentDTO publishedDocumentDTO = publishedDocumentsDAO.toDTO(publishedDocumentInfos);
+                documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
+
+            }
+        } finally {
+            nuxeoController.setCacheType(cacheType);
+            nuxeoController.setAuthType(authType);
+        }
+        
     }
 
 }

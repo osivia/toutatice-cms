@@ -8,33 +8,28 @@
 
 <c:if test="${not doc.type.folderish}">
 
-	<c:set var="remote_sections"
-		value="${doc.properties['rsi:remoteSections']}" />
+	<c:set var="publishedDocuments"
+		value="${doc.publishedDocuments}" />
 		
-		<c:if test="${not empty remote_sections}">
+		<c:if test="${not empty publishedDocuments}">
 		    <!-- DCH: FIXME: add a DTO or CMSItemType variable? -->
 		    <c:set var="isInLiveSpace" value="true" />
-		    <c:forEach items="${remote_sections}" var="remote_section">
-		          <c:set var="isInPublishSpace" value="${fn:startsWith(doc.path, remote_section.sectionPath)}" />
+		    <c:forEach items="${publishedDocuments}" var="publishedDocument">
+		          <c:set var="isInPublishSpace" value="${fn:startsWith(doc.path, publishedDocument.nxUrl)}" />
 		          <c:set var="isInLiveSpace" value="${isInLiveSpace and not isInPublishSpace}" /> 
 		    </c:forEach>
 		
-		<c:if test="${isInLiveSpace}">
-		
-			<dt><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></dt>
-			<span>
-				<c:forEach items="${remote_sections}" var="remote_section">
-					<c:set var="proxyURL"><ttc:transformNxLink link="${remote_section.proxyURL}" /></c:set>
+			<c:if test="${isInLiveSpace}"> 
+			
+				<dt><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></dt>
+				<c:forEach items="${publishedDocuments}" var="publishedDocument">
+					<c:set var="publishedDocumentURL"><ttc:transformNxLink link="${publishedDocument.nxUrl}" /></c:set>
 					<dd>
-						<a href="${proxyURL}"><span>${remote_section.sectionTitle}</span></a>
-						<c:if test="${remote_section.pending}">
-							<i class="glyphicons clock"></i>
-						</c:if>
+						<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
 					</dd>
 				</c:forEach>
-			</span>
-			
-		</c:if>
+				
+			</c:if>
 			
         </c:if>
 

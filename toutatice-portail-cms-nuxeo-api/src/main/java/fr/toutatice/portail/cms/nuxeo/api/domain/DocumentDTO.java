@@ -44,6 +44,8 @@ public class DocumentDTO implements Cloneable {
     private boolean commentable;
     /** Document comments. */
     private final List<CommentDTO> comments;
+    /** Remote published documents of this document. */
+    private final List<RemotePublishedDocumentDTO> publishedDocuments;
 
     /** Original Nuxeo document. */
     private Document document;
@@ -57,6 +59,7 @@ public class DocumentDTO implements Cloneable {
         this.properties = new HashMap<String, Object>();
         this.attachments = new ArrayList<DocumentAttachmentDTO>();
         this.comments = new ArrayList<CommentDTO>();
+        this.publishedDocuments = new ArrayList<RemotePublishedDocumentDTO>();
     }
 
 
@@ -75,6 +78,7 @@ public class DocumentDTO implements Cloneable {
         this.attachments.addAll(documentDTO.attachments);
         this.commentable = documentDTO.commentable;
         this.comments.addAll(documentDTO.comments);
+        this.publishedDocuments.addAll(documentDTO.publishedDocuments);
         this.document = documentDTO.document;
     }
 
@@ -212,6 +216,14 @@ public class DocumentDTO implements Cloneable {
     public List<CommentDTO> getComments() {
         return this.comments;
     }
+    
+    /**
+     * @return the publishedDocuments
+     */
+    public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
+        return this.publishedDocuments;
+    }
+
 
     /**
      * Getter for document.
