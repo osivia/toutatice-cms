@@ -605,7 +605,7 @@ public class MenuBarFormater {
                     menubar.add(previewItem);
                 }
             }
-        } else if (pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+        } else if (!DocumentHelper.isFolder(document) && pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
             if (pubInfos.isBeingModified()) {
                 MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
