@@ -990,7 +990,7 @@ public class MenuBarFormater {
 
         Document document = (Document) cmsContext.getDoc();
 
-        if (!DocumentHelper.isFolder(document) && !DocumentConstants.APPROVED_DOC_STATE.equals(document.getState())) {
+        if (!DocumentHelper.isFolder(document)) {
 
             String path = document.getPath();
 
@@ -1016,7 +1016,7 @@ public class MenuBarFormater {
                     validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
                     menubar.add(validationWfItem);
 
-                } else if (pubInfos.isEditableByUser()) {
+                } else if (!DocumentConstants.APPROVED_DOC_STATE.equals(document.getState()) && pubInfos.isEditableByUser()) {
                     // We can start a validation workflow
                     Map<String, String> requestParameters = new HashMap<String, String>();
                     String startWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);
@@ -1091,9 +1091,11 @@ public class MenuBarFormater {
                             .getEcmUrl(cmsContext, EcmViews.remotePublishing, pubInfos.getDocumentPath(), requestParameters);
 
                     remotePubItem.setUrl(remotePublishingURL);
+                    menubar.add(remotePubItem);
+                } else {
+                    remotePubItem.setDisabled(true);
+                    menubar.add(remotePubItem);
                 }
-
-                menubar.add(remotePubItem);
 
             }
 
