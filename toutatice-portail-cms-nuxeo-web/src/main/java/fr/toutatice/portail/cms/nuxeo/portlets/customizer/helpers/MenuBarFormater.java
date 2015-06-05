@@ -228,8 +228,12 @@ public class MenuBarFormater {
 
                 // Change edition mode
                 this.getChangeModeLink(portalControllerContext, cmsContext, menubar, bundle);
+                
                 // Edition
                 this.getEditLink(portalControllerContext, cmsContext, menubar, bundle);
+                // Nuxeo drive edit
+                this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
                 // Move
                 this.getMoveLink(portalControllerContext, cmsContext, menubar, bundle);
                 // Suppression
@@ -238,10 +242,11 @@ public class MenuBarFormater {
                 // Nuxeo administration
                 this.getAdministrationLink(portalControllerContext, cmsContext, menubar, bundle);
 
-                // Nuxeo drive edit
-                this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
+                // Manage (for workspaces)
+                this.getEditWksLink(portalControllerContext, cmsContext, menubar, bundle);
 
                 if (!userWorkspace) {
                     // Follow
@@ -727,9 +732,9 @@ public class MenuBarFormater {
         }
 
         if (extendedInfos.getDriveEditURL() != null) {
-            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 13,
+            MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 2,
             		extendedInfos.getDriveEditURL(), null, null, null);
             driveEditItem.setAjaxDisabled(true);
 
@@ -952,18 +957,23 @@ public class MenuBarFormater {
 
         if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             try {
+            	
+            	// --------- EDIT LDAP MEMBERS
+            	
         		Map<String, String> windowProperties = new HashMap<String, String>();
         		windowProperties.put("osivia.ajaxLink", "1");
         		windowProperties.put("theme.dyna.partial_refresh_enabled", "true");
         		windowProperties.put("action", "consulterRole");
+        		windowProperties.put("osivia.title", bundle.getString("MANAGE_MEMBERS_ACTION"));
+        		//windowProperties.put("osivia.hideTitle", "1");
         		windowProperties.put("workspacePath", document.getPath());
 
-        		String url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-workspace-gestionworkspace-portailPortletInstance", windowProperties, false);
+        		String urlEditMembers = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-workspace-gestionworkspace-portailPortletInstance", windowProperties, false);
 
-                MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+        		MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
 
                 MenubarItem manageMembersItem = new MenubarItem("MANAGE_MEMBERS", bundle.getString("MANAGE_MEMBERS_ACTION"), "glyphicons glyphicons-group",
-                        parent, 22, url, null, null, null);
+                        parent, 22, urlEditMembers, null, null, null);
 	            manageMembersItem.setAjaxDisabled(true);
 
 	            menubar.add(manageMembersItem);
@@ -976,6 +986,62 @@ public class MenuBarFormater {
 
     }
 
+
+	/**
+	 * Get Administrations links
+	 * @param portalControllerContext
+	 * @param cmsContext
+	 * @param menubar
+	 * @param bundle
+	 * @throws CMSException
+	 */
+	private void getEditWksLink(PortalControllerContext portalControllerContext,
+			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        String path = document.getPath();
+        // Publication infos
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+
+        if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+
+        	// --------- EDIT OPTIONS IN NUXEO
+        	
+        	// Callback URL
+            String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+            // ECM base URL
+            String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
+
+            Map<String, String> requestParameters = new HashMap<String, String>();
+            String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, pubInfos.getDocumentPath(), requestParameters);
+
+            // On click action
+            StringBuilder onClick = new StringBuilder();
+            onClick.append("javascript:setCallbackFromEcmParams('");
+            onClick.append(callbackURL);
+            onClick.append("', '");
+            onClick.append(ecmBaseURL);
+            onClick.append("');");
+
+            String editLabel = bundle.getString("EDIT");
+
+            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+
+            // Menubar item
+            MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
+                    "fancyframe_refresh");
+            item.setAjaxDisabled(true);
+
+            menubar.add(item);
+
+        }
+
+
+    }
+
+    
+	
 	/**
      * Get link to validation workflow tasks.
      * 
