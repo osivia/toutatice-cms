@@ -523,7 +523,7 @@ public class MenuBarFormater {
                         menubar.add(cancelAskPublishItem);
                     }
                 } else {
-                    if (pubInfos.isBeingModified()) {
+                    if (!this.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         if (pubInfos.isUserCanValidate()) {
                             // Publish menubar item
                             String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
@@ -535,7 +535,7 @@ public class MenuBarFormater {
                             publishItem.setDivider(true);
 
                             menubar.add(publishItem);
-                        } else if (DocumentConstants.VALIDATE_ONLINE_TASK_NAME.equals(extendedInfos.getTaskName())) {
+                        } else {
                             // Ask Publication (workflow) item
                             String askPublishURL = this.getContributionService().getAskPublishContributionURL(portalControllerContext,
                                     pubInfos.getDocumentPath());
