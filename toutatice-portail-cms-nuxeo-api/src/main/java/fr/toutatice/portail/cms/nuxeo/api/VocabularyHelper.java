@@ -28,6 +28,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
@@ -276,9 +277,11 @@ public class VocabularyHelper {
                         }
                     }
 
-                    if(multiLevel == true && parentId != null) {
+                    if(multiLevel == true && StringUtils.isNotBlank(parentId)) {
                     	VocabularyEntry parentVoc = parent.getChildren().get(parentId);
-                    	parentVoc.getChildren().put(entry.getId(), entry);
+                    	if(parentVoc != null){// DCH FIXME: temporary fix in case of more than 2 levels vocabularies
+                    	    parentVoc.getChildren().put(entry.getId(), entry);
+                    	}
                     }
                     else {
                     	parent.getChildren().put(entry.getId(), entry);
@@ -345,7 +348,7 @@ public class VocabularyHelper {
 
 
             Blob blob = (Blob) nuxeoSession.newRequest("Document.GetVocabularies").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
-                    .set("vocabularies", stringVocabNames).set("locale", Locale.FRANCE.toString()).execute();
+                    .set("vocabularies", stringVocabNames).execute();
             String content = IOUtils.toString(blob.getStream(), "UTF-8");
 
             JSONObject rootObject = new JSONObject();
