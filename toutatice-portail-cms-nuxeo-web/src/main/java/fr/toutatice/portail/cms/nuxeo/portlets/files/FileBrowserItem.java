@@ -1,10 +1,12 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
+import java.util.List;
+
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
  * File browser item.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see DocumentDTO
  */
@@ -16,7 +18,7 @@ public class FileBrowserItem extends DocumentDTO {
 
     /**
      * Constructor.
-     * 
+     *
      * @param documentDTO document DTO
      */
     public FileBrowserItem(DocumentDTO documentDTO) {
@@ -25,17 +27,40 @@ public class FileBrowserItem extends DocumentDTO {
 
 
     /**
-     * Getter for index.
+     * Get accepted types.
      * 
+     * @return accepted types
+     */
+    public String[] getAcceptedTypes() {
+        // Portal form sub-types
+        List<String> portalFormSubTypes = null;
+        if (this.getType() != null) {
+            portalFormSubTypes = this.getType().getPortalFormSubTypes();
+        }
+
+        // Accepted types
+        String[] acceptedTypes;
+        if (portalFormSubTypes != null) {
+            acceptedTypes = portalFormSubTypes.toArray(new String[portalFormSubTypes.size()]);
+        } else {
+            acceptedTypes = new String[0];
+        }
+        return acceptedTypes;
+    }
+
+
+    /**
+     * Getter for index.
+     *
      * @return the index
      */
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     /**
      * Setter for index.
-     * 
+     *
      * @param index the index to set
      */
     public void setIndex(int index) {

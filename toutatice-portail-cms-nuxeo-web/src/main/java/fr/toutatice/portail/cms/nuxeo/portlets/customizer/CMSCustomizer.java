@@ -18,9 +18,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import javax.portlet.PortletContext;
 
-import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-
 
 
 /**
@@ -39,9 +36,6 @@ public class CMSCustomizer extends DefaultCMSCustomizer {
 	
 	public CMSCustomizer(PortletContext ctx) {
 		super( ctx);
-	
 	}
-
-
 
 }

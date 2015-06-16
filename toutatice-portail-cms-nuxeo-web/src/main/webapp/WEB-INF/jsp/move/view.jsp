@@ -14,8 +14,8 @@
 <portlet:resourceURL id="fancytreeLazyLoading" var="lazyLoadingURL">
     <portlet:param name="live" value="true" />
 
-    <c:if test="${not empty documentPath}">
-        <portlet:param name="documentPath" value="${documentPath}" />
+    <c:if test="${not empty ignoredPaths}">
+        <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
     </c:if>
 
     <c:if test="${not empty cmsBasePath}">

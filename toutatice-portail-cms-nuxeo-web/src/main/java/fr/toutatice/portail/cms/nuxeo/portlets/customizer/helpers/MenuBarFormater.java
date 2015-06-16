@@ -1044,7 +1044,7 @@ public class MenuBarFormater {
 	
 	/**
      * Get link to validation workflow tasks.
-     * 
+     *
      * @param portalControllerContext
      * @param cmsContext
      * @param menubar
@@ -1069,15 +1069,15 @@ public class MenuBarFormater {
 
                 MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
                 MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
-                
-                String onClick = generateCallbackParams(portalControllerContext, cmsContext);
+
+                String onClick = this.generateCallbackParams(portalControllerContext, cmsContext);
                 validationWfItem.setOnclick(onClick);
 
                 if (BooleanUtils.isTrue(isValidationWfRunning)) {
                     // Access to current validation workflow task
                     Map<String, String> requestParameters = new HashMap<String, String>();
                     String followWfURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
-                    
+
                     validationWfItem.setUrl(followWfURL);
                     validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
                     menubar.add(validationWfItem);
@@ -1553,7 +1553,7 @@ public class MenuBarFormater {
         }
 
         // OK button
-        Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default btn-warning", bundle.getString("YES"),
+        Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"),
                 "halflings halflings-alert", null);
         DOM4JUtils.addAttribute(okButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         form.add(okButton);

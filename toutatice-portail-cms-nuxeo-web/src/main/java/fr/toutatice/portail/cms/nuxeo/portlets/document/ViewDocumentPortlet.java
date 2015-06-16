@@ -29,12 +29,10 @@ import javax.portlet.WindowState;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
@@ -154,7 +152,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             customizer.setCmsService(cmsService);
 
 
-            
+
             // Directory service locator
             IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
             customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
@@ -163,15 +161,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
             customizer.setInternationalizationService(internationalizationService);
             INotificationsService notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
             customizer.setNotificationsService(notificationsService);
-            
+
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
-            
+
             for(EcmCommand command : customizer.getEcmCommands().values()) {
             	ecmCmdService.registerCommand(command.getCommandName(), command);
             }
-            
-            
+
+
             // v1.0.16
             ThumbnailServlet.setPortletContext(this.getPortletContext());
             SitePictureServlet.setPortletContext(this.getPortletContext());
@@ -356,9 +354,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                     // Attachments
                     this.generateAttachments(nuxeoController, document, documentDTO);
-                    
-                    // Remote Published documents 
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO);
+
+                    // Remote Published documents
+                    // this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO);
 
                     // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
@@ -468,10 +466,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
         }
         return enable;
     }
-    
+
     /**
      * Get remote published documents.
-     * 
+     *
      * @param nuxeoController
      * @param document
      * @param documentDTO
@@ -480,7 +478,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         int cacheType = nuxeoController.getCacheType();
         int authType = nuxeoController.getAuthType();
-        
+
         try {
 
             nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
@@ -492,7 +490,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
 
                 JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
-                RemotePublishedDocumentDTO publishedDocumentDTO = publishedDocumentsDAO.toDTO(publishedDocumentInfos);
+                RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDAO.toDTO(publishedDocumentInfos);
                 documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
 
             }
@@ -500,7 +498,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             nuxeoController.setCacheType(cacheType);
             nuxeoController.setAuthType(authType);
         }
-        
+
     }
 
 }

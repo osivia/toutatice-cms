@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -155,14 +156,15 @@ public class MenuPortlet extends CMSPortlet {
             if ("drop".equals(action)) {
                 // Drop action
 
-                // Source
-                String sourceId = request.getParameter("sourceId");
-                // Target
+                // Source identifiers
+                List<String> sourceIds = Arrays.asList(StringUtils.split(request.getParameter("sourceIds"), ","));
+                // Target identifier
                 String targetId = request.getParameter("targetId");
+
                 String targetPath = this.getAuxiliaryPath(nuxeoController, targetId);
 
                 // Move document command
-                INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
+                INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
                 try {
                     nuxeoController.executeNuxeoCommand(command);
 
@@ -762,7 +764,7 @@ public class MenuPortlet extends CMSPortlet {
 
     /**
      * Check if item is selected regarding paths.
-     * 
+     *
      * @param currentPath current path, may be null
      * @param itemPath item path
      * @return true if item is selected

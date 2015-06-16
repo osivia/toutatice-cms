@@ -85,7 +85,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
                     date2 = (Date) item2.getProperties().get("dc:created");
                 }
 
-                result = this.compare(date1, date2);
+                result = -this.compare(date1, date2);
             } else if ("contributor".equals(sort)) {
                 String contributor1 = (String) item1.getProperties().get("dc:lastContributor");
                 String contributor2 = (String) item2.getProperties().get("dc:lastContributor");

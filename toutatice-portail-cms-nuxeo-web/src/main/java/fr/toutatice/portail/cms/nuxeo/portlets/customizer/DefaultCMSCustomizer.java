@@ -205,10 +205,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Directory service. */
     private IDirectoryService directoryService;
-    
+
     /** Notification service */
     private INotificationsService notificationsService;
-    
+
     /** Internationalization service */
     private IInternationalizationService internationalizationService;
 
@@ -344,7 +344,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Get browser adapter.
-     * 
+     *
      * @return browser adapter
      */
     public BrowserAdapter getBrowserAdapter() {
@@ -749,6 +749,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception {
         Document doc = (Document) ctx.getDoc();
 
+
+        // Workspace indicator
+        boolean workspace = false;
+        if (ctx.getContextualizationBasePath() != null) {
+            CMSItem spaceConfig = this.cmsService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
+            String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
+            workspace = ("Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType));
+        }
+
+
         if ("UserWorkspace".equals(doc.getType())) {
             // Pas de filtre sur les versions publiées
             ctx.setDisplayLiveVersion("1");
@@ -756,7 +766,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (("DocumentUrlContainer".equals(doc.getType()))) {
-            return this.getCMSUrlContainerPlayer(ctx);
+            if (workspace) {
+                // File browser
+                ctx.setDisplayLiveVersion("1");
+                CMSHandlerProperties props = this.getCMSFileBrowser(ctx);
+                props.getWindowProperties().put("osivia.title", doc.getTitle());
+                props.getWindowProperties().put("osivia.defaultView", "thumbnails");
+                return props;
+            } else {
+                return this.getCMSUrlContainerPlayer(ctx);
+            }
         }
 
         if ("AnnonceFolder".equals(doc.getType())) {
@@ -764,33 +783,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (("Folder".equals(doc.getType()) || "OrderedFolder".equals(doc.getType())) || ("Section".equals(doc.getType()))) {
-            // if (ctx.getContextualizationBasePath() != null)
-
-            // Test JSS (tant que pas d'objet affichable en liste dans les workspace open-toutatice)
-            if ((ctx.getContextualizationBasePath() != null) && !doc.getTitle().startsWith("test-list")) {
-
-                CMSItem spaceConfig = this.cmsService.getSpaceConfig(ctx, ctx.getContextualizationBasePath());
-
-                // v2.0-SP1 : Folders contextualisés dans les workspaces à afficher avec le filebrowser a la place du portlet liste
-                // v2.0.5 : file explorer également sur userworkspace
-                String spaceType = ((Document) spaceConfig.getNativeItem()).getType();
-                if ("Workspace".equals(spaceType) || "UserWorkspace".equals(spaceType)) {
-
-                    // if( "Workspace".equals(((Document) spaceConfig.getNativeItem()).getType())) {
-                    // Pas de filtre sur les versions publiées
-                    ctx.setDisplayLiveVersion("1");
-                    CMSHandlerProperties props = this.getCMSFileBrowser(ctx);
-                    props.getWindowProperties().put("osivia.title", doc.getTitle());
-                    return props;
-                }
-            }
-            // ordre par date de modif par défaut
-            if ("Folder".equals(doc.getType())) {
+            if (workspace) {
+                // File browser
+                ctx.setDisplayLiveVersion("1");
+                CMSHandlerProperties props = this.getCMSFileBrowser(ctx);
+                props.getWindowProperties().put("osivia.title", doc.getTitle());
+                return props;
+            } else if ("Folder".equals(doc.getType())) {
                 return this.getCMSFolderPlayer(ctx);
             } else {
                 return this.getCMSOrderedFolderPlayer(ctx);
             }
-
         }
 
         if ("PortalVirtualPage".equals(doc.getType())) {
@@ -1232,7 +1235,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // CMS path
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
-            
+
             String currentPagePath = null;
             if( cmsContext.getRequest() != null)    {
                 Window window = (Window) cmsContext.getRequest().getAttribute("osivia.window");
@@ -1243,7 +1246,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     }
                 }
             }
-            
+
 
             // Portal URL
             String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null, null);
@@ -1257,15 +1260,24 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             link = new Link("#", false);
         } else {
             // Absolute URL
+            String absoluteURL;
             boolean external;
+
+            StringBuilder builder = new StringBuilder();
+            if (!(StringUtils.startsWithIgnoreCase(url, "http://") || StringUtils.startsWithIgnoreCase(url, "https://"))) {
+                builder.append("http://");
+            }
+            builder.append(url);
+            absoluteURL = builder.toString();
+
             try {
-                URL urlObject = new URL(url);
+                URL urlObject = new URL(absoluteURL);
                 String serverName = cmsContext.getRequest().getServerName();
                 external = !StringUtils.equals(urlObject.getHost(), serverName);
             } catch (Exception e) {
                 external = false;
             }
-            link = new Link(url, external);
+            link = new Link(absoluteURL, external);
         }
 
         return link;
@@ -1299,7 +1311,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Document path
                 String path = null;
                 try {
-                    
+
                     CMSPublicationInfos pubInfos = this.getCmsService().getPublicationInfos(cmsContext, serviceWebId);
                     path = pubInfos.getDocumentPath();
                 } catch (CMSException e) {
@@ -1362,11 +1374,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(new CMSItemType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Audio", "Video", "Annonce", "PortalPage",
                 "Picture", "ContextualLink"), null, "glyphicons glyphicons-more-items"));
         // Folder
-        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note", "Picture",
-                "ContextualLink"), null, "glyphicons glyphicons-folder-closed"));
+        defaultTypes.add(new CMSItemType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note", "Picture"),
+                null, "glyphicons glyphicons-folder-closed"));
         // Ordered folder
         defaultTypes.add(new CMSItemType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note",
-                "Picture", "ContextualLink"), null, "glyphicons glyphicons-folder-closed"));
+                "Picture"), null, "glyphicons glyphicons-folder-closed"));
         // File
         defaultTypes.add(new CMSItemType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
         // Audio file
@@ -1442,14 +1454,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public void setDirectoryService(IDirectoryService directoryService) {
         this.directoryService = directoryService;
     }
-    
-    
+
+
 
     /**
 	 * @return the notificationsService
 	 */
 	public INotificationsService getNotificationsService() {
-		return notificationsService;
+		return this.notificationsService;
 	}
 
 	/**
@@ -1463,7 +1475,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 * @return the internationalizationService
 	 */
 	public IInternationalizationService getInternationalizationService() {
-		return internationalizationService;
+		return this.internationalizationService;
 	}
 
 	/**
@@ -1658,8 +1670,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             delegation.setAdmin(isAdmin);
 
-            if(  StringUtils.endsWith(path, ".proxy") && !StringUtils.endsWith(path, ".remote.proxy"))
-            	path = StringUtils.removeEnd(path, ".proxy");
+            if(  StringUtils.endsWith(path, ".proxy") && !StringUtils.endsWith(path, ".remote.proxy")) {
+                path = StringUtils.removeEnd(path, ".proxy");
+            }
 
             delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
 
@@ -1772,10 +1785,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.bundleFactory;
     }
 
-    
 
-    
-    
+
+
+
 
     /**
      * {@inheritDoc}
@@ -1796,18 +1809,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 */
 	@Override
 	public Map<String, EcmCommand> getEcmCommands() {
-		
+
 		Map<String, EcmCommand> commands = new HashMap<String, EcmCommand>();
-		
-		commands.put(EcmCommonCommands.lock.name(), new LockCommand(getNotificationsService(), getInternationalizationService()));
-		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(getNotificationsService(), getInternationalizationService()));
-		
-		commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(getNotificationsService(), getInternationalizationService()));
-		commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(getNotificationsService(), getInternationalizationService()));
-		
-		commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(getNotificationsService(), getInternationalizationService()));
-		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(getNotificationsService(), getInternationalizationService()));
-		
+
+		commands.put(EcmCommonCommands.lock.name(), new LockCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(this.getNotificationsService(), this.getInternationalizationService()));
+
+		commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+
+		commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+
 
 		return commands;
 	}
