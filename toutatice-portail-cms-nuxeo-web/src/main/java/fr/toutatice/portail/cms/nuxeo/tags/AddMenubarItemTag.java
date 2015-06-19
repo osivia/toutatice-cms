@@ -11,12 +11,17 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.IMenubarService;
+import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
+
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * Add menubar item tag.
@@ -25,9 +30,6 @@ import org.osivia.portal.api.menubar.MenubarItem;
  * @see SimpleTagSupport
  */
 public class AddMenubarItemTag extends SimpleTagSupport {
-
-    /** Bundle factory. */
-    private static final IBundleFactory BUNDLE_FACTORY = getBundleFactory();
 
     /** Menubar item identifier. */
     private String id;
@@ -47,8 +49,15 @@ public class AddMenubarItemTag extends SimpleTagSupport {
     private String glyphicon;
     /** Menubar item AJAX indicator. */
     private Boolean ajax;
+    /** Menubar item dropdown parent. */
+    private String dropdown;
     /** Menubar item data attributes. */
     private Map<String, String> data;
+
+    /** Menubar service. */
+    private final IMenubarService menubarService;
+    /** Bundle factory. */
+    private final IBundleFactory bundleFactory;
 
 
     /**
@@ -56,6 +65,14 @@ public class AddMenubarItemTag extends SimpleTagSupport {
      */
     public AddMenubarItemTag() {
         super();
+
+        // Menubar service
+        this.menubarService = Locator.findMBean(IMenubarService.class, IMenubarService.MBEAN_NAME);
+
+        // Bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -69,14 +86,26 @@ public class AddMenubarItemTag extends SimpleTagSupport {
         PageContext pageContext = (PageContext) this.getJspContext();
         // Request
         ServletRequest request = pageContext.getRequest();
+        // Nuxeo controller
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
         // Bundle
-        Bundle bundle = BUNDLE_FACTORY.getBundle(request.getLocale());
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
         // Menubar
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
         if (menubar != null) {
             // Title
             String title = bundle.getString(this.labelKey);
+
+            // Parent
+            MenubarContainer parent = null;
+            if ((this.dropdown != null) && (nuxeoController != null)) {
+                PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+                parent = this.menubarService.getDropdown(portalControllerContext, this.dropdown);
+            }
+            if (parent == null) {
+                parent = MenubarGroup.SPECIFIC;
+            }
 
             // Order int value
             int orderInt;
@@ -87,7 +116,7 @@ public class AddMenubarItemTag extends SimpleTagSupport {
             }
 
             // Menubar item
-            MenubarItem item = new MenubarItem(this.id, title, this.glyphicon, MenubarGroup.SPECIFIC, orderInt, this.url, this.target, this.onclick,
+            MenubarItem item = new MenubarItem(this.id, title, this.glyphicon, parent, orderInt, this.url, this.target, this.onclick,
                     this.htmlClass);
             item.setAjaxDisabled(BooleanUtils.isFalse(this.ajax));
             if (this.data != null) {
@@ -96,18 +125,6 @@ public class AddMenubarItemTag extends SimpleTagSupport {
 
             menubar.add(item);
         }
-    }
-
-
-    /**
-     * Get bundle factory.
-     *
-     * @return bundle factory
-     */
-    private static IBundleFactory getBundleFactory() {
-        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                IInternationalizationService.MBEAN_NAME);
-        return internationalizationService.getBundleFactory(FormatFileSizeTag.class.getClassLoader());
     }
 
 
@@ -271,6 +288,24 @@ public class AddMenubarItemTag extends SimpleTagSupport {
      */
     public void setAjax(Boolean ajax) {
         this.ajax = ajax;
+    }
+
+    /**
+     * Getter for dropdown.
+     *
+     * @return the dropdown
+     */
+    public String getDropdown() {
+        return this.dropdown;
+    }
+
+    /**
+     * Setter for dropdown.
+     *
+     * @param dropdown the dropdown to set
+     */
+    public void setDropdown(String dropdown) {
+        this.dropdown = dropdown;
     }
 
     /**

@@ -21,7 +21,7 @@
 <c:set var="description" value="${document.properties['dc:description']}" />
 
 
-<ttc:addMenubarItem id="LINK" labelKey="OPEN_LINK" url="${link.url}" target="${target}" glyphicon="halflings halflings-share-alt" />
+<ttc:addMenubarItem id="LINK" labelKey="OPEN_LINK" url="${link.url}" target="${target}" glyphicon="halflings halflings-new-window" />
 
 
 <div class="contextual-link">

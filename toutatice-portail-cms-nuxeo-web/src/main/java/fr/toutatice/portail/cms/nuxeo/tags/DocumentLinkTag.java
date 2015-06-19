@@ -75,14 +75,22 @@ public class DocumentLinkTag extends SimpleTagSupport {
         // Nuxeo controller
         NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
 
-        if ((nuxeoController != null) && (this.document != null)) {
+        // Nuxeo document
+        Document nuxeoDocument;
+        if (this.document != null) {
+            nuxeoDocument = this.document.getDocument();
+        } else if (nuxeoController != null) {
+            nuxeoDocument = nuxeoController.getCurrentDoc();
+        } else {
+            nuxeoDocument = null;
+        }
+
+
+        if ((nuxeoController != null) && (nuxeoDocument != null)) {
             // Link
             Link link;
 
             if (StringUtils.isEmpty(this.property)) {
-                // Original Nuxeo document
-                Document nuxeoDocument = this.document.getDocument();
-
                 if (BooleanUtils.isTrue(this.picture)) {
                     String path = nuxeoDocument.getPath();
                     String url = nuxeoController.createPictureLink(path, StringUtils.defaultIfEmpty(this.displayContext, "Original"));

@@ -9,7 +9,6 @@ import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.StringUtils;
-import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
@@ -61,7 +60,7 @@ public class TransformNuxeoLinkTag extends SimpleTagSupport {
      * @return the link
      */
     public String getLink() {
-        return link;
+        return this.link;
     }
 
     /**

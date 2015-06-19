@@ -76,18 +76,17 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
 
                     if (StringUtils.contains(keys[i], "/")) {
             			String[]subKeys = StringUtils.split(keys[i], "/");
-            			
+
             			VocabularyEntry vocabularyEntryRoot = VocabularyHelper.getVocabularyEntry(nuxeoController, this.name, true);
-            			
+
             			VocabularyEntry parent = vocabularyEntryRoot.getChild(subKeys[0]);
-            			sb.append(StringUtils.clean(parent.getLabel()));
-            			
+                        sb.append(StringUtils.trimToEmpty(parent.getLabel()));
+
             			VocabularyEntry child = parent.getChild(subKeys[1]);
             			if(child != null){
             			    sb.append(" / ");
-            			    sb.append(StringUtils.clean(child.getLabel()));
+                            sb.append(StringUtils.trimToEmpty(child.getLabel()));
             			}
-                    	
                     } else {
                         sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
                     }
@@ -99,7 +98,7 @@ public class GetVocabularyLabelTag extends SimpleTagSupport {
                 out.write(label);
             }
         } catch (NuxeoException e) {
-            log.error(e.getMessage() + " ; name=" + this.name + ", key=" + this.key);
+            this.log.error(e.getMessage() + " ; name=" + this.name + ", key=" + this.key);
         }
     }
 

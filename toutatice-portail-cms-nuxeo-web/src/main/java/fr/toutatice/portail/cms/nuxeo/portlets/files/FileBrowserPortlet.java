@@ -46,7 +46,6 @@ import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
-import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
@@ -81,9 +80,11 @@ public class FileBrowserPortlet extends CMSPortlet {
     private static final int FILE_UPLOAD_NOTIFICATIONS_DURATION = 1000;
 
     /** Nuxeo path window property name. */
-    private static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
+    public static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
     /** Default view window property name. */
-    private static final String DEFAULT_VIEW_WINDOW_PROPERTY = "osivia.defaultView";
+    public static final String DEFAULT_VIEW_WINDOW_PROPERTY = "osivia.defaultView";
+    /** Reorganization indicator window property name. */
+    public static final String REORGANIZATION_WINDOW_PROPERTY = "osivia.reorganization";
 
     /** View request parameter name. */
     private static final String VIEW_REQUEST_PARAMETER = "view";
@@ -135,6 +136,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Notification service
         this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
+
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
     }
@@ -208,6 +210,21 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Notification
                     String message = bundle.getString("MESSAGE_MOVE_ERROR");
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                }
+
+            } else if ("sort".equals(action)) {
+                // Sort action
+
+                String sourceId = request.getParameter("sourceId");
+                String targetId = request.getParameter("targetId");
+
+                INuxeoCommand command = new SortDocumentCommand(sourceId, targetId);
+                nuxeoController.executeNuxeoCommand(command);
+
+                // View
+                String view = request.getParameter(VIEW_REQUEST_PARAMETER);
+                if (view != null) {
+                    response.setRenderParameter(VIEW_REQUEST_PARAMETER, view);
                 }
 
             } else if ("fileUpload".equals(action)) {
@@ -356,6 +373,14 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("view", currentView.getName());
 
 
+                // Reorganization indicator
+                boolean reorganization = BooleanUtils.toBoolean(window.getProperty(REORGANIZATION_WINDOW_PROPERTY));
+                if (reorganization) {
+                    nuxeoController.setDisplayContext("reorganization");
+                }
+                request.setAttribute("reorganization", reorganization);
+
+
                 // Sort criteria
                 FileBrowserSortCriteria criteria = this.getSortCriteria(portalControllerContext, ordered, currentView);
                 request.setAttribute("criteria", criteria);
@@ -367,8 +392,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("documents", fileBrowserItems);
 
 
-                // Change view menubar items
-                this.addChangeViewMenubarItems(portalControllerContext, currentView);
+                // Add menubar items
+                this.addMenubarItems(portalControllerContext, currentView);
 
                 // Toolbar attributes
                 this.addToolbarAttributes(portalControllerContext, nuxeoController, currentDocument);
@@ -549,13 +574,13 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
     /**
-     * Add change view menubar items.
+     * Add menubar items.
      *
      * @param portalControllerContext portal controller context
      * @param currentView current file browser view
      */
     @SuppressWarnings("unchecked")
-    private void addChangeViewMenubarItems(PortalControllerContext portalControllerContext, FileBrowserView currentView) {
+    private void addMenubarItems(PortalControllerContext portalControllerContext, FileBrowserView currentView) {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
         // Response
@@ -570,7 +595,6 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (response instanceof MimeResponse) {
             MimeResponse mimeResponse = (MimeResponse) response;
 
-            MenubarContainer parent = MenubarGroup.SPECIFIC;
             int order = 0;
             for (FileBrowserView view : FileBrowserView.values()) {
                 if (view != currentView) {
@@ -582,10 +606,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     // URL
                     PortletURL renderURL = mimeResponse.createRenderURL();
-                    renderURL.setParameter("view", view.getName());
+                    renderURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
                     String url = renderURL.toString();
 
-                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), parent, order, url, null, null, null);
+                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, url, null, null, null);
                     menubar.add(menubarItem);
 
                     order++;

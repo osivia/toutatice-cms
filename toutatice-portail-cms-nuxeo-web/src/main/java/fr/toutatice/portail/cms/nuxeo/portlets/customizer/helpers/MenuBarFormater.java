@@ -228,12 +228,12 @@ public class MenuBarFormater {
 
                 // Change edition mode
                 this.getChangeModeLink(portalControllerContext, cmsContext, menubar, bundle);
-                
+
                 // Edition
                 this.getEditLink(portalControllerContext, cmsContext, menubar, bundle);
                 // Nuxeo drive edit
                 this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
                 // Move
                 this.getMoveLink(portalControllerContext, cmsContext, menubar, bundle);
                 // Suppression
@@ -244,9 +244,12 @@ public class MenuBarFormater {
 
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                
+
                 // Manage (for workspaces)
                 this.getEditWksLink(portalControllerContext, cmsContext, menubar, bundle);
+
+                // Reorganize
+                this.getReorganizeLink(portalControllerContext, cmsContext, menubar, bundle);
 
                 if (!userWorkspace) {
                     // Follow
@@ -957,9 +960,9 @@ public class MenuBarFormater {
 
         if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             try {
-            	
+
             	// --------- EDIT LDAP MEMBERS
-            	
+
         		Map<String, String> windowProperties = new HashMap<String, String>();
         		windowProperties.put("osivia.ajaxLink", "1");
         		windowProperties.put("theme.dyna.partial_refresh_enabled", "true");
@@ -987,16 +990,17 @@ public class MenuBarFormater {
     }
 
 
-	/**
-	 * Get Administrations links
-	 * @param portalControllerContext
-	 * @param cmsContext
-	 * @param menubar
-	 * @param bundle
-	 * @throws CMSException
-	 */
-	private void getEditWksLink(PortalControllerContext portalControllerContext,
-			CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+    /**
+     * Get Administrations links.
+     *
+     * @param portalControllerContext
+     * @param cmsContext
+     * @param menubar
+     * @param bundle
+     * @throws CMSException
+     */
+    private void getEditWksLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+            throws CMSException {
 
         // Current document
         Document document = (Document) cmsContext.getDoc();
@@ -1006,9 +1010,9 @@ public class MenuBarFormater {
 
         if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
-        	// --------- EDIT OPTIONS IN NUXEO
-        	
-        	// Callback URL
+            // --------- EDIT OPTIONS IN NUXEO
+
+            // Callback URL
             String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
             // ECM base URL
             String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
@@ -1034,14 +1038,65 @@ public class MenuBarFormater {
             item.setAjaxDisabled(true);
 
             menubar.add(item);
-
         }
-
-
     }
 
-    
-	
+
+    /**
+     * Get reorganize link.
+     *
+     * @param portalControllerContext
+     * @param cmsContext
+     * @param menubar
+     * @param bundle
+     * @throws CMSException
+     */
+    protected void getReorganizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+            throws CMSException {
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        // CMS item type
+        CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+
+        if ((cmsItemType != null) && (cmsItemType.isReorganizable())) {
+            // Publication infos
+            CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+
+            if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
+                        portalControllerContext.getPortletCtx());
+
+                // Title
+                String title;
+                // Glyphicon
+                String glyphicon;
+                // Parent
+                MenubarContainer parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+                // URL
+                String url;
+
+                if ("reorganization".equals(cmsContext.getDisplayContext())) {
+                    // Stop reorganisation
+                    title = bundle.getString("STOP_REORGANIZATION");
+                    glyphicon = "glyphicons glyphicons-ban";
+                    url = nuxeoController.getLink(document).getUrl();
+                } else {
+                    // Start reorganisation
+                    title = bundle.getString("START_REORGANIZATION");
+                    glyphicon = "glyphicons glyphicons-adjust-alt";
+                    url = nuxeoController.getLink(document, "reorganization").getUrl();
+                }
+
+                MenubarItem menubarItem = new MenubarItem("REORGANIZE", title, glyphicon, parent, 2, url, null, null, null);
+                menubarItem.setAjaxDisabled(true);
+
+                menubar.add(menubarItem);
+            }
+        }
+    }
+
+
 	/**
      * Get link to validation workflow tasks.
      *
@@ -1827,7 +1882,7 @@ public class MenuBarFormater {
         String url = this.computePermaLinkUrl(portalControllerContext, cmsContext, menubar, bundle);
         if (url != null) {
             this.addPermaLinkItem(portalControllerContext, cmsContext, menubar, bundle, url);
-            
+
             this.addEmailLink(portalControllerContext, cmsContext, menubar, bundle);
         }
     }

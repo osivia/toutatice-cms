@@ -52,7 +52,7 @@
             }
         }
         
-        ~ .draggable {
+        ~ .draggable, .sortable-handle {
             visibility: visible;
         }
         
@@ -95,14 +95,43 @@
     }
     
     
+    // Sortable
+    .sortable-handle {
+        @background-color: #fff;
+        
+        position: absolute;
+        z-index: 2;
+        
+        visibility: hidden;
+
+        background-color: @background-color;
+        border-radius: 50%;
+        
+        cursor: move;
+        
+        &:hover {
+            color: #333;
+            background-color: darken(@background-color, 10%);
+        }
+    }
+
+    .dragged .sortable-handle {
+        display: none;
+    }
+    
+    
     // Fancybox gallery
-    .fancybox-gallery {
+    .fancybox.thumbnail {
         position: absolute;
         top: 0;
         bottom: 0;
         left: 0;
         right: 0;
+        
         visibility: hidden;
+        
+        margin: 0;
+        padding: 0;
     }
     
     
@@ -314,6 +343,19 @@
                 border-color: transparent;
             }
         }
+        
+        
+        // Sortable
+        .sortable-handle {
+            @height: @line-height - 6px;
+            
+            top: floor((@line-height - @height) / 2);
+            left: 4px;
+            height: @height;
+            width: @height;
+            
+            line-height: @height;
+        }
     }
     
     
@@ -406,6 +448,28 @@
         .draggable {
             border-style: solid;
             border-width: 1px;
+        }
+        
+        
+        // Sortable
+        .sortable-handle {
+            @height: 26px;
+            @border-color: #eee;
+            
+            top: 5px;
+            left: 5px;
+            height: @height;
+            width: @height;
+            
+            border-style: solid;
+            border-width: 1px;
+            border-color: @border-color;
+            
+            line-height: @height;
+            
+            &:hover {
+                border-color: darken(@border-color, 12%);
+            }
         }
     }
 }

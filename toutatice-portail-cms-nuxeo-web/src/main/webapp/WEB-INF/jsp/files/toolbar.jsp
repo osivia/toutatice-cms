@@ -35,13 +35,6 @@
             </div>
         
             <div class="btn-group btn-group-sm single-selection" role="group">
-                <!-- Detail -->
-                <c:set var="title"><is:getProperty key="VIEW_DETAIL" /></c:set>
-                <a href="" class="btn btn-default no-ajax-link detail" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-zoom-in"></i>
-                    <span class="sr-only">${title}</span>
-                </a>
-                
                 <!-- Gallery -->
                 <c:set var="title"><is:getProperty key="VIEW_PICTURE_GALLERY" /></c:set>
                 <button type="button" onclick="gallery(this)" class="btn btn-default gallery" title="${title}" data-toggle="tooltip" data-placement="bottom">

@@ -7,34 +7,52 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="documentURL"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
-<c:set var="iconURL"><ttc:getDocumentIconURL document="${document}" /></c:set>
-<c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
-<c:set var="fileName" value="${document.properties['file:filename']}" />
-<c:set var="fileSize" value="${document.properties['file:content']['length']}" />
+<c:choose>
+    <c:when test="${'Picture' eq document.type.name}">
+        <ttc:documentLink document="${document}" picture="true" var="link" />
+    </c:when>
+    
+    <c:otherwise>
+        <ttc:documentLink document="${document}" displayContext="download" var="link" />
+    </c:otherwise>
+</c:choose>
+
 <c:set var="description" value="${document.properties['dc:description']}" />
+
+<c:set var="fileName" value="${document.properties['file:content']['name']}" />
+<c:set var="fileSize" value="${document.properties['file:content']['length']}" />
 <c:set var="mimeType" value="${document.properties['file:content']['mime-type']}" />
 
 
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="glyphicons glyphicons-download-alt" />
+<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${link.url}" glyphicon="glyphicons glyphicons-download-alt" />
 
 <div class="file">
+    <!-- Description -->
     <c:if test="${not empty description}">
         <p>${description}</p>
     </c:if>
 
-    <div class="media">
-        <div class="media-left">
-            <img src="${iconURL}" alt="${typeName}" class="media-object">
-        </div>
+    <p>
+        <!-- Title -->
+        <i class="${document.type.glyph}"></i>
+        <a href="${link.url}" class="no-ajax-link">${fileName}</a>
         
-        <div class="media-body">
-            <p>
-                <a href="${documentURL}">${fileName}</a>
-                <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
-            </p>
-        </div>
-    </div>
+        <!-- Size -->
+        <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
+    </p>
+
+    
+    <c:if test="${('Picture' eq document.type.name)}">
+        <!-- Picture -->
+        <ttc:documentLink document="${document}" picture="true" displayContext="Medium" var="pictureLink" />
+        
+        <hr>
+        
+        <a href="${link.url}" class="thumbnail fancybox no-ajax-link">
+            <img src="${pictureLink.url}" alt="">
+        </a>
+    </c:if>
+    
     
     <c:if test="${('Audio' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'audio/'))}">
         <!-- Audio player -->
@@ -46,6 +64,7 @@
             </audio>
         </div>
     </c:if>
+    
     
     <c:if test="${('Video' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'video/'))}">
         <!-- Video player -->

@@ -7,7 +7,7 @@ $JQry(function() {
 	
 	// Selectable
 	$JQry(".file-browser .selectable").selectable({
-		cancel: "a",
+		cancel: "a, .sortable-handle",
 		filter: ".data",
 		
 		selected: function(event, ui) {
@@ -218,8 +218,8 @@ $JQry(function() {
 				targetAcceptedTypes = $droppable.data("acceptedtypes").split(","),
 				accepted = true;
 			
-			if ($droppable.closest(".ui-selected").hasClass("ui-selected")) {
-				// Prevent drop on selected element
+			if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".ui-selected").hasClass("ui-selected")) {
+				// Prevent drop on sortable or selected element
 				accepted = false;
 			} else {
 				$selected.each(function(index, element) {
@@ -276,6 +276,61 @@ $JQry(function() {
 		}
 	});
 
+	
+	// Sortable
+	$JQry(".file-browser .sortable").each(function(index, element) {
+		var $element = $JQry(element),
+			ordered = $element.data("ordered"),
+			axis = $element.data("axis"),
+			placeholderClasses = $element.data("placeholderclasses");
+		
+		if (ordered) {
+			$element.sortable({
+				axis: (axis !== undefined ? axis : false),
+				cursor: "move",
+				forcePlaceholderSize: true,
+				handle: ".sortable-handle",
+				placeholder: "bg-info" + (placeholderClasses !== undefined ? " " + placeholderClasses : ""),
+				tolerance: "pointer",
+				
+				start: function(event, ui) {
+					var $item = $JQry(ui.item),
+						$placeholder = $JQry(ui.placeholder);
+					
+					$placeholder.height($item.height());
+				},
+				
+				update: function(event, ui) {
+					var $browser = $JQry(this).closest(".file-browser"),
+					
+						// Source
+						$source = $JQry(ui.item),
+						sourceId = $source.find(".data").data("id");
+						
+						// Target
+						$target = $source.next();
+						targetId = $target.find(".data").data("id");
+						
+						// AJAX parameters
+						container = null,
+						options = {
+							requestHeaders : [ "ajax", "true", "bilto" ],
+							method : "post",
+							postBody : "sourceId=" + sourceId + (targetId !== undefined ? "&targetId=" + targetId : ""),
+							onSuccess : function(t) {
+								onAjaxSuccess(t, null);
+							}
+						},
+						url = $browser.data("sorturl"),
+						eventToStop = null,
+						callerId = null;
+					
+					directAjaxCall(container, options, url, eventToStop, callerId);
+				}
+			});
+		}
+	});
+	
 	
 	// File Upload
 	$JQry(".file-browser .file-upload").fileupload({
@@ -395,14 +450,6 @@ $JQry(function() {
 		$dropZone.removeClass("in hover bg-info");
 	});
 	
-	
-	// Fancybox gallery
-	$JQry(".file-browser .fancybox-gallery").fancybox({
-		type: "image",
-    	openEffect: "elastic",
-    	closeEffect: "elastic"
-	});
-	
 });
 
 
@@ -414,6 +461,11 @@ function updateSelectableControls($browser) {
 		$links = $toolbar.find("a[data-url]"),
 		identifiers = "";
 
+	
+	// Sortable
+	$browser.find(".sortable-handle").addClass("hidden");
+	
+	
 	// Reset links
 	$links.each(function(index, element) {
 		var $element = $JQry(element),
@@ -431,6 +483,11 @@ function updateSelectableControls($browser) {
 		$single.show();
 		$messageSelection.children(".badge").text("1");
 		$messageSelection.children(".text").text($messageSelection.data("message-single-selection"));
+
+		
+		// Sortable
+		$selected.find(".sortable-handle").removeClass("hidden");
+		
 		
 		// Update links with single-selected properties
 		$links.each(function(index, element) {
@@ -446,8 +503,8 @@ function updateSelectableControls($browser) {
 		
 		// Gallery
 		$gallery = $toolbar.find(".gallery");
-		$fancyboxGallery = $selected.find(".fancybox-gallery");
-		if ($fancyboxGallery.length) {
+		$fancybox = $selected.find(".fancybox.thumbnail");
+		if ($fancybox.length) {
 			$gallery.removeClass("hidden");
 		} else {
 			$gallery.addClass("hidden");
@@ -462,17 +519,6 @@ function updateSelectableControls($browser) {
 			$download.removeClass("hidden");
 		} else {
 			$download.addClass("hidden");
-		}
-		
-		
-		// Detail
-		$detail = $toolbar.find(".detail");
-		detailURL = $selected.data("detailurl");
-		if (detailURL) {
-			$detail.attr("href", detailURL);
-			$detail.removeClass("hidden");
-		} else {
-			$detail.addClass("hidden");
 		}
 		
 		
@@ -529,5 +575,5 @@ function gallery(source) {
 	var $browser = $JQry(source).closest(".file-browser"),
 		$selected = $browser.find(".ui-selected");
 	
-	$selected.find(".fancybox-gallery").first().trigger("click");
+	$selected.find(".fancybox.thumbnail").first().trigger("click");
 }

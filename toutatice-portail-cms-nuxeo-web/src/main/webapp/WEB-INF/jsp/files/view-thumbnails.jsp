@@ -10,13 +10,10 @@
     <div class="selectable">
     
         <!-- Folders -->
-        <ul class="list-unstyled row file-browser-folders">
+        <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
             <c:forEach var="document" items="${documents}">
                 <c:if test="${document.type.folderish}">
                     <!-- Document properties -->
-                    
-                    <!-- Links -->
-                    <ttc:documentLink document="${document}" displayContext="document" var="detailLink" />
 
                     <!-- Glyph -->
                     <c:choose>
@@ -41,9 +38,7 @@
                     <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
                         <div>
                             <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}">
-                                <div
-                                    <c:if test="${document.type.browsable}">class="droppable" data-acceptedtypes="${fn:join(document.acceptedTypes, ',')}"</c:if>
-                                >
+                                <div class="droppable" data-acceptedtypes="${fn:join(document.acceptedTypes, ',')}">
                                     <div class="thumbnail">
                                         <div class="caption text-overflow">
                                             <div class="document-icon">
@@ -54,6 +49,13 @@
                                                 <ttc:title document="${document}" displayContext="fileExplorer" />
                                             </div>
                                         </div>
+                                        
+                                        <!-- Sortable handle -->
+                                        <c:if test="${ordered}">
+                                            <div class="sortable-handle text-muted text-center hidden">
+                                                <i class="glyphicons glyphicons-sorting"></i>
+                                            </div>
+                                        </c:if>
                                     </div>
                                 </div>
                             </div>
@@ -67,13 +69,12 @@
         
         
         <!-- Files -->
-        <ul class="list-unstyled row file-browser-files">
+        <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
             <c:forEach var="document" items="${documents}">
                 <c:if test="${not document.type.folderish}">
                     <!-- Document properties -->
                     
-                    <!-- Links -->
-                    <ttc:documentLink document="${document}" displayContext="document" var="detailLink" />
+                    <!-- Download link -->
                     <ttc:documentLink document="${document}" displayContext="download" var="downloadLink" />
                     
                     <!-- Vignette -->
@@ -103,7 +104,6 @@
                         <div>
                             <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
                                 <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
-                                <c:if test="${'ContextualLink' eq document.type.name}">data-detailurl="${detailLink.url}"</c:if>
                             >
                                 <div class="thumbnail">
                                     <div class="img-container">
@@ -129,7 +129,7 @@
                                         <c:if test="${'Picture' eq document.type.name}">
                                             <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
                                             
-                                            <a href="${pictureLink.url}" rel="gallery" class="fancybox-gallery no-ajax-link"></a>
+                                            <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
                                         </c:if>
                                     </div>
                                 
@@ -142,6 +142,13 @@
                                             <ttc:title document="${document}" displayContext="fileExplorer" />
                                         </div>
                                     </div>
+                                    
+                                    <!-- Sortable handle -->
+                                    <c:if test="${ordered}">
+                                        <div class="sortable-handle text-muted text-center hidden">
+                                            <i class="glyphicons glyphicons-sorting"></i>
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
                             

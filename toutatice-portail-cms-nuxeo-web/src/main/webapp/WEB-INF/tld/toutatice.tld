@@ -62,7 +62,7 @@
         <attribute>
             <description>Document DTO.</description>
             <name>document</name>
-            <required>true</required>
+            <required>false</required>
             <rtexprvalue>true</rtexprvalue>
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
         </attribute>
@@ -336,6 +336,14 @@
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Boolean</type>
+        </attribute>
+        
+        <attribute>
+            <description>Menubar item dropdown parent identifier.</description>
+            <name>dropdown</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
         </attribute>
         
         <attribute>

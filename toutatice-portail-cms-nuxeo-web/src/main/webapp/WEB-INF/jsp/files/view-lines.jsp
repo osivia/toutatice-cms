@@ -126,12 +126,11 @@
     
     
     <div class="table-body">
-        <ul class="list-unstyled selectable">
+        <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y">
             <c:forEach var="document" items="${documents}">
                 <!-- Document properties -->
 
-                <!-- Links -->
-                <ttc:documentLink document="${document}" displayContext="document" var="detailLink" />
+                <!-- Download link -->
                 <ttc:documentLink document="${document}" displayContext="download" var="downloadLink" />
 
                 <!-- Glyph -->
@@ -166,10 +165,9 @@
                 <li>
                     <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
                         <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
-                        <c:if test="${'ContextualLink' eq document.type.name}">data-detailurl="${detailLink.url}"</c:if>
                     >
                         <div
-                            <c:if test="${document.type.browsable}">class="droppable" data-acceptedtypes="${fn:join(document.acceptedTypes, ',')}"</c:if>
+                            <c:if test="${document.type.folderish}">class="droppable" data-acceptedtypes="${fn:join(document.acceptedTypes, ',')}"</c:if>
                         >
                             <div class="table-row">
                                 <div class="row">
@@ -201,7 +199,14 @@
                                         <c:if test="${'Picture' eq document.type.name}">
                                             <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
                                             
-                                            <a href="${pictureLink.url}" rel="gallery" class="fancybox-gallery no-ajax-link"></a>
+                                            <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
+                                        </c:if>
+                                        
+                                        <!-- Sortable handle -->
+                                        <c:if test="${ordered}">
+                                            <div class="sortable-handle text-muted text-center hidden">
+                                                <i class="glyphicons glyphicons-sorting"></i>
+                                            </div>
                                         </c:if>
                                     </div>
                                     
@@ -236,6 +241,7 @@
                         </div>
                     </div>
                     
+                    <!-- Draggable -->
                     <div class="draggable border-primary"></div>
                 </li>
             </c:forEach>
