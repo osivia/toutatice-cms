@@ -1451,22 +1451,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Annonce folder
         defaultTypes.add(new CMSItemType("AnnonceFolder", true, true, false, false, false, true, Arrays.asList("Annonce"), null,
                 "glyphicons glyphicons-newspaper"));
+        // Document URL container
+        defaultTypes.add(new CMSItemType("DocumentUrlContainer", true, true, true, true, false, true, Arrays.asList("DocumentUrlContainer", "ContextualLink"),
+                null, "glyphicons glyphicons-bookmark"));
         // Contextual link
         defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
                 "glyphicons glyphicons-link"));
-        // Document URL container
-        CMSItemType urlContainerType = new CMSItemType("DocumentUrlContainer", true, true, false, true, false, true, Arrays.asList("ContextualLink"), null,
-                "glyphicons glyphicons-bookmark");
-        urlContainerType.setReorganizable(true);
-        defaultTypes.add(urlContainerType);
         // Picture book
-        CMSItemType pictureBookType = new CMSItemType("PictureBook", true, false, true, true, false, true, Arrays.asList("Picture", "PictureBook"), null,
-                "glyphicons glyphicons-picture");
-        pictureBookType.setReorganizable(true);
-        defaultTypes.add(pictureBookType);
+        defaultTypes.add(new CMSItemType("PictureBook", true, true, true, true, false, true, Arrays.asList("Picture", "PictureBook"), null,
+                "glyphicons glyphicons-picture"));
         // Picture
         defaultTypes.add(new CMSItemType("Picture", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-picture"));
-
 
         return defaultTypes;
     }
