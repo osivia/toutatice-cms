@@ -795,7 +795,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public CMSHandlerProperties getCMSPlayer(CMSServiceCtx cmsContext) throws Exception {
         Document document = (Document) cmsContext.getDoc();
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
-        String displayContext = cmsContext.getDisplayContext();
 
         // Workspace indicator
         boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
@@ -808,14 +807,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (("DocumentUrlContainer".equals(document.getType()))) {
-            if ("reorganization".equals(displayContext)) {
+            if (workspace) {
                 // File browser
                 cmsContext.setDisplayLiveVersion("1");
                 CMSHandlerProperties properties = this.getCMSFileBrowser(cmsContext);
                 Map<String, String> windowProperties = properties.getWindowProperties();
                 windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
                 windowProperties.put(FileBrowserPortlet.DEFAULT_VIEW_WINDOW_PROPERTY, FileBrowserView.THUMBNAILS.getName());
-                windowProperties.put(FileBrowserPortlet.REORGANIZATION_WINDOW_PROPERTY, String.valueOf(true));
                 return properties;
             } else {
                 return this.getCMSUrlContainerPlayer(cmsContext);
@@ -823,14 +821,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if ("PictureBook".equals(document.getType())) {
-            if ("reorganization".equals(displayContext)) {
+            if (workspace) {
                 // File browser
                 cmsContext.setDisplayLiveVersion("1");
                 CMSHandlerProperties properties = this.getCMSFileBrowser(cmsContext);
                 Map<String, String> windowProperties = properties.getWindowProperties();
                 windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
                 windowProperties.put(FileBrowserPortlet.DEFAULT_VIEW_WINDOW_PROPERTY, FileBrowserView.THUMBNAILS.getName());
-                windowProperties.put(FileBrowserPortlet.REORGANIZATION_WINDOW_PROPERTY, String.valueOf(true));
                 return properties;
             } else {
                 return this.getCMSPictureBookPlayer(cmsContext);

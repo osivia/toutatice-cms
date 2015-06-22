@@ -24,7 +24,7 @@
             
             
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <a href="${link.url}" class="thumbnail"
+                <a href="${link.url}" class="thumbnail no-ajax-link"
                     <c:if test="${link.external}">target="_blank"</c:if>
                 >
                     <span class="media">

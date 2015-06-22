@@ -44,7 +44,27 @@
 </portlet:renderURL>
 
 
+<!-- Description -->
+<c:set var="description" value="${document.properties['dc:description']}" />
+
+
 <div class="file-browser-lines">
+    <div class="row">
+        <!-- Description -->
+        <div class="col-sm-5 col-md-6 col-lg-7 ">
+            <c:if test="${not empty description}">
+                <p class="text-muted">${description}</p>
+            </c:if>
+        </div>
+        
+        
+        <!-- Toolbar -->
+        <div class="col-sm-7 col-md-6 col-lg-5">
+            <jsp:include page="toolbar.jsp" />
+        </div>
+    </div>
+
+
     <!-- Header -->
     <div class="table-header table-row">
         <div class="row">
@@ -126,7 +146,7 @@
     
     
     <div class="table-body">
-        <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y">
+        <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y" data-alternative="${criteria.alternative}">
             <c:forEach var="document" items="${documents}">
                 <!-- Document properties -->
 
@@ -203,7 +223,7 @@
                                         </c:if>
                                         
                                         <!-- Sortable handle -->
-                                        <c:if test="${ordered}">
+                                        <c:if test="${ordered and (criteria.sort eq 'index')}">
                                             <div class="sortable-handle text-muted text-center hidden">
                                                 <i class="glyphicons glyphicons-sorting"></i>
                                             </div>

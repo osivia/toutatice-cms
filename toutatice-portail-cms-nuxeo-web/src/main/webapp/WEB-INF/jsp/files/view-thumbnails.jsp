@@ -1,163 +1,150 @@
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
 <%@ taglib uri="toutatice" prefix="ttc" %>
 
 
+<!-- Description -->
+<c:set var="description" value="${document.properties['dc:description']}" />
+
+
 <div class="file-browser-thumbnails">
-    <div class="selectable">
-    
-        <!-- Folders -->
-        <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
-            <c:forEach var="document" items="${documents}">
-                <c:if test="${document.type.folderish}">
-                    <!-- Document properties -->
 
-                    <!-- Glyph -->
-                    <c:choose>
-                        <c:when test="${'File' eq document.type.name}">
-                            <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
-                        </c:when>
-                        
-                        <c:when test="${not empty document.type.glyph}">
-                            <c:set var="glyph" value="${document.type.glyph}" />
-                        </c:when>
-                        
-                        <c:when test="${document.type.navigable}">
-                            <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
-                        </c:when>
-                        
-                        <c:otherwise>
-                            <c:set var="glyph" value="glyphicons glyphicons-file" />
-                        </c:otherwise>
-                    </c:choose>
-                
-                
-                    <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
-                        <div>
-                            <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}">
-                                <div class="droppable" data-acceptedtypes="${fn:join(document.acceptedTypes, ',')}">
-                                    <div class="thumbnail">
-                                        <div class="caption text-overflow">
-                                            <div class="document-icon">
-                                                <i class="${glyph}"></i>
-                                            </div>
-                                            
-                                            <div class="text-overflow">
-                                                <ttc:title document="${document}" displayContext="fileExplorer" />
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Sortable handle -->
-                                        <c:if test="${ordered}">
-                                            <div class="sortable-handle text-muted text-center hidden">
-                                                <i class="glyphicons glyphicons-sorting"></i>
-                                            </div>
-                                        </c:if>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="draggable border-primary"></div>
-                        </div>
-                    </li>
-                </c:if>
-            </c:forEach>
-        </ul>
-        
-        
-        <!-- Files -->
-        <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
-            <c:forEach var="document" items="${documents}">
-                <c:if test="${not document.type.folderish}">
-                    <!-- Document properties -->
-                    
-                    <!-- Download link -->
-                    <ttc:documentLink document="${document}" displayContext="download" var="downloadLink" />
-                    
-                    <!-- Vignette -->
-                    <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>                    
-                    
-                    <!-- Glyph -->
-                    <c:choose>
-                        <c:when test="${'File' eq document.type.name}">
-                            <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
-                        </c:when>
-                        
-                        <c:when test="${not empty document.type.glyph}">
-                            <c:set var="glyph" value="${document.type.glyph}" />
-                        </c:when>
-                        
-                        <c:when test="${document.type.navigable}">
-                            <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
-                        </c:when>
-                        
-                        <c:otherwise>
-                            <c:set var="glyph" value="glyphicons glyphicons-file" />
-                        </c:otherwise>
-                    </c:choose>
-                    
-                    
-                    <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
-                        <div>
-                            <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
-                                <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
-                            >
-                                <div class="thumbnail">
-                                    <div class="img-container">
-                                        <c:choose>
-                                            <c:when test="${not empty vignetteURL}">
-                                                <img src="${vignetteURL}" alt="" class="img-responsive text-middle">
-                                            </c:when>
-                                            
-                                            <c:when test="${'Picture' eq document.type.name}">
-                                                <ttc:documentLink document="${document}" picture="true" displayContext="Medium" var="mediumPictureLink" />
-                                                
-                                                <img src="${mediumPictureLink.url}" alt="" class="img-responsive text-middle">
-                                            </c:when>
+    <!-- Description -->
+    <c:if test="${not empty description}">
+        <p class="text-muted">${description}</p>
+    </c:if>
 
-                                            <c:otherwise>
-                                                <div class="text-center">
-                                                    <i class="${glyph}"></i>
-                                                </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        
-                                        <!-- Fancybox gallery link -->
-                                        <c:if test="${'Picture' eq document.type.name}">
-                                            <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
-                                            
-                                            <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
-                                        </c:if>
-                                    </div>
+
+    <!-- Folders -->
+    <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+        <c:forEach var="document" items="${documents}">
+            <c:if test="${document.type.folderish}">
+                <!-- Document properties -->
+
+                <!-- Link -->
+                <ttc:documentLink document="${document}" var="link" />
+
+                <!-- Glyph -->
+                <c:choose>
+                    <c:when test="${'File' eq document.type.name}">
+                        <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
+                    </c:when>
+                    
+                    <c:when test="${not empty document.type.glyph}">
+                        <c:set var="glyph" value="${document.type.glyph}" />
+                    </c:when>
+                    
+                    <c:when test="${document.type.navigable}">
+                        <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
+                    </c:when>
+                    
+                    <c:otherwise>
+                        <c:set var="glyph" value="glyphicons glyphicons-file" />
+                    </c:otherwise>
+                </c:choose>
+            
+            
+                <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="data" data-id="${document.id}">
+                        <a href="${link.url}" class="thumbnail sortable-handle no-ajax-link" ondragstart="return false;">
+                            <span class="caption text-overflow">
+                                <span class="document-icon">
+                                    <i class="${glyph}"></i>
+                                </span>
                                 
-                                    <div class="caption text-overflow">
-                                        <div class="document-icon">
-                                            <i class="${glyph}"></i>
-                                        </div>
+                                <span>${document.title}</span>
+                            </span>
+                        </a>
+                    </div>
+                </li>
+            </c:if>
+        </c:forEach>
+    </ul>
+    
+    
+    <!-- Files -->
+    <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+        <c:forEach var="document" items="${documents}">
+            <c:if test="${not document.type.folderish}">
+                <!-- Document properties -->
+                    
+                <!-- Link -->
+                <c:remove var="fancyboxClass" />
+                <c:choose>
+                    <c:when test="${'Picture' eq document.type.name}">
+                        <ttc:documentLink document="${document}" picture="true" var="link" />
+                        <c:set var="fancyboxClass" value="fancybox" />
+                    </c:when>
+                    
+                    <c:when test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">
+                        <ttc:documentLink document="${document}" displayContext="download" var="link" />
+                    </c:when>
+                    
+                    <c:otherwise>
+                        <ttc:documentLink document="${document}" var="link" />
+                    </c:otherwise>
+                </c:choose>
+
+                <!-- Vignette -->
+                <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>                    
+                
+                <!-- Glyph -->
+                <c:choose>
+                    <c:when test="${'File' eq document.type.name}">
+                        <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
+                    </c:when>
+                    
+                    <c:when test="${not empty document.type.glyph}">
+                        <c:set var="glyph" value="${document.type.glyph}" />
+                    </c:when>
+                    
+                    <c:when test="${document.type.navigable}">
+                        <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
+                    </c:when>
+                    
+                    <c:otherwise>
+                        <c:set var="glyph" value="glyphicons glyphicons-file" />
+                    </c:otherwise>
+                </c:choose>
+                
+                
+                <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="data" data-id="${document.id}">
+                        <div class="sortable-handle">
+                            <a href="${link.url}" class="thumbnail no-ajax-link ${fancyboxClass}" ondragstart="return false;"
+                                <c:if test="${link.external}">target="_blank"</c:if>
+                                <c:if test="${'Picture' eq document.type.name}">data-title="${document.title}" rel="gallery"</c:if>
+                            >
+                                <span class="img-container">
+                                    <c:choose>
+                                        <c:when test="${not empty vignetteURL}">
+                                            <img src="${vignetteURL}" alt="" class="img-responsive text-middle">
+                                        </c:when>
                                         
-                                        <div class="text-overflow">
-                                            <ttc:title document="${document}" displayContext="fileExplorer" />
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Sortable handle -->
-                                    <c:if test="${ordered}">
-                                        <div class="sortable-handle text-muted text-center hidden">
-                                            <i class="glyphicons glyphicons-sorting"></i>
-                                        </div>
-                                    </c:if>
-                                </div>
-                            </div>
+                                        <c:when test="${'Picture' eq document.type.name}">
+                                            <ttc:documentLink document="${document}" picture="true" displayContext="Medium" var="mediumPictureLink" />
+                                            
+                                            <img src="${mediumPictureLink.url}" alt="" class="img-responsive text-middle">
+                                        </c:when>
+    
+                                        <c:otherwise>
+                                            <i class="${glyph}"></i>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
+                            </a>
                             
-                            <div class="draggable border-primary"></div>
+                            <div class="text-overflow">
+                                <div class="document-icon">
+                                    <i class="${glyph}"></i>
+                                </div>
+                                
+                                <ttc:title document="${document}" displayContext="fileExplorer" />
+                            </div>
                         </div>
-                    </li>
-                </c:if>
-            </c:forEach>
-        </ul>
-        
-    </div>
+                    </div>
+                </li>
+            </c:if>
+        </c:forEach>
+    </ul>
+
 </div>

@@ -288,6 +288,7 @@ $JQry(function() {
 			$element.sortable({
 				axis: (axis !== undefined ? axis : false),
 				cursor: "move",
+				distance: 10,
 				forcePlaceholderSize: true,
 				handle: ".sortable-handle",
 				placeholder: "bg-info" + (placeholderClasses !== undefined ? " " + placeholderClasses : ""),
@@ -302,28 +303,33 @@ $JQry(function() {
 				
 				update: function(event, ui) {
 					var $browser = $JQry(this).closest(".file-browser"),
+						$sortable = $browser.find(".sortable");
 					
-						// Source
-						$source = $JQry(ui.item),
-						sourceId = $source.find(".data").data("id");
-						
-						// Target
+					// Source
+					$source = $JQry(ui.item);
+					sourceId = $source.find(".data").data("id");
+					
+					// Target
+					if ($sortable.data("alternative")) {
+						$target = $source.prev();
+					} else {
 						$target = $source.next();
-						targetId = $target.find(".data").data("id");
+					}
+					targetId = $target.find(".data").data("id");
 						
-						// AJAX parameters
-						container = null,
-						options = {
-							requestHeaders : [ "ajax", "true", "bilto" ],
-							method : "post",
-							postBody : "sourceId=" + sourceId + (targetId !== undefined ? "&targetId=" + targetId : ""),
-							onSuccess : function(t) {
-								onAjaxSuccess(t, null);
-							}
-						},
-						url = $browser.data("sorturl"),
-						eventToStop = null,
-						callerId = null;
+					// AJAX parameters
+					container = null,
+					options = {
+						requestHeaders : [ "ajax", "true", "bilto" ],
+						method : "post",
+						postBody : "sourceId=" + sourceId + (targetId !== undefined ? "&targetId=" + targetId : ""),
+						onSuccess : function(t) {
+							onAjaxSuccess(t, null);
+						}
+					},
+					url = $browser.data("sorturl"),
+					eventToStop = null,
+					callerId = null;
 					
 					directAjaxCall(container, options, url, eventToStop, callerId);
 				}

@@ -83,8 +83,6 @@ public class FileBrowserPortlet extends CMSPortlet {
     public static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
     /** Default view window property name. */
     public static final String DEFAULT_VIEW_WINDOW_PROPERTY = "osivia.defaultView";
-    /** Reorganization indicator window property name. */
-    public static final String REORGANIZATION_WINDOW_PROPERTY = "osivia.reorganization";
 
     /** View request parameter name. */
     private static final String VIEW_REQUEST_PARAMETER = "view";
@@ -164,6 +162,11 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
+            String view = request.getParameter(VIEW_REQUEST_PARAMETER);
+            if (view != null) {
+                response.setRenderParameter(VIEW_REQUEST_PARAMETER, view);
+            }
+
             if ("delete".equals(action)) {
                 // Delete action
 
@@ -221,11 +224,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 INuxeoCommand command = new SortDocumentCommand(sourceId, targetId);
                 nuxeoController.executeNuxeoCommand(command);
 
-                // View
-                String view = request.getParameter(VIEW_REQUEST_PARAMETER);
-                if (view != null) {
-                    response.setRenderParameter(VIEW_REQUEST_PARAMETER, view);
-                }
+                // Refresh navigation
+                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
 
             } else if ("fileUpload".equals(action)) {
                 // File upload
@@ -371,14 +371,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Current view
                 FileBrowserView currentView = this.getCurrentView(portalControllerContext, window);
                 request.setAttribute("view", currentView.getName());
-
-
-                // Reorganization indicator
-                boolean reorganization = BooleanUtils.toBoolean(window.getProperty(REORGANIZATION_WINDOW_PROPERTY));
-                if (reorganization) {
-                    nuxeoController.setDisplayContext("reorganization");
-                }
-                request.setAttribute("reorganization", reorganization);
 
 
                 // Sort criteria

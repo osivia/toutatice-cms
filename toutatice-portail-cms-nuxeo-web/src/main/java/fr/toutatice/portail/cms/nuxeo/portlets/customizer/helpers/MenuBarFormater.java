@@ -248,9 +248,6 @@ public class MenuBarFormater {
                 // Manage (for workspaces)
                 this.getEditWksLink(portalControllerContext, cmsContext, menubar, bundle);
 
-                // Reorganize
-                this.getReorganizeLink(portalControllerContext, cmsContext, menubar, bundle);
-
                 if (!userWorkspace) {
                     // Follow
                     this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
@@ -1038,61 +1035,6 @@ public class MenuBarFormater {
             item.setAjaxDisabled(true);
 
             menubar.add(item);
-        }
-    }
-
-
-    /**
-     * Get reorganize link.
-     *
-     * @param portalControllerContext
-     * @param cmsContext
-     * @param menubar
-     * @param bundle
-     * @throws CMSException
-     */
-    protected void getReorganizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
-            throws CMSException {
-        // Current document
-        Document document = (Document) cmsContext.getDoc();
-        // CMS item type
-        CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
-
-        if ((cmsItemType != null) && (cmsItemType.isReorganizable())) {
-            // Publication infos
-            CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
-
-            if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
-                        portalControllerContext.getPortletCtx());
-
-                // Title
-                String title;
-                // Glyphicon
-                String glyphicon;
-                // Parent
-                MenubarContainer parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
-                // URL
-                String url;
-
-                if ("reorganization".equals(cmsContext.getDisplayContext())) {
-                    // Stop reorganisation
-                    title = bundle.getString("STOP_REORGANIZATION");
-                    glyphicon = "glyphicons glyphicons-ban";
-                    url = nuxeoController.getLink(document).getUrl();
-                } else {
-                    // Start reorganisation
-                    title = bundle.getString("START_REORGANIZATION");
-                    glyphicon = "glyphicons glyphicons-adjust-alt";
-                    url = nuxeoController.getLink(document, "reorganization").getUrl();
-                }
-
-                MenubarItem menubarItem = new MenubarItem("REORGANIZE", title, glyphicon, parent, 2, url, null, null, null);
-                menubarItem.setAjaxDisabled(true);
-
-                menubar.add(menubarItem);
-            }
         }
     }
 
