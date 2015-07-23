@@ -50,7 +50,13 @@ public class SliderListEditableWindow extends CriteriaListEditableWindow {
             if (!ALL_DOC_TYPES.equalsIgnoreCase(docType)) {
                 docTypesCriterion.append(" ecm:primaryType = '").append(docType).append("'");
             }
+            else {
+            	// for slider, show only files and not folders
+            	docTypesCriterion.append(" ecm:mixinType <> 'Folderish' ");
+            }
         }
+        
+        
         return docTypesCriterion.toString();
     }
     
@@ -73,7 +79,7 @@ public class SliderListEditableWindow extends CriteriaListEditableWindow {
         properties.put(SliderTemplateModule.SLIDER_TIMER, (String) displayCriteria.get("timer"));
         
         PropertyMap requestCriteria = (PropertyMap) schema.get("requestCriteria");
-        properties.put(SliderTemplateModule.SLIDER_DOC_TYPE, StringUtils.lowerCase((String) requestCriteria.getString("docType")));
+        properties.put(SliderTemplateModule.SLIDER_DOC_TYPE, StringUtils.lowerCase(requestCriteria.getString("docType")));
         
         return properties;
     }
