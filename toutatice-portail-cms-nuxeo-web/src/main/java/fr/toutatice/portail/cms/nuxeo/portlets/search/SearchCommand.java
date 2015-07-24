@@ -72,7 +72,7 @@ public class SearchCommand implements INuxeoCommand{
 		String searchQuery = "";
 		
 		if( path != null && path.length() > 0)
-			searchQuery = addClause(searchQuery, "ecm:path STARTSWITH '"+path+"'");
+			searchQuery = addClause(searchQuery, "ecm:path STARTSWITH '" + path + "'");
 
 		String searchKeywords = keywords;
 		if( searchKeywords == null)
@@ -80,18 +80,16 @@ public class SearchCommand implements INuxeoCommand{
 		
 		searchKeywords += " -noindex";
 		
-		searchQuery = addClause(searchQuery, "ecm:fulltext = '"+searchKeywords+"'" );
+		searchQuery = addClause(searchQuery, "ecm:fulltext = '" + searchKeywords + "'" );
 		
 
 
 		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryCtx, searchQuery);
-
-			
-		request.set("query", "SELECT * FROM Document " + filteredRequest);
-
-
-
+		//String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryCtx, searchQuery);
+		
+		// Filter on publish spaces lives.
+		String filteredRequest = NuxeoQueryFilter.addSearchFilter(queryCtx, searchQuery);
+		request.set("query", "SELECT * FROM Document " + filteredRequest.toString());
 		PaginableDocuments result = (PaginableDocuments) request.execute();
 		
 		return result;

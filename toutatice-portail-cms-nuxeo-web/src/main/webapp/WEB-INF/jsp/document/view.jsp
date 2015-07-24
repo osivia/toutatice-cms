@@ -12,28 +12,38 @@
     <c:choose>
         <c:when test="${not empty document}">
             <c:choose>
-                <c:when test="${onlyDescription}">
-                    <jsp:include page="only-description.jsp" />
+                <c:when test="${onlyRemoteSections}">
+                    <jsp:include page="only-remote-sections.jsp" />
                 </c:when>
                 
                 <c:otherwise>
-                    <!-- Document view -->
-                    <jsp:include page="dispatch.jsp" />
-                    
-                    <!-- Document attachments view -->
-                    <c:if test="${attachments}">
-                        <jsp:include page="attachments.jsp" />
-                    </c:if>
-                    
-                    <!-- Metadata -->
-                    <c:if test="${metadata}">
-                        <jsp:include page="metadata.jsp" />
-                    </c:if>
-                    
-                    <!-- Document comments view -->
-                    <jsp:include page="comments.jsp" />
-                </c:otherwise>
-            </c:choose>
+        
+		            <c:choose>
+		                <c:when test="${onlyDescription}">
+		                    <jsp:include page="only-description.jsp" />
+		                </c:when>
+		                
+		                <c:otherwise>
+		                    <!-- Document view -->
+		                    <jsp:include page="dispatch.jsp" />
+		                    
+		                    <!-- Document attachments view -->
+		                    <c:if test="${attachments}">
+		                        <jsp:include page="attachments.jsp" />
+		                    </c:if>
+		                    
+		                    <!-- Metadata -->
+		                    <c:if test="${metadata}">
+		                        <jsp:include page="metadata.jsp" />
+		                    </c:if>
+		                    
+		                    <!-- Document comments view -->
+		                    <jsp:include page="comments.jsp" />
+		                </c:otherwise>
+		            </c:choose>
+		            
+		         </c:otherwise>   
+	         </c:choose>
         </c:when>
         
         <c:otherwise>

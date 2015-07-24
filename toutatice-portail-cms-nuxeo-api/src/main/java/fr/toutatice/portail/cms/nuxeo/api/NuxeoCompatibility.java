@@ -16,6 +16,9 @@ public class NuxeoCompatibility {
     public static int VERSION_58 = 58;
 
     public static int VERSION_60 = 60;
+    
+    /** Linked to opentoutatice 3.1. */
+    public static int VERSION_61 = 61;
 
     public static boolean isVersionGreaterOrEqualsThan(int versionNumber) {
         if (versionChecked == false) {

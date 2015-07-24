@@ -55,6 +55,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
@@ -92,6 +93,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
+    /** Display only remote sections indicator window property name. */
+    public static final String ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY = "osivia.document.onlyRemoteSections";
+    /** Indicates if portlet is in remote sections list page. */
+    public static final String REMOTE_SECTIONS_PAGE_WINDOW_PROPERTY = "osivia.document.remoteSectionsPage";
     /** Hide metadata indicator window property name. */
     public static final String HIDE_METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
     /** Hide attachment indicator window property name. */
@@ -320,6 +325,14 @@ public class ViewDocumentPortlet extends CMSPortlet {
             if (StringUtils.isNotBlank(path)) {
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
 
+                // Display only remote sections indicator
+                boolean onlyRemoteSections = BooleanUtils.toBoolean(window.getProperty(ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY));
+                request.setAttribute("onlyRemoteSections", onlyRemoteSections);
+                
+                // Remote sections page indicator
+                boolean remoteSectionsPage = BooleanUtils.toBoolean(window.getProperty(REMOTE_SECTIONS_PAGE_WINDOW_PROPERTY));
+                request.setAttribute("remoteSectionsPage", remoteSectionsPage);
+                
                 // Display only description indicator
                 boolean onlyDescription = BooleanUtils.toBoolean(window.getProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY));
                 if (!maximized) {
@@ -347,8 +360,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 if (StringUtils.isNotBlank(title)) {
                     response.setTitle(title);
                 }
-
-                if (!onlyDescription || maximized) {
+                
+                if(onlyRemoteSections && maximized){
+                    
+                    // Remote Published documents
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, onlyRemoteSections);
+                    
+                } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
 
@@ -356,7 +374,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     this.generateAttachments(nuxeoController, document, documentDTO);
 
                     // Remote Published documents
-                    // this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO);
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, Boolean.FALSE);
 
                     // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
@@ -470,33 +488,36 @@ public class ViewDocumentPortlet extends CMSPortlet {
     /**
      * Get remote published documents.
      *
+     * @param readFilter filter published documents on user read permission
      * @param nuxeoController
      * @param document
      * @param documentDTO
      */
-    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO){
+    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO, Boolean readFilter){
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61)) {
 
-        int cacheType = nuxeoController.getCacheType();
-        int authType = nuxeoController.getAuthType();
+            int cacheType = nuxeoController.getCacheType();
+            int authType = nuxeoController.getAuthType();
 
-        try {
+            try {
 
-            nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-            GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(document);
-            JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
+                GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(document, readFilter);
+                JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
 
-            for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
+                for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
 
-                JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
-                RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDAO.toDTO(publishedDocumentInfos);
-                documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
+                    JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
+                    RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDAO.toDTO(publishedDocumentInfos);
+                    documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
 
+                }
+            } finally {
+                nuxeoController.setCacheType(cacheType);
+                nuxeoController.setAuthType(authType);
             }
-        } finally {
-            nuxeoController.setCacheType(cacheType);
-            nuxeoController.setAuthType(authType);
+
         }
 
     }

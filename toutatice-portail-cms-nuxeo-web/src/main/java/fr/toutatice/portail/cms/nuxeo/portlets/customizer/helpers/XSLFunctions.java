@@ -371,6 +371,11 @@ public class XSLFunctions {
                         if (mDoc.matches()) {
                             if (mDoc.groupCount() > 0) {
                                 String path = mDoc.group(2);
+                                
+                                String parameters = url.getQuery();
+                                if(StringUtils.isNotBlank(parameters)){
+                                    path = path.concat("?").concat(parameters);
+                                }
 
                                 // v2 : simplification : phase de redirection trop complexe
                                 String portalLink = this.nuxeoController.getCMSLinkByPath(path, null).getUrl();
@@ -408,6 +413,7 @@ public class XSLFunctions {
 
                                 String params = url.getQuery();
                                 if (params != null) {
+                                    query = query.concat("?").concat(params);
                                     String[] split = params.split("&");
                                     for (String element : split) {
                                         // In case of resources url, serve the resource

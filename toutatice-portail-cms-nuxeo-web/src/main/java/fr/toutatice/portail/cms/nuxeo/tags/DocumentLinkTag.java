@@ -113,7 +113,7 @@ public class DocumentLinkTag extends SimpleTagSupport {
                             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
                             CMSItem cmsItem = cmsService.createItem(cmsContext, this.document.getPath(), null, nuxeoDocument);
 
-                            if (StringUtils.isNotEmpty(cmsItem.getDomainId()) && StringUtils.isNotEmpty(cmsItem.getWebId())) {
+                            if (StringUtils.isNotEmpty(cmsItem.getWebId())) {
                                 path = this.webIdService.itemToPageUrl(cmsContext, cmsItem);
                             }
                         }

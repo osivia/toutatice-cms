@@ -13,6 +13,11 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 
 
 /**
@@ -20,6 +25,11 @@ package fr.toutatice.portail.cms.nuxeo.api.domain;
  *
  */
 public class RemotePublishedDocumentDTO {
+    
+    //DCH: FIXME: no notion of Nuxeo at this level?
+    
+    /** NUxeo path context. */
+    public static final String NX_PATH_CTX = "/nuxeo/nxpath/default/";
     
     /** Nuxeo Published document url. */
     private String nxUrl;
@@ -38,6 +48,23 @@ public class RemotePublishedDocumentDTO {
      */
     public void setNxUrl(String nxUrl) {
         this.nxUrl = nxUrl;
+    }
+    
+    /**
+     * @return the path of published Document.
+     */
+    public String getPath(){
+        String path = StringUtils.substringAfter(this.nxUrl, NX_PATH_CTX);
+        return StringUtils.substringBefore(path, "@");
+    }
+    
+    /**
+     * @return portal contextualization param.
+     */
+    public Map<String, String> getLinkContextualization(){
+        Map<String, String> param = new HashMap<String, String>(1);
+        param.put("contextualization", "portal");
+        return param;
     }
 
     /**

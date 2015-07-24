@@ -26,6 +26,7 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -114,6 +115,8 @@ public class CMSService implements ICMSService {
 
     /** Logger. */
     protected static final Log logger = LogFactory.getLog(CMSService.class);
+    /** Slash separator. */
+    private static final String SLASH = "/";
 
     /** Portlet context. */
     private final PortletContext portletCtx;
@@ -141,8 +144,7 @@ public class CMSService implements ICMSService {
     public void setCustomizer(DefaultCMSCustomizer customizer) {
         this.customizer = customizer;
     }
-
-
+    
     /**
      * Create CMS item.
      *
@@ -979,8 +981,10 @@ public class CMSService implements ICMSService {
 
                 String cmsReferrerNavigationPath = ctx.getCmsReferrerNavigationPath();
                 String displayLiveVersion = ctx.getDisplayLiveVersion();
+                String parentId = ctx.getParentId();
+                String parentPath = ctx.getParentPath();
 
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(cmsReferrerNavigationPath, path, displayLiveVersion)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(cmsReferrerNavigationPath, parentId, parentPath, path, displayLiveVersion)));
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();
@@ -2062,7 +2066,31 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
-
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public Map<String, String> getNxPathParameters(String cmsPath){
+        Map<String, String> parameters = new HashMap<String, String>(0);
+        
+        if(StringUtils.contains(cmsPath, "?")){
+            String params = StringUtils.substringAfter(cmsPath, "?");
+            
+            if(StringUtils.isNotBlank(params)){
+               String[] keysValues = StringUtils.split(params, "&");
+               
+               for(String keyValue : keysValues){
+                   String[] keyNValue = StringUtils.split(keyValue, "=");
+                   
+                   parameters.put(keyNValue[0], keyNValue[1]);
+               }
+               
+            }
+            
+        }
+        
+        return parameters;
+    }
 
     /**
      * {@inheritDoc}
@@ -2146,6 +2174,19 @@ public class CMSService implements ICMSService {
         } catch (Exception e) {
             throw new CMSException(e);
         }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getParentPath(String documentPath) {
+        
+        if (StringUtils.endsWith(documentPath, SLASH)) {
+            documentPath = StringUtils.removeEnd(documentPath, SLASH);
+        }
+
+        return StringUtils.substringBeforeLast(documentPath, SLASH);
     }
 
 

@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +44,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -69,6 +72,7 @@ import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -109,6 +113,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
@@ -1089,7 +1094,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
         /* Filtre pour sélectionner uniquement les version publiées */
-        String requestFilter = "";
+        String requestFilter = StringUtils.EMPTY;
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
@@ -1101,6 +1106,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
         }
 
+        return addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
+
+    }
+
+    /**
+     * @param ctx
+     * @param nuxeoRequest
+     * @param requestFilteringPolicy
+     * @param requestFilter
+     * @return request with extra filters according to policy and others.
+     * @throws Exception
+     */
+    protected String addExtraNxQueryFilters(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, String requestFilter) throws Exception {
         String policyFilter = null;
 
         ServerInvocation invocation = ctx.getServerInvocation();
@@ -1189,8 +1207,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         finalRequest += " " + orderBy;
         editedNuxeoRequest = finalRequest;
-
         return editedNuxeoRequest;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String addSearchFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
+        
+        StringBuffer filter = new StringBuffer(2);
+        filter.append(" ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0");
+        filter.append(" AND ecm:mixinType <> 'isLocalPublishLive'");
+        
+        return addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, filter.toString());
     }
 
 
@@ -1293,6 +1323,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // CMS path
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
+            
+            Map<String, String> parameters = new HashMap<String, String>(0);
+                    
+            // CMS path can have parameters
+            ExtendedParameters extendedParameters = null;
+            Map<String, String> nxPathParameters = this.cmsService.getNxPathParameters(cmsPath);
+            if(MapUtils.isNotEmpty(nxPathParameters)){
+                cmsPath = StringUtils.substringBefore(cmsPath, "?");
+                extendedParameters = new ExtendedParameters();
+                extendedParameters.setAllParameters(nxPathParameters);
+            }
 
             String currentPagePath = null;
             if( cmsContext.getRequest() != null)    {
@@ -1307,7 +1348,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null, null);
+            String portalURL = StringUtils.EMPTY;
+            if(extendedParameters != null){
+                portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null, null, extendedParameters);
+            } else {
+                portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null, null);
+            }
+                
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
@@ -1340,8 +1387,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return link;
     }
-
-
+    
     /**
      * Transform Nuxeo URL into CMS path.
      *
@@ -1356,15 +1402,30 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if (StringUtils.startsWith(url, "/nuxeo/web/")) {
             // Nuxeo web path
             String webPath = StringUtils.removeStart(url, "/nuxeo/web/");
+            
+            // Webpath can have path parameter containing "/"
+            String pathParameters = StringUtils.EMPTY;
+            if(StringUtils.contains(webPath, "?")){
+                
+                String parameters = StringUtils.substringAfter(webPath, "?");
+                
+                if(StringUtils.contains(parameters, "/")){
+                    pathParameters = parameters;
+                    webPath = StringUtils.substringBefore(webPath, "?");
+                }
+            }
 
             String[] splittedWebPath = StringUtils.split(webPath, "/");
-            if (splittedWebPath.length > 1) {
-                // Domain ID
-                String domainId = splittedWebPath[0];
-                // Web ID
+            if (splittedWebPath.length > 0) {
+                
+                // Web ID 
                 String webId = splittedWebPath[splittedWebPath.length - 1];
+                if(StringUtils.isNotBlank(pathParameters)){
+                    webId = webId.concat("?").concat(pathParameters);
+                }
+                
                 // Service web ID
-                String serviceWebId = this.getWebIdService().domainAndIdToFetchInfoService(domainId, webId);
+                String serviceWebId = this.getWebIdService().webIdToFetchInfoService(webId);
 
                 // Document path
                 String path = null;
@@ -1378,8 +1439,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 }
 
                 // CMS item
-                CMSItem cmsItem = new CMSItem(path, domainId, webId, null, null);
-
+                CMSItem cmsItem = new CMSItem(path, null, webId, null, null);
+                
                 cmsPath = this.getWebIdService().itemToPageUrl(cmsContext, cmsItem);
             }
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
@@ -1588,12 +1649,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Document doc = (Document) cmsCtx.getDoc();
 
         String webId = doc.getString("ttc:webid");
-        String domainId = doc.getString("ttc:domainID");
 
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
-        // webId and domainId have no signification without each other
-        if (StringUtils.isNotEmpty(webId) && StringUtils.isNotEmpty(domainId)) {
+        if (StringUtils.isNotEmpty(webId)) {
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
 
@@ -1605,13 +1664,40 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (extension != null) {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
             }
-            CMSItem cmsItem = new CMSItem(doc.getPath(), domainId, webId, properties, doc);
+            
+            
+            // Case of remote proxy 
+            try {
+                if (!StringUtils.contains(webId, "?")) {
+
+                    if (DocumentHelper.isRemoteProxy(doc)) {
+                        String parentId = getWebIdService().getParentId(cmsCtx, doc.getPath());
+                        if (StringUtils.isNotBlank(parentId)) {
+                            webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);
+                        } else {
+                            String parentPath = getCmsService().getParentPath(doc.getPath());
+                            if (StringUtils.isNotBlank(parentPath)) {
+                                webId = webId.concat("?").concat(IWebIdService.PARENT_PATH).concat("=").concat(parentPath);
+                            }
+                        }
+                    }
+                }
+            } catch (CMSException e) {
+                // Noting
+            }
+            
+            CMSItem cmsItem = new CMSItem(doc.getPath(), null, webId, properties, doc);
+            
+            CMSItemType cmsItemType = this.getCMSItemTypes().get(doc.getType());
+            cmsItem.setType(cmsItemType);
 
             permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx, cmsItem);
         }
 
         return permLinkPath;
     }
+    
+    
 
     @Override
     public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {

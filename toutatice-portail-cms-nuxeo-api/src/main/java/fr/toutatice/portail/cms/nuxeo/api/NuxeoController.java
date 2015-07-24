@@ -29,7 +29,9 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -44,6 +46,7 @@ import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -1558,11 +1561,25 @@ public class NuxeoController {
         Window window = (Window) this.getPortalCtx().getRequest().getAttribute("osivia.window");
         Page page = window.getPage();
 
-        Map<String, String> pageParams = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<String, String>(0);
 
+        // path can have parameters
+        ExtendedParameters extendedParameters = null;
+        Map<String, String> nxPathParameters = getCMSService().getNxPathParameters(path);
+        if (MapUtils.isNotEmpty(nxPathParameters)) {
+            path = StringUtils.substringBefore(path, "?");
+            extendedParameters = new ExtendedParameters();
+            extendedParameters.setAllParameters(nxPathParameters);
+        }
 
-        String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams, null,
-                displayContext, null, null, null, null);
+        String url = StringUtils.EMPTY;
+        if(extendedParameters != null){
+            url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
+                displayContext, null, null, null, null, extendedParameters);
+        } else {
+            url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
+                    displayContext, null, null, null, null);
+        }
 
         if (url != null) {
 
@@ -1652,8 +1669,7 @@ public class NuxeoController {
         }
 
     }
-
-
+    
     /**
      * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
      *

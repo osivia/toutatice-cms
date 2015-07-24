@@ -50,6 +50,22 @@ public class DocumentHelper {
 
         return isFolder;
     }
+    
+    /**
+     * @param document
+     * @return true if document is a remote proxy.
+     */
+    public static boolean isRemoteProxy(Document document){
+        boolean isRemote = false;
+        
+        PropertyList facetsProp = document.getFacets();
+        if (facetsProp != null && !facetsProp.isEmpty()) {
+            List<Object> facets = facetsProp.list();
+            isRemote = facets.contains(DocumentConstants.REMOTE_PROXY_FACET);
+        }
+        
+        return isRemote;
+    }
 
 
 }

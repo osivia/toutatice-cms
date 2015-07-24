@@ -76,5 +76,28 @@ public class NuxeoQueryFilter {
 		}
 
 	}
+	
+	/**
+     * Adds the search filter.
+     *
+     * @param queryCtx the query ctx
+     * @param nuxeoRequest the nuxeo request
+     * @return the string
+     */
+    public static String addSearchFilter(NuxeoQueryFilterContext queryCtx,String nuxeoRequest) {
+
+        // adapt thanks to CMSCustomizer
+        
+        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+        
+        CMSServiceCtx ctx = getCMSCtx();
+      
+        try {
+            return nuxeoService.getCMSCustomizer().addSearchFilter(ctx, nuxeoRequest, queryCtx.getPolicy());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }

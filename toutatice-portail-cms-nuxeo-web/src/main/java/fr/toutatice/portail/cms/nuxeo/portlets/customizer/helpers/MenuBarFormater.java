@@ -54,6 +54,7 @@ import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
@@ -65,6 +66,7 @@ import org.osivia.portal.core.cms.CMSItemTypeComparator;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -105,6 +107,8 @@ public class MenuBarFormater {
     private final IMenubarService menubarService;
     /** CMS service. */
     private final CMSService cmsService;
+    /** WebId service */
+    private final IWebIdService webIdService;
     /** Portal URL factory. */
     private final IPortalUrlFactory urlFactory;
     /** CMS customizer. */
@@ -129,6 +133,8 @@ public class MenuBarFormater {
         this.menubarService = Locator.findMBean(IMenubarService.class, IMenubarService.MBEAN_NAME);
         // CMS service
         this.cmsService = cmsService;
+        // WebId Service
+        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
         // Portal URL factory
         this.urlFactory = (IPortalUrlFactory) portletCtx.getAttribute("UrlService");
         // CMS customizer
@@ -306,13 +312,13 @@ public class MenuBarFormater {
 
 
     /**
-     * Check if current document is a remote proxy.
+     * Checks if current document is a remote proxy.
      *
      * @param cmsCtx CMS context
      * @param pubInfos CMS publication informations
      * @return true if current document is a remote proxy
      */
-    protected boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
+    public boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
         if (cmsCtx.getDoc() == null) {
             return false;
         }
@@ -330,6 +336,24 @@ public class MenuBarFormater {
         }
 
         return false;
+    }
+    
+    /**
+     * Checks if document in context has webId property.
+     * 
+     * @param cmsCtx context
+     * @return true if document in context has webId property.
+     */
+    public boolean hasWebId(CMSServiceCtx cmsCtx){
+        boolean has = false;
+        
+        Document document = (Document) cmsCtx.getDoc();
+        if(document != null){
+            String webid = (String) document.getString("ttc:webid");
+            has = StringUtils.isNotBlank(webid);
+        }
+        
+        return has;
     }
 
 
@@ -1749,31 +1773,58 @@ public class MenuBarFormater {
         }
 
 
-
         // Document
         Document document = (Document) cmsContext.getDoc();
-        String path = document.getPath();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+        String docPath = document.getPath();
+        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, docPath);
 
-        // On ne sait pas gérer les webid des proxys distants (comment résoudre l'ambiguité si plusieurs proxys)
-        // Du coup, on ne les gère que pour les portails web
-        // A revoir dans la version 4.2
-
-        if( !this.isRemoteProxy(cmsContext, pubInfos )) {
-            path =  this.customizer.getContentWebIdPath(cmsContext);
-        }
-
-
+        String path = this.customizer.getContentWebIdPath(cmsContext);
 
         // URL
         String url;
+        String permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
+        
+        // url of type share for Workspaces and local proxies
+        if (this.hasWebId(cmsContext)) {
+
+            if (pubInfos.isLiveSpace() || StringUtils.endsWith(docPath, ".proxy")) {
+                permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
+            }
+        }
+        
+        ExtendedParameters extendedParameters = null;
+        if (!StringUtils.contains(path, "?")) {
+
+            if (this.hasWebId(cmsContext)) {
+                if (this.isRemoteProxy(cmsContext, pubInfos)) {
+                    extendedParameters = new ExtendedParameters();
+
+                    String parentId = this.webIdService.getParentId(cmsContext, document.getPath());
+                    if (StringUtils.isNotBlank(parentId)) {
+                        extendedParameters.addParameter(IWebIdService.PARENT_ID, parentId);
+                    } else {
+                        String parentPath = this.cmsService.getParentPath(document.getPath());
+                        if (StringUtils.isNotBlank(parentPath)) {
+                            extendedParameters.addParameter(IWebIdService.PARENT_PATH, parentPath);
+                        }
+                    }
+                }
+            }
+        }
+         
         try {
-            url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+            if(extendedParameters != null){
+                url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType, extendedParameters);
+            } else {
+                url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType);
+            }
+
         } catch (PortalException e) {
             url = null;
         }
         return ContextualizationHelper.getLivePath(url);
     }
+
 
     /**
      * Get permalink display indicator.

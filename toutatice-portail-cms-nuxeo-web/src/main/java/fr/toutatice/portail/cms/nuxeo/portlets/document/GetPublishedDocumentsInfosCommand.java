@@ -32,9 +32,11 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 public class GetPublishedDocumentsInfosCommand implements INuxeoCommand {
 
     Document document;
+    Boolean readFilter;
 
-    public GetPublishedDocumentsInfosCommand(Document document) {
+    public GetPublishedDocumentsInfosCommand(Document document, Boolean readFilter) {
         this.document = document;
+        this.readFilter = readFilter;
     }
 
     /**
@@ -45,6 +47,7 @@ public class GetPublishedDocumentsInfosCommand implements INuxeoCommand {
         
         OperationRequest request = session.newRequest("Document.GetPublishedDocumentsInfos");
         request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
+        request.set("readFilter", readFilter);
         request.setInput(document);
         
         Blob publishedDocsInfos = (Blob) request.execute();
