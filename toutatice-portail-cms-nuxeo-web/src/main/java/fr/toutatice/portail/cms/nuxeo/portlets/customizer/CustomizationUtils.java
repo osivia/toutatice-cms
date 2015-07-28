@@ -31,7 +31,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class CustomizationUtils.
  */
