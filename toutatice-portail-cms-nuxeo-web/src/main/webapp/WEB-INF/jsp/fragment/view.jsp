@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -20,7 +21,7 @@
     
         <!-- Fragment -->
         <c:if test="${not empty fragmentType.module.viewJSPName}">
-            <jsp:include page="view-${fragmentType.module.viewJSPName}.jsp" />
+            <ttc:custom-include page="view-${fragmentType.module.viewJSPName}.jsp" />
         </c:if>
     </c:when>
     

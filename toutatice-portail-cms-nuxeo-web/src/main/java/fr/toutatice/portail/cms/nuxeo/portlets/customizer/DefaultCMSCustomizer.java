@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +46,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -64,12 +67,14 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmCommonCommands;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.urls.ExtendedParameters;
@@ -85,15 +90,18 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -115,7 +123,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
@@ -156,8 +163,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
     /** List template contextual links. */
     public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";
-    /** List template picturebook. */
-    public static final String LIST_TEMPLATE_PICTUREBOOK = "picturebook";
+
     /** List template slider. */
     public static final String LIST_TEMPLATE_SLIDER = "slider";
 
@@ -165,8 +171,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
     /** Slider schemas. */
     public static final String SLIDER_SCHEMAS = "dublincore, toutatice, picture, annonce";
-    /** Picturebook schemas. */
-    public static final String PICTUREBOOK_SCHEMAS = "dublincore, common, toutatice, file";
+
 
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
@@ -232,8 +237,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** binary delegation */
     public static Map<String, Map<String,BinaryDelegation>> delegations = new ConcurrentHashMap<String, Map<String,BinaryDelegation>>() ;
+    
+    /** The liste templates. */
+    private Map<Locale, List<ListTemplate>> listeTemplates = new ConcurrentHashMap<Locale, List<ListTemplate>>();
+    
+    
+    /** The fragments. */
+    private Map<Locale, Map<String, FragmentType>> listeFragments = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
+   
 
 
+    /** Portal URL factory. */
+    protected final ICustomizationService customizationService;
 
     /**
      * Constructor.
@@ -253,6 +268,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         IInternationalizationService internationalizationService = (IInternationalizationService) this.portletCtx
                 .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        
+        // Customization Service
+        this.customizationService = (ICustomizationService) Locator.findMBean(ICustomizationService.class,
+                ICustomizationService.MBEAN_NAME);
 
         // initialise le player view document par défaut
         this.players = new HashMap<String, IPlayer>();
@@ -375,12 +394,28 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.commentsService;
     }
 
+    
+    
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<ListTemplate> getListTemplates(Locale locale) {
+    public final List<ListTemplate> getListTemplates(Locale locale) {
+
+        List<ListTemplate> updatedTemplates = CustomizationUtils.customizeListTemplates(locale, this);
+        
+        if( updatedTemplates != null  ) {
+            
+            this.listeTemplates.put(locale, updatedTemplates);
+        }
+     
+        return this.listeTemplates.get(locale);
+    }
+
+    
+    public List<ListTemplate> initListTemplates(Locale locale) {
+        
         List<ListTemplate> templates = new ArrayList<ListTemplate>();
 
         // Bundle
@@ -396,8 +431,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.add(new ListTemplate(LIST_TEMPLATE_EDITORIAL, bundle.getString("LIST_TEMPLATE_EDITORIAL"), DEFAULT_SCHEMAS));
         // Contextual links
         templates.add(new ListTemplate(LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
-        // Picturebook
-        templates.add(new ListTemplate(LIST_TEMPLATE_PICTUREBOOK, bundle.getString("LIST_TEMPLATE_PICTUREBOOK"), PICTUREBOOK_SCHEMAS));
         // Slider
         ListTemplate slider = new ListTemplate(LIST_TEMPLATE_SLIDER, bundle.getString("LIST_TEMPLATE_SLIDER"), SLIDER_SCHEMAS);
         slider.setModule(new SliderTemplateModule());
@@ -406,14 +439,30 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return templates;
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<FragmentType> getFragmentTypes(Locale locale) {
-        List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
+    public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
+        
+        Map<String, FragmentType> updatedFragments = CustomizationUtils.customizeFragments(locale, this);
+        
+        if( updatedFragments != null  ) {
+            
+            this.listeFragments.put(locale, updatedFragments);
+        }
+     
+        return this.listeFragments.get(locale);
+    }
+    
+    
+    
 
+    
+    public List<FragmentType> initListFragments(Locale locale) {
+        
+        List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
+        
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
@@ -441,9 +490,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Summary fragment
         fragmentTypes.add(new FragmentType(SummaryFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SUMMARY"), SummaryFragmentModule.getInstance()));
 
-        return fragmentTypes;
+        return fragmentTypes;        
+    
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -500,7 +550,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return Nuxeo request
      * @throws CMSException
      */
-    protected String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException {
+    public String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException {
         String nuxeoRequest = null;
 
         Document doc = (Document) ctx.getDoc();
@@ -624,35 +674,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-    /**
-     * Get picturebook player properties.
-     *
-     * @param cmsContext CMS context
-     * @return player properties
-     */
-    public CMSHandlerProperties getCMSPictureBookPlayer(CMSServiceCtx cmsContext) throws Exception {
-        Document document = (Document) cmsContext.getDoc();
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
-
-        windowProperties.put("osivia.title", document.getTitle());
-        windowProperties.put("osivia.cms.scope", cmsContext.getScope());
-        windowProperties.put("osivia.cms.uri", document.getPath());
-        windowProperties.put("osivia.hideDecorators", "1");
-        windowProperties.put("osivia.ajaxLink", "1");
-        windowProperties.put("osivia.cms.displayLiveVersion", cmsContext.getDisplayLiveVersion());
-        windowProperties.put("osivia.cms.style", LIST_TEMPLATE_PICTUREBOOK);
-        windowProperties.put("osivia.nuxeoRequest", this.createFolderRequest(cmsContext, false));
-        windowProperties.put("osivia.cms.pageSize", "24");
-        windowProperties.put("osivia.cms.pageSizeMax", "96");
-        windowProperties.put("osivia.cms.maxItems", "96");
-
-        CMSHandlerProperties linkProps = new CMSHandlerProperties();
-        linkProps.setWindowProperties(windowProperties);
-        linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewListPortletInstance");
-
-        return linkProps;
-    }
 
 
     /**
@@ -804,6 +826,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace indicator
         boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
 
+        
+
+        
+        List<IPlayerModule> modules = CustomizationUtils.customizeModules(cmsContext);
+        
+        for (IPlayerModule icmsCustomizerModule : modules) {
+            CMSHandlerProperties properties = icmsCustomizerModule.getCMSPlayer(cmsContext, getCmsService());
+            if (properties != null)
+                return properties;
+        }
+        
+        
+        
 
         if ("UserWorkspace".equals(document.getType())) {
             // Pas de filtre sur les versions publiées
@@ -818,26 +853,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 CMSHandlerProperties properties = this.getCMSFileBrowser(cmsContext);
                 Map<String, String> windowProperties = properties.getWindowProperties();
                 windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
-                windowProperties.put(FileBrowserPortlet.DEFAULT_VIEW_WINDOW_PROPERTY, FileBrowserView.THUMBNAILS.getName());
+                windowProperties.put(InternalConstants.DEFAULT_VIEW_WINDOW_PROPERTY, FileBrowserView.THUMBNAILS.getName());
                 return properties;
             } else {
                 return this.getCMSUrlContainerPlayer(cmsContext);
             }
         }
 
-        if ("PictureBook".equals(document.getType())) {
-            if (workspace) {
-                // File browser
-                cmsContext.setDisplayLiveVersion("1");
-                CMSHandlerProperties properties = this.getCMSFileBrowser(cmsContext);
-                Map<String, String> windowProperties = properties.getWindowProperties();
-                windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
-                windowProperties.put(FileBrowserPortlet.DEFAULT_VIEW_WINDOW_PROPERTY, FileBrowserView.THUMBNAILS.getName());
-                return properties;
-            } else {
-                return this.getCMSPictureBookPlayer(cmsContext);
-            }
-        }
+
 
         if ("AnnonceFolder".equals(document.getType())) {
             return this.getCMSAnnonceFolderPlayer(cmsContext);
@@ -1464,23 +1487,27 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Map<String, CMSItemType> getCMSItemTypes() {
-        if (this.cmsItemTypes == null) {
-            List<CMSItemType> defaultTypes = this.getDefaultCMSItemTypes();
-            this.cmsItemTypes = new LinkedHashMap<String, CMSItemType>(defaultTypes.size());
-            for (CMSItemType defaultType : defaultTypes) {
-                this.cmsItemTypes.put(defaultType.getName(), defaultType);
-            }
+        
+        Map<String, CMSItemType> updatedDocTypes = CustomizationUtils.customizeCMSItemTypes(this);
+        
+        if( updatedDocTypes != null  ) {
+            
+            this.cmsItemTypes = updatedDocTypes;
         }
         return this.cmsItemTypes;
     }
 
-
+    protected List<CMSItemType> getCustomizedCMSItemTypes() {
+        return new ArrayList<CMSItemType>();
+    }
+    
+    
     /**
      * Get default CMS item types.
      *
      * @return default CMS item types
      */
-    private List<CMSItemType> getDefaultCMSItemTypes() {
+    public List<CMSItemType> getDefaultCMSItemTypes() {
         List<CMSItemType> defaultTypes = new ArrayList<CMSItemType>();
 
         // Workspace
@@ -1518,12 +1545,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual link
         defaultTypes.add(new CMSItemType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
                 "glyphicons glyphicons-link"));
-        // Picture book
-        defaultTypes.add(new CMSItemType("PictureBook", true, true, true, true, false, true, Arrays.asList("Picture", "PictureBook"), null,
-                "glyphicons glyphicons-picture"));
-        // Picture
-        defaultTypes.add(new CMSItemType("Picture", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-picture"));
-
+ 
         return defaultTypes;
     }
 

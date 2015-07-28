@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.portlets.files;
+package fr.toutatice.portail.cms.nuxeo.api;
 
 /**
  * File browser views enumeration.

@@ -230,6 +230,7 @@
         </attribute>
     </tag>
     
+    
 
 
     <tag>
@@ -386,5 +387,25 @@
             <type>java.lang.String</type>
         </attribute>
     </tag>
+    
+    
+        
+    <tag>
+        <description>Include</description>
+        <display-name>Include jsp</display-name>
+        <name>custom-include</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.tags.IncludeTag</tag-class>
+        <body-content>empty</body-content>
+    
+        <attribute>
+            <description>Page name.</description>
+            <name>page</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+ 
+    </tag>
+    
 
 </taglib>

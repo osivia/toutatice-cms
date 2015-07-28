@@ -58,9 +58,11 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -81,8 +83,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
     /** Nuxeo path window property name. */
     public static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
-    /** Default view window property name. */
-    public static final String DEFAULT_VIEW_WINDOW_PROPERTY = "osivia.defaultView";
+
 
     /** View request parameter name. */
     private static final String VIEW_REQUEST_PARAMETER = "view";
@@ -505,7 +506,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (StringUtils.isNotEmpty(viewParameter)) {
             currentView = FileBrowserView.fromName(viewParameter);
         } else {
-            currentView = FileBrowserView.fromName(window.getProperty(DEFAULT_VIEW_WINDOW_PROPERTY));
+            currentView = FileBrowserView.fromName(window.getProperty(InternalConstants.DEFAULT_VIEW_WINDOW_PROPERTY));
         }
 
         return currentView;

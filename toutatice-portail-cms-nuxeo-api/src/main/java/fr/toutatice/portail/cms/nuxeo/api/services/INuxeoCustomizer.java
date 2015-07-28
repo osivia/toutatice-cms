@@ -37,6 +37,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * Nuxeo customizer interface.
  */
@@ -44,33 +45,33 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Get CMS player
-     * the player is deduced from the current document but also from the context
+     * the player is deduced from the current document but also from the context.
      *
      * @param ctx CMS context
      * @return CMS player portlet with properties
-     * @throws Exception
+     * @throws Exception the exception
      */
     CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception;
 
 
     /**
      * Create custom link.
-     *
+     * 
      * custom links are useful during the cms link generation when the cms controller phase
      * is not adapted
-     *
+     * 
      *  Use cases :
      * - the action for the link is powered directly by the portlet (for example, the download of an attached file)
      * - the link opens an external application
-     *
+     * 
      * if this method returns null, then the standard cms pattern will be applied
-     *
-     *
+     * 
+     * 
      * displayContext : menu, download, fileExplorer, permlink ...
      *
      * @param ctx CMS context
      * @return custom link
-     * @throws Exception
+     * @throws Exception the exception
      */
     Link createCustomLink(CMSServiceCtx ctx) throws Exception;
 
@@ -79,7 +80,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * Format content menu bar.
      *
      * @param ctx CMS context
-     * @throws Exception
+     * @throws Exception the exception
      */
     void formatContentMenuBar(CMSServiceCtx ctx) throws Exception;
 
@@ -90,7 +91,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param cmsContext CMS context
      * @param document Nuxeo document
      * @return comments HTML formatted content
-     * @throws CMSException
+     * @throws CMSException the CMS exception
      */
     String getCommentsHTMLContent(CMSServiceCtx cmsContext, Document document) throws CMSException;
 
@@ -101,7 +102,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param ctx CMS context
      * @param doc Nuxeo document
      * @return document configuration
-     * @throws Exception
+     * @throws Exception the exception
      */
     Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception;
 
@@ -113,7 +114,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param nuxeoRequest Nuxeo request
      * @param requestFilteringPolicy request filtering policy
      * @return edited Nuxeo request
-     * @throws Exception
+     * @throws Exception the exception
      */
     String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception;
     
@@ -124,7 +125,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param nuxeoRequest Nuxeo request
      * @param requestFilteringPolicy request filtering policy
      * @return edited Nuxeo request
-     * @throws Exception
+     * @throws Exception the exception
      */
     String addSearchFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception;
 
@@ -134,7 +135,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param ctx CMS context
      * @param htmlContent HTML content
      * @return transformed HTML content
-     * @throws Exception
+     * @throws Exception the exception
      */
     String transformHTMLContent(CMSServiceCtx ctx, String htmlContent) throws Exception;
 
@@ -145,7 +146,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param ctx CMS context
      * @param link link URL
      * @return transformed link URL
-     * @throws Exception
      */
     String transformLink(CMSServiceCtx ctx, String link);
 
@@ -164,7 +164,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * Get webID path like /_webid/domain-def-jss/publistatfaq.html
      *
      * @param ctx CMS context
-     * @throws Exception
+     * @return the content web id path
      */
     String getContentWebIdPath(CMSServiceCtx ctx) ;
 
@@ -189,7 +189,8 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      *
      * @param cmsCtx cms context
      * @param username username
-     * @return
+     * @return the user avatar
+     * @throws CMSException the CMS exception
      */
     Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
 
@@ -216,9 +217,10 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Get fragments list.
      *
+     * @param locale the locale
      * @return fragments list
      */
-    List<FragmentType> getFragmentTypes(Locale locale);
+    Map<String, FragmentType> getFragmentTypes(Locale locale);
 
 
     /**
@@ -236,14 +238,40 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param cmsContext CMS context
      * @param command Nuxeo command
      * @return Nuxeo command result
-     * @throws CMSException
+     * @throws CMSException the CMS exception
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
     
     
+
+    
     /**
-     * Define ECM commands
-     * @return
+     * Creates the folder request.
+     *
+     * @param ctx the ctx
+     * @param ordered the ordered
+     * @return the string
+     * @throws CMSException the CMS exception
+     */
+    String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException;
+    
+    
+    /**
+     * Gets the CMS file browser.
+     *
+     * @param cmsContext the cms context
+     * @return the CMS file browser
+     */
+    CMSHandlerProperties getCMSFileBrowser(CMSServiceCtx cmsContext) ;
+    
+    
+    
+    
+    
+    /**
+     * Define ECM commands.
+     *
+     * @return the ecm commands
      */
     Map<String, EcmCommand> getEcmCommands();
 

@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -62,7 +63,7 @@
                     </c:when>
                     
                     <c:otherwise>
-                        <jsp:include page="admin-${fragmentType.module.adminJSPName}.jsp" />
+                        <ttc:custom-include page="admin-${fragmentType.module.adminJSPName}.jsp" />
                     </c:otherwise>
                 </c:choose>
             </fieldset>

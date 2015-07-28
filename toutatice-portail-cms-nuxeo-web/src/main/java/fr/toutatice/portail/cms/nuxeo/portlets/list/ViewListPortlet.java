@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -72,16 +72,18 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CMSCustomizerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationUtils;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
  * List portlet.
- *
+ * 
  * @see CMSPortlet
  */
 public class ViewListPortlet extends CMSPortlet {
@@ -172,7 +174,7 @@ public class ViewListPortlet extends CMSPortlet {
 
     /**
      * Get current template.
-     *
+     * 
      * @param locale user locale
      * @param configuration configuration
      * @return current template
@@ -320,7 +322,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
-                
+
                 // Use of ElasticSearch
                 window.setProperty(USE_ES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("useES")));
 
@@ -382,10 +384,25 @@ public class ViewListPortlet extends CMSPortlet {
         ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
 
         if (template.getModule() != null) {
+
+            ClassLoader restoreLoader = null;
+
+
             try {
+                // save current class loader
+
+                if (template.getModule() instanceof CMSCustomizerModule) {
+                    restoreLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) template.getModule()).getCl());
+                }
+
                 template.getModule().processAction(nuxeoController.getPortalCtx(), window, request, response);
             } catch (Exception e) {
                 throw new PortletException(e);
+            } finally {
+                if (restoreLoader != null) {
+                    Thread.currentThread().setContextClassLoader(restoreLoader);
+                }
             }
         }
     }
@@ -393,7 +410,7 @@ public class ViewListPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     *
+     * 
      * @param request request
      * @param response response
      * @throws PortletException
@@ -489,30 +506,29 @@ public class ViewListPortlet extends CMSPortlet {
             }
 
 
-            
             // BeanShell
             if (configuration.isBeanShell()) {
-                
+
                 String orginalRequest = nuxeoRequest;
-                
+
 
                 nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
-                
-                /* many request (almost templates) generate null values which are not accepted bu Nuxeo
+
+                /*
+                 * many request (almost templates) generate null values which are not accepted bu Nuxeo
                  * It's due to the fact that they expect to be run in contextualized mode
                  * Instead of generatig an exception, it's better to return a null value
-                 * */
-                
-                if( nuxeoRequest != null && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*"))  {
+                 */
+
+                if (nuxeoRequest != null && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*")) {
                     // Is it a contextualization error
-                    if(  nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*"))  {
+                    if (nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*")) {
                         nuxeoRequest = null;
                     }
-                     
-                }
-                
 
-                
+                }
+
+
             }
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
@@ -582,7 +598,7 @@ public class ViewListPortlet extends CMSPortlet {
                 String schemas = template.getSchemas();
 
 
-                // Request page size
+                 // Request page size
                 int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
                 if (pageSize > 0) {
                     requestPageSize = pageSize;
@@ -682,7 +698,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                     if (anonymousAccess) {
                         Map<String, String> publicParams = new HashMap<String, String>();
-                        if (selectors != null)  {
+                        if (selectors != null) {
                             // Selectors
                             Map<String, List<String>> selectorsMap = PageSelectors.decodeProperties(selectors);
 
@@ -690,8 +706,8 @@ public class ViewListPortlet extends CMSPortlet {
                             publicParams.put("selectors", PageSelectors.encodeProperties(selectorsMap));
                         }
 
-                        String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, configuration.getRssReference(),
-                                publicParams, cmsPath, IPortalUrlFactory.PERM_LINK_TYPE_RSS);
+                        String url = nuxeoController.getPortalUrlFactory().getPermaLink(portalControllerContext, configuration.getRssReference(), publicParams,
+                                cmsPath, IPortalUrlFactory.PERM_LINK_TYPE_RSS);
                         request.setAttribute("rssLinkURL", url);
                     }
                 }
@@ -717,7 +733,25 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // v2.0.8 : customization
                 if (template.getModule() != null) {
-                    template.getModule().doView(portalControllerContext, window, request, response);
+                    
+                    ClassLoader restoreLoader = null;
+
+                    try {
+                        // save current class loader
+
+                        if (template.getModule() instanceof CMSCustomizerModule) {
+                            restoreLoader = Thread.currentThread().getContextClassLoader();
+                            Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) template.getModule()).getCl());
+                        }
+
+                        template.getModule().doView(portalControllerContext, window, request, response);
+                    } finally {
+                        if (restoreLoader != null) {
+                            Thread.currentThread().setContextClassLoader(restoreLoader);
+                        }
+                    }
+                    
+                    
                 }
             } else {
                 String bshTitle = (String) request.getAttribute("bsh.title");
@@ -750,6 +784,7 @@ public class ViewListPortlet extends CMSPortlet {
 
         response.setContentType("text/html");
 
+
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
         dispatcher.include(request, response);
     }
@@ -757,7 +792,7 @@ public class ViewListPortlet extends CMSPortlet {
 
     /**
      * BeanShell interpretation.
-     *
+     * 
      * @param nuxeoController Nuxeo controller
      * @param nuxeoRequest Nuxeo request
      * @return interpreted request
@@ -797,7 +832,7 @@ public class ViewListPortlet extends CMSPortlet {
 
     /**
      * Get list configuration.
-     *
+     * 
      * @param window portal window
      * @return list configuration
      */
@@ -809,7 +844,7 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Bean Shell interpretation
         configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
-        
+
         // Use of ElasticSearch
         configuration.setUseES(BooleanUtils.toBoolean(window.getProperty(USE_ES_WINDOW_PROPERTY)));
 

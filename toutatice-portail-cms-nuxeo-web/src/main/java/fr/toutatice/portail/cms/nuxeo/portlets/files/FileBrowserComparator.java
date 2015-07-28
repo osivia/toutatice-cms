@@ -126,8 +126,10 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
      * @param object2 object #2
      * @return comparison value
      */
-    private <T extends Comparable<T>> int compare(T object1, T object2) {
+    private <T extends Comparable<T>> int compare(T object1P, T object2P) {
         int result;
+        Object object1 = object1P;
+        Object object2 = object2P;        
         if (object1 == null) {
             result = -1;
         } else if (object2 == null) {
@@ -137,7 +139,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
             String string2 = (String) object2;
             result = string1.compareToIgnoreCase(string2);
         } else {
-            result = object1.compareTo(object2);
+            result = object1P.compareTo(object2P);
         }
         return result;
     }
