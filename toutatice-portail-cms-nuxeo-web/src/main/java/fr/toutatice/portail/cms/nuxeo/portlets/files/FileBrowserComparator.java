@@ -129,7 +129,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
     private <T extends Comparable<T>> int compare(T object1P, T object2P) {
         int result;
         Object object1 = object1P;
-        Object object2 = object2P;        
+        Object object2 = object2P;
         if (object1 == null) {
             result = -1;
         } else if (object2 == null) {

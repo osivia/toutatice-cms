@@ -241,8 +241,8 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @throws CMSException the CMS exception
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
-    
-    
+
+
 
     
     /**

@@ -80,18 +80,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
- 				<configuration>
+                <configuration>
                     <attachClasses>true</attachClasses>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>                
+                </configuration>
             </plugin>
-            
-            
-
             
         </plugins>
     </build>

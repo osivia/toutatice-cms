@@ -26,7 +26,6 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -47,6 +46,8 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.taskbar.TaskbarPlayer;
+import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -144,7 +145,7 @@ public class CMSService implements ICMSService {
     public void setCustomizer(DefaultCMSCustomizer customizer) {
         this.customizer = customizer;
     }
-    
+
     /**
      * Create CMS item.
      *
@@ -1934,7 +1935,7 @@ public class CMSService implements ICMSService {
     @Override
     public void unpublishDocument(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
         String reloadPagePath = pagePath;
-        
+
         // To consider remote proxy case
         cmsCtx.setDisplayLiveVersion("0");
         CMSItem cmsPublishedItem = this.getContent(cmsCtx, pagePath);
@@ -1944,7 +1945,7 @@ public class CMSService implements ICMSService {
         cmsCtx.setDisplayLiveVersion("1");
         CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
         Document doc = (Document) cmsItem.getNativeItem();
-        
+
         Document inputDoc = doc;
         boolean isRemoteProxy = !publishedDocPath.equals(doc.getPath());
         if(isRemoteProxy){
@@ -2066,29 +2067,30 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
-    
+
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
+    @Override
     public Map<String, String> getNxPathParameters(String cmsPath){
         Map<String, String> parameters = new HashMap<String, String>(0);
-        
+
         if(StringUtils.contains(cmsPath, "?")){
             String params = StringUtils.substringAfter(cmsPath, "?");
-            
+
             if(StringUtils.isNotBlank(params)){
                String[] keysValues = StringUtils.split(params, "&");
-               
+
                for(String keyValue : keysValues){
                    String[] keyNValue = StringUtils.split(keyValue, "=");
-                   
+
                    parameters.put(keyNValue[0], keyNValue[1]);
                }
-               
+
             }
-            
+
         }
-        
+
         return parameters;
     }
 
@@ -2160,7 +2162,7 @@ public class CMSService implements ICMSService {
         Document doc = (Document) cmsItem.getNativeItem();
 
         try {
-        	
+
         	this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
 
 
@@ -2175,13 +2177,13 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String getParentPath(String documentPath) {
-        
+
         if (StringUtils.endsWith(documentPath, SLASH)) {
             documentPath = StringUtils.removeEnd(documentPath, SLASH);
         }
@@ -2190,5 +2192,55 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<TaskbarTask> getTaskbarNavigationTasks(CMSServiceCtx cmsContext, String basePath, String currentPath) throws CMSException {
+        // Navigations items
+        List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
+
+        // Players
+        Map<String, TaskbarPlayer> taskbarPlayers = this.customizer.getNavigationTaskbarPlayers();
+
+
+        // Tasks
+        List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
+        for (CMSItem navigationItem : navigationItems) {
+            if ("1".equals(navigationItem.getProperties().get("menuItem"))) {
+                TaskbarTask task = new TaskbarTask();
+
+                // Document
+                Document document = (Document) navigationItem.getNativeItem();
+                // Type
+                CMSItemType type = navigationItem.getType();
+
+                // Identifier
+                task.setId(document.getId());
+                // Name
+                task.setName(document.getTitle());
+                // Icon
+                task.setIcon(type.getGlyph());
+                // Taskbar player
+                TaskbarPlayer taskbarPlayer = taskbarPlayers.get(type.getName());
+                task.setTaskbarPlayer(taskbarPlayer);
+                // Path
+                task.setPath(document.getPath());
+
+                tasks.add(task);
+            }
+        }
+
+        return tasks;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<TaskbarTask> getTaskbarCustomTasks(CMSServiceCtx cmsContext) {
+        return new ArrayList<TaskbarTask>(this.customizer.getTaskbarTasks(cmsContext));
+    }
 
 }
