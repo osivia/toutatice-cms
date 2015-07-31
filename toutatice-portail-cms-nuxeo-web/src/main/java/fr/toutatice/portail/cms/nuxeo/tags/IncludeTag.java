@@ -18,7 +18,8 @@ import org.nuxeo.ecm.automation.client.model.Document;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationUtils;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
  * Transform HTML content tag.
@@ -75,7 +76,7 @@ public class IncludeTag extends SimpleTagSupport {
                 path = parentPath + page;
             }
             
-            String customName = CustomizationUtils.customizeJSP( path, nuxeoController.getPortletCtx(), nuxeoController.getRequest());
+            String customName = ((DefaultCMSCustomizer)nuxeoController.getNuxeoCMSService().getCMSCustomizer()).getPluginMgr().customizeJSP( path, nuxeoController.getPortletCtx(), nuxeoController.getRequest());
 
             pageContext.include(customName);
             

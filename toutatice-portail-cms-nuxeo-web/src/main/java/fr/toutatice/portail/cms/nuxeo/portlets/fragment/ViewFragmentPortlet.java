@@ -45,7 +45,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CMSCustomizerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationUtils;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 
 /**
  * View fragment portlet

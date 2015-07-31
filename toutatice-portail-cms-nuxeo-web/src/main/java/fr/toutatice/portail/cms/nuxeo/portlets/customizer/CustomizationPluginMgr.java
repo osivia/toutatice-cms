@@ -19,12 +19,17 @@ import javax.portlet.RenderRequest;
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
+
+import sun.util.logging.resources.logging;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
@@ -35,27 +40,39 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 /**
  * The Class CustomizationUtils.
  */
-public class CustomizationUtils {
+public class CustomizationPluginMgr implements ICMSCustomizationObserver{
+    
+    private static final Log logger = LogFactory.getLog(CustomizationPluginMgr.class);    
 
 
- 
+    DefaultCMSCustomizer customizer;
+    
+    
+    public CustomizationPluginMgr(DefaultCMSCustomizer customizer) {
+        super();
+        this.customizer = customizer;
+        
+        getCustomizationService().setCMSObserver(this);
+    }
+
+
     /** The configuration cache ts. */
-    private static Hashtable<MultiKey, Long> configurationCacheTs = new Hashtable<MultiKey, Long>();
+    private  Hashtable<MultiKey, Long> configurationCacheTs = new Hashtable<MultiKey, Long>();
     
     /** The customization cache ts. */
-    private static Hashtable<Locale, Long> customizationCacheTs = new Hashtable<Locale, Long>();
+    private  Hashtable<Locale, Long> customizationCacheTs = new Hashtable<Locale, Long>();
     
     /** The customization attributes cache. */
-    private static Map<Locale, Map<String, Object>> customizationAttributesCache = new Hashtable<Locale, Map<String, Object>>();
+    private  Map<Locale, Map<String, Object>> customizationAttributesCache = new Hashtable<Locale, Map<String, Object>>();
     
-    /** The dest dispatcher. */
-    private static Map<String, String> destDispatcher = new Hashtable<String, String>();
+    /** The dest dispatcher for customized JSP */
+    private  Map<String, String> destDispatcher = new Hashtable<String, String>();
     
-    /** The modules. */
-    private static List<IPlayerModule> dynamicModules = new ArrayList<IPlayerModule>();
+    /** The modules that defines players . */
+    private  List<IPlayerModule> dynamicModules = new ArrayList<IPlayerModule>();
 
     /** Portal URL factory. */
-    private static ICustomizationService customizationService;
+    private  ICustomizationService customizationService;
 
 
     private static final String CUSTOM_JSP_EXTENTION = "-custom-";
@@ -67,7 +84,7 @@ public class CustomizationUtils {
      *
      * @return the customization service
      */
-    public static ICustomizationService getCustomizationService() {
+    public  ICustomizationService getCustomizationService() {
         if (customizationService == null) {
             customizationService = (ICustomizationService) Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
         }
@@ -83,25 +100,16 @@ public class CustomizationUtils {
      * @param locale the locale
      * @return true, if successful
      */
-    private static boolean hasToBeUpdated(String datasName, Locale locale) {
+    private  boolean hasToBeUpdated(String datasName, Locale locale) {
 
-        // TODO : optimiser dans request
-
-        ICustomizationService customizationService = getCustomizationService();
 
         MultiKey cacheKey = new MultiKey(datasName, locale);
         Long updateTs = configurationCacheTs.get(cacheKey);
-        Long firstCustomization = customizationService.getFirstCustomizationTimestamp("osivia.customizer.cms.id", locale);
+
 
         if (updateTs == null)
             return true;
 
-
-        if (firstCustomization.longValue() == 0)
-            return true;
-
-        if (updateTs.compareTo(firstCustomization) < 0)
-            return true;
 
         return false;
 
@@ -114,22 +122,17 @@ public class CustomizationUtils {
      * @param locale the locale
      * @return the customization attributes
      */
-    private static Map<String, Object> getCustomizationAttributes(Locale locale) {
+    private  Map<String, Object> getCustomizationAttributes(Locale locale) {
 
         Long updateTs = customizationCacheTs.get(locale);
 
 
-        Long firstCustomization = getCustomizationService().getFirstCustomizationTimestamp("osivia.customizer.cms.id", locale);
-
+  
 
         boolean updateCache = false;
         if (updateTs == null) {
             updateCache = true;
-        } else if (firstCustomization.longValue() == 0) {
-            updateCache = true;
-        } else if (updateTs.compareTo(firstCustomization) < 0) {
-            updateCache = true;
-        }
+        } 
 
         if (updateCache) {
             Map<String, Object> customizationAttributes = new Hashtable<String, Object>();
@@ -154,7 +157,7 @@ public class CustomizationUtils {
      * @param datasName the datas name
      * @param locale the locale
      */
-    public static void update(String datasName, Locale locale) {
+    public  void update(String datasName, Locale locale) {
 
         MultiKey cacheKey = new MultiKey(datasName, locale);
         long updateTs = System.currentTimeMillis();
@@ -172,7 +175,7 @@ public class CustomizationUtils {
      * @return the string
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public static String customizeJSP(String name, PortletContext portletContext, PortletRequest request) throws IOException {
+    public  String customizeJSP(String name, PortletContext portletContext, PortletRequest request) throws IOException {
 
         if (hasToBeUpdated("JSP-" + name, null)) {
 
@@ -224,7 +227,7 @@ public class CustomizationUtils {
      * @param customizer the customizer
      * @return the list
      */
-    public static List<ListTemplate> customizeListTemplates(Locale locale, DefaultCMSCustomizer customizer) {
+    public  List<ListTemplate> customizeListTemplates(Locale locale) {
 
 
         List<ListTemplate> updatedTemplates = null;
@@ -259,7 +262,7 @@ public class CustomizationUtils {
      * @param customizer the customizer
      * @return the map
      */
-    public static Map<String, FragmentType> customizeFragments(Locale locale, DefaultCMSCustomizer customizer) {
+    public  Map<String, FragmentType> customizeFragments(Locale locale) {
 
 
         Map<String, FragmentType> updatedFragments = null;
@@ -298,7 +301,7 @@ public class CustomizationUtils {
      * @param customizer the customizer
      * @return the map
      */
-    public static Map<String, CMSItemType> customizeCMSItemTypes(DefaultCMSCustomizer customizer) {
+    public  Map<String, CMSItemType> customizeCMSItemTypes() {
         Map<String, CMSItemType> updatedTypes = null;
 
         if (hasToBeUpdated("TYPE", null)) {
@@ -341,13 +344,12 @@ public class CustomizationUtils {
      * @param ctx the ctx
      * @return the list
      */
-    public static List<IPlayerModule> customizeModules(CMSServiceCtx ctx) {
+    public  List<IPlayerModule> customizeModules(CMSServiceCtx ctx) {
         if (hasToBeUpdated("MODULES", Locale.getDefault())) {
             Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
             List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get("osivia.customizer.cms.modules");
             
              dynamicModules.clear();
-
              if( players != null)
                 dynamicModules.addAll(players);
 
@@ -356,6 +358,24 @@ public class CustomizationUtils {
 
         return dynamicModules;
 
+    }
+
+
+    @Override
+    public void notifyDeployment() {
+        // Init all local caches
+
+        configurationCacheTs = new Hashtable<MultiKey, Long>();
+        
+        customizationCacheTs = new Hashtable<Locale, Long>();
+        
+        customizationAttributesCache = new Hashtable<Locale, Map<String, Object>>();
+        
+        destDispatcher = new Hashtable<String, String>();
+        
+        dynamicModules = new ArrayList<IPlayerModule>();
+        
+        
     }
 
 

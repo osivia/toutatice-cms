@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -213,11 +214,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private INotificationsService notificationsService;
     /** Internationalization service */
     private IInternationalizationService internationalizationService;
+    
+    /** The plugin mgr. */
+    private CustomizationPluginMgr pluginMgr;
 
-    /** CMS item types. */
-    private Map<String, CMSItemType> cmsItemTypes;
-    /** CMS Players. */
-    private final Map<String, IPlayer> players;
+    
+
+
     /** Avatar map. */
     private Map<String, String> avatarMap = new ConcurrentHashMap<String, String>();
     /** binary map. */
@@ -225,14 +228,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** binary delegation */
     public static Map<String, Map<String,BinaryDelegation>> delegations = new ConcurrentHashMap<String, Map<String,BinaryDelegation>>() ;
 
+    private Map<String, IPlayer> players = new ConcurrentHashMap<String, IPlayer>();
+    
     /** The liste templates. */
     private Map<Locale, List<ListTemplate>> listeTemplates = new ConcurrentHashMap<Locale, List<ListTemplate>>();
 
     /** The fragments. */
     private Map<Locale, Map<String, FragmentType>> listeFragments = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
 
+    /** The cms item types. */
+    Map<String, CMSItemType> cmsItemTypes = new ConcurrentHashMap<String, CMSItemType>();
+    
+    
     /** Taskbar tasks. */
     private List<TaskbarTask> tasks;
+    
     /** Navigation taskbar players. */
     private Map<String, TaskbarPlayer> navigationTaskbarPlayers;
 
@@ -263,8 +273,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 ICustomizationService.MBEAN_NAME);
 
         // initialise le player view document par défaut
-        this.players = new HashMap<String, IPlayer>();
+        this.players = new Hashtable<String, IPlayer>();
         this.players.put("defaultPlayer", new DefaultPlayer(this));
+        
+        // Plugin
+        pluginMgr = new CustomizationPluginMgr(this);
 
         try {
             // Initialisé ici pour résoudre problème de classloader
@@ -371,6 +384,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return BrowserAdapter.getInstance(this.cmsService);
     }
 
+    
+    
+    /**
+     * Gets the plugin mgr.
+     *
+     * @return the plugin mgr
+     */
+    public CustomizationPluginMgr getPluginMgr() {
+        return pluginMgr;
+    }
 
     /**
      * {@inheritDoc}
@@ -392,7 +415,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final List<ListTemplate> getListTemplates(Locale locale) {
 
-        List<ListTemplate> updatedTemplates = CustomizationUtils.customizeListTemplates(locale, this);
+        List<ListTemplate> updatedTemplates = pluginMgr.customizeListTemplates(locale);
 
         if( updatedTemplates != null  ) {
 
@@ -434,7 +457,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
 
-        Map<String, FragmentType> updatedFragments = CustomizationUtils.customizeFragments(locale, this);
+        Map<String, FragmentType> updatedFragments = pluginMgr.customizeFragments(locale);
 
         if( updatedFragments != null  ) {
 
@@ -820,7 +843,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
 
-        List<IPlayerModule> modules = CustomizationUtils.customizeModules(cmsContext);
+        List<IPlayerModule> modules = pluginMgr.customizeModules(cmsContext);
 
         for (IPlayerModule icmsCustomizerModule : modules) {
             CMSHandlerProperties properties = icmsCustomizerModule.getCMSPlayer(cmsContext, this.getCmsService());
@@ -1480,7 +1503,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Map<String, CMSItemType> getCMSItemTypes() {
 
-        Map<String, CMSItemType> updatedDocTypes = CustomizationUtils.customizeCMSItemTypes(this);
+        Map<String, CMSItemType> updatedDocTypes = pluginMgr.customizeCMSItemTypes();
 
         if( updatedDocTypes != null  ) {
 
@@ -1964,7 +1987,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	@Override
 	public Map<String, EcmCommand> getEcmCommands() {
 
-		Map<String, EcmCommand> commands = new HashMap<String, EcmCommand>();
+		Map<String, EcmCommand> commands = new ConcurrentHashMap<String, EcmCommand>();
 
 		commands.put(EcmCommonCommands.lock.name(), new LockCommand(this.getNotificationsService(), this.getInternationalizationService()));
 		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(this.getNotificationsService(), this.getInternationalizationService()));
@@ -1987,7 +2010,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public Map<String, TaskbarPlayer> getNavigationTaskbarPlayers() {
         if (this.navigationTaskbarPlayers == null) {
-            this.navigationTaskbarPlayers = new HashMap<String, TaskbarPlayer>();
+            this.navigationTaskbarPlayers = new ConcurrentHashMap<String, TaskbarPlayer>();
 
             // Folder
             TaskbarPlayer folderPlayer = this.getFolderTaskbarPlayer();
