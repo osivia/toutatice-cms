@@ -230,14 +230,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     private Map<String, IPlayer> players = new ConcurrentHashMap<String, IPlayer>();
     
-    /** The liste templates. */
-    private Map<Locale, List<ListTemplate>> listeTemplates = new ConcurrentHashMap<Locale, List<ListTemplate>>();
-
-    /** The fragments. */
-    private Map<Locale, Map<String, FragmentType>> listeFragments = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
-
-    /** The cms item types. */
-    Map<String, CMSItemType> cmsItemTypes = new ConcurrentHashMap<String, CMSItemType>();
     
     
     /** Taskbar tasks. */
@@ -277,7 +269,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.players.put("defaultPlayer", new DefaultPlayer(this));
         
         // Plugin
-        pluginMgr = new CustomizationPluginMgr(this);
+        this.pluginMgr = new CustomizationPluginMgr(this);
 
         try {
             // Initialisé ici pour résoudre problème de classloader
@@ -415,14 +407,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final List<ListTemplate> getListTemplates(Locale locale) {
 
-        List<ListTemplate> updatedTemplates = pluginMgr.customizeListTemplates(locale);
-
-        if( updatedTemplates != null  ) {
-
-            this.listeTemplates.put(locale, updatedTemplates);
-        }
-
-        return this.listeTemplates.get(locale);
+        return pluginMgr.customizeListTemplates(locale);
     }
 
 
@@ -457,20 +442,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
 
-        Map<String, FragmentType> updatedFragments = pluginMgr.customizeFragments(locale);
+        return pluginMgr.getFragments(locale);
 
-        if( updatedFragments != null  ) {
 
-            this.listeFragments.put(locale, updatedFragments);
-        }
-
-        return this.listeFragments.get(locale);
     }
 
 
 
 
 
+    /**
+     * Inits the list fragments.
+     *
+     * @param locale the locale
+     * @return the list
+     */
     public List<FragmentType> initListFragments(Locale locale) {
 
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
@@ -1503,13 +1489,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Map<String, CMSItemType> getCMSItemTypes() {
 
-        Map<String, CMSItemType> updatedDocTypes = pluginMgr.customizeCMSItemTypes();
+        return pluginMgr.customizeCMSItemTypes();
 
-        if( updatedDocTypes != null  ) {
-
-            this.cmsItemTypes = updatedDocTypes;
-        }
-        return this.cmsItemTypes;
     }
 
     protected List<CMSItemType> getCustomizedCMSItemTypes() {
