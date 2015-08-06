@@ -1,12 +1,13 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="toutatice" prefix="ttc"%>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
 
 <portlet:defineObjects />
-
+b
 
 <div class="document clearfix">
     <c:choose>
@@ -25,7 +26,8 @@
 		                
 		                <c:otherwise>
 		                    <!-- Document view -->
-		                    <jsp:include page="dispatch.jsp" />
+		                    VIEW : ${dispatchJsp}
+		                    <ttc:custom-include page="view-${dispatchJsp}.jsp" />
 		                    
 		                    <!-- Document attachments view -->
 		                    <c:if test="${attachments}">

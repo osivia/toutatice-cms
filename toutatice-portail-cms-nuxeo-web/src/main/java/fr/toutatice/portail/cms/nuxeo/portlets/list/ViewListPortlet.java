@@ -72,7 +72,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CMSCustomizerModule;
+import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -391,9 +391,9 @@ public class ViewListPortlet extends CMSPortlet {
             try {
                 // save current class loader
 
-                if (template.getModule() instanceof CMSCustomizerModule) {
+                if (template.getModule() instanceof PluginModule) {
                     restoreLoader = Thread.currentThread().getContextClassLoader();
-                    Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) template.getModule()).getCl());
+                    Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
                 }
 
                 template.getModule().processAction(nuxeoController.getPortalCtx(), window, request, response);
@@ -739,9 +739,9 @@ public class ViewListPortlet extends CMSPortlet {
                     try {
                         // save current class loader
 
-                        if (template.getModule() instanceof CMSCustomizerModule) {
+                        if (template.getModule() instanceof PluginModule) {
                             restoreLoader = Thread.currentThread().getContextClassLoader();
-                            Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) template.getModule()).getCl());
+                            Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
                         }
 
                         template.getModule().doView(portalControllerContext, window, request, response);

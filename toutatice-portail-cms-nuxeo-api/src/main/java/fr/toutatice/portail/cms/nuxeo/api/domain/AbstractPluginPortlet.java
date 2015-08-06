@@ -25,7 +25,7 @@ import org.osivia.portal.core.cms.CMSItemType;
 /**
  * The Class CMSCustomizerPortlet.
  */
-public abstract class CMSCustomizerPortlet extends GenericPortlet {
+public abstract class AbstractPluginPortlet extends GenericPortlet {
 
 
     /** Customization modules repository. */
@@ -44,7 +44,7 @@ public abstract class CMSCustomizerPortlet extends GenericPortlet {
     /**
      * Constructor.
      */
-    public CMSCustomizerPortlet() {
+    public AbstractPluginPortlet() {
         super();
         this.metadatas = this.generateMetadatas();
 

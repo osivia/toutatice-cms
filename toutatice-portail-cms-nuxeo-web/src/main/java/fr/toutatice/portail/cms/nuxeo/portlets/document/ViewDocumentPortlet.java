@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -64,7 +65,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
@@ -101,11 +101,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public static final String HIDE_METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
     /** Hide attachment indicator window property name. */
     public static final String HIDE_ATTACHMENTS_WINDOW_PROPERTY = "osivia.document.hideAttachments";
-
+    /** Dispatch to JSP */
+    public static final String DISPATCH_JSP = "osivia.document.dispatch.jsp";
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
     /** View path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
+
 
 
     /** Nuxeo service. */
@@ -324,7 +326,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             if (StringUtils.isNotBlank(path)) {
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
-
+                
                 // Display only remote sections indicator
                 boolean onlyRemoteSections = BooleanUtils.toBoolean(window.getProperty(ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY));
                 request.setAttribute("onlyRemoteSections", onlyRemoteSections);
@@ -351,6 +353,25 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 Document document = nuxeoController.fetchDocument(path);
                 nuxeoController.setCurrentDoc(document);
 
+                // View dispatched
+                if(window.getProperty(DISPATCH_JSP) != null) {
+                	request.setAttribute("dispatchJsp", window.getProperty(DISPATCH_JSP));
+                }
+                else {
+                	String docType = StringUtils.lowerCase(document.getType());
+                	
+                	String realPath = getPortletContext().getRealPath("/WEB-INF/jsp/document/view-" + docType + ".jsp" );
+                	File file = new File(realPath);
+                	if(file.exists()) {
+                		request.setAttribute("dispatchJsp", docType);
+                	}
+                	else {
+                		request.setAttribute("dispatchJsp", "default");
+                	}
+                	
+					
+                }
+                
                 // DTO
                 DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                 request.setAttribute("document", documentDTO);

@@ -41,7 +41,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CMSCustomizerModule;
+import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -121,9 +121,9 @@ public class ViewFragmentPortlet extends CMSPortlet {
                             try {
                                 // save current class loader
 
-                                if (fragmentType.getModule() instanceof CMSCustomizerModule) {
+                                if (fragmentType.getModule() instanceof PluginModule) {
                                     restoreLoader = Thread.currentThread().getContextClassLoader();
-                                    Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) fragmentType.getModule()).getCl());
+                                    Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
                                 }
 
                                 // Specific fragment admin action
@@ -185,9 +185,9 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 try {
                     // save current class loader
 
-                    if (fragmentType.getModule() instanceof CMSCustomizerModule) {
+                    if (fragmentType.getModule() instanceof PluginModule) {
                         restoreLoader = Thread.currentThread().getContextClassLoader();
-                        Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) fragmentType.getModule()).getCl());
+                        Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
                     }
 
                     // Specific fragment admin action
@@ -252,9 +252,9 @@ public class ViewFragmentPortlet extends CMSPortlet {
                     try {
                         // save current class loader
 
-                        if (fragmentType.getModule() instanceof CMSCustomizerModule) {
+                        if (fragmentType.getModule() instanceof PluginModule) {
                             restoreLoader = Thread.currentThread().getContextClassLoader();
-                            Thread.currentThread().setContextClassLoader(((CMSCustomizerModule) fragmentType.getModule()).getCl());
+                            Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
                         }
 
                         fragmentType.getModule().doView(portalControllerContext);

@@ -8,7 +8,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
-public class CMSCustomizerModule {
+public class PluginModule {
     
 
 
@@ -30,7 +30,7 @@ public class CMSCustomizerModule {
 
 
 
-    public CMSCustomizerModule(PortletContext portletContext) {
+    public PluginModule(PortletContext portletContext) {
         super();
         this.cl = Thread.currentThread().getContextClassLoader();
         this.portletContext = portletContext;
