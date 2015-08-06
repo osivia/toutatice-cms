@@ -7,7 +7,6 @@
 
 
 <portlet:defineObjects />
-b
 
 <div class="document clearfix">
     <c:choose>
@@ -26,7 +25,6 @@ b
 		                
 		                <c:otherwise>
 		                    <!-- Document view -->
-		                    VIEW : ${dispatchJsp}
 		                    <ttc:custom-include page="view-${dispatchJsp}.jsp" />
 		                    
 		                    <!-- Document attachments view -->
