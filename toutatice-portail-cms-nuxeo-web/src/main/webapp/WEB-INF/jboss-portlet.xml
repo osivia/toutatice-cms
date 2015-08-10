@@ -135,6 +135,10 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
+        
+        <header-content>
+            <script type="text/javascript" src="/js/search.min.js"></script>
+        </header-content>
 
         <portlet-info>
             <icon>
@@ -241,6 +245,16 @@
     <!-- Move document -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-move</portlet-name>
+    </portlet>
+    
+    
+    <!-- Reorder documents -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-reorder</portlet-name>
+        
+        <header-content>
+            <script type="text/javascript" src="/js/reorder.min.js"></script>
+        </header-content>
     </portlet>
 
 </portlet-app>

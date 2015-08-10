@@ -76,6 +76,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
@@ -242,7 +243,9 @@ public class MenuBarFormater {
 
                 // Move
                 this.getMoveLink(portalControllerContext, cmsContext, menubar, bundle);
-                // Suppression
+                // Reorder
+                this.getReorderLink(portalControllerContext, cmsContext, menubar, bundle);
+                // Delete
                 this.getDeleteLink(portalControllerContext, cmsContext, menubar, bundle);
 
                 // Nuxeo administration
@@ -337,22 +340,22 @@ public class MenuBarFormater {
 
         return false;
     }
-    
+
     /**
      * Checks if document in context has webId property.
-     * 
+     *
      * @param cmsCtx context
      * @return true if document in context has webId property.
      */
     public boolean hasWebId(CMSServiceCtx cmsCtx){
         boolean has = false;
-        
+
         Document document = (Document) cmsCtx.getDoc();
         if(document != null){
-            String webid = (String) document.getString("ttc:webid");
+            String webid = document.getString("ttc:webid");
             has = StringUtils.isNotBlank(webid);
         }
-        
+
         return has;
     }
 
@@ -1051,7 +1054,7 @@ public class MenuBarFormater {
 
             String editLabel = bundle.getString("EDIT");
 
-            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
             // Menubar item
             MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
@@ -1306,6 +1309,63 @@ public class MenuBarFormater {
 
                         MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL, null,
                                 null, "fancyframe_refresh");
+                        item.setAjaxDisabled(true);
+
+                        menubar.add(item);
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Get reorder link.
+     *
+     * @param portalControllerContext portal controller context
+     * @param cmsContext CMS context
+     * @param menubar menubar
+     * @param bundle internationalization bundle
+     * @throws CMSException
+     */
+    protected void getReorderLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
+            throws CMSException {
+        if (cmsContext.getRequest().getRemoteUser() == null) {
+            return;
+        }
+
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        if (document != null) {
+            // Publication infos
+            CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+
+            if (this.isRemoteProxy(cmsContext, pubInfos)) {
+                return;
+            }
+
+            if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                // CMS item type
+                CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+
+                if ((cmsItemType != null) && cmsItemType.isOrdered()) {
+                    // Reorder documents popup URL
+                    String reorderDocumentsURL;
+                    try {
+                        Map<String, String> properties = new HashMap<String, String>();
+                        properties.put(ReorderDocumentsPortlet.PATH_WINDOW_PROPERTY, document.getPath());
+
+                        reorderDocumentsURL = this.urlFactory.getStartPortletUrl(portalControllerContext,
+                                "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties, true);
+                    } catch (PortalException e) {
+                        reorderDocumentsURL = null;
+                    }
+
+                    if (reorderDocumentsURL != null) {
+                        MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+
+                        MenubarItem item = new MenubarItem("REORDER", bundle.getString("REORDER"), "glyphicons glyphicons-sorting", parent, 3,
+                                reorderDocumentsURL, null, null, "fancyframe_refresh");
                         item.setAjaxDisabled(true);
 
                         menubar.add(item);
@@ -1783,7 +1843,7 @@ public class MenuBarFormater {
         // URL
         String url;
         String permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
-        
+
         // url of type share for Workspaces and local proxies
         if (this.hasWebId(cmsContext)) {
 
@@ -1791,7 +1851,7 @@ public class MenuBarFormater {
                 permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
             }
         }
-        
+
         ExtendedParameters extendedParameters = null;
         if (!StringUtils.contains(path, "?")) {
 
@@ -1811,7 +1871,7 @@ public class MenuBarFormater {
                 }
             }
         }
-         
+
         try {
             if(extendedParameters != null){
                 url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType, extendedParameters);

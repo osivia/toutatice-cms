@@ -309,6 +309,27 @@
             <title>Move document</title>
         </portlet-info>
     </portlet>
+    
+    
+    <!-- Reorder documents -->
+    <portlet>
+        <description>Reorder documents portlet</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-reorder</portlet-name>
+        <display-name>Reorder documents</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>Reorder documents</title>
+        </portlet-info>
+    </portlet>
 
 
     <public-render-parameter>
