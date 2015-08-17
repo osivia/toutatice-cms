@@ -24,8 +24,8 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SummaryEditableWindow;
 
 

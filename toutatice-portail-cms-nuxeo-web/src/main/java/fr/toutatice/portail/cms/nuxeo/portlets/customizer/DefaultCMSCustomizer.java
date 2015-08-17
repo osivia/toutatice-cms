@@ -97,6 +97,7 @@ import fr.toutatice.portail.cms.nuxeo.api.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -108,7 +109,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.IPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
@@ -125,7 +125,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SliderTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
@@ -137,6 +136,9 @@ import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
 
 /**
  * Default CMS customizer.
@@ -160,15 +162,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** List template contextual links. */
     public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";
 
-    /** List template slider. */
-    public static final String LIST_TEMPLATE_SLIDER = "slider";
-
     /** Default schemas. */
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
-    /** Slider schemas. */
-    public static final String SLIDER_SCHEMAS = "dublincore, toutatice, picture, annonce";
-
-
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
@@ -196,8 +191,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private NuxeoConnectionProperties nuxeoConnection;
     /** XML parser. */
     private XMLReader parser;
-    /** Editable window adapter. */
-    private EditableWindowAdapter editableWindowAdapter;
 
     /** Nuxeo comments service. */
     private INuxeoCommentsService commentsService;
@@ -354,17 +347,39 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
+//    /**
+//     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables.
+//     *
+//     * @return Instance du EditableWindowAdapter
+//     */
+//    public EditableWindowAdapter getEditableWindowAdapter() {
+//        if (this.editableWindowAdapter == null) {
+//            this.editableWindowAdapter = new EditableWindowAdapter();
+//        }
+//        return this.editableWindowAdapter;
+//    }
+    
+
+
     /**
-     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables.
-     *
-     * @return Instance du EditableWindowAdapter
+     * {@inheritDoc}
      */
-    public EditableWindowAdapter getEditableWindowAdapter() {
-        if (this.editableWindowAdapter == null) {
-            this.editableWindowAdapter = new EditableWindowAdapter();
-        }
-        return this.editableWindowAdapter;
+    @Override
+    public final Map<String,EditableWindow> getEditableWindows(Locale locale) {
+        return pluginMgr.customizeEditableWindows(locale);
     }
+
+
+    public Map<String,EditableWindow> initListEditableWindows(Locale locale) {
+
+    	Map<String,EditableWindow> map = new HashMap<String, EditableWindow>();
+    	map.put("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
+    	map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+    	map.put("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
+    	
+    	return map;
+    }
+
 
 
     /**
@@ -428,10 +443,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         templates.add(new ListTemplate(LIST_TEMPLATE_EDITORIAL, bundle.getString("LIST_TEMPLATE_EDITORIAL"), DEFAULT_SCHEMAS));
         // Contextual links
         templates.add(new ListTemplate(LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
-        // Slider
-        ListTemplate slider = new ListTemplate(LIST_TEMPLATE_SLIDER, bundle.getString("LIST_TEMPLATE_SLIDER"), SLIDER_SCHEMAS);
-        slider.setModule(new SliderTemplateModule());
-        templates.add(slider);
+
 
         return templates;
     }

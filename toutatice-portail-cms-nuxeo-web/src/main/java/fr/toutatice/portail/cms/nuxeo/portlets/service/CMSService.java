@@ -75,6 +75,8 @@ import org.osivia.portal.core.profils.IProfilManager;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -86,7 +88,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.EditableWindowAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
@@ -101,8 +102,6 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexP
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
@@ -1244,7 +1243,7 @@ public class CMSService implements ICMSService {
                 // Fragments
                 PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
                 if ((fragments != null) && !fragments.isEmpty()) {
-                    EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
+                    Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
 
                     // Region windows count
                     int regionWindowsCount = 0;
@@ -1257,7 +1256,7 @@ public class CMSService implements ICMSService {
                         if (inheritedRegions.get(regionId) == null) {
                             String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
 
-                            EditableWindow editableWindow = adapter.getType(category);
+                            EditableWindow editableWindow = editableWindows.get(category);
                             if (editableWindow != null) {
                                 // Window creation
                                 int windowId = windowsCount + regionWindowsCount;
@@ -1311,10 +1310,6 @@ public class CMSService implements ICMSService {
         }
         navCMSContext.setScope(navigationScope);
 
-        // Window adapter
-        EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
-
-
         // Overrided regions
         Set<String> overridedRegions = this.getPageOverridedRegions(cmsContext, path, publishSpacePath);
 
@@ -1324,8 +1319,7 @@ public class CMSService implements ICMSService {
 
         String parentPath = CMSObjectPath.parse(path).getParent().toString();
         while (StringUtils.startsWith(parentPath, publishSpacePath)) {
-            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, adapter,
-                    parentPath, publishSpacePath, editionMode);
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, parentPath, publishSpacePath, editionMode);
             inheritedRegions.putAll(pagePropagatedRegions);
             overridedRegions.addAll(pagePropagatedRegions.keySet());
 
@@ -1344,8 +1338,7 @@ public class CMSService implements ICMSService {
         boolean directInheritance = (publishSpacePath != null) && (StringUtils.startsWith(path, sitePath));
         if (!directInheritance) {
             // Add defaut page propagated region windows in case of indirect inheritance
-            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, adapter,
-                    sitePath, sitePath, editionMode);
+            Map<String, List<CMSEditableWindow>> pagePropagatedRegions = this.getPagePropagatedRegions(navCMSContext, overridedRegions, windowId, sitePath, sitePath, editionMode);
             inheritedRegions.putAll(pagePropagatedRegions);
         }
 
@@ -1397,7 +1390,7 @@ public class CMSService implements ICMSService {
      * @return page propagated regions
      */
     private Map<String, List<CMSEditableWindow>> getPagePropagatedRegions(CMSServiceCtx cmsContext, Set<String> overridedRegions, int windowsCount,
-            EditableWindowAdapter adapter, String path, String publishSpacePath, boolean editionMode) {
+            String path, String publishSpacePath, boolean editionMode) {
         Map<String, List<CMSEditableWindow>> pagePropagatedRegions = new HashMap<String, List<CMSEditableWindow>>();
 
         try {
@@ -1481,7 +1474,10 @@ public class CMSService implements ICMSService {
                             if (propagatedRegions.contains(regionId)) {
                                 String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
 
-                                EditableWindow editableWindow = adapter.getType(category);
+                                Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
+                                
+                                EditableWindow editableWindow = editableWindows.get(category);
+                                
                                 if (editableWindow != null) {
                                     List<CMSEditableWindow> windows = pagePropagatedRegions.get(regionId);
 
@@ -1745,8 +1741,8 @@ public class CMSService implements ICMSService {
 
                     String fragmentCategory = (String) fragments.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
 
-                    EditableWindowAdapter adapter = this.customizer.getEditableWindowAdapter();
-                    EditableWindow ew = adapter.getType(fragmentCategory);
+                    Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsCtx.getServerInvocation().getRequest().getLocales()[0]);
+                    EditableWindow ew = editableWindows.get(fragmentCategory);
 
                     if (ew != null) {
 

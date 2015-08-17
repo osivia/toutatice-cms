@@ -33,6 +33,7 @@ import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
@@ -223,6 +224,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Map<String, FragmentType> getFragmentTypes(Locale locale);
 
 
+    /**
+     * Get editable window list.
+     *
+     * @param locale the locale
+     * @return editable winsow list
+     */
+    Map<String,EditableWindow> getEditableWindows(Locale locale);
+    
     /**
      * Get menu templates.
      *

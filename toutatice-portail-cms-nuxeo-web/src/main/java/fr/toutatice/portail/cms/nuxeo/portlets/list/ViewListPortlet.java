@@ -60,7 +60,6 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
@@ -72,13 +71,13 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlets.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
@@ -86,42 +85,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
  * 
  * @see CMSPortlet
  */
-public class ViewListPortlet extends CMSPortlet {
-
-    /** Nuxeo request window property name. */
-    public static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
-    /** Bean Shell interpretation indicator window property name. */
-    public static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
-    /** Use of ElasticSearch indicator window property */
-    public static final String USE_ES_WINDOW_PROPERTY = "osivia.useES";
-    /** Version window property name. */
-    public static final String VERSION_WINDOW_PROPERTY = Constants.WINDOW_PROP_VERSION;
-    /** Content filter window property name. */
-    public static final String CONTENT_FILTER_WINDOW_PROPERTY = InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY;
-    /** Scope window property name. */
-    public static final String SCOPE_WINDOW_PROPERTY = Constants.WINDOW_PROP_SCOPE;
-    /** Hide metadata indicator window property name. */
-    public static final String METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
-    /** Nuxeo request display indicator window property name. */
-    public static final String NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY = "osivia.displayNuxeoRequest";
-    /** Results limit window property name. */
-    public static final String RESULTS_LIMIT_WINDOW_PROPERTY = "osivia.cms.maxItems";
-    /** Normal view pagination window property name. */
-    public static final String NORMAL_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSize";
-    /** Maximized view pagination window property name. */
-    public static final String MAXIMIZED_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSizeMax";
-    /** Template window property name. */
-    public static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.style";
-    /** Permalink reference window property name. */
-    public static final String PERMALINK_REFERENCE_WINDOW_PROPERTY = "osivia.permaLinkRef";
-    /** RSS reference window property name. */
-    public static final String RSS_REFERENCE_WINDOW_PROPERTY = "osivia.rssLinkRef";
-    /** RSS title window property name. */
-    public static final String RSS_TITLE_WINDOW_PROPERTY = "osivia.rssTitle";
-    /** Creation parent container path window property name. */
-    public static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
-    /** Creation content type window property name. */
-    public static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
+public class ViewListPortlet extends ViewList {
 
     /** Default request page size. */
     private static final int DEFAULT_REQUEST_PAGE_SIZE = 100;

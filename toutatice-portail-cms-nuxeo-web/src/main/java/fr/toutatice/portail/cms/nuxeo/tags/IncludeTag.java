@@ -2,23 +2,15 @@ package fr.toutatice.portail.cms.nuxeo.tags;
 
 import java.io.IOException;
 
-import javax.portlet.PortletContext;
-import javax.portlet.RenderRequest;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.model.Document;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
@@ -71,6 +63,9 @@ public class IncludeTag extends SimpleTagSupport {
             
             if( ! getPage().startsWith("/"))    {
                 String servletPath = (String) request.getAttribute("javax.servlet.include.servlet_path");     
+                
+                // FIXME bidouille pour que les JSP include fonctionnent
+                servletPath = servletPath.replaceAll("/WEB-INF/jsp//WEB-INF/jsp", "/WEB-INF/jsp");
                 
                 String parentPath = servletPath.substring(0, StringUtils.lastIndexOf(servletPath, '/') + 1);
                 path = parentPath + page;

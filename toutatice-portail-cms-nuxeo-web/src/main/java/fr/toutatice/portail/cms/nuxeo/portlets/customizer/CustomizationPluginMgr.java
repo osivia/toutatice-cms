@@ -1,3 +1,19 @@
+/*
+ * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ *
+ *
+ */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.io.File;
@@ -26,6 +42,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -64,6 +81,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /** The customization cache ts. */
     private Map<Locale, Map<String, FragmentType>> fragmentsCache = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
 
+    /** The editable window cache ts. */
+    private Map<Locale, Map<String, EditableWindow>> ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
+    
     /** The liste templates. */
     private Map<Locale, List<ListTemplate>> templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
     
@@ -89,7 +109,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     public ICustomizationService getCustomizationService() {
         if (customizationService == null) {
-            customizationService = (ICustomizationService) Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
+            customizationService = Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
         }
 
         return customizationService;
@@ -261,6 +281,49 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     }
 
 
+
+    /**
+     * Customize editable window.
+     * 
+     * @param locale the locale
+     * @param customizer the customizer
+     * @return the map
+     */
+    public Map<String, EditableWindow> customizeEditableWindows(Locale locale) {
+
+
+        Map<String, EditableWindow> ew = ewCache.get(locale);
+
+        if (ew == null) {
+
+        	Map<String, EditableWindow> initList = customizer.initListEditableWindows(locale);
+
+            ew = new Hashtable<String, EditableWindow>();
+
+            for (Map.Entry<String, EditableWindow> customEw : initList.entrySet()) {
+                ew.put(customEw.getKey(), customEw.getValue());
+            }
+
+
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
+
+            Map<String, EditableWindow> ewList = (Map<String, EditableWindow>) customizationAttributes.get("osivia.customizer.cms.ew." + locale);
+
+            if (ewList != null) {
+
+                for (Map.Entry<String, EditableWindow> customEw  : ewList.entrySet()) {
+                    ew.put(customEw.getKey(), customEw.getValue());
+                }
+            }
+
+            ewCache.put(locale, ew);
+
+        }
+
+
+        return ew;
+    }
+    
     /**
      * Customize cms item types.
      * 
@@ -340,6 +403,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         dynamicModules = null;
 
         fragmentsCache = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
+        
+        ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
 
         templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
         

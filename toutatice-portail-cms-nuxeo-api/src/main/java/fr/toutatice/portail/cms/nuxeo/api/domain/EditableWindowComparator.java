@@ -14,7 +14,7 @@
  *
  *    
  */
-package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
+package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.util.Comparator;
 

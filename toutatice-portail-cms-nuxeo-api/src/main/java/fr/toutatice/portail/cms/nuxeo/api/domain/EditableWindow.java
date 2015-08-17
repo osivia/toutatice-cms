@@ -14,7 +14,7 @@
  *
  *
  */
-package fr.toutatice.portail.cms.nuxeo.service.editablewindow;
+package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +28,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.core.cms.CMSEditableWindow;
+
 
 /**
  * Classe générique de fragment nuxeo

@@ -1,11 +1,25 @@
+/*
+ * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ *
+ *
+ */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.GenericPortlet;
@@ -14,10 +28,6 @@ import javax.portlet.PortletException;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
-import org.osivia.portal.api.internationalization.IBundleFactory;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
-import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.theming.IAttributesBundle;
 import org.osivia.portal.core.cms.CMSItemType;
 
 
@@ -220,6 +230,18 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
         return fragmentTypes;
     }
 
-
+    /**
+     * Get the editable windows types
+     * @param context the context
+     * @return the EW list
+     */
+    protected Map<String, EditableWindow> getEditableWindows(CustomizationContext context) {
+        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) context.getAttributes().get("osivia.customizer.cms.ew." + context.getLocale());
+        if (ew == null) {
+            ew = new Hashtable<String, EditableWindow>();
+            context.getAttributes().put("osivia.customizer.cms.ew." + context.getLocale(), ew);
+        }
+        return ew;
+    }
 
 }
