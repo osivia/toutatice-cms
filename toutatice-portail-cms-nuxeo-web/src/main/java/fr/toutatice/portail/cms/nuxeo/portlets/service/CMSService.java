@@ -72,6 +72,7 @@ import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -1047,9 +1048,19 @@ public class CMSService implements ICMSService {
 
         CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
+        
         try {
 
-            docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
+            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+                if (ctx.getDoc() != null) {
+                    if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
+                        if (ctx.getRequest().getRemoteUser() != null) {
+        	
+                        	docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
+                        }
+                    }
+                }
+            }
 
         } catch (NuxeoException e) {
             e.rethrowCMSException();
@@ -2215,13 +2226,16 @@ public class CMSService implements ICMSService {
                 task.setId(document.getId());
                 // Name
                 task.setName(document.getTitle());
-                // Icon
-                task.setIcon(type.getGlyph());
-                // Taskbar player
-                TaskbarPlayer taskbarPlayer = taskbarPlayers.get(type.getName());
-                task.setTaskbarPlayer(taskbarPlayer);
                 // Path
                 task.setPath(document.getPath());
+                
+                if (type != null) {
+                	// Icon
+                    task.setIcon(type.getGlyph());
+                    // Taskbar player
+                    TaskbarPlayer taskbarPlayer = taskbarPlayers.get(type.getName());
+                    task.setTaskbarPlayer(taskbarPlayer);
+                }
 
                 tasks.add(task);
             }

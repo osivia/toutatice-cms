@@ -36,14 +36,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.customization.CustomizationContext;
+import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
+import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
@@ -86,6 +89,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     
     /** The liste templates. */
     private Map<Locale, List<ListTemplate>> templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
+    
+    /** The menubar contributions. */
+    private Map<Locale, List<IMenubarModule>> menubarCache = new ConcurrentHashMap<Locale, List<IMenubarModule>>();
+    
     
     /** The types cache. */
     Map<String, CMSItemType> typesCache = null;
@@ -131,7 +138,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             Map<String, Object> customizationAttributes = new Hashtable<String, Object>();
             CustomizationContext customizationContext = new CustomizationContext(customizationAttributes, locale);
 
-            customizationService.customize("osivia.customizer.cms.id", customizationContext);
+            customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
 
             customizationAttributesCache.put(locale, customizationAttributes);
 
@@ -166,7 +173,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             // Default initialization
             destDispatcher.put(name, name); 
 
-            Map<String, String> jsp = (Map<String, String>) customizationAttributes.get("osivia.customizer.cms.jsp");
+            Map<String, String> jsp = (Map<String, String>) customizationAttributes.get(Customizable.JSP.toString());
             if (name != null && jsp != null) {
                 String jspKey = StringUtils.removeStart(name, WEB_INF_JSP);
                 String originalPath = jsp.get(jspKey);
@@ -220,7 +227,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
-            Map<String, ListTemplate> templatesMap = ((Map<String, ListTemplate>) customizationAttributes.get("osivia.customizer.cms.template." + locale));
+            Map<String, ListTemplate> templatesMap = ((Map<String, ListTemplate>) customizationAttributes.get(Customizable.LIST_TEMPLATE.toString() + locale));
 
             if (templatesMap != null) {
                 Set<Entry<String, ListTemplate>> customTemplates = templatesMap.entrySet();
@@ -263,7 +270,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
-            List<FragmentType> fragmentsList = (List<FragmentType>) customizationAttributes.get("osivia.customizer.cms.fragments." + locale);
+            List<FragmentType> fragmentsList = (List<FragmentType>) customizationAttributes.get(Customizable.FRAGMENT.toString() + locale);
 
             if (fragmentsList != null) {
 
@@ -307,7 +314,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
-            Map<String, EditableWindow> ewList = (Map<String, EditableWindow>) customizationAttributes.get("osivia.customizer.cms.ew." + locale);
+            Map<String, EditableWindow> ewList = (Map<String, EditableWindow>) customizationAttributes.get(Customizable.EDITABLE_WINDOW.toString() + locale);
 
             if (ewList != null) {
 
@@ -352,7 +359,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
 
-            Map<String, CMSItemType> customDocTypes = (Map<String, CMSItemType>) customizationAttributes.get("osivia.customizer.cms.doctype");
+            Map<String, CMSItemType> customDocTypes = (Map<String, CMSItemType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
 
             if (customDocTypes != null) {
                 Set<Entry<String, CMSItemType>> customTypes = customDocTypes.entrySet();
@@ -369,6 +376,43 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Customize list templates.
+     * 
+     * @param locale the locale
+     * @param customizer the customizer
+     * @return the list
+     */
+    public List<IMenubarModule> customizeMenubars(Locale locale) {
+
+
+        List<IMenubarModule> menubars = menubarCache.get(locale);
+
+        if (menubars == null) {
+        	
+        	menubars = new ArrayList<IMenubarModule>();
+
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
+
+            List<IMenubarModule> menubarList = (List<IMenubarModule>) customizationAttributes.get(Customizable.MENUBAR.toString());
+
+            if (menubarList != null) {
+
+                for (IMenubarModule customMenubarModule : menubarList) {
+                    menubars.add(customMenubarModule);
+                }
+            }
+
+            menubarCache.put(locale, menubars);
+        }
+
+
+        return menubars;
+
+    }
+
+    
+
+    /**
      * Customize modules.
      * 
      * @param ctx the ctx
@@ -377,7 +421,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     public List<IPlayerModule> customizeModules(CMSServiceCtx ctx) {
         if (dynamicModules == null) {
             Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
-            List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get("osivia.customizer.cms.modules");
+            List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
 
             dynamicModules = new ArrayList<IPlayerModule>();
             if (players != null)
@@ -409,6 +453,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
         
         typesCache = null;
+        
+        menubarCache = new ConcurrentHashMap<Locale, List<IMenubarModule>>();
 
 
     }

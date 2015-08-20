@@ -80,6 +80,7 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemType;
@@ -99,6 +100,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
@@ -1073,21 +1075,27 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
-        this.getMenuBarFormater().formatContentMenuBar(ctx);
+    	
+        CMSPublicationInfos publicationInfos = null;
+        CMSExtendedDocumentInfos extendedDocumentInfos = null;
+        if(ctx.getDoc() != null) {
+        	Document doc = (Document) ctx.getDoc();
+        	publicationInfos = cmsService.getPublicationInfos(ctx, doc.getPath());
+        	extendedDocumentInfos = cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
+        }
+        
+        this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
+
         List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-        this.adaptContentMenuBar(ctx, menuBar);
+        
+        List<IMenubarModule> customizeMenubars = pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
+
+        
+        for(IMenubarModule menubarCustom : customizeMenubars) {
+        	menubarCustom.adaptContentMenuBar(ctx, menuBar, publicationInfos, extendedDocumentInfos);
+        }
+     
     }
-
-
-    /**
-     * Customize menu bar items.
-     *
-     * @param ctx CMS context
-     * @param menuBar menu bar
-     */
-    protected void adaptContentMenuBar(CMSServiceCtx ctx, List<MenubarItem> menuBar) {
-    }
-
 
     /**
      * Compute preloading pages when user log in.

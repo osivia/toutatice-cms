@@ -22,22 +22,24 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import javax.portlet.GenericPortlet;
 import javax.portlet.PortletException;
 
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
+import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.core.cms.CMSItemType;
+
+import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class CMSCustomizerPortlet.
  */
-public abstract class AbstractPluginPortlet extends GenericPortlet {
+public abstract class AbstractPluginPortlet extends PortalGenericPortlet {
 
-
+	
     /** Customization modules repository. */
     private ICustomizationModulesRepository repository;
     /** Internationalization customization module metadatas. */
@@ -134,10 +136,10 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
             customizeCMSProperties(customizationID,  context);
             
             // Parse and register JSP
-            Map<String, String> jsp = (Map<String, String>) attributes.get("osivia.customizer.cms.jsp");
+            Map<String, String> jsp = (Map<String, String>) attributes.get(Customizable.JSP.toString());
             if (jsp == null) {
                 jsp = new Hashtable<String, String>();
-                attributes.put("osivia.customizer.cms.jsp", jsp);
+                attributes.put(Customizable.JSP.toString(), jsp);
             }
 
             String dirPath = getPortletContext().getRealPath("/WEB-INF/custom/jsp");
@@ -172,12 +174,12 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
      */
     protected List<IPlayerModule> getPlayers(CustomizationContext context) {
         // Players
-        List<IPlayerModule> modules = (List<IPlayerModule>) context.getAttributes().get("osivia.customizer.cms.modules");
-        if (modules == null) {
-            modules = new ArrayList<IPlayerModule>();
-            context.getAttributes().put("osivia.customizer.cms.modules", modules);
+        List<IPlayerModule> players = (List<IPlayerModule>) context.getAttributes().get(Customizable.PLAYER.toString());
+        if (players == null) {
+            players = new ArrayList<IPlayerModule>();
+            context.getAttributes().put(Customizable.PLAYER.toString(), players);
         }
-        return modules;
+        return players;
     }
 
 
@@ -189,10 +191,10 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
      */
     protected Map<String, ListTemplate> getListTemplates(CustomizationContext context) {
         // Lists
-        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) context.getAttributes().get("osivia.customizer.cms.template." + context.getLocale());
+        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) context.getAttributes().get(Customizable.LIST_TEMPLATE.toString() + context.getLocale());
         if (templates == null) {
             templates = new Hashtable<String, ListTemplate>();
-            context.getAttributes().put("osivia.customizer.cms.template." + context.getLocale(), templates);
+            context.getAttributes().put(Customizable.LIST_TEMPLATE.toString() + context.getLocale(), templates);
         }
         return templates;
     }
@@ -205,10 +207,10 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
      * @return the doc types
      */
     protected Map<String, CMSItemType> getDocTypes(CustomizationContext context) {
-        Map<String, CMSItemType> docTypes = (Map<String, CMSItemType>) context.getAttributes().get("osivia.customizer.cms.doctype");
+        Map<String, CMSItemType> docTypes = (Map<String, CMSItemType>) context.getAttributes().get(Customizable.DOC_TYPE.toString());
         if (docTypes == null) {
             docTypes = new Hashtable<String, CMSItemType>();
-            context.getAttributes().put("osivia.customizer.cms.doctype", docTypes);
+            context.getAttributes().put(Customizable.DOC_TYPE.toString(), docTypes);
         }
         return docTypes;
     }
@@ -222,10 +224,10 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
      */
     protected List<FragmentType> getFragmentTypes(CustomizationContext context) {
 
-        List<FragmentType> fragmentTypes = (List<FragmentType>) context.getAttributes().get("osivia.customizer.cms.fragments." + context.getLocale());
+        List<FragmentType> fragmentTypes = (List<FragmentType>) context.getAttributes().get(Customizable.FRAGMENT.toString() + context.getLocale());
         if (fragmentTypes == null) {
             fragmentTypes = new ArrayList<FragmentType>();
-            context.getAttributes().put("osivia.customizer.cms.fragments." + context.getLocale(), fragmentTypes);
+            context.getAttributes().put(Customizable.FRAGMENT.toString() + context.getLocale(), fragmentTypes);
         }
         return fragmentTypes;
     }
@@ -236,12 +238,29 @@ public abstract class AbstractPluginPortlet extends GenericPortlet {
      * @return the EW list
      */
     protected Map<String, EditableWindow> getEditableWindows(CustomizationContext context) {
-        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) context.getAttributes().get("osivia.customizer.cms.ew." + context.getLocale());
+        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) context.getAttributes().get(Customizable.EDITABLE_WINDOW.toString() + context.getLocale());
         if (ew == null) {
             ew = new Hashtable<String, EditableWindow>();
-            context.getAttributes().put("osivia.customizer.cms.ew." + context.getLocale(), ew);
+            context.getAttributes().put(Customizable.EDITABLE_WINDOW.toString() + context.getLocale(), ew);
         }
         return ew;
+    }
+
+    
+    /**
+     * Gets the menubar contributors.
+     *
+     * @param context the context
+     * @return the players
+     */
+    protected List<IMenubarModule> getMenubars(CustomizationContext context) {
+        // Players
+        List<IMenubarModule> menubars = (List<IMenubarModule>) context.getAttributes().get(Customizable.MENUBAR.toString());
+        if (menubars == null) {
+            menubars = new ArrayList<IMenubarModule>();
+            context.getAttributes().put(Customizable.MENUBAR.toString(), menubars);
+        }
+        return menubars;
     }
 
 }
