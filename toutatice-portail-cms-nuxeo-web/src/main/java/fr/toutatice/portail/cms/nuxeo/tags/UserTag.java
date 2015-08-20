@@ -36,7 +36,11 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
  */
 public class UserTag extends SimpleTagSupport {
 
-    /** Portal URL factory. */
+    /**
+	 * 
+	 */
+	private static final String NX_USER_PREFIX = "user:";
+	/** Portal URL factory. */
     private static final IPortalUrlFactory PORTAL_URL_FACTORY = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
     /** Directory service locator. */
     private static final IDirectoryServiceLocator DIRECTORY_SERVICE_LOCATOR = Locator.findMBean(IDirectoryServiceLocator.class,
@@ -74,6 +78,11 @@ public class UserTag extends SimpleTagSupport {
         JspWriter out = pageContext.getOut();
 
         if ((nuxeoController != null) && (directoryService != null)) {
+        	// For nuxeo user, remove the user: prefix.
+        	if(name.startsWith(NX_USER_PREFIX)) {
+        		name = StringUtils.removeStart(name, NX_USER_PREFIX);
+        	}
+        	
             // User LDAP person
             DirectoryPerson person = directoryService.getPerson(this.name);
 
