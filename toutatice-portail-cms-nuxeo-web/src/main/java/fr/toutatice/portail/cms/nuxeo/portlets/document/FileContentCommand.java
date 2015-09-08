@@ -74,7 +74,15 @@ public class FileContentCommand implements INuxeoCommand {
             this.document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", this.docPath).execute();
         }
 
-        PropertyMap map = this.document.getProperties().getMap(this.fieldName);
+        String tokens[] = this.fieldName.split("/");
+        
+        PropertyMap map = this.document.getProperties().getMap(tokens[0]);
+        
+        for(int i=1; i<tokens.length; i++){
+            map = map.getMap(tokens[i]);
+        }
+       
+        
 
         String pathFile = map.getString("data");
 
