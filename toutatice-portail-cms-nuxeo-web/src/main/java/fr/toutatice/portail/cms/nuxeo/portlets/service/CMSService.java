@@ -1048,14 +1048,14 @@ public class CMSService implements ICMSService {
 
         CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
-        
+
         try {
 
             if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
                 if (ctx.getDoc() != null) {
                     if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
                         if (ctx.getRequest().getRemoteUser() != null) {
-        	
+
                         	docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
                         }
                     }
@@ -1486,9 +1486,9 @@ public class CMSService implements ICMSService {
                                 String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
 
                                 Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
-                                
+
                                 EditableWindow editableWindow = editableWindows.get(category);
-                                
+
                                 if (editableWindow != null) {
                                     List<CMSEditableWindow> windows = pagePropagatedRegions.get(regionId);
 
@@ -2215,29 +2215,32 @@ public class CMSService implements ICMSService {
         List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
         for (CMSItem navigationItem : navigationItems) {
             if ("1".equals(navigationItem.getProperties().get("menuItem"))) {
-                TaskbarTask task = new TaskbarTask();
+
 
                 // Document
                 Document document = (Document) navigationItem.getNativeItem();
                 // Type
                 CMSItemType type = navigationItem.getType();
-
-                // Identifier
-                task.setId(document.getId());
-                // Name
-                task.setName(document.getTitle());
-                // Path
-                task.setPath(document.getPath());
-                
                 if (type != null) {
-                	// Icon
+                    TaskbarTask task = new TaskbarTask();
+
+                    // Identifier
+                    task.setId(document.getId());
+                    // Name
+                    task.setName(document.getTitle());
+                    // Icon
                     task.setIcon(type.getGlyph());
                     // Taskbar player
                     TaskbarPlayer taskbarPlayer = taskbarPlayers.get(type.getName());
                     task.setTaskbarPlayer(taskbarPlayer);
-                }
 
-                tasks.add(task);
+                    // Path
+                    task.setPath(document.getPath());
+                    // Type
+                    task.setType(type.getName());
+
+                    tasks.add(task);
+                }
             }
         }
 

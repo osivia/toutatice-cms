@@ -209,11 +209,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private INotificationsService notificationsService;
     /** Internationalization service */
     private IInternationalizationService internationalizationService;
-    
+
     /** The plugin mgr. */
     private CustomizationPluginMgr pluginMgr;
 
-    
+
 
 
     /** Avatar map. */
@@ -224,12 +224,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static Map<String, Map<String,BinaryDelegation>> delegations = new ConcurrentHashMap<String, Map<String,BinaryDelegation>>() ;
 
     private Map<String, IPlayer> players = new ConcurrentHashMap<String, IPlayer>();
-    
-    
-    
+
+
+
     /** Taskbar tasks. */
     private List<TaskbarTask> tasks;
-    
+
     /** Navigation taskbar players. */
     private Map<String, TaskbarPlayer> navigationTaskbarPlayers;
 
@@ -262,7 +262,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // initialise le player view document par défaut
         this.players = new Hashtable<String, IPlayer>();
         this.players.put("defaultPlayer", new DefaultPlayer(this));
-        
+
         // Plugin
         this.pluginMgr = new CustomizationPluginMgr(this);
 
@@ -360,7 +360,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 //        }
 //        return this.editableWindowAdapter;
 //    }
-    
+
 
 
     /**
@@ -368,7 +368,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public final Map<String,EditableWindow> getEditableWindows(Locale locale) {
-        return pluginMgr.customizeEditableWindows(locale);
+        return this.pluginMgr.customizeEditableWindows(locale);
     }
 
 
@@ -378,7 +378,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     	map.put("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
     	map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
     	map.put("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
-    	
+
     	return map;
     }
 
@@ -393,15 +393,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return BrowserAdapter.getInstance(this.cmsService);
     }
 
-    
-    
+
+
     /**
      * Gets the plugin mgr.
      *
      * @return the plugin mgr
      */
     public CustomizationPluginMgr getPluginMgr() {
-        return pluginMgr;
+        return this.pluginMgr;
     }
 
     /**
@@ -424,7 +424,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final List<ListTemplate> getListTemplates(Locale locale) {
 
-        return pluginMgr.customizeListTemplates(locale);
+        return this.pluginMgr.customizeListTemplates(locale);
     }
 
 
@@ -456,7 +456,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
 
-        return pluginMgr.getFragments(locale);
+        return this.pluginMgr.getFragments(locale);
 
 
     }
@@ -843,7 +843,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
 
-        List<IPlayerModule> modules = pluginMgr.customizeModules(cmsContext);
+        List<IPlayerModule> modules = this.pluginMgr.customizeModules(cmsContext);
 
         for (IPlayerModule icmsCustomizerModule : modules) {
             CMSHandlerProperties properties = icmsCustomizerModule.getCMSPlayer(cmsContext, this.getCmsService());
@@ -1075,26 +1075,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
-    	
+
         CMSPublicationInfos publicationInfos = null;
         CMSExtendedDocumentInfos extendedDocumentInfos = null;
         if(ctx.getDoc() != null) {
         	Document doc = (Document) ctx.getDoc();
-        	publicationInfos = cmsService.getPublicationInfos(ctx, doc.getPath());
-        	extendedDocumentInfos = cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
+        	publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
+        	extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
         }
-        
+
         this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
 
         List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-        
-        List<IMenubarModule> customizeMenubars = pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
 
-        
+        List<IMenubarModule> customizeMenubars = this.pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
+
+
         for(IMenubarModule menubarCustom : customizeMenubars) {
         	menubarCustom.adaptContentMenuBar(ctx, menuBar, publicationInfos, extendedDocumentInfos);
         }
-     
+
     }
 
     /**
@@ -1509,7 +1509,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Map<String, CMSItemType> getCMSItemTypes() {
 
-        return pluginMgr.customizeCMSItemTypes();
+        return this.pluginMgr.customizeCMSItemTypes();
 
     }
 
@@ -2017,6 +2017,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             TaskbarPlayer folderPlayer = this.getFolderTaskbarPlayer();
             this.navigationTaskbarPlayers.put("Folder", folderPlayer);
             this.navigationTaskbarPlayers.put("OrderedFolder", folderPlayer);
+
+            // Picture book
+            TaskbarPlayer pictureBookPlayer = this.getFolderTaskbarPlayer();
+            pictureBookPlayer.setClosed(true);
+            this.navigationTaskbarPlayers.put("PictureBook", pictureBookPlayer);
         }
         return this.navigationTaskbarPlayers;
     }
@@ -2031,6 +2036,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         TaskbarPlayer player = new TaskbarPlayer();
         player.setInstance("toutatice-portail-cms-nuxeo-publishMenuPortletInstance");
         Map<String, String> properties = new HashMap<String, String>();
+        properties.put("osivia.bootstrapPanelStyle", String.valueOf(true));
         properties.put("osivia.cms.template", "fancytree-lazy");
         properties.put("osivia.cms.startLevel", String.valueOf(2));
         player.setProperties(properties);
@@ -2094,13 +2100,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         task.setKey("SEARCH");
         // Icon
         task.setIcon("glyphicons glyphicons-search");
-        // Taskbar player
-        TaskbarPlayer player = new TaskbarPlayer();
-        player.setInstance("toutatice-portail-cms-nuxeo-searchPortletInstance");
+        // Maximized player
+        TaskbarPlayer maximizedPlayer = new TaskbarPlayer();
+        maximizedPlayer.setInstance("toutatice-portail-cms-nuxeo-searchPortletInstance");
         Map<String, String> properties = new HashMap<String, String>(1);
         properties.put(Constants.WINDOW_PROP_URI, "${basePath}");
-        player.setProperties(properties);
-        task.setTaskbarPlayer(player);
+        maximizedPlayer.setProperties(properties);
+        task.setMaximizedPlayer(maximizedPlayer);
 
         return task;
     }

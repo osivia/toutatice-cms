@@ -85,6 +85,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.template";
     /** Force navigation window property name. */
     private static final String FORCE_NAVIGATION_WINDOW_PROPERTY = "osivia.cms.forceNavigation";
+    /** Type filter window property name. */
+    private static final String TYPE_FILTER_WINDOW_PROPERTY = "osivia.cms.type";
 
     /** Default max levels. */
     private static final int DEFAULT_MAX_LEVELS = 3;
@@ -275,6 +277,12 @@ public class MenuPortlet extends CMSPortlet {
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
 
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+
+        // Type filter
+        String typeFilter = window.getProperty(TYPE_FILTER_WINDOW_PROPERTY);
+
         if ("lazyLoading".equals(request.getParameter("action"))) {
             // Lazy loading
 
@@ -297,13 +305,16 @@ public class MenuPortlet extends CMSPortlet {
 
                     for (CMSItem item : items) {
                         if ("1".equals(item.getProperties().get("menuItem"))) {
-                            // Nuxeo document
-                            Document document = (Document) item.getNativeItem();
-                            // Nuxeo document link
-                            Link link = nuxeoController.getLink(document, "menu");
+                            CMSItemType type = item.getType();
+                            if ((typeFilter == null) || ((type != null) && (typeFilter.equals(type.getName())))) {
+                                // Nuxeo document
+                                Document document = (Document) item.getNativeItem();
+                                // Nuxeo document link
+                                Link link = nuxeoController.getLink(document, "menu");
 
-                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, false, item);
-                            children.add(navigationDisplayItemChild);
+                                NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, false, item);
+                                children.add(navigationDisplayItemChild);
+                            }
                         }
                     }
 
