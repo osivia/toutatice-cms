@@ -46,11 +46,14 @@ import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarState;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -106,6 +109,8 @@ public class FileBrowserPortlet extends CMSPortlet {
     private IBundleFactory bundleFactory;
     /** Notifications service. */
     private INotificationsService notificationsService;
+    /** Taskbar service. */
+    private ITaskbarService taskbarService;
     /** Document DAO. */
     private DocumentDAO documentDAO;
 
@@ -136,6 +141,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         // Notification service
         this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
 
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
     }
@@ -163,12 +171,20 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            String view = request.getParameter(VIEW_REQUEST_PARAMETER);
+            FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
             if (view != null) {
-                response.setRenderParameter(VIEW_REQUEST_PARAMETER, view);
+                response.setRenderParameter(VIEW_REQUEST_PARAMETER, view.getName());
             }
 
-            if ("delete".equals(action)) {
+            if ("changeView".equals(action)) {
+                // Change view
+                TaskbarState taskbarState = this.taskbarService.getTaskbarState(portalControllerContext);
+                if (taskbarState != null) {
+                    taskbarState.setClosed(view.isHidePlayer());
+                    taskbarState.setHideToggle(view.isHidePlayer());
+                }
+
+            } else if ("delete".equals(action)) {
                 // Delete action
 
                 String[] identifiers = StringUtils.split(request.getParameter("identifiers"), ",");
@@ -598,9 +614,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     String id = builder.toString();
 
                     // URL
-                    PortletURL renderURL = mimeResponse.createRenderURL();
-                    renderURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
-                    String url = renderURL.toString();
+                    PortletURL actionURL = mimeResponse.createActionURL();
+                    actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
+                    actionURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
+                    String url = actionURL.toString();
 
                     MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, url, null, null, null);
                     menubar.add(menubarItem);

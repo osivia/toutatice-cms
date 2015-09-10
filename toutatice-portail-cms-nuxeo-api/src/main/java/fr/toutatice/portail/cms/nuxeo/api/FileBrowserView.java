@@ -8,9 +8,9 @@ package fr.toutatice.portail.cms.nuxeo.api;
 public enum FileBrowserView {
 
     /** Lines view. */
-    LINES("lines", "glyphicons glyphicons-show-thumbnails-with-lines", true),
+    LINES("lines", "glyphicons glyphicons-show-thumbnails-with-lines", true, false),
     /** Thumbnails view. */
-    THUMBNAILS("thumbnails", "glyphicons glyphicons-show-thumbnails", false);
+    THUMBNAILS("thumbnails", "glyphicons glyphicons-show-thumbnails", false, true);
 
 
     /** Default view. */
@@ -23,6 +23,8 @@ public enum FileBrowserView {
     private final String icon;
     /** Orderable view indicator. */
     private final boolean orderable;
+    /** Hide taskbar player indicator. */
+    private final boolean hidePlayer;
 
 
     /**
@@ -31,11 +33,13 @@ public enum FileBrowserView {
      * @param name view name
      * @param icon view icon
      * @param orderable orderable view indicator
+     * @param hidePlayer hide taskbar player indicator
      */
-    private FileBrowserView(String name, String icon, boolean orderable) {
+    private FileBrowserView(String name, String icon, boolean orderable, boolean hidePlayer) {
         this.name = name;
         this.icon = icon;
         this.orderable = orderable;
+        this.hidePlayer = hidePlayer;
     }
 
 
@@ -79,11 +83,20 @@ public enum FileBrowserView {
 
     /**
      * Getter for orderable.
-     * 
+     *
      * @return the orderable
      */
     public boolean isOrderable() {
         return this.orderable;
+    }
+
+    /**
+     * Getter for hidePlayer.
+     * 
+     * @return the hidePlayer
+     */
+    public boolean isHidePlayer() {
+        return this.hidePlayer;
     }
 
 }

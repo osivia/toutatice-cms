@@ -146,8 +146,8 @@ public class MenuBarFormater {
      * Format content menubar.
      *
      * @param cmsContext CMS context
-     * @param extendedDocumentInfos 
-     * @param publicationInfos 
+     * @param extendedDocumentInfos
+     * @param publicationInfos
      * @throws PortalException
      */
     @SuppressWarnings("unchecked")
@@ -263,8 +263,8 @@ public class MenuBarFormater {
      * Format content menubar.
      *
      * @param cmsCtx
-	 * @param extendedDocumentInfos 
-	 * @param publicationInfos 
+	 * @param extendedDocumentInfos
+	 * @param publicationInfos
      * @throws Exception
      */
     public void formatContentMenuBar(CMSServiceCtx cmsCtx, CMSPublicationInfos publicationInfos, CMSExtendedDocumentInfos extendedDocumentInfos) throws Exception {
@@ -390,7 +390,7 @@ public class MenuBarFormater {
         if (dropdown == null) {
             dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"), "glyphicons glyphicons-option-vertical",
                     MenubarGroup.GENERIC, 40);
-            dropdown.setReducible(false);
+            dropdown.setReducible(true);
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
 
@@ -441,7 +441,7 @@ public class MenuBarFormater {
      * @param cmsContext CMS service context
      * @param menubar menubar items
      * @param bundle internationalization bundle
-     * @param extendedInfos 
+     * @param extendedInfos
      */
     protected void getChangeModeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException {
@@ -1218,7 +1218,7 @@ public class MenuBarFormater {
                 }
             }
         }
-        
+
     }
 
 
@@ -1272,7 +1272,7 @@ public class MenuBarFormater {
                 }
             }
         }
-        
+
     }
 
 

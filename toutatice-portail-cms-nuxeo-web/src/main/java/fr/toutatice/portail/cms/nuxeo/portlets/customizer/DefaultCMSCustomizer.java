@@ -2021,6 +2021,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // Picture book
             TaskbarPlayer pictureBookPlayer = this.getFolderTaskbarPlayer();
             pictureBookPlayer.setClosed(true);
+            pictureBookPlayer.setHideToggle(true);
             this.navigationTaskbarPlayers.put("PictureBook", pictureBookPlayer);
         }
         return this.navigationTaskbarPlayers;
