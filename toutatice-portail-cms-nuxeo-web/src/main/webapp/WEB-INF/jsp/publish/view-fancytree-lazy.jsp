@@ -12,6 +12,10 @@
 
 
 <div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
+    <c:if test="${empty displayItem.children}">
+        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+    </c:if>
+
     <div class="fancytree fancytree-lazy">
         <c:set var="parent" value="${displayItem}" scope="request" />
         <c:set var="lazy" value="true" scope="request" />

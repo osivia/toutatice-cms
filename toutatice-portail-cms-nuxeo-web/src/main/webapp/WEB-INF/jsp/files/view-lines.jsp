@@ -267,4 +267,9 @@
             </c:forEach>
         </ul>
     </div>
+    
+    
+    <c:if test="${empty documents}">
+        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+    </c:if>
 </div>

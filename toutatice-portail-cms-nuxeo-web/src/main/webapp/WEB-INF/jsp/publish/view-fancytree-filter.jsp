@@ -13,6 +13,10 @@
 
 
 <div class="menu">
+    <c:if test="${empty displayItem.children}">
+        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+    </c:if>
+
     <div class="fancytree fancytree-links">
         <div class="form-group">
             <div class="input-group input-group-sm">
