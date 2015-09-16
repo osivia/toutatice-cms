@@ -71,8 +71,8 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.taskbar.ITaskbarService;
-import org.osivia.portal.api.taskbar.TaskbarPlayer;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -229,9 +229,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Taskbar tasks. */
     private List<TaskbarTask> tasks;
+    /** Navigation panel players. */
+    private Map<String, PanelPlayer> navigationPanelPlayers;
 
-    /** Navigation taskbar players. */
-    private Map<String, TaskbarPlayer> navigationTaskbarPlayers;
 
     /** Portal URL factory. */
     protected final ICustomizationService customizationService;
@@ -2005,60 +2005,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Get navigation taskbar players.
-     *
-     * @return taskbar players
-     */
-    public Map<String, TaskbarPlayer> getNavigationTaskbarPlayers() {
-        if (this.navigationTaskbarPlayers == null) {
-            this.navigationTaskbarPlayers = new ConcurrentHashMap<String, TaskbarPlayer>();
-
-            // Folder
-            TaskbarPlayer folderPlayer = this.getFolderTaskbarPlayer();
-            this.navigationTaskbarPlayers.put("Folder", folderPlayer);
-            this.navigationTaskbarPlayers.put("OrderedFolder", folderPlayer);
-
-            // Picture book
-            TaskbarPlayer pictureBookPlayer = this.getFolderTaskbarPlayer();
-            pictureBookPlayer.setClosed(true);
-            pictureBookPlayer.setHideToggle(true);
-            this.navigationTaskbarPlayers.put("PictureBook", pictureBookPlayer);
-        }
-        return this.navigationTaskbarPlayers;
-    }
-
-
-    /**
-     * Get folder taskbar player.
-     *
-     * @return taskbar player
-     */
-    protected TaskbarPlayer getFolderTaskbarPlayer() {
-        TaskbarPlayer player = new TaskbarPlayer();
-        player.setInstance("toutatice-portail-cms-nuxeo-publishMenuPortletInstance");
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put("osivia.bootstrapPanelStyle", String.valueOf(true));
-        properties.put("osivia.cms.template", "fancytree-lazy");
-        properties.put("osivia.cms.startLevel", String.valueOf(2));
-        player.setProperties(properties);
-        return player;
-    }
-
-
-    /**
      * Get taskbar tasks.
      *
      * @return tasks
      */
-    public List<TaskbarTask> getTaskbarTasks(CMSServiceCtx cmsContext) {
+    public List<TaskbarTask> getTaskbarTasks() {
         if (this.tasks == null) {
             this.tasks = new ArrayList<TaskbarTask>();
 
             // Home
-            this.tasks.add(this.getHomeTask(cmsContext));
+            this.tasks.add(this.getHomeTask());
 
             // Search
-            this.tasks.add(this.getSearchTask(cmsContext));
+            this.tasks.add(this.getSearchTask());
         }
         return this.tasks;
     }
@@ -2067,10 +2026,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get home task.
      *
-     * @param cmsContext CMS context
      * @return task
      */
-    protected TaskbarTask getHomeTask(CMSServiceCtx cmsContext) {
+    protected TaskbarTask getHomeTask() {
         // Task
         TaskbarTask task = new TaskbarTask();
 
@@ -2088,10 +2046,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get search task.
      *
-     * @param cmsContext CMS context
      * @return task
      */
-    protected TaskbarTask getSearchTask(CMSServiceCtx cmsContext) {
+    protected TaskbarTask getSearchTask() {
         // Task
         TaskbarTask task = new TaskbarTask();
 
@@ -2102,7 +2059,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Icon
         task.setIcon("glyphicons glyphicons-search");
         // Maximized player
-        TaskbarPlayer maximizedPlayer = new TaskbarPlayer();
+        PanelPlayer maximizedPlayer = new PanelPlayer();
         maximizedPlayer.setInstance("toutatice-portail-cms-nuxeo-searchPortletInstance");
         Map<String, String> properties = new HashMap<String, String>(1);
         properties.put(Constants.WINDOW_PROP_URI, "${basePath}");
@@ -2110,6 +2067,39 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         task.setMaximizedPlayer(maximizedPlayer);
 
         return task;
+    }
+
+
+    /**
+     * Get navigation panel players.
+     *
+     * @return panel players, grouped by maximized window instance
+     */
+    public Map<String, PanelPlayer> getNavigationPanelPlayers() {
+        if (this.navigationPanelPlayers == null) {
+            this.navigationPanelPlayers = new ConcurrentHashMap<String, PanelPlayer>();
+
+            // File browser
+            this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
+        }
+        return this.navigationPanelPlayers;
+    }
+
+
+    /**
+     * Get file browser panel player.
+     *
+     * @return panel player
+     */
+    protected PanelPlayer getFileBrowserPanelPlayer() {
+        PanelPlayer player = new PanelPlayer();
+        player.setInstance("toutatice-portail-cms-nuxeo-publishMenuPortletInstance");
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put("osivia.bootstrapPanelStyle", String.valueOf(true));
+        properties.put("osivia.cms.template", "fancytree-lazy");
+        properties.put("osivia.cms.startLevel", String.valueOf(2));
+        player.setProperties(properties);
+        return player;
     }
 
 }

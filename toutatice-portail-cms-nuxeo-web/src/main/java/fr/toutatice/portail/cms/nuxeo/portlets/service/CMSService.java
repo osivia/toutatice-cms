@@ -46,7 +46,7 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
-import org.osivia.portal.api.taskbar.TaskbarPlayer;
+import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -2207,16 +2207,10 @@ public class CMSService implements ICMSService {
         // Navigations items
         List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
 
-        // Players
-        Map<String, TaskbarPlayer> taskbarPlayers = this.customizer.getNavigationTaskbarPlayers();
-
-
         // Tasks
         List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
         for (CMSItem navigationItem : navigationItems) {
             if ("1".equals(navigationItem.getProperties().get("menuItem"))) {
-
-
                 // Document
                 Document document = (Document) navigationItem.getNativeItem();
                 // Type
@@ -2230,9 +2224,6 @@ public class CMSService implements ICMSService {
                     task.setName(document.getTitle());
                     // Icon
                     task.setIcon(type.getGlyph());
-                    // Taskbar player
-                    TaskbarPlayer taskbarPlayer = taskbarPlayers.get(type.getName());
-                    task.setTaskbarPlayer(taskbarPlayer);
 
                     // Path
                     task.setPath(document.getPath());
@@ -2253,7 +2244,16 @@ public class CMSService implements ICMSService {
      */
     @Override
     public List<TaskbarTask> getTaskbarCustomTasks(CMSServiceCtx cmsContext) {
-        return new ArrayList<TaskbarTask>(this.customizer.getTaskbarTasks(cmsContext));
+        return new ArrayList<TaskbarTask>(this.customizer.getTaskbarTasks());
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PanelPlayer getNavigationPanelPlayer(String instance) {
+        return this.customizer.getNavigationPanelPlayers().get(instance);
     }
 
 }

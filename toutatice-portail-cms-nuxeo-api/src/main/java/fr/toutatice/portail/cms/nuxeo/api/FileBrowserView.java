@@ -23,8 +23,8 @@ public enum FileBrowserView {
     private final String icon;
     /** Orderable view indicator. */
     private final boolean orderable;
-    /** Hide taskbar player indicator. */
-    private final boolean hidePlayer;
+    /** Closed navigation panel indicator. */
+    private final boolean closedNavigation;
 
 
     /**
@@ -33,13 +33,13 @@ public enum FileBrowserView {
      * @param name view name
      * @param icon view icon
      * @param orderable orderable view indicator
-     * @param hidePlayer hide taskbar player indicator
+     * @param closedNavigation closed navigation panel indicator
      */
-    private FileBrowserView(String name, String icon, boolean orderable, boolean hidePlayer) {
+    private FileBrowserView(String name, String icon, boolean orderable, boolean closedNavigation) {
         this.name = name;
         this.icon = icon;
         this.orderable = orderable;
-        this.hidePlayer = hidePlayer;
+        this.closedNavigation = closedNavigation;
     }
 
 
@@ -91,12 +91,12 @@ public enum FileBrowserView {
     }
 
     /**
-     * Getter for hidePlayer.
+     * Getter for closedNavigation.
      * 
-     * @return the hidePlayer
+     * @return the closedNavigation
      */
-    public boolean isHidePlayer() {
-        return this.hidePlayer;
+    public boolean isClosedNavigation() {
+        return this.closedNavigation;
     }
 
 }

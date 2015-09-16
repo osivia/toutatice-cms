@@ -26,6 +26,7 @@ import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -52,8 +53,9 @@ import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.panels.Panel;
+import org.osivia.portal.api.portlet.IPortletStatusService;
 import org.osivia.portal.api.taskbar.ITaskbarService;
-import org.osivia.portal.api.taskbar.TaskbarState;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -87,7 +89,6 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Nuxeo path window property name. */
     public static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
 
-
     /** View request parameter name. */
     private static final String VIEW_REQUEST_PARAMETER = "view";
     /** Sort criteria request parameter name. */
@@ -109,6 +110,8 @@ public class FileBrowserPortlet extends CMSPortlet {
     private IBundleFactory bundleFactory;
     /** Notifications service. */
     private INotificationsService notificationsService;
+    /** Portlet status service. */
+    private IPortletStatusService portletStatusService;
     /** Taskbar service. */
     private ITaskbarService taskbarService;
     /** Document DAO. */
@@ -141,6 +144,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         // Notification service
         this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
 
+        // Portlet status service
+        this.portletStatusService = Locator.findMBean(IPortletStatusService.class, IPortletStatusService.MBEAN_NAME);
+
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
 
@@ -167,22 +173,38 @@ public class FileBrowserPortlet extends CMSPortlet {
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
-            if (view != null) {
-                response.setRenderParameter(VIEW_REQUEST_PARAMETER, view.getName());
-            }
-
             if ("changeView".equals(action)) {
                 // Change view
-                TaskbarState taskbarState = this.taskbarService.getTaskbarState(portalControllerContext);
-                if (taskbarState != null) {
-                    taskbarState.setClosed(view.isHidePlayer());
-                    taskbarState.setHideToggle(view.isHidePlayer());
+
+                FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
+
+                // Type
+                String path = this.getPath(window);
+                path = nuxeoController.getComputedPath(path);
+                Document currentDocument = nuxeoController.fetchDocument(path);
+                String type = currentDocument.getType();
+
+                // Active task identifier
+                String taskId;
+                try {
+                    taskId = this.taskbarService.getActiveId(portalControllerContext);
+                } catch (PortalException e) {
+                    throw new PortletException(e);
                 }
+
+                // Portlet status
+                FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
+                if (status == null) {
+                    status = new FileBrowserStatus(taskId);
+                }
+                status.getViews().put(type, view);
+                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), status);
 
             } else if ("delete".equals(action)) {
                 // Delete action
@@ -282,9 +304,6 @@ public class FileBrowserPortlet extends CMSPortlet {
             if ("save".equals(action)) {
                 // Save
 
-                // Current window
-                PortalWindow window = WindowFactory.getWindow(request);
-
                 // Nuxeo path
                 String path = request.getParameter("path");
                 window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, path);
@@ -327,10 +346,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         PortalWindow window = WindowFactory.getWindow(request);
 
         // Path
-        String path = window.getProperty(Constants.WINDOW_PROP_URI);
-        if (path == null) {
-            path = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
-        }
+        String path = this.getPath(window);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
@@ -386,7 +402,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Current view
-                FileBrowserView currentView = this.getCurrentView(portalControllerContext, window);
+                FileBrowserView currentView = this.getCurrentView(portalControllerContext, window, currentDocument.getType());
                 request.setAttribute("view", currentView.getName());
 
 
@@ -429,6 +445,21 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         response.setContentType("text/html");
         dispatcher.include(request, response);
+    }
+
+
+    /**
+     * Get path.
+     *
+     * @param window current window
+     * @return path
+     */
+    private String getPath(PortalWindow window) {
+        String path = window.getProperty(Constants.WINDOW_PROP_URI);
+        if (path == null) {
+            path = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
+        }
+        return path;
     }
 
 
@@ -510,20 +541,46 @@ public class FileBrowserPortlet extends CMSPortlet {
      *
      * @param portalControllerContext portal controller context
      * @param window portal window
+     * @param type type name
      * @return view
+     * @throws PortletException
      */
-    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, PortalWindow window) {
-        // Request
-        PortletRequest request = portalControllerContext.getRequest();
+    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, PortalWindow window, String type) throws PortletException {
+        // Controller context
+        ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
+        // HTTP servlet request
+        HttpServletRequest httpServletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
 
+        // Portlet status
+        FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
 
-        FileBrowserView currentView;
-        String viewParameter = request.getParameter(VIEW_REQUEST_PARAMETER);
-        if (StringUtils.isNotEmpty(viewParameter)) {
-            currentView = FileBrowserView.fromName(viewParameter);
-        } else {
+        // Active task identifier
+        String taskId;
+        try {
+            taskId = this.taskbarService.getActiveId(portalControllerContext);
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
+
+        // Current view
+        FileBrowserView currentView = null;
+
+        if (status != null) {
+            if (StringUtils.equals(taskId, status.getTaskId())) {
+                currentView = status.getViews().get(type);
+            } else {
+                // Status reinitialization
+                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), null);
+            }
+        }
+
+        if (currentView == null) {
             currentView = FileBrowserView.fromName(window.getProperty(InternalConstants.DEFAULT_VIEW_WINDOW_PROPERTY));
         }
+
+
+        // Update navigation panel closed indicator
+        httpServletRequest.setAttribute(Panel.NAVIGATION_PANEL.getClosedAttribute(), currentView.isClosedNavigation());
 
         return currentView;
     }
@@ -617,9 +674,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                     PortletURL actionURL = mimeResponse.createActionURL();
                     actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
                     actionURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
-                    String url = actionURL.toString();
 
-                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, url, null, null, null);
+                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, actionURL.toString(),
+                            null, null, null);
                     menubar.add(menubarItem);
 
                     order++;
