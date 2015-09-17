@@ -15,7 +15,7 @@
         <c:set var="description" value="${document.properties['dc:description']}" />
 
         <!-- Author -->
-        <c:set var="author" value="${document.properties['dc:creator']}" />
+        <c:set var="author" value="${document.properties['dc:lastContributor']}" />
         
         <!-- Date -->
         <c:set var="date" value="${document.properties['dc:issued']}" />
