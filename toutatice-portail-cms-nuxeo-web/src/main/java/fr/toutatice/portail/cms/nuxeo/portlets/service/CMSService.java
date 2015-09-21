@@ -2203,7 +2203,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<TaskbarTask> getTaskbarNavigationTasks(CMSServiceCtx cmsContext, String basePath, String currentPath) throws CMSException {
+    public List<TaskbarTask> getTaskbarNavigationTasks(CMSServiceCtx cmsContext, String basePath) throws CMSException {
         // Navigations items
         List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
 
