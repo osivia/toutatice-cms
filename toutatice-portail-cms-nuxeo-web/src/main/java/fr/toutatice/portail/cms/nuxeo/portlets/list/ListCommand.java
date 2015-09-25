@@ -30,15 +30,15 @@ public class ListCommand implements INuxeoCommand {
     int pageNumber;
     int pageSize;
     String schemas;
-    boolean displayLiveVersion;
+    String version;
     String portalPolicyFilter;
     boolean useES;
 
 
-    public ListCommand(String nuxeoRequest, boolean displayLiveVersion, int pageNumber, int pageSize, String schemas, String portalPolicyFilter, boolean useES) {
+    public ListCommand(String nuxeoRequest, String version, int pageNumber, int pageSize, String schemas, String portalPolicyFilter, boolean useES) {
         super();
         this.nuxeoRequest = nuxeoRequest;
-        this.displayLiveVersion = displayLiveVersion;
+        this.version = version;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.schemas = schemas;
@@ -56,9 +56,11 @@ public class ListCommand implements INuxeoCommand {
             request = generateVCSRequest(nuxeoSession);
         }
 
-        // Insertion du filtre sur les élements publiés
-        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(displayLiveVersion ? NuxeoQueryFilterContext.STATE_LIVE
-                : NuxeoQueryFilterContext.STATE_DEFAULT, portalPolicyFilter);
+        // Insertion du filtre sur les élements 
+        
+        int state = NuxeoQueryFilter.getState(version);
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(state, portalPolicyFilter);
+        
         String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 
         request.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
@@ -86,7 +88,7 @@ public class ListCommand implements INuxeoCommand {
     }
 
     public String getId() {
-        return "ListCommand/" + displayLiveVersion + "/" + pageSize + "/" + pageNumber + "/" + nuxeoRequest;
+        return "ListCommand/" + version + "/" + pageSize + "/" + pageNumber + "/" + nuxeoRequest;
     };
 
 

@@ -24,9 +24,15 @@ public class NuxeoQueryFilterContext {
 
     /** The Constant STATE_LIVE. */
     public static final int STATE_LIVE = 1;
+    
+    /** The constant STATE_LIVE_N_PUBLISHED. */
+    public static final int STATE_LIVE_N_PUBLISHED = 2;
 
     /** Live context instance. */
     public static final NuxeoQueryFilterContext CONTEXT_LIVE = new NuxeoQueryFilterContext(STATE_LIVE);
+    
+    /** Live and published context instance. */
+    public static final NuxeoQueryFilterContext CONTEXT_LIVE_N_PUBLISHED = new NuxeoQueryFilterContext(STATE_LIVE_N_PUBLISHED);
 
 
     public NuxeoQueryFilterContext() {

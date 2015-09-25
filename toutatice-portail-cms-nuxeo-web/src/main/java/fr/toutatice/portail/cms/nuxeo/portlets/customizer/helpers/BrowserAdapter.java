@@ -85,7 +85,7 @@ public class BrowserAdapter {
             // Portal policy filter
             String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
 
-            INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
+            INuxeoCommand nuxeoCommand = new ListCommand(query, "1", 0, -1, schemas, filter, true);
             Documents documents = (Documents) nuxeoController.executeNuxeoCommand(nuxeoCommand);
 
             workspaces = new ArrayList<CMSItem>(documents.size());
@@ -141,7 +141,7 @@ public class BrowserAdapter {
                 String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
 
                 try {
-                    INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
+                    INuxeoCommand nuxeoCommand = new ListCommand(query, "1", 0, -1, schemas, filter, true);
                     Documents documents = (Documents) this.cmsService.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
                     workspaces = new ArrayList<CMSItem>(documents.size());

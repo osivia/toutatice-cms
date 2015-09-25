@@ -1142,11 +1142,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
+            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "
+                            + "AND ecm:currentLifeCycleState <> 'deleted'";
+            
+        } else if("2".equals(ctx.getDisplayLiveVersion())){
+            // All except lives of publish spaces
+            requestFilter = " ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
+                            + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-
-            // requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 1  AND ecm:currentLifeCycleState <> 'deleted' ";
             requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
         }
 

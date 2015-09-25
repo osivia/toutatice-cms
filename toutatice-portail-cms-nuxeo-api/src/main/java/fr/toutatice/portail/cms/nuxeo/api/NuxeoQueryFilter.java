@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.server.ServerInvocation;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -67,8 +68,11 @@ public class NuxeoQueryFilter {
 		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		CMSServiceCtx ctx = getCMSCtx();
-		if( queryCtx.getState() == queryCtx.STATE_LIVE)
+		if(queryCtx.getState() == NuxeoQueryFilterContext.STATE_LIVE){
 			ctx.setDisplayLiveVersion("1");
+		} else if(queryCtx.getState() == NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED){
+		    ctx.setDisplayLiveVersion("2");
+		}
 		try {
 			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, queryCtx.getPolicy());
 		} catch (Exception e) {
@@ -98,6 +102,28 @@ public class NuxeoQueryFilter {
             throw new RuntimeException(e);
         }
 
+    }
+    
+    /**
+     * Get the query state according to given version.
+     * 
+     * @param version
+     * @return the state;
+     */
+    public static final int getState(String version){
+        int state = NuxeoQueryFilterContext.STATE_DEFAULT;
+        
+        if(StringUtils.isNotBlank(version)){
+            
+            if("1".equals(version)){
+                state = NuxeoQueryFilterContext.STATE_LIVE;
+            } else if("2".equals(version)){
+                state = NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED;
+            }
+            
+        }
+        
+        return state;
     }
 
 }

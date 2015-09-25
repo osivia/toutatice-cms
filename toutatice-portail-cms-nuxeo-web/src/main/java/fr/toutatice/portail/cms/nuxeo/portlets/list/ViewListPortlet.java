@@ -224,7 +224,7 @@ public class ViewListPortlet extends ViewList {
 
 
                     // Nuxeo command
-                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), 0, resultsLimit, schemas,
+                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), 0, resultsLimit, schemas,
                             configuration.getContentFilter(), configuration.isUseES());
 
                     // Nuxeo documents
@@ -574,7 +574,7 @@ public class ViewListPortlet extends ViewList {
 
 
                 // Nuxeo command
-                INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), currentPage, requestPageSize, schemas,
+                INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), currentPage, requestPageSize, schemas,
                         configuration.getContentFilter(), configuration.isUseES());
 
                 // Nuxeo documents
