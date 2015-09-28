@@ -46,7 +46,7 @@ public class TransformHTMLTag extends SimpleTagSupport {
         // Request
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
 
         if ((nuxeoController != null) && (this.document != null)) {
             // Original Nuxeo document
@@ -66,7 +66,7 @@ public class TransformHTMLTag extends SimpleTagSupport {
 
     /**
      * Getter for document.
-     * 
+     *
      * @return the document
      */
     public DocumentDTO getDocument() {
@@ -75,7 +75,7 @@ public class TransformHTMLTag extends SimpleTagSupport {
 
     /**
      * Setter for document.
-     * 
+     *
      * @param document the document to set
      */
     public void setDocument(DocumentDTO document) {

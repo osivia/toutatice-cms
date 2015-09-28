@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -25,7 +25,7 @@
 		                
 		                <c:otherwise>
 		                    <!-- Document view -->
-		                    <ttc:custom-include page="view-${dispatchJsp}.jsp" />
+		                    <ttc:include page="view-${dispatchJsp}.jsp" />
 		                    
 		                    <!-- Document attachments view -->
 		                    <c:if test="${attachments}">

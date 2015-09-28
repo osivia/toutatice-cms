@@ -25,6 +25,7 @@ import org.osivia.portal.core.cms.CMSItemType;
  * Document data transfert object.
  *
  * @author Cédric Krommenhoek
+ * @see Cloneable
  */
 public class DocumentDTO implements Cloneable {
 
@@ -65,7 +66,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param documentDTO document DTO
      */
     protected DocumentDTO(DocumentDTO documentDTO) {
@@ -102,7 +103,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Getter for id.
-     * 
+     *
      * @return the id
      */
     public String getId() {
@@ -173,24 +174,6 @@ public class DocumentDTO implements Cloneable {
     }
 
     /**
-     * Getter for properties.
-     *
-     * @return the properties
-     */
-    public Map<String, Object> getProperties() {
-        return this.properties;
-    }
-
-    /**
-     * Getter for attachments.
-     *
-     * @return the attachments
-     */
-    public List<DocumentAttachmentDTO> getAttachments() {
-        return this.attachments;
-    }
-
-    /**
      * Getter for commentable.
      *
      * @return the commentable
@@ -209,23 +192,6 @@ public class DocumentDTO implements Cloneable {
     }
 
     /**
-     * Getter for comments.
-     *
-     * @return the comments
-     */
-    public List<CommentDTO> getComments() {
-        return this.comments;
-    }
-    
-    /**
-     * @return the publishedDocuments
-     */
-    public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
-        return this.publishedDocuments;
-    }
-
-
-    /**
      * Getter for document.
      *
      * @return the document
@@ -241,6 +207,42 @@ public class DocumentDTO implements Cloneable {
      */
     public void setDocument(Document document) {
         this.document = document;
+    }
+
+    /**
+     * Getter for properties.
+     *
+     * @return the properties
+     */
+    public Map<String, Object> getProperties() {
+        return this.properties;
+    }
+
+    /**
+     * Getter for attachments.
+     *
+     * @return the attachments
+     */
+    public List<DocumentAttachmentDTO> getAttachments() {
+        return this.attachments;
+    }
+
+    /**
+     * Getter for comments.
+     *
+     * @return the comments
+     */
+    public List<CommentDTO> getComments() {
+        return this.comments;
+    }
+
+    /**
+     * Getter for publishedDocuments.
+     *
+     * @return the publishedDocuments
+     */
+    public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
+        return this.publishedDocuments;
     }
 
 }

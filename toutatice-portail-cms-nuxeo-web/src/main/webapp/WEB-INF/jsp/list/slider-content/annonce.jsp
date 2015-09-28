@@ -1,8 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <c:set var="imageURL">
-	<ttc:getImageURL document="${doc}" property="annonce:image" />
+	<ttc:pictureLink document="${doc}" property="annonce:image" />
 </c:set>
 <ttc:documentLink document="${doc}" var="link" />
 

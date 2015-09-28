@@ -37,7 +37,7 @@ public abstract class ToutaticeLinkTag extends ToutaticeSimpleTag {
         // Link
         Link link = this.getLink(nuxeoController, document);
 
-        if (link != null) {
+        if ((link != null) && (link.getUrl() != null)) {
             if (this.var == null) {
                 // Out
                 jspContext.getOut().write(link.getUrl());

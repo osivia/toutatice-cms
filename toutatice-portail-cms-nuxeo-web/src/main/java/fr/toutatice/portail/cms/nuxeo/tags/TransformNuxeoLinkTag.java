@@ -3,7 +3,6 @@ package fr.toutatice.portail.cms.nuxeo.tags;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.jsp.JspException;
@@ -19,24 +18,24 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * Transform Nuxeo link to Portal Link.
- * 
+ *
  * @author David Chevrier.
  * @see SimpleTagSupport
  */
 public class TransformNuxeoLinkTag extends SimpleTagSupport {
-    
+
     /** Nuxeo link. */
     private String link;
     /** Portal link params. */
     private Map<String, String> params;
-    
+
     /**
      * Default constructor.
      */
     public TransformNuxeoLinkTag(){
         super();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -47,7 +46,7 @@ public class TransformNuxeoLinkTag extends SimpleTagSupport {
         // Request
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
 
         if ((nuxeoController != null)) {
 
@@ -56,7 +55,7 @@ public class TransformNuxeoLinkTag extends SimpleTagSupport {
 
             // Transformation
             String portalLink = nuxeoController.transformNuxeoLink(nxURL);
-            
+
             //Params
             if(MapUtils.isNotEmpty(this.params)){
                 for(Entry<String, String> param : this.params.entrySet()){
@@ -87,7 +86,7 @@ public class TransformNuxeoLinkTag extends SimpleTagSupport {
      * @return the params
      */
     public Map<String, String> getParams() {
-        return params;
+        return this.params;
     }
 
     /**
@@ -96,5 +95,5 @@ public class TransformNuxeoLinkTag extends SimpleTagSupport {
     public void setParams(Map<String, String> params) {
         this.params = params;
     }
-    
+
 }

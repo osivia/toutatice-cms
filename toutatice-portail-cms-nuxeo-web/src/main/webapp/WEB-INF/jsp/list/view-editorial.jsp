@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="internationalization" prefix="is"%>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
 
@@ -11,7 +11,7 @@
 	<!-- Document properties -->
     
     <!-- Vignette -->
-    <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+    <c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
     
     <!-- Author -->
     <c:set var="author" value="${document.properties['dc:creator']}" />

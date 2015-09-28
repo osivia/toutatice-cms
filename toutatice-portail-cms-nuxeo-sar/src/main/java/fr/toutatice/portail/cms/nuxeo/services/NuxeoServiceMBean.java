@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
@@ -10,20 +10,44 @@ import org.osivia.portal.core.cms.spi.ICMSIntegration;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
-
-
 /**
- * @author jss
- *
+ * Nuxeo service MBean interface.
+ * 
+ * @see ServiceMBean
+ * @see INuxeoService
+ * @see ICMSIntegration
  */
-public interface NuxeoServiceMBean extends ServiceMBean,INuxeoService,ICMSIntegration {
+public interface NuxeoServiceMBean extends ServiceMBean, INuxeoService, ICMSIntegration {
 
-	public void startService()throws Exception;
-	
-	public void stopService()throws Exception;
-	
-	public IProfilerService getProfiler() ;
+    /**
+     * Start service.
+     *
+     * @throws Exception
+     */
+    void startService() throws Exception;
 
-	public void setProfiler(IProfilerService profiler) ;
+
+    /**
+     * Stop service.
+     *
+     * @throws Exception
+     */
+    void stopService() throws Exception;
+
+
+    /**
+     * Get profiler.
+     *
+     * @return profiler
+     */
+    IProfilerService getProfiler();
+
+
+    /**
+     * Set profiler.
+     *
+     * @param profiler profiler
+     */
+    void setProfiler(IProfilerService profiler);
 
 }

@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
 
@@ -38,7 +38,7 @@
         <a href="${link.url}" class="no-ajax-link">${fileName}</a>
         
         <!-- Size -->
-        <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
+        <span>(<ttc:fileSize size="${fileSize}" />)</span>
     </p>
 
     

@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -16,10 +16,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -41,15 +39,14 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 
 /**
  * View fragment portlet
- * 
+ *
  * @see CMSPortlet
  */
 public class ViewFragmentPortlet extends CMSPortlet {
@@ -115,7 +112,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
                     String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
                     window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
                     if (fragmentTypeId != null) {
-                        FragmentType fragmentType = customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
+                        FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
                         if (fragmentType != null) {
                             ClassLoader restoreLoader = null;
                             try {
@@ -133,10 +130,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
                                 if (restoreLoader != null) {
                                     Thread.currentThread().setContextClassLoader(restoreLoader);
                                 }
-                            }                            
-                           
-                            
-                            
+                            }
+
+
+
                         }
                     }
                 }
@@ -150,7 +147,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param request request
      * @param response response
      * @throws PortletException
@@ -160,8 +157,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-        request.setAttribute("nuxeoController", nuxeoController);
-        
+
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
         // Current window
@@ -179,8 +175,8 @@ public class ViewFragmentPortlet extends CMSPortlet {
             FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
             if (fragmentType != null) {
                 // Specific fragment admin view
-                
-                
+
+
                 ClassLoader restoreLoader = null;
                 try {
                     // save current class loader
@@ -197,10 +193,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
                     if (restoreLoader != null) {
                         Thread.currentThread().setContextClassLoader(restoreLoader);
                     }
-                }      
-                
-                
-                
+                }
+
+
+
                 request.setAttribute("fragmentType", fragmentType);
 
                 if (fragmentType.getModule().getAdminJSPName() != null) {
@@ -233,8 +229,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("nuxeoController", nuxeoController);
-            
+
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
@@ -244,7 +239,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
             String fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
             if (StringUtils.isNotEmpty(fragmentTypeId)) {
                 // Fragment type
-                FragmentType fragmentType = customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
+                FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
                 if (fragmentType != null) {
 
                     ClassLoader restoreLoader = null;

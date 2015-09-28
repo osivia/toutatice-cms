@@ -69,6 +69,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
@@ -81,6 +82,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsComm
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
+import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
 
 /**
  * View Nuxeo document portlet.
@@ -107,7 +109,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
     /** View path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
-
 
 
     /** Nuxeo service. */
@@ -145,6 +146,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // CMS customizer
             CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
             this.nuxeoService.registerCMSCustomizer(customizer);
+
+            // Nuxeo tag service
+            INuxeoTagService tagService = new NuxeoTagService();
+            this.nuxeoService.registerTagService(tagService);
 
             // DAO
             this.documentDAO = DocumentDAO.getInstance();
@@ -308,7 +313,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("nuxeoController", nuxeoController);
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -326,15 +330,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             if (StringUtils.isNotBlank(path)) {
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
-                
+
                 // Display only remote sections indicator
                 boolean onlyRemoteSections = BooleanUtils.toBoolean(window.getProperty(ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY));
                 request.setAttribute("onlyRemoteSections", onlyRemoteSections);
-                
+
                 // Remote sections page indicator
                 boolean remoteSectionsPage = BooleanUtils.toBoolean(window.getProperty(REMOTE_SECTIONS_PAGE_WINDOW_PROPERTY));
                 request.setAttribute("remoteSectionsPage", remoteSectionsPage);
-                
+
                 // Display only description indicator
                 boolean onlyDescription = BooleanUtils.toBoolean(window.getProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY));
                 if (!maximized) {
@@ -359,8 +363,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
                 else {
                 	String docType = StringUtils.lowerCase(document.getType());
-                	
-                	String realPath = getPortletContext().getRealPath("/WEB-INF/jsp/document/view-" + docType + ".jsp" );
+
+                	String realPath = this.getPortletContext().getRealPath("/WEB-INF/jsp/document/view-" + docType + ".jsp" );
                 	File file = new File(realPath);
                 	if(file.exists()) {
                 		request.setAttribute("dispatchJsp", docType);
@@ -368,10 +372,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 	else {
                 		request.setAttribute("dispatchJsp", "default");
                 	}
-                	
-					
+
+
                 }
-                
+
                 // DTO
                 DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                 request.setAttribute("document", documentDTO);
@@ -381,12 +385,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 if (StringUtils.isNotBlank(title)) {
                     response.setTitle(title);
                 }
-                
+
                 if(onlyRemoteSections && maximized){
-                    
+
                     // Remote Published documents
                     this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, onlyRemoteSections);
-                    
+
                 } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();

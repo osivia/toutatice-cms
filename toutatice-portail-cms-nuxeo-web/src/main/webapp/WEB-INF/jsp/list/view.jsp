@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -21,7 +21,7 @@
         
             <!-- Documents -->
             <div class="no-ajax-link">
-                <ttc:custom-include page="view-${style}.jsp" />
+                <ttc:include page="view-${style}.jsp" />
             </div>
             
             <!-- Pagination -->

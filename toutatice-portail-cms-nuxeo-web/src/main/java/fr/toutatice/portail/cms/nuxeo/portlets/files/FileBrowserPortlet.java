@@ -356,7 +356,6 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Nuxeo controller
                 NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-                request.setAttribute("nuxeoController", nuxeoController);
 
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();

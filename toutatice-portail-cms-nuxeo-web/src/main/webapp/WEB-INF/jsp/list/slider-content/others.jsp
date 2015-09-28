@@ -2,11 +2,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="internationalization" prefix="is"%>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <c:set var="description" value="${doc.properties['dc:description']}" />
 <c:set var="thumbnailURL">
-	<ttc:getImageURL document="${doc}" property="ttc:vignette" />
+	<ttc:pictureLink document="${doc}" property="ttc:vignette" />
 </c:set>
 <ttc:documentLink document="${doc}" var="link" />
 <c:set var="date" value="${doc.properties['dc:issued']}" />

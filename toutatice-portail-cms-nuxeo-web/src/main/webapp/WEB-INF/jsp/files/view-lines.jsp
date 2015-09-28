@@ -3,7 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 
 <!-- Sort by index render URL -->
@@ -245,7 +245,7 @@
                                                 <div class="table-cell text-overflow">
                                                     <c:choose>
                                                         <c:when test="${size gt 0}">
-                                                            <span><ttc:formatFileSize size="${size}" /></span>
+                                                            <span><ttc:fileSize size="${size}" /></span>
                                                         </c:when>
                                                         
                                                         <c:otherwise>

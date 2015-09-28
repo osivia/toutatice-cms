@@ -1,12 +1,12 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+<c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
 
 <c:set var="date" value="${document.properties['dc:modified']}" />

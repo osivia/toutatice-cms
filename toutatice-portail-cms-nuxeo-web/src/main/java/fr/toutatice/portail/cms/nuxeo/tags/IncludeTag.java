@@ -15,7 +15,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
  * Transform HTML content tag.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see SimpleTagSupport
  */
@@ -27,7 +27,7 @@ public class IncludeTag extends SimpleTagSupport {
 
 
     public String getPage() {
-        return page;
+        return this.page;
     }
 
 
@@ -56,25 +56,25 @@ public class IncludeTag extends SimpleTagSupport {
             // Request
             ServletRequest request = pageContext.getRequest();
             // Nuxeo controller
-            NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
-            
-            String path = page;
-           
-            
-            if( ! getPage().startsWith("/"))    {
-                String servletPath = (String) request.getAttribute("javax.servlet.include.servlet_path");     
-                
+            NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
+
+            String path = this.page;
+
+
+            if( ! this.getPage().startsWith("/"))    {
+                String servletPath = (String) request.getAttribute("javax.servlet.include.servlet_path");
+
                 // FIXME bidouille pour que les JSP include fonctionnent
                 servletPath = servletPath.replaceAll("/WEB-INF/jsp//WEB-INF/jsp", "/WEB-INF/jsp");
-                
+
                 String parentPath = servletPath.substring(0, StringUtils.lastIndexOf(servletPath, '/') + 1);
-                path = parentPath + page;
+                path = parentPath + this.page;
             }
-            
+
             String customName = ((DefaultCMSCustomizer)nuxeoController.getNuxeoCMSService().getCMSCustomizer()).getPluginMgr().customizeJSP( path, nuxeoController.getPortletCtx(), nuxeoController.getRequest());
 
             pageContext.include(customName);
-            
+
 
 
         }

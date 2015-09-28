@@ -428,7 +428,6 @@ public class ViewListPortlet extends ViewList {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("nuxeoController", nuxeoController);
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
@@ -484,9 +483,9 @@ public class ViewListPortlet extends ViewList {
                  * Instead of generatig an exception, it's better to return a null value
                  */
 
-                if (nuxeoRequest != null && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*")) {
+                if ((nuxeoRequest != null) && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*")) {
                     // Is it a contextualization error
-                    if (nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*")) {
+                    if ((nuxeoController.getBasePath() == null) && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*")) {
                         nuxeoRequest = null;
                     }
 

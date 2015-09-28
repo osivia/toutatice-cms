@@ -73,7 +73,7 @@ public class DocumentLinkTag extends SimpleTagSupport {
         // Request
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
 
         // Nuxeo document
         Document nuxeoDocument;

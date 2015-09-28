@@ -194,7 +194,7 @@ public class SearchPortlet extends CMSPortlet {
                 nuxeoController.setCacheTimeOut(0);
 
                 NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext();
-                if( path != null && path.length() > 0)  {
+                if( (path != null) && (path.length() > 0))  {
                     queryFilter = nuxeoController.getQueryFilterContextForPath(path);
                 }
                 
@@ -212,7 +212,6 @@ public class SearchPortlet extends CMSPortlet {
                 int minPage = Math.max(0, currentPage - docs.getPageSize());
                 int maxPage = Math.min(currentPage + docs.getPageSize(), docs.getPageCount()) - 1;
 
-                request.setAttribute("nuxeoController", nuxeoController);
                 request.setAttribute("keywords", keywords);
                 request.setAttribute("documents", documentsDTO);
                 request.setAttribute("totalSize", docs.getTotalSize());

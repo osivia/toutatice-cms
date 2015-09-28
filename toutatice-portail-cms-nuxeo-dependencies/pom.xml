@@ -30,6 +30,14 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
+        
+        <!-- Toutatice portal taglib -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-taglib</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Nuxeo automation -->
         <dependency>

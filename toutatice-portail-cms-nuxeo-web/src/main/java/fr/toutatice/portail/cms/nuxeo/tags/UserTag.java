@@ -37,7 +37,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 public class UserTag extends SimpleTagSupport {
 
     /**
-	 * 
+	 *
 	 */
 	private static final String NX_USER_PREFIX = "user:";
 	/** Portal URL factory. */
@@ -71,7 +71,7 @@ public class UserTag extends SimpleTagSupport {
         // Request
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
         // Directory service
         IDirectoryService directoryService = DIRECTORY_SERVICE_LOCATOR.getDirectoryService();
 
@@ -79,10 +79,10 @@ public class UserTag extends SimpleTagSupport {
 
         if ((nuxeoController != null) && (directoryService != null)) {
         	// For nuxeo user, remove the user: prefix.
-        	if(name.startsWith(NX_USER_PREFIX)) {
-        		name = StringUtils.removeStart(name, NX_USER_PREFIX);
+        	if(this.name.startsWith(NX_USER_PREFIX)) {
+        		this.name = StringUtils.removeStart(this.name, NX_USER_PREFIX);
         	}
-        	
+
             // User LDAP person
             DirectoryPerson person = directoryService.getPerson(this.name);
 

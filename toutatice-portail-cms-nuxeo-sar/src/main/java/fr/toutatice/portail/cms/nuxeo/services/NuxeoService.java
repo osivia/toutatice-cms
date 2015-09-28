@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
@@ -29,134 +26,185 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 import org.osivia.portal.api.profiler.IProfilerService;
-import org.osivia.portal.core.cms.ICMSService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
+/**
+ * Nuxeo service implementation.
+ *
+ * @see ServiceMBeanSupport
+ * @see NuxeoServiceMBean
+ * @see Serializable
+ */
 public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBean, Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    /** Default serial version ID. */
+    private static final long serialVersionUID = 1L;
+
+    /** Logger. */
+    private static Log logger = LogFactory.getLog(NuxeoService.class);
+
+    /** Nuxeo customizer. */
+    private INuxeoCustomizer nuxeoCustomizer;
+    /** Nuxeo tag service. */
+    private INuxeoTagService tagService;
+    /** Profiler. */
+    private transient IProfilerService profiler;
 
 
-	private static Log logger = LogFactory.getLog(NuxeoService.class);
-
-	INuxeoCustomizer nuxeoCustomizer;
-
-
-	ICMSService cmsService;
-
-	private transient IProfilerService profiler;
-
-	public IProfilerService getProfiler() {
-		return profiler;
-	}
-
-	public void setProfiler(IProfilerService profiler) {
-		this.profiler = profiler;
-	}
-
-	public void stopService() throws Exception {
-		logger.info("Gestionnaire nuxeo arrete");
-
-	}
-
-	public void startService() throws Exception {
-		logger.info("Gestionnaire nuxeo demarre");
-
-	}
-
-	public Session createUserSession(String userId) throws Exception {
-
-		long begin = System.currentTimeMillis();
-		boolean error = false;
-		
-		Session session = null;
-
-		try {
-
-			String secretKey = System.getProperty("nuxeo.secretKey");
-
-			URI uri = NuxeoConnectionProperties.getPrivateBaseUri();
-
-			HttpAutomationClient client = new HttpAutomationClient(uri.toString() + "/site/automation");
-
-			if (userId != null)
-				client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
-			session = (Session) client.getSession();
-
-		} catch (Exception e) {
-			error = true;
-			throw e;
-		} finally {
-
-			// log into profiler
-			long end = System.currentTimeMillis();
-			long elapsedTime = end - begin;
-			
-			String nuxeoUserId = userId;
-			if( nuxeoUserId == null)
-				nuxeoUserId = "null";
-
-			String name = "createAutomationSession,user='" + nuxeoUserId + "'";
-
-			profiler.logEvent("NUXEO", name, elapsedTime, error);
-
-		}
-
-		return session;
-
-	}
-
-	public void registerCMSCustomizer(INuxeoCustomizer CMSCustomizer) {
-		this.nuxeoCustomizer = CMSCustomizer;
-
-	}
-
-	public INuxeoCustomizer getCMSCustomizer() {
-		return nuxeoCustomizer;
-
-	}
-
-
-	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
-
-		Session session = (Session) sessionEvent.getSession().getAttribute("portal.session" + "osivia.nuxeoSession");
-
-		if (session != null) {
-			
-			long begin = System.currentTimeMillis();
-			boolean error = false;
-			
-			try {
-				session.getClient().shutdown();
-			} finally {
-
-				// log into profiler
-				long end = System.currentTimeMillis();
-				long elapsedTime = end - begin;
-
-				String name = "shutdown";
-
-				profiler.logEvent("NUXEO", name, elapsedTime, error);
-
-			}			
-
-		}
-		
-		getCMSCustomizer().sessionDestroyed(sessionEvent);
-
-	}
-
-    public INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx) throws Exception {
-        return new NuxeoCommandService();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IProfilerService getProfiler() {
+        return this.profiler;
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setProfiler(IProfilerService profiler) {
+        this.profiler = profiler;
+    }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void stopService() throws Exception {
+        logger.info("Gestionnaire nuxeo arrete");
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void startService() throws Exception {
+        logger.info("Gestionnaire nuxeo demarre");
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Session createUserSession(String userId) throws Exception {
+        long begin = System.currentTimeMillis();
+        boolean error = false;
+
+        Session session = null;
+
+        try {
+            String secretKey = System.getProperty("nuxeo.secretKey");
+
+            URI uri = NuxeoConnectionProperties.getPrivateBaseUri();
+
+            HttpAutomationClient client = new HttpAutomationClient(uri.toString() + "/site/automation");
+
+            if (userId != null) {
+                client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
+            }
+            session = client.getSession();
+        } catch (Exception e) {
+            error = true;
+            throw e;
+        } finally {
+            // log into profiler
+            long end = System.currentTimeMillis();
+            long elapsedTime = end - begin;
+
+            String nuxeoUserId = userId;
+            if (nuxeoUserId == null) {
+                nuxeoUserId = "null";
+            }
+
+            String name = "createAutomationSession,user='" + nuxeoUserId + "'";
+
+            this.profiler.logEvent("NUXEO", name, elapsedTime, error);
+        }
+
+        return session;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void registerCMSCustomizer(INuxeoCustomizer CMSCustomizer) {
+        this.nuxeoCustomizer = CMSCustomizer;
+
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public INuxeoCustomizer getCMSCustomizer() {
+        return this.nuxeoCustomizer;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void registerTagService(INuxeoTagService tagService) {
+        this.tagService = tagService;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public INuxeoTagService getTagService() {
+        return this.tagService;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sessionDestroyed(HttpSessionEvent sessionEvent) {
+        Session session = (Session) sessionEvent.getSession().getAttribute("portal.session" + "osivia.nuxeoSession");
+
+        if (session != null) {
+            long begin = System.currentTimeMillis();
+            boolean error = false;
+
+            try {
+                session.getClient().shutdown();
+            } finally {
+                // log into profiler
+                long end = System.currentTimeMillis();
+                long elapsedTime = end - begin;
+
+                String name = "shutdown";
+
+                this.profiler.logEvent("NUXEO", name, elapsedTime, error);
+            }
+        }
+
+        this.getCMSCustomizer().sessionDestroyed(sessionEvent);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx) throws Exception {
+        return new NuxeoCommandService();
+    }
 
 }

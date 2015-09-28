@@ -22,6 +22,13 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+        
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-taglib</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 		
         <dependency>
             <groupId>${project.groupId}</groupId>

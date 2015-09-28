@@ -46,14 +46,14 @@ public class GetImageURLTag extends SimpleTagSupport {
         // Request
         ServletRequest request = pageContext.getRequest();
         // Nuxeo controller
-        NuxeoController nuxeoController = (NuxeoController) request.getAttribute("nuxeoController");
+        NuxeoController nuxeoController = (NuxeoController) request.getAttribute(NuxeoController.REQUEST_ATTRIBUTE);
 
         if ((nuxeoController != null) && (this.document != null)) {
             // Original Nuxeo document
             Document nuxeoDocument = this.document.getDocument();
 
             PropertyMap map = nuxeoDocument.getProperties().getMap(this.property);
-            
+
             if (map != null) {
                 String url = nuxeoController.createFileLink(nuxeoDocument, this.property);
 
@@ -66,7 +66,7 @@ public class GetImageURLTag extends SimpleTagSupport {
 
     /**
      * Getter for document.
-     * 
+     *
      * @return the document
      */
     public DocumentDTO getDocument() {
@@ -75,7 +75,7 @@ public class GetImageURLTag extends SimpleTagSupport {
 
     /**
      * Setter for document.
-     * 
+     *
      * @param document the document to set
      */
     public void setDocument(DocumentDTO document) {

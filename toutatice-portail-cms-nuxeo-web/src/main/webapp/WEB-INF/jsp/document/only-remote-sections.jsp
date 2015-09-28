@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="internationalization" prefix="is"%>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
 
@@ -20,7 +20,7 @@
                 
                     <div class="media">
                         <div class="media-body">
-                            <c:set var="publishedDocumentURL"><ttc:transformNxLink link="${publishedDocument.nxUrl}" params="${publishedDocument.linkContextualization}"/></c:set>
+                            <c:set var="publishedDocumentURL"><ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" params="${publishedDocument.linkContextualization}"/></c:set>
                             <a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
                         </div>
                         <div class="media-right">

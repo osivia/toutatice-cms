@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="internationalization" prefix="is"%>
-<%@ taglib uri="toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
 
@@ -19,16 +19,14 @@
 		          <c:set var="isInLiveSpace" value="${isInLiveSpace and not isInPublishSpace}" /> 
 		    </c:forEach>
 		
-			<c:if test="${isInLiveSpace}"> 
-			
+			<c:if test="${isInLiveSpace}">
 				<dt><is:getProperty key="DOCUMENT_REMOTE_SECTIONS" /></dt>
 				<c:forEach items="${publishedDocuments}" var="publishedDocument">
-					<c:set var="publishedDocumentURL"><ttc:transformNxLink link="${publishedDocument.nxUrl}" /></c:set>
+					<c:set var="publishedDocumentURL"><ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" /></c:set>
 					<dd>
 						<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
 					</dd>
 				</c:forEach>
-				
 			</c:if>
 			
         </c:if>

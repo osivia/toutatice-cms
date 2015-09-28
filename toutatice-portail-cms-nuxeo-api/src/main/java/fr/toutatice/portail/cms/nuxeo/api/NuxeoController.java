@@ -87,6 +87,10 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
  */
 public class NuxeoController {
 
+    /** Request attribute name. */
+    public static final String REQUEST_ATTRIBUTE = NuxeoController.class.getSimpleName();
+
+
     /** The request. */
     PortletRequest request;
 
@@ -808,6 +812,8 @@ public class NuxeoController {
             }
 
 
+            // Inject Nuxeo controller into request
+            request.setAttribute(REQUEST_ATTRIBUTE, this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1669,7 +1675,7 @@ public class NuxeoController {
         }
 
     }
-    
+
     /**
      * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
      *
