@@ -73,12 +73,11 @@ import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.AddCommentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.DeleteCommentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
@@ -237,6 +236,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
             String id = request.getParameter("id");
             // Comment content
             String content = request.getParameter("content");
+            // Comment DTO
+            CommentDTO comment = new CommentDTO();
+            comment.setContent(content);
 
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
@@ -251,13 +253,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     // Add comment
 
                     // Nuxeo command
-                    INuxeoCommand command = new AddCommentCommand(document, content, null, null);
+                    INuxeoCommand command = new AddCommentCommand(document, comment, null);
                     nuxeoController.executeNuxeoCommand(command);
                 } else if ("replyComment".equals(action)) {
                     // Reply comment
 
                     // Nuxeo command
-                    INuxeoCommand command = new CreateChildCommentCommand(document, id, content, null, null);
+                    INuxeoCommand command = new AddCommentCommand(document, comment, id);
                     nuxeoController.executeNuxeoCommand(command);
                 } else if ("deleteComment".equals(action)) {
                     // Delete comment
