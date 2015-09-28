@@ -219,6 +219,7 @@
 
     <modules>
         <module>toutatice-portail-cms-nuxeo-api</module>
+        <module>toutatice-portail-cms-nuxeo-taglib</module>        
         <module>toutatice-portail-cms-nuxeo-web</module>
         <module>toutatice-portail-cms-nuxeo-sar</module>
         <module>toutatice-portail-cms-nuxeo-automation-client</module>
