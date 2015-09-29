@@ -17,14 +17,13 @@ public class FileBrowserStatus implements PortletStatus {
 
     /** Task identifier, may be null. */
     private final String taskId;
-
     /** Views. */
     private final Map<String, FileBrowserView> views;
 
 
     /**
      * Constructor.
-     * 
+     *
      * @param taskId task identifier, may be null
      */
     public FileBrowserStatus(String taskId) {
@@ -61,13 +60,13 @@ public class FileBrowserStatus implements PortletStatus {
 
 
     /**
-     * Getter for taskId.
-     *
-     * @return the taskId
+     * {@inheritDoc}
      */
+    @Override
     public String getTaskId() {
         return this.taskId;
     }
+
 
     /**
      * Getter for views.

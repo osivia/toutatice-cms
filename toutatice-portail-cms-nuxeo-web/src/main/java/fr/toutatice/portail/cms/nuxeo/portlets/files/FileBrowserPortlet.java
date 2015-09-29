@@ -26,7 +26,6 @@ import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -53,6 +52,7 @@ import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.panels.IPanelsService;
 import org.osivia.portal.api.panels.Panel;
 import org.osivia.portal.api.portlet.IPortletStatusService;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -112,6 +112,8 @@ public class FileBrowserPortlet extends CMSPortlet {
     private INotificationsService notificationsService;
     /** Portlet status service. */
     private IPortletStatusService portletStatusService;
+    /** Panel service. */
+    private IPanelsService panelsService;
     /** Taskbar service. */
     private ITaskbarService taskbarService;
     /** Document DAO. */
@@ -146,6 +148,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Portlet status service
         this.portletStatusService = Locator.findMBean(IPortletStatusService.class, IPortletStatusService.MBEAN_NAME);
+
+        // Panels service
+        this.panelsService = Locator.findMBean(IPanelsService.class, IPanelsService.MBEAN_NAME);
 
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
@@ -545,11 +550,6 @@ public class FileBrowserPortlet extends CMSPortlet {
      * @throws PortletException
      */
     private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, PortalWindow window, String type) throws PortletException {
-        // Controller context
-        ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
-        // HTTP servlet request
-        HttpServletRequest httpServletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
-
         // Portlet status
         FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
 
@@ -578,8 +578,16 @@ public class FileBrowserPortlet extends CMSPortlet {
         }
 
 
-        // Update navigation panel closed indicator
-        httpServletRequest.setAttribute(Panel.NAVIGATION_PANEL.getClosedAttribute(), currentView.isClosedNavigation());
+        // Toggle panel
+        try {
+            if (currentView.isClosedNavigation()) {
+                this.panelsService.hidePanel(portalControllerContext, Panel.NAVIGATION_PANEL);
+            } else {
+                this.panelsService.showPanel(portalControllerContext, Panel.NAVIGATION_PANEL);
+            }
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
 
         return currentView;
     }
