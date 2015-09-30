@@ -3,7 +3,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 
 <%@ page isELIgnored="false" %>
@@ -35,7 +35,7 @@
         <fieldset>
             <legend>
                 <i class="halflings halflings-cog"></i>
-                <span><is:getProperty key="LIST_REQUEST_CONFIGURATION" /></span>
+                <span><op:translate key="LIST_REQUEST_CONFIGURATION" /></span>
             </legend>
     
             <!-- Example -->
@@ -43,7 +43,7 @@
                 <div class="panel-heading">
                     <a href="#bean-shell-example" class="no-ajax-link" data-toggle="collapse">
                         <i class="halflings halflings-info-sign"></i>
-                        <span><is:getProperty key="LIST_BEAN_SHELL_EXAMPLE" /></span>
+                        <span><op:translate key="LIST_BEAN_SHELL_EXAMPLE" /></span>
                     </a>
                 </div>
                 <div id="bean-shell-example" class="panel-collapse collapse">
@@ -105,20 +105,20 @@
     
             <!-- Nuxeo request -->
             <div class="form-group">
-                <label for="nuxeo-request" class="control-label col-sm-4"><is:getProperty key="LIST_NUXEO_REQUEST" /></label>
+                <label for="nuxeo-request" class="control-label col-sm-4"><op:translate key="LIST_NUXEO_REQUEST" /></label>
                 <div class="col-sm-8">
                     <textarea id="nuxeo-request" name="nuxeoRequest" rows="10" class="form-control">${configuration.nuxeoRequest}</textarea>
     
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" name="beanShell" ${beanShellChecked}>
-                            <span><is:getProperty key="LIST_BEAN_SHELL" /></span>
+                            <span><op:translate key="LIST_BEAN_SHELL" /></span>
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" name="useES" ${useESChecked}>
-                            <span><is:getProperty key="LIST_USE_ES" /></span>
+                            <span><op:translate key="LIST_USE_ES" /></span>
                         </label>
                     </div>
                 </div>
@@ -126,7 +126,7 @@
     
             <!-- Version -->
             <div class="form-group">                
-                <label for="cms-version" class="control-label col-sm-4"><is:getProperty key="LIST_VERSION" /></label>
+                <label for="cms-version" class="control-label col-sm-4"><op:translate key="LIST_VERSION" /></label>
                 <div class="col-sm-8">
                     <span>${versions}</span>
                 </div>
@@ -134,7 +134,7 @@
         
             <!-- Content filter -->
             <div class="form-group">                
-                <label for="cms-filter" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_FILTER" /></label>
+                <label for="cms-filter" class="control-label col-sm-4"><op:translate key="LIST_CONTENT_FILTER" /></label>
                 <div class="col-sm-8">
                     <span>${contentFilters}</span>
                 </div>
@@ -142,7 +142,7 @@
             
             <!-- Scope -->
             <div class="form-group">
-                <label for="cms-scope" class="control-label col-sm-4"><is:getProperty key="LIST_SCOPE" /></label>
+                <label for="cms-scope" class="control-label col-sm-4"><op:translate key="LIST_SCOPE" /></label>
                 <div class="col-sm-8">
                     <span>${scopes}</span>
                 </div>
@@ -152,12 +152,12 @@
         <fieldset>
             <legend>
                 <i class="glyphicons glyphicons-display"></i>
-                <span><is:getProperty key="LIST_DISPLAY_CONFIGURATION" /></span>
+                <span><op:translate key="LIST_DISPLAY_CONFIGURATION" /></span>
             </legend>
     
     		 <!-- Template -->
             <div class="form-group">
-                <label for="template" class="control-label col-sm-4"><is:getProperty key="LIST_TEMPLATE" /></label>
+                <label for="template" class="control-label col-sm-4"><op:translate key="LIST_TEMPLATE" /></label>
                 <div class="col-sm-8">
                     <select id="template" name="template" class="form-control">
                         <c:forEach var="template" items="${templates}">
@@ -174,12 +174,12 @@
     
             <!-- Request display -->
             <div class="form-group">
-                <label for="request-display" class="control-label col-sm-4"><is:getProperty key="LIST_NUXEO_REQUEST" /></label>
+                <label for="request-display" class="control-label col-sm-4"><op:translate key="LIST_NUXEO_REQUEST" /></label>
                 <div class="col-sm-8">
                     <div class="checkbox">
                         <label>
                             <input id="request-display" type="checkbox" name="nuxeoRequestDisplay" ${nuxeoRequestDisplayChecked}>
-                            <span><is:getProperty key="LIST_DISPLAY_NUXEO_REQUEST" /></span>
+                            <span><op:translate key="LIST_DISPLAY_NUXEO_REQUEST" /></span>
                         </label>
                     </div>
                 </div>
@@ -187,7 +187,7 @@
         
             <!-- Results limit -->
             <div class="form-group">                
-                <label for="results-limit" class="control-label col-sm-4"><is:getProperty key="LIST_RESULTS_LIMIT" /></label>
+                <label for="results-limit" class="control-label col-sm-4"><op:translate key="LIST_RESULTS_LIMIT" /></label>
                 <div class="col-sm-8">
                     <input id="results-limit" type="number" name="resultsLimit" value="${configuration.resultsLimit}" class="form-control" />
                 </div>
@@ -195,7 +195,7 @@
             
             <!-- Normal view pagination -->
             <div class="form-group">                
-                <label for="normal-pagination" class="control-label col-sm-4"><is:getProperty key="LIST_NORMAL_PAGINATION" /></label>
+                <label for="normal-pagination" class="control-label col-sm-4"><op:translate key="LIST_NORMAL_PAGINATION" /></label>
                 <div class="col-sm-8">
                     <input id="normal-pagination" type="number" name="normalPagination" value="${configuration.normalPagination}" class="form-control" />
                 </div>
@@ -203,7 +203,7 @@
             
             <!-- Maximized view pagination -->
             <div class="form-group">                
-                <label for="maximized-pagination" class="control-label col-sm-4"><is:getProperty key="LIST_MAXIMIZED_PAGINATION" /></label>
+                <label for="maximized-pagination" class="control-label col-sm-4"><op:translate key="LIST_MAXIMIZED_PAGINATION" /></label>
                 <div class="col-sm-8">
                     <input id="maximized-pagination" type="number" name="maximizedPagination" value="${configuration.maximizedPagination}" class="form-control" />
                 </div>
@@ -211,12 +211,12 @@
             
     		<!-- Metadata -->
             <div class="form-group">
-                <label for="metadata-display" class="control-label col-sm-4"><is:getProperty key="LIST_METADATA" /></label>
+                <label for="metadata-display" class="control-label col-sm-4"><op:translate key="LIST_METADATA" /></label>
                 <div class="col-sm-8">
                     <div class="checkbox">
                         <label>
                             <input id="metadata-display" type="checkbox" name="metadataDisplay" ${metadataDisplayChecked}>
-                            <span><is:getProperty key="LIST_METADATA_DISPLAY" /></span>
+                            <span><op:translate key="LIST_METADATA_DISPLAY" /></span>
                         </label>
                     </div>
                 </div>
@@ -228,12 +228,12 @@
         <fieldset>
             <legend>
                 <i class="social social-rss"></i>
-                <span><is:getProperty key="LIST_PERMALINK_RSS_CONFIGURATION" /></span>
+                <span><op:translate key="LIST_PERMALINK_RSS_CONFIGURATION" /></span>
             </legend>
         
             <!-- Permalink reference -->
             <div class="form-group">                
-                <label for="permalink-reference" class="control-label col-sm-4"><is:getProperty key="LIST_PERMALINK_REFERENCE" /></label>
+                <label for="permalink-reference" class="control-label col-sm-4"><op:translate key="LIST_PERMALINK_REFERENCE" /></label>
                 <div class="col-sm-8">
                     <input id="permalink-reference" type="text" name="permalinkReference" value="${configuration.permalinkReference}" class="form-control" />
                 </div>
@@ -241,7 +241,7 @@
             
             <!-- RSS reference -->
             <div class="form-group">                
-                <label for="rss-reference" class="control-label col-sm-4"><is:getProperty key="LIST_RSS_REFERENCE" /></label>
+                <label for="rss-reference" class="control-label col-sm-4"><op:translate key="LIST_RSS_REFERENCE" /></label>
                 <div class="col-sm-8">
                     <input id="rss-reference" type="text" name="rssReference" value="${configuration.rssReference}" class="form-control" />
                 </div>
@@ -249,7 +249,7 @@
             
             <!-- RSS title -->
             <div class="form-group">                
-                <label for="rss-title" class="control-label col-sm-4"><is:getProperty key="LIST_RSS_TITLE" /></label>
+                <label for="rss-title" class="control-label col-sm-4"><op:translate key="LIST_RSS_TITLE" /></label>
                 <div class="col-sm-8">
                     <input id="rss-title" type="text" name="rssTitle" value="${configuration.rssTitle}" class="form-control" />
                 </div>
@@ -259,12 +259,12 @@
         <fieldset>
             <legend>
                 <i class="halflings halflings-plus-sign"></i>
-                <span><is:getProperty key="LIST_CONTENT_CREATION_CONFIGURATION" /></span>
+                <span><op:translate key="LIST_CONTENT_CREATION_CONFIGURATION" /></span>
             </legend>
         
             <!-- Creation parent container path -->
             <div class="form-group">                
-                <label for="parent-path" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_PARENT_PATH" /></label>
+                <label for="parent-path" class="control-label col-sm-4"><op:translate key="LIST_CONTENT_PARENT_PATH" /></label>
                 <div class="col-sm-8">
                     <input id="parent-path" type="text" name="creationParentPath" value="${configuration.creationParentPath}" class="form-control" />
                 </div>
@@ -272,7 +272,7 @@
             
             <!-- Creation content type -->
             <div class="form-group">                
-                <label for="content-type" class="control-label col-sm-4"><is:getProperty key="LIST_CONTENT_TYPE" /></label>
+                <label for="content-type" class="control-label col-sm-4"><op:translate key="LIST_CONTENT_TYPE" /></label>
                 <div class="col-sm-8">
                     <input id="content-type" type="text" name="creationContentType" value="${configuration.creationContentType}" class="form-control" />
                 </div>
@@ -285,10 +285,10 @@
                 <div class="col-sm-offset-4 col-sm-8">
                     <button type="submit" class="btn btn-primary navbar-btn">
                         <i class="halflings halflings-floppy-disk"></i>
-                        <span><is:getProperty key="SAVE" /></span>
+                        <span><op:translate key="SAVE" /></span>
                     </button>
                     
-                    <button type="button" class="btn btn-default navbar-btn" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+                    <button type="button" class="btn btn-default navbar-btn" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
                 </div>
             </div>
         </div>

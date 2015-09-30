@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page isELIgnored="false" %>
 
@@ -31,18 +31,18 @@
         <c:set var="dateTo" value="${interval[1]}" />
     
         <c:set var="glyphicon" value="halflings halflings-ok" />
-        <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
+        <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
         <c:set var="glyphicon" value="halflings halflings-plus" />
-        <c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
+        <c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
     </c:otherwise>
 </c:choose>
 
 
-<c:set var="placeholderBegin"><is:getProperty key="BEGIN" /></c:set>
-<c:set var="placeholderEnd"><is:getProperty key="END" /></c:set>
+<c:set var="placeholderBegin"><op:translate key="BEGIN" /></c:set>
+<c:set var="placeholderEnd"><op:translate key="END" /></c:set>
 
 
 <div class="dates-selector">
@@ -70,7 +70,7 @@
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
                         <i class="halflings halflings-trash"></i>
-                        <span class="sr-only"><is:getProperty key="DELETE" /></span>
+                        <span class="sr-only"><op:translate key="DELETE" /></span>
                     </a>
                 </p>
             </c:forEach>

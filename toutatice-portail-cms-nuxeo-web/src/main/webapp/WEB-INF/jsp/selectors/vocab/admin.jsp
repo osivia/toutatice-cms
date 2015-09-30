@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is"%>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -23,13 +23,13 @@ $JQry(document).ready(function() {
 </script>
 
 
-<c:set var="othersLabelPlaceholder"><is:getProperty key="SELECTOR_OTHERS_LABEL" /></c:set>
+<c:set var="othersLabelPlaceholder"><op:translate key="SELECTOR_OTHERS_LABEL" /></c:set>
 
 
 <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">
     <!-- Label -->
     <div class="form-group">
-        <label for="selector-label" class="control-label col-sm-3"><is:getProperty key="SELECTOR_LABEL" /></label>
+        <label for="selector-label" class="control-label col-sm-3"><op:translate key="SELECTOR_LABEL" /></label>
         <div class="col-sm-9">
             <input id="selector-label" type="text" name="libelle" value="${libelle}" class="form-control">
         </div>
@@ -37,7 +37,7 @@ $JQry(document).ready(function() {
     
     <!-- Identifier -->
     <div class="form-group">
-        <label for="selector-id" class="control-label col-sm-3"><is:getProperty key="SELECTOR_IDENTIFIER" /></label>
+        <label for="selector-id" class="control-label col-sm-3"><op:translate key="SELECTOR_IDENTIFIER" /></label>
         <div class="col-sm-9">
             <input id="selector-id" type="text" name="selectorId" value="${selectorId}" class="form-control">
         </div>
@@ -51,7 +51,7 @@ $JQry(document).ready(function() {
                     <input type="checkbox" name="selectorMonoValued" value="1"
                         <c:if test="${selectorMonoValued eq '1'}">checked="checked"</c:if>
                     >
-                    <span><is:getProperty key="SELECTOR_MONO_VALUED" /></span>
+                    <span><op:translate key="SELECTOR_MONO_VALUED" /></span>
                 </label>
             </div>
         </div>
@@ -65,7 +65,7 @@ $JQry(document).ready(function() {
                     <input type="checkbox" name="selectorMultiLevel" value="1"
                         <c:if test="${selectorMultiLevel eq '1'}">checked="checked"</c:if>
                     >
-                    <span><is:getProperty key="SELECTOR_MULTI_LEVEL_VOCAB" /></span>
+                    <span><op:translate key="SELECTOR_MULTI_LEVEL_VOCAB" /></span>
                 </label>
             </div>
         </div>
@@ -73,7 +73,7 @@ $JQry(document).ready(function() {
     
     <!-- Option "others" -->
     <div class="form-group">
-        <label for="selector-other" class="control-label col-sm-3"><is:getProperty key="SELECTOR_OTHERS" /></label>
+        <label for="selector-other" class="control-label col-sm-3"><op:translate key="SELECTOR_OTHERS" /></label>
         <div class="col-sm-9">
             <div class="checkbox">
                 <p>
@@ -81,7 +81,7 @@ $JQry(document).ready(function() {
                         <input id="selector-other" type="checkbox" name="othersOption" value="1"
                             <c:if test="${othersOption eq '1'}">checked="checked"</c:if>
                         >
-                        <span><is:getProperty key="SELECTOR_OTHERS_ACTIVATE" /></span>
+                        <span><op:translate key="SELECTOR_OTHERS_ACTIVATE" /></span>
                     </label>
                 </p>
             </div>
@@ -93,7 +93,7 @@ $JQry(document).ready(function() {
     
     <!-- Vocabulary level 1 -->
     <div class="form-group">
-        <label for="vocabulary-1" class="control-label col-sm-3"><is:getProperty key="SELECTOR_VOCABULARY_LEVEL" args="1" /></label>
+        <label for="vocabulary-1" class="control-label col-sm-3"><op:translate key="SELECTOR_VOCABULARY_LEVEL" args="1" /></label>
         <div class="col-sm-9">
             <input id="vocabulary-1" type="text" name="vocabName1" value="${vocabName1}" class="form-control">
         </div>
@@ -101,16 +101,16 @@ $JQry(document).ready(function() {
     
     <!-- Vocabulary level 1 preselection -->
     <div class="form-group">
-        <label for="vocabulary-1-preselection" class="control-label col-sm-3"><is:getProperty key="SELECTOR_VOCABULARY_LEVEL_1_PRESELECTION" /></label>
+        <label for="vocabulary-1-preselection" class="control-label col-sm-3"><op:translate key="SELECTOR_VOCABULARY_LEVEL_1_PRESELECTION" /></label>
         <div class="col-sm-9">
             <input id="vocabulary-1-preselection" type="text" name="preselect1" value="${preselect1}" class="form-control">
-            <span class="help-block"><is:getProperty key="SELECTOR_VOCABULARY_LEVEL_1_PRESELECTION_HELP" /></span>
+            <span class="help-block"><op:translate key="SELECTOR_VOCABULARY_LEVEL_1_PRESELECTION_HELP" /></span>
         </div>
     </div>
     
     <!-- Vocabulary level 2 -->
     <div class="form-group">
-        <label for="vocabulary-2" class="control-label col-sm-3"><is:getProperty key="SELECTOR_VOCABULARY_LEVEL" args="2" /></label>
+        <label for="vocabulary-2" class="control-label col-sm-3"><op:translate key="SELECTOR_VOCABULARY_LEVEL" args="2" /></label>
         <div class="col-sm-9">
             <input id="vocabulary-2" type="text" name="vocabName2" value="${vocabName2}" class="form-control">
         </div>
@@ -118,7 +118,7 @@ $JQry(document).ready(function() {
     
     <!-- Vocabulary level 3 -->
     <div class="form-group">
-        <label for="vocabulary-3" class="control-label col-sm-3"><is:getProperty key="SELECTOR_VOCABULARY_LEVEL" args="3" /></label>
+        <label for="vocabulary-3" class="control-label col-sm-3"><op:translate key="SELECTOR_VOCABULARY_LEVEL" args="3" /></label>
         <div class="col-sm-9">
             <input id="vocabulary-3" type="text" name="vocabName3" value="${vocabName3}" class="form-control">
         </div>
@@ -130,10 +130,10 @@ $JQry(document).ready(function() {
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
                 <i class="halflings halflings-floppy-disk"></i>
-                <span><is:getProperty key="SAVE" /></span>
+                <span><op:translate key="SAVE" /></span>
             </button>
             
-            <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+            <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </form>

@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -20,14 +20,14 @@
 <form action="${changeSpaceURL}" method="post" class="form-horizontal" role="form">
     <p class="lead">
         <i class="glyphicons glyphicons-move"></i>
-        <span><is:getProperty key="DOCUMENT_MOVE_TITLE" /></span>
+        <span><op:translate key="DOCUMENT_MOVE_TITLE" /></span>
         <span>&ndash;</span>
-        <span><is:getProperty key="DOCUMENT_MOVE_CHANGE_SPACE_TITLE" /></span>
+        <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE_TITLE" /></span>
     </p>
     
     <!-- Space path -->
     <div class="form-group">
-        <label for="${namespace}-space-path" class="col-sm-3 control-label"><is:getProperty key="DOCUMENT_MOVE_SPACE" /></label>
+        <label for="${namespace}-space-path" class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
         <div class="col-sm-9">        
             <div class="selector">
                 <input id="${namespace}-space-path" type="hidden" name="spacePath" value="${cmsBasePath}" class="selector-value">
@@ -61,10 +61,10 @@
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
                 <i class="halflings halflings-ok"></i>
-                <span><is:getProperty key="VALIDATE" /></span>
+                <span><op:translate key="VALIDATE" /></span>
             </button>
             <a href="${viewURL}" class="btn btn-default">
-                <span><is:getProperty key="BACK" /></span>
+                <span><op:translate key="BACK" /></span>
             </a>
         </div>
     </div>

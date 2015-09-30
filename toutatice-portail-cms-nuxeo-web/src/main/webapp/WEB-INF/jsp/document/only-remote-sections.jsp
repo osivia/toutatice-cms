@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
-<%@ taglib uri="internationalization" prefix="is"%>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
@@ -13,7 +13,7 @@
         <c:when test="${not empty publishedDocuments}">
         
              <c:if test="${remoteSectionsPage}">
-                 <h4><is:getProperty key="MANY_REMOTE_SECTIONS_FOR_DOCUMENT" args="${document.title}"/></h4>
+                 <h4><op:translate key="MANY_REMOTE_SECTIONS_FOR_DOCUMENT" args="${document.title}"/></h4>
              </c:if>
         
                 <c:forEach items="${publishedDocuments}" var="publishedDocument">
@@ -33,7 +33,7 @@
         </c:when>
         <c:otherwise>
             <c:if test="${remoteSectionsPage}">
-                <h4><is:getProperty key="NO_REMOTE_SECTIONS_FOR_DOCUMENT" args="${document.title}"/></h4>
+                <h4><op:translate key="NO_REMOTE_SECTIONS_FOR_DOCUMENT" args="${document.title}"/></h4>
             </c:if>
             
             <c:set var="documentURL"><ttc:documentLink document="${document}" /></c:set>

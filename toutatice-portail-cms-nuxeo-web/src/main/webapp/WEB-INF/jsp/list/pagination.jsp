@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 
 <%@ page isELIgnored="false" %>
@@ -114,7 +114,7 @@
                         <span>${page + 1}</span>
                         
                         <c:if test="${page == currentPage}">
-                            <span class="sr-only"> (<is:getProperty key="CURRENT" />)</span>
+                            <span class="sr-only"> (<op:translate key="CURRENT" />)</span>
                         </c:if>
                     </a>
                 </li>

@@ -1,5 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
@@ -31,7 +31,7 @@
     <div class="text-right">
         <a href="${documentURL}" class="btn btn-default btn-sm">
             <i class="halflings halflings-zoom-in"></i>
-            <span><is:getProperty key="CONTINUATION" />...</span>
+            <span><op:translate key="CONTINUATION" />...</span>
         </a>
     </div>
 </div>

@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="/WEB-INF/tld/vocabulary-selector.tld" prefix="vs" %>
 
 <%@ page isELIgnored="false" %>
@@ -12,14 +12,14 @@
 <portlet:actionURL var="actionURL" />
 
 
-<c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
+<c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
 
 
 <c:choose>
     <c:when test="${selectorMonoValued eq '1'}">
         <c:set var="name" value="monoAdd" />
         <c:set var="glyphicon" value="halflings halflings-ok" />
-        <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
+        <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
@@ -56,7 +56,7 @@
                     
                     <a href="${deleteActionURL}" class="btn btn-default">
                         <i class="halflings halflings-trash"></i>
-                        <span class="sr-only"><is:getProperty key="DELETE" /></span>
+                        <span class="sr-only"><op:translate key="DELETE" /></span>
                     </a>
                 </p>
             </c:forEach>

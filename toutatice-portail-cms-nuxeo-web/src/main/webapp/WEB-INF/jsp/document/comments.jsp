@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page isELIgnored="false"%>
 
@@ -20,7 +20,7 @@
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <i class="glyphicons glyphicons-conversation"></i>                
-                        <span><is:getProperty key="COMMENTS" /></span>
+                        <span><op:translate key="COMMENTS" /></span>
                     </h3>
                 </div>
             
@@ -36,7 +36,7 @@
                     <div class="list-group-item">
                         <a href="#${namespace}-add-comment" class="btn btn-default no-ajax-link" data-toggle="collapse">
                             <i class="glyphicons glyphicons-chat"></i>
-                            <span><is:getProperty key="COMMENT_ADD" /></span>
+                            <span><op:translate key="COMMENT_ADD" /></span>
                         </a>
                         
                         
@@ -45,13 +45,13 @@
                         
                             <form action="${addCommentURL}" method="post" role="form">
                                 <div class="form-group">
-                                    <label for="${namespace}-comment-content"><is:getProperty key="COMMENT_CONTENT" /></label>
+                                    <label for="${namespace}-comment-content"><op:translate key="COMMENT_CONTENT" /></label>
                                     <textarea id="${namespace}-comment-content" name="content" class="form-control"></textarea>
                                 </div>
                                 
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-primary">
-                                        <span><is:getProperty key="SAVE" /></span>
+                                        <span><op:translate key="SAVE" /></span>
                                     </button>
                                 </div>
                             </form>

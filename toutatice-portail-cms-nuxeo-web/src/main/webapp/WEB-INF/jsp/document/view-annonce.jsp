@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
@@ -40,9 +40,9 @@
     
     <!-- Edition informations -->
     <p class="small test-right">
-<%--         <span><is:getProperty key="CREATED_BY" /></span> --%>
+<%--         <span><op:translate key="CREATED_BY" /></span> --%>
 <%--         <ttc:user name="${author}"/> --%>
-        <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
+        <span><op:translate key="DATE_ARTICLE_PREFIX" /></span>
         <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
     </p>
 </article>

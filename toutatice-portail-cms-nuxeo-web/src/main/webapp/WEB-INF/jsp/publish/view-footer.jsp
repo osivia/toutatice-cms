@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -13,7 +13,7 @@
         <c:when test="${not empty displayItem}">
             <nav class="menu-footer">
                 <!-- Title -->
-                <h3 class="hidden"><is:getProperty key="MENU_TITLE_FOOTER" /></h3>
+                <h3 class="hidden"><op:translate key="MENU_TITLE_FOOTER" /></h3>
     
                 <!-- Menu -->
                 <ul class="list-inline">
@@ -59,7 +59,7 @@
         <c:otherwise>
             <p class="text-danger">
                 <i class="halflings halflings-exclamation-sign"></i>
-                <span><is:getProperty key="MESSAGE_PATH_UNDEFINED" /></span>
+                <span><op:translate key="MESSAGE_PATH_UNDEFINED" /></span>
             </p>
         </c:otherwise>
     </c:choose>

@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -13,7 +13,7 @@
 <form action="${reorderURL}" method="post" class="form-horizontal no-ajax-link" role="form">
     <p class="lead">
         <i class="glyphicons glyphicons-sorting"></i>
-        <span><is:getProperty key="REORDER_DOCUMENTS_TITLE" /></span>
+        <span><op:translate key="REORDER_DOCUMENTS_TITLE" /></span>
     </p>
 
 
@@ -22,7 +22,7 @@
     
     <!-- Documents -->
     <div class="form-group">
-        <label class="control-label col-sm-3"><is:getProperty key="REORDER_DOCUMENTS_LABEL" /></label>
+        <label class="control-label col-sm-3"><op:translate key="REORDER_DOCUMENTS_LABEL" /></label>
         <div class="col-sm-9">
             <ul class="list-sortable reorder-sortable">
                 <c:forEach items="${documents}" var="document">
@@ -32,7 +32,7 @@
                     </li>
                 </c:forEach>
             </ul>
-            <div class="help-block"><is:getProperty key="REORDER_DOCUMENTS_HELP" /></div>
+            <div class="help-block"><op:translate key="REORDER_DOCUMENTS_HELP" /></div>
         </div>
     </div>
     
@@ -42,9 +42,9 @@
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
                 <i class="glyphicons glyphicons-floppy-disk"></i>
-                <span><is:getProperty key="REORDER" /></span>
+                <span><op:translate key="REORDER" /></span>
             </button>
-            <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+            <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </form>

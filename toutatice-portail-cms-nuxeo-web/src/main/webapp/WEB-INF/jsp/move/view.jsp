@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -36,12 +36,12 @@
 <form action="${moveURL}" method="post" class="form-horizontal" role="form">
     <p class="lead">
         <i class="glyphicons glyphicons-move"></i>
-        <span><is:getProperty key="DOCUMENT_MOVE_TITLE" /></span>
+        <span><op:translate key="DOCUMENT_MOVE_TITLE" /></span>
     </p>
 
     <!-- Target path -->
     <div class="form-group">
-        <label for="${namespace}-target-path" class="col-sm-3 control-label"><is:getProperty key="DOCUMENT_MOVE_TARGET_PATH" /></label>
+        <label for="${namespace}-target-path" class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_TARGET_PATH" /></label>
         <div class="col-sm-9">
             <div class="selector">
                 <p>
@@ -60,12 +60,12 @@
     
     <!-- Space -->
     <div class="form-group">
-        <label class="col-sm-3 control-label"><is:getProperty key="DOCUMENT_MOVE_SPACE" /></label>
+        <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
         <div class="col-sm-9">
             <div class="form-inline">
                 <p class="form-control-static">${spaceDocument.title}</p>
                 <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
-                    <span><is:getProperty key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
+                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
                 </a>
             </div>
         </div>
@@ -76,9 +76,9 @@
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
                 <i class="glyphicons glyphicons-floppy-disk"></i>
-                <span><is:getProperty key="MOVE" /></span>
+                <span><op:translate key="MOVE" /></span>
             </button>
-            <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+            <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </form>

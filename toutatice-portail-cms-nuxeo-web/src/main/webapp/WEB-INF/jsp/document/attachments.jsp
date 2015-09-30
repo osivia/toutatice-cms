@@ -1,5 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page isELIgnored="false"%>
 
@@ -13,7 +13,7 @@
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <i class="halflings halflings-glyph-paperclip"></i>
-                        <span><is:getProperty key="ATTACHMENTS" /></span>
+                        <span><op:translate key="ATTACHMENTS" /></span>
                     </h3>
                 </div>
             

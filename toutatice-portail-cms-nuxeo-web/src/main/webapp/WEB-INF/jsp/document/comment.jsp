@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
@@ -19,7 +19,7 @@
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 <c:set var="currentComment" value="${comment}" />
-<c:set var="deleteTitle"><is:getProperty key="DELETE" /></c:set>
+<c:set var="deleteTitle"><op:translate key="DELETE" /></c:set>
 
 
 <div class="comment">
@@ -29,7 +29,7 @@
             <!-- Reply -->
             <a href="#${namespace}-reply-comment-${currentComment.id}" class="btn btn-default no-ajax-link" data-toggle="collapse">
                 <i class="glyphicons glyphicons-chat"></i>
-                <span><is:getProperty key="REPLY" /></span>
+                <span><op:translate key="REPLY" /></span>
             </a>
             
             <!-- Delete -->
@@ -65,13 +65,13 @@
             
                 <form action="${replyCommentURL}" method="post" role="form">
                     <div class="form-group">
-                        <label for="${namespace}-comment-content"><is:getProperty key="COMMENT_CONTENT" /></label>
+                        <label for="${namespace}-comment-content"><op:translate key="COMMENT_CONTENT" /></label>
                         <textarea id="${namespace}-comment-content" name="content" class="form-control"></textarea>
                     </div>
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
-                            <span><is:getProperty key="SAVE" /></span>
+                            <span><op:translate key="SAVE" /></span>
                         </button>
                     </div>
                 </form>
@@ -85,13 +85,13 @@
         <div id="${namespace}-delete-comment-${currentComment.id}" class="container-fluid">
             <form action="${deleteCommentURL}" method="post" role="form">            
                 <div class="form-group">
-                    <p><is:getProperty key="COMMENT_SUPPRESSION_CONFIRM_MESSAGE" /></p>
+                    <p><op:translate key="COMMENT_SUPPRESSION_CONFIRM_MESSAGE" /></p>
                     <div class="text-center">
                         <button type="submit" class="btn btn-warning">
                             <i class="halflings halflings-alert"></i>
-                            <span><is:getProperty key="YES" /></span>
+                            <span><op:translate key="YES" /></span>
                         </button>
-                        <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="NO" /></button>
+                        <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="NO" /></button>
                     </div>
                 </div>
             </form>

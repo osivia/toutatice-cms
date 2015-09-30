@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
@@ -22,7 +22,7 @@
         <div class="panel-heading">
             <h3 class="panel-title">
                 <i class="halflings halflings-tags"></i>
-                <span><is:getProperty key="METADATA" /></span>
+                <span><op:translate key="METADATA" /></span>
             </h3>
         </div>
     
@@ -38,14 +38,14 @@
                 <div class="media-body">
                     <!-- Author -->
                     <p>
-                        <strong><is:getProperty key="AUTHOR" /></strong>
+                        <strong><op:translate key="AUTHOR" /></strong>
                         <span> : </span>
                         <ttc:user name="${author}"/>
                     </p>
                     
                     <!-- Publication date -->
                     <p>
-                        <strong><is:getProperty key="DOCUMENT_PUBLICATION_DATE" /></strong>
+                        <strong><op:translate key="DOCUMENT_PUBLICATION_DATE" /></strong>
                         <span> : </span>
                         <span><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></span>
                     </p>

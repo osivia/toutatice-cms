@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -13,7 +13,7 @@
 
 <div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
     <c:if test="${empty displayItem.children}">
-        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+        <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
     </c:if>
 
     <div class="fancytree fancytree-lazy">

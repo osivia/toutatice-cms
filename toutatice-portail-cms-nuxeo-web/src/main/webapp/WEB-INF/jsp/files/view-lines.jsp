@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 
@@ -89,7 +89,7 @@
                 
                     <div>
                         <a href="${sortNameURL}">
-                            <span><is:getProperty key="FILE_BROWSER_NAME" /></span>
+                            <span><op:translate key="FILE_BROWSER_NAME" /></span>
                         </a>
                         
                         <c:if test="${criteria.sort eq 'name'}">
@@ -109,7 +109,7 @@
                     <div class="col-xs-9">
                         <div class="table-cell">
                             <a href="${sortDateURL}">
-                                <span><is:getProperty key="FILE_BROWSER_LAST_CONTRIBUTION" /></span>
+                                <span><op:translate key="FILE_BROWSER_LAST_CONTRIBUTION" /></span>
                             </a>
                             
                             <c:if test="${criteria.sort eq 'date'}">
@@ -126,7 +126,7 @@
                     <div class="col-xs-3">
                         <div class="table-cell">
                             <a href="${sortSizeURL}">
-                                <span><is:getProperty key="FILE_BROWSER_SIZE" /></span>
+                                <span><op:translate key="FILE_BROWSER_SIZE" /></span>
                             </a>
                             
                             <c:if test="${criteria.sort eq 'size'}">
@@ -270,6 +270,6 @@
     
     
     <c:if test="${empty documents}">
-        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+        <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
     </c:if>
 </div>

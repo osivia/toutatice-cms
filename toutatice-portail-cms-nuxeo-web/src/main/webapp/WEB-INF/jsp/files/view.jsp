@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false" %>
@@ -47,12 +47,12 @@
                         <div class="form-group fileupload-buttonbar">
                             <button type="submit" class="btn btn-primary start">
                                 <i class="halflings halflings-upload"></i>
-                                <span><is:getProperty key="FILE_BROWSER_START_UPLOAD" /></span>
+                                <span><op:translate key="FILE_BROWSER_START_UPLOAD" /></span>
                             </button>
                             
                             <button type="reset" class="btn btn-default cancel">
                                 <i class="halflings halflings-ban-circle"></i>
-                                <span><is:getProperty key="CANCEL" /></span>
+                                <span><op:translate key="CANCEL" /></span>
                             </button>
                         </div>
                             
@@ -69,7 +69,7 @@
             
             <div class="file-upload-shadowbox jumbotron bg-info-hover">
                 <div class="text-center">
-                    <p><is:getProperty key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
+                    <p><op:translate key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
                     <p class="h1"><i class="glyphicons glyphicons-inbox"></i></p>
                 </div>
             </div>

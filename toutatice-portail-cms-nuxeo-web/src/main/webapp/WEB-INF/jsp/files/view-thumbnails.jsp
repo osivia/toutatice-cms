@@ -1,5 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 
@@ -17,7 +17,7 @@
 
     <!-- Empty indicator -->
     <c:if test="${empty documents}">
-        <p class="text-muted text-center"><is:getProperty key="NO_ITEMS" /></p>
+        <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
     </c:if>
 
 
