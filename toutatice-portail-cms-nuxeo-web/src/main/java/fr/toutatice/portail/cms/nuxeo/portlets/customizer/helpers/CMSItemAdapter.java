@@ -28,8 +28,8 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -104,7 +104,7 @@ public class CMSItemAdapter {
 
 
     public boolean supportsOnlyPortalContextualization(CMSServiceCtx ctx, Document doc) {
-    	CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+    	DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
 		return ((cmsItemType != null) && (cmsItemType.isForcePortalContextualization()));
     }
 

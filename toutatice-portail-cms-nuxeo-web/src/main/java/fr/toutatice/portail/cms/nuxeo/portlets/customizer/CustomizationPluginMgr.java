@@ -35,11 +35,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.core.cms.CMSItemType;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
@@ -47,8 +46,8 @@ import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 
 
 /**
@@ -78,7 +77,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private Map<String, String> destDispatcher = new Hashtable<String, String>();
 
     /** The modules that defines players . */
-    private List<IPlayerModule> dynamicModules = null;
+    private List<INuxeoPlayerModule> dynamicModules = null;
 
 
     /** The customization cache ts. */
@@ -95,7 +94,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     
     
     /** The types cache. */
-    Map<String, CMSItemType> typesCache = null;
+    Map<String, DocumentType> typesCache = null;
     
     /** The customization deployement ts. */
     long customizationDeployementTS=System.currentTimeMillis();
@@ -337,33 +336,33 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @param customizer the customizer
      * @return the map
      */
-    public Map<String, CMSItemType> customizeCMSItemTypes() {
+    public Map<String, DocumentType> customizeCMSItemTypes() {
 
 
         if (typesCache == null) {
 
 
-            List<CMSItemType> defaultTypes = customizer.getDefaultCMSItemTypes();
-            typesCache = new LinkedHashMap<String, CMSItemType>(defaultTypes.size());
+            List<DocumentType> defaultTypes = customizer.getDefaultCMSItemTypes();
+            typesCache = new LinkedHashMap<String, DocumentType>(defaultTypes.size());
             
             
-            for (CMSItemType defaultType : defaultTypes) {
+            for (DocumentType defaultType : defaultTypes) {
                 typesCache.put(defaultType.getName(), defaultType);
             }
 
-            List<CMSItemType> customizedTypes = customizer.getCustomizedCMSItemTypes();
-            for (CMSItemType customizedType : customizedTypes) {
+            List<DocumentType> customizedTypes = customizer.getCustomizedCMSItemTypes();
+            for (DocumentType customizedType : customizedTypes) {
                 typesCache.put(customizedType.getName(), customizedType);
             }
 
 
             Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
 
-            Map<String, CMSItemType> customDocTypes = (Map<String, CMSItemType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
+            Map<String, DocumentType> customDocTypes = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
 
             if (customDocTypes != null) {
-                Set<Entry<String, CMSItemType>> customTypes = customDocTypes.entrySet();
-                for (Entry<String, CMSItemType> customType : customTypes) {
+                Set<Entry<String, DocumentType>> customTypes = customDocTypes.entrySet();
+                for (Entry<String, DocumentType> customType : customTypes) {
                     typesCache.put(customType.getKey(), customType.getValue());
                 }
             }
@@ -418,12 +417,12 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @param ctx the ctx
      * @return the list
      */
-    public List<IPlayerModule> customizeModules(CMSServiceCtx ctx) {
+    public List<INuxeoPlayerModule> customizeModules() {
         if (dynamicModules == null) {
             Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
-            List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
+            List<INuxeoPlayerModule> players = (List<INuxeoPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
 
-            dynamicModules = new ArrayList<IPlayerModule>();
+            dynamicModules = new ArrayList<INuxeoPlayerModule>();
             if (players != null)
                 dynamicModules.addAll(players);
 

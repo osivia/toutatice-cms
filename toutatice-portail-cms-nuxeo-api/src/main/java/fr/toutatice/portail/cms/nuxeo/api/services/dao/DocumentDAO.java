@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -191,12 +191,12 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @param type document type name
      * @return CMS item type
      */
-    private CMSItemType getType(String type) {
+    private DocumentType getType(String type) {
         // CMS customizer
         INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
 
         // CMS item types
-        Map<String, CMSItemType> types = cmsCustomizer.getCMSItemTypes();
+        Map<String, DocumentType> types = cmsCustomizer.getCMSItemTypes();
         return types.get(type);
     }
 

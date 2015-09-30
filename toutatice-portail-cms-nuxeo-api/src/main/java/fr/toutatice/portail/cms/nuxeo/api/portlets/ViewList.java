@@ -59,4 +59,18 @@ public abstract class ViewList extends CMSPortlet {
     public static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
     /** Creation content type window property name. */
     public static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
+    
+    
+    /* Default style for lists */
+    /** List template minimal. */
+    public static final String LIST_TEMPLATE_MINI = "mini";
+    /** List template normal. */
+    public static final String LIST_TEMPLATE_NORMAL = "normal";
+    /** List template detailed. */
+    public static final String LIST_TEMPLATE_DETAILED = "detailed";
+    /** List template editorial. */
+    public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
+    /** List template contextual links. */
+    public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";    
+    
 }

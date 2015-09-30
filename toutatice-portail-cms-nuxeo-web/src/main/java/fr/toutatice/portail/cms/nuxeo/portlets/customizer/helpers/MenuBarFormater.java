@@ -37,6 +37,7 @@ import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
@@ -61,7 +62,6 @@ import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSItemTypeComparator;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -454,8 +454,8 @@ public class MenuBarFormater {
         String path = document.getPath();
 
         // CMS item type
-        Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
-        CMSItemType containerDocType = managedTypes.get(document.getType());
+        Map<String, DocumentType> managedTypes = this.customizer.getCMSItemTypes();
+        DocumentType containerDocType = managedTypes.get(document.getType());
 
         if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // Edition state
@@ -676,7 +676,7 @@ public class MenuBarFormater {
         } else {
             path = document.getPath();
 
-            CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
             folderish = (cmsItemType != null) && cmsItemType.isFolderish();
         }
 
@@ -1123,7 +1123,7 @@ public class MenuBarFormater {
 
         if (pubInfos.isEditableByUser()) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+                DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
                     // Callback URL
                     String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
@@ -1190,7 +1190,7 @@ public class MenuBarFormater {
                     portalControllerContext.getPortletCtx());
 
             // CMS item type
-            CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
             if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
                 // Move document popup URL
@@ -1246,7 +1246,7 @@ public class MenuBarFormater {
 
         if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // CMS item type
-            CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
             if ((cmsItemType != null) && cmsItemType.isOrdered()) {
                 // Reorder documents popup URL
@@ -1321,20 +1321,20 @@ public class MenuBarFormater {
 
             // Sub-types
             Map<String, String> subTypes = pubInfos.getSubTypes();
-            Comparator<CMSItemType> comparator = new CMSItemTypeComparator(bundle);
-            SortedMap<CMSItemType, String> folderishTypes = new TreeMap<CMSItemType, String>(comparator);
-            SortedMap<CMSItemType, String> notFolderishTypes = new TreeMap<CMSItemType, String>(comparator);
+            Comparator<DocumentType> comparator = new CMSItemTypeComparator(bundle);
+            SortedMap<DocumentType, String> folderishTypes = new TreeMap<DocumentType, String>(comparator);
+            SortedMap<DocumentType, String> notFolderishTypes = new TreeMap<DocumentType, String>(comparator);
 
-            Map<String, CMSItemType> managedTypes = this.customizer.getCMSItemTypes();
-            CMSItemType containerDocType = managedTypes.get(parentDoc.getType());
+            Map<String, DocumentType> managedTypes = this.customizer.getCMSItemTypes();
+            DocumentType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
                 for (String docType : subTypes.keySet()) {
                     // Is this type managed at portal level ?
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
-                        CMSItemType docTypeDef = managedTypes.get(docType);
+                        DocumentType docTypeDef = managedTypes.get(docType);
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
                             // CMS item type
-                            CMSItemType cmsItemType = managedTypes.get(docType);
+                            DocumentType cmsItemType = managedTypes.get(docType);
                             if (cmsItemType != null) {
                                 // URL
                                 Map<String, String> requestParameters = new HashMap<String, String>();
@@ -1356,7 +1356,7 @@ public class MenuBarFormater {
             if (size == 1) {
                 // Direct link
 
-                Entry<CMSItemType, String> entry;
+                Entry<DocumentType, String> entry;
                 if (folderishTypes.size() == 1) {
                     entry = folderishTypes.entrySet().iterator().next();
                 } else {
@@ -1379,8 +1379,8 @@ public class MenuBarFormater {
                 int order = 1;
                 boolean divider = false;
 
-                for (Entry<CMSItemType, String> entry : folderishTypes.entrySet()) {
-                    CMSItemType cmsItemType = entry.getKey();
+                for (Entry<DocumentType, String> entry : folderishTypes.entrySet()) {
+                    DocumentType cmsItemType = entry.getKey();
                     String url = entry.getValue();
 
                     // Type name
@@ -1398,8 +1398,8 @@ public class MenuBarFormater {
                     divider = true;
                 }
 
-                for (Entry<CMSItemType, String> entry : notFolderishTypes.entrySet()) {
-                    CMSItemType cmsItemType = entry.getKey();
+                for (Entry<DocumentType, String> entry : notFolderishTypes.entrySet()) {
+                    DocumentType cmsItemType = entry.getKey();
                     String url = entry.getValue();
 
                     // Type name
@@ -1446,7 +1446,7 @@ public class MenuBarFormater {
         // Do not delete published elements
         if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() || this.isInLiveMode(cmsContext, pubInfos))) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                CMSItemType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
+                DocumentType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
                     MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 

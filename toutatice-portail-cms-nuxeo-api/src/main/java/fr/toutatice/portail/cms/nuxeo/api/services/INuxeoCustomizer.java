@@ -25,11 +25,12 @@ import java.util.SortedMap;
 import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.cms.DocumentContext;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.ecm.EcmCommand;
+import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -38,7 +39,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 
 
-// TODO: Auto-generated Javadoc
 /**
  * Nuxeo customizer interface.
  */
@@ -52,8 +52,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return CMS player portlet with properties
      * @throws Exception the exception
      */
-    CMSHandlerProperties getCMSPlayer(CMSServiceCtx ctx) throws Exception;
-
+    Player getCMSPlayer(CMSServiceCtx ctx) throws Exception;
 
     /**
      * Create custom link.
@@ -175,7 +174,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      *
      * @return CMS item types
      */
-    Map<String, CMSItemType> getCMSItemTypes();
+    Map<String, DocumentType> getCMSItemTypes();
 
 
     /**
@@ -254,26 +253,15 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
 
     
-    /**
-     * Creates the folder request.
-     *
-     * @param ctx the ctx
-     * @param ordered the ordered
-     * @return the string
-     * @throws CMSException the CMS exception
-     */
-    String createFolderRequest(CMSServiceCtx ctx, boolean ordered) throws CMSException;
-    
-    
-    /**
-     * Gets the CMS file browser.
-     *
-     * @param cmsContext the cms context
-     * @return the CMS file browser
-     */
-    CMSHandlerProperties getCMSFileBrowser(CMSServiceCtx cmsContext) ;
-    
-    
+//    /**
+//     * Creates the folder request.
+//     *
+//     * @param ctx the ctx
+//     * @param ordered the ordered
+//     * @return the string
+//     * @throws CMSException the CMS exception
+//     */
+//    String createFolderRequest(DocumentContext<Document> docCtx, boolean ordered);
     
     
     
@@ -283,5 +271,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the ecm commands
      */
     Map<String, EcmCommand> getEcmCommands();
+
+    /**
+     * Gets the CMS file browser.
+     *
+     * @param docCtx the cms context
+     * @return the CMS file browser
+     */
+	Player getCMSFileBrowser(DocumentContext<Document> docCtx);
+
 
 }

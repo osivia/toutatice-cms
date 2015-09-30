@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.api.cms.DocumentType;
 
 /**
  * Document data transfert object.
@@ -36,7 +36,7 @@ public class DocumentDTO implements Cloneable {
     /** Document path. */
     private String path;
     /** Document type. */
-    private CMSItemType type;
+    private DocumentType type;
     /** Document properties. */
     private final Map<String, Object> properties;
     /** Document attachments. */
@@ -160,7 +160,7 @@ public class DocumentDTO implements Cloneable {
      *
      * @return the type
      */
-    public CMSItemType getType() {
+    public DocumentType getType() {
         return this.type;
     }
 
@@ -169,7 +169,7 @@ public class DocumentDTO implements Cloneable {
      *
      * @param type the type to set
      */
-    public void setType(CMSItemType type) {
+    public void setType(DocumentType type) {
         this.type = type;
     }
 

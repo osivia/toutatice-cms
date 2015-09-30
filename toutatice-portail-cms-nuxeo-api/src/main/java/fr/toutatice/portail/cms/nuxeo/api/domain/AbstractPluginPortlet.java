@@ -18,17 +18,20 @@ package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletException;
 
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
+import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
+import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
-import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 
@@ -37,13 +40,14 @@ import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 /**
  * The Class CMSCustomizerPortlet.
  */
-public abstract class AbstractPluginPortlet extends PortalGenericPortlet {
+public abstract class AbstractPluginPortlet extends PortalGenericPortlet implements ICustomizationModule{
 
 	
     /** Customization modules repository. */
     private ICustomizationModulesRepository repository;
+    
     /** Internationalization customization module metadatas. */
-    protected final CustomizationModuleMetadatas metadatas;
+    private CustomizationModuleMetadatas metadatas;
 
 
     /** The cl. */
@@ -51,16 +55,6 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet {
 
     /** Customization modules repository attribute name. */
     private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
-
-
-    /**
-     * Constructor.
-     */
-    public AbstractPluginPortlet() {
-        super();
-        this.metadatas = this.generateMetadatas();
-
-    }
 
     /**
      * {@inheritDoc}
@@ -72,17 +66,34 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet {
   
         cl = Thread.currentThread().getContextClassLoader();
 
+        
+//        if (this.getClass().getAnnotation(Plugin.class) != null) {
+//            this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
+//            
+    		CustomizationModuleMetadatas metadatas = new CustomizationModuleMetadatas();
+//    		
+//    		Plugin plugin = this.getClass().getAnnotation(Plugin.class);
+//    		
+    		metadatas.setName(getPluginName());
+    		metadatas.setModule(this);
+    		metadatas.setCustomizationIDs(Arrays.asList(ICustomizationModule.PLUGIN_ID));
+    		metadatas.setOrder(100);
+            
+            this.metadatas = metadatas;
+            //this.repository.register(this.metadatas);
+//        }
+//        else throw new PortletException("You should declare an id value with the @Plugin(''myPluginName'') annotation. ");
+        
         this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
         this.repository.register(this.metadatas);
     }
 
 
-    /**
-     * Utility method used to generate attributes bundles customization module metadatas.
-     * 
-     * @return metadatas
-     */
-    protected abstract CustomizationModuleMetadatas generateMetadatas();
+	/**
+	 * @return
+	 */
+	protected abstract String getPluginName();
+
 
 
     /**
@@ -206,10 +217,10 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet {
      * @param context the context
      * @return the doc types
      */
-    protected Map<String, CMSItemType> getDocTypes(CustomizationContext context) {
-        Map<String, CMSItemType> docTypes = (Map<String, CMSItemType>) context.getAttributes().get(Customizable.DOC_TYPE.toString());
+    protected Map<String, DocumentType> getDocTypes(CustomizationContext context) {
+        Map<String, DocumentType> docTypes = (Map<String, DocumentType>) context.getAttributes().get(Customizable.DOC_TYPE.toString());
         if (docTypes == null) {
-            docTypes = new Hashtable<String, CMSItemType>();
+            docTypes = new Hashtable<String, DocumentType>();
             context.getAttributes().put(Customizable.DOC_TYPE.toString(), docTypes);
         }
         return docTypes;

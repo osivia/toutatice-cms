@@ -22,8 +22,8 @@ import javax.portlet.PortletContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
@@ -68,7 +68,7 @@ public class NavigationItemAdapter {
 	 */
 
 	protected boolean isNavigable(Document doc)	{
-		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+		DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
 		return ((cmsItemType != null) && (cmsItemType.isNavigable()));
 	}
 
@@ -117,7 +117,7 @@ public class NavigationItemAdapter {
 	public void adaptPublishSpaceNavigationItem(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem) {
 
 		Document doc = (Document) publishSpaceNavigationItem.getNativeItem();
-		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+		DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
 
 		Map<String, String> properties = publishSpaceNavigationItem.getProperties();
 
