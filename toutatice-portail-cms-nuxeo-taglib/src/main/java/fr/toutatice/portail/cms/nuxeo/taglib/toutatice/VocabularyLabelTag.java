@@ -94,4 +94,21 @@ public class VocabularyLabelTag extends ToutaticeSimpleTag {
         }
     }
 
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
+	/**
+	 * @param key the key to set
+	 */
+	public void setKey(String key) {
+		this.key = key;
+	}
+    
+    
 }
