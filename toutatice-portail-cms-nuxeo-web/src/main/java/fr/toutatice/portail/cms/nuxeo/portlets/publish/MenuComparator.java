@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.api.cms.DocumentType;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
@@ -55,9 +55,9 @@ public class MenuComparator implements Comparator<NavigationDisplayItem> {
         Document doc1 = (Document) item1.getNavItem().getNativeItem();
         Document doc2 = (Document) item2.getNavItem().getNativeItem();
 
-        Map<String, CMSItemType> managedTypes = this.nuxeoController.getCMSItemTypes();
-        CMSItemType type1 = managedTypes.get(doc1.getPath());
-        CMSItemType type2 = managedTypes.get(doc2.getPath());
+        Map<String, DocumentType> managedTypes = this.nuxeoController.getCMSItemTypes();
+        DocumentType type1 = managedTypes.get(doc1.getPath());
+        DocumentType type2 = managedTypes.get(doc2.getPath());
 
         if ((type1 != null) && type1.isFolderish()) {
             if ((type2 != null) && type2.isFolderish()) {

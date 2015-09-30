@@ -13,6 +13,8 @@ package org.nuxeo.ecm.automation.client.model;
 
 import java.util.Date;
 
+import org.osivia.portal.api.cms.EcmDocument;
+
 
 /**
  * A immutable document. You cannot modify documents. Documents are as they are
@@ -31,7 +33,7 @@ import java.util.Date;
  *
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
-public class Document extends DocRef {
+public class Document extends DocRef implements EcmDocument{
 
     private static final long serialVersionUID = 1L;
 

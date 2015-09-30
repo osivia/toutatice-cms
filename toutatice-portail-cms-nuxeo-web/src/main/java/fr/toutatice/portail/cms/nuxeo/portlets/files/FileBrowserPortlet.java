@@ -41,6 +41,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
@@ -59,7 +60,6 @@ import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
@@ -400,7 +400,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Ordered indicator
-                CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
+                DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
                 boolean ordered = ((cmsItemType != null) && cmsItemType.isOrdered());
                 request.setAttribute("ordered", ordered);
 
@@ -708,11 +708,10 @@ public class FileBrowserPortlet extends CMSPortlet {
         PortletRequest request = portalControllerContext.getRequest();
         // CMS context
         CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
-        // Path
-        String path = nuxeoController.getContentPath();
+
 
         // Callback URL
-        String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
+        String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
         request.setAttribute("callbackURL", callbackURL);
 
         // ECM base URL

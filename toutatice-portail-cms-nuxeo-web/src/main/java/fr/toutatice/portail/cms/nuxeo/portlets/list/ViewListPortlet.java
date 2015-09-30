@@ -78,7 +78,6 @@ import fr.toutatice.portail.cms.nuxeo.api.portlets.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
 /**
  * List portlet.
@@ -146,7 +145,7 @@ public class ViewListPortlet extends ViewList {
     public ListTemplate getCurrentTemplate(Locale locale, ListConfiguration configuration) {
         String currentTemplateName = configuration.getTemplate();
         if (currentTemplateName == null) {
-            currentTemplateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
+            currentTemplateName = LIST_TEMPLATE_NORMAL;
         }
 
         // Search template
@@ -158,7 +157,7 @@ public class ViewListPortlet extends ViewList {
                 // Current template
                 currentTemplate = template;
                 break;
-            } else if (DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL.equals(template.getKey())) {
+            } else if (LIST_TEMPLATE_NORMAL.equals(template.getKey())) {
                 // Default template
                 defaultTemplate = template;
             }
@@ -554,7 +553,7 @@ public class ViewListPortlet extends ViewList {
                 request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
                 String templateName = configuration.getTemplate();
                 if (templateName == null) {
-                    templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
+                    templateName = LIST_TEMPLATE_NORMAL;
                 }
                 ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));

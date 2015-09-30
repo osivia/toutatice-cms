@@ -43,10 +43,12 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.panels.PanelPlayer;
+import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -57,9 +59,7 @@ import org.osivia.portal.core.cms.CMSConfigurationItem;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSHandlerProperties;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
@@ -170,7 +170,7 @@ public class CMSService implements ICMSService {
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
 
         // CMS item type
-        CMSItemType type = this.customizer.getCMSItemTypes().get(doc.getType());
+        DocumentType type = this.customizer.getCMSItemTypes().get(doc.getType());
         cmsItem.setType(type);
 
         return cmsItem;
@@ -623,12 +623,13 @@ public class CMSService implements ICMSService {
 
 
     @Override
-    public CMSHandlerProperties getItemHandler(CMSServiceCtx ctx) throws CMSException {
+    public Player getItemHandler(CMSServiceCtx ctx) throws CMSException {
         // Document doc = ctx.g
         try {
             if (!"detailedView".equals(ctx.getDisplayContext())) {
                 return this.getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
             } else {
+            	
                 return ((DefaultCMSCustomizer) this.getNuxeoService().getCMSCustomizer()).getCMSDefaultPlayer(ctx);
             }
         } catch (NuxeoException e) {
@@ -2214,7 +2215,7 @@ public class CMSService implements ICMSService {
                 // Document
                 Document document = (Document) navigationItem.getNativeItem();
                 // Type
-                CMSItemType type = navigationItem.getType();
+                DocumentType type = navigationItem.getType();
                 if (type != null) {
                     TaskbarTask task = new TaskbarTask();
 

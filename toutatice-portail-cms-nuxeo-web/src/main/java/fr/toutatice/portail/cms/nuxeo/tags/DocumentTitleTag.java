@@ -10,10 +10,10 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 import org.apache.commons.lang.BooleanUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.urls.Link;
-import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -60,7 +60,7 @@ public class DocumentTitleTag extends SimpleTagSupport {
         // Document glyphicon
         String glyphicon = null;
         if (BooleanUtils.isTrue(this.icon)) {
-            CMSItemType type = this.document.getType();
+            DocumentType type = this.document.getType();
             if (type != null) {
                 glyphicon = type.getGlyph();
             }

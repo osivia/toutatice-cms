@@ -43,6 +43,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -54,7 +55,6 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.context.ControllerContextAdapter;
@@ -305,7 +305,7 @@ public class MenuPortlet extends CMSPortlet {
 
                     for (CMSItem item : items) {
                         if ("1".equals(item.getProperties().get("menuItem"))) {
-                            CMSItemType type = item.getType();
+                            DocumentType type = item.getType();
                             if ((typeFilter == null) || ((type != null) && (typeFilter.equals(type.getName())))) {
                                 // Nuxeo document
                                 Document document = (Document) item.getNativeItem();
@@ -362,7 +362,7 @@ public class MenuPortlet extends CMSPortlet {
         String acceptedTypes = null;
         String glyph = null;
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
-            CMSItemType cmsItemType = item.getNavItem().getType();
+            DocumentType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
             acceptedTypes = StringUtils.join(cmsItemType.getPortalFormSubTypes(), ",");
             glyph = cmsItemType.getGlyph();
@@ -685,7 +685,7 @@ public class MenuPortlet extends CMSPortlet {
         }
 
         // v2.0.9 : sort for consistent view with file browser
-        CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(document.getType());
+        DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(document.getType());
         if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
             Comparator<NavigationDisplayItem> comparator = new MenuComparator(nuxeoController);
             Collections.sort(navigationDisplayItemChildren, comparator);

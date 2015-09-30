@@ -33,10 +33,10 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -128,7 +128,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
             cmsItem.setPublished(Boolean.valueOf(isPublished));
             cmsItem.setBeingModified(Boolean.valueOf(isLiveModifiedFromProxy));
 
-            CMSItemType type = this.getType(documentType);
+            DocumentType type = this.getType(documentType);
             cmsItem.setType(type);
 
             cmsItems.add(cmsItem);
@@ -159,12 +159,12 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      * @param type document type name
      * @return CMS item type
      */
-    private CMSItemType getType(String type) {
+    private DocumentType getType(String type) {
         // CMS customizer
         INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
 
         // CMS item types
-        Map<String, CMSItemType> types = cmsCustomizer.getCMSItemTypes();
+        Map<String, DocumentType> types = cmsCustomizer.getCMSItemTypes();
         return types.get(type);
     }
 

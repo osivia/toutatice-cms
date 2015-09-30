@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.api.cms.DocumentType;
 
 /**
  * File browser comparator.
@@ -59,9 +59,9 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
             result = this.compare(item1.getIndex(), item2.getIndex());
         } else {
             // Folderish comparison
-            CMSItemType type1 = item1.getType();
+            DocumentType type1 = item1.getType();
             boolean folderish1 = (type1 != null) && type1.isFolderish();
-            CMSItemType type2 = item2.getType();
+            DocumentType type2 = item2.getType();
             boolean folderish2 = (type2 != null) && type2.isFolderish();
 
             if (folderish1 && !folderish2) {
