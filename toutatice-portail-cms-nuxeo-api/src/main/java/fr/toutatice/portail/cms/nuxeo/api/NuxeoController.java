@@ -2318,7 +2318,7 @@ public class NuxeoController {
      */
     private static void addInfos(CMSServiceCtx cmsCtx, String path, NuxeoDocumentContext docContext) throws CMSException {
     	
-        BasicPublicationInfos navigationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
+        BasicPublicationInfos publicationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
 		BasicPermissions perms = docContext.getPermissions(BasicPermissions.class);
 		
     	
@@ -2330,27 +2330,28 @@ public class NuxeoController {
         INuxeoCustomizer cmsCustomizer = nuxeoService.getCMSCustomizer();
         
         
-        CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsCtx, path);
+        CMSPublicationInfos pub = cmsService.getPublicationInfos(cmsCtx, path);
 		
 
-		perms.setAnonymouslyReadable(publicationInfos.isAnonymouslyReadable());
-		perms.setDeletableByUser(publicationInfos.isDeletableByUser());
-		perms.setEditableByUser(publicationInfos.isEditableByUser());
-		perms.setManageableByUser(publicationInfos.isManageableByUser());
+		perms.setAnonymouslyReadable(pub.isAnonymouslyReadable());
+		perms.setDeletableByUser(pub.isDeletableByUser());
+		perms.setEditableByUser(pub.isEditableByUser());
+		perms.setManageableByUser(pub.isManageableByUser());
 		
 		DocumentState version = DocumentState.parse(cmsCtx.getDisplayLiveVersion());
-		navigationInfos.setContentPath(path);
-		navigationInfos.setState(version);
-		navigationInfos.setLiveId(publicationInfos.getLiveId());
-		navigationInfos.setLiveSpace(publicationInfos.isLiveSpace());
-		navigationInfos.setBasePath(publicationInfos.getPublishSpacePath());
-		navigationInfos.setScope(cmsCtx.getScope());
+		publicationInfos.setContentPath(path);
+		publicationInfos.setState(version);
+		publicationInfos.setLiveId(pub.getLiveId());
+		publicationInfos.setLiveSpace(pub.isLiveSpace());
+		publicationInfos.setBasePath(pub.getPublishSpacePath());
+		publicationInfos.setScope(cmsCtx.getScope());
+		publicationInfos.setDisplayContext(cmsCtx.getDisplayContext());
 		
 		if(cmsCtx.getContextualizationBasePath()!=null) {
-			navigationInfos.setContextualized(Boolean.TRUE);
+			publicationInfos.setContextualized(Boolean.TRUE);
 		}
 		
-		CMSItem content = cmsService.getContent(cmsCtx, navigationInfos.getContentPath());
+		CMSItem content = cmsService.getContent(cmsCtx, publicationInfos.getContentPath());
 		Document nativeItem = (Document) content.getNativeItem();
 		
 		docContext.setDoc(nativeItem);
