@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -20,8 +20,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
+import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.ResourceRequest;
@@ -36,21 +39,26 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.path.IBrowserService;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
 /**
  * Superclass for CMS Portlet.
- * 
+ *
  * @see PortalGenericPortlet
  */
 public abstract class CMSPortlet extends PortalGenericPortlet {
 
-    /** Logger. */
-    protected final Log logger;
+    /** Log. */
+    private final Log logger;
 
     /** The nuxeo navigation service. */
     private final INuxeoService nuxeoService;
@@ -65,16 +73,22 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     public CMSPortlet() {
         super();
+
+        // Log
         this.logger = LogFactory.getLog(CMSPortlet.class);
-        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+
+        // Nuxeo service
         this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+        // CMS service locator
+        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+        // Browser service
         this.browserService = Locator.findMBean(IBrowserService.class, IBrowserService.MBEAN_NAME);
     }
 
 
     /**
      * Get CMS service.
-     * 
+     *
      * @return CMS service
      */
     public ICMSService getCMSService() {
@@ -84,7 +98,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /**
      * Get Nuxeo service.
-     * 
+     *
      * @return Nuxeo service
      */
     public INuxeoService getNuxeoService() {
@@ -136,7 +150,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
             // Destruction des threads éventuels
             new NuxeoController(this.getPortletContext()).stopNuxeoService();
         } catch (Exception e) {
-            logger.error(e);
+            this.logger.error(e);
         }
 
         super.destroy();
@@ -186,6 +200,100 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
 
     /**
+     * Process comment action.
+     *
+     * @param request action request
+     * @param response action response
+     * @throws PortletException
+     * @throws IOException
+     */
+    protected void processCommentAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
+        // Action name
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+
+        // Comment identifier
+        String id = request.getParameter("id");
+        // Comment content
+        String content = request.getParameter("content");
+
+
+        if (PortletMode.VIEW.equals(request.getPortletMode())) {
+            if ("addComment".equals(action)) {
+                // Add comment action
+                this.addCommentAction(request, response, content, null);
+            } else if ("replyComment".equals(action)) {
+                // Reply comment action
+                this.addCommentAction(request, response, content, id);
+            } else if ("deleteComment".equals(action)) {
+                // Delete comment
+                this.deleteCommentAction(request, response, id);
+            }
+        }
+    }
+
+
+    /**
+     * Add or reply comment action.
+     *
+     * @param request action request
+     * @param response action response
+     * @param content comment content
+     * @param parentId parent comment identifier, may be null
+     * @throws PortletException
+     */
+    protected void addCommentAction(ActionRequest request, ActionResponse response, String content, String parentId) throws PortletException {
+        // Document context
+        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext());
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Comments service
+        INuxeoCommentsService commentsService = nuxeoController.getNuxeoCommentsService();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+        // Document
+        Document document = documentContext.getDoc();
+
+        // Comment DTO
+        CommentDTO comment = new CommentDTO();
+        comment.setContent(content);
+
+        try {
+            commentsService.addDocumentComment(cmsContext, document, comment, parentId);
+        } catch (CMSException e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    /**
+     * Delete comment action.
+     *
+     * @param request action request
+     * @param response action response
+     * @param id comment identifier
+     * @throws PortletException
+     */
+    protected void deleteCommentAction(ActionRequest request, ActionResponse response, String id) throws PortletException {
+        // Document context
+        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext());
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Comments service
+        INuxeoCommentsService commentsService = nuxeoController.getNuxeoCommentsService();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+        // Document
+        Document document = documentContext.getDoc();
+
+        try {
+            commentsService.deleteDocumentComment(cmsContext, document, id);
+        } catch (CMSException e) {
+            throw new PortletException(e);
+        }
+    }
+
+
+    /**
      * Serve resource by cache.
      *
      * @param resourceRequest the resource request
@@ -230,7 +338,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
             httpErrorCode = HttpServletResponse.SC_NOT_FOUND;
             String message = "Resource CMSPortlet " + resourceRequest.getParameterMap() + " not found (error 404).";
-            logger.error(message);
+            this.logger.error(message);
         } else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
             httpErrorCode = HttpServletResponse.SC_FORBIDDEN;
         }
@@ -285,7 +393,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 resourceResponse.getPortletOutputStream().close();
             } else if ("fancytreeLazyLoading".equals(resourceRequest.getResourceID())) {
                 // Fancytree lazy-loading
-                serveResourceFancytreeLazyLoading(resourceRequest, resourceResponse);
+                this.serveResourceFancytreeLazyLoading(resourceRequest, resourceResponse);
             } else {
                 // Tous les autres cas sont dépréciés
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
@@ -302,7 +410,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     protected void serveResourceFancytreeLazyLoading(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(getPortletContext(), request, response);
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
 
         try {
             String data = this.browserService.browse(portalControllerContext);

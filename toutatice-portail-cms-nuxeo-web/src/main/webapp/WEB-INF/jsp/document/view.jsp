@@ -2,6 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
+<%@ taglib tagdir="/WEB-INF/tags/test" prefix="test" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -38,7 +39,7 @@
 		                    </c:if>
 		                    
 		                    <!-- Document comments view -->
-		                    <jsp:include page="comments.jsp" />
+                            <ttc:comments document="${document}" />
 		                </c:otherwise>
 		            </c:choose>
 		            

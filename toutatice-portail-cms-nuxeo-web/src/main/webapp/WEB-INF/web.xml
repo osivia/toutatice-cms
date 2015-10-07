@@ -57,6 +57,7 @@
         <url-pattern>/avatar/*</url-pattern>
     </servlet-mapping>
     
+    
 	<servlet>
         <servlet-name>StreamingServlet</servlet-name>
         <servlet-class>fr.toutatice.portail.cms.nuxeo.portlets.streaming.StreamingServlet</servlet-class>
@@ -67,22 +68,8 @@
         <url-pattern>/streaming/*</url-pattern>
     </servlet-mapping>
 	
-    
-    
-    
+
     <jsp-config>
-        <taglib>
-            <taglib-uri>osivia-portal</taglib-uri>
-            <taglib-location>theme/osivia-portal.tld</taglib-location>
-        </taglib>
-        <taglib>
-            <taglib-uri>internationalization</taglib-uri>
-            <taglib-location>theme/internationalization.tld</taglib-location>
-        </taglib>
-        <taglib>
-            <taglib-uri>toutatice</taglib-uri>
-            <taglib-location>/WEB-INF/tld/toutatice.tld</taglib-location>
-        </taglib>
         <taglib>
             <taglib-uri>vocabulary-selector</taglib-uri>
             <taglib-location>/WEB-INF/tld/vocabulary-selector.tld</taglib-location>

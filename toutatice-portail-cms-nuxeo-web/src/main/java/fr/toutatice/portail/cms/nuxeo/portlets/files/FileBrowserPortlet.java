@@ -72,6 +72,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
@@ -189,11 +190,15 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
 
-                // Type
+                // Path
                 String path = this.getPath(window);
-                path = nuxeoController.getComputedPath(path);
-                Document currentDocument = nuxeoController.fetchDocument(path);
-                String type = currentDocument.getType();
+                // Document context
+                NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+
+                // Document
+                Document document = documentContext.getDoc();
+                // Type
+                String type = document.getType();
 
                 // Active task identifier
                 String taskId;
@@ -352,6 +357,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Path
         String path = this.getPath(window);
+        // Document context
+        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
@@ -369,7 +376,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 path = nuxeoController.getComputedPath(path);
 
                 // Fetch current Nuxeo document
-                Document currentDocument = nuxeoController.fetchDocument(path);
+                Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
                 request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
 
@@ -711,7 +718,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
         // Callback URL
-        String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+        String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
+                null, null);
         request.setAttribute("callbackURL", callbackURL);
 
         // ECM base URL

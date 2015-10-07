@@ -61,6 +61,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -73,8 +74,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
-import fr.toutatice.portail.cms.nuxeo.portlets.comments.AddCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.comments.DeleteCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
@@ -232,43 +231,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
         } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            // Comment identifier
-            String id = request.getParameter("id");
-            // Comment content
-            String content = request.getParameter("content");
-            // Comment DTO
-            CommentDTO comment = new CommentDTO();
-            comment.setContent(content);
-
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            // Document path
-            String path = window.getProperty(PATH_WINDOW_PROPERTY);
-
-            if (path != null) {
-                // Fetch Nuxeo document
-                Document document = nuxeoController.fetchDocument(path);
-
-                if ("addComment".equals(action)) {
-                    // Add comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new AddCommentCommand(document, comment, null);
-                    nuxeoController.executeNuxeoCommand(command);
-                } else if ("replyComment".equals(action)) {
-                    // Reply comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new AddCommentCommand(document, comment, id);
-                    nuxeoController.executeNuxeoCommand(command);
-                } else if ("deleteComment".equals(action)) {
-                    // Delete comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new DeleteCommentCommand(document, id);
-                    nuxeoController.executeNuxeoCommand(command);
-                }
-            }
+            // Comment action
+            this.processCommentAction(request, response);
         }
     }
 
@@ -331,6 +295,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             path = nuxeoController.getComputedPath(path);
 
             if (StringUtils.isNotBlank(path)) {
+                // Document context
+                NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+
+                // Maximized indicator
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
 
                 // Display only remote sections indicator
@@ -355,8 +323,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 boolean attachments = BooleanUtils.toBoolean(window.getProperty(HIDE_ATTACHMENTS_WINDOW_PROPERTY), null, "1");
                 request.setAttribute("attachments", attachments);
 
-                // Fetch document
-                Document document = nuxeoController.fetchDocument(path);
+                // Document
+                Document document = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(document);
 
                 // View dispatched

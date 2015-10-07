@@ -401,12 +401,12 @@
             <type>java.lang.String</type>
         </attribute>
     </tag>
-    
+
     
     <!-- Include JSP -->
     <tag>
-        <description>Include JSP</description>
-        <display-name>Include jsp</display-name>
+        <description>Include JSP.</description>
+        <display-name>Include JSP</display-name>
         <name>include</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.IncludeTag</tag-class>
         <body-content>empty</body-content>
@@ -418,7 +418,24 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
- 
+    </tag>
+
+
+    <!-- Comment display -->
+    <tag>
+        <description>Nuxeo document single comment display.</description>
+        <display-name>Single comment display</display-name>
+        <name>comment</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.CommentTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Comment DTO.</description>
+            <name>comment</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO</type>
+        </attribute>
     </tag>
 
 
@@ -439,4 +456,13 @@
         <path>/META-INF/tags/toutatice/user.tag</path>
     </tag-file>
     
+    
+    <!-- Comments -->
+    <tag-file>
+        <description>Nuxeo document comments display.</description>
+        <display-name>Comments</display-name>
+        <name>comments</name>
+        <path>/META-INF/tags/toutatice/comments.tag</path>
+    </tag-file>
+
 </taglib>
