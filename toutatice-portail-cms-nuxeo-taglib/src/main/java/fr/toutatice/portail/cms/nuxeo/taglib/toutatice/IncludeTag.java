@@ -8,6 +8,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -15,7 +16,7 @@ import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 
 /**
  * Include JSP tag.
- *
+ * 
  * @author Cédric Krommenhoek
  * @see ToutaticeSimpleTag
  */
@@ -58,20 +59,21 @@ public class IncludeTag extends ToutaticeSimpleTag {
             path = this.page;
         }
 
-        // JSP name
-        String name = this.getTagService().getIncludedJspName(nuxeoController, path);
 
         try {
+            // JSP name
+            String name = this.getTagService().getIncludedJspName(nuxeoController, path);
+
             pageContext.include(name);
         } catch (ServletException e) {
             throw new JspException(e);
-        }
+        } 
     }
 
 
     /**
      * Setter for page.
-     *
+     * 
      * @param page the page to set
      */
     public void setPage(String page) {

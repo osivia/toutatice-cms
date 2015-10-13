@@ -17,11 +17,14 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -238,6 +241,18 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return menu templates
      */
     SortedMap<String, String> getMenuTemplates(Locale locale);
+    
+    
+    /**
+     * Customize jsp new.
+     * 
+     * @param name the name
+     * @param portletContext the portlet context
+     * @param request the request
+     * @return the string
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException ;
 
 
     /**

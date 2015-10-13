@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
@@ -1986,6 +1988,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         properties.put("osivia.cms.startLevel", String.valueOf(2));
         player.setProperties(properties);
         return player;
+    }
+
+    @Override
+    public String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException {
+        try {
+        return this.pluginMgr.customizeJSP(name, portletContext, request);
+        } catch( IOException e){
+            throw new CMSException( e);
+        }
     }
 
 

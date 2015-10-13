@@ -66,6 +66,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
@@ -281,6 +282,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+            // CMS customizer
+            INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();            
 
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
@@ -333,8 +336,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
                 else {
                 	String docType = StringUtils.lowerCase(document.getType());
-
-                	String realPath = this.getPortletContext().getRealPath("/WEB-INF/jsp/document/view-" + docType + ".jsp" );
+                	
+                	String jspName = customizer.getJSPName("/WEB-INF/jsp/document/view-" + docType + ".jsp",  getPortletContext(), request );
+                    String realPath = getPortletContext().getRealPath(jspName);
                 	File file = new File(realPath);
                 	if(file.exists()) {
                 		request.setAttribute("dispatchJsp", docType);
