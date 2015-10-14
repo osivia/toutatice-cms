@@ -734,8 +734,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         Map<String, String> moveProperties = new HashMap<String, String>();
         moveProperties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, currentDocument.getPath());
         moveProperties.put(MoveDocumentPortlet.DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY, "_IDS_");
+        moveProperties.put(MoveDocumentPortlet.IGNORED_PATHS_WINDOW_PROPERTY, "_PATHS_");
         moveProperties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
-        moveProperties.put(MoveDocumentPortlet.ACCEPTED_TYPE_WINDOW_PROPERTY, currentDocument.getType());
+        moveProperties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, "_TYPES_");
         String moveURL = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
                 moveProperties, true);
         request.setAttribute("moveURL", moveURL);

@@ -1199,7 +1199,7 @@ public class MenuBarFormater {
                     Map<String, String> properties = new HashMap<String, String>();
                     properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
                     properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
-                    properties.put(MoveDocumentPortlet.ACCEPTED_TYPE_WINDOW_PROPERTY, cmsItemType.getName());
+                    properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
                     moveDocumentURL = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
                             properties, true);

@@ -22,8 +22,8 @@
         <portlet:param name="cmsBasePath" value="${cmsBasePath}" />
     </c:if>
 
-    <c:if test="${not empty acceptedType}">
-        <portlet:param name="acceptedType" value="${acceptedType}" />
+    <c:if test="${not empty acceptedTypes}">
+        <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
     </c:if>
 </portlet:resourceURL>
 

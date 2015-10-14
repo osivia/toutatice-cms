@@ -465,7 +465,7 @@ function updateSelectableControls($browser) {
 		$single = $toolbar.find(".single-selection"),
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
-		identifiers = "";
+		identifiers = "", paths = "", types = "";
 
 	
 	// Sortable
@@ -543,22 +543,30 @@ function updateSelectableControls($browser) {
 		$messageSelection.children(".text").text($messageSelection.data("message-multiple-selection"));
 	}
 	
-	// Identifier
+	// Identifiers, paths and types
 	$selected.each(function(index, element) {
+		var $element = $JQry(element);
+		
 		if (index > 0) {
 			identifiers += ",";
+			paths += ",";
+			types += ",";
 		}
-		identifiers += $JQry(element).data("id");
+		identifiers += $element.data("id");
+		paths += $element.data("path");
+		types += $element.data("type");
 	});
 	$browser.find("input[name=identifiers]").val(identifiers);
-	
+
 	// Update links with multiple-selected properties
 	$links.each(function(index, element) {
 		var $element = $JQry(element),
 			url = $element.attr("href");
 		
-		// Update identifiers
+		// Update tokens
 		url = url.replace("_IDS_", identifiers);
+		url = url.replace("_PATHS_", paths)
+		url = url.replace("_TYPES_", types);
 		
 		$element.attr("href", url);
 	});

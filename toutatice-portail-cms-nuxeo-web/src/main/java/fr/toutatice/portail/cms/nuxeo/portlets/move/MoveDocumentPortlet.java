@@ -26,6 +26,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
@@ -42,10 +43,12 @@ public class MoveDocumentPortlet extends CMSPortlet {
     public static final String DOCUMENT_PATH_WINDOW_PROPERTY = "osivia.move.documentPath";
     /** Documents identifiers window property name. */
     public static final String DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY = "osivia.move.documentsIdentifiers";
+    /** Ignored paths window property name. */
+    public static final String IGNORED_PATHS_WINDOW_PROPERTY = "osivia.move.ignoredPaths";
     /** CMS base path window property name. */
     public static final String CMS_BASE_PATH_WINDOW_PROPERTY = "osivia.move.cmsBasePath";
-    /** Accepted type window property name. */
-    public static final String ACCEPTED_TYPE_WINDOW_PROPERTY = "osivia.move.acceptedType";
+    /** Accepted types window property name. */
+    public static final String ACCEPTED_TYPES_WINDOW_PROPERTY = "osivia.move.acceptedTypes";
 
     /** Space path request parameter name. */
     private static final String SPACE_PATH_REQUEST_PARAMETER = "osivia.move.spacePath";
@@ -94,9 +97,12 @@ public class MoveDocumentPortlet extends CMSPortlet {
         PortalWindow window = WindowFactory.getWindow(request);
 
         // Ignored paths
-        if (window.getProperty(DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY) == null) {
+        String ignoredPaths = window.getProperty(IGNORED_PATHS_WINDOW_PROPERTY);
+        if (ignoredPaths == null) {
             String documentPath = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
-            request.setAttribute("documentPath", documentPath);
+            request.setAttribute("ignoredPaths", documentPath);
+        } else {
+            request.setAttribute("ignoredPaths", ignoredPaths);
         }
 
         // CMS base path
@@ -109,15 +115,16 @@ public class MoveDocumentPortlet extends CMSPortlet {
             cmsBasePath = nuxeoController.getComputedPath(cmsBasePath);
             request.setAttribute("cmsBasePath", cmsBasePath);
 
-            // Fetch space root document
-            Document spaceRootDocument = nuxeoController.fetchDocument(cmsBasePath);
-            DocumentDTO spaceRootDocumentDTO = this.documentDAO.toDTO(spaceRootDocument);
-            request.setAttribute("spaceDocument", spaceRootDocumentDTO);
+            // Space root document
+            NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), cmsBasePath);
+            Document nuxeoDocument = documentContext.getDoc();
+            DocumentDTO documentDto = this.documentDAO.toDTO(nuxeoDocument);
+            request.setAttribute("spaceDocument", documentDto);
         }
 
-        // Accepted type
-        String acceptedType = window.getProperty(ACCEPTED_TYPE_WINDOW_PROPERTY);
-        request.setAttribute("acceptedType", acceptedType);
+        // Accepted types
+        String acceptedTypes = window.getProperty(ACCEPTED_TYPES_WINDOW_PROPERTY);
+        request.setAttribute("acceptedTypes", acceptedTypes);
 
 
         // Dispatcher path
@@ -156,8 +163,9 @@ public class MoveDocumentPortlet extends CMSPortlet {
             // Document path
             String path = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
 
-            // Fetch document
-            Document document = nuxeoController.fetchDocument(path);
+            // Document
+            NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+            Document document = documentContext.getDoc();
 
             // Documents identifiers
             String[] identifiersProperty = StringUtils.split(window.getProperty(DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY), ",");
@@ -175,8 +183,9 @@ public class MoveDocumentPortlet extends CMSPortlet {
                     sourceIds = Arrays.asList(identifiersProperty);
                 }
 
-                // Fetch target document
-                Document targetDocument = nuxeoController.fetchDocument(targetPath);
+                // Target document
+                NuxeoDocumentContext targetDocumentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), targetPath);
+                Document targetDocument = targetDocumentContext.getDoc();
 
                 // Redirection path
                 String redirectionPath;
