@@ -4,7 +4,15 @@
 <portlet-app>
 
     <portlet>
-        <portlet-name>toutatice-portail-cms-injection-testPortlet</portlet-name>
+        <portlet-name>toutatice-cms-test-portlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+    </portlet>
+    
+    <portlet>
+        <portlet-name>toutatice-cms-test-spring-portlet</portlet-name>
 
         <transaction>
             <trans-attribute>Required</trans-attribute>

@@ -6,13 +6,36 @@
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="fr">Toutatice - Portlet de test d'injection de données LDAP et Nuxeo</display-name>
-            <instance-id>toutatice-portail-cms-injection-testPortletInstance</instance-id>
-            <portlet-ref>toutatice-portail-cms-injection-testPortlet</portlet-ref>
+            <display-name xml:lang="fr">Toutatice - Portlet de test</display-name>
+            <instance-id>toutatice-cms-test-portlet-instance</instance-id>
+            <portlet-ref>toutatice-cms-test-portlet</portlet-ref>
             <security-constraint>
                 <policy-permission>
                     <action-name>view</action-name>
                     <unchecked />
+                </policy-permission>
+                <policy-permission>
+                    <action-name>admin</action-name>
+                    <role-name>Administrators</role-name>
+                </policy-permission>
+            </security-constraint>
+        </instance>
+    </deployment>
+    
+    <deployment>
+        <if-exists>overwrite</if-exists>
+        <instance>
+            <display-name xml:lang="fr">Toutatice - Portlet de test avec SpringFramework</display-name>
+            <instance-id>toutatice-cms-test-spring-portlet-instance</instance-id>
+            <portlet-ref>toutatice-cms-test-spring-portlet</portlet-ref>
+            <security-constraint>
+                <policy-permission>
+                    <action-name>view</action-name>
+                    <unchecked />
+                </policy-permission>
+                <policy-permission>
+                    <action-name>admin</action-name>
+                    <role-name>Administrators</role-name>
                 </policy-permission>
             </security-constraint>
         </instance>
