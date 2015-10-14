@@ -73,7 +73,8 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
         // Bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        this.bundleFactory = internationalizationService.getBundleFactory(classLoader);
     }
 
 
@@ -94,7 +95,12 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
         if (menubar != null) {
             // Title
-            String title = bundle.getString(this.labelKey);
+            String title;
+            if (this.labelKey != null) {
+                title = bundle.getString(this.labelKey);
+            } else {
+                title = null;
+            }
 
             // Parent
             MenubarContainer parent = null;
@@ -128,7 +134,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for id.
-     * 
+     *
      * @param id the id to set
      */
     public void setId(String id) {
@@ -137,7 +143,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for labelKey.
-     * 
+     *
      * @param labelKey the labelKey to set
      */
     public void setLabelKey(String labelKey) {
@@ -146,7 +152,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for order.
-     * 
+     *
      * @param order the order to set
      */
     public void setOrder(Integer order) {
@@ -155,7 +161,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for url.
-     * 
+     *
      * @param url the url to set
      */
     public void setUrl(String url) {
@@ -164,7 +170,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for onclick.
-     * 
+     *
      * @param onclick the onclick to set
      */
     public void setOnclick(String onclick) {
@@ -173,7 +179,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for htmlClass.
-     * 
+     *
      * @param htmlClass the htmlClass to set
      */
     public void setHtmlClass(String htmlClass) {
@@ -182,7 +188,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for target.
-     * 
+     *
      * @param target the target to set
      */
     public void setTarget(String target) {
@@ -191,7 +197,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for glyphicon.
-     * 
+     *
      * @param glyphicon the glyphicon to set
      */
     public void setGlyphicon(String glyphicon) {
@@ -200,7 +206,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for ajax.
-     * 
+     *
      * @param ajax the ajax to set
      */
     public void setAjax(Boolean ajax) {
@@ -209,7 +215,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for dropdown.
-     * 
+     *
      * @param dropdown the dropdown to set
      */
     public void setDropdown(String dropdown) {
@@ -218,7 +224,7 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /**
      * Setter for data.
-     * 
+     *
      * @param data the data to set
      */
     public void setData(Map<String, String> data) {

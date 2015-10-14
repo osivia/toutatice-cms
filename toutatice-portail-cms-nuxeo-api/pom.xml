@@ -14,7 +14,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>toutatice-portail.cms</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -22,7 +22,11 @@
 
     <profiles>
         <profile>
-            <id>deploy-toutatice-modules</id>
+            <activation>
+                <property>
+                    <name>deploy.socle-libs.dir</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>

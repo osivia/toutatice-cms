@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" %>
+<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" isELIgnored="false" %>
 <%@ attribute name="name" description="User name." required="true" rtexprvalue="true" type="java.lang.String" %>
 <%@ attribute name="linkable" description="Linkable indicator. Default = true." required="false" rtexprvalue="true" type="java.lang.Boolean" %>
 
@@ -11,16 +11,18 @@
 <c:set var="profileUrl"><ttc:userProfileLink name="${name}"/></c:set>
 
 
-<span>
-    <img src="${avatarUrl}" alt="" class="avatar">
-    
-    <c:choose>
-        <c:when test="${(empty linkable or linkable) and not empty profileUrl}">
-            <a href="${profileUrl}">${displayName}</a>
-        </c:when>
+<c:if test="${not empty name}">
+    <span>
+        <img src="${avatarUrl}" alt="" class="avatar">
         
-        <c:otherwise>
-            <span>${displayName}</span>
-        </c:otherwise>
-    </c:choose>
-</span>
+        <c:choose>
+            <c:when test="${(empty linkable or linkable) and not empty profileUrl}">
+                <a href="${profileUrl}" class="no-ajax-link">${displayName}</a>
+            </c:when>
+            
+            <c:otherwise>
+                <span>${displayName}</span>
+            </c:otherwise>
+        </c:choose>
+    </span>
+</c:if>

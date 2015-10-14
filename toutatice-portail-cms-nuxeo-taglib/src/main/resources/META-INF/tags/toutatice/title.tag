@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" %>
+<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" isELIgnored="false" %>
 <%@ attribute name="document" description="Document DTO." required="true" rtexprvalue="true" type="fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO" %>
 <%@ attribute name="linkable" description="Document linkable indicator. Default = true." required="false" rtexprvalue="true" type="java.lang.Boolean" %>
 <%@ attribute name="displayContext" description="Document link display context." required="false" rtexprvalue="true" type="java.lang.String" %>

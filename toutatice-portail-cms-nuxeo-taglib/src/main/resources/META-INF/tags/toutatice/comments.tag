@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" %>
+<%@ tag language="java" pageEncoding="UTF-8" body-content="empty" isELIgnored="false" %>
 <%@ attribute name="document" description="Document DTO." required="true" rtexprvalue="true" type="fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO" %>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
@@ -44,7 +44,7 @@
                     <div id="${namespace}-add-comment" class="collapse">
                         <hr>
                     
-                        <form action="${addCommentUrl}" method="post" role="form">
+                        <form action="${addCommentUrl}" method="post" class="no-ajax-link" role="form">
                             <div class="form-group">
                                 <label for="${namespace}-comment-content"><op:translate key="COMMENT_CONTENT" /></label>
                                 <textarea id="${namespace}-comment-content" name="content" class="form-control"></textarea>
@@ -70,7 +70,7 @@
     <!-- Delete comment confirmation fancybox -->
     <div class="hidden">
         <div id="${namespace}-delete-comment" class="container-fluid">
-            <form action="${deleteCommentUrl}" method="post" role="form">
+            <form action="${deleteCommentUrl}" method="post" class="no-ajax-link" role="form">
                 <input type="hidden" name="id">
             
                 <div class="form-group">

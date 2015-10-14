@@ -53,8 +53,7 @@ public class CommentTag extends ToutaticeSimpleTag {
         // Internationalization bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        this.bundleFactory = internationalizationService.getBundleFactory(classLoader);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -279,15 +278,26 @@ public class CommentTag extends ToutaticeSimpleTag {
         // Container
         Element container = DOM4JUtils.generateDivElement("children");
 
-        // Children
+        // UL
+        Element ul = DOM4JUtils.generateElement(HTMLConstants.UL, null, null);
+        container.add(ul);
+
         for (CommentDTO child : comment.getChildren()) {
+            // LI
+            Element li = DOM4JUtils.generateElement(HTMLConstants.LI, null, null);
+            ul.add(li);
+
+            // Horizontal row
+            Element hr = DOM4JUtils.generateElement(HTMLConstants.HR, null, null);
+            li.add(hr);
+
             Element element = this.generateComment(nuxeoController, bundle, child);
-            container.add(element);
+            li.add(element);
         }
 
         // Reply form
         Element replyForm = this.generateReplyForm(nuxeoController, bundle, comment);
-        container.add(replyForm);
+        ul.add(replyForm);
 
         return container;
     }
@@ -312,7 +322,7 @@ public class CommentTag extends ToutaticeSimpleTag {
         idBuilder.append(namespace);
         idBuilder.append("-reply-comment-");
         idBuilder.append(comment.getId());
-        Element container = DOM4JUtils.generateDivElement("collapse");
+        Element container = DOM4JUtils.generateElement(HTMLConstants.LI, "collapse", null);
         DOM4JUtils.addAttribute(container, HTMLConstants.ID, idBuilder.toString());
 
         // Horizontal row
@@ -323,7 +333,7 @@ public class CommentTag extends ToutaticeSimpleTag {
         PortletURL actionUrl = response.createActionURL();
         actionUrl.setParameter(ActionRequest.ACTION_NAME, "replyComment");
         actionUrl.setParameter("id", comment.getId());
-        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, null, null, null, AccessibilityRoles.FORM);
+        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
         DOM4JUtils.addAttribute(form, HTMLConstants.ACTION, actionUrl.toString());
         DOM4JUtils.addAttribute(form, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
         container.add(form);

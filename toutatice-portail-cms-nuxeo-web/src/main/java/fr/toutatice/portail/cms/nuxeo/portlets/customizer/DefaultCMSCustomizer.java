@@ -152,7 +152,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWind
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
-    /** Logger. */ 
+    /** Logger. */
     protected static final Log LOGGER = LogFactory.getLog(DefaultCMSCustomizer.class);
 
 
@@ -537,15 +537,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @param ctx CMS context
      * @return CMS default player
-     * @throws PortletException 
+     * @throws PortletException
      * @throws Exception
      */
 	public Player getCMSDefaultPlayer(CMSServiceCtx ctx) throws PortletException {
         Document doc = (Document) ctx.getDoc();
-        
+
         DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(ctx, doc.getPath());
 
-		return getCMSDefaultPlayer(docCtx);
+		return this.getCMSDefaultPlayer(docCtx);
 	}
 
 
@@ -570,7 +570,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @throws CMSException
      */
     public Player getCMSOrderedFolderPlayer(DocumentContext<Document> docCtx) throws CMSException {
-    	
+
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
         Document doc = docCtx.getDoc();
 
@@ -602,7 +602,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Player getCMSFileBrowser(DocumentContext<Document> docCtx) {
-    	
+
         Document document = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
@@ -622,7 +622,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return linkProps;
     }
 
-    
+
     /**
      * Get CMS folder player.
      *
@@ -631,8 +631,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @throws CMSException
      */
     public Player getCMSFolderPlayer(DocumentContext<Document> docCtx) throws CMSException {
-    	
-    	
+
+
         Document doc = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
@@ -750,7 +750,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace indicator
         boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
 
-        List<INuxeoPlayerModule> modules = pluginMgr.customizeModules();
+        List<INuxeoPlayerModule> modules = this.pluginMgr.customizeModules();
         DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(cmsContext, document.getPath());
 
         for (INuxeoPlayerModule icmsCustomizerModule : modules) {
@@ -1034,7 +1034,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // selection des versions lives : il faut exclure les proxys
             requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "
                             + "AND ecm:currentLifeCycleState <> 'deleted'";
-            
+
         } else if("2".equals(ctx.getDisplayLiveVersion())){
             // All except lives of publish spaces
             requestFilter = " ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
@@ -1941,7 +1941,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Identifier
         task.setId("SEARCH");
         // Internationalized name
-        task.setKey("SEARCH");
+        task.setKey("SEARCH_TASK");
         // Icon
         task.setIcon("glyphicons glyphicons-search");
         // Maximized player

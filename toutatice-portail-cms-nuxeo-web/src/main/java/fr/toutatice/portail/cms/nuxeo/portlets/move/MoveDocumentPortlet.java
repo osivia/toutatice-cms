@@ -193,8 +193,8 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 nuxeoController.executeNuxeoCommand(command);
 
                 // Redirection URL
-                String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, redirectionPath, null, null, null, null,
-                        null, null, null);
+                String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, redirectionPath, null, null,
+                        IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
                 redirectionURL = this.getPortalUrlFactory().adaptPortalUrlToPopup(portalControllerContext, redirectionURL,
                         IPortalUrlFactory.POPUP_URL_ADAPTER_CLOSE);
                 request.setAttribute(Constants.PORTLET_ATTR_REDIRECTION_URL, redirectionURL);
