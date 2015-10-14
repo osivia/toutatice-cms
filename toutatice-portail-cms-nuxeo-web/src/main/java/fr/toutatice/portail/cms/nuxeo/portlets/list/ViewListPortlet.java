@@ -48,7 +48,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
-import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -676,7 +675,7 @@ public class ViewListPortlet extends ViewList {
 
 
                 // Creation item, if parameters are given
-                String dynamicPath = window.getProperty(Constants.WINDOW_PROP_URI);
+                String dynamicPath = window.getProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY);
                 if (dynamicPath != null) {
                     dynamicPath = nuxeoController.getLivePath(dynamicPath);
                     Document folder = nuxeoController.fetchDocument(dynamicPath);
