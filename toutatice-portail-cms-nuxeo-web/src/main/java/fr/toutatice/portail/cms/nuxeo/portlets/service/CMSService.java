@@ -1823,6 +1823,8 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@remote_publishing?";
         } else if (command == EcmViews.validateRemotePublishing) {
             url = uri.toString() + "/nxpath/default" + path + "@validate_remote_publishing?";
+        } else if (command == EcmViews.globalAdministration) {
+            url = uri.toString() + "/nxadmin/default@view_admin?";            
         } else if (command == EcmViews.gotoMediaLibrary) {
 
             Document mediaLibrary;
