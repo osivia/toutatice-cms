@@ -1466,7 +1466,7 @@ public class MenuBarFormater {
         Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
 
         // Container
-        Element container = DOM4JUtils.generateDivElement("container-fluid");
+        Element container = DOM4JUtils.generateDivElement(null);
         DOM4JUtils.addAttribute(container, HTMLConstants.ID, fancyboxId);
         fancyboxContainer.add(container);
 
@@ -1804,7 +1804,7 @@ public class MenuBarFormater {
         Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
 
         // Container
-        Element container = DOM4JUtils.generateDivElement("container-fluid");
+        Element container = DOM4JUtils.generateDivElement(null);
         DOM4JUtils.addAttribute(container, HTMLConstants.ID, id);
         fancyboxContainer.add(container);
 
