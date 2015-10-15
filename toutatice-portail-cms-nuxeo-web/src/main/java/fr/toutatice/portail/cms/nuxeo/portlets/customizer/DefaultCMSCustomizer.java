@@ -1041,7 +1041,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                             + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-            requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' ";
+            requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
         }
 
         return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
@@ -1594,7 +1594,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             try {
                 if (!StringUtils.contains(webId, "?")) {
 
-                    if (DocumentHelper.isRemoteProxy(doc)) {
+                    if (DocumentHelper.isRemoteProxy(cmsCtx, getCmsService().getPublicationInfos(cmsCtx, doc.getPath()))) {
                         String parentId = this.getWebIdService().getParentId(cmsCtx, doc.getPath());
                         if (StringUtils.isNotBlank(parentId)) {
                             webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);

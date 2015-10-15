@@ -64,9 +64,11 @@
         <div class="col-sm-9">
             <div class="form-inline">
                 <p class="form-control-static">${spaceDocument.title}</p>
-                <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
-                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
-                </a>
+                <c:if test="${spaceDocument.type.name=='Workspace'}">
+	                <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
+	                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
+	                </a>
+                </c:if>
             </div>
         </div>
     </div>

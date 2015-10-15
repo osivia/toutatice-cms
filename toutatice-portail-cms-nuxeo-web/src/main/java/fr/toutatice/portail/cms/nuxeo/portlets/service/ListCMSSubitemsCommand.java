@@ -40,9 +40,11 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 
 /**
  * List CMS sub-items command.
@@ -57,8 +59,8 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
 
     /** Current parent identifier. */
     private final String parentId;
-    /** Live content indicator. */
-    private final boolean liveContent;
+    /** Publish status indicator. */
+    private final RequestPublishStatus publishStatus;
     /** CMS Context */
     private final CMSServiceCtx cmsContext;
 
@@ -69,7 +71,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      * @param parentId current parent identifier
      * @param liveContent live content indicator
      */
-    public ListCMSSubitemsCommand(CMSServiceCtx cmsContext, String parentId, boolean liveContent) {
+    public ListCMSSubitemsCommand(CMSServiceCtx cmsContext, String parentId, RequestPublishStatus publishStatus) {
         super();
 
         // Nuxeo service
@@ -77,7 +79,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
 
         this.cmsContext = cmsContext;
         this.parentId = parentId;
-        this.liveContent = liveContent;
+        this.publishStatus = publishStatus;
     }
 
 
@@ -89,7 +91,14 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
         // Fetch live tree with publishing infos
         OperationRequest request = nuxeoSession.newRequest("Fetch.PublishingStatusChildren");
         request.set("documentId", this.parentId);
-        request.set("liveStatus", this.liveContent);
+        
+        if(NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62)){
+            request.set("publishStatus", publishStatus.getStatus());
+        } else {
+            boolean live = publishStatus.getStatus() == RequestPublishStatus.live.getStatus();
+            request.set("liveStatus", live);
+        }
+        
         request.setHeader(Constants.HEADER_NX_SCHEMAS, this.getSchemas());
         Blob binariesPublishingInfos = (Blob) request.execute();
 
@@ -147,7 +156,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
         id.append("[");
         id.append(this.parentId);
         id.append(";");
-        id.append(this.liveContent);
+        id.append(this.publishStatus.getStatus());
         id.append("]");
         return id.toString();
     }

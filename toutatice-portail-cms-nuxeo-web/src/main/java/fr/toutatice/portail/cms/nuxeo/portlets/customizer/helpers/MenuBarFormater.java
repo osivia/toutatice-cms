@@ -69,6 +69,7 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
@@ -273,53 +274,6 @@ public class MenuBarFormater {
 
 
     /**
-     * Controls if live mode is associated with the current document.
-     *
-     * @param cmsCtx CMS context
-     * @param pubInfos CMS publication informations
-     * @return true if in live mode
-     */
-    protected boolean isInLiveMode(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
-        boolean liveMode = false;
-
-        EditionState curState = (EditionState) cmsCtx.getRequest().getAttribute("osivia.editionState");
-        if ((curState != null) && curState.getContributionMode().equals(EditionState.CONTRIBUTION_MODE_EDITION)) {
-            if (curState.getDocPath().equals(pubInfos.getDocumentPath())) {
-                liveMode = true;
-            }
-        }
-        return liveMode;
-    }
-
-
-    /**
-     * Checks if current document is a remote proxy.
-     *
-     * @param cmsCtx CMS context
-     * @param pubInfos CMS publication informations
-     * @return true if current document is a remote proxy
-     */
-    public boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
-        if (cmsCtx.getDoc() == null) {
-            return false;
-        }
-
-        if (pubInfos.isPublished() && !this.isInLiveMode(cmsCtx, pubInfos)) {
-            // Document
-            Document document = (Document) cmsCtx.getDoc();
-            // Path
-            String path = document.getPath();
-
-            // Pour un proxy distant, le documentPath du pubInfos est égal au docPath
-            if (pubInfos.getDocumentPath().equals(path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Checks if document in context has webId property.
      *
      * @param cmsCtx context
@@ -413,7 +367,7 @@ public class MenuBarFormater {
         }
 
         // Do not manage remote proxy
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
+        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
@@ -463,7 +417,7 @@ public class MenuBarFormater {
 
             MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
 
-            if (this.isInLiveMode(cmsContext, pubInfos)) {
+            if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                 editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
 
                 // Live version indicator menubar item
@@ -489,7 +443,7 @@ public class MenuBarFormater {
                 this.contributionService.removeWindowEditionState(portalControllerContext);
             }
 
-            if (this.isInLiveMode(cmsContext, pubInfos)) {
+            if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                 if (extendedInfos.isOnlineTaskPending()) {
                     if (extendedInfos.canUserValidateOnlineTask()) {
 
@@ -518,7 +472,7 @@ public class MenuBarFormater {
                         menubar.add(cancelAskPublishItem);
                     }
                 } else {
-                    if (!this.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                    if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         if (pubInfos.isUserCanValidate()) {
                             // Publish menubar item
                             String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
@@ -575,7 +529,7 @@ public class MenuBarFormater {
                     menubar.add(unpublishItem);
                 }
 
-                if (!this.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                     // Current modification indicator
                     MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);
                     modificationIndicator.setGlyphicon("halflings halflings-alert");
@@ -583,7 +537,7 @@ public class MenuBarFormater {
                     menubar.add(modificationIndicator);
                 }
 
-                if (this.isRemoteProxy(cmsContext, pubInfos)) {
+                if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
                     // Go to live version
                     String liveURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
                             IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
@@ -681,7 +635,7 @@ public class MenuBarFormater {
         }
 
         // Do not browse into remote proxy
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
+        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
@@ -1117,7 +1071,7 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
 
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
+        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
@@ -1142,7 +1096,7 @@ public class MenuBarFormater {
                     onClick.append("');");
 
                     String editLabel = null;
-                    if (!pubInfos.isLiveSpace() && !this.isInLiveMode(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                    if (!pubInfos.isLiveSpace() && !DocumentHelper.isInLiveMode(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         editLabel = bundle.getString("EDIT_LIVE_VERSION");
                     } else {
                         editLabel = bundle.getString("EDIT");
@@ -1180,11 +1134,15 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
 
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
-            return;
+        boolean authorizedSpace = true;
+        if(!NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62)){
+            if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
+                return;
+            }
+            authorizedSpace = pubInfos.isLiveSpace();
         }
 
-        if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+        if (authorizedSpace && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
                     portalControllerContext.getPortletCtx());
@@ -1240,11 +1198,15 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
 
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
-            return;
+        boolean authorizedSpace = true;
+        if(!NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62)){
+            if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
+                return;
+            }
+            authorizedSpace = pubInfos.isLiveSpace();
         }
 
-        if (pubInfos.isLiveSpace() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+        if (authorizedSpace && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // CMS item type
             DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
@@ -1300,7 +1262,7 @@ public class MenuBarFormater {
         }
 
         // Do not add into remote proxy
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
+        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
@@ -1439,12 +1401,12 @@ public class MenuBarFormater {
         Document document = (Document) cmsContext.getDoc();
 
         // Do not delete remote proxy
-        if (this.isRemoteProxy(cmsContext, pubInfos)) {
+        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
         // Do not delete published elements
-        if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() || this.isInLiveMode(cmsContext, pubInfos))) {
+        if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() || DocumentHelper.isInLiveMode(cmsContext, pubInfos))) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 DocumentType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
@@ -1744,7 +1706,7 @@ public class MenuBarFormater {
         if (!StringUtils.contains(path, "?")) {
 
             if (this.hasWebId(cmsContext)) {
-                if (this.isRemoteProxy(cmsContext, pubInfos)) {
+                if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
                     extendedParameters = new ExtendedParameters();
 
                     String parentId = this.webIdService.getParentId(cmsContext, document.getPath());

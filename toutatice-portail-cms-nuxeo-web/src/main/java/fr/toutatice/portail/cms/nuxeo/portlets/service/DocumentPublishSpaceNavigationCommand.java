@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.Constants;
@@ -38,6 +37,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 
 
 
@@ -69,13 +69,6 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 		this.publishSpaceConfig = publishSpaceConfig;
         this.forceLiveVersion = forceLiveVersion;
         this.useES = NuxeoCompatibility.canUseES();
-	}
-
-	public static String  computeNavPath(String path){
-		String result = path;
-		if( path.endsWith(".proxy"))
-			result = result.substring(0, result.length() - 6);
-		return result;
 	}
 
 	@Override
@@ -176,7 +169,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
 			NavigationItem navItem;
 
 			/* Update current Item */
-			String navPath = computeNavPath(child.getPath());
+			String navPath = DocumentHelper.computeNavPath(child.getPath());
 
 			navItem = navItems.get(navPath);
 			if (navItem == null) {

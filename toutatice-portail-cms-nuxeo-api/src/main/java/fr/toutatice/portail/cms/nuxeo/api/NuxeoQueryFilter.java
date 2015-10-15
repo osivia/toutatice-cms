@@ -68,11 +68,10 @@ public class NuxeoQueryFilter {
 		INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 		
 		CMSServiceCtx ctx = getCMSCtx();
-		if(queryCtx.getState() == NuxeoQueryFilterContext.STATE_LIVE){
-			ctx.setDisplayLiveVersion("1");
-		} else if(queryCtx.getState() == NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED){
-		    ctx.setDisplayLiveVersion("2");
-		}
+		
+		String state = String.valueOf(queryCtx.getState());
+		ctx.setDisplayLiveVersion(state);
+		
 		try {
 			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, queryCtx.getPolicy());
 		} catch (Exception e) {

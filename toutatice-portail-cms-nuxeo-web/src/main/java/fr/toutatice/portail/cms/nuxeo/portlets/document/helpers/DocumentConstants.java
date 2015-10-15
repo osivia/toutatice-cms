@@ -34,5 +34,8 @@ public interface DocumentConstants {
     String VALIDATE_ONLINE_TASK_NAME = "validate-online";
     /** Validate remote publication task name of a document (if any). */
     String VALIDATE_REMOTE_ONLINE_TASK_NAME = "org.nuxeo.ecm.platform.publisher.task.CoreProxyWithWorkflowFactory";
+    
+    /** Suffix of local proxies. */
+    String LOCAL_PROXIES_SUFFIX = ".proxy";
 
 }

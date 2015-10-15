@@ -20,6 +20,7 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 
@@ -29,6 +30,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.SortDocumentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 
 /**
  * Reorder documents portlet.
@@ -84,13 +86,25 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
-        cmsContext.setDisplayLiveVersion("1");
-
+        
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
         // Path
         String path = window.getProperty(PATH_WINDOW_PROPERTY);
+        
+        // Publish status
+        cmsContext.setDisplayLiveVersion(RequestPublishStatus.live.getStatus());
+        CMSPublicationInfos publicationInfos;
+        try {
+            publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+        } catch (CMSException cmse) {
+            throw new PortletException(cmse);
+        }
+        if(!publicationInfos.isLiveSpace() && StringUtils.isNotBlank(publicationInfos.getPublishSpacePath())){
+            // To get local lives and remote proxies
+            cmsContext.setDisplayLiveVersion(RequestPublishStatus.liveNRemotePublished.getStatus());
+        }
 
 
         // Children

@@ -60,7 +60,7 @@ public class MoveDocumentCommand implements INuxeoCommand {
      * {@inheritDoc}
      */
     @Override
-    public Object execute(Session nuxeoSession) throws Exception {
+    public Documents execute(Session nuxeoSession) throws Exception {
         // Target parent document reference
         DocRef target = new IdRef(this.targetId);
 

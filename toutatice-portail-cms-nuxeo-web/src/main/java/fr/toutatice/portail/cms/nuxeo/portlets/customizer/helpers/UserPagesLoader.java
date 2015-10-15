@@ -28,8 +28,8 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.DocumentPublishSpaceNavigationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
 /**
@@ -70,8 +70,7 @@ public class UserPagesLoader {
 					cmsCtx, new UserPagesPreloadCommand());
 
 			for (Document child : children) {
-				String spacePath = DocumentPublishSpaceNavigationCommand
-						.computeNavPath(child.getPath());
+				String spacePath = DocumentHelper.computeNavPath(child.getPath());
 
 				CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx,
 						spacePath, child.getTitle(), child, spacePath);

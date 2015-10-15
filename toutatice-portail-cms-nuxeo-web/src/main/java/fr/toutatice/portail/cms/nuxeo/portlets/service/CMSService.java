@@ -97,6 +97,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
@@ -771,7 +773,7 @@ public class CMSService implements ICMSService {
 
         try {
 
-            String livePath = DocumentPublishSpaceNavigationCommand.computeNavPath(path);
+            String livePath = DocumentHelper.computeNavPath(path);
 
             CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
 
@@ -877,7 +879,7 @@ public class CMSService implements ICMSService {
 
                         Document docChild = (Document) child;
 
-                        String childNavPath = DocumentPublishSpaceNavigationCommand.computeNavPath(docChild.getPath());
+                        String childNavPath = DocumentHelper.computeNavPath(docChild.getPath());
 
                         NavigationItem navChild = navItems.get(childNavPath);
 
@@ -925,15 +927,21 @@ public class CMSService implements ICMSService {
     @Override
     public List<CMSItem> getPortalSubitems(CMSServiceCtx cmsContext, String path) throws CMSException {
         try {
-            // Parent identifier
-            Document parent = (Document) this.fetchContent(cmsContext, path).getNativeItem();
-            String parentId = parent.getId();
+            // Parent identifier (necessary live to get children)
+            String version = cmsContext.getDisplayLiveVersion();
+            String parentId;
+            try{
+                cmsContext.setDisplayLiveVersion("1");
+                Document parent = (Document) this.fetchContent(cmsContext, path).getNativeItem();
+                parentId = parent.getId();
+            } finally{
+                cmsContext.setDisplayLiveVersion(version);
+            }
 
-            // Live content
-            boolean liveContent = "1".equals(cmsContext.getDisplayLiveVersion());
+            RequestPublishStatus publishStatus = RequestPublishStatus.setRequestPublishStatus(version);
 
             // Nuxeo command execution
-            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(cmsContext, parentId, liveContent);
+            INuxeoCommand nuxeoCommand = new ListCMSSubitemsCommand(cmsContext, parentId, publishStatus);
             return (List<CMSItem>) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
         } catch (CMSException e) {
