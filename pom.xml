@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
-
+	<!-- properties-->
     <properties>
         <osivia-portal.version>4.0.12</osivia-portal.version>
         
