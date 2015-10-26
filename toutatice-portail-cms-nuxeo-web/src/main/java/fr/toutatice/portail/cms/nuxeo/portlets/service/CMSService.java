@@ -699,10 +699,14 @@ public class CMSService implements ICMSService {
             cmsCtx.setScope("superuser_context");
 
 
+
+            boolean isParent = false;
+            
             while (pathToCheck.contains(publishSpaceConfig.getPath())) {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
-                if ((navItem != null) && (fetchSubItems && navItem.isUnfetchedChildren())) {
+
+                if ((navItem != null) && ( (fetchSubItems || isParent) && navItem.isUnfetchedChildren())) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
                     if (!idsToFetch.contains(doc.getId())) {
@@ -710,15 +714,19 @@ public class CMSService implements ICMSService {
                     }
                 }
 
+                
                   if (navItem == null) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
                     if (!idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
                     }
+                    
                 }
 
                   CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
                   pathToCheck = parentPath.toString();
+                  
+                  isParent = true;
 
             }
 
