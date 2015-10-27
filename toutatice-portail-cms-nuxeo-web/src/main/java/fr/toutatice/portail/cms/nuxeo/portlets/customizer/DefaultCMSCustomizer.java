@@ -504,6 +504,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public SortedMap<String, String> getMenuTemplates(Locale locale) {
+        return this.pluginMgr.customizeMenuTemplates(locale);
+    }
+
+
+    public SortedMap<String, String> initMenuTemplates(Locale locale) {
         SortedMap<String, String> templates = new TreeMap<String, String>();
 
         // Bundle
@@ -522,6 +527,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return templates;
     }
+
 
     /**
      * Get search schema.
@@ -1594,7 +1600,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             try {
                 if (!StringUtils.contains(webId, "?")) {
 
-                    if (DocumentHelper.isRemoteProxy(cmsCtx, getCmsService().getPublicationInfos(cmsCtx, doc.getPath()))) {
+                    if (DocumentHelper.isRemoteProxy(cmsCtx, this.getCmsService().getPublicationInfos(cmsCtx, doc.getPath()))) {
                         String parentId = this.getWebIdService().getParentId(cmsCtx, doc.getPath());
                         if (StringUtils.isNotBlank(parentId)) {
                             webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);

@@ -145,16 +145,21 @@ public class NuxeoTagService implements INuxeoTagService {
      */
     @Override
     public String getUserDisplayName(NuxeoController nuxeoController, String name) {
+        String displayName = null;
+
         // Directory service
         IDirectoryService directoryService = this.directoryServiceLocator.getDirectoryService();
-        // User LDAP person
-        DirectoryPerson person = directoryService.getPerson(name);
+        if (directoryService != null) {
+            // User LDAP person
+            DirectoryPerson person = directoryService.getPerson(name);
 
-        // Display name
-        String displayName;
-        if ((person != null) && (StringUtils.isNotEmpty(person.getDisplayName()))) {
-            displayName = person.getDisplayName();
-        } else {
+            // Display name
+            if ((person != null) && (StringUtils.isNotEmpty(person.getDisplayName()))) {
+                displayName = person.getDisplayName();
+            }
+        }
+
+        if (displayName == null) {
             displayName = name;
         }
 

@@ -24,29 +24,31 @@ package fr.toutatice.portail.cms.nuxeo.api;
 public enum Customizable {
 
 	JSP("osivia.customizer.cms.jsp"),
-	
+
 	LIST_TEMPLATE("osivia.customizer.cms.template."),
-	
+
 	FRAGMENT("osivia.customizer.cms.fragments."),
-	
+
 	EDITABLE_WINDOW("osivia.customizer.cms.ew."),
-	
+
 	DOC_TYPE("osivia.customizer.cms.doctype"),
-	
+
 	PLAYER("osivia.customizer.cms.modules"),
-	
-	MENUBAR("osivia.customizer.cms.menubar");
-	
-	
-	
+
+    MENUBAR("osivia.customizer.cms.menubar"),
+
+    MENU_TEMPLATE("osivia.customizer.cms.menuTemplate");
+
+
+
 	private String property;
-	
+
 	private Customizable(String property) {
 		this.property = property;
 	}
-	
+
 	@Override
 	public String toString() {
-		return property;
+		return this.property;
 	}
 }

@@ -96,8 +96,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final int DEFAULT_OPEN_LEVELS = 1;
 
 
-    /** View JSP path prefix. */
-    private static final String PATH_VIEW_PREFIX = "/WEB-INF/jsp/publish/view";
+    /** View JSP path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/publish/view.jsp";
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
 
@@ -483,7 +483,7 @@ public class MenuPortlet extends CMSPortlet {
             PortalWindow window = WindowFactory.getWindow(request);
 
             // Template
-            String template = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
+            request.setAttribute("template", window.getProperty(TEMPLATE_WINDOW_PROPERTY));
 
             // Start level
             request.setAttribute("startLevel", options.getStartLevel());
@@ -504,13 +504,7 @@ public class MenuPortlet extends CMSPortlet {
             response.setContentType("text/html");
 
             // Dispatcher
-            String requestDispatcherPath;
-            if (StringUtils.isEmpty(template)) {
-                requestDispatcherPath = PATH_VIEW_PREFIX + ".jsp";
-            } else {
-                requestDispatcherPath = PATH_VIEW_PREFIX + "-" + template + ".jsp";
-            }
-            this.getPortletContext().getRequestDispatcher(requestDispatcherPath).include(request, response);
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (PortletException e) {

@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.portlet.PortletException;
 
@@ -42,10 +44,10 @@ import fr.toutatice.portail.cms.nuxeo.api.Customizable;
  */
 public abstract class AbstractPluginPortlet extends PortalGenericPortlet implements ICustomizationModule{
 
-	
+
     /** Customization modules repository. */
     private ICustomizationModulesRepository repository;
-    
+
     /** Internationalization customization module metadatas. */
     private CustomizationModuleMetadatas metadatas;
 
@@ -63,27 +65,27 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     public void init() throws PortletException {
         super.init();
 
-  
-        cl = Thread.currentThread().getContextClassLoader();
 
-        
+        this.cl = Thread.currentThread().getContextClassLoader();
+
+
 //        if (this.getClass().getAnnotation(Plugin.class) != null) {
 //            this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
-//            
+//
     		CustomizationModuleMetadatas metadatas = new CustomizationModuleMetadatas();
-//    		
+//
 //    		Plugin plugin = this.getClass().getAnnotation(Plugin.class);
-//    		
-    		metadatas.setName(getPluginName());
+//
+    		metadatas.setName(this.getPluginName());
     		metadatas.setModule(this);
     		metadatas.setCustomizationIDs(Arrays.asList(ICustomizationModule.PLUGIN_ID));
     		metadatas.setOrder(100);
-            
+
             this.metadatas = metadatas;
             //this.repository.register(this.metadatas);
 //        }
 //        else throw new PortletException("You should declare an id value with the @Plugin(''myPluginName'') annotation. ");
-        
+
         this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
         this.repository.register(this.metadatas);
     }
@@ -108,13 +110,13 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /**
      * Parses and register the custom jsp.
-     * 
+     *
      * @param customDirPath the custom dir path
      * @param file the file
      * @param jsp the jsp
      */
     public void parseJSP(String customDirPath, File file, Map<String, String> jsp) {
-        
+
         File[] filesList = file.listFiles();
         for (File child : filesList) {
             if (child.isFile()) {
@@ -124,17 +126,18 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             }
 
             if (child.isDirectory()) {
-                parseJSP(customDirPath, child, jsp);
+                this.parseJSP(customDirPath, child, jsp);
             }
         }
     }
 
 
-    
+
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void customize(String customizationID, CustomizationContext context) {
         ClassLoader restoreLoader = null;
 
@@ -144,8 +147,8 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
             Map<String, Object> attributes = context.getAttributes();
 
-            customizeCMSProperties(customizationID,  context);
-            
+            this.customizeCMSProperties(customizationID,  context);
+
             // Parse and register JSP
             Map<String, String> jsp = (Map<String, String>) attributes.get(Customizable.JSP.toString());
             if (jsp == null) {
@@ -153,10 +156,11 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
                 attributes.put(Customizable.JSP.toString(), jsp);
             }
 
-            String dirPath = getPortletContext().getRealPath("/WEB-INF/custom/jsp");
+            String dirPath = this.getPortletContext().getRealPath("/WEB-INF/custom/jsp");
             File f = new File(dirPath);
-            if (f.exists())
-                parseJSP(dirPath, f, jsp);
+            if (f.exists()) {
+                this.parseJSP(dirPath, f, jsp);
+            }
 
 
         } finally {
@@ -174,8 +178,8 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @return metadatas
      */
     protected abstract void customizeCMSProperties(String customizationID, CustomizationContext context);
-    
-    
+
+
 
     /**
      * Gets the players.
@@ -257,7 +261,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         return ew;
     }
 
-    
+
     /**
      * Gets the menubar contributors.
      *
@@ -272,6 +276,24 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             context.getAttributes().put(Customizable.MENUBAR.toString(), menubars);
         }
         return menubars;
+    }
+
+
+    /**
+     * Get menu templates.
+     *
+     * @param context customization context
+     * @return menu templates
+     */
+    @SuppressWarnings("unchecked")
+    protected SortedMap<String, String> getMenuTemplates(CustomizationContext context) {
+        SortedMap<String, String> templates = (SortedMap<String, String>) context.getAttributes().get(
+                Customizable.MENU_TEMPLATE.toString() + context.getLocale());
+        if (templates == null) {
+            templates = new TreeMap<String, String>();
+            context.getAttributes().put(Customizable.MENU_TEMPLATE.toString() + context.getLocale(), templates);
+        }
+        return templates;
     }
 
 }
