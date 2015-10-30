@@ -515,7 +515,7 @@ public class MenuBarFormater {
                     unpublishItem.setAjaxDisabled(true);
                     unpublishItem.setDivider(true);
 
-                    if (!containerDocType.isRootType()) {
+                    if ((containerDocType == null) || !containerDocType.isRootType()) {
                         // Unpublish menubar item
                         String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
 

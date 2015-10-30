@@ -10,45 +10,56 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
 /**
  * Listing of existing extension points and the property to access them.
- * @author lbillon
  *
+ * @author lbillon
  */
 public enum Customizable {
 
-	JSP("osivia.customizer.cms.jsp"),
-
-	LIST_TEMPLATE("osivia.customizer.cms.template."),
-
-	FRAGMENT("osivia.customizer.cms.fragments."),
-
-	EDITABLE_WINDOW("osivia.customizer.cms.ew."),
-
-	DOC_TYPE("osivia.customizer.cms.doctype"),
-
-	PLAYER("osivia.customizer.cms.modules"),
-
+    /** JSP. */
+    JSP("osivia.customizer.cms.jsp"),
+    /** List template. */
+    LIST_TEMPLATE("osivia.customizer.cms.template."),
+    /** Fragment. */
+    FRAGMENT("osivia.customizer.cms.fragments."),
+    /** Editable window. */
+    EDITABLE_WINDOW("osivia.customizer.cms.ew."),
+    /** Document type. */
+    DOC_TYPE("osivia.customizer.cms.doctype"),
+    /** Document player. */
+    PLAYER("osivia.customizer.cms.modules"),
+    /** Menubar. */
     MENUBAR("osivia.customizer.cms.menubar"),
+    /** Menu template. */
+    MENU_TEMPLATE("osivia.customizer.cms.menuTemplate"),
+    /** CMS item adapter module. */
+    CMS_ITEM_ADAPTER_MODULE("osivia.customizer.cms.cmsItemAdapterModule");
 
-    MENU_TEMPLATE("osivia.customizer.cms.menuTemplate");
+
+    /** Property name. */
+    private String property;
 
 
+    /**
+     * Constructor.
+     *
+     * @param property property name.
+     */
+    private Customizable(String property) {
+        this.property = property;
+    }
 
-	private String property;
 
-	private Customizable(String property) {
-		this.property = property;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return this.property;
+    }
 
-	@Override
-	public String toString() {
-		return this.property;
-	}
 }

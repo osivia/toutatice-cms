@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
@@ -37,26 +34,23 @@ import org.osivia.portal.api.portlet.PortalGenericPortlet;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 
-
-// TODO: Auto-generated Javadoc
 /**
- * The Class CMSCustomizerPortlet.
+ * Plugin portlet abstract super-class.
+ *
+ * @see PortalGenericPortlet
+ * @see ICustomizationModule
  */
-public abstract class AbstractPluginPortlet extends PortalGenericPortlet implements ICustomizationModule{
-
-
-    /** Customization modules repository. */
-    private ICustomizationModulesRepository repository;
-
-    /** Internationalization customization module metadatas. */
-    private CustomizationModuleMetadatas metadatas;
-
-
-    /** The cl. */
-    ClassLoader cl;
+public abstract class AbstractPluginPortlet extends PortalGenericPortlet implements ICustomizationModule {
 
     /** Customization modules repository attribute name. */
     private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
+
+
+    /** Customization module metadatas. */
+    private CustomizationModuleMetadatas metadatas;
+    /** Customization modules repository. */
+    private ICustomizationModulesRepository repository;
+
 
     /**
      * {@inheritDoc}
@@ -65,37 +59,25 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     public void init() throws PortletException {
         super.init();
 
+        // Metadatas
+        this.metadatas = new CustomizationModuleMetadatas();
+        this.metadatas.setName(this.getPluginName());
+        this.metadatas.setModule(this);
+        this.metadatas.setCustomizationIDs(Arrays.asList(ICustomizationModule.PLUGIN_ID));
+        this.metadatas.setOrder(100);
 
-        this.cl = Thread.currentThread().getContextClassLoader();
-
-
-//        if (this.getClass().getAnnotation(Plugin.class) != null) {
-//            this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
-//
-    		CustomizationModuleMetadatas metadatas = new CustomizationModuleMetadatas();
-//
-//    		Plugin plugin = this.getClass().getAnnotation(Plugin.class);
-//
-    		metadatas.setName(this.getPluginName());
-    		metadatas.setModule(this);
-    		metadatas.setCustomizationIDs(Arrays.asList(ICustomizationModule.PLUGIN_ID));
-    		metadatas.setOrder(100);
-
-            this.metadatas = metadatas;
-            //this.repository.register(this.metadatas);
-//        }
-//        else throw new PortletException("You should declare an id value with the @Plugin(''myPluginName'') annotation. ");
-
+        // Repository
         this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
         this.repository.register(this.metadatas);
     }
 
 
-	/**
-	 * @return
-	 */
-	protected abstract String getPluginName();
-
+    /**
+     * Get plugin name.
+     *
+     * @return plugin name
+     */
+    protected abstract String getPluginName();
 
 
     /**
@@ -116,7 +98,6 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param jsp the jsp
      */
     public void parseJSP(String customDirPath, File file, Map<String, String> jsp) {
-
         File[] filesList = file.listFiles();
         for (File child : filesList) {
             if (child.isFile()) {
@@ -132,22 +113,19 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     }
 
 
-
-
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void customize(String customizationID, CustomizationContext context) {
         ClassLoader restoreLoader = null;
 
         try {
             // save current class loader
-
-
             Map<String, Object> attributes = context.getAttributes();
 
-            this.customizeCMSProperties(customizationID,  context);
+            this.customizeCMSProperties(customizationID, context);
 
             // Parse and register JSP
             Map<String, String> jsp = (Map<String, String>) attributes.get(Customizable.JSP.toString());
@@ -161,8 +139,6 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             if (f.exists()) {
                 this.parseJSP(dirPath, f, jsp);
             }
-
-
         } finally {
             if (restoreLoader != null) {
                 Thread.currentThread().setContextClassLoader(restoreLoader);
@@ -180,18 +156,18 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     protected abstract void customizeCMSProperties(String customizationID, CustomizationContext context);
 
 
-
     /**
      * Gets the players.
      *
      * @param context the context
      * @return the players
      */
-    protected List<IPlayerModule> getPlayers(CustomizationContext context) {
+    @SuppressWarnings("unchecked")
+    protected List<IPlayerModule<?>> getPlayers(CustomizationContext context) {
         // Players
-        List<IPlayerModule> players = (List<IPlayerModule>) context.getAttributes().get(Customizable.PLAYER.toString());
+        List<IPlayerModule<?>> players = (List<IPlayerModule<?>>) context.getAttributes().get(Customizable.PLAYER.toString());
         if (players == null) {
-            players = new ArrayList<IPlayerModule>();
+            players = new ArrayList<IPlayerModule<?>>();
             context.getAttributes().put(Customizable.PLAYER.toString(), players);
         }
         return players;
@@ -204,9 +180,11 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param context the context
      * @return the list templates
      */
+    @SuppressWarnings("unchecked")
     protected Map<String, ListTemplate> getListTemplates(CustomizationContext context) {
         // Lists
-        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) context.getAttributes().get(Customizable.LIST_TEMPLATE.toString() + context.getLocale());
+        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) context.getAttributes().get(
+                Customizable.LIST_TEMPLATE.toString() + context.getLocale());
         if (templates == null) {
             templates = new Hashtable<String, ListTemplate>();
             context.getAttributes().put(Customizable.LIST_TEMPLATE.toString() + context.getLocale(), templates);
@@ -221,6 +199,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param context the context
      * @return the doc types
      */
+    @SuppressWarnings("unchecked")
     protected Map<String, DocumentType> getDocTypes(CustomizationContext context) {
         Map<String, DocumentType> docTypes = (Map<String, DocumentType>) context.getAttributes().get(Customizable.DOC_TYPE.toString());
         if (docTypes == null) {
@@ -237,6 +216,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param context the context
      * @return the fragment types
      */
+    @SuppressWarnings("unchecked")
     protected List<FragmentType> getFragmentTypes(CustomizationContext context) {
 
         List<FragmentType> fragmentTypes = (List<FragmentType>) context.getAttributes().get(Customizable.FRAGMENT.toString() + context.getLocale());
@@ -249,11 +229,14 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /**
      * Get the editable windows types
+     *
      * @param context the context
      * @return the EW list
      */
+    @SuppressWarnings("unchecked")
     protected Map<String, EditableWindow> getEditableWindows(CustomizationContext context) {
-        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) context.getAttributes().get(Customizable.EDITABLE_WINDOW.toString() + context.getLocale());
+        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) context.getAttributes().get(
+                Customizable.EDITABLE_WINDOW.toString() + context.getLocale());
         if (ew == null) {
             ew = new Hashtable<String, EditableWindow>();
             context.getAttributes().put(Customizable.EDITABLE_WINDOW.toString() + context.getLocale(), ew);
@@ -268,6 +251,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param context the context
      * @return the players
      */
+    @SuppressWarnings("unchecked")
     protected List<IMenubarModule> getMenubars(CustomizationContext context) {
         // Players
         List<IMenubarModule> menubars = (List<IMenubarModule>) context.getAttributes().get(Customizable.MENUBAR.toString());
@@ -294,6 +278,27 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             context.getAttributes().put(Customizable.MENU_TEMPLATE.toString() + context.getLocale(), templates);
         }
         return templates;
+    }
+
+
+    /**
+     * Get CMS item adapter modules.
+     *
+     * @param context customization context
+     * @return CMS item adapter modules
+     */
+    @SuppressWarnings("unchecked")
+    protected List<ICmsItemAdapterModule> getCmsItemAdapterModules(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        // Modules
+        List<ICmsItemAdapterModule> modules = (List<ICmsItemAdapterModule>) attributes.get(Customizable.CMS_ITEM_ADAPTER_MODULE.toString());
+        if (modules == null) {
+            modules = new ArrayList<ICmsItemAdapterModule>();
+            attributes.put(Customizable.CMS_ITEM_ADAPTER_MODULE.toString(), modules);
+        }
+        return modules;
     }
 
 }

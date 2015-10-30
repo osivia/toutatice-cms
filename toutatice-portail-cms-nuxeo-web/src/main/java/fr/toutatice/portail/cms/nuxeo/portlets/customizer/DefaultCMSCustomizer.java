@@ -104,6 +104,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ICmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
@@ -115,6 +116,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultCmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
@@ -336,24 +338,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public CMSItemAdapter getCMSItemAdapter() {
         if (this.cmsItemAdapter == null) {
-            this.cmsItemAdapter = new CMSItemAdapter(this.portletCtx, this, this.cmsService);
+            this.cmsItemAdapter = new CMSItemAdapter(this);
         }
         return this.cmsItemAdapter;
     }
 
 
-//    /**
-//     * EditableWindowAdapter permet de gérer les types de EditableWindow affichables.
-//     *
-//     * @return Instance du EditableWindowAdapter
-//     */
-//    public EditableWindowAdapter getEditableWindowAdapter() {
-//        if (this.editableWindowAdapter == null) {
-//            this.editableWindowAdapter = new EditableWindowAdapter();
-//        }
-//        return this.editableWindowAdapter;
-//    }
+    /**
+     * Init CMS item adapter modules.
+     *
+     * @return CMS item adapter modules
+     */
+    public List<ICmsItemAdapterModule> initCmsItemAdapterModules() {
+        List<ICmsItemAdapterModule> modules = new ArrayList<ICmsItemAdapterModule>();
 
+        // Default CMS item adapter module
+        modules.add(new DefaultCmsItemAdapterModule(this.cmsService));
+
+        return modules;
+    }
 
 
     /**
@@ -365,8 +368,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-    public Map<String,EditableWindow> initListEditableWindows(Locale locale) {
-
+    /**
+     * Init editable windows.
+     *
+     * @param locale current user locale
+     * @return editable windows
+     */
+    public Map<String, EditableWindow> initEditableWindows(Locale locale) {
     	Map<String,EditableWindow> map = new HashMap<String, EditableWindow>();
     	map.put("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
     	map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
@@ -374,7 +382,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     	return map;
     }
-
 
 
     /**
@@ -637,8 +644,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @throws CMSException
      */
     public Player getCMSFolderPlayer(DocumentContext<Document> docCtx) throws CMSException {
-
-
         Document doc = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
@@ -759,14 +764,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<INuxeoPlayerModule> modules = this.pluginMgr.customizeModules();
         DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(cmsContext, document.getPath());
 
-        for (INuxeoPlayerModule icmsCustomizerModule : modules) {
-            Player properties = icmsCustomizerModule.getCMSPlayer(docCtx);
-            if (properties != null) {
-                return properties;
+        for (INuxeoPlayerModule module : modules) {
+            Player player = module.getCMSPlayer(docCtx);
+            if (player != null) {
+                return player;
             }
         }
-
-
 
 
         if ("UserWorkspace".equals(document.getType())) {

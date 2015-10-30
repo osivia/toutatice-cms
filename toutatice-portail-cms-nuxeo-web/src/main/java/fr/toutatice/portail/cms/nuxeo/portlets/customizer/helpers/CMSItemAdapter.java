@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -20,11 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.portlet.PortletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
@@ -32,10 +26,13 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
+import fr.toutatice.portail.cms.nuxeo.api.domain.ICmsItemAdapterModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
+/**
+ * CMS item adapter.
+ */
 public class CMSItemAdapter {
 
     private static final String NX_DC_TITLE = "dc:title";
@@ -43,35 +40,47 @@ public class CMSItemAdapter {
     private static final String NX_DC_CREATOR = "dc:creator";
     private static final String NX_TTC_KEYWORDS = "ttc:keywords";
 
-    protected CMSService CMSService;
-    protected DefaultCMSCustomizer customizer;
-    protected PortletContext portletCtx;
 
-    public CMSItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+    /** CMS customizer. */
+    private final DefaultCMSCustomizer customizer;
+
+
+    /**
+     * Constructor.
+     *
+     * @param cmsService CMS service
+     */
+    public CMSItemAdapter(DefaultCMSCustomizer customizer) {
         super();
-        CMSService = cmsService;
-        this.portletCtx = portletCtx;
         this.customizer = customizer;
-
     };
 
-    // TODO : remonter dans ICMSService
+
+    /**
+     * Compute nav path.
+     * TODO : remonter dans ICMSService
+     *
+     * @param path path
+     * @return nav path
+     */
     public static String computeNavPath(String path) {
         String result = path;
-        if (path.endsWith(".proxy"))
+        if (path.endsWith(".proxy")) {
             result = result.substring(0, result.length() - 6);
+        }
         return result;
     }
-    
+
+
     /**
      * @param doc
      * @param facet
      * @return true if document has the given facet.
      */
-    public static boolean docHasFacet(Document doc, String facet){
+    public static boolean docHasFacet(Document doc, String facet) {
         boolean has = false;
         PropertyList facets = doc.getFacets();
-        if(facets != null){
+        if (facets != null) {
             List<Object> facetsList = facets.list();
             has = facetsList.contains(facet);
         }
@@ -79,73 +88,48 @@ public class CMSItemAdapter {
     }
 
 
-    /*
-     * Personnalisation des propriétés des éléments d'un CMSItem
-     */
-
     public void adaptItem(CMSServiceCtx ctx, CMSItem item) throws Exception {
-
         Document doc = (Document) item.getNativeItem();
-
         Map<String, String> properties = item.getProperties();
 
-        adaptDoc(ctx, doc, properties);
-        adaptSEOProperties(ctx, doc, item.getMetaProperties());
+        this.adaptDoc(ctx, doc, properties);
+        this.adaptSEOProperties(ctx, doc, item.getMetaProperties());
     }
 
+
     public Map<String, String> adaptDocument(CMSServiceCtx ctx, Document doc) throws Exception {
-
         Map<String, String> properties = new HashMap<String, String>();
-
-        adaptDoc(ctx, doc, properties);
-
+        this.adaptDoc(ctx, doc, properties);
         return properties;
     }
 
 
     public boolean supportsOnlyPortalContextualization(CMSServiceCtx ctx, Document doc) {
-    	DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
-		return ((cmsItemType != null) && (cmsItemType.isForcePortalContextualization()));
+        DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+        return ((cmsItemType != null) && (cmsItemType.isForcePortalContextualization()));
     }
 
 
     /**
      * Change navigation path in case of special types of documents accessed.
-     * 
-     * @param ctx cms context
-     * @param doc current document
+     *
+     * @param cmsContext cms context
+     * @param document current document
      * @param properties page properties
      * @throws Exception
      */
-    public void adaptNavigationProperties(CMSServiceCtx ctx, Document doc, Map<String, String> properties) throws Exception {
-        // compute domain path
-        String domainPath = WebConfigurationHelper.getDomainPath(ctx);
+    public void adaptNavigationProperties(CMSServiceCtx cmsContext, Document document, Map<String, String> properties) throws Exception {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        // CMS item adapter modules
+        List<ICmsItemAdapterModule> modules = pluginManager.customizeCmsItemAdapterModules();
 
-        if (domainPath != null) {
-            // get configs installed in nuxeo
-
-            WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.CMS_NAVIGATION_ADAPTER);
-            
-
-            Documents configs = WebConfigurationHelper.executeWebConfigCmd(ctx, CMSService, command);
-
-            if (configs.size() > 0) {
-                for (Document config : configs) {
-                    String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
-                    String urlAdapted = config.getProperties().getString(WebConfigurationHelper.ADDITIONAL_CODE);
-
-                    if (doc.getType().equals(documentType)) {
-                        String path = computeNavPath(urlAdapted);
-                        properties.put("navigationPath", path);
-                        break;
-                    }
-                }
-            }
+        for (ICmsItemAdapterModule module : modules) {
+            // Adapt navigation properties
+            module.adaptNavigationProperties(cmsContext, document, properties);
         }
-
-        return;
-
     }
+
 
     private void adaptSEOProperties(CMSServiceCtx ctx, Document doc, Map<String, String> properties) {
         PropertyMap nxProperties = doc.getProperties();
@@ -172,17 +156,13 @@ public class CMSItemAdapter {
         }
     }
 
+
     public void adaptDoc(CMSServiceCtx ctx, Document doc, Map<String, String> properties) throws Exception {
-
-
-        if (supportsOnlyPortalContextualization(ctx, doc))
+        if (this.supportsOnlyPortalContextualization(ctx, doc)) {
             properties.put("supportsOnlyPortalContextualization", "1");
+        }
 
-
-        adaptNavigationProperties(ctx, doc, properties);
-
-
+        this.adaptNavigationProperties(ctx, doc, properties);
     }
-
 
 }
