@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -388,17 +389,38 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
-
-
         CMSItem content = null;
         try {
+            // Cache key
+            ContentCacheKey key = new ContentCacheKey(path, cmsCtx);
+            // Request
+            HttpServletRequest request = cmsCtx.getControllerContext().getServerInvocation().getServerContext().getClientRequest();
+            // Cache
+            Map<ContentCacheKey, CMSItem> cache = (Map<ContentCacheKey, CMSItem>) request.getAttribute("osivia.cms.content.cache");
+            if (cache == null) {
+                cache = new ConcurrentHashMap<ContentCacheKey, CMSItem>();
+                request.setAttribute("osivia.cms.content.cache", cache);
+            }
 
-            content = this.fetchContent(cmsCtx, path);
+            if (!cmsCtx.isForceReload()) {
+                // Get content in cache
+                content = cache.get(key);
+            }
 
-            this.getCustomizer().getCMSItemAdapter().adaptItem(cmsCtx, content);
+            if (content == null) {
+                // Fetch content
+                content = this.fetchContent(cmsCtx, path);
+                this.getCustomizer().getCMSItemAdapter().adaptItem(cmsCtx, content);
 
+                // Update cache
+                cache.put(key, content);
+            }
         } catch (NuxeoException e) {
             e.rethrowCMSException();
         } catch (Exception e) {
@@ -631,7 +653,7 @@ public class CMSService implements ICMSService {
             if (!"detailedView".equals(ctx.getDisplayContext())) {
                 return this.getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
             } else {
-            	
+
                 return ((DefaultCMSCustomizer) this.getNuxeoService().getCMSCustomizer()).getCMSDefaultPlayer(ctx);
             }
         } catch (NuxeoException e) {
@@ -701,7 +723,7 @@ public class CMSService implements ICMSService {
 
 
             boolean isParent = false;
-            
+
             while (pathToCheck.contains(publishSpaceConfig.getPath())) {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
@@ -714,18 +736,18 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                
+
                   if (navItem == null) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
                     if (!idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
                     }
-                    
+
                 }
 
                   CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
                   pathToCheck = parentPath.toString();
-                  
+
                   isParent = true;
 
             }
@@ -1840,7 +1862,7 @@ public class CMSService implements ICMSService {
         } else if (command == EcmViews.validateRemotePublishing) {
             url = uri.toString() + "/nxpath/default" + path + "@validate_remote_publishing?";
         } else if (command == EcmViews.globalAdministration) {
-            url = uri.toString() + "/nxadmin/default@view_admin?";            
+            url = uri.toString() + "/nxadmin/default@view_admin?";
         } else if (command == EcmViews.gotoMediaLibrary) {
 
             Document mediaLibrary;

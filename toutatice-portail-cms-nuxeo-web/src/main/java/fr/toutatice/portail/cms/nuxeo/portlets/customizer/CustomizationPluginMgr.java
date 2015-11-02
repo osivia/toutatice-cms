@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -128,7 +129,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private Map<String, Object> getCustomizationAttributes(Locale locale) {
         Map<String, Object> attributes = this.customizationAttributesCache.get(locale);
         if (attributes == null) {
-            Map<String, Object> customizationAttributes = new Hashtable<String, Object>();
+            Map<String, Object> customizationAttributes = new ConcurrentHashMap<String, Object>();
             CustomizationContext customizationContext = new CustomizationContext(customizationAttributes, locale);
 
             this.customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
@@ -303,7 +304,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     public Map<String, DocumentType> customizeCMSItemTypes() {
         if (this.typesCache == null) {
             List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
-            this.typesCache = new LinkedHashMap<String, DocumentType>(defaultTypes.size());
+            this.typesCache = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
 
             for (DocumentType defaultType : defaultTypes) {
                 this.typesCache.put(defaultType.getName(), defaultType);

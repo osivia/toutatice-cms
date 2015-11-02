@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -516,7 +517,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     public SortedMap<String, String> initMenuTemplates(Locale locale) {
-        SortedMap<String, String> templates = new TreeMap<String, String>();
+        SortedMap<String, String> templates = Collections.synchronizedSortedMap(new TreeMap<String, String>());
 
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(locale);
