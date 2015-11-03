@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -129,7 +130,7 @@ public class PropertyFragmentModule implements IFragmentModule {
 
             // Fetch Nuxeo document
             Document document = nuxeoController.fetchDocument(nuxeoPath);
-            nuxeoController.setCurrentDoc(document);            
+            nuxeoController.setCurrentDoc(document);
 
             // Title
             if (StringUtils.isNotBlank(document.getTitle())) {
@@ -226,24 +227,26 @@ public class PropertyFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        if ("admin".equals(request.getPortletMode().toString()) && "save".equals(request.getParameter(ActionRequest.ACTION_NAME))) {
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-        // Nuxeo path
-        window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
+            // Nuxeo path
+            window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
 
-        // Property name
-        window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
+            // Property name
+            window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
 
-        // Scope
-        window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
+            // Scope
+            window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
 
-        // CMS menu display indicator
-        window.setProperty(CMS_MENU_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cmsMenu")));
+            // CMS menu display indicator
+            window.setProperty(CMS_MENU_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cmsMenu")));
+        }
     }
 
 

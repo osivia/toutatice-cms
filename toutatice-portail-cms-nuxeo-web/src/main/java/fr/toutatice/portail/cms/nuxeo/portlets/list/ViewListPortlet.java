@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -70,17 +70,18 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
-import fr.toutatice.portail.cms.nuxeo.api.portlets.ViewList;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 /**
  * List portlet.
- * 
+ *
  * @see CMSPortlet
  */
 public class ViewListPortlet extends ViewList {
@@ -136,7 +137,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Get current template.
-     * 
+     *
      * @param locale user locale
      * @param configuration configuration
      * @return current template
@@ -358,7 +359,7 @@ public class ViewListPortlet extends ViewList {
                     Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
                 }
 
-                template.getModule().processAction(nuxeoController.getPortalCtx(), window, request, response);
+                template.getModule().processAction(nuxeoController.getPortalCtx());
             } catch (Exception e) {
                 throw new PortletException(e);
             } finally {
@@ -372,7 +373,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param request request
      * @param response response
      * @throws PortletException
@@ -677,8 +678,9 @@ public class ViewListPortlet extends ViewList {
                 // Creation item, if parameters are given
                 String dynamicPath = window.getProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY);
                 if (dynamicPath != null) {
-                    dynamicPath = nuxeoController.getLivePath(dynamicPath);
-                    Document folder = nuxeoController.fetchDocument(dynamicPath);
+                    dynamicPath = NuxeoController.getLivePath(dynamicPath);
+                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), dynamicPath);
+                    Document folder = documentContext.getDoc();
                     nuxeoController.setCurrentDoc(folder);
                     response.setTitle(folder.getTitle());
                 }
@@ -694,7 +696,7 @@ public class ViewListPortlet extends ViewList {
 
                 // v2.0.8 : customization
                 if (template.getModule() != null) {
-                    
+
                     ClassLoader restoreLoader = null;
 
                     try {
@@ -705,14 +707,14 @@ public class ViewListPortlet extends ViewList {
                             Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
                         }
 
-                        template.getModule().doView(portalControllerContext, window, request, response);
+                        template.getModule().doView(portalControllerContext);
                     } finally {
                         if (restoreLoader != null) {
                             Thread.currentThread().setContextClassLoader(restoreLoader);
                         }
                     }
-                    
-                    
+
+
                 }
             } else {
                 String bshTitle = (String) request.getAttribute("bsh.title");
@@ -753,7 +755,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * BeanShell interpretation.
-     * 
+     *
      * @param nuxeoController Nuxeo controller
      * @param nuxeoRequest Nuxeo request
      * @return interpreted request
@@ -793,7 +795,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Get list configuration.
-     * 
+     *
      * @param window portal window
      * @return list configuration
      */

@@ -9,24 +9,11 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 
 public class PluginModule {
-    
+
 
 
     private ClassLoader cl;
     private PortletContext portletContext;
-    
-
-    
-    public ClassLoader getCl() {
-        return cl;
-    }
-
-
-    
-    public PortletContext getPortletContext() {
-        return portletContext;
-    }
-
 
 
 
@@ -35,18 +22,34 @@ public class PluginModule {
         this.cl = Thread.currentThread().getContextClassLoader();
         this.portletContext = portletContext;
     }
-    
-    
+
+
+    public ClassLoader getCl() {
+        return this.cl;
+    }
+
+
+
+    public PortletContext getPortletContext() {
+        return this.portletContext;
+    }
+
+
+
+
+
+
+
     protected INuxeoCustomizer getNuxeoCustomizer() {
         // Nuxeo service
         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
         INuxeoCustomizer cmsCustomizer = nuxeoService.getCMSCustomizer();
         return cmsCustomizer;
     }
-    
-    
-    
-    
-     
+
+
+
+
+
 
 }

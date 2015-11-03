@@ -190,7 +190,7 @@ public class LinksFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Do nothing
     }
 

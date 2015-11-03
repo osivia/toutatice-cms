@@ -109,7 +109,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.ICmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
-import fr.toutatice.portail.cms.nuxeo.api.portlets.ViewList;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;

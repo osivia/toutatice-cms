@@ -90,7 +90,13 @@ public class ViewFragmentPortlet extends CMSPortlet {
      */
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+        // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
+
 
         if ("admin".equals(request.getPortletMode().toString())) {
             if ("select".equals(action)) {
@@ -99,42 +105,39 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 // Fragment type identifier
                 String fragmentTypeId = request.getParameter("fragmentTypeId");
                 response.setRenderParameter("fragmentTypeId", fragmentTypeId);
-            } else {
-                if ("save".equals(action)) {
-                    // Save action
+            } else if ("save".equals(action)) {
+                // Save action
 
-                    // Portal controller context
-                    PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
-                    // Current window
-                    PortalWindow window = WindowFactory.getWindow(request);
+                // Fragment type
+                String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
+                window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
+            }
 
-                    // Fragment type
-                    String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
-                    window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
-                    if (fragmentTypeId != null) {
-                        FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
-                        if (fragmentType != null) {
-                            ClassLoader restoreLoader = null;
-                            try {
-                                // Save current class loader
-                                if (fragmentType.getModule() instanceof PluginModule) {
-                                    restoreLoader = Thread.currentThread().getContextClassLoader();
-                                    Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
-                                }
+            response.setPortletMode(PortletMode.VIEW);
+            response.setWindowState(WindowState.NORMAL);
+        }
 
-                                // Specific fragment admin action
-                                fragmentType.getModule().processAdminAction(portalControllerContext);
-                            } finally {
-                                if (restoreLoader != null) {
-                                    Thread.currentThread().setContextClassLoader(restoreLoader);
-                                }
-                            }
-                        }
+
+        // Module
+        String fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
+        if (fragmentTypeId != null) {
+            FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
+            if (fragmentType != null) {
+                ClassLoader restoreLoader = null;
+                try {
+                    // Save current class loader
+                    if (fragmentType.getModule() instanceof PluginModule) {
+                        restoreLoader = Thread.currentThread().getContextClassLoader();
+                        Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
+                    }
+
+                    // Specific fragment module action
+                    fragmentType.getModule().processAction(portalControllerContext);
+                } finally {
+                    if (restoreLoader != null) {
+                        Thread.currentThread().setContextClassLoader(restoreLoader);
                     }
                 }
-
-                response.setPortletMode(PortletMode.VIEW);
-                response.setWindowState(WindowState.NORMAL);
             }
         }
     }

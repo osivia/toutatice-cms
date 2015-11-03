@@ -14,7 +14,7 @@
  *
  *
  */
-package fr.toutatice.portail.cms.nuxeo.api.portlets;
+package fr.toutatice.portail.cms.nuxeo.api.portlet;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 
