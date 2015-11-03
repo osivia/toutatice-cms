@@ -17,7 +17,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentState;
-import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.notifications.NotificationsType;
@@ -37,7 +36,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 
 /**
  * Move document portlet.
@@ -179,19 +177,19 @@ public class MoveDocumentPortlet extends CMSPortlet {
             } catch (CMSException e) {
                 throw new PortletException(e);
             }
-            
+
             // Live document
             cmsCtx.setDisplayLiveVersion(DocumentState.LIVE.toString());
             path = NuxeoController.getLivePath(path);
             NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(cmsCtx, path);
             Document document = documentContext.getDoc();
-            
+
             // Possible published document
             try{
                 cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
                 NuxeoDocumentContext remotedocumentContext = NuxeoController.getDocumentContext(cmsCtx, path);
                 Document publishedDocument = remotedocumentContext.getDoc();
-                
+
                 cmsCtx.setDoc(publishedDocument);
                 if(DocumentHelper.isRemoteProxy(cmsCtx, publicationInfos)) {
                     document = publishedDocument;
@@ -215,7 +213,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 } else {
                     sourceIds = Arrays.asList(identifiersProperty);
                 }
-                
+
                 // Target document
                 CMSPublicationInfos targetPubInfos;
                 try {
@@ -224,7 +222,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
                     throw new PortletException(e);
                 }
                 String targetId = targetPubInfos.getLiveId();
-                
+
 
                 // Redirection path
                 String redirectionPath;
@@ -239,8 +237,8 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 // Nuxeo command
                 INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
                 Documents movedDocuments = (Documents) nuxeoController.executeNuxeoCommand(command);
-                
-                refreshMovedDocuments(cmsCtx, movedDocuments);
+
+                this.refreshMovedDocuments(cmsCtx, movedDocuments);
 
                 // Redirection URL
                 String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, redirectionPath, null, null,
@@ -288,21 +286,21 @@ public class MoveDocumentPortlet extends CMSPortlet {
 
     /**
      * Artefact waiting for Nuxeo cache clearing resolution...
-     * 
+     *
      * @param cmsCtx
      * @param movedDocuments
      */
     private void refreshMovedDocuments(CMSServiceCtx cmsCtx, Documents movedDocuments) {
         for (Document movedDocument : movedDocuments) {
             try {
-                cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
+                // cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
                 NuxeoDocumentContext publishedDocumentContext = NuxeoController.getDocumentContext(cmsCtx, movedDocument.getPath());
                 Document publishedDocument = publishedDocumentContext.getDoc();
-                
+
                 cmsCtx.setDoc(publishedDocument);
                 cmsCtx.getRequest().setAttribute("osivia.cms.menuBar.forceContextualization", Boolean.TRUE);
                 NuxeoController.getCMSService().getExtendedDocumentInfos(cmsCtx, publishedDocument.getPath());
-                
+
             } catch (Exception e) {
                 // Nothig: there is no local published version.
             }

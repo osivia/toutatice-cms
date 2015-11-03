@@ -42,6 +42,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentType;
@@ -99,7 +100,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
@@ -2304,6 +2307,75 @@ public class CMSService implements ICMSService {
     @Override
     public PanelPlayer getNavigationPanelPlayer(String instance) {
         return this.customizer.getNavigationPanelPlayers().get(instance);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getMoveUrl(CMSServiceCtx cmsContext) throws CMSException {
+        // URL
+        String url = null;
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+        // Publication infos
+        CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, document.getPath());
+        // Type
+        DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+
+        if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+            // Properties
+            Map<String, String> properties = new HashMap<String, String>();
+            properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, publicationInfos.getDocumentPath());
+            properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, publicationInfos.getPublishSpacePath());
+            properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
+
+            try {
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance", properties, true);
+            } catch (PortalException e) {
+                throw new CMSException(e);
+            }
+        }
+
+        return url;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getReorderUrl(CMSServiceCtx cmsContext) throws CMSException {
+        // URL
+        String url = null;
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+        // Publication infos
+        CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, document.getPath());
+
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62)
+                || (!DocumentHelper.isRemoteProxy(cmsContext, publicationInfos) && publicationInfos.isLiveSpace())) {
+            // Properties
+            Map<String, String> properties = new HashMap<String, String>();
+            properties.put(ReorderDocumentsPortlet.PATH_WINDOW_PROPERTY, document.getPath());
+
+            try {
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties, true);
+            } catch (PortalException e) {
+                throw new CMSException(e);
+            }
+        }
+
+        return url;
     }
 
 }
