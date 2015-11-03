@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletContext;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
@@ -1735,7 +1737,7 @@ public class NuxeoController {
      *
      * @return comments HTML formatted content
      * @throws CMSException the CMS exception
-     * @deprecated unused ? 
+     * @deprecated unused ?
      */
     @Deprecated
 	public String getCommentsHTMLContent() throws CMSException {
@@ -1767,7 +1769,7 @@ public class NuxeoController {
      * @param reload force reloading of the document (no cache)
      * @return the document
      * @throws Exception the exception
-     * @deprecated use DocumentContext      * 
+     * @deprecated use DocumentContext      *
      */
     @Deprecated
 	public Document fetchDocument(String path, boolean reload) {
@@ -1802,7 +1804,7 @@ public class NuxeoController {
      * @param path the path
      * @return the fetched document
      * @throws Exception the exception
-     * @deprecated use DocumentContext 
+     * @deprecated use DocumentContext
      */
     @Deprecated
 	public Document fetchDocument(String path) {
@@ -1944,6 +1946,83 @@ public class NuxeoController {
             return getCMSService().getBinaryContent(this.getCMSCtx(), "file", docPath, fieldName);
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
+        }
+    }
+
+
+    /**
+     * Create URL from webId.
+     *
+     * @param webId webId
+     * @param parameters request parameters
+     * @return URL
+     * @throws CMSException
+     */
+    public String createUrlFromWebId(String webId, Map<String, String> parameters) throws CMSException {
+        // CMS service
+        ICMSService cmsService = getCMSService();
+        // WebId service
+        IWebIdService webIdService = this.getWebIdService();
+        // Nuxeo service
+        INuxeoService nuxeoService = this.getNuxeoCMSService();
+        // CMS customizer
+        INuxeoCustomizer cmsCustomizer = nuxeoService.getCMSCustomizer();
+        // Portal URL factory
+        IPortalUrlFactory portalUrlFactory = this.getPortalUrlFactory();
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = this.getPortalCtx();
+
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setPortalControllerContext(portalControllerContext);
+
+        // WebId path
+        String webIdPath = webIdService.webIdToFetchInfoService(webId);
+
+        // Fetch document
+        CMSItem content = cmsService.getContent(cmsContext, webIdPath);
+        cmsContext.setDoc(content.getNativeItem());
+
+        // Path
+        String path = cmsCustomizer.getContentWebIdPath(cmsContext);
+
+        // URL
+        String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
+
+        try {
+            // Original URI
+            URI originalUri = new URI(url);
+
+            // Query
+            String query = originalUri.getQuery();
+            boolean firstParameter = true;
+            StringBuilder builder = new StringBuilder();
+            if (query != null) {
+                builder.append(query);
+                firstParameter = false;
+            }
+            if (parameters != null) {
+                for (Entry<String, String> parameter : parameters.entrySet()) {
+                    if (firstParameter) {
+                        firstParameter = false;
+                    } else {
+                        builder.append("&");
+                    }
+
+                    builder.append(URLEncoder.encode(parameter.getKey(), CharEncoding.UTF_8));
+                    builder.append("=");
+                    builder.append(URLEncoder.encode(parameter.getValue(), CharEncoding.UTF_8));
+                }
+            }
+            query = builder.toString();
+
+            // Adapted URI
+            URI adaptedUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), originalUri.getPath(), query, originalUri.getFragment());
+
+            return adaptedUri.toString();
+        } catch (Exception e) {
+            return url;
         }
     }
 
@@ -2178,14 +2257,14 @@ public class NuxeoController {
 
         return p;
     }
-    
+
     /**
      * Instantiates a new nuxeo controller.
      *
      * @param request the request
      * @param response the response
      * @param portletCtx the portlet ctx
-     * @throws PortletException 
+     * @throws PortletException
      * @throws RuntimeException the runtime exception
      */
     public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws PortletException{
@@ -2199,23 +2278,23 @@ public class NuxeoController {
      * @param response the response
      * @param portletCtx the portlet ctx
      * @param path a specific path
-     * @throws PortletException 
+     * @throws PortletException
      * @throws RuntimeException the runtime exception
      */
     public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletCtx, String path) throws PortletException{
 
     	NuxeoDocumentContext docContext = new NuxeoDocumentContext();
-    	
+
         NuxeoController nxCtl = new NuxeoController(request, response, portletCtx);
 
         PortalWindow window = WindowFactory.getWindow(request);
 
-        
+
         BasicPublicationInfos navigationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
 		navigationInfos.setBasePath(window.getPageProperty(BasicPublicationInfos.BASE_PATH));
 
         navigationInfos.setNavigationPath(request.getParameter(BasicPublicationInfos.NAVIGATION_PATH));
-        
+
         if(path == null) {
         	navigationInfos.setContentPath(request.getParameter(BasicPublicationInfos.CONTENT_PATH));
         }
@@ -2230,32 +2309,32 @@ public class NuxeoController {
                 navigationInfos.setReloadResource(Boolean.TRUE);
             }
         }
-        		
+
         if(navigationInfos.getContentPath() != null) {
 			CMSServiceCtx cmsCtx = nxCtl.getCMSCtx();
-	
+
 			ICMSService cmsService = getCMSService();
-			
+
 			try {
 				addInfos(cmsCtx, navigationInfos.getContentPath(), docContext);
-	
-	
+
+
 				String contextualizationBasePath = cmsCtx.getContextualizationBasePath();
 				if(contextualizationBasePath != null) {
 					List<CMSItem> portalNavigationSubitems = cmsService.getPortalNavigationSubitems(cmsCtx, contextualizationBasePath, getLivePath(navigationInfos.getContentPath()));
-					
+
 					if(portalNavigationSubitems.size() > 0) {
 						navigationInfos.setHasSubItems(Boolean.TRUE);
 					}
 				}
-				
-			
-	
-				
+
+
+
+
 			} catch (CMSException e) {
 				throw new PortletException(e);
 			}
-			
+
             // Preview mode
             if (request != null) {
 
@@ -2276,68 +2355,69 @@ public class NuxeoController {
 
 
 			return docContext;
+        } else {
+            return null;
         }
-        else return null;
     }
-    
-    
+
+
     /**
      * Instantiates a new nuxeo controller.
      *
      * @param request the request
      * @param response the response
      * @param portletCtx the portlet ctx
-     * @throws PortletException 
+     * @throws PortletException
      * @throws RuntimeException the runtime exception
      */
     public static NuxeoDocumentContext getDocumentContext(CMSServiceCtx cmsCtx, String path) throws PortletException{
-    	
+
     	NuxeoDocumentContext docContext = null;
-    	
+
     	if(path != null) {
-    		
+
     		docContext = new NuxeoDocumentContext();
-    		
+
 			try {
 				addInfos(cmsCtx, path, docContext);
-				
+
 			} catch (CMSException e) {
 				throw new PortletException(e);
 			}
     	}
-		
+
 		return docContext;
     }
-    
+
     /**
-     * 
+     *
      * @param cmsCtx
      * @param path
      * @param docContext
      * @throws CMSException
      */
     private static void addInfos(CMSServiceCtx cmsCtx, String path, NuxeoDocumentContext docContext) throws CMSException {
-    	
+
         BasicPublicationInfos publicationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
 		BasicPermissions perms = docContext.getPermissions(BasicPermissions.class);
-		
-    	
+
+
 		ICMSService cmsService = getCMSService();
-    	
+
         // Nuxeo service
         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
         // CMS customizer
         INuxeoCustomizer cmsCustomizer = nuxeoService.getCMSCustomizer();
-        
-        
+
+
         CMSPublicationInfos pub = cmsService.getPublicationInfos(cmsCtx, path);
-		
+
 
 		perms.setAnonymouslyReadable(pub.isAnonymouslyReadable());
 		perms.setDeletableByUser(pub.isDeletableByUser());
 		perms.setEditableByUser(pub.isEditableByUser());
 		perms.setManageableByUser(pub.isManageableByUser());
-		
+
 		DocumentState version = DocumentState.parse(cmsCtx.getDisplayLiveVersion());
 		publicationInfos.setContentPath(path);
 		publicationInfos.setState(version);
@@ -2346,24 +2426,24 @@ public class NuxeoController {
 		publicationInfos.setBasePath(pub.getPublishSpacePath());
 		publicationInfos.setScope(cmsCtx.getScope());
 		publicationInfos.setDisplayContext(cmsCtx.getDisplayContext());
-		
+
 		if(cmsCtx.getContextualizationBasePath()!=null) {
 			publicationInfos.setContextualized(Boolean.TRUE);
 		}
-		
+
 		CMSItem content = cmsService.getContent(cmsCtx, publicationInfos.getContentPath());
 		Document nativeItem = (Document) content.getNativeItem();
-		
+
 		docContext.setDoc(nativeItem);
-        
-        
+
+
 		DocumentType documentType = cmsCustomizer.getCMSItemTypes().get(nativeItem.getType());
-		docContext.setDocumentType(documentType);		
-    	
-		
-		
+		docContext.setDocumentType(documentType);
+
+
+
     }
-    
+
 
     /**
      * Gére les folders 'hiddenInNavigation'.
@@ -2412,5 +2492,5 @@ public class NuxeoController {
 
         return nuxeoRequest;
     }
-    
+
 }
