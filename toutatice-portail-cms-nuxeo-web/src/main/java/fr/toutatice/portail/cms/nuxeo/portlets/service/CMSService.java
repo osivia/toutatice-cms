@@ -385,7 +385,6 @@ public class CMSService implements ICMSService {
         } finally {
             cmsCtx.setScope(savedScope);
         }
-
     }
 
 
@@ -394,44 +393,56 @@ public class CMSService implements ICMSService {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public CMSItem getContent(CMSServiceCtx cmsCtx, String path) throws CMSException {
+    public CMSItem getContent(CMSServiceCtx cmsContext, String path) throws CMSException {
+        // Content
         CMSItem content = null;
-        try {
-            // Cache key
-            ContentCacheKey key = new ContentCacheKey(path, cmsCtx);
-            // Request
-            HttpServletRequest request = cmsCtx.getControllerContext().getServerInvocation().getServerContext().getClientRequest();
-            // Cache
-            Map<ContentCacheKey, CMSItem> cache = (Map<ContentCacheKey, CMSItem>) request.getAttribute("osivia.cms.content.cache");
-            if (cache == null) {
-                cache = new ConcurrentHashMap<ContentCacheKey, CMSItem>();
-                request.setAttribute("osivia.cms.content.cache", cache);
-            }
 
-            if (!cmsCtx.isForceReload()) {
-                // Get content in cache
-                content = cache.get(key);
+        try {
+            // Server invocation
+            ServerInvocation serverInvocation = cmsContext.getServerInvocation();
+
+            // Cache key
+            ContentCacheKey key = new ContentCacheKey(path, cmsContext);
+            // Cache
+            Map<ContentCacheKey, CMSItem> cache = null;
+
+            if (serverInvocation != null) {
+                // Request
+                HttpServletRequest request = serverInvocation.getServerContext().getClientRequest();
+                // Cache
+                cache = (Map<ContentCacheKey, CMSItem>) request.getAttribute("osivia.cms.content.cache");
+                if (cache == null) {
+                    cache = new ConcurrentHashMap<ContentCacheKey, CMSItem>();
+                    request.setAttribute("osivia.cms.content.cache", cache);
+                }
+
+                if (!cmsContext.isForceReload()) {
+                    // Get content in cache
+                    content = cache.get(key);
+                }
             }
 
             if (content == null) {
                 // Fetch content
-                content = this.fetchContent(cmsCtx, path);
-                this.getCustomizer().getCMSItemAdapter().adaptItem(cmsCtx, content);
+                content = this.fetchContent(cmsContext, path);
+                this.getCustomizer().getCMSItemAdapter().adaptItem(cmsContext, content);
+            }
 
+            if (cache != null) {
                 // Update cache
                 cache.put(key, content);
             }
         } catch (NuxeoException e) {
             e.rethrowCMSException();
+        } catch (CMSException e) {
+            throw e;
         } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
-            } else {
-                throw (CMSException) e;
-            }
+            throw new CMSException(e);
         }
+
         return content;
     }
+
 
     @Override
     public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {
