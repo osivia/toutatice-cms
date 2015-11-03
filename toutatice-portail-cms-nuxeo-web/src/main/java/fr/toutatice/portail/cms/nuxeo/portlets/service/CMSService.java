@@ -1206,26 +1206,24 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String adaptWebPathToCms(CMSServiceCtx cmsCtx, String requestPath) throws CMSException {
+    public String adaptWebPathToCms(CMSServiceCtx cmsContext, String requestPath) throws CMSException {
         try {
+            // Publication infos
+            CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsContext, requestPath);
 
-            // LBI : no need of customization
-
-            CMSItem content = this.getContent(cmsCtx, requestPath);
-            return content.getPath();
-
-        } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                if ((e instanceof NuxeoException) && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
-                    return null;
-                } else {
-                    throw new CMSException(e);
-                }
+            return pubInfos.getDocumentPath();
+        } catch (NuxeoException e) {
+            if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+                return null;
             } else {
-
-                throw (CMSException) e;
+                throw new CMSException(e);
             }
+        } catch (CMSException e) {
+            throw e;
         }
     }
 
