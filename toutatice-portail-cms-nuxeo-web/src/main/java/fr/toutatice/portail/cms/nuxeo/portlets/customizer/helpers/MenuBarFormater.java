@@ -1630,7 +1630,7 @@ public class MenuBarFormater {
     private void addEmailLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle)
             throws CMSException {
 
-        if (pubInfos.isLiveSpace()) {
+        if (pubInfos.isLiveSpace() || (pubInfos.isPublished())) {
 
 	        Map<String, String> requestParameters = new HashMap<String, String>();
 	        String url = this.getCmsService().getEcmUrl(cmsContext, EcmViews.shareDocument, pubInfos.getDocumentPath(), requestParameters);
@@ -1697,7 +1697,8 @@ public class MenuBarFormater {
         // url of type share for Workspaces and local proxies
         if (this.hasWebId(cmsContext)) {
 
-            if (pubInfos.isLiveSpace() || StringUtils.endsWith(docPath, ".proxy")) {
+            if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && StringUtils.isNotBlank(pubInfos.getPublishSpacePath())
+                    && !DocumentHelper.isRemoteProxy(cmsContext, pubInfos))) {
                 permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
             }
         }
