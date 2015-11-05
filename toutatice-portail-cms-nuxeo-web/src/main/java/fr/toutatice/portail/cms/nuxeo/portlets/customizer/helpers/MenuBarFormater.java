@@ -1630,7 +1630,7 @@ public class MenuBarFormater {
     private void addEmailLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle)
             throws CMSException {
 
-        if (pubInfos.isLiveSpace() || (pubInfos.isPublished())) {
+        if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && pubInfos.isPublished())) {
 
 	        Map<String, String> requestParameters = new HashMap<String, String>();
 	        String url = this.getCmsService().getEcmUrl(cmsContext, EcmViews.shareDocument, pubInfos.getDocumentPath(), requestParameters);
