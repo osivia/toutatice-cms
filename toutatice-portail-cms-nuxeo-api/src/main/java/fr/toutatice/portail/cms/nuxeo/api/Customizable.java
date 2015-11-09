@@ -36,8 +36,8 @@ public enum Customizable {
     MENUBAR("osivia.customizer.cms.menubar"),
     /** Menu template. */
     MENU_TEMPLATE("osivia.customizer.cms.menuTemplate"),
-    /** CMS item adapter module. */
-    CMS_ITEM_ADAPTER_MODULE("osivia.customizer.cms.cmsItemAdapterModule");
+    /** Navigation adapters. */
+    NAVIGATION_ADAPTERS("osivia.customizer.cms.navigationAdapters");
 
 
     /** Property name. */

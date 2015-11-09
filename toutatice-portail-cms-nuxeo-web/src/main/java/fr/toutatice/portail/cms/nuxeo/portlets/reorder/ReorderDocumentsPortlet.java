@@ -14,19 +14,20 @@ import javax.portlet.RenderResponse;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.SortDocumentCommand;
@@ -86,25 +87,29 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
-        
+
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
         // Path
         String path = window.getProperty(PATH_WINDOW_PROPERTY);
-        
+
+        // Parent document
+        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+        Document parent = documentContext.getDoc();
+
         // Publish status
         cmsContext.setDisplayLiveVersion(RequestPublishStatus.live.getStatus());
-        CMSPublicationInfos publicationInfos;
-        try {
-            publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
-        } catch (CMSException cmse) {
-            throw new PortletException(cmse);
-        }
-        if(!publicationInfos.isLiveSpace() && StringUtils.isNotBlank(publicationInfos.getPublishSpacePath())){
+        if (!publicationInfos.isLiveSpace() && StringUtils.isNotBlank(publicationInfos.getBasePath())) {
             // To get local lives and remote proxies
             cmsContext.setDisplayLiveVersion(RequestPublishStatus.liveNRemotePublished.getStatus());
         }
+
+
+        // Parent title
+        String parentTitle = parent.getTitle();
+        request.setAttribute("parentTitle", parentTitle);
 
 
         // Children

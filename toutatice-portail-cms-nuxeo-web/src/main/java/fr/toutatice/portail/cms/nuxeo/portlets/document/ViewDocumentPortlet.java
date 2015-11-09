@@ -77,7 +77,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
@@ -283,7 +282,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
             // CMS customizer
-            INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();            
+            INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
 
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
@@ -336,9 +335,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
                 else {
                 	String docType = StringUtils.lowerCase(document.getType());
-                	
-                	String jspName = customizer.getJSPName("/WEB-INF/jsp/document/view-" + docType + ".jsp",  getPortletContext(), request );
-                    String realPath = getPortletContext().getRealPath(jspName);
+
+                	String jspName = customizer.getJSPName("/WEB-INF/jsp/document/view-" + docType + ".jsp",  this.getPortletContext(), request );
+                    String realPath = this.getPortletContext().getRealPath(jspName);
                 	File file = new File(realPath);
                 	if(file.exists()) {
                 		request.setAttribute("dispatchJsp", docType);
@@ -475,7 +474,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
 
             Document space = (Document) spaceConfig.getNativeItem();
-            boolean isPublishSpace = CMSItemAdapter.docHasFacet(space, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+            boolean isPublishSpace = (space.getFacets() != null) && (space.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC));
 
             if (isPublishSpace) {
                 enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));

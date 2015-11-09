@@ -2172,24 +2172,6 @@ public class NuxeoController {
 
 
     /**
-     * Gets the document configuration.
-     *
-     * @param doc the doc
-     * @return the document configuration
-     * @throws Exception the exception
-     * @deprecated unused ?
-     */
-    @Deprecated
-	public Map<String, String> getDocumentConfiguration(Document doc) {
-        try {
-            INuxeoService nuxeoService = this.getNuxeoCMSService();
-            return nuxeoService.getCMSCustomizer().getDocumentConfiguration(this.getCMSCtx(), doc);
-        } catch (Exception e) {
-            throw this.wrapNuxeoException(e);
-        }
-    }
-
-    /**
      * Gets the debug infos.
      *
      * @return the debug infos

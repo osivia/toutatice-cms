@@ -100,17 +100,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
 
     /**
-     * Get document configuration.
-     *
-     * @param ctx CMS context
-     * @param doc Nuxeo document
-     * @return document configuration
-     * @throws Exception the exception
-     */
-    Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception;
-
-
-    /**
      * Add publication filter.
      *
      * @param ctx CMS context

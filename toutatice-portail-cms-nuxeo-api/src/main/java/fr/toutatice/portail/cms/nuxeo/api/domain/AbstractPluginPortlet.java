@@ -282,23 +282,23 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
-     * Get CMS item adapter modules.
+     * Get navigation adapters.
      *
      * @param context customization context
-     * @return CMS item adapter modules
+     * @return navigation adapters
      */
     @SuppressWarnings("unchecked")
-    protected List<ICmsItemAdapterModule> getCmsItemAdapterModules(CustomizationContext context) {
+    protected List<INavigationAdapterModule> getNavigationAdapters(CustomizationContext context) {
         // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
 
-        // Modules
-        List<ICmsItemAdapterModule> modules = (List<ICmsItemAdapterModule>) attributes.get(Customizable.CMS_ITEM_ADAPTER_MODULE.toString());
-        if (modules == null) {
-            modules = new ArrayList<ICmsItemAdapterModule>();
-            attributes.put(Customizable.CMS_ITEM_ADAPTER_MODULE.toString(), modules);
+        // Navigation adapters
+        List<INavigationAdapterModule> adapters = (List<INavigationAdapterModule>) attributes.get(Customizable.NAVIGATION_ADAPTERS.toString());
+        if (adapters == null) {
+            adapters = new ArrayList<INavigationAdapterModule>();
+            attributes.put(Customizable.NAVIGATION_ADAPTERS.toString(), adapters);
         }
-        return modules;
+        return adapters;
     }
 
 }

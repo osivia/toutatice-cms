@@ -105,7 +105,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ICmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
@@ -116,8 +115,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultCmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
@@ -183,8 +180,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private MenuBarFormater menuBarFormater;
     /** Navigation item adapter. */
     private NavigationItemAdapter navigationItemAdapter;
-    /** CMS item adapter. */
-    private CMSItemAdapter cmsItemAdapter;
     /** Nuxeo connection properties. */
     private NuxeoConnectionProperties nuxeoConnection;
     /** XML parser. */
@@ -329,34 +324,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             this.navigationItemAdapter = new NavigationItemAdapter(this.portletCtx, this, this.cmsService);
         }
         return this.navigationItemAdapter;
-    }
-
-
-    /**
-     * Get CMS item adapter.
-     *
-     * @return CMS item adapter
-     */
-    public CMSItemAdapter getCMSItemAdapter() {
-        if (this.cmsItemAdapter == null) {
-            this.cmsItemAdapter = new CMSItemAdapter(this);
-        }
-        return this.cmsItemAdapter;
-    }
-
-
-    /**
-     * Init CMS item adapter modules.
-     *
-     * @return CMS item adapter modules
-     */
-    public List<ICmsItemAdapterModule> initCmsItemAdapterModules() {
-        List<ICmsItemAdapterModule> modules = new ArrayList<ICmsItemAdapterModule>();
-
-        // Default CMS item adapter module
-        modules.add(new DefaultCmsItemAdapterModule(this.cmsService));
-
-        return modules;
     }
 
 
@@ -516,6 +483,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
+    /**
+     * Menu templates initialization.
+     * 
+     * @param locale current user locale
+     * @return menu templates
+     */
     public SortedMap<String, String> initMenuTemplates(Locale locale) {
         SortedMap<String, String> templates = Collections.synchronizedSortedMap(new TreeMap<String, String>());
 
@@ -1020,15 +993,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public Map<String, String> parseCMSURL(CMSServiceCtx cmsCtx, String requestPath, Map<String, String> requestParameters) throws Exception {
         return null;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String, String> getDocumentConfiguration(CMSServiceCtx ctx, Document doc) throws Exception {
-        return this.getCMSItemAdapter().adaptDocument(ctx, doc);
     }
 
 

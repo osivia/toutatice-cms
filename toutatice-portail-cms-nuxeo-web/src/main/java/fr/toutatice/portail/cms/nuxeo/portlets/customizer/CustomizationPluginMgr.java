@@ -43,8 +43,8 @@ import org.osivia.portal.core.customization.ICustomizationService;
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ICmsItemAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 
@@ -87,8 +87,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private List<INuxeoPlayerModule> dynamicModules;
     /** Types cache. */
     private Map<String, DocumentType> typesCache;
-    /** CMS item adapter modules cache. */
-    private List<ICmsItemAdapterModule> cmsItemAdapterModulesCache;
+    /** Navigation adapters cache. */
+    private List<INavigationAdapterModule> navigationAdaptersCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
@@ -421,26 +421,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
-     * Customize CMS item adapter modules.
+     * Customize navigation adapters.
      *
-     * @return CMS item adapter modules
+     * @return navigation adapters
      */
-    public List<ICmsItemAdapterModule> customizeCmsItemAdapterModules() {
-        if (this.cmsItemAdapterModulesCache == null) {
-            // Modules
-            this.cmsItemAdapterModulesCache = this.customizer.initCmsItemAdapterModules();
+    public List<INavigationAdapterModule> customizeNavigationAdapters() {
+        if (this.navigationAdaptersCache == null) {
+            // Cache
+            this.navigationAdaptersCache = new ArrayList<INavigationAdapterModule>();
 
             // Customization attributes
             Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
 
             // Customized modules
-            List<?> customizedModules = (List<?>) attributes.get(Customizable.CMS_ITEM_ADAPTER_MODULE.toString());
+            List<?> customizedModules = (List<?>) attributes.get(Customizable.NAVIGATION_ADAPTERS.toString());
             if (customizedModules != null) {
-                CollectionUtils.addAll(this.cmsItemAdapterModulesCache, customizedModules.iterator());
+                CollectionUtils.addAll(this.navigationAdaptersCache, customizedModules.iterator());
             }
         }
 
-        return this.cmsItemAdapterModulesCache;
+        return this.navigationAdaptersCache;
     }
 
 
@@ -455,7 +455,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         // Reset caches
         this.dynamicModules = null;
         this.typesCache = null;
-        this.cmsItemAdapterModulesCache = null;
+        this.navigationAdaptersCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

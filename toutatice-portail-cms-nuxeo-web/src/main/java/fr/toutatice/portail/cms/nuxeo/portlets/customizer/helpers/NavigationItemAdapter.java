@@ -241,15 +241,15 @@ public class NavigationItemAdapter {
 	            properties.put("contextualizeExternalContents", "1");
 	        }
 		}
-		
+
 		/*
-		 * Use of ElasticSearch on PublishSpaces 
+		 * Use of ElasticSearch on PublishSpaces
 		 * and possibility to comment inside
 		 */
-		if (isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
+		if (this.isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
 		    Boolean useES = doc.getProperties().getBoolean("ttc:useES");
 		    properties.put("useES", String.valueOf(useES));
-		    
+
 		    Boolean spaceCommentable = doc.getProperties().getBoolean("ttcs:spaceCommentable");
 		    properties.put("spaceCommentable", String.valueOf(spaceCommentable));
 		}
@@ -280,7 +280,7 @@ public class NavigationItemAdapter {
 		}
 		*/
 	}
-	
+
 	/**
 	 * @param publishSpaceNavigationItem
 	 * @param publishSpaceItem
@@ -289,9 +289,7 @@ public class NavigationItemAdapter {
 	 */
 	public boolean isCurrentDocPublishSpace(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem, Document doc){
 	    boolean isPublishSpace = publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath());
-	    if(isPublishSpace){
-	        isPublishSpace = CMSItemAdapter.docHasFacet(doc, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
-	    }
+        isPublishSpace &= (doc.getFacets() != null) && (doc.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC));
 	    return isPublishSpace;
 	}
 

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +65,7 @@ import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.DocumentMetadata;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
@@ -80,6 +80,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -88,9 +89,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
@@ -394,46 +395,19 @@ public class CMSService implements ICMSService {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @Override
     public CMSItem getContent(CMSServiceCtx cmsContext, String path) throws CMSException {
         // Content
         CMSItem content = null;
 
         try {
-            // Server invocation
-            ServerInvocation serverInvocation = cmsContext.getServerInvocation();
+            // Fetch content
+            content = this.fetchContent(cmsContext, path);
 
-            // Cache key
-            ContentCacheKey key = new ContentCacheKey(path, cmsContext);
-            // Cache
-            Map<ContentCacheKey, CMSItem> cache = null;
-
-            if (serverInvocation != null) {
-                // Request
-                HttpServletRequest request = serverInvocation.getServerContext().getClientRequest();
-                // Cache
-                cache = (Map<ContentCacheKey, CMSItem>) request.getAttribute("osivia.cms.content.cache");
-                if (cache == null) {
-                    cache = new ConcurrentHashMap<ContentCacheKey, CMSItem>();
-                    request.setAttribute("osivia.cms.content.cache", cache);
-                }
-
-                if (!cmsContext.isForceReload()) {
-                    // Get content in cache
-                    content = cache.get(key);
-                }
-            }
-
-            if (content == null) {
-                // Fetch content
-                content = this.fetchContent(cmsContext, path);
-                this.getCustomizer().getCMSItemAdapter().adaptItem(cmsContext, content);
-            }
-
-            if (cache != null) {
-                // Update cache
-                cache.put(key, content);
+            // Force portal contextualization indicator
+            DocumentType type = content.getType();
+            if ((type != null) && type.isForcePortalContextualization()) {
+                content.getProperties().put("supportsOnlyPortalContextualization", "1");
             }
         } catch (NuxeoException e) {
             e.rethrowCMSException();
@@ -805,10 +779,12 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
-
         String savedScope = cmsCtx.getScope();
 
         if ((cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope())) {
@@ -816,7 +792,6 @@ public class CMSService implements ICMSService {
         }
 
         try {
-
             String livePath = DocumentHelper.computeNavPath(path);
 
             CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
@@ -861,7 +836,6 @@ public class CMSService implements ICMSService {
                 }
 
             }
-
         } catch (NuxeoException e) {
             e.rethrowCMSException();
         } catch (Exception e) {
@@ -878,6 +852,10 @@ public class CMSService implements ICMSService {
         return null;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
@@ -2000,7 +1978,7 @@ public class CMSService implements ICMSService {
         cmsCtx.setDisplayLiveVersion("0");
         CMSItem cmsPublishedItem = this.getContent(cmsCtx, pagePath);
         Document publishedDoc = (Document) cmsPublishedItem.getNativeItem();
-        String publishedDocPath = CMSItemAdapter.computeNavPath(publishedDoc.getPath());
+        String publishedDocPath = StringUtils.removeEnd(publishedDoc.getPath(), ".proxy");
 
         cmsCtx.setDisplayLiveVersion("1");
         CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
@@ -2376,6 +2354,64 @@ public class CMSService implements ICMSService {
         }
 
         return url;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAdaptedNavigationPath(CMSServiceCtx cmsContext) throws CMSException {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        // Adapted navigation path
+        String navigationPath = null;
+
+        // Navigation adapters
+        List<INavigationAdapterModule> adapters = pluginManager.customizeNavigationAdapters();
+        for (INavigationAdapterModule adapter : adapters) {
+            navigationPath = adapter.adaptNavigationPath(cmsContext);
+        }
+
+        return navigationPath;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DocumentMetadata getDocumentMetadata(CMSServiceCtx cmsContext) throws CMSException {
+        // Document metadata
+        DocumentMetadata metadata = new DocumentMetadata();
+
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+        if (document != null) {
+            // Title
+            metadata.setTitle(document.getTitle());
+
+            // SEO properties
+            Map<String, String> seo = metadata.getSeo();
+            // Description
+            String description = document.getString("dc:description");
+            if (StringUtils.isNotBlank(description)) {
+                seo.put("description", description);
+            }
+            // Author
+            String author = document.getString("dc:creator");
+            if (StringUtils.isNotBlank(author)) {
+                seo.put("author", author);
+            }
+            // Keywords
+            PropertyList keywords = document.getProperties().getList("ttc:keywords");
+            if ((keywords != null) && !keywords.isEmpty()) {
+                seo.put("keywords", StringUtils.join(keywords.list(), ", "));
+            }
+        }
+
+        return metadata;
     }
 
 }
