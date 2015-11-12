@@ -71,8 +71,14 @@
             <!-- Buttons -->
 	        <div class="form-group">
 	            <div class="col-sm-offset-3 col-sm-9">
-	                <button type="submit" class="btn btn-default btn-primary"><op:translate key="SAVE" /></button>
-	                <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
+	                <button type="submit" class="btn btn-primary">
+                        <i class="glyphicons glyphicons-floppy-disk"></i>
+                        <span><op:translate key="SAVE" /></span>
+                    </button>
+                    
+	                <button type="button" class="btn btn-default" onclick="closeFancybox()">
+                        <span><op:translate key="CANCEL" /></span>
+                    </button>
 	            </div>
 	        </div>
         </form>
