@@ -163,11 +163,11 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @return the players
      */
     @SuppressWarnings("unchecked")
-    protected List<IPlayerModule<?>> getPlayers(CustomizationContext context) {
+    protected List<IPlayerModule> getPlayers(CustomizationContext context) {
         // Players
-        List<IPlayerModule<?>> players = (List<IPlayerModule<?>>) context.getAttributes().get(Customizable.PLAYER.toString());
+        List<IPlayerModule> players = (List<IPlayerModule>) context.getAttributes().get(Customizable.PLAYER.toString());
         if (players == null) {
-            players = new ArrayList<IPlayerModule<?>>();
+            players = new ArrayList<IPlayerModule>();
             context.getAttributes().put(Customizable.PLAYER.toString(), players);
         }
         return players;
