@@ -127,13 +127,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinksFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.ZoomFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
@@ -450,10 +448,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         fragmentTypes.add(new FragmentType(PropertyFragmentModule.TEXT_ID, bundle.getString("FRAGMENT_TYPE_TEXT"), PropertyFragmentModule.getInstance(false)));
         // HTML fragment
         fragmentTypes.add(new FragmentType(PropertyFragmentModule.HTML_ID, bundle.getString("FRAGMENT_TYPE_HTML"), PropertyFragmentModule.getInstance(true)));
-        // Zoom fragment
-        fragmentTypes.add(new FragmentType(ZoomFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_ZOOM"), ZoomFragmentModule.getInstance()));
-        // Links fragment
-        fragmentTypes.add(new FragmentType(LinksFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_LINKS"), LinksFragmentModule.getInstance()));
+
         // Navigation picture fragment
         fragmentTypes.add(new FragmentType(NavigationPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_NAVIGATION_PICTURE"),
                 NavigationPictureFragmentModule.getInstance()));
