@@ -1960,6 +1960,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         properties.put("osivia.bootstrapPanelStyle", String.valueOf(true));
         properties.put("osivia.cms.template", "fancytree-lazy");
         properties.put("osivia.cms.startLevel", String.valueOf(2));
+        properties.put("osivia.cms.forceNavigation", String.valueOf(true));
+       
         player.setProperties(properties);
         return player;
     }
