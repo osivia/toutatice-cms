@@ -111,10 +111,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 // Fragment type
                 String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
                 window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
-            }
 
-            response.setPortletMode(PortletMode.VIEW);
-            response.setWindowState(WindowState.NORMAL);
+                response.setPortletMode(PortletMode.VIEW);
+                response.setWindowState(WindowState.NORMAL);
+            }
         }
 
 
