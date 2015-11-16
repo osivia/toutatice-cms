@@ -201,7 +201,7 @@
                                             </c:if>
                                         
                                             <div>
-                                                <div class="document-icon">
+                                                <div class="document-icon draggable">
                                                     <div
                                                         <c:if test="${document.type.folderish}">class="folderish"</c:if>
                                                     >
@@ -210,7 +210,9 @@
                                                 </div>
                                             
                                                 <div class="text-overflow">
-                                                    <ttc:title document="${document}" displayContext="fileExplorer" />
+                                                    <span class="draggable">
+                                                        <ttc:title document="${document}" displayContext="fileExplorer" />
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -262,7 +264,7 @@
                     </div>
                     
                     <!-- Draggable -->
-                    <div class="draggable border-primary"></div>
+                    <div class="draggable draggable-shadowbox border-primary"></div>
                 </li>
             </c:forEach>
         </ul>
