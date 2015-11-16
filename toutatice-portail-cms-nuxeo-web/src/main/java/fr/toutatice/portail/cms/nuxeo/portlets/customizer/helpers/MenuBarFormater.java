@@ -561,7 +561,7 @@ public class MenuBarFormater {
             }
         } else if (!DocumentHelper.isFolder(document) && pubInfos.isEditableByUser() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
-            if (pubInfos.isBeingModified()) {
+            if (pubInfos.isBeingModified() && pubInfos.isRemotePublished()) {
                 MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
                 // Current modification indicator
                 MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);

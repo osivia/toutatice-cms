@@ -133,6 +133,7 @@ public class PublishInfosCommand implements INuxeoCommand {
                     publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
                     publiInfos.setManageableByUser(adaptBoolean(infos.get("manageableByUser")));
                     publiInfos.setRemotePublishable(adaptBoolean(infos.get("isRemotePublishable")));
+                    publiInfos.setRemotePublished(adaptBoolean(infos.get("isRemotePublished")));
                     publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
                     publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
                     publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));

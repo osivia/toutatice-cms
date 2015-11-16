@@ -14,7 +14,7 @@
     <c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
     
     <!-- Author -->
-    <c:set var="author" value="${document.properties['dc:creator']}" />
+    <c:set var="author" value="${document.properties['dc:lastContributor']}" />
 
     <!-- Description -->
     <c:set var="description" value="${document.properties['dc:description']}" />
