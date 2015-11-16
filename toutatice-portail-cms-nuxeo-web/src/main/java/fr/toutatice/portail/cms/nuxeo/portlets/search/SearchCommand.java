@@ -89,7 +89,7 @@ public class SearchCommand implements INuxeoCommand{
 		
 		// Filter on publish spaces lives.
 		String filteredRequest = NuxeoQueryFilter.addSearchFilter(queryCtx, searchQuery);
-		request.set("query", "SELECT * FROM Document " + filteredRequest.toString());
+		request.set("query", "SELECT * FROM Document " + filteredRequest);
 		PaginableDocuments result = (PaginableDocuments) request.execute();
 		
 		return result;

@@ -1243,7 +1243,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath, String navigationScope)
+    public List<CMSEditableWindow> getEditableWindows(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath, String navigationScope, Boolean isSpaceSite)
             throws CMSException {
         List<CMSEditableWindow> windows = new ArrayList<CMSEditableWindow>();
 
@@ -1262,16 +1262,21 @@ public class CMSService implements ICMSService {
         }
 
 
-        // Inherited regions
-        Map<String, List<CMSEditableWindow>> inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
-                editionMode);
-        for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
-            if (CollectionUtils.isNotEmpty(inheritedWindows)) {
-                // Add inherited region windows
-                windows.addAll(inheritedWindows);
-            }
+        // Inherited regions, useful in space site to propagate default regions like menus, banner
+        // not used in desktop
+        Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>> ();
+        int windowsCount = 0;
+        if(isSpaceSite) {
+	        inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
+	                editionMode);
+	        for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+	            if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+	                // Add inherited region windows
+	                windows.addAll(inheritedWindows);
+	            }
+	        }
+	        windowsCount = windows.size();
         }
-        int windowsCount = windows.size();
 
 
         try {
