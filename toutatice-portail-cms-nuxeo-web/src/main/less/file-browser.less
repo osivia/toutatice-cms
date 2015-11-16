@@ -52,20 +52,20 @@
             }
         }
         
-        ~ .draggable {
+        ~ .draggable-shadowbox {
             visibility: visible;
         }
         
         &.dragged {
-            &, & ~ .draggable {
+            &, & ~ .draggable-shadowbox {
                 opacity: 0.3;
             }
         }
     }
     
     
-    // Draggable
-    .draggable {
+    // Draggable shadowbox
+    .draggable-shadowbox {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -293,8 +293,8 @@
         }
 
         
-        // Draggable
-        .draggable {
+        // Draggable shadowbox
+        .draggable-shadowbox {
             border-bottom-style: solid;
             border-width: 1px;
         }

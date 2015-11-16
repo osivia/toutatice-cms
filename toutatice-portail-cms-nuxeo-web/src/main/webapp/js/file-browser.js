@@ -7,7 +7,7 @@ $JQry(function() {
 	
 	// Selectable
 	$JQry(".file-browser .selectable").selectable({
-		cancel: "a, .sortable-handle",
+		cancel: ".sortable-handle, .draggable",
 		filter: ".data",
 		
 		selected: function(event, ui) {
@@ -83,19 +83,19 @@ $JQry(function() {
 		
 		helper: function(event) {
 			var $target = $JQry(event.target),
-				$selectable = $target.closest(".selectable"),
-				$selected = $selectable.find(".ui-selected"),
+				$data = $target.closest(".data"),
+				direct = ($data.length > 0),
+				$selected = (direct ? $data : $target.closest(".selectable").find(".ui-selected")),
 				offset = $target.offset(),
 				click = {
 					top: event.pageY - offset.top,
 					left: event.pageX - offset.left
 				},
+				identifiers = "", types = "", text = "",
 				$helper;
 			
 			
 			// Identifiers & types
-			identifiers = "";
-			types = "";
 			$selected.each(function(index, element) {
 				if (index > 0) {
 					identifiers += ",";
@@ -121,9 +121,15 @@ $JQry(function() {
 			// Panel
 			$panel = $JQry(document.createElement("div"));
 			$panel.addClass("panel panel-primary");
-			$panel.css({
-				width: $target.width()
-			});
+			if (direct) {
+				$panel.css({
+					width: $data.siblings(".draggable-shadowbox").width()
+				});
+			} else {
+				$panel.css({
+					width: $target.width()
+				});
+			}
 			$panel.animate({
 				top: click.top + 1,
 				left: click.left + 1,
@@ -151,7 +157,6 @@ $JQry(function() {
 			}
 			
 			// Text
-			text = "";
 			$selected.find(".document-icon").siblings().each(function(index, element) {
 				if (index > 0) {
 					text += ", ";
