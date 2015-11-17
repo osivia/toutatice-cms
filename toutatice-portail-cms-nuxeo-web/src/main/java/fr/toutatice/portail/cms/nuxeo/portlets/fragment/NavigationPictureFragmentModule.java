@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -31,14 +32,14 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Navigation picture fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class NavigationPictureFragmentModule implements IFragmentModule {
+public class NavigationPictureFragmentModule extends FragmentModule {
 
     /** Navigation picture fragment identifier. */
     public static final String ID = "navigation_picture";
@@ -51,28 +52,14 @@ public class NavigationPictureFragmentModule implements IFragmentModule {
     /** View JSP name. */
     private static final String VIEW_JSP_NAME = "picture";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private NavigationPictureFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new NavigationPictureFragmentModule();
-        }
-        return instance;
+    public NavigationPictureFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 

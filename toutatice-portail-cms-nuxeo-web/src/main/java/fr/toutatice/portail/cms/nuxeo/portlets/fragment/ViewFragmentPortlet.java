@@ -40,7 +40,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.IFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
@@ -123,19 +123,16 @@ public class ViewFragmentPortlet extends CMSPortlet {
         if (fragmentTypeId != null) {
             FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
             if (fragmentType != null) {
-                ClassLoader restoreLoader = null;
-                try {
-                    // Save current class loader
-                    if (fragmentType.getModule() instanceof PluginModule) {
-                        restoreLoader = Thread.currentThread().getContextClassLoader();
-                        Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
-                    }
-
-                    // Specific fragment module action
-                    fragmentType.getModule().processAction(portalControllerContext);
-                } finally {
-                    if (restoreLoader != null) {
-                        Thread.currentThread().setContextClassLoader(restoreLoader);
+                // Module
+                IFragmentModule module = fragmentType.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    try {
+                        module.processAction(portalControllerContext);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
                     }
                 }
             }
@@ -169,22 +166,16 @@ public class ViewFragmentPortlet extends CMSPortlet {
         if (fragmentTypeId != null) {
             FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
             if (fragmentType != null) {
-                // Specific fragment admin view
-
-
-                ClassLoader restoreLoader = null;
-                try {
-                    // Save current class loader
-                    if (fragmentType.getModule() instanceof PluginModule) {
-                        restoreLoader = Thread.currentThread().getContextClassLoader();
-                        Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
-                    }
-
-                    // Specific fragment admin action
-                    fragmentType.getModule().doAdmin(portalControllerContext);
-                } finally {
-                    if (restoreLoader != null) {
-                        Thread.currentThread().setContextClassLoader(restoreLoader);
+                // Module
+                IFragmentModule module = fragmentType.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    try {
+                        module.doAdmin(portalControllerContext);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
                     }
                 }
 
@@ -227,20 +218,16 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 // Fragment type
                 FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
                 if (fragmentType != null) {
-
-                    ClassLoader restoreLoader = null;
-
-                    try {
-                        // Save current class loader
-                        if (fragmentType.getModule() instanceof PluginModule) {
-                            restoreLoader = Thread.currentThread().getContextClassLoader();
-                            Thread.currentThread().setContextClassLoader(((PluginModule) fragmentType.getModule()).getCl());
-                        }
-
-                        fragmentType.getModule().doView(portalControllerContext);
-                    } finally {
-                        if (restoreLoader != null) {
-                            Thread.currentThread().setContextClassLoader(restoreLoader);
+                    // Module
+                    IFragmentModule module = fragmentType.getModule();
+                    if (module != null) {
+                        // Saved class loader
+                        ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                        Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                        try {
+                            module.doView(portalControllerContext);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(savedClassLoader);
                         }
                     }
 

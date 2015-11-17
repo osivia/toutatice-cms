@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -28,16 +29,16 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ZoomEditableWindow;
 
 /**
  * Display zooms of a current page.
  *
  * @author Loïc Billon
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class ZoomFragmentModule implements IFragmentModule {
+public class ZoomFragmentModule extends FragmentModule {
 
     /** Zoom fragment identifier. */
     public static final String ID = "zoom_property";
@@ -62,28 +63,14 @@ public class ZoomFragmentModule implements IFragmentModule {
     /** Template. */
     private static final String TEMPLATE = "zoomTemplate";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private ZoomFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new ZoomFragmentModule();
-        }
-        return instance;
+    public ZoomFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 

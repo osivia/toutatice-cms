@@ -73,7 +73,7 @@ import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.domain.PluginModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -187,6 +187,10 @@ public class ViewListPortlet extends ViewList {
             ListConfiguration configuration = this.getConfiguration(window);
 
 
+            // Template
+            ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+
+
             if ("rss".equals(request.getParameter("type"))) {
                 // RSS generation
 
@@ -217,8 +221,6 @@ public class ViewListPortlet extends ViewList {
 
 
                 if (nuxeoRequest != null) {
-                    // Template
-                    ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
                     String schemas = template.getSchemas();
 
 
@@ -254,7 +256,22 @@ public class ViewListPortlet extends ViewList {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
             } else {
-                super.serveResource(request, response);
+                // Module
+                IPortletModule module = template.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    try {
+                        module.serveResource(portalControllerContext);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
+                    }
+                }
+
+                if (!response.isCommitted()) {
+                    super.serveResource(request, response);
+                }
             }
         } catch (PortletException e) {
             throw e;
@@ -346,26 +363,17 @@ public class ViewListPortlet extends ViewList {
         // v2.0.8 : ajout custom
         ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
 
-        if (template.getModule() != null) {
 
-            ClassLoader restoreLoader = null;
-
-
+        // Module
+        IPortletModule module = template.getModule();
+        if (module != null) {
+            // Saved class loader
+            ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(module.getClassLoader());
             try {
-                // save current class loader
-
-                if (template.getModule() instanceof PluginModule) {
-                    restoreLoader = Thread.currentThread().getContextClassLoader();
-                    Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
-                }
-
-                template.getModule().processAction(nuxeoController.getPortalCtx());
-            } catch (Exception e) {
-                throw new PortletException(e);
+                module.processAction(nuxeoController.getPortalCtx());
             } finally {
-                if (restoreLoader != null) {
-                    Thread.currentThread().setContextClassLoader(restoreLoader);
-                }
+                Thread.currentThread().setContextClassLoader(savedClassLoader);
             }
         }
     }
@@ -694,27 +702,17 @@ public class ViewListPortlet extends ViewList {
                 }
 
 
-                // v2.0.8 : customization
-                if (template.getModule() != null) {
-
-                    ClassLoader restoreLoader = null;
-
+                // Module
+                IPortletModule module = template.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
                     try {
-                        // save current class loader
-
-                        if (template.getModule() instanceof PluginModule) {
-                            restoreLoader = Thread.currentThread().getContextClassLoader();
-                            Thread.currentThread().setContextClassLoader(((PluginModule) template.getModule()).getCl());
-                        }
-
-                        template.getModule().doView(portalControllerContext);
+                        module.doView(portalControllerContext);
                     } finally {
-                        if (restoreLoader != null) {
-                            Thread.currentThread().setContextClassLoader(restoreLoader);
-                        }
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
                     }
-
-
                 }
             } else {
                 String bshTitle = (String) request.getAttribute("bsh.title");

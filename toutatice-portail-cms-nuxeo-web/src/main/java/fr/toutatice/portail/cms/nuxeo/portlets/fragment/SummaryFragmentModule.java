@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -25,15 +26,17 @@ import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SummaryEditableWindow;
 
 
 /**
- * @author David Chevrier
+ * Summary fragment module.
  *
+ * @author David Chevrier
+ * @see FragmentModule
  */
-public class SummaryFragmentModule implements IFragmentModule {
+public class SummaryFragmentModule extends FragmentModule {
 
     /** Generic fragment properties */
     public enum GenericProperties {
@@ -46,29 +49,20 @@ public class SummaryFragmentModule implements IFragmentModule {
     /** JSP name. */
     private static final String VIEW_JSP_NAME = "summary";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
 
     /**
-     * Private constructor.
-     */
-    private SummaryFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new SummaryFragmentModule();
-        }
-        return instance;
+    public SummaryFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void doView(PortalControllerContext portalControllerContext) throws PortletException {
         Map<String, String> resultFragments = new LinkedHashMap<String, String>();

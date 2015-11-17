@@ -1,5 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
+import fr.toutatice.portail.cms.nuxeo.api.fragment.IFragmentModule;
+
 
 /**
  * Fragment type java-bean.

@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -32,14 +33,14 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Document attachment picture fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class DocumentPictureFragmentModule implements IFragmentModule {
+public class DocumentPictureFragmentModule extends FragmentModule {
 
     /** Document picture fragment identifier. */
     public static final String ID = "document_picture";
@@ -58,28 +59,14 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
     /** View JSP name. */
     private static final String VIEW_JSP_NAME = "picture";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
+     * Constructor.
+     * 
+     * @param portletContext portlet context
      */
-    private DocumentPictureFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
-     *
-     * @return singleton instance
-     */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new DocumentPictureFragmentModule();
-        }
-        return instance;
+    public DocumentPictureFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 

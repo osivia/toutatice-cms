@@ -4,6 +4,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -17,14 +18,14 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Link fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class LinkFragmentModule implements IFragmentModule {
+public class LinkFragmentModule extends FragmentModule {
 
     /** Link fragment identifier. */
     public static final String ID = "doc_link";
@@ -41,28 +42,14 @@ public class LinkFragmentModule implements IFragmentModule {
     /** JSP name. */
     private static final String JSP_NAME = "link";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private LinkFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new LinkFragmentModule();
-        }
-        return instance;
+    public LinkFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 

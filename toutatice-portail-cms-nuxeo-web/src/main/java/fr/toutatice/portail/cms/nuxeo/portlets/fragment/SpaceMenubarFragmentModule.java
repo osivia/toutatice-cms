@@ -3,6 +3,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -11,49 +12,34 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Fragment permettant l'affichage d'une Menubar pour un espace (page).
  * --- appliqué pour le moment aux workspaces ---
  *
  * @author David Chevrier
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class SpaceMenubarFragmentModule implements IFragmentModule {
+public class SpaceMenubarFragmentModule extends FragmentModule {
 
     /** Space menubar fragment identifier. */
     public static final String ID = "space_menubar";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private SpaceMenubarFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new SpaceMenubarFragmentModule();
-        }
-        return instance;
+    public SpaceMenubarFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void doView(PortalControllerContext portalControllerContext) throws PortletException {
         // Request

@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -30,14 +31,14 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Property fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class PropertyFragmentModule implements IFragmentModule {
+public class PropertyFragmentModule extends FragmentModule {
 
     /** Text property fragment identifier. */
     public static final String TEXT_ID = "text_property";
@@ -60,44 +61,20 @@ public class PropertyFragmentModule implements IFragmentModule {
     /** Reference URI. */
     private static final String REF_URI = "refURI";
 
-    /** Text singleton instance. */
-    private static IFragmentModule textInstance;
-    /** HTML singleton instance. */
-    private static IFragmentModule htmlInstance;
-
 
     /** HTML content indicator. */
     private final boolean html;
 
 
     /**
-     * Private constructor.
-     */
-    private PropertyFragmentModule(boolean html) {
-        super();
-        this.html = html;
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
+     * @param html HTML content indicator
      */
-    public static IFragmentModule getInstance(boolean html) {
-        IFragmentModule instance;
-        if (html) {
-            if (htmlInstance == null) {
-                htmlInstance = new PropertyFragmentModule(true);
-            }
-            instance = htmlInstance;
-        } else {
-            if (textInstance == null) {
-                textInstance = new PropertyFragmentModule(false);
-            }
-            instance = textInstance;
-        }
-        return instance;
+    public PropertyFragmentModule(PortletContext portletContext, boolean html) {
+        super(portletContext);
+        this.html = html;
     }
 
 

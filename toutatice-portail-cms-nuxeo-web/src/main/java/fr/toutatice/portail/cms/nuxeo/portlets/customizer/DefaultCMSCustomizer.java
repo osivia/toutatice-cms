@@ -441,29 +441,34 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
 
+        // Portlet context
+        PortletContext portletContext = this.getPortletCtx();
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         // Text fragment
-        fragmentTypes.add(new FragmentType(PropertyFragmentModule.TEXT_ID, bundle.getString("FRAGMENT_TYPE_TEXT"), PropertyFragmentModule.getInstance(false)));
+        fragmentTypes.add(new FragmentType(PropertyFragmentModule.TEXT_ID, bundle.getString("FRAGMENT_TYPE_TEXT"), new PropertyFragmentModule(portletContext,
+                false)));
         // HTML fragment
-        fragmentTypes.add(new FragmentType(PropertyFragmentModule.HTML_ID, bundle.getString("FRAGMENT_TYPE_HTML"), PropertyFragmentModule.getInstance(true)));
+        fragmentTypes.add(new FragmentType(PropertyFragmentModule.HTML_ID, bundle.getString("FRAGMENT_TYPE_HTML"), new PropertyFragmentModule(portletContext,
+                true)));
 
         // Navigation picture fragment
         fragmentTypes.add(new FragmentType(NavigationPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_NAVIGATION_PICTURE"),
-                NavigationPictureFragmentModule.getInstance()));
+                new NavigationPictureFragmentModule(portletContext)));
         // Document attachment picture fragment
-        fragmentTypes.add(new FragmentType(DocumentPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_DOCUMENT_PICTURE"), DocumentPictureFragmentModule
-                .getInstance()));
+        fragmentTypes.add(new FragmentType(DocumentPictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_DOCUMENT_PICTURE"),
+                new DocumentPictureFragmentModule(portletContext)));
         // Link fragment
-        fragmentTypes.add(new FragmentType(LinkFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_LINK"), LinkFragmentModule.getInstance()));
+        fragmentTypes.add(new FragmentType(LinkFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_LINK"), new LinkFragmentModule(portletContext)));
         // Space menubar fragment
-        fragmentTypes.add(new FragmentType(SpaceMenubarFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_MENUBAR"), SpaceMenubarFragmentModule.getInstance()));
+        fragmentTypes.add(new FragmentType(SpaceMenubarFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_MENUBAR"), new SpaceMenubarFragmentModule(
+                portletContext)));
         // Site picture fragment
-        fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"), SitePictureFragmentModule
-                .getInstance()));
+        fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"), new SitePictureFragmentModule(
+                portletContext)));
         // Summary fragment
-        fragmentTypes.add(new FragmentType(SummaryFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SUMMARY"), SummaryFragmentModule.getInstance()));
+        fragmentTypes.add(new FragmentType(SummaryFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SUMMARY"), new SummaryFragmentModule(portletContext)));
 
         return fragmentTypes;
 
@@ -480,7 +485,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Menu templates initialization.
-     * 
+     *
      * @param locale current user locale
      * @return menu templates
      */
@@ -1956,7 +1961,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         properties.put("osivia.cms.template", "fancytree-lazy");
         properties.put("osivia.cms.startLevel", String.valueOf(2));
         properties.put("osivia.cms.forceNavigation", String.valueOf(true));
-       
+
         player.setProperties(properties);
         return player;
     }

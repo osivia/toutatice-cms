@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -30,16 +31,16 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.LinksEditableWindow;
 
 /**
  * Display links of a current page.
  *
  * @author Loïc Billon
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class LinksFragmentModule implements IFragmentModule {
+public class LinksFragmentModule extends FragmentModule {
 
     /** Links fragment identifier. */
     public static final String ID = "links_property";
@@ -51,28 +52,14 @@ public class LinksFragmentModule implements IFragmentModule {
     /** Template. */
     private static final String TEMPLATE = "linksTemplate";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private LinksFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new LinksFragmentModule();
-        }
-        return instance;
+    public LinksFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
