@@ -185,6 +185,32 @@ public class CMSService implements ICMSService {
 
 
     /**
+     * Create CMS item.
+     *
+     * @param cmsContext CMS context
+     * @param path path
+     * @param displayName display name
+     * @param document document
+     * @param publicationInfos publications infos
+     * @return CMS item
+     * @throws CMSException
+     */
+    public CMSItem createItem(CMSServiceCtx cmsContext, String path, String displayName, Document document, CMSPublicationInfos publicationInfos)
+            throws CMSException {
+        // CMS item
+        CMSItem cmsItem = this.createItem(cmsContext, path, displayName, document);
+
+        // Publication infos
+        if (publicationInfos != null) {
+            cmsItem.setPublished(publicationInfos.isPublished());
+            cmsItem.setBeingModified(publicationInfos.isBeingModified());
+        }
+
+        return cmsItem;
+    }
+
+
+    /**
      * Create CMS navigation item.
      *
      * @param cmsCtx CMS context
@@ -337,58 +363,72 @@ public class CMSService implements ICMSService {
                 return command.execute(nuxeoSession);
             }
         });
-
-
     }
 
-    private CMSItem fetchContent(CMSServiceCtx cmsCtx, String path) throws Exception {
 
-        String savedScope = cmsCtx.getScope();
+    /**
+     * Fetch content.
+     *
+     * @param cmsContext CMS context
+     * @param path path
+     * @return CMS item
+     * @throws Exception
+     */
+    private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
+        // CMS item
+        CMSItem cmsItem;
+
+        // Saved scope
+        String savedScope = cmsContext.getScope();
         try {
-            boolean saveAsync = cmsCtx.isAsyncCacheRefreshing();
+            boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
 
-            cmsCtx.setAsyncCacheRefreshing(false);
-            CMSPublicationInfos pubInfos = this.getPublicationInfos(cmsCtx, path);
-            path = pubInfos.getDocumentPath();
+            cmsContext.setAsyncCacheRefreshing(false);
 
-            cmsCtx.setAsyncCacheRefreshing(saveAsync);
+            // Publication infos
+            CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+            path = publicationInfos.getDocumentPath();
 
-            boolean haveToGetLive = "1".equals(cmsCtx.getDisplayLiveVersion());
+            cmsContext.setAsyncCacheRefreshing(saveAsync);
 
-            if (pubInfos.getDocumentPath().equals(cmsCtx.getForcedLivePath()) || pubInfos.getLiveId().equals(cmsCtx.getForcedLivePath())) {
+            boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
+
+            if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath()) || publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
                 haveToGetLive = true;
             }
 
             // Document non publié et rattaché à un workspace
-            if ((!pubInfos.isPublished() && StringUtils.isNotEmpty(pubInfos.getPublishSpacePath()) && pubInfos.isLiveSpace())) {
+            if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath()) && publicationInfos.isLiveSpace())) {
                 haveToGetLive = true;
             }
 
             // Ajout JSS 20130122
             // Document non publié et non rattaché à un espace : usage collaboratif
-            if (!pubInfos.isPublished() && (pubInfos.getPublishSpacePath() == null)) {
+            if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
                 haveToGetLive = true;
             }
 
 
-            cmsCtx.setScope("superuser_context");
+            cmsContext.setScope("superuser_context");
 
+
+            // Nuxeo command
+            INuxeoCommand nuxeoCommand;
             if (haveToGetLive) {
-
-                Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(path, "Read")));
-                return this.createItem(cmsCtx, path, doc.getTitle(), doc);
-
+                nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
             } else {
-
-                Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchPublishedCommand(path)));
-
-
-                return this.createItem(cmsCtx, path, doc.getTitle(), doc);
-
+                nuxeoCommand = new DocumentFetchPublishedCommand(path);
             }
+
+            // Document
+            Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+            // CMS item
+            cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
         } finally {
-            cmsCtx.setScope(savedScope);
+            cmsContext.setScope(savedScope);
         }
+
+        return cmsItem;
     }
 
 
