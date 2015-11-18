@@ -94,7 +94,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
  */
 public class MenuBarFormater {
 
-
     /** Logger. */
     private static final Log LOGGER = LogFactory.getLog(MenuBarFormater.class);
 
@@ -618,33 +617,44 @@ public class MenuBarFormater {
             return;
         }
 
-        // Current document
-        Document document = (Document) cmsContext.getDoc();
-        String path;
-        boolean folderish;
-        if (document == null) {
-            path = cmsContext.getCreationPath();
-
-            // Items with creation path are presumed folderish
-            folderish = (path != null);
-        } else {
-            path = document.getPath();
-
-            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
-            folderish = (cmsItemType != null) && cmsItemType.isFolderish();
-        }
-
         // Do not browse into remote proxy
         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
 
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
+                portalControllerContext.getPortletCtx());
+
+        // Current document
+        Document document = (Document) cmsContext.getDoc();
+        String navigationPath;
+        boolean folderish;
+        if (document == null) {
+            navigationPath = cmsContext.getCreationPath();
+
+            // Items with creation path are presumed folderish
+            folderish = (navigationPath != null);
+        } else {
+            navigationPath = nuxeoController.getContentPath();
+
+            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            folderish = (cmsItemType != null) && cmsItemType.isFolderish();
+        }
+
         if (!pubInfos.isLiveSpace() && !pubInfos.getSubTypes().isEmpty() && folderish) {
+            // Current portal
+            Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+            // Space site indicator
+            boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
+
             // Live content browser popup link
             String browserURL;
             try {
                 Map<String, String> properties = new HashMap<String, String>(1);
-                properties.put("osivia.browser.path", path);
+                properties.put("osivia.browser.basePath", nuxeoController.getBasePath());
+                properties.put("osivia.browser.navigationPath", navigationPath);
+                properties.put("osivia.browser.space", String.valueOf(spaceSite));
                 browserURL = this.urlFactory.getStartPortletUrl(portalControllerContext, "osivia-portal-browser-portlet-instance", properties, true);
             } catch (PortalException e) {
                 browserURL = "#";
@@ -1290,6 +1300,11 @@ public class MenuBarFormater {
             Map<String, DocumentType> managedTypes = this.customizer.getCMSItemTypes();
             DocumentType containerDocType = managedTypes.get(parentDoc.getType());
             if (containerDocType != null) {
+                // Current portal
+                Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+                // Space site indicator
+                boolean spaceSite = PortalObjectUtils.isSpaceSite(portal);
+
                 for (String docType : subTypes.keySet()) {
                     // Is this type managed at portal level ?
                     if (containerDocType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
@@ -1297,7 +1312,7 @@ public class MenuBarFormater {
                         if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
                             // CMS item type
                             DocumentType cmsItemType = managedTypes.get(docType);
-                            if (cmsItemType != null) {
+                            if ((cmsItemType != null) && !(spaceSite && "PortalPage".equals(cmsItemType.getName()))) {
                                 // URL
                                 Map<String, String> requestParameters = new HashMap<String, String>();
                                 requestParameters.put("type", docType);
@@ -1685,8 +1700,6 @@ public class MenuBarFormater {
 
         // Document
         Document document = (Document) cmsContext.getDoc();
-        String docPath = document.getPath();
-        //CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, docPath);
 
         String path = this.customizer.getContentWebIdPath(cmsContext);
 
