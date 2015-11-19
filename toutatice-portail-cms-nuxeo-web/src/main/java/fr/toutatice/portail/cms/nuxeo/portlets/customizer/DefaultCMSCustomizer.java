@@ -103,6 +103,7 @@ import org.xml.sax.XMLReader;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
@@ -1966,14 +1967,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return player;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException {
         try {
-        return this.pluginMgr.customizeJSP(name, portletContext, request);
+            CustomizedJsp customizedPage = this.pluginMgr.customizeJSP(name, portletContext, request);
+
+            String customizedName;
+            if (customizedPage != null) {
+                customizedName = customizedPage.getName();
+            } else {
+                customizedName = null;
+            }
+            return customizedName;
         } catch( IOException e){
             throw new CMSException( e);
         }
     }
-
 
 }

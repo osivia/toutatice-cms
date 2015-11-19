@@ -22,6 +22,7 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.bridge.Formater;
@@ -216,7 +217,7 @@ public class NuxeoTagService implements INuxeoTagService {
      * {@inheritDoc}
      */
     @Override
-    public String getIncludedJspName(NuxeoController nuxeoController, String name) throws IOException {
+    public CustomizedJsp getCustomizedJsp(NuxeoController nuxeoController, String name) throws IOException {
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = (DefaultCMSCustomizer) nuxeoController.getNuxeoCMSService().getCMSCustomizer();
         // Plugin manager

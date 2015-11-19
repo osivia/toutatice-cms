@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletException;
 
+import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
@@ -50,6 +52,19 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     private CustomizationModuleMetadatas metadatas;
     /** Customization modules repository. */
     private ICustomizationModulesRepository repository;
+
+
+    /** Class loader. */
+    private final ClassLoader classLoader;
+
+
+    /**
+     * Constructor.
+     */
+    public AbstractPluginPortlet() {
+        super();
+        this.classLoader = this.getClass().getClassLoader();
+    }
 
 
     /**
@@ -91,23 +106,25 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
-     * Parses and register the custom jsp.
+     * Parse and register customized JavaServer pages.
      *
-     * @param customDirPath the custom dir path
-     * @param file the file
-     * @param jsp the jsp
+     * @param directoryPath directory path
+     * @param directory directory
+     * @param customizedPages customized JavaServer pages
      */
-    public void parseJSP(String customDirPath, File file, Map<String, String> jsp) {
-        File[] filesList = file.listFiles();
-        for (File child : filesList) {
+    public void parseJavaServerPages(String directoryPath, File directory, Map<String, CustomizedJsp> customizedPages) {
+        // Directory children
+        File[] children = directory.listFiles();
+        for (File child : children) {
             if (child.isFile()) {
+                String absolutePath = child.getAbsolutePath();
+                String relativePath = StringUtils.removeStart(absolutePath, directoryPath);
+                CustomizedJsp customizedPage = new CustomizedJsp(absolutePath, this.classLoader);
 
-                String relativePath = child.getAbsolutePath().substring(customDirPath.length());
-                jsp.put(relativePath, child.getAbsolutePath());
+                customizedPages.put(relativePath, customizedPage);
             }
-
             if (child.isDirectory()) {
-                this.parseJSP(customDirPath, child, jsp);
+                this.parseJavaServerPages(directoryPath, child, customizedPages);
             }
         }
     }
@@ -119,32 +136,25 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     @SuppressWarnings("unchecked")
     @Override
     public void customize(String customizationID, CustomizationContext context) {
-        ClassLoader restoreLoader = null;
+        Map<String, Object> attributes = context.getAttributes();
 
-        try {
-            // save current class loader
-            Map<String, Object> attributes = context.getAttributes();
+        this.customizeCMSProperties(customizationID, context);
 
-            this.customizeCMSProperties(customizationID, context);
+        // Customized JavaServer pages
+        Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) attributes.get(Customizable.JSP.toString());
+        if (customizedPages == null) {
+            customizedPages = new ConcurrentHashMap<String, CustomizedJsp>();
+            attributes.put(Customizable.JSP.toString(), customizedPages);
+        }
 
-            // Parse and register JSP
-            Map<String, String> jsp = (Map<String, String>) attributes.get(Customizable.JSP.toString());
-            if (jsp == null) {
-                jsp = new Hashtable<String, String>();
-                attributes.put(Customizable.JSP.toString(), jsp);
-            }
-
-            String dirPath = this.getPortletContext().getRealPath("/WEB-INF/custom/jsp");
-            File f = new File(dirPath);
-            if (f.exists()) {
-                this.parseJSP(dirPath, f, jsp);
-            }
-        } finally {
-            if (restoreLoader != null) {
-                Thread.currentThread().setContextClassLoader(restoreLoader);
-            }
+        // Parse JavaServer pages
+        String directoryPath = this.getPortletContext().getRealPath("/WEB-INF/custom/jsp");
+        File directory = new File(directoryPath);
+        if (directory.exists()) {
+            this.parseJavaServerPages(directoryPath, directory, customizedPages);
         }
     }
+
 
     /**
      * Utility method used to generate attributes bundles customization module metadatas.

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 
 /**
@@ -60,12 +61,12 @@ public interface INuxeoTagService {
 
 
     /**
-     * Get included JSP name.
+     * Get customized JavaServer page.
      *
      * @param nuxeoController Nuxeo controller
-     * @param path JSP name
-     * @return included JSP name
+     * @param name JSP name
+     * @return customized JSP
      */
-    String getIncludedJspName(NuxeoController nuxeoController, String name) throws IOException;
+    CustomizedJsp getCustomizedJsp(NuxeoController nuxeoController, String name) throws IOException;
 
 }

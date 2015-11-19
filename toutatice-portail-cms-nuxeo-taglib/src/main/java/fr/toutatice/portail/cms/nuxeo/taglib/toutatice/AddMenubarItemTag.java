@@ -2,8 +2,10 @@ package fr.toutatice.portail.cms.nuxeo.taglib.toutatice;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.portlet.PortletRequest;
 import javax.servlet.ServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
@@ -11,8 +13,6 @@ import javax.servlet.jsp.PageContext;
 import org.apache.commons.lang.BooleanUtils;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.internationalization.Bundle;
-import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.IMenubarService;
@@ -57,8 +57,8 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
 
     /** Menubar service. */
     private final IMenubarService menubarService;
-    /** Bundle factory. */
-    private final IBundleFactory bundleFactory;
+    /** Internationalization service. */
+    private final IInternationalizationService internationalizationService;
 
 
     /**
@@ -70,11 +70,8 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
         // Menubar service
         this.menubarService = Locator.findMBean(IMenubarService.class, IMenubarService.MBEAN_NAME);
 
-        // Bundle factory
-        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                IInternationalizationService.MBEAN_NAME);
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        this.bundleFactory = internationalizationService.getBundleFactory(classLoader);
+        // Internationalization service
+        this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
     }
 
 
@@ -86,18 +83,25 @@ public class AddMenubarItemTag extends ToutaticeSimpleTag {
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Context
         PageContext pageContext = (PageContext) this.getJspContext();
-        // Request
-        ServletRequest request = pageContext.getRequest();
-        // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+        // Servlet request
+        ServletRequest servletRequest = pageContext.getRequest();
+        // Portlet request
+        PortletRequest portletRequest = nuxeoController.getRequest();
         // Menubar
-        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+        List<MenubarItem> menubar = (List<MenubarItem>) servletRequest.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
         if (menubar != null) {
             // Title
             String title;
             if (this.labelKey != null) {
-                title = bundle.getString(this.labelKey);
+                // Locale
+                Locale locale = servletRequest.getLocale();
+                // Current class loader
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                // Customized class loader
+                ClassLoader customizedClassLoader = (ClassLoader) portletRequest.getAttribute("osivia.customizer.cms.jsp.classloader");
+
+                title = this.internationalizationService.getString(this.labelKey, locale, classLoader, customizedClassLoader);
             } else {
                 title = null;
             }

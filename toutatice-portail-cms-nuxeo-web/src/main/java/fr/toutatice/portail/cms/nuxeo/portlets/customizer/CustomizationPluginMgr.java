@@ -41,6 +41,7 @@ import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
@@ -69,8 +70,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
     /** Customization attributes cache. */
     private final Map<Locale, Map<String, Object>> customizationAttributesCache;
-    /** Dest dispatcher for customized JSP */
-    private final Map<String, String> destDispatcher;
+    /** Customized JavaServer pages cache. */
+    private final Map<String, CustomizedJsp> customizedJavaServerPagesCache;
     /** Fragments cache. */
     private final Map<Locale, Map<String, FragmentType>> fragmentsCache;
     /** Editable window cache. */
@@ -109,7 +110,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.customizationService.setCMSObserver(this);
 
         this.customizationAttributesCache = new ConcurrentHashMap<Locale, Map<String, Object>>();
-        this.destDispatcher = new ConcurrentHashMap<String, String>();
+        this.customizedJavaServerPagesCache = new ConcurrentHashMap<String, CustomizedJsp>();
         this.fragmentsCache = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
         this.ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
         this.templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
@@ -142,53 +143,59 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
-     * Customize JSP.
+     * Customize JavaServer page.
      *
-     * @param name the name
-     * @param portletContext the portlet context
-     * @param request the request
-     * @return the string
+     * @param name JSP name
+     * @param portletContext portlet context
+     * @param request portlet request
+     * @return customized JavaServer page
      * @throws IOException Signals that an I/O exception has occurred.
      */
     @SuppressWarnings("unchecked")
-    public String customizeJSP(String name, PortletContext portletContext, PortletRequest request) throws IOException {
+    public CustomizedJsp customizeJSP(String name, PortletContext portletContext, PortletRequest request) throws IOException {
+        // Customized JavaServer page
+        CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
 
-        String customJSPName = this.destDispatcher.get(name);
-        if (customJSPName == null) {
+        if (customizedPage == null) {
             // Locale
             Locale locale = request.getLocale();
             Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
 
             // Default initialization
-            this.destDispatcher.put(name, name);
+            customizedPage = new CustomizedJsp(name, null);
 
-            Map<String, String> jsp = (Map<String, String>) customizationAttributes.get(Customizable.JSP.toString());
-            if ((name != null) && (jsp != null)) {
-                String jspKey = StringUtils.removeStart(name, WEB_INF_JSP);
-                String originalPath = jsp.get(jspKey);
-                if (originalPath != null) {
+            // Customized JavaServer pages
+            Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
+            if ((name != null) && (customizedPages != null)) {
+                String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
+                CustomizedJsp page = customizedPages.get(relativePath);
 
-                    int extension = name.lastIndexOf('.');
-                    if (extension != -1) {
-                        // Append custom name (the jsp musn't be overwritten)
-                        String destinationName = WEB_INF_JSP + "/" + name.substring(0, extension) + CUSTOM_JSP_EXTENTION + this.customizationDeployementTS
-                                + "." + name.substring(extension + 1);
+                if ((page != null) && (name.contains("."))) {
+                    // Destination
+                    StringBuilder destination = new StringBuilder();
+                    destination.append(StringUtils.substringBeforeLast(name, "."));
+                    destination.append(CUSTOM_JSP_EXTENTION);
+                    destination.append(this.customizationDeployementTS);
+                    destination.append(".");
+                    destination.append(StringUtils.substringAfterLast(name, "."));
 
-                        this.destDispatcher.put(name, destinationName);
+                    // Copy original JSP
+                    String directoryPath = portletContext.getRealPath("/");
+                    File directory = new File(directoryPath);
+                    File destinationFile = new File(directory, destination.toString());
+                    destinationFile.delete();
+                    File sourceFile = new File(page.getName());
+                    FileUtils.copyFile(sourceFile, destinationFile);
 
-                        // Copy the original JSP
-                        String dirPath = portletContext.getRealPath("/");
-                        File destPath = new File(new File(dirPath), this.destDispatcher.get(name));
 
-                        destPath.delete();
-
-                        FileUtils.copyFile(new File(originalPath), destPath);
-                    }
+                    customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
                 }
             }
+
+            this.customizedJavaServerPagesCache.put(name, customizedPage);
         }
 
-        return this.destDispatcher.get(name);
+        return customizedPage;
     }
 
 
@@ -459,7 +466,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
         // Clear caches
         this.customizationAttributesCache.clear();
-        this.destDispatcher.clear();
+        this.customizedJavaServerPagesCache.clear();
         this.fragmentsCache.clear();
         this.ewCache.clear();
         this.templatesCache.clear();

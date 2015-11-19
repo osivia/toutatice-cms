@@ -2,21 +2,22 @@ package fr.toutatice.portail.cms.nuxeo.taglib.toutatice;
 
 import java.io.IOException;
 
+import javax.portlet.PortletRequest;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 
 /**
  * Include JSP tag.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see ToutaticeSimpleTag
  */
@@ -41,39 +42,46 @@ public class IncludeTag extends ToutaticeSimpleTag {
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Page context
         PageContext pageContext = (PageContext) this.getJspContext();
-        // Request
-        ServletRequest request = pageContext.getRequest();
+        // Servlet request
+        ServletRequest servletRequest = pageContext.getRequest();
+        // Portlet request
+        PortletRequest portletRequest = nuxeoController.getRequest();
 
         // Path
         String path;
 
         if (!this.page.startsWith("/")) {
-            String servletPath = (String) request.getAttribute("javax.servlet.include.servlet_path");
-
-            // FIXME bidouille pour que les JSP include fonctionnent
-            servletPath = servletPath.replaceAll("/WEB-INF/jsp//WEB-INF/jsp", "/WEB-INF/jsp");
-
-            String parentPath = servletPath.substring(0, StringUtils.lastIndexOf(servletPath, '/') + 1);
-            path = parentPath + this.page;
+            String servletPath = (String) servletRequest.getAttribute("javax.servlet.include.servlet_path");
+            String parentPath = StringUtils.substringBeforeLast(servletPath, "/");
+            path = parentPath + "/" + this.page;
         } else {
             path = this.page;
         }
 
 
         try {
-            // JSP name
-            String name = this.getTagService().getIncludedJspName(nuxeoController, path);
+            // Customized JavaServer page
+            CustomizedJsp customizedPage = this.getTagService().getCustomizedJsp(nuxeoController, path);
 
-            pageContext.include(name);
+            // Customized class loader
+            ClassLoader customizedClassLoader = customizedPage.getClassLoader();
+            if (customizedClassLoader != null) {
+                portletRequest.setAttribute("osivia.customizer.cms.jsp.classloader", customizedClassLoader);
+            }
+
+            // Include customized page
+            pageContext.include(customizedPage.getName());
         } catch (ServletException e) {
             throw new JspException(e);
-        } 
+        } finally {
+            portletRequest.removeAttribute("osivia.customizer.cms.jsp.classloader");
+        }
     }
 
 
     /**
      * Setter for page.
-     * 
+     *
      * @param page the page to set
      */
     public void setPage(String page) {
