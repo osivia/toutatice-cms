@@ -248,6 +248,11 @@ public class MenuBarFormater {
                 // Manage (for workspaces)
                 this.getEditWksLink(portalControllerContext, cmsContext, menubar, bundle);
 
+                // Validation workflow(s)
+                this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                // Remote publishing
+                this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);                
+                
                 if (!userWorkspace) {
                     // Follow
                     this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
@@ -258,10 +263,6 @@ public class MenuBarFormater {
                     // Manage
                     this.getManageLink(portalControllerContext, cmsContext, menubar, bundle);
 
-                    // Validation workflow(s)
-                    this.getValidationWfLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                    // Remote publishing
-                    this.getRemotePublishingLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                 }
             }
         } catch (CMSException e) {
