@@ -686,7 +686,7 @@ public class ViewListPortlet extends ViewList {
                 // Creation item, if parameters are given
                 String dynamicPath = window.getProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY);
                 if (dynamicPath != null) {
-                    dynamicPath = NuxeoController.getLivePath(dynamicPath);
+                    dynamicPath = NuxeoController.getLivePath(nuxeoController.getComputedPath(dynamicPath));
                     NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), dynamicPath);
                     Document folder = documentContext.getDoc();
                     nuxeoController.setCurrentDoc(folder);
