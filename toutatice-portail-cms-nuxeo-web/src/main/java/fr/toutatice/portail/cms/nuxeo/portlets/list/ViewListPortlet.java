@@ -518,8 +518,18 @@ public class ViewListPortlet extends ViewList {
                 // Selectors
                 String selectors = request.getParameter("selectors");
                 String lastSelectors = request.getParameter("lastSelectors");
-                request.setAttribute("selectors", selectors);
+                
+                if( "".equals(selectors))
+                    selectors = null;
+                
 
+                
+                // On render url, it is not possible to clear a parameter value (old value keeps unchanged)
+                // So put __NONE__
+                if("__NONE__".equals(lastSelectors))
+                    lastSelectors = null;
+                
+                request.setAttribute("lastSelectors", StringUtils.isEmpty(selectors)?"__NONE__":selectors);
 
                 // Results limit
                 int resultsLimit;

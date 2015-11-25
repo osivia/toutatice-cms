@@ -38,9 +38,8 @@
             <portlet:renderURL var="leftUrl">
                 <portlet:param name="currentPage" value="${currentPage - 1}" />
                 <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                <c:if test="${not empty selectors}">
-                    <portlet:param name="lastSelectors" value="${selectors}" />
-                </c:if>
+                <portlet:param name="lastSelectors" value="${lastSelectors}" />
+
             </portlet:renderURL>
         </c:otherwise>
     </c:choose>
@@ -56,9 +55,7 @@
             <portlet:renderURL var="rightUrl">
                 <portlet:param name="currentPage" value="${currentPage + 1}" />
                 <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                <c:if test="${not empty selectors}">
-                    <portlet:param name="lastSelectors" value="${selectors}" />
-                </c:if>
+                 <portlet:param name="lastSelectors" value="${lastSelectors}" />
             </portlet:renderURL>
         </c:otherwise>
     </c:choose>
@@ -71,9 +68,8 @@
                 <portlet:renderURL var="startUrl">
                     <portlet:param name="currentPage" value="0" />
                     <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                    <c:if test="${not empty selectors}">
-                        <portlet:param name="lastSelectors" value="${selectors}" />
-                    </c:if>
+                     <portlet:param name="lastSelectors" value="${lastSelectors}" />
+
                 </portlet:renderURL>
                 
                 <li>
@@ -102,9 +98,7 @@
                         <portlet:renderURL var="url">
                             <portlet:param name="currentPage" value="${page}" />
                             <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                            <c:if test="${not empty selectors}">
-                                <portlet:param name="lastSelectors" value="${selectors}" />
-                            </c:if>
+                            <portlet:param name="lastSelectors" value="${lastSelectors}" />
                         </portlet:renderURL>
                     </c:otherwise>
                 </c:choose>
