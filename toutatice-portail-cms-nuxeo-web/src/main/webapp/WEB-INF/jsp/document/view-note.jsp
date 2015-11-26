@@ -16,7 +16,7 @@
     <h3 class="hidden">${document.title}</h3>
     
     <!-- Content -->
-    <div>${content}</div>
+    <div class="clearfix">${content}</div>
     
     <!-- Edition informations -->
     <p class="small test-right">
