@@ -192,8 +192,8 @@ public class NuxeoTagService implements INuxeoTagService {
         // Link
         Link link;
         try {
-            String url = this.portalUrlFactory.getStartPortletInNewPage(portalControllerContext, "myprofile", displayName,
-                    "toutatice-identite-fichepersonne-portailPortletInstance", properties, parameters);
+            String url = this.portalUrlFactory.getStartPortletInNewPage(portalControllerContext, "myprofile", displayName, "directory-person-card-instance",
+                    properties, parameters);
             link = new Link(url, false);
         } catch (PortalException e) {
             link = null;

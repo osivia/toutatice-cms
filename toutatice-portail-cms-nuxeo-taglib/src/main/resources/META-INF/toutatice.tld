@@ -13,6 +13,48 @@
     <uri>http://www.toutatice.fr/jsp/taglib/toutatice</uri> 
     
     
+    <!-- Document title -->
+    <tag>
+        <description>Nuxeo document title.</description>
+        <display-name>Document title</display-name>
+        <name>title</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.TitleTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document linkable indicator. Default = true.</description>
+            <name>linkable</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document link display context.</description>
+            <name>displayContext</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document type icon indicator. Default = false.</description>
+            <name>icon</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+    </tag>
+    
+    
     <!-- Document link -->
     <tag>
         <description>Nuxeo document link.</description>
@@ -139,14 +181,14 @@
     </tag>
     
     
-    <!-- User display name -->
+    <!-- User -->
     <tag>
-        <description>User display name.</description>
-        <display-name>User display name</display-name>
-        <name>userDisplayName</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.UserDisplayNameTag</tag-class>
+        <description>Display user name, avatar and profile page.</description>
+        <display-name>User</display-name>
+        <name>user</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.UserTag</tag-class>
         <body-content>empty</body-content>
-
+        
         <attribute>
             <description>User name.</description>
             <name>name</name>
@@ -154,57 +196,13 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
-    </tag>
-    
-    
-    <!-- User avatar link -->
-    <tag>
-        <description>User avatar link.</description>
-        <display-name>User avatar link</display-name>
-        <name>userAvatarLink</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.UserAvatarLinkTag</tag-class>
-        <body-content>empty</body-content>
-
+        
         <attribute>
-            <description>User name.</description>
-            <name>name</name>
-            <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
-            <type>java.lang.String</type>
-        </attribute>
-
-        <attribute>
-            <description>Request variable name.</description>
-            <name>var</name>
+            <description>Linkable indicator. Default = true.</description>
+            <name>linkable</name>
             <required>false</required>
-            <rtexprvalue>false</rtexprvalue>
-            <type>java.lang.String</type>
-        </attribute>
-    </tag>
-
-
-    <!-- User profile link -->
-    <tag>
-        <description>User profile link.</description>
-        <display-name>User profile link</display-name>
-        <name>userProfileLink</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.UserProfileLinkTag</tag-class>
-        <body-content>empty</body-content>
-
-        <attribute>
-            <description>User name.</description>
-            <name>name</name>
-            <required>true</required>
             <rtexprvalue>true</rtexprvalue>
-            <type>java.lang.String</type>
-        </attribute>
-
-        <attribute>
-            <description>Request variable name.</description>
-            <name>var</name>
-            <required>false</required>
-            <rtexprvalue>false</rtexprvalue>
-            <type>java.lang.String</type>
+            <type>java.lang.Boolean</type>
         </attribute>
     </tag>
     
@@ -421,48 +419,21 @@
     </tag>
 
 
-    <!-- Comment display -->
+    <!-- Comments display -->
     <tag>
-        <description>Nuxeo document single comment display.</description>
-        <display-name>Single comment display</display-name>
-        <name>comment</name>
-        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.CommentTag</tag-class>
+        <description>Nuxeo document comments display.</description>
+        <display-name>Comments display</display-name>
+        <name>comments</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.CommentsTag</tag-class>
         <body-content>empty</body-content>
         
         <attribute>
-            <description>Comment DTO.</description>
-            <name>comment</name>
+            <description>Document DTO.</description>
+            <name>document</name>
             <required>true</required>
             <rtexprvalue>true</rtexprvalue>
-            <type>fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO</type>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
         </attribute>
     </tag>
-
-
-    <!-- Document title -->
-    <tag-file>
-        <description>Nuxeo document title.</description>
-        <display-name>Document title</display-name>
-        <name>title</name>
-        <path>/META-INF/tags/toutatice/title.tag</path>
-    </tag-file>
-    
-    
-    <!-- User -->
-    <tag-file>
-        <description>Display user name, avatar and profile page.</description>
-        <display-name>User</display-name>
-        <name>user</name>
-        <path>/META-INF/tags/toutatice/user.tag</path>
-    </tag-file>
-    
-    
-    <!-- Comments -->
-    <tag-file>
-        <description>Nuxeo document comments display.</description>
-        <display-name>Comments</display-name>
-        <name>comments</name>
-        <path>/META-INF/tags/toutatice/comments.tag</path>
-    </tag-file>
 
 </taglib>

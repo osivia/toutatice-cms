@@ -30,15 +30,12 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 
 /**
- * Comment tag.
+ * Comments tag.
  *
  * @author Cédric Krommenhoek
  * @see ToutaticeSimpleTag
  */
-public class CommentTag extends ToutaticeSimpleTag {
-
-    /** Comment DTO. */
-    private CommentDTO comment;
+public class CommentsTag extends ToutaticeSimpleTag {
 
     /** Internationalization service. */
     private final IBundleFactory bundleFactory;
@@ -47,7 +44,7 @@ public class CommentTag extends ToutaticeSimpleTag {
     /**
      * Constructor.
      */
-    public CommentTag() {
+    public CommentsTag() {
         super();
 
         // Internationalization bundle factory
@@ -62,17 +59,203 @@ public class CommentTag extends ToutaticeSimpleTag {
      */
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
-        // Internationalization bundle
-        Bundle bundle = this.bundleFactory.getBundle(nuxeoController.getRequest().getLocale());
+        if (document.isCommentable()) {
+            // Internationalization bundle
+            Bundle bundle = this.bundleFactory.getBundle(nuxeoController.getRequest().getLocale());
 
-        if (nuxeoController != null) {
-            Element element = this.generateComment(nuxeoController, bundle, this.comment);
+            // Container
+            Element container = this.generateContainer(nuxeoController, document, bundle);
+
+            // Delete confirmation fancybox
+            Element fancybox = this.generateDeleteConfirmationFancybox(nuxeoController, document, bundle);
 
             // HTML writer
             HTMLWriter htmlWriter = new HTMLWriter(this.getJspContext().getOut());
             htmlWriter.setEscapeText(false);
-            htmlWriter.write(element);
+            htmlWriter.write(container);
+            htmlWriter.write(fancybox);
         }
+    }
+
+
+    /**
+     * Generate comments container DOM4J element.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param document Nuxeo document
+     * @param bundle internationalization bundle
+     * @return DOM4J element
+     * @throws JspException
+     */
+    private Element generateContainer(NuxeoController nuxeoController, DocumentDTO document, Bundle bundle) throws JspException {
+        // Response
+        MimeResponse response = (MimeResponse) nuxeoController.getResponse();
+        // Namespace
+        String namespace = nuxeoController.getResponse().getNamespace();
+        // Add comment URL
+        PortletURL addActionUrl = response.createActionURL();
+        addActionUrl.setParameter(ActionRequest.ACTION_NAME, "addComment");
+        String addUrl = addActionUrl.toString();
+
+
+        // Container
+        Element container = DOM4JUtils.generateDivElement("hidden-print");
+
+        // Horizontal row
+        Element hr = DOM4JUtils.generateElement(HTMLConstants.HR, null, null);
+        container.add(hr);
+
+        // Comments container
+        Element commentsContainer = DOM4JUtils.generateDivElement("comments");
+        container.add(commentsContainer);
+
+        // Panel
+        Element panel = DOM4JUtils.generateDivElement("panel panel-default");
+        commentsContainer.add(panel);
+
+        // Panel heading
+        Element panelHeading = DOM4JUtils.generateDivElement("panel-heading");
+        panel.add(panelHeading);
+
+        // Panel title
+        Element panelTitle = DOM4JUtils.generateElement(HTMLConstants.H3, "panel-title", bundle.getString("COMMENTS"), "glyphicons glyphicons-conversation",
+                null);
+        panelHeading.add(panelTitle);
+
+        // Panel list group
+        Element listGroup = DOM4JUtils.generateDivElement("list-group");
+        panel.add(listGroup);
+
+        for (CommentDTO comment : document.getComments()) {
+            // List group item
+            Element listGroupItem = DOM4JUtils.generateDivElement("list-group-item");
+            listGroupItem.add(this.generateComment(nuxeoController, bundle, comment));
+            listGroup.add(listGroupItem);
+        }
+
+        // Panel body
+        Element panelBody = DOM4JUtils.generateDivElement("panel-body");
+        panel.add(panelBody);
+
+        // Add comment toggle button
+        Element addToggle = DOM4JUtils.generateLinkElement("#" + namespace + "-add-comment", null, null, "btn btn-default no-ajax-link",
+                bundle.getString("COMMENT_ADD"), "glyphicons glyphicons-chat");
+        DOM4JUtils.addDataAttribute(addToggle, "toggle", "collapse");
+        panelBody.add(addToggle);
+
+        // Add comment collapsed container
+        Element addCollapsed = DOM4JUtils.generateDivElement("collapse");
+        DOM4JUtils.addAttribute(addCollapsed, HTMLConstants.ID, namespace + "-add-comment");
+        panelBody.add(addCollapsed);
+
+        // Add comment horizontal row
+        Element addHr = DOM4JUtils.generateElement(HTMLConstants.HR, null, null);
+        addCollapsed.add(addHr);
+
+        // Add comment form
+        Element addForm = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
+        DOM4JUtils.addAttribute(addForm, HTMLConstants.ACTION, addUrl);
+        DOM4JUtils.addAttribute(addForm, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
+        addCollapsed.add(addForm);
+
+        // Add comment content form group
+        Element addContentFormGroup = DOM4JUtils.generateDivElement("form-group");
+        addForm.add(addContentFormGroup);
+
+        // Add comment content label
+        Element addContentLabel = DOM4JUtils.generateElement(HTMLConstants.LABEL, "control-label", bundle.getString("COMMENT_CONTENT"));
+        DOM4JUtils.addAttribute(addContentLabel, HTMLConstants.FOR, namespace + "-comment-content");
+        addContentFormGroup.add(addContentLabel);
+
+        // Add comment content textarea
+        Element addContentTextarea = DOM4JUtils.generateElement(HTMLConstants.TEXTAREA, "form-control", StringUtils.EMPTY);
+        DOM4JUtils.addAttribute(addContentTextarea, HTMLConstants.ID, namespace + "-comment-content");
+        DOM4JUtils.addAttribute(addContentTextarea, HTMLConstants.NAME, "content");
+        addContentFormGroup.add(addContentTextarea);
+
+        // Add comment buttons form group
+        Element addButtonsFormGroup = DOM4JUtils.generateDivElement("form-group");
+        addForm.add(addButtonsFormGroup);
+
+        // Add comment submit button
+        Element addSubmit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-primary", bundle.getString("SAVE"));
+        DOM4JUtils.addAttribute(addSubmit, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
+        addButtonsFormGroup.add(addSubmit);
+
+        // Add comment cancel button
+        Element addCancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CANCEL"));
+        DOM4JUtils.addAttribute(addCancel, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(addCancel, HTMLConstants.ONCLICK, "$JQry('#" + namespace + "-add-comment').collapse('hide')");
+        addButtonsFormGroup.add(addCancel);
+
+        return container;
+    }
+
+
+    /**
+     * Generate delete confirmation fancybox DOM4J element.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param document Nuxeo document
+     * @param bundle internationalization bundle
+     * @return DOM4J element
+     * @throws JspException
+     */
+    private Element generateDeleteConfirmationFancybox(NuxeoController nuxeoController, DocumentDTO document, Bundle bundle) throws JspException {
+        // Response
+        MimeResponse response = (MimeResponse) nuxeoController.getResponse();
+        // Namespace
+        String namespace = response.getNamespace();
+        // URL
+        PortletURL actionUrl = response.createActionURL();
+        actionUrl.setParameter(ActionRequest.ACTION_NAME, "deleteComment");
+        String url = actionUrl.toString();
+
+
+        // Container
+        Element container = DOM4JUtils.generateDivElement("hidden");
+
+        // Fancybox container
+        Element fancyboxContainer = DOM4JUtils.generateDivElement("container-fluid");
+        DOM4JUtils.addAttribute(fancyboxContainer, HTMLConstants.ID, namespace + "-delete-comment");
+        container.add(fancyboxContainer);
+
+        // Form
+        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
+        DOM4JUtils.addAttribute(form, HTMLConstants.ACTION, url);
+        DOM4JUtils.addAttribute(form, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
+        fancyboxContainer.add(form);
+
+        // Identifier hidden input
+        Element hidden = DOM4JUtils.generateElement(HTMLConstants.INPUT, null, StringUtils.EMPTY);
+        DOM4JUtils.addAttribute(hidden, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_HIDDEN);
+        DOM4JUtils.addAttribute(hidden, HTMLConstants.NAME, "id");
+        form.add(hidden);
+
+        // Form group
+        Element formGroup = DOM4JUtils.generateDivElement("form-group");
+        form.add(formGroup);
+
+        // Message
+        Element message = DOM4JUtils.generateElement(HTMLConstants.P, null, bundle.getString("COMMENT_SUPPRESSION_CONFIRM_MESSAGE"));
+        formGroup.add(message);
+
+        // Buttons container
+        Element buttonsContainer = DOM4JUtils.generateDivElement("text-center");
+        formGroup.add(buttonsContainer);
+
+        // Submit
+        Element submit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "halflings halflings-alert", null);
+        DOM4JUtils.addAttribute(submit, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
+        buttonsContainer.add(submit);
+
+        // Cancel
+        Element cancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        DOM4JUtils.addAttribute(cancel, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(cancel, HTMLConstants.ONCLICK, "closeFancybox()");
+        buttonsContainer.add(cancel);
+
+        return container;
     }
 
 
@@ -369,16 +552,6 @@ public class CommentTag extends ToutaticeSimpleTag {
         group2.add(cancelButton);
 
         return container;
-    }
-
-
-    /**
-     * Setter for comment.
-     *
-     * @param comment the comment to set
-     */
-    public void setComment(CommentDTO comment) {
-        this.comment = comment;
     }
 
 }
