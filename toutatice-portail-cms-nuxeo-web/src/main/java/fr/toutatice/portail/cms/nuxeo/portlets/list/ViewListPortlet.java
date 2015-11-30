@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -81,7 +81,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 /**
  * List portlet.
- *
+ * 
  * @see CMSPortlet
  */
 public class ViewListPortlet extends ViewList {
@@ -137,7 +137,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Get current template.
-     *
+     * 
      * @param locale user locale
      * @param configuration configuration
      * @return current template
@@ -189,9 +189,27 @@ public class ViewListPortlet extends ViewList {
 
             // Template
             ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+            boolean requestExecution = false;
 
+            PaginableDocuments documents = null;
+            int resultsLimit = 100;
 
             if ("rss".equals(request.getParameter("type"))) {
+                resultsLimit = DEFAULT_RSS_RESULTS_LIMIT;
+                requestExecution = true;
+            }
+
+            if ("true".equals(request.getParameter("injectdocs"))) {
+                requestExecution = true;
+                String limit = request.getParameter("limit");
+                if( limit != null)  {
+                    resultsLimit = Integer.parseInt(limit);
+                }
+            }
+
+
+
+            if (requestExecution) {
                 // RSS generation
 
                 // Nuxeo request
@@ -213,13 +231,6 @@ public class ViewListPortlet extends ViewList {
                 }
 
 
-                // Results limit
-                int resultsLimit = DEFAULT_RSS_RESULTS_LIMIT;
-                if (configuration.getMaximizedPagination() != null) {
-                    resultsLimit = configuration.getMaximizedPagination();
-                }
-
-
                 if (nuxeoRequest != null) {
                     String schemas = template.getSchemas();
 
@@ -229,8 +240,15 @@ public class ViewListPortlet extends ViewList {
                             configuration.getContentFilter(), configuration.isUseES());
 
                     // Nuxeo documents
-                    PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
+                    documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
+                    
+                    request.setAttribute("osivia.cms.list.docs", documents);
+                }
 
+            }
+
+            if ("rss".equals(request.getParameter("type"))) {
+                if (documents != null) {
                     // RSS document
                     org.w3c.dom.Document document = RssGenerator.createDocument(nuxeoController, portalControllerContext, configuration.getRssTitle(),
                             documents, configuration.getRssReference());
@@ -381,7 +399,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Admin view display.
-     *
+     * 
      * @param request request
      * @param response response
      * @throws PortletException
@@ -518,18 +536,17 @@ public class ViewListPortlet extends ViewList {
                 // Selectors
                 String selectors = request.getParameter("selectors");
                 String lastSelectors = request.getParameter("lastSelectors");
-                
-                if( "".equals(selectors))
-                    selectors = null;
-                
 
-                
+                if ("".equals(selectors))
+                    selectors = null;
+
+
                 // On render url, it is not possible to clear a parameter value (old value keeps unchanged)
                 // So put __NONE__
-                if("__NONE__".equals(lastSelectors))
+                if ("__NONE__".equals(lastSelectors))
                     lastSelectors = null;
-                
-                request.setAttribute("lastSelectors", StringUtils.isEmpty(selectors)?"__NONE__":selectors);
+
+                request.setAttribute("lastSelectors", StringUtils.isEmpty(selectors) ? "__NONE__" : selectors);
 
                 // Results limit
                 int resultsLimit;
@@ -578,7 +595,7 @@ public class ViewListPortlet extends ViewList {
                 String schemas = template.getSchemas();
 
 
-                 // Request page size
+                // Request page size
                 int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
                 if (pageSize > 0) {
                     requestPageSize = pageSize;
@@ -763,7 +780,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * BeanShell interpretation.
-     *
+     * 
      * @param nuxeoController Nuxeo controller
      * @param nuxeoRequest Nuxeo request
      * @return interpreted request
@@ -803,7 +820,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Get list configuration.
-     *
+     * 
      * @param window portal window
      * @return list configuration
      */
