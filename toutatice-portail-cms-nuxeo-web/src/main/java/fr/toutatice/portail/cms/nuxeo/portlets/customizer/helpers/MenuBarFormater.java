@@ -199,8 +199,7 @@ public class MenuBarFormater {
 
 
         try {
-            // Live version browser
-            this.getLiveContentBrowserLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+
 
             // Creation
             this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
@@ -227,14 +226,21 @@ public class MenuBarFormater {
                 // Delete
                 this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                // Nuxeo administration
-                this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                
+                // === other tools
+                // Live version browser
+                this.getLiveContentBrowserLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                
 
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
+                // Nuxeo administration
+                this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                 // Manage (for workspaces)
                 this.getEditWksLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                
+                
 
                 if (!userWorkspace) {
                     // Follow
@@ -660,9 +666,9 @@ public class MenuBarFormater {
                 browserURL = "#";
             }
 
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
 
-            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-search", parent,
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-book-open", parent,
                     3, browserURL, null, null, "fancyframe_refresh");
             browserItem.setAjaxDisabled(true);
 
@@ -752,6 +758,7 @@ public class MenuBarFormater {
 
                 MenubarItem synchronizeItem = new MenubarItem(command, bundle.getString(command), icon, parent, 12, synchronizeURL, null, null, null);
 	            synchronizeItem.setAjaxDisabled(true);
+	            synchronizeItem.setDivider(true);
 
 	            menubar.add(synchronizeItem);
 			} catch (PortalException e) {
@@ -763,6 +770,7 @@ public class MenuBarFormater {
 
             MenubarItem rootURLItem = new MenubarItem("SYNCHRO_ROOT_URL", bundle.getString("SYNCHRO_ROOT_URL"), null, parent, 12, rootURL, null, null, null);
             rootURLItem.setAjaxDisabled(true);
+            rootURLItem.setDivider(true);
 
             menubar.add(rootURLItem);
         }
