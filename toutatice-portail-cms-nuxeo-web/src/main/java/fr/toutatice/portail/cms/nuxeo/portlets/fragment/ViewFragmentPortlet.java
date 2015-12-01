@@ -150,8 +150,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
