@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.jsp.JspException;
 
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
 import org.osivia.portal.api.html.DOM4JUtils;
@@ -46,7 +47,7 @@ public class TitleTag extends ToutaticeSimpleTag {
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Title
-        String title = document.getTitle();
+        String title = StringUtils.trimToEmpty(document.getTitle());
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {
