@@ -145,26 +145,17 @@ public class NuxeoTagService implements INuxeoTagService {
      * {@inheritDoc}
      */
     @Override
-    public String getUserDisplayName(NuxeoController nuxeoController, String name) {
-        String displayName = null;
+    public DirectoryPerson getDirectoryPerson(NuxeoController nuxeoController, String name) {
+        DirectoryPerson person = null;
 
         // Directory service
         IDirectoryService directoryService = this.directoryServiceLocator.getDirectoryService();
         if (directoryService != null) {
             // User LDAP person
-            DirectoryPerson person = directoryService.getPerson(name);
-
-            // Display name
-            if ((person != null) && (StringUtils.isNotEmpty(person.getDisplayName()))) {
-                displayName = person.getDisplayName();
-            }
+            person = directoryService.getPerson(name);
         }
 
-        if (displayName == null) {
-            displayName = name;
-        }
-
-        return displayName;
+        return person;
     }
 
 
@@ -172,12 +163,9 @@ public class NuxeoTagService implements INuxeoTagService {
      * {@inheritDoc}
      */
     @Override
-    public Link getUserProfileLink(NuxeoController nuxeoController, String name) {
+    public Link getUserProfileLink(NuxeoController nuxeoController, String name, String displayName) {
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
-
-        // Display name
-        String displayName = this.getUserDisplayName(nuxeoController, name);
 
         // Page properties
         Map<String, String> properties = new HashMap<String, String>();

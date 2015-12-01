@@ -7,6 +7,7 @@ import javax.servlet.jsp.JspException;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.urls.Link;
@@ -65,13 +66,21 @@ public class UserTag extends ToutaticeSimpleTag {
             }
             container.add(avatar);
 
+            // Directory person
+            DirectoryPerson person = this.getTagService().getDirectoryPerson(nuxeoController, this.name);
+
             // Display name
-            String displayName = this.getTagService().getUserDisplayName(nuxeoController, this.name);
+            String displayName;
+            if ((person != null) && StringUtils.isNotBlank(person.getDisplayName())) {
+                displayName = person.getDisplayName();
+            } else {
+                displayName = this.name;
+            }
 
             // URL
             String url = null;
-            if (this.linkable) {
-                Link userLink = this.getTagService().getUserProfileLink(nuxeoController, this.name);
+            if (this.linkable && (person != null)) {
+                Link userLink = this.getTagService().getUserProfileLink(nuxeoController, this.name, displayName);
                 if (userLink != null) {
                     url = userLink.getUrl();
                 }

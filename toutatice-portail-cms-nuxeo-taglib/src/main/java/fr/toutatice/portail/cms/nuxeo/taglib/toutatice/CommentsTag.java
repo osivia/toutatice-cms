@@ -14,6 +14,7 @@ import javax.servlet.jsp.JspException;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.html.AccessibilityRoles;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
@@ -359,9 +360,20 @@ public class CommentsTag extends ToutaticeSimpleTag {
         Element container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
 
         try {
+            // Avatar link
             Link avatarLink = nuxeoController.getUserAvatar(author);
-            Link profileLink = this.getTagService().getUserProfileLink(nuxeoController, author);
-            String displayName = this.getTagService().getUserDisplayName(nuxeoController, author);
+            // User name & link
+            DirectoryPerson person = this.getTagService().getDirectoryPerson(nuxeoController, author);
+            String displayName;
+            if ((person != null) && StringUtils.isNotBlank(person.getDisplayName())) {
+                displayName = person.getDisplayName();
+            } else {
+                displayName = author;
+            }
+            Link profileLink = null;
+            if (person != null) {
+                profileLink = this.getTagService().getUserProfileLink(nuxeoController, author, displayName);
+            }
 
 
             // Avatar

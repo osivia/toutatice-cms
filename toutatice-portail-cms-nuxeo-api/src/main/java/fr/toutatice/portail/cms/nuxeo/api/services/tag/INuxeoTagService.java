@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.api.services.tag;
 
 import java.io.IOException;
 
+import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -30,13 +31,13 @@ public interface INuxeoTagService {
 
 
     /**
-     * Get user display name.
+     * Get directory person.
      *
      * @param nuxeoController Nuxeo controller
-     * @param name user name
-     * @return display name
+     * @param name person name
+     * @return directory person
      */
-    String getUserDisplayName(NuxeoController nuxeoController, String name);
+    DirectoryPerson getDirectoryPerson(NuxeoController nuxeoController, String name);
 
 
     /**
@@ -44,9 +45,10 @@ public interface INuxeoTagService {
      *
      * @param nuxeoController Nuxeo controller
      * @param name user name
+     * @param displayName user display name
      * @return link
      */
-    Link getUserProfileLink(NuxeoController nuxeoController, String name);
+    Link getUserProfileLink(NuxeoController nuxeoController, String name, String displayName);
 
 
     /**
