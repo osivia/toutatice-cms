@@ -59,7 +59,7 @@
                     <div
                         <c:if test="${not empty vocab1Id and empty vocab2Id and (selectorMonoValued ne '1')}">class="media-body"</c:if>
                     >
-                        <select name="vocab1Id" class="form-control"onchange="refreshOnVocabularyChange(this, '${url}')">
+                        <select name="vocab1Id" class="form-control" onchange="refreshOnVocabularyChange(this, '${url}')">
                             <option value="">Tous</option>
                             
                             <c:forEach var="optGroup" items="${vocab1.children}">
