@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -81,7 +81,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 /**
  * List portlet.
- * 
+ *
  * @see CMSPortlet
  */
 public class ViewListPortlet extends ViewList {
@@ -123,21 +123,21 @@ public class ViewListPortlet extends ViewList {
         // Bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
 
         // Document DAO
-        this.documentDAO = DocumentDAO.getInstance();
+        documentDAO = DocumentDAO.getInstance();
 
         // Nuxeo service
         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         // CMS customizer
-        this.customizer = nuxeoService.getCMSCustomizer();
+        customizer = nuxeoService.getCMSCustomizer();
     }
 
 
     /**
      * Get current template.
-     * 
+     *
      * @param locale user locale
      * @param configuration configuration
      * @return current template
@@ -151,7 +151,7 @@ public class ViewListPortlet extends ViewList {
         // Search template
         ListTemplate currentTemplate = null;
         ListTemplate defaultTemplate = null;
-        List<ListTemplate> templates = this.customizer.getListTemplates(locale);
+        List<ListTemplate> templates = customizer.getListTemplates(locale);
         for (ListTemplate template : templates) {
             if (currentTemplateName.equals(template.getKey())) {
                 // Current template
@@ -178,17 +178,17 @@ public class ViewListPortlet extends ViewList {
     public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         try {
             // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
             // Configuration
-            ListConfiguration configuration = this.getConfiguration(window);
+            ListConfiguration configuration = getConfiguration(window);
 
 
             // Template
-            ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+            ListTemplate template = getCurrentTemplate(request.getLocale(), configuration);
             boolean requestExecution = false;
 
             PaginableDocuments documents = null;
@@ -241,8 +241,15 @@ public class ViewListPortlet extends ViewList {
 
                     // Nuxeo documents
                     documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
-                    
-                    request.setAttribute("osivia.cms.list.docs", documents);
+
+                    // Result list
+                    List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documents.size());
+                    for (Document document : documents) {
+                        DocumentDTO documentDTO = documentDAO.toDTO(document);
+                        documentsDTO.add(documentDTO);
+                    }
+                    request.setAttribute("documents", documentsDTO);
+
                 }
 
             }
@@ -269,7 +276,7 @@ public class ViewListPortlet extends ViewList {
 
                     response.setContentType("application/rss+xml");
                     response.setProperty("Cache-Control", "max-age=" + response.getCacheControl().getExpirationTime());
-                    response.setProperty("Last-Modified", this.formatResourceLastModified());
+                    response.setProperty("Last-Modified", formatResourceLastModified());
                 } else {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
@@ -305,7 +312,7 @@ public class ViewListPortlet extends ViewList {
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
         // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
         // Action
         String action = request.getParameter(ActionRequest.ACTION_NAME);
         // Current window
@@ -375,11 +382,11 @@ public class ViewListPortlet extends ViewList {
 
 
         // Configuration
-        ListConfiguration configuration = this.getConfiguration(window);
+        ListConfiguration configuration = getConfiguration(window);
 
 
         // v2.0.8 : ajout custom
-        ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+        ListTemplate template = getCurrentTemplate(request.getLocale(), configuration);
 
 
         // Module
@@ -399,7 +406,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Admin view display.
-     * 
+     *
      * @param request request
      * @param response response
      * @throws PortletException
@@ -409,13 +416,13 @@ public class ViewListPortlet extends ViewList {
     public void doAdmin(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
             // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
 
             // Configuration
-            ListConfiguration configuration = this.getConfiguration(window);
+            ListConfiguration configuration = getConfiguration(window);
             request.setAttribute("configuration", configuration);
 
             // Versions
@@ -428,12 +435,12 @@ public class ViewListPortlet extends ViewList {
             request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
 
             // Templates
-            request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
 
 
             response.setContentType("text/html");
 
-            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_ADMIN);
+            PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher(PATH_ADMIN);
             dispatcher.include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
@@ -452,15 +459,15 @@ public class ViewListPortlet extends ViewList {
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
         try {
             // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
             // Configuration
-            ListConfiguration configuration = this.getConfiguration(window);
+            ListConfiguration configuration = getConfiguration(window);
             // Bundle
-            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+            Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
             // Feed mode
             boolean feed = BooleanUtils.toBoolean(window.getProperty("osivia.cms.feed"));
@@ -500,7 +507,7 @@ public class ViewListPortlet extends ViewList {
                 String orginalRequest = nuxeoRequest;
 
 
-                nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
+                nuxeoRequest = beanShellInterpretation(nuxeoController, nuxeoRequest);
 
                 /*
                  * many request (almost templates) generate null values which are not accepted bu Nuxeo
@@ -537,14 +544,16 @@ public class ViewListPortlet extends ViewList {
                 String selectors = request.getParameter("selectors");
                 String lastSelectors = request.getParameter("lastSelectors");
 
-                if ("".equals(selectors))
+                if ("".equals(selectors)) {
                     selectors = null;
+                }
 
 
                 // On render url, it is not possible to clear a parameter value (old value keeps unchanged)
                 // So put __NONE__
-                if ("__NONE__".equals(lastSelectors))
+                if ("__NONE__".equals(lastSelectors)) {
                     lastSelectors = null;
+                }
 
                 request.setAttribute("lastSelectors", StringUtils.isEmpty(selectors) ? "__NONE__" : selectors);
 
@@ -585,12 +594,12 @@ public class ViewListPortlet extends ViewList {
 
 
                 // Templates
-                request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+                request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
                 String templateName = configuration.getTemplate();
                 if (templateName == null) {
                     templateName = LIST_TEMPLATE_NORMAL;
                 }
-                ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+                ListTemplate template = getCurrentTemplate(request.getLocale(), configuration);
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
 
@@ -623,7 +632,7 @@ public class ViewListPortlet extends ViewList {
                 // Result list
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documentsList.size());
                 for (Document document : documentsList) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    DocumentDTO documentDTO = documentDAO.toDTO(document);
                     documentsDTO.add(documentDTO);
                 }
                 request.setAttribute("documents", documentsDTO);
@@ -714,7 +723,7 @@ public class ViewListPortlet extends ViewList {
                 String dynamicPath = window.getProperty(CREATION_PARENT_PATH_WINDOW_PROPERTY);
                 if (dynamicPath != null) {
                     dynamicPath = NuxeoController.getLivePath(nuxeoController.getComputedPath(dynamicPath));
-                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), dynamicPath);
+                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, getPortletContext(), dynamicPath);
                     Document folder = documentContext.getDoc();
                     nuxeoController.setCurrentDoc(folder);
                     response.setTitle(folder.getTitle());
@@ -773,14 +782,14 @@ public class ViewListPortlet extends ViewList {
         response.setContentType("text/html");
 
 
-        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
+        PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher(PATH_VIEW);
         dispatcher.include(request, response);
     }
 
 
     /**
      * BeanShell interpretation.
-     * 
+     *
      * @param nuxeoController Nuxeo controller
      * @param nuxeoRequest Nuxeo request
      * @return interpreted request
@@ -820,7 +829,7 @@ public class ViewListPortlet extends ViewList {
 
     /**
      * Get list configuration.
-     * 
+     *
      * @param window portal window
      * @return list configuration
      */
