@@ -72,33 +72,33 @@
                             <dd>space's (workspace or published space) live ID</dd>
                         </dl>
     
-    <pre>
-    StringBuilder nuxeoRequest = new StringBuilder();
-    
-    nuxeoRequest.append("ecm:path STARTSWITH '").append(navigationPath).append("' ");
-    
-    // Format search by title
-    if (param.get("title") != null) {
-        nuxeoRequest.append("AND ").append(NXQLFormater.formatTextSearch("dc:title", params.get("title"))).append(" ");
-    }
-    
-    // Format search by dates
-    if (params.get("datesId") != null) {
-        nuxeoRequest.append("AND ").append(NXQLFormater.formatDateSearch("dc:created", params.get("datesId"))).append(" ");
-    }
-    
-    // Format search by nature
-    if (params.get("nature") != null) {
-        nuxeoRequest.append("AND ").append(NXQLFormater.formatVocabularySearch("dc:nature", params.get("nature"))).append(" ");
-    }
-    
-    // Get childrens
-    nuxeoRequest.append("AND ecm:parentId = '").append(navigationPubInfos.getLiveId()).append("' ");
-    
-    nuxeoRequest.append("ORDER BY dc:modified DESC");
-    
-    return nuxeoRequest.toString();
-    </pre>
+<pre>
+StringBuilder nuxeoRequest = new StringBuilder();
+
+nuxeoRequest.append("ecm:path STARTSWITH '").append(navigationPath).append("' ");
+
+// Format search by title
+if (params.get("title") != null) {
+    nuxeoRequest.append("AND ").append(NXQLFormater.formatTextSearch("dc:title", params.get("title"))).append(" ");
+}
+
+// Format search by dates
+if (params.get("datesId") != null) {
+    nuxeoRequest.append("AND ").append(NXQLFormater.formatDateSearch("dc:created", params.get("datesId"))).append(" ");
+}
+
+// Format search by nature
+if (params.get("nature") != null) {
+    nuxeoRequest.append("AND ").append(NXQLFormater.formatVocabularySearch("dc:nature", params.get("nature"))).append(" ");
+}
+
+// Get childrens
+nuxeoRequest.append("AND ecm:parentId = '").append(navigationPubInfos.getLiveId()).append("' ");
+
+nuxeoRequest.append("ORDER BY dc:modified DESC");
+
+return nuxeoRequest.toString();
+</pre>
                     </div>
                 </div>
             </div>
