@@ -1,7 +1,6 @@
 package fr.toutatice.portail.cms.test.common;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -14,25 +13,15 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.ICMSService;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.test.common.model.Configuration;
 import fr.toutatice.portail.cms.test.common.model.Tab;
 import fr.toutatice.portail.cms.test.common.service.ITestRepository;
+import fr.toutatice.portail.cms.test.common.service.ITestService;
 import fr.toutatice.portail.cms.test.common.service.TestRepositoryImpl;
+import fr.toutatice.portail.cms.test.common.service.TestServiceImpl;
 
 /**
  * Test portlet.
@@ -47,10 +36,12 @@ public class TestPortlet extends CMSPortlet {
     /** Path suffix. */
     private static final String PATH_SUFFIX = ".jsp";
 
+
+    /** Test service. */
+    private final ITestService service;
     /** Test repository. */
     private final ITestRepository repository;
-    /** Document DAO. */
-    private final DocumentDAO documentDao;
+
 
 
     /**
@@ -58,8 +49,8 @@ public class TestPortlet extends CMSPortlet {
      */
     public TestPortlet() {
         super();
+        this.service = TestServiceImpl.getInstance();
         this.repository = TestRepositoryImpl.getInstance();
-        this.documentDao = DocumentDAO.getInstance();
     }
 
 
@@ -70,54 +61,39 @@ public class TestPortlet extends CMSPortlet {
     public void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-
-        // CMS service
-        ICMSService cmsService = NuxeoController.getCMSService();
-        // CMS context
-        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
         // Configuration
         Configuration configuration = this.repository.getConfiguration(portalControllerContext);
         request.setAttribute("configuration", configuration);
 
-        // Document
-        if (StringUtils.isNotBlank(configuration.getPath())) {
-            // Computed path
-            String path = nuxeoController.getComputedPath(configuration.getPath());
-            // Document context
-            NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
-            // Nuxeo document
-            Document nuxeoDocument = documentContext.getDoc();
-            // Document DTO
-            DocumentDTO document = this.documentDao.toDTO(nuxeoDocument);
-            request.setAttribute("document", document);
-
-            // Comments
-            try {
-                CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
-                if (ContextualizationHelper.isCurrentDocContextualized(cmsContext) && publicationInfos.isCommentableByUser()) {
-                    INuxeoCommentsService commentsService = nuxeoController.getNuxeoCommentsService();
-                    List<CommentDTO> comments = commentsService.getDocumentComments(cmsContext, nuxeoDocument);
-
-                    document.setCommentable(true);
-                    document.getComments().addAll(comments);
-                }
-            } catch (CMSException e) {
-                throw new PortletException(e);
-            }
-
-
-        }
 
         // Tabs
         Tab[] tabs = Tab.values();
         request.setAttribute("tabs", tabs);
 
         // Current tab
-        Tab currentTab = Tab.fromId(request.getParameter("tab"));
+        Tab currentTab;
+        String currentTabId = request.getParameter("currentTabId");
+        if (currentTabId != null) {
+            currentTab = Tab.fromId(currentTabId);
+        } else {
+            currentTab = configuration.getDefaultTab();
+        }
+        request.setAttribute("currentTabId", currentTab.getId());
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_PREFIX + currentTab.getId() + PATH_SUFFIX);
+
+
+        // Tags
+        if (Tab.TAGS.equals(currentTab)) {
+            this.service.injectTagsData(portalControllerContext, configuration);
+        }
+
+
+        // Attributes storage
+        if (Tab.ATTRIBUTES_STORAGE.equals(currentTab)) {
+            this.service.injectAttributesStorageData(portalControllerContext, configuration);
+        }
+
 
         // Response
         response.setContentType("text/html");
@@ -142,6 +118,10 @@ public class TestPortlet extends CMSPortlet {
         Configuration configuration = this.repository.getConfiguration(portalControllerContext);
         request.setAttribute("configuration", configuration);
 
+        // Tabs
+        Tab[] tabs = Tab.values();
+        request.setAttribute("tabs", tabs);
+
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/admin.jsp").include(request, response);
     }
@@ -163,8 +143,10 @@ public class TestPortlet extends CMSPortlet {
             if ("save".equals(action)) {
                 // Save configuration
                 Configuration configuration = new Configuration();
+                configuration.setDefaultTab(Tab.fromId(request.getParameter("defaultTab")));
                 configuration.setPath(request.getParameter("path"));
                 configuration.setUser(request.getParameter("user"));
+                configuration.setSelectionId(request.getParameter("selectionId"));
 
                 this.repository.setConfiguration(portalControllerContext, configuration);
             }
@@ -177,6 +159,25 @@ public class TestPortlet extends CMSPortlet {
 
             // Comment action
             this.processCommentAction(request, response);
+
+            if ("addToSelection".equals(action)) {
+                // Selection content
+                String content = request.getParameter("content");
+
+                this.service.addToSelection(portalControllerContext, content);
+
+            } else if ("editStorage".equals(action)) {
+                if (request.getParameter("add") != null) {
+                    String name = request.getParameter("attributeName");
+                    String value = request.getParameter("attributeValue");
+
+                    this.service.addToStorage(portalControllerContext, name, value);
+                } else if (request.getParameter("remove") != null) {
+                    String name = request.getParameter("remove");
+
+                    this.service.removeFromStorage(portalControllerContext, name);
+                }
+            }
 
             // Current tab
             response.setRenderParameter("tab", StringUtils.trimToEmpty(request.getParameter("tab")));

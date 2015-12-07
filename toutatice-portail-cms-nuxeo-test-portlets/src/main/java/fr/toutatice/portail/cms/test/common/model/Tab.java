@@ -10,7 +10,9 @@ import org.apache.commons.lang.StringUtils;
 public enum Tab {
 
     /** Tags. */
-    TAGS("tags");
+    TAGS("tags"),
+    /** Attributes storages. */
+    ATTRIBUTES_STORAGE("attributes-storage");
 
 
     /** Default tab. */
@@ -30,7 +32,7 @@ public enum Tab {
      */
     private Tab(String id) {
         this.id = id;
-        this.key = StringUtils.upperCase(id);
+        this.key = StringUtils.upperCase(StringUtils.replace(id, "-", "_"));
     }
 
 

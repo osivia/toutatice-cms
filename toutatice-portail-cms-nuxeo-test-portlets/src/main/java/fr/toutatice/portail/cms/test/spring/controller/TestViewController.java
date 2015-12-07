@@ -22,12 +22,12 @@ import fr.toutatice.portail.cms.test.common.model.Tab;
  */
 @Controller
 @RequestMapping(value = "VIEW")
-public class TestController extends TestPortlet {
+public class TestViewController extends TestPortlet {
 
     /**
      * Constructor.
      */
-    public TestController() {
+    public TestViewController() {
         super();
     }
 

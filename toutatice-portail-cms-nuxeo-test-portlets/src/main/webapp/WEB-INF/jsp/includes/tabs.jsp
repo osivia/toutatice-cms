@@ -9,12 +9,12 @@
 <ul class="nav nav-tabs">
     <c:forEach items="${tabs}" var="tab">
         <portlet:renderURL var="url">
-            <portlet:param name="tab" value="${tab.id}" />
+            <portlet:param name="currentTabId" value="${tab.id}" />
         </portlet:renderURL>
     
     
         <li
-            <c:if test="${tab.id eq currentTab}">class="active"</c:if>
+            <c:if test="${currentTabId eq tab.id}">class="active"</c:if>
         >
             <a href="${url}">
                 <op:translate key="${tab.key}" />

@@ -13,21 +13,54 @@
 
 
 <form action="${url}" method="post" class="form-horizontal" role="form">
-    <!-- Document path -->
+    <!-- Default tab -->
     <div class="form-group">
-        <label for="${namespace}-path" class="control-label col-sm-3">Chemin du document</label>
+        <label for="${namespace}-default-tab" class="control-label col-sm-3"><op:translate key="DEFAULT_TAB" /></label>
         <div class="col-sm-9">
-            <input id="${namespace}-path" type="text" name="path" value="${configuration.path}" class="form-control" />
+            <select id="${namespace}-default-tab" name="defaultTab" class="form-control">
+                <c:forEach var="tab" items="${tabs}">
+                    <option value="${tab.id}"
+                        <c:if test="${configuration.defaultTab eq tab}">selected</c:if>
+                    ><op:translate key="${tab.key}" /></option>
+                </c:forEach>
+            </select>
         </div>
     </div>
+
+
+    <fieldset>
+        <legend><op:translate key="TAGS" /></legend>
+        
+        <!-- Document path -->
+        <div class="form-group">
+            <label for="${namespace}-path" class="control-label col-sm-3"><op:translate key="DOCUMENT_PATH" /></label>
+            <div class="col-sm-9">
+                <input id="${namespace}-path" type="text" name="path" value="${configuration.path}" class="form-control" />
+            </div>
+        </div>
+        
+        <!-- User name -->
+        <div class="form-group">
+            <label for="${namespace}-user" class="control-label col-sm-3"><op:translate key="USER_NAME" /></label>
+            <div class="col-sm-9">
+                <input id="${namespace}-user" type="text" name="user" value="${configuration.user}" class="form-control" />
+            </div>
+        </div>
+    </fieldset>
+
     
-    <!-- User name -->
-    <div class="form-group">
-        <label for="${namespace}-user" class="control-label col-sm-3">Nom de l'utilisateur</label>
-        <div class="col-sm-9">
-            <input id="${namespace}-user" type="text" name="user" value="${configuration.user}" class="form-control" />
+    <fieldset>
+        <legend><op:translate key="ATTRIBUTES_STORAGE" /></legend>
+        
+        <!-- Selection identifier -->
+        <div class="form-group">
+            <label for="${namespace}-selection-id" class="control-label col-sm-3"><op:translate key="SELECTION_IDENTIFIER" /></label>
+            <div class="col-sm-9">
+                <input id="${namespace}-selection-id" type="text" name="selectionId" value="${configuration.selectionId}" class="form-control">
+            </div>
         </div>
-    </div>
+    </fieldset>
+    
     
     <!-- Buttons -->
     <div class="form-group">
