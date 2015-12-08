@@ -49,20 +49,14 @@
 
 
 <div class="file-browser-lines">
-    <div class="row">
-        <!-- Description -->
-        <div class="col-sm-5 col-md-6 col-lg-7 ">
-            <c:if test="${not empty description}">
-                <p class="text-muted">${description}</p>
-            </c:if>
-        </div>
-        
-        
-        <!-- Toolbar -->
-        <div class="col-sm-7 col-md-6 col-lg-5">
-            <jsp:include page="toolbar.jsp" />
-        </div>
-    </div>
+    <!-- Description -->
+    <c:if test="${not empty description}">
+        <p class="text-muted">${description}</p>
+    </c:if>
+    
+    
+    <!-- Toolbar -->
+    <jsp:include page="toolbar.jsp" />
 
 
     <!-- Header -->
