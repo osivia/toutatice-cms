@@ -66,6 +66,7 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.DocumentMetadata;
+import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
@@ -2454,6 +2455,38 @@ public class CMSService implements ICMSService {
             if ((keywords != null) && !keywords.isEmpty()) {
                 seo.put("keywords", StringUtils.join(keywords.list(), ", "));
             }
+        }
+
+        return metadata;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext) throws CMSException {
+        // Base path
+        String basePath = cmsContext.getContextualizationBasePath();
+
+        // Nuxeo command
+        INuxeoCommand command = new DocumentsMetadataCommand(basePath);
+
+        // Super-user scope
+        String savedScope = cmsContext.getScope();
+        cmsContext.setScope("superuser_context");
+
+        // Metadata
+        DocumentsMetadata metadata;
+
+        try {
+            metadata = (DocumentsMetadata) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        } finally {
+            cmsContext.setScope(savedScope);
         }
 
         return metadata;
