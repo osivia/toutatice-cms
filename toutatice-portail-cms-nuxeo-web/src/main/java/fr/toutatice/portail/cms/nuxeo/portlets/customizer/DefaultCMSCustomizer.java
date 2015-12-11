@@ -132,7 +132,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmen
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SummaryFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
@@ -142,6 +141,7 @@ import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PictureEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
 
 /**
@@ -345,6 +345,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     	Map<String,EditableWindow> map = new HashMap<String, EditableWindow>();
     	map.put("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
     	map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
+    	map.put("fgt.picture", new PictureEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "picture_Frag_"));
     	map.put("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
 
     	return map;
@@ -468,8 +469,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Site picture fragment
         fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"), new SitePictureFragmentModule(
                 portletContext)));
-        // Summary fragment
-        fragmentTypes.add(new FragmentType(SummaryFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SUMMARY"), new SummaryFragmentModule(portletContext)));
 
         return fragmentTypes;
 
