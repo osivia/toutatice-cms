@@ -139,6 +139,7 @@ import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PictureEditableWindow;
@@ -347,6 +348,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     	map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
     	map.put("fgt.picture", new PictureEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "picture_Frag_"));
     	map.put("fgt.portlet", new PortletEditableWindow("", "portlet_Frag_"));
+    	map.put("ew.fragment", new FragmentEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "ew_frag_"));
 
     	return map;
     }
