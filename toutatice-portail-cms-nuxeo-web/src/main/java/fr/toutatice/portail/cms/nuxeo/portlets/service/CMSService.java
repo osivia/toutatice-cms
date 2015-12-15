@@ -2465,12 +2465,17 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext) throws CMSException {
-        // Base path
-        String basePath = cmsContext.getContextualizationBasePath();
+    public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext, String basePath, Long timestamp) throws CMSException {
+        // Version
+        RequestPublishStatus version;
+        if ("1".equals(cmsContext.getDisplayLiveVersion())) {
+            version = RequestPublishStatus.live;
+        } else {
+            version = RequestPublishStatus.published;
+        }
 
         // Nuxeo command
-        INuxeoCommand command = new DocumentsMetadataCommand(basePath);
+        INuxeoCommand command = new DocumentsMetadataCommand(basePath, version, timestamp);
 
         // Super-user scope
         String savedScope = cmsContext.getScope();
@@ -2478,7 +2483,6 @@ public class CMSService implements ICMSService {
 
         // Metadata
         DocumentsMetadata metadata;
-
         try {
             metadata = (DocumentsMetadata) this.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
