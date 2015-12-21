@@ -24,6 +24,10 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     public static final String WEB_URL_SEGMENT_PROPERTY = "ottcweb:segment";
 
 
+    /** WebId path prefix. */
+    private static final String WEB_ID_PATH_PREFIX = "/" + IWebUrlService.WEB_ID_PREFIX;
+
+
     /** CMS base path. */
     private final String basePath;
     /** Nuxeo documents. */
@@ -63,7 +67,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
         // Maps initialization
         for (Document document : documents) {
-            String path = document.getPath();
+            String path = StringUtils.removeEnd(document.getPath(), ".proxy");
             String webId = document.getString(WEB_ID_PROPERTY);
             String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
             if (webId != null) {
@@ -120,7 +124,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             PathValues workingPathValues = this.paths.get(workingPath);
             if ((workingPathValues != null) && (workingPathValues.webId != null)) {
                 String webPath = this.toWebPaths.get(workingPathValues.webId);
-                if (webPath != null) {
+                if ((webPath != null) && !StringUtils.startsWith(webPath, WEB_ID_PATH_PREFIX)) {
                     closestWebPath = webPath;
                     break;
                 }
@@ -172,8 +176,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         // Web path
         String webPath;
         if (incompleteWebPath) {
-            workingWebPath.append("/");
-            workingWebPath.append(IWebUrlService.WEB_ID_PREFIX);
+            workingWebPath.append(WEB_ID_PATH_PREFIX);
             workingWebPath.append(webId);
             webPath = workingWebPath.toString();
         } else {
