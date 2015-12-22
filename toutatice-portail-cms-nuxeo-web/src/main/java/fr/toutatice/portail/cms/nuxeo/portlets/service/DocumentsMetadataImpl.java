@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +23,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     public static final String WEB_ID_PROPERTY = "ttc:webid";
     /** Web URL segment Nuxeo document property name. */
     public static final String WEB_URL_SEGMENT_PROPERTY = "ottcweb:segment";
+    /** Modified Nuxeo document property name. */
+    public static final String MODIFIED_PROPERTY = "dc:modified";
 
 
     /** WebId path prefix. */
@@ -65,23 +68,31 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         this.toWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
         this.fromWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
 
-        // Maps initialization
+        // Maps & timestamp initialization
+        this.timestamp = 0;
         for (Document document : documents) {
             String path = StringUtils.removeEnd(document.getPath(), ".proxy");
             String webId = document.getString(WEB_ID_PROPERTY);
             String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
+            Date modified = document.getDate(MODIFIED_PROPERTY);
+
             if (webId != null) {
                 this.webIds.put(webId, path);
             }
+
             if ((webId != null) || (segment != null)) {
                 this.paths.put(path, new PathValues(webId, segment));
             }
+
             if (!path.equals(basePath) && (segment != null)) {
                 this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
             }
+
+            this.timestamp = Math.max(this.timestamp, modified.getTime());
         }
 
-        this.timestamp = System.currentTimeMillis();
+        // Increase time to exclude last modified document from the next request (Nuxeo documents timestamp are truncated to 10ms)
+        this.timestamp += 10;
     }
 
 
@@ -124,7 +135,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             PathValues workingPathValues = this.paths.get(workingPath);
             if ((workingPathValues != null) && (workingPathValues.webId != null)) {
                 String webPath = this.toWebPaths.get(workingPathValues.webId);
-                if ((webPath != null) && !StringUtils.startsWith(webPath, WEB_ID_PATH_PREFIX)) {
+                if ((webPath != null) && !webPath.startsWith(WEB_ID_PATH_PREFIX)) {
                     closestWebPath = webPath;
                     break;
                 }
@@ -312,7 +323,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                 // WebId
                 String webId = document.getString(WEB_ID_PROPERTY);
                 // Path
-                String path = document.getPath();
+                String path = StringUtils.removeEnd(document.getPath(), ".proxy");
                 // Segment
                 String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
 
@@ -381,7 +392,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             }
 
             // Update timestamp
-            this.timestamp = metadata.timestamp;
+            this.timestamp = Math.max(this.timestamp, metadata.timestamp);
         }
     }
 

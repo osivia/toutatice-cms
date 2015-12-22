@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +23,8 @@ public class DocumentsMetadataImplTest {
 
     /** Base path test value. */
     private static final String BASE_PATH = "/domain/site";
+
+    private static final long BASE_TIMESTAMP = 1000000;
 
 
     /** Metadata object under test. */
@@ -47,8 +51,9 @@ public class DocumentsMetadataImplTest {
         // Portal site
         Document portalSite = EasyMock.createMock(Document.class);
         EasyMock.expect(portalSite.getPath()).andReturn(BASE_PATH).anyTimes();
-        EasyMock.expect(portalSite.getString("ottcweb:segment")).andReturn(StringUtils.EMPTY).anyTimes();
-        EasyMock.expect(portalSite.getString("ttc:webid")).andReturn("site").anyTimes();
+        EasyMock.expect(portalSite.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(StringUtils.EMPTY).anyTimes();
+        EasyMock.expect(portalSite.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("site").anyTimes();
+        EasyMock.expect(portalSite.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(portalSite);
         documents.add(portalSite);
 
@@ -57,15 +62,16 @@ public class DocumentsMetadataImplTest {
             Document pageLevel1 = EasyMock.createMock(Document.class);
             EasyMock.expect(pageLevel1.getPath()).andReturn(BASE_PATH + "/page" + i).anyTimes();
             if (i < 2) {
-                EasyMock.expect(pageLevel1.getString("ottcweb:segment")).andReturn("page-" + i).anyTimes();
+                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i).anyTimes();
             } else {
-                EasyMock.expect(pageLevel1.getString("ottcweb:segment")).andReturn(null).anyTimes();
+                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
             }
             if ((i % 2) == 0) {
-                EasyMock.expect(pageLevel1.getString("ttc:webid")).andReturn("page" + i).anyTimes();
+                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i).anyTimes();
             } else {
-                EasyMock.expect(pageLevel1.getString("ttc:webid")).andReturn(null).anyTimes();
+                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
             }
+            EasyMock.expect(pageLevel1.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP * (i + 1))).anyTimes();
             EasyMock.replay(pageLevel1);
             documents.add(pageLevel1);
 
@@ -73,15 +79,16 @@ public class DocumentsMetadataImplTest {
                 Document pageLevel2 = EasyMock.createMock(Document.class);
                 EasyMock.expect(pageLevel2.getPath()).andReturn(BASE_PATH + "/page" + i + "/page" + i + j).anyTimes();
                 if (j < 2) {
-                    EasyMock.expect(pageLevel2.getString("ottcweb:segment")).andReturn("page-" + i + "-" + j).anyTimes();
+                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i + "-" + j).anyTimes();
                 } else {
-                    EasyMock.expect(pageLevel2.getString("ottcweb:segment")).andReturn(null).anyTimes();
+                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
                 }
                 if ((j % 2) == 0) {
-                    EasyMock.expect(pageLevel2.getString("ttc:webid")).andReturn("page" + i + j).anyTimes();
+                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i + j).anyTimes();
                 } else {
-                    EasyMock.expect(pageLevel2.getString("ttc:webid")).andReturn(null).anyTimes();
+                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
                 }
+                EasyMock.expect(pageLevel2.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP * (i + 1) * (j + 1))).anyTimes();
                 EasyMock.replay(pageLevel2);
                 documents.add(pageLevel2);
 
@@ -89,15 +96,18 @@ public class DocumentsMetadataImplTest {
                     Document pageLevel3 = EasyMock.createMock(Document.class);
                     EasyMock.expect(pageLevel3.getPath()).andReturn(BASE_PATH + "/page" + i + "/page" + i + j + "/page" + i + j + k).anyTimes();
                     if (k < 2) {
-                        EasyMock.expect(pageLevel3.getString("ottcweb:segment")).andReturn("page-" + i + "-" + j + "-" + k).anyTimes();
+                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i + "-" + j + "-" + k)
+                                .anyTimes();
                     } else {
-                        EasyMock.expect(pageLevel3.getString("ottcweb:segment")).andReturn(null).anyTimes();
+                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
                     }
                     if ((k % 2) == 0) {
-                        EasyMock.expect(pageLevel3.getString("ttc:webid")).andReturn("page" + i + j + k).anyTimes();
+                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i + j + k).anyTimes();
                     } else {
-                        EasyMock.expect(pageLevel3.getString("ttc:webid")).andReturn(null).anyTimes();
+                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
                     }
+                    EasyMock.expect(pageLevel3.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY))
+                            .andReturn(new Date(BASE_TIMESTAMP * (i + 1) * (j + 1) * (k + 1))).anyTimes();
                     EasyMock.replay(pageLevel3);
                     documents.add(pageLevel3);
 
@@ -105,6 +115,8 @@ public class DocumentsMetadataImplTest {
             }
         }
 
+        // Shuffle
+        Collections.shuffle(documents);
 
         this.metadata = new DocumentsMetadataImpl(BASE_PATH, documents);
     }
@@ -236,6 +248,16 @@ public class DocumentsMetadataImplTest {
 
 
     /**
+     * Test getTimestamp function.
+     */
+    @Test
+    public final void testGetTimestamp() {
+        long timestamp = this.metadata.getTimestamp();
+        Assert.assertEquals((BASE_TIMESTAMP * Double.valueOf(Math.pow(4, 3)).longValue()) + 10, timestamp);
+    }
+
+
+    /**
      * Test update function.
      */
     @Test
@@ -256,56 +278,63 @@ public class DocumentsMetadataImplTest {
         // Page 8
         Document page8 = EasyMock.createMock(Document.class);
         EasyMock.expect(page8.getPath()).andReturn(BASE_PATH + "/page8").anyTimes();
-        EasyMock.expect(page8.getString("ottcweb:segment")).andReturn(null).anyTimes();
-        EasyMock.expect(page8.getString("ttc:webid")).andReturn("page8").anyTimes();
+        EasyMock.expect(page8.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+        EasyMock.expect(page8.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page8").anyTimes();
+        EasyMock.expect(page8.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page8);
         documents.add(page8);
 
         // Page 2-0 -> 8-0
         Document page80 = EasyMock.createMock(Document.class);
         EasyMock.expect(page80.getPath()).andReturn(BASE_PATH + "/page8/page80").anyTimes();
-        EasyMock.expect(page80.getString("ottcweb:segment")).andReturn("page-8-0").anyTimes();
-        EasyMock.expect(page80.getString("ttc:webid")).andReturn("page20").anyTimes();
+        EasyMock.expect(page80.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-8-0").anyTimes();
+        EasyMock.expect(page80.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page20").anyTimes();
+        EasyMock.expect(page80.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page80);
         documents.add(page80);
 
         // Page 9
         Document page9 = EasyMock.createMock(Document.class);
         EasyMock.expect(page9.getPath()).andReturn(BASE_PATH + "/page9").anyTimes();
-        EasyMock.expect(page9.getString("ottcweb:segment")).andReturn("page-9").anyTimes();
-        EasyMock.expect(page9.getString("ttc:webid")).andReturn("page9").anyTimes();
+        EasyMock.expect(page9.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-9").anyTimes();
+        EasyMock.expect(page9.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page9").anyTimes();
+        EasyMock.expect(page9.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page9);
         documents.add(page9);
 
         // Page 0-0 -> 9-0
         Document page00 = EasyMock.createMock(Document.class);
         EasyMock.expect(page00.getPath()).andReturn(BASE_PATH + "/page9/page90").anyTimes();
-        EasyMock.expect(page00.getString("ottcweb:segment")).andReturn("page-9-0").anyTimes();
-        EasyMock.expect(page00.getString("ttc:webid")).andReturn("page00").anyTimes();
+        EasyMock.expect(page00.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-9-0").anyTimes();
+        EasyMock.expect(page00.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page00").anyTimes();
+        EasyMock.expect(page00.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page00);
         documents.add(page00);
 
         // New page 0-8
         Document page08 = EasyMock.createMock(Document.class);
         EasyMock.expect(page08.getPath()).andReturn(BASE_PATH + "/page0/page08").anyTimes();
-        EasyMock.expect(page08.getString("ottcweb:segment")).andReturn(null).anyTimes();
-        EasyMock.expect(page08.getString("ttc:webid")).andReturn("page08").anyTimes();
+        EasyMock.expect(page08.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+        EasyMock.expect(page08.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page08").anyTimes();
+        EasyMock.expect(page08.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page08);
         documents.add(page08);
 
         // New page 0-9
         Document page09 = EasyMock.createMock(Document.class);
         EasyMock.expect(page09.getPath()).andReturn(BASE_PATH + "/page0/page09").anyTimes();
-        EasyMock.expect(page09.getString("ottcweb:segment")).andReturn("page-0-9").anyTimes();
-        EasyMock.expect(page09.getString("ttc:webid")).andReturn("page09").anyTimes();
+        EasyMock.expect(page09.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-0-9").anyTimes();
+        EasyMock.expect(page09.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page09").anyTimes();
+        EasyMock.expect(page09.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page09);
         documents.add(page09);
 
         // New page 0-1-1 bis
         Document page011 = EasyMock.createMock(Document.class);
         EasyMock.expect(page011.getPath()).andReturn(BASE_PATH + "/page0/page01/page011bis").anyTimes();
-        EasyMock.expect(page011.getString("ottcweb:segment")).andReturn("page-0-1-1").anyTimes();
-        EasyMock.expect(page011.getString("ttc:webid")).andReturn("page011bis").anyTimes();
+        EasyMock.expect(page011.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-0-1-1").anyTimes();
+        EasyMock.expect(page011.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page011bis").anyTimes();
+        EasyMock.expect(page011.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
         EasyMock.replay(page011);
         documents.add(page011);
 
