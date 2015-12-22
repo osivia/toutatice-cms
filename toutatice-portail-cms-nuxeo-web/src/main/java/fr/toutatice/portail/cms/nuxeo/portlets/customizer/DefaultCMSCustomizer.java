@@ -125,6 +125,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
@@ -1562,23 +1563,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
             // Case of remote proxy
-            try {
-                if (!StringUtils.contains(webId, "?")) {
+            if (!StringUtils.contains(webId, "?")) {
 
-                    if (DocumentHelper.isRemoteProxy(cmsCtx, this.getCmsService().getPublicationInfos(cmsCtx, doc.getPath()))) {
-                        String parentId = this.getWebIdService().getParentWebId(cmsCtx, doc.getPath());
-                        if (StringUtils.isNotBlank(parentId)) {
-                            webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);
-                        } else {
-                            String parentPath = this.getCmsService().getParentPath(doc.getPath());
-                            if (StringUtils.isNotBlank(parentPath)) {
-                                webId = webId.concat("?").concat(IWebIdService.PARENT_PATH).concat("=").concat(parentPath);
-                            }
+                if (ContextDocumentsHelper.isRemoteProxy(doc)) {
+                    String parentId = this.getWebIdService().getParentWebId(cmsCtx, doc.getPath());
+                    if (StringUtils.isNotBlank(parentId)) {
+                        webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);
+                    } else {
+                        String parentPath = this.getCmsService().getParentPath(doc.getPath());
+                        if (StringUtils.isNotBlank(parentPath)) {
+                            webId = webId.concat("?").concat(IWebIdService.PARENT_PATH).concat("=").concat(parentPath);
                         }
                     }
                 }
-            } catch (CMSException e) {
-                // Noting
             }
 
             permLinkPath = this.getWebIdService().webIdToCmsPath(webId);
@@ -1586,7 +1583,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return permLinkPath;
     }
-
 
 
     @Override

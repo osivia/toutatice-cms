@@ -45,15 +45,7 @@ public class DocumentHelper {
      * @return true if document is a folder
      */
     public static boolean isFolder(Document document) {
-        boolean isFolder = false;
-
-        PropertyList facetsProp = document.getFacets();
-        if ((facetsProp != null) && !facetsProp.isEmpty()) {
-            List<Object> facets = facetsProp.list();
-            isFolder = facets.contains(DocumentConstants.FOLDERISH_FACET);
-        }
-
-        return isFolder;
+        return ContextDocumentsHelper.isFolder(document);
     }
 
 
