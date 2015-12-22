@@ -74,8 +74,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 
 		OperationRequest request = automationSession.newRequest("Document.FetchPublicationInfos");
 		
-        if (path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
-            request.set("webid", path.replaceAll(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO, StringUtils.EMPTY));
+        if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
+            request.set("webid", path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
             
             if(StringUtils.isNotBlank(navigationPath)){
                 request.set("navigationPath", navigationPath);
@@ -198,7 +198,7 @@ public class PublishInfosCommand implements INuxeoCommand {
         StringBuffer id = new StringBuffer();
         id.append("PublishInfosCommand/").append(StringUtils.removeEnd(this.path, ".proxy"));
 
-        if (this.path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
+        if (this.path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
             id.append(": ").append(this.displayLiveVersion).append("/").append(this.navigationPath ).append("/").append(this.parentId)
                 .append("/").append(this.parentPath);
         } 

@@ -1738,7 +1738,7 @@ public class MenuBarFormater {
                 if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
                     extendedParameters = new ExtendedParameters();
 
-                    String parentId = webIdService.getParentId(cmsContext, document.getPath());
+                    String parentId = webIdService.getParentWebId(cmsContext, document.getPath());
                     if (StringUtils.isNotBlank(parentId)) {
                         extendedParameters.addParameter(IWebIdService.PARENT_ID, parentId);
                     } else {

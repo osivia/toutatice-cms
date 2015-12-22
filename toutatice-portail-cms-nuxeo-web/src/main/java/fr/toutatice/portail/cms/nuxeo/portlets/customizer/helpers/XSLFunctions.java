@@ -371,7 +371,7 @@ public class XSLFunctions {
                         if (mDoc.matches()) {
                             if (mDoc.groupCount() > 0) {
                                 String path = mDoc.group(2);
-                                
+
                                 String parameters = url.getQuery();
                                 if(StringUtils.isNotBlank(parameters)){
                                     path = path.concat("?").concat(parameters);
@@ -419,7 +419,7 @@ public class XSLFunctions {
                                         // In case of resources url, serve the resource
                                         if (element.startsWith("content")) {
                                             String[] param = element.split("=");
-                                            String webId = this.webIdService.webPathToFetchInfoService(webpath);
+                                            String webId = this.webIdService.cmsPathToFetchPath(webpath);
                                             return this.nuxeoController.createPictureLink(webId, param[1]);
                                         }
                                     }

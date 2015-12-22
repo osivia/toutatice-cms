@@ -115,7 +115,7 @@ public class NuxeoTagService implements INuxeoTagService {
                         CMSItem cmsItem = cmsService.createItem(cmsContext, document.getPath(), null, nuxeoDocument);
 
                         if (StringUtils.isNotEmpty(cmsItem.getWebId())) {
-                            path = this.webIdService.itemToPageUrl(cmsContext, cmsItem);
+                            path = this.webIdService.webIdToCmsPath(cmsItem.getWebId());
                         }
                     }
 

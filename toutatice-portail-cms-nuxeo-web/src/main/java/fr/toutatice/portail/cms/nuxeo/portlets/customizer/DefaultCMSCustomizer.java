@@ -89,7 +89,6 @@ import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -97,6 +96,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
+import org.osivia.portal.core.web.IWebUrlService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -192,8 +192,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** CMS service. */
     private CMSService cmsService;
-    /** WEBID service. */
+    /** WebId service. */
     private IWebIdService webIdService;
+    /** Web URL service. */
+    private IWebUrlService webUrlService;
     /** Directory service. */
     private IDirectoryService directoryService;
     /** Notification service */
@@ -267,6 +269,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
     }
 
+
+    /**
+     * Get webId service.
+     *
+     * @return webId service
+     */
     public IWebIdService getWebIdService() {
         if (this.webIdService == null) {
             this.webIdService = (IWebIdService) this.portletCtx.getAttribute("webIdService");
@@ -274,6 +282,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return this.webIdService;
     }
+
+
+    /**
+     * Get web URL service.
+     *
+     * @return web URL service
+     */
+    public IWebUrlService getWebUrlService() {
+        if (this.webUrlService == null) {
+            this.webUrlService = Locator.findMBean(IWebUrlService.class, IWebUrlService.MBEAN_NAME);
+        }
+        return this.webUrlService;
+    }
+
 
     /**
      * Get Nuxeo connection properties.
@@ -1262,13 +1284,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
             // Portal URL
-            String portalURL = StringUtils.EMPTY;
-            if(extendedParameters != null){
-                portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null, null, extendedParameters);
-            } else {
-                portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null, null);
-            }
-
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null,
+                    null, extendedParameters);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
@@ -1315,48 +1332,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (StringUtils.startsWith(url, "/nuxeo/web/")) {
             // Nuxeo web path
-            String webPath = StringUtils.removeStart(url, "/nuxeo/web/");
+            String nuxeoWebPath = StringUtils.removeStart(url, "/nuxeo/web/");
 
-            // Webpath can have path parameter containing "/"
+            // Nuxeo web path can have path parameter containing "/"
             String pathParameters = StringUtils.EMPTY;
-            if(StringUtils.contains(webPath, "?")){
+            if (StringUtils.contains(nuxeoWebPath, "?")) {
+                String parameters = StringUtils.substringAfter(nuxeoWebPath, "?");
 
-                String parameters = StringUtils.substringAfter(webPath, "?");
-
-                if(StringUtils.contains(parameters, "/")){
+                if (StringUtils.contains(parameters, "/")) {
                     pathParameters = parameters;
-                    webPath = StringUtils.substringBefore(webPath, "?");
                 }
             }
 
-            String[] splittedWebPath = StringUtils.split(webPath, "/");
-            if (splittedWebPath.length > 0) {
+            // WebId
+            String webId = StringUtils.substringBefore(nuxeoWebPath, "?");
 
-                // Web ID
-                String webId = splittedWebPath[splittedWebPath.length - 1];
-                if(StringUtils.isNotBlank(pathParameters)){
-                    webId = webId.concat("?").concat(pathParameters);
-                }
-
-                // Service web ID
-                String serviceWebId = this.getWebIdService().webIdToFetchInfoService(webId);
-
-                // Document path
-                String path = null;
-                try {
-
-                    CMSPublicationInfos pubInfos = this.getCmsService().getPublicationInfos(cmsContext, serviceWebId);
-                    path = pubInfos.getDocumentPath();
-                } catch (CMSException e) {
-                    //path = StringUtils.EMPTY;
-                    // keep null path
-                }
-
-                // CMS item
-                CMSItem cmsItem = new CMSItem(path, null, webId, null, null);
-
-                cmsPath = this.getWebIdService().itemToPageUrl(cmsContext, cmsItem);
+            if (StringUtils.isNotBlank(pathParameters)) {
+                webId = webId.concat("?").concat(pathParameters);
             }
+
+            cmsPath = this.getWebIdService().webIdToCmsPath(webId);
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
             // Nuxeo CMS path
             cmsPath = StringUtils.removeStart(url, "/nuxeo/nxpath/");
@@ -1571,7 +1566,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 if (!StringUtils.contains(webId, "?")) {
 
                     if (DocumentHelper.isRemoteProxy(cmsCtx, this.getCmsService().getPublicationInfos(cmsCtx, doc.getPath()))) {
-                        String parentId = this.getWebIdService().getParentId(cmsCtx, doc.getPath());
+                        String parentId = this.getWebIdService().getParentWebId(cmsCtx, doc.getPath());
                         if (StringUtils.isNotBlank(parentId)) {
                             webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);
                         } else {
@@ -1586,12 +1581,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Noting
             }
 
-            CMSItem cmsItem = new CMSItem(doc.getPath(), null, webId, properties, doc);
-
-            DocumentType cmsItemType = this.getCMSItemTypes().get(doc.getType());
-            cmsItem.setType(cmsItemType);
-
-            permLinkPath = this.getWebIdService().itemToPageUrl(cmsCtx, cmsItem);
+            permLinkPath = this.getWebIdService().webIdToCmsPath(webId);
         }
 
         return permLinkPath;

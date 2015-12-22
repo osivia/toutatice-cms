@@ -53,8 +53,8 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
         CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
         OperationRequest request = nuxeoSession.newRequest("Document.FetchExtendedDocInfos");
-        if (path.startsWith(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO)) {
-            request.set("webid", path.replaceAll(IWebIdService.PREFIX_WEBID_FETCH_PUB_INFO, StringUtils.EMPTY));
+        if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
+            request.set("webid", path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
         } else {
             request.set("path", path);
         }

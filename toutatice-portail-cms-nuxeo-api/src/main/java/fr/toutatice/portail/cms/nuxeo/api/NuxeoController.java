@@ -1978,7 +1978,7 @@ public class NuxeoController {
         cmsContext.setPortalControllerContext(portalControllerContext);
 
         // WebId path
-        String webIdPath = webIdService.webIdToFetchInfoService(webId);
+        String webIdPath = webIdService.webIdToFetchPath(webId);
 
         // Fetch document
         CMSItem content = cmsService.getContent(cmsContext, webIdPath);
