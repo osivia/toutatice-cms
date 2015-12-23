@@ -120,6 +120,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.customizationDeployementTS = System.currentTimeMillis();
     }
 
+    
+    
+    /**
+     * Clone the type definition to allow some modifications at plugin level
+     * @param defaultType
+     * @return
+     */
+    private DocumentType cloneDefaultType(DocumentType defaultType){
+        
+        List<String> clonedSubTypes = new ArrayList<String>();
+        
+        for(String subType:defaultType.getPortalFormSubTypes()) {
+            clonedSubTypes.add(subType);
+        }
+        
+        DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(),defaultType.isNavigable(), defaultType.isBrowsable(), defaultType.isOrdered(), defaultType.isForcePortalContextualization(),
+                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType());
+        return clonedType;
+    }
+    
 
     /**
      * Gets the customization attributes.
@@ -132,8 +152,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         if (attributes == null) {
             Map<String, Object> customizationAttributes = new ConcurrentHashMap<String, Object>();
             CustomizationContext customizationContext = new CustomizationContext(customizationAttributes, locale);
+            
+            /* Inject default types */
+            List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
+            Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
+
+            for (DocumentType defaultType : defaultTypes) {
+                types.put(defaultType.getName(), cloneDefaultType(defaultType));
+            }
+
+            List<DocumentType> customizedTypes = this.customizer.getCustomizedCMSItemTypes();
+            for (DocumentType customizedType : customizedTypes) {
+                types.put(customizedType.getName(), cloneDefaultType(customizedType));
+            }
+
+
+            customizationAttributes.put(Customizable.DOC_TYPE.toString(), types);
 
             this.customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
+            
+            
 
             this.customizationAttributesCache.put(locale, customizationAttributes);
         }
@@ -310,28 +348,12 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     @SuppressWarnings("unchecked")
     public Map<String, DocumentType> customizeCMSItemTypes() {
         if (this.typesCache == null) {
-            List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
-            this.typesCache = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
-
-            for (DocumentType defaultType : defaultTypes) {
-                this.typesCache.put(defaultType.getName(), defaultType);
-            }
-
-            List<DocumentType> customizedTypes = this.customizer.getCustomizedCMSItemTypes();
-            for (DocumentType customizedType : customizedTypes) {
-                this.typesCache.put(customizedType.getName(), customizedType);
-            }
-
+  
             Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
 
-            Map<String, DocumentType> customDocTypes = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
+            this.typesCache = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
 
-            if (customDocTypes != null) {
-                Set<Entry<String, DocumentType>> customTypes = customDocTypes.entrySet();
-                for (Entry<String, DocumentType> customType : customTypes) {
-                    this.typesCache.put(customType.getKey(), customType.getValue());
-                }
-            }
+
         }
 
         return this.typesCache;

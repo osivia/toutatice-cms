@@ -1393,20 +1393,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder", "DocumentUrlContainer",
-                "AnnonceFolder", "PictureBook"), "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
+        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder"), "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
         // Portal site
-        defaultTypes.add(new DocumentType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Audio", "Video", "Annonce", "PortalPage",
-                "Picture", "ContextualLink"), null, "glyphicons glyphicons-global", true));
+        defaultTypes.add(new DocumentType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Audio", "Video", "PortalPage",
+                "ContextualLink"), null, "glyphicons glyphicons-global", true));
         // Portal page
-        defaultTypes.add(new DocumentType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Audio", "Video", "Annonce", "PortalPage",
-                "Picture", "ContextualLink"), null, "glyphicons glyphicons-more-items"));
+        defaultTypes.add(new DocumentType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "Audio", "Video",  "PortalPage",
+                "ContextualLink"), null, "glyphicons glyphicons-more-items"));
         // Folder
-        defaultTypes.add(new DocumentType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note", "Picture"),
+        defaultTypes.add(new DocumentType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note"),
                 null, "glyphicons glyphicons-folder-closed"));
         // Ordered folder
-        defaultTypes.add(new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note",
-                "Picture"), null, "glyphicons glyphicons-folder-closed"));
+        defaultTypes.add(new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note"), null, "glyphicons glyphicons-folder-closed"));
         // File
         defaultTypes.add(new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
         // Audio file
