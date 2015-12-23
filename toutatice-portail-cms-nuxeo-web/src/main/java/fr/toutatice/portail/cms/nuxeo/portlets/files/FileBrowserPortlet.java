@@ -227,11 +227,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                         }
 
                         // Notification
-                        String message = bundle.getString("MESSAGE_DELETE_SUCCESS");
+                        String message = bundle.getString("SUCCESS_MESSAGE_DELETE");
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                     } catch (CMSException e) {
                         // Notification
-                        String message = bundle.getString("MESSAGE_DELETE_ERROR");
+                        String message = bundle.getString("ERROR_MESSAGE_ERROR_HAS_OCCURED");
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
                     }
                 }
