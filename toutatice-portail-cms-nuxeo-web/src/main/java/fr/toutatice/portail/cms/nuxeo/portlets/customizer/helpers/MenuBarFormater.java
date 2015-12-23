@@ -1175,7 +1175,7 @@ public class MenuBarFormater {
             // CMS item type
             DocumentType cmsItemType = customizer.getCMSItemTypes().get(document.getType());
 
-            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms() && cmsItemType.isMovable()) {
                 // Move document popup URL
                 String moveDocumentURL;
                 try {
