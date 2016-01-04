@@ -127,7 +127,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @param defaultType
      * @return
      */
-    private DocumentType cloneDefaultType(DocumentType defaultType){
+    protected static DocumentType cloneDefaultType(DocumentType defaultType){
         
         List<String> clonedSubTypes = new ArrayList<String>();
         
@@ -136,7 +136,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         }
         
         DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(),defaultType.isNavigable(), defaultType.isBrowsable(), defaultType.isOrdered(), defaultType.isForcePortalContextualization(),
-                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType());
+                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable());
         return clonedType;
     }
     
