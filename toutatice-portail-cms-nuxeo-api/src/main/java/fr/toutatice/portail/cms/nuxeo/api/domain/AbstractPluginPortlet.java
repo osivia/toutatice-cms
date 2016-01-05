@@ -46,6 +46,8 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /** Customization modules repository attribute name. */
     private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
+    /** Customization modules repository attribute name. */
+    public static final int DEFAULT_DEPLOYMENT_ORDER = 100;
 
 
     /** Customization module metadatas. */
@@ -65,6 +67,14 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         super();
         this.classLoader = this.getClass().getClassLoader();
     }
+    
+    
+    /**
+     * Constructor.
+     */
+    public int getOrder() {
+       return DEFAULT_DEPLOYMENT_ORDER;
+    }
 
 
     /**
@@ -79,7 +89,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         this.metadatas.setName(this.getPluginName());
         this.metadatas.setModule(this);
         this.metadatas.setCustomizationIDs(Arrays.asList(ICustomizationModule.PLUGIN_ID));
-        this.metadatas.setOrder(100);
+        this.metadatas.setOrder(getOrder());
 
         // Repository
         this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
