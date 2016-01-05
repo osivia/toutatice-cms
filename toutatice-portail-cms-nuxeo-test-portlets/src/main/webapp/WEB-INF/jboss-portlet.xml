@@ -4,6 +4,11 @@
 <portlet-app>
 
     <portlet>
+        <portlet-name>outatice-cms-test-JSPPlugin</portlet-name>
+    </portlet>
+
+
+    <portlet>
         <portlet-name>toutatice-cms-test-portlet</portlet-name>
 
         <transaction>
@@ -18,5 +23,11 @@
             <trans-attribute>Required</trans-attribute>
         </transaction>
     </portlet>
+
+    <service>
+        <service-name>CustomizationModulesRepository</service-name>
+        <service-class>org.osivia.portal.api.customization.ICustomizationModulesRepository</service-class>
+        <service-ref>osivia:service=CustomizationService</service-ref>
+    </service>
 
 </portlet-app>

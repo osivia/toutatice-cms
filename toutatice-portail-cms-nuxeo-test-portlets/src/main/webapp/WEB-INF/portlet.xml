@@ -44,5 +44,20 @@
             <title>Test (SpringFramework)</title>
         </portlet-info>
     </portlet>
+    
+    <portlet>
+		<portlet-name>toutatice-cms-test-JSPPlugin</portlet-name>
+		<portlet-class>fr.toutatice.portail.cms.test.plugin.JSPPlugin</portlet-class>
+		<expiration-cache>180</expiration-cache>
+
+		<supports>
+			<mime-type>text/html</mime-type>
+		</supports>
+
+		<portlet-info>
+			<title>JSPPlugin plugin</title>
+		</portlet-info>
+	</portlet>    
+    
 
 </portlet-app>
