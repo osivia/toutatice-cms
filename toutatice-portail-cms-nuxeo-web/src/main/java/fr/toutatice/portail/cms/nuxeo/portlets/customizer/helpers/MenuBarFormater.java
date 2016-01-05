@@ -694,8 +694,12 @@ public class MenuBarFormater {
         if (!ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             return;
         }
+        
+        Document document = (Document) cmsContext.getDoc();
+        
+        DocumentType cmsItemType = customizer.getCMSItemTypes().get(document.getType());
 
-        if (extendedInfos.getDriveEditURL() != null) {
+        if (extendedInfos.getDriveEditURL() != null && cmsItemType != null && cmsItemType.isLiveEditable()) {
             MenubarDropdown parent = getCMSEditionDropdown(portalControllerContext, bundle);
 
             MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 2,

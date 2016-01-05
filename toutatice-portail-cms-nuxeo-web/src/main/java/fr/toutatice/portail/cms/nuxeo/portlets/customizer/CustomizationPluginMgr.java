@@ -136,7 +136,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         }
         
         DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(),defaultType.isNavigable(), defaultType.isBrowsable(), defaultType.isOrdered(), defaultType.isForcePortalContextualization(),
-                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable());
+                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable(), defaultType.isLiveEditable());
         return clonedType;
     }
     

@@ -1406,7 +1406,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Ordered folder
         defaultTypes.add(new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Audio", "Video", "Folder", "Note"), null, "glyphicons glyphicons-folder-closed"));
         // File
-        defaultTypes.add(new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file"));
+        defaultTypes.add(new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file", false,true,true));
         // Audio file
         defaultTypes.add(new DocumentType("Audio", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-headphones"));
         // Video file

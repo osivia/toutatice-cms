@@ -29,7 +29,7 @@ public class CustomizationPluginMgrTest  {
     @Test
     public final void testCloneDocumentType()  {
         
-        int LAST_CONSTRUCTOR_PARAMS = 12;
+        int LAST_CONSTRUCTOR_PARAMS = 13;
         
         Constructor<?>[] constructors = DocumentType.class.getConstructors();
         
@@ -38,18 +38,18 @@ public class CustomizationPluginMgrTest  {
         }
         
         // Test non default values
-        DocumentType nonDefault = new DocumentType("NonDefautType", false, false, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-picture", true, false);
+        DocumentType nonDefault = new DocumentType("NonDefautType", false, false, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-picture", true, false, true);
         DocumentType clone = CustomizationPluginMgr.cloneDefaultType(nonDefault);
         Assert.assertTrue("Incorrect cloning for non default values", EqualsBuilder.reflectionEquals(nonDefault, clone));
  
         
         // Test true values
-        DocumentType trueValues = new DocumentType("TrueType", true, true, true, true, true, true, new ArrayList<String>(0), null, "true true-picture", true, true);
+        DocumentType trueValues = new DocumentType("TrueType", true, true, true, true, true, true, new ArrayList<String>(0), null, "true true-picture", true, true, true);
         DocumentType trueClone = CustomizationPluginMgr.cloneDefaultType(trueValues);
         Assert.assertTrue( "Incorrect cloning for true values", EqualsBuilder.reflectionEquals(trueValues, trueClone));
 
         // Test false values
-        DocumentType falseValues = new DocumentType("FalseType", false, false, false, false, false, false, new ArrayList<String>(0), null, "false", false, false);
+        DocumentType falseValues = new DocumentType("FalseType", false, false, false, false, false, false, new ArrayList<String>(0), null, "false", false, false, false);
         DocumentType falseClone = CustomizationPluginMgr.cloneDefaultType(falseValues);
         Assert.assertTrue( "Incorrect cloning for false values", EqualsBuilder.reflectionEquals(falseValues, falseClone));       
         
