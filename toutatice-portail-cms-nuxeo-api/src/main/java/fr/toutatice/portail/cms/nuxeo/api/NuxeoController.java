@@ -97,7 +97,14 @@ public class NuxeoController {
 
     /** Request attribute name. */
     public static final String REQUEST_ATTRIBUTE = NuxeoController.class.getSimpleName();
-
+    /** Slash separator. */
+    private static final String SLASH = "/";
+    /** Dot separator. */
+    private static final String DOT = ".";
+    /** Prefix used to query document in the ECM. */
+    private static final String FETCH_PATH_PREFIX = "webId:";
+    /** Prefix for CMS path. */
+    private static final String CMS_PATH_PREFIX = "/_webid";
 
     /** The request. */
     PortletRequest request;
@@ -2492,6 +2499,50 @@ public class NuxeoController {
         }
 
         return nuxeoRequest;
+    }
+
+    /**
+     * Convert webId to fetch publication infos path.
+     *
+     * @param webId webId
+     * @return fetch publication infos path (e.g. webId:example)
+     */
+    public static String webIdToFetchPath(String webId) {
+        String fetchPath;
+        if (webId != null) {
+            fetchPath = FETCH_PATH_PREFIX.concat(webId);
+        } else {
+            fetchPath = null;
+        }
+        return fetchPath;
+    }
+
+
+    /**
+     * Convert CMS path to fetch publication infos path.
+     *
+     * @param cmsPath CMS path (e.g. /_webid/example)
+     * @return fetch publication infos path (e.g. webId:example)
+     */
+    public static String cmsPathToFetchPath(String cmsPath) {
+        String webId = StringUtils.substringAfterLast(cmsPath, SLASH);
+        webId = StringUtils.substringBefore(webId, DOT);
+        return webIdToFetchPath(webId);
+    }
+
+
+    /**
+     * Convert webId to CMS path.
+     *
+     * @param webId webId
+     * @return CMS path (e.g. /_webid/example)
+     */
+    public static String webIdToCmsPath(String webId) {
+        StringBuilder path = new StringBuilder();
+        path.append(CMS_PATH_PREFIX);
+        path.append(SLASH);
+        path.append(webId);
+        return path.toString();
     }
 
 }
