@@ -35,19 +35,27 @@ public class ContextDocumentsHelper {
     private ContextDocumentsHelper(){};
     
     /**
-     * @param document (possibly in context).
-     * @return true if document is a remote proxy.
-     */
-    public static boolean isRemoteProxy(Document document){
-        return getFacets(document).contains(DocumentConstants.REMOTE_PROXY_FACET);
-    }
-    
-    /**
      * @param document document (possibly in context).
      * @return true if document is a folder
      */
     public static boolean isFolder(Document document) {
         return getFacets(document).contains(DocumentConstants.FOLDERISH_FACET);
+    }
+    
+    /**
+     * @param document
+     * @return true if document is a live in a publish space
+     */
+    public static boolean isLocalPublishLive(Document document){
+        return getFacets(document).contains(DocumentConstants.LOCAL_PUBLISH_LIVE_FACET);
+    }
+    
+    /**
+     * @param document (possibly in context).
+     * @return true if document is a remote proxy.
+     */
+    public static boolean isRemoteProxy(Document document){
+        return getFacets(document).contains(DocumentConstants.REMOTE_PROXY_FACET);
     }
     
     /**
@@ -58,7 +66,7 @@ public class ContextDocumentsHelper {
         List<Object> facets = new ArrayList<Object>(0);
         
         PropertyList facetsProp = document.getFacets();
-        if(CollectionUtils.isNotEmpty(facets)){
+        if(facetsProp != null && facetsProp.size() > 0){
             facets.addAll(facetsProp.list());
         }
         

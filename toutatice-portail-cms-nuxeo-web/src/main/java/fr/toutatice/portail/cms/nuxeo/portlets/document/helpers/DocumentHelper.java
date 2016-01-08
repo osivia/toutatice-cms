@@ -13,12 +13,9 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document.helpers;
 
-import java.util.List;
-
 import javax.portlet.PortletRequest;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -46,6 +43,14 @@ public class DocumentHelper {
      */
     public static boolean isFolder(Document document) {
         return ContextDocumentsHelper.isFolder(document);
+    }
+    
+    /**
+     * @param document
+     * @return true if document is a live in a publish space
+     */
+    public static boolean isLocalPublishLive(Document document){
+        return ContextDocumentsHelper.isLocalPublishLive(document);
     }
 
 
@@ -106,7 +111,7 @@ public class DocumentHelper {
      */
     public static String  computeNavPath(String path){
         String result = path;
-        if( path.endsWith(".proxy")) {
+        if( path.endsWith(DocumentConstants.LOCAL_PROXIES_SUFFIX)) {
             result = result.substring(0, result.length() - 6);
         }
         return result;

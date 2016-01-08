@@ -55,15 +55,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 	protected static Log logger = LogFactory.getLog(PublishInfosCommand.class);
 	
 	private final String path;
-	private String navigationPath;
-	private String displayLiveVersion;
 	private final String parentId;
 	private final String parentPath;
 
-	public PublishInfosCommand(String navigationPath, String parentId, String parentPath, String path, String displayLiveVersion) {
+	public PublishInfosCommand(String parentId, String parentPath, String path) {
 		this.path = path;
-		this.navigationPath = navigationPath;
-		this.displayLiveVersion = displayLiveVersion;
 		this.parentId = parentId;
 		this.parentPath = parentPath;
 	}
@@ -76,10 +72,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 		
         if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
             request.set("webid", path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
-            
-            if(StringUtils.isNotBlank(navigationPath)){
-                request.set("navigationPath", navigationPath);
-            }
             
             if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61)) {
 
@@ -95,12 +87,6 @@ public class PublishInfosCommand implements INuxeoCommand {
         else {
             request.set("path", path);
         }
-        
-        if(StringUtils.isNotBlank(displayLiveVersion)){
-            boolean draft = "1".equals(displayLiveVersion);
-            request.set("displayLiveVersion", draft);         
-        }
-        
 		
         Blob binariesInfos = (Blob) request.execute();
 
@@ -110,62 +96,49 @@ public class PublishInfosCommand implements INuxeoCommand {
             String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8");
 
             JSONArray infosContent = JSONArray.fromObject(pubInfosContent);
-            Iterator it = infosContent.iterator();
+            Iterator<?> it = infosContent.iterator();
             while (it.hasNext()) {
                 JSONObject infos = (JSONObject) it.next();
 
-                if (infos.containsKey("hasManyProxies")) {
-                    Boolean hasManyProxies = adaptBoolean(infos.get("hasManyProxies"));
-                    publiInfos.setHasManyPublications(Boolean.valueOf(hasManyProxies));
-                    publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
-                    // Informations used in some navigation cases
-                    publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
-                    publiInfos.setSubTypes(new HashMap<String, String>(0));
+                publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
+
+                publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
+                publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
+
+                publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
+                publiInfos.setManageableByUser(adaptBoolean(infos.get("manageableByUser")));
+                publiInfos.setRemotePublishable(adaptBoolean(infos.get("isRemotePublishable")));
+                publiInfos.setRemotePublished(adaptBoolean(infos.get("isRemotePublished")));
+                publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
+                publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
+                publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
+                publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
+
+                publiInfos.setPublished(adaptBoolean(infos.get("published")));
+                publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
+
+                publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
+                publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
+
+                if (infos.containsKey("spaceID")) {
+                    publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                }
+                if (infos.containsKey("parentSpaceID")) {
+                    publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
                 }
 
-                if (!publiInfos.hasManyPublications()) {
-
-                    publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
-
-                    publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
-                    publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
-
-                    publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
-                    publiInfos.setManageableByUser(adaptBoolean(infos.get("manageableByUser")));
-                    publiInfos.setRemotePublishable(adaptBoolean(infos.get("isRemotePublishable")));
-                    publiInfos.setRemotePublished(adaptBoolean(infos.get("isRemotePublished")));
-                    publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
-                    publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
-                    publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
-                    publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
-
-                    publiInfos.setPublished(adaptBoolean(infos.get("published")));
-                    publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
-
-                    publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
-                    publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
-
-                    if (infos.containsKey("spaceID")) {
-                        publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
+                String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
+                if (StringUtils.isNotEmpty(publishSpacePath)) {
+                    publiInfos.setPublishSpacePath(publishSpacePath);
+                    publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
+                    publiInfos.setLiveSpace(false);
+                } else {
+                    String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
+                    if (StringUtils.isNotEmpty(workspacePath)) {
+                        publiInfos.setPublishSpacePath(workspacePath);
+                        publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
+                        publiInfos.setLiveSpace(true);
                     }
-                    if (infos.containsKey("parentSpaceID")) {
-                        publiInfos.setParentSpaceID(this.adaptType(String.class, infos.getString("parentSpaceID")));
-                    }
-
-                    String publishSpacePath = decode(adaptType(String.class, infos.get("publishSpacePath")));
-                    if (StringUtils.isNotEmpty(publishSpacePath)) {
-                        publiInfos.setPublishSpacePath(publishSpacePath);
-                        publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("publishSpaceDisplayName"))));
-                        publiInfos.setLiveSpace(false);
-                    } else {
-                        String workspacePath = decode(adaptType(String.class, infos.get("workspacePath")));
-                        if (StringUtils.isNotEmpty(workspacePath)) {
-                            publiInfos.setPublishSpacePath(workspacePath);
-                            publiInfos.setPublishSpaceDisplayName(decode(adaptType(String.class, infos.get("workspaceDisplayName"))));
-                            publiInfos.setLiveSpace(true);
-                        }
-                    }
-
                 }
 
             }
@@ -199,7 +172,7 @@ public class PublishInfosCommand implements INuxeoCommand {
         id.append("PublishInfosCommand/").append(StringUtils.removeEnd(this.path, ".proxy"));
 
         if (this.path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
-            id.append(": ").append(this.displayLiveVersion).append("/").append(this.navigationPath ).append("/").append(this.parentId)
+            id.append(": ").append("/").append("/").append(this.parentId)
                 .append("/").append(this.parentPath);
         } 
         

@@ -1332,25 +1332,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String cmsPath = null;
 
         if (StringUtils.startsWith(url, "/nuxeo/web/")) {
-            // Nuxeo web path
-            String nuxeoWebPath = StringUtils.removeStart(url, "/nuxeo/web/");
 
-            // Nuxeo web path can have path parameter containing "/"
-            String pathParameters = StringUtils.EMPTY;
-            if (StringUtils.contains(nuxeoWebPath, "?")) {
-                String parameters = StringUtils.substringAfter(nuxeoWebPath, "?");
-
-                if (StringUtils.contains(parameters, "/")) {
-                    pathParameters = parameters;
-                }
-            }
-
-            // WebId
-            String webId = StringUtils.substringBefore(nuxeoWebPath, "?");
-
-            if (StringUtils.isNotBlank(pathParameters)) {
-                webId = webId.concat("?").concat(pathParameters);
-            }
+            // WebId (wich can have parameter
+            String webId = StringUtils.removeStart(url, "/nuxeo/web/");
 
             cmsPath = this.getWebIdService().webIdToCmsPath(webId);
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {

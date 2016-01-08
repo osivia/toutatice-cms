@@ -26,6 +26,9 @@ public interface DocumentConstants {
     String FOLDERISH_FACET = "Folderish";
     /** Indicates if document is a remote proxy. */
     String REMOTE_PROXY_FACET = "isRemoteProxy";
+    /** Indicates if document is a live in a publish space. */
+    String LOCAL_PUBLISH_LIVE_FACET = "isLocalPublishLive";
+     
     
     /** Approved document state. */
     String APPROVED_DOC_STATE = "approved";

@@ -153,7 +153,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
 
     /**
-     * Get webID path like /_webid/domain-def-jss/publistatfaq.html
+     * Get webID path like /_id/domain-def-jss/publistatfaq.html
      *
      * @param ctx CMS context
      * @return the content web id path

@@ -104,7 +104,7 @@ public class NuxeoController {
     /** Prefix used to query document in the ECM. */
     private static final String FETCH_PATH_PREFIX = "webId:";
     /** Prefix for CMS path. */
-    private static final String CMS_PATH_PREFIX = "/_webid";
+    private static final String CMS_PATH_PREFIX = "/_id";
 
     /** The request. */
     PortletRequest request;
@@ -1665,18 +1665,21 @@ public class NuxeoController {
             String displayLiveVersion = getDisplayLiveVersion();
 
             String path = doc.getPath();
-
-            // On ne sait pas gérer les webid des proxys distants (comment résoudre l'ambiguité si plusieurs proxys)
-            // Du coup, on ne gère les webids que pour les portails web
-            // Il reste une ambiguité si 2 publications distantes vers un portail web
-            // A revoir dans la version 4.2
-
+            
+            ExtendedParameters extendedParameters = null;
             if (PortalObjectUtils.isSpaceSite(page.getPortal())) {
-                    path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
+                path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
+                // CMS path can have parameters
+                Map<String, String> nxPathParameters = getCMSService().getNxPathParameters(path);
+                if (MapUtils.isNotEmpty(nxPathParameters)) {
+                    path = StringUtils.substringBefore(path, "?");
+                    extendedParameters = new ExtendedParameters();
+                    extendedParameters.setAllParameters(nxPathParameters);
+                }
             }
 
             String url = getPortalUrlFactory().getCMSUrl(portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams,
-                    localContextualization, displayContext, getHideMetaDatas(), null, displayLiveVersion, null);
+                    localContextualization, displayContext, getHideMetaDatas(), null, displayLiveVersion, null, extendedParameters);
 
 
             if (url != null) {
@@ -1694,7 +1697,7 @@ public class NuxeoController {
     }
 
     /**
-     * Gets the content web id path ( like /_webid/domain-def-jss/publistatfaq.html)
+     * Gets the content web id path ( like /_id/domain-def-jss/publistatfaq.html)
      *
      * if no webId is defined, returns original path
      *
@@ -2521,7 +2524,7 @@ public class NuxeoController {
     /**
      * Convert CMS path to fetch publication infos path.
      *
-     * @param cmsPath CMS path (e.g. /_webid/example)
+     * @param cmsPath CMS path (e.g. /_id/example)
      * @return fetch publication infos path (e.g. webId:example)
      */
     public static String cmsPathToFetchPath(String cmsPath) {
@@ -2535,7 +2538,7 @@ public class NuxeoController {
      * Convert webId to CMS path.
      *
      * @param webId webId
-     * @return CMS path (e.g. /_webid/example)
+     * @return CMS path (e.g. /_id/example)
      */
     public static String webIdToCmsPath(String webId) {
         StringBuilder path = new StringBuilder();

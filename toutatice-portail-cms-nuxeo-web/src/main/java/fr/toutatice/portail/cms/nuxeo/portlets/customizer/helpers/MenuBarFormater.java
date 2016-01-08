@@ -1726,11 +1726,10 @@ public class MenuBarFormater {
         String url;
         String permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
 
-        // url of type share for Workspaces and local proxies
+        // url of type share for Workspaces and proxies
         if (hasWebId(cmsContext)) {
 
-            if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && StringUtils.isNotBlank(pubInfos.getPublishSpacePath())
-                    && !DocumentHelper.isRemoteProxy(cmsContext, pubInfos))) {
+            if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && StringUtils.isNotBlank(pubInfos.getPublishSpacePath()))) {
                 permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
             }
         }
@@ -1782,8 +1781,8 @@ public class MenuBarFormater {
         boolean displayPermalink = false;
 
         if (WindowState.MAXIMIZED.equals(cmsContext.getRequest().getWindowState()) && (cmsContext.getDoc() != null)) {
-            // Maximized document
-            displayPermalink = true;
+            // Maximized document: we don't show permalink for lives of publish spaces.
+            displayPermalink = !DocumentHelper.isLocalPublishLive((Document) cmsContext.getDoc());
         } else {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 displayPermalink = true;

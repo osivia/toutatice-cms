@@ -1052,12 +1052,10 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                String cmsReferrerNavigationPath = ctx.getCmsReferrerNavigationPath();
-                String displayLiveVersion = ctx.getDisplayLiveVersion();
                 String parentId = ctx.getParentId();
                 String parentPath = ctx.getParentPath();
 
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(cmsReferrerNavigationPath, parentId, parentPath, path, displayLiveVersion)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(parentId, parentPath, path)));
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();
