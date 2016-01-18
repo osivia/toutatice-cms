@@ -266,14 +266,38 @@ public class DocumentsMetadataImplTest {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 for (int k = 0; k < 4; k++) {
+                    this.metadata.getWebPath("page" + i + j + k);
                     this.metadata.getWebId("/page-" + i + "/page-" + i + "-" + j + "/page-" + i + "-" + j + "-" + k);
                 }
             }
         }
 
 
+        // Check web path with missing parent segment
+        String webPath120 = this.metadata.getWebPath("page120");
+        Assert.assertEquals("/page-1/id_page120", webPath120);
+
+
         // Documents
         List<Document> documents = new ArrayList<Document>();
+
+        // Remove segment to page 1-0
+        Document page11 = EasyMock.createMock(Document.class);
+        EasyMock.expect(page11.getPath()).andReturn(BASE_PATH + "/page1/page10").anyTimes();
+        EasyMock.expect(page11.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+        EasyMock.expect(page11.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page10").anyTimes();
+        EasyMock.expect(page11.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
+        EasyMock.replay(page11);
+        documents.add(page11);
+
+        // Add segment to page 1-2
+        Document page12 = EasyMock.createMock(Document.class);
+        EasyMock.expect(page12.getPath()).andReturn(BASE_PATH + "/page1/page12").anyTimes();
+        EasyMock.expect(page12.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-1-2").anyTimes();
+        EasyMock.expect(page12.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page12").anyTimes();
+        EasyMock.expect(page12.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
+        EasyMock.replay(page12);
+        documents.add(page12);
 
         // Page 8
         Document page8 = EasyMock.createMock(Document.class);
@@ -347,6 +371,22 @@ public class DocumentsMetadataImplTest {
 
         String webPath;
         String webId;
+
+        // Page 1-0
+        // Check web path with removed parent segment
+        webPath = this.metadata.getWebPath("page100");
+        Assert.assertEquals("/page-1/id_page100", webPath);
+        // Resolve old web path
+        webId = this.metadata.getWebId("/page-1/page-1-0/page-1-0-0");
+        Assert.assertEquals("page100", webId);
+
+        // Page 1-2
+        // Check web path with new parent segment
+        webPath = this.metadata.getWebPath("page120");
+        Assert.assertEquals("/page-1/page-1-2/page-1-2-0", webPath);
+        // Resolve new web path
+        webId = this.metadata.getWebId("/page-1/page-1-2/page-1-2-0");
+        Assert.assertEquals("page120", webId);
 
         // Page 2-0
         // Get new web path

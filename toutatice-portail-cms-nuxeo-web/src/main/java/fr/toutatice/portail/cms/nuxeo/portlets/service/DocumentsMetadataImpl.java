@@ -176,6 +176,9 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                 String currentWebPath = workingWebPath.toString();
                 if (currentPathValues.webId != null) {
                     this.toWebPaths.put(currentPathValues.webId, currentWebPath);
+
+                    // Reversed dependency
+                    this.fromWebPaths.put(currentWebPath, currentPathValues.webId);
                 }
             } else {
                 incompleteWebPath = true;
@@ -195,6 +198,9 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         }
         this.toWebPaths.put(webId, webPath);
 
+        // Reversed dependency
+        this.fromWebPaths.put(webPath, webId);
+
         return webPath;
     }
 
@@ -213,6 +219,11 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             return webId;
         } else if (StringUtils.isBlank(webPath)) {
             return null;
+        } else {
+            String webId = this.fromWebPaths.get(webPath);
+            if (webId != null) {
+                return webId;
+            }
         }
 
 
@@ -350,9 +361,13 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                         // Update webIds
                         if (originalPath != null) {
                             for (Entry<String, String> entry : this.webIds.entrySet()) {
+                                String currentWebId = entry.getKey();
                                 String currentPath = entry.getValue();
                                 if (currentPath.startsWith(originalPath)) {
-                                    this.webIds.put(entry.getKey(), path + StringUtils.substringAfter(currentPath, originalPath));
+                                    this.webIds.put(currentWebId, path + StringUtils.substringAfter(currentPath, originalPath));
+
+                                    // Remove obsolete web path
+                                    this.toWebPaths.remove(currentWebId);
                                 }
                             }
                         }
@@ -364,8 +379,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                             for (Entry<String, PathValues> entry : this.paths.entrySet()) {
                                 String currentPath = entry.getKey();
                                 if (currentPath.startsWith(originalPath)) {
-                                    this.paths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
                                     this.paths.remove(currentPath);
+                                    this.paths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
                                 }
                             }
                         }
@@ -385,7 +400,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                             this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
                         }
 
-                        // Remove old web path
+                        // Remove obsolete web path
                         this.toWebPaths.remove(webId);
                     }
                 }
