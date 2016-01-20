@@ -21,9 +21,10 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.core.constants.InternalConstants;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 
 /**
  * List fragment.
@@ -58,28 +59,31 @@ public class ListEditableWindow extends EditableWindow {
 
         PropertyMap mapListe = EditableWindowHelper.findSchemaByRefURI(doc, LIST_SCHEMA, fragment.getString("uri"));
 
-        properties.put(ViewListPortlet.NUXEO_REQUEST_WINDOW_PROPERTY, mapListe.getString("request"));
-        properties.put(ViewListPortlet.BEAN_SHELL_WINDOW_PROPERTY, String.valueOf(true));
-        properties.put(ViewListPortlet.SCOPE_WINDOW_PROPERTY, null);
-        properties.put(ViewListPortlet.METADATA_WINDOW_PROPERTY, "1");
-        properties.put(ViewListPortlet.NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
+        properties.put(ViewList.NUXEO_REQUEST_WINDOW_PROPERTY, mapListe.getString("request"));
+        properties.put(ViewList.BEAN_SHELL_WINDOW_PROPERTY, String.valueOf(true));
+        properties.put(ViewList.SCOPE_WINDOW_PROPERTY, null);
+        properties.put(ViewList.METADATA_WINDOW_PROPERTY, "1");
+        properties.put(ViewList.NUXEO_REQUEST_DISPLAY_WINDOW_PROPERTY, String.valueOf(false));
 
         if (mapListe.getBoolean("allContents")) {
-            properties.put(ViewListPortlet.CONTENT_FILTER_WINDOW_PROPERTY, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_GLOBAL);
-            properties.put(ViewListPortlet.VERSION_WINDOW_PROPERTY, "1");
+            properties.put(ViewList.CONTENT_FILTER_WINDOW_PROPERTY, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_GLOBAL);
+            properties.put(ViewList.VERSION_WINDOW_PROPERTY, "1");
         } else {
-            properties.put(ViewListPortlet.CONTENT_FILTER_WINDOW_PROPERTY, null);
-            properties.put(ViewListPortlet.VERSION_WINDOW_PROPERTY, null);
+            properties.put(ViewList.CONTENT_FILTER_WINDOW_PROPERTY, null);
+            properties.put(ViewList.VERSION_WINDOW_PROPERTY, null);
         }
 
-        properties.put(ViewListPortlet.TEMPLATE_WINDOW_PROPERTY, mapListe.getString("view"));
-        properties.put(ViewListPortlet.NORMAL_PAGINATION_WINDOW_PROPERTY, mapListe.getString("pageSize"));
-        properties.put(ViewListPortlet.MAXIMIZED_PAGINATION_WINDOW_PROPERTY, mapListe.getString("pageSizeMax"));
-        properties.put(ViewListPortlet.RESULTS_LIMIT_WINDOW_PROPERTY, mapListe.getString("maxItems"));
+        properties.put(ViewList.TEMPLATE_WINDOW_PROPERTY, mapListe.getString("view"));
+        properties.put(ViewList.NORMAL_PAGINATION_WINDOW_PROPERTY, mapListe.getString("pageSize"));
+        properties.put(ViewList.MAXIMIZED_PAGINATION_WINDOW_PROPERTY, mapListe.getString("pageSizeMax"));
+        properties.put(ViewList.RESULTS_LIMIT_WINDOW_PROPERTY, mapListe.getString("maxItems"));
 
-        properties.put(ViewListPortlet.PERMALINK_REFERENCE_WINDOW_PROPERTY, null);
-        properties.put(ViewListPortlet.RSS_REFERENCE_WINDOW_PROPERTY, null);
-        properties.put(ViewListPortlet.RSS_TITLE_WINDOW_PROPERTY, null);
+        properties.put(ViewList.PERMALINK_REFERENCE_WINDOW_PROPERTY, null);
+        properties.put(ViewList.RSS_REFERENCE_WINDOW_PROPERTY, null);
+        properties.put(ViewList.RSS_TITLE_WINDOW_PROPERTY, null);
+
+        // si ElasticSearch est activé, on l'utilise par défaut
+        properties.put(ViewList.USE_ES_WINDOW_PROPERTY, String.valueOf(NuxeoCompatibility.canUseES()));
 
 
         // // Cas particulier des feed
@@ -123,7 +127,7 @@ public class ListEditableWindow extends EditableWindow {
     public List<String> prepareDelete(Document doc, String refURI) {
         List<String> propertiesToRemove = new ArrayList<String>();
 
-        this.prepareDeleteGeneric(propertiesToRemove, doc, refURI);
+        prepareDeleteGeneric(propertiesToRemove, doc, refURI);
 
         Integer indexToRemove = EditableWindowHelper.findIndexByRefURI(doc, LIST_SCHEMA, refURI);
 
