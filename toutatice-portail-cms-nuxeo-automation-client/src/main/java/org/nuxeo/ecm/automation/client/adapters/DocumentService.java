@@ -95,19 +95,19 @@ public class DocumentService {
     }
 
     public Session getSession() {
-        return session;
+        return this.session;
     }
 
     public Document getDocument(String ref) throws Exception {
-        return getDocument(DocRef.newRef(ref), null);
+        return this.getDocument(DocRef.newRef(ref), null);
     }
 
     public Document getDocument(DocRef ref) throws Exception {
-        return getDocument(ref, null);
+        return this.getDocument(ref, null);
     }
 
     public Document getDocument(DocRef ref, String schemas) throws Exception {
-        OperationRequest req = session.newRequest(FetchDocument).set("value",
+        OperationRequest req = this.session.newRequest(FetchDocument).set("value",
                 ref);
         if (schemas != null) {
             req.setHeader(Constants.HEADER_NX_SCHEMAS, schemas);
@@ -116,39 +116,39 @@ public class DocumentService {
     }
 
     public Document getRootDocument() throws Exception {
-        return getDocument(new PathRef("/"));
+        return this.getDocument(new PathRef("/"));
     }
 
     public Document createDocument(DocRef parent, String type, String name)
             throws Exception {
-        return createDocument(parent, type, name, null);
+        return this.createDocument(parent, type, name, null);
     }
 
     public Document createDocument(DocRef parent, String type, String name,
             PropertyMap properties) throws Exception {
-        OperationRequest req = session.newRequest(CreateDocument).setInput(
+        OperationRequest req = this.session.newRequest(CreateDocument).setInput(
                 parent).set("type", type).set("name", name);
-        if (properties != null && !properties.isEmpty()) {
+        if ((properties != null) && !properties.isEmpty()) {
             req.set("properties", properties);
         }
         return (Document) req.execute();
     }
 
     public void remove(DocRef doc) throws Exception {
-        session.newRequest(DeleteDocument).setInput(doc).execute();
+        this.session.newRequest(DeleteDocument).setInput(doc).execute();
     }
 
     public void remove(String ref) throws Exception {
-        session.newRequest(DeleteDocument).setInput(DocRef.newRef(ref)).execute();
+        this.session.newRequest(DeleteDocument).setInput(DocRef.newRef(ref)).execute();
     }
 
     public Document copy(DocRef src, DocRef targetParent) throws Exception {
-        return copy(src, targetParent, null);
+        return this.copy(src, targetParent, null);
     }
 
     public Document copy(DocRef src, DocRef targetParent, String name)
             throws Exception {
-        OperationRequest req = session.newRequest(CopyDocument).setInput(src).set(
+        OperationRequest req = this.session.newRequest(CopyDocument).setInput(src).set(
                 "target", targetParent);
         if (name != null) {
             req.set("name", name);
@@ -157,12 +157,12 @@ public class DocumentService {
     }
 
     public Document move(DocRef src, DocRef targetParent) throws Exception {
-        return move(src, targetParent, null);
+        return this.move(src, targetParent, null);
     }
 
     public Document move(DocRef src, DocRef targetParent, String name)
             throws Exception {
-        OperationRequest req = session.newRequest(MoveDocument).setInput(src).set(
+        OperationRequest req = this.session.newRequest(MoveDocument).setInput(src).set(
                 "target", targetParent);
         if (name != null) {
             req.set("name", name);
@@ -171,41 +171,41 @@ public class DocumentService {
     }
 
     public Documents getChildren(DocRef docRef) throws Exception {
-        return (Documents) session.newRequest(GetDocumentChildren).setInput(
+        return (Documents) this.session.newRequest(GetDocumentChildren).setInput(
                 docRef).execute();
     }
 
     public Document getChild(DocRef docRef, String name) throws Exception {
-        return (Document) session.newRequest(GetDocumentChildren).setInput(
+        return (Document) this.session.newRequest(GetDocumentChild).setInput(
                 docRef).set("name", name).execute();
     }
 
     public Document getParent(DocRef docRef) throws Exception {
-        return (Document) session.newRequest(GetDocumentParent).setInput(docRef).execute();
+        return (Document) this.session.newRequest(GetDocumentParent).setInput(docRef).execute();
     }
 
     public Documents getParent(DocRef docRef, String type) throws Exception {
-        return (Documents) session.newRequest(GetDocumentParent).setInput(
+        return (Documents) this.session.newRequest(GetDocumentParent).setInput(
                 docRef).set("type", type).execute();
     }
 
     public Documents query(String query) throws Exception {
-        return (Documents) session.newRequest(Query).set("query", query).execute();
+        return (Documents) this.session.newRequest(Query).set("query", query).execute();
     }
 
     public Document setPermission(DocRef doc, String user, String permission)
             throws Exception {
-        return setPermission(doc, user, permission, null, true);
+        return this.setPermission(doc, user, permission, null, true);
     }
 
     public Document setPermission(DocRef doc, String user, String permission,
             boolean granted) throws Exception {
-        return setPermission(doc, user, permission, null, granted);
+        return this.setPermission(doc, user, permission, null, granted);
     }
 
     public Document setPermission(DocRef doc, String user, String permission,
             String acl, boolean granted) throws Exception {
-        OperationRequest req = session.newRequest(SetPermission).setInput(doc).set(
+        OperationRequest req = this.session.newRequest(SetPermission).setInput(doc).set(
                 "user", user).set("permission", permission).set("grant",
                 granted);
         if (acl != null) {
@@ -215,21 +215,21 @@ public class DocumentService {
     }
 
     public Document removeAcl(DocRef doc, String acl) throws Exception {
-        return (Document) session.newRequest(RemoveAcl).setInput(doc).set(
+        return (Document) this.session.newRequest(RemoveAcl).setInput(doc).set(
                 "acl", acl).execute();
     }
 
     public Document setState(DocRef doc, String state) throws Exception {
-        return (Document) session.newRequest(SetDocumentState).setInput(doc).set(
+        return (Document) this.session.newRequest(SetDocumentState).setInput(doc).set(
                 "value", state).execute();
     }
 
     public Document lock(DocRef doc) throws Exception {
-        return lock(doc, null);
+        return this.lock(doc, null);
     }
 
     public Document lock(DocRef doc, String lock) throws Exception {
-        OperationRequest req = session.newRequest(LockDocument).setInput(doc);
+        OperationRequest req = this.session.newRequest(LockDocument).setInput(doc);
         if (lock != null) {
             req.set("owner", lock);
         }
@@ -237,50 +237,50 @@ public class DocumentService {
     }
 
     public Document unlock(DocRef doc) throws Exception {
-        return (Document) session.newRequest(UnlockDocument).setInput(doc).execute();
+        return (Document) this.session.newRequest(UnlockDocument).setInput(doc).execute();
     }
 
     // TODO: value Serializable?
     public Document setProperty(DocRef doc, String key, String value)
             throws Exception {
-        return (Document) session.newRequest(SetProperty).setInput(doc).set(
+        return (Document) this.session.newRequest(SetProperty).setInput(doc).set(
                 "xpath", key).set("value", value).execute();
     }
 
     public Document removeProperty(DocRef doc, String key) throws Exception {
-        return (Document) session.newRequest(RemoveProperty).setInput(doc).set(
+        return (Document) this.session.newRequest(RemoveProperty).setInput(doc).set(
                 "xpath", key).execute();
     }
 
     public Document update(DocRef doc, PropertyMap properties) throws Exception {
-        return (Document) session.newRequest(UpdateDocument).setInput(doc).set(
+        return (Document) this.session.newRequest(UpdateDocument).setInput(doc).set(
                 "properties", properties).execute();
     }
 
     public Document publish(DocRef doc, DocRef section) throws Exception {
-        return publish(doc, section, true);
+        return this.publish(doc, section, true);
     }
 
     public Document publish(DocRef doc, DocRef section, boolean override)
             throws Exception {
-        return (Document) session.newRequest(PublishDocument).setInput(doc).set(
+        return (Document) this.session.newRequest(PublishDocument).setInput(doc).set(
                 "target", section).set("override", override).execute();
     }
 
     public Document createRelation(DocRef subject, String predicate,
             DocRef object) throws Exception {
-        return (Document) session.newRequest(CreateRelation).setInput(subject).set(
+        return (Document) this.session.newRequest(CreateRelation).setInput(subject).set(
                 "object", object).set("predicate", predicate).execute();
     }
 
     public Documents getRelations(DocRef doc, String predicate)
             throws Exception {
-        return getRelations(doc, predicate, true);
+        return this.getRelations(doc, predicate, true);
     }
 
     public Documents getRelations(DocRef doc, String predicate, boolean outgoing)
             throws Exception {
-        return (Documents) session.newRequest(GetRelations).setInput(doc).set(
+        return (Documents) this.session.newRequest(GetRelations).setInput(doc).set(
                 "predicate", predicate).set("outgoing", outgoing).execute();
     }
 
@@ -289,16 +289,16 @@ public class DocumentService {
      */
     public Documents getRelations(DocRef doc, String predicate, boolean outgoing, String graphName)
             throws Exception {
-        return (Documents) session.newRequest(GetRelations).setInput(doc).set(
+        return (Documents) this.session.newRequest(GetRelations).setInput(doc).set(
                 "predicate", predicate).set("outgoing", outgoing).set("graphName", graphName).execute();
     }
 
     public void setBlob(DocRef doc, Blob blob) throws Exception {
-        setBlob(doc, blob, null);
+        this.setBlob(doc, blob, null);
     }
 
     public void setBlob(DocRef doc, Blob blob, String xpath) throws Exception {
-        OperationRequest req = session.newRequest(SetBlob).setInput(blob).set(
+        OperationRequest req = this.session.newRequest(SetBlob).setInput(blob).set(
                 "document", doc);
         if (xpath != null) {
             req.set("xpath", xpath);
@@ -308,11 +308,11 @@ public class DocumentService {
     }
 
     public void removeBlob(DocRef doc) throws Exception {
-        removeBlob(doc, null);
+        this.removeBlob(doc, null);
     }
 
     public void removeBlob(DocRef doc, String xpath) throws Exception {
-        OperationRequest req = session.newRequest(RemoveBlob).setInput(doc);
+        OperationRequest req = this.session.newRequest(RemoveBlob).setInput(doc);
         if (xpath != null) {
             req.set("xpath", xpath);
         }
@@ -321,11 +321,11 @@ public class DocumentService {
     }
 
     public FileBlob getBlob(DocRef doc) throws Exception {
-        return getBlob(doc, null);
+        return this.getBlob(doc, null);
     }
 
     public FileBlob getBlob(DocRef doc, String xpath) throws Exception {
-        OperationRequest req = session.newRequest(GetBlob).setInput(doc);
+        OperationRequest req = this.session.newRequest(GetBlob).setInput(doc);
         if (xpath != null) {
             req.set("xpath", xpath);
         }
@@ -333,11 +333,11 @@ public class DocumentService {
     }
 
     public Blobs getBlobs(DocRef doc) throws Exception {
-        return getBlobs(doc, null);
+        return this.getBlobs(doc, null);
     }
 
     public Blobs getBlobs(DocRef doc, String xpath) throws Exception {
-        OperationRequest req = session.newRequest(GetBlobs).setInput(doc);
+        OperationRequest req = this.session.newRequest(GetBlobs).setInput(doc);
         if (xpath != null) {
             req.set("xpath", xpath);
         }
@@ -345,7 +345,7 @@ public class DocumentService {
     }
 
     public Document createVersion(DocRef doc) throws Exception {
-        return createVersion(doc, null);
+        return this.createVersion(doc, null);
     }
 
     /**
@@ -356,7 +356,7 @@ public class DocumentService {
      */
     public Document createVersion(DocRef doc, String increment)
             throws Exception {
-        OperationRequest req = session.newRequest(CreateVersion).setInput(doc);
+        OperationRequest req = this.session.newRequest(CreateVersion).setInput(doc);
         if (increment != null) {
             req.set("increment", increment);
         }
@@ -364,11 +364,11 @@ public class DocumentService {
     }
 
     public void fireEvent(String event) throws Exception {
-        fireEvent(null, event);
+        this.fireEvent(null, event);
     }
 
     public void fireEvent(DocRef doc, String event) throws Exception {
-        OperationRequest req = session.newRequest(CreateVersion).setInput(doc);
+        OperationRequest req = this.session.newRequest(CreateVersion).setInput(doc);
         req.setHeader(Constants.HEADER_NX_VOIDOP, "true");
         req.execute();
     }
