@@ -153,10 +153,6 @@
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
 
-        <ajax>
-            <partial-refresh>false</partial-refresh>
-        </ajax>
-
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
