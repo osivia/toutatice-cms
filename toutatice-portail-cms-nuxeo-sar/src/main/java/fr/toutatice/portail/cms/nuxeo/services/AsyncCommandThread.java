@@ -12,11 +12,10 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -32,9 +31,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 /**
  * Execution asynchrone des commandes Nuxeo
- * 
+ *
  * @author jeanseb
- * 
+ *
  */
 
 public class AsyncCommandThread implements Runnable {
@@ -48,7 +47,8 @@ public class AsyncCommandThread implements Runnable {
 		this.commandService = commandService;
 	}
 
-	public void run() {
+	@Override
+    public void run() {
 
 		while (true) {
 
@@ -64,7 +64,7 @@ public class AsyncCommandThread implements Runnable {
 
 				if (!"0".equals(System.getProperty("nuxeo.asyncSupport"))) {
 
-					List<AsyncCommandBean> commands = commandService.getAsyncronousCommands();
+					List<AsyncCommandBean> commands = this.commandService.getAsyncronousCommands();
 
 					for (AsyncCommandBean command : commands) {
 
@@ -72,7 +72,7 @@ public class AsyncCommandThread implements Runnable {
 
 							// On attend que le service Nuxeo soit disponible
 
-							while (!commandService.checkStatus(command.getCtx())) {
+							while (!this.commandService.checkStatus(command.getCtx())) {
 								Thread.sleep(1 * 10000);
 							}
 
@@ -106,16 +106,20 @@ public class AsyncCommandThread implements Runnable {
 							// Forçage de la mise à jour du cache
 							cacheInfos.setForceReload(true);
 
-							commandService.getServiceCache(command.getCtx()).getCache(cacheInfos);
+							this.commandService.getServiceCache(command.getCtx()).getCache(cacheInfos);
+
+                            if (command.getCtx().isAsynchronousCommand()) {
+                                this.commandService.removeAsyncronousCommand(command);
+                            }
 						}
 
 						catch (Exception e) {
 
 							// Par défaut, en cas d'erreur la commande
 							// asynchrone est supprimée
-							commandService.removeAsyncronousCommand(command);
+							this.commandService.removeAsyncronousCommand(command);
 
-							commandService.handleError(command.getCtx(), e);
+							this.commandService.handleError(command.getCtx(), e);
 
 							throw e;
 

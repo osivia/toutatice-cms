@@ -53,6 +53,9 @@ public class NuxeoCommandContext {
 	/** The server invocation. */
 	private ServerInvocation serverInvocation;
 
+    /** Asynchronous command execution indicator. */
+    private boolean asynchronousCommand;
+
 
 	/**
 	 * Gets the server invocation.
@@ -303,11 +306,12 @@ public class NuxeoCommandContext {
 
 		Boolean isAdmin = (Boolean) serverInvocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
 
-		if( Boolean.TRUE.equals(isAdmin))
-			this.administrator = true;
+		if( Boolean.TRUE.equals(isAdmin)) {
+            this.administrator = true;
+        }
 	}
-	
-	
+
+
 	   /**
      * Instantiates a new nuxeo command context.
      *
@@ -318,11 +322,12 @@ public class NuxeoCommandContext {
         super();
         this.ctx = ctx;
         this.request = servletRequest;
-        
+
         Boolean isAdmin = (Boolean) servletRequest.getAttribute("osivia.isAdmin");
 
-        if( Boolean.TRUE.equals(isAdmin))
+        if( Boolean.TRUE.equals(isAdmin)) {
             this.administrator = true;
+        }
     }
 
 
@@ -336,5 +341,25 @@ public class NuxeoCommandContext {
 		return this.controllerCtx;
 
 	}
+
+
+    /**
+     * Getter for asynchronousCommand.
+     * 
+     * @return the asynchronousCommand
+     */
+    public boolean isAsynchronousCommand() {
+        return this.asynchronousCommand;
+    }
+
+
+    /**
+     * Setter for asynchronousCommand.
+     * 
+     * @param asynchronousCommand the asynchronousCommand to set
+     */
+    public void setAsynchronousCommand(boolean asynchronousCommand) {
+        this.asynchronousCommand = asynchronousCommand;
+    }
 
 }
