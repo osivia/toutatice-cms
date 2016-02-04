@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
@@ -34,55 +31,58 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
 /**
  * Préchargement des pages au login de l'utilisateur
- * 
+ *
  * Pour l'instant, traitement minimimaliste ("ttc:isPreloadedOnLogin = 1";)
- * 
+ *
  * A sous-classer pour spécificités
- * 
+ *
  * @author jeanseb
  *
  */
 public class UserPagesLoader {
 
-	CMSService CMSService;
-
-	public UserPagesLoader(PortletContext portletCtx,
-			DefaultCMSCustomizer customizer, CMSService cmsService) {
-		super();
-		CMSService = cmsService;
-	}
-
-	public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx)
-			throws Exception {
+    /** CMS service. */
+    private CMSService cmsService;
 
 
-		// Conversion en CMSItem
-		List<CMSPage> pages = new ArrayList<CMSPage>();
+    /**
+     * Constructor.
+     * 
+     * @param portletCtx portlet context
+     * @param customizer CMS customizer
+     * @param cmsService CMS service
+     */
+    public UserPagesLoader(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+        super();
+        this.cmsService = cmsService;
+    }
 
-		if (cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal() != null) {
-			String userName = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal().getName();
 
-			// Vérifier l'init de l'espace perso avant de calculer des pages
-			CMSService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(
-					userName));
+    public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
+        // Conversion en CMSItem
+        List<CMSPage> pages = new ArrayList<CMSPage>();
 
-			Documents children = (Documents) CMSService.executeNuxeoCommand(
-					cmsCtx, new UserPagesPreloadCommand());
+        if (cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal() != null) {
+            String userName = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal().getName();
 
-			for (Document child : children) {
-				String spacePath = DocumentHelper.computeNavPath(child.getPath());
+            // Vérifier l'init de l'espace perso avant de calculer des pages
+            this.cmsService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(userName));
 
-				CMSItem publishSpace = CMSService.createNavigationItem(cmsCtx,
-						spacePath, child.getTitle(), child, spacePath);
+            Documents children = (Documents) this.cmsService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand());
 
-				CMSPage userPage = new CMSPage();
-				userPage.setPublishSpace(publishSpace);
+            for (Document child : children) {
+                String spacePath = DocumentHelper.computeNavPath(child.getPath());
 
-				pages.add(userPage);
-			}
-		}
+                CMSItem publishSpace = this.cmsService.createNavigationItem(cmsCtx, spacePath, child.getTitle(), child, spacePath);
 
-		return pages;
-	}
+                CMSPage userPage = new CMSPage();
+                userPage.setPublishSpace(publishSpace);
+
+                pages.add(userPage);
+            }
+        }
+
+        return pages;
+    }
 
 }
