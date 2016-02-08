@@ -37,7 +37,9 @@ public enum Customizable {
     /** Menu template. */
     MENU_TEMPLATE("osivia.customizer.cms.menuTemplate"),
     /** Navigation adapters. */
-    NAVIGATION_ADAPTERS("osivia.customizer.cms.navigationAdapters");
+    NAVIGATION_ADAPTERS("osivia.customizer.cms.navigationAdapters"),
+    /** Tab groups. */
+    TAB_GROUPS("osivia.customizer.cms.tabGroups");
 
 
     /** Property name. */

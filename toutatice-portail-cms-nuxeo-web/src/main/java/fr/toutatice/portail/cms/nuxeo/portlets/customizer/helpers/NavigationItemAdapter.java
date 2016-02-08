@@ -30,6 +30,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
+@Deprecated
 public class NavigationItemAdapter {
 
 	CMSService CMSService;

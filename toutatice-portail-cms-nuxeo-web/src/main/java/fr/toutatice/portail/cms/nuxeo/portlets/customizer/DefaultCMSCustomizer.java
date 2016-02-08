@@ -179,6 +179,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Menu bar formatter. */
     private MenuBarFormater menuBarFormater;
     /** Navigation item adapter. */
+    @Deprecated
     private NavigationItemAdapter navigationItemAdapter;
     /** Nuxeo connection properties. */
     private NuxeoConnectionProperties nuxeoConnection;
@@ -341,6 +342,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return navigation item adapter
      */
+    @Deprecated
     public NavigationItemAdapter getNavigationItemAdapter() {
         if (this.navigationItemAdapter == null) {
             this.navigationItemAdapter = new NavigationItemAdapter(this.portletCtx, this, this.cmsService);
@@ -1495,6 +1497,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @param navigationItemAdapter the navigationItemAdapter to set
      */
+    @Deprecated
     public void setNavigationItemAdapter(NavigationItemAdapter navigationItemAdapter) {
         this.navigationItemAdapter = navigationItemAdapter;
     }

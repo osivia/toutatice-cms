@@ -37,6 +37,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
@@ -83,17 +84,17 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /** Menu templates cache. */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
 
-
     /** Dynamic modules that defines players . */
     private List<INuxeoPlayerModule> dynamicModules;
     /** Types cache. */
     private Map<String, DocumentType> typesCache;
     /** Navigation adapters cache. */
     private List<INavigationAdapterModule> navigationAdaptersCache;
+    /** Tab groups cache. */
+    private Map<String, TabGroup> tabGroupsCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
-
 
 
     /**
@@ -120,26 +121,27 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.customizationDeployementTS = System.currentTimeMillis();
     }
 
-    
-    
+
     /**
      * Clone the type definition to allow some modifications at plugin level
+     *
      * @param defaultType
      * @return
      */
-    protected static DocumentType cloneDefaultType(DocumentType defaultType){
-        
+    protected static DocumentType cloneDefaultType(DocumentType defaultType) {
+
         List<String> clonedSubTypes = new ArrayList<String>();
-        
-        for(String subType:defaultType.getPortalFormSubTypes()) {
+
+        for (String subType : defaultType.getPortalFormSubTypes()) {
             clonedSubTypes.add(subType);
         }
-        
-        DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(),defaultType.isNavigable(), defaultType.isBrowsable(), defaultType.isOrdered(), defaultType.isForcePortalContextualization(),
-                defaultType.isSupportsPortalForms(),clonedSubTypes,defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable(), defaultType.isLiveEditable());
+
+        DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(), defaultType.isNavigable(), defaultType.isBrowsable(),
+                defaultType.isOrdered(), defaultType.isForcePortalContextualization(), defaultType.isSupportsPortalForms(), clonedSubTypes,
+                defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable(), defaultType.isLiveEditable());
         return clonedType;
     }
-    
+
 
     /**
      * Gets the customization attributes.
@@ -152,7 +154,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         if (attributes == null) {
             Map<String, Object> customizationAttributes = new ConcurrentHashMap<String, Object>();
             CustomizationContext customizationContext = new CustomizationContext(customizationAttributes, locale);
-            
+
             /* Inject default types */
             List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
             Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
@@ -170,8 +172,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             customizationAttributes.put(Customizable.DOC_TYPE.toString(), types);
 
             this.customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
-            
-            
+
 
             this.customizationAttributesCache.put(locale, customizationAttributes);
         }
@@ -348,14 +349,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     @SuppressWarnings("unchecked")
     public Map<String, DocumentType> customizeCMSItemTypes() {
         if (this.typesCache == null) {
-  
             Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
-
             this.typesCache = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
-
-
         }
-
         return this.typesCache;
     }
 
@@ -474,6 +470,30 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Customize tab groups.
+     *
+     * @return tab groups
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, TabGroup> customizeTabGroups() {
+        if (this.tabGroupsCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            // Customized tab groups
+            Map<String, TabGroup> tabGroups = (Map<String, TabGroup>) attributes.get(Customizable.TAB_GROUPS.toString());
+            if (tabGroups == null) {
+                this.tabGroupsCache = new ConcurrentHashMap<String, TabGroup>();
+            } else {
+                this.tabGroupsCache = tabGroups;
+            }
+
+        }
+        return this.tabGroupsCache;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -485,6 +505,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.dynamicModules = null;
         this.typesCache = null;
         this.navigationAdaptersCache = null;
+        this.tabGroupsCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

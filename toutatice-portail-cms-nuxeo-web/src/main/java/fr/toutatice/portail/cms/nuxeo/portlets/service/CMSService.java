@@ -51,6 +51,7 @@ import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.TaskbarTask;
+import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -217,13 +218,13 @@ public class CMSService implements ICMSService {
      * @param cmsCtx CMS context
      * @param path CMS path
      * @param displayName display name
-     * @param doc Nuxeo document
+     * @param document Nuxeo document
      * @param publishSpacePath publish space path
      * @return CMS navigation item
      * @throws CMSException
      */
-    public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document doc, String publishSpacePath) throws CMSException {
-        CMSItem cmsItem = this.createItem(cmsCtx, path, displayName, doc);
+    public CMSItem createNavigationItem(CMSServiceCtx cmsCtx, String path, String displayName, Document document, String publishSpacePath) throws CMSException {
+        CMSItem cmsItem = this.createItem(cmsCtx, path, displayName, document);
         CMSItem publishSpaceItem = null;
 
         if ((publishSpacePath != null) && !path.equals(publishSpacePath)) {
@@ -233,6 +234,9 @@ public class CMSService implements ICMSService {
         }
 
         this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
+
+        // Tab group properties
+        this.adaptTabGroupProperties(cmsCtx, cmsItem);
 
         return cmsItem;
     }
@@ -1192,6 +1196,9 @@ public class CMSService implements ICMSService {
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
 
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
+
+                // Tab group properties
+                this.adaptTabGroupProperties(cmsCtx, configItem);
 
                 portalRequest.setAttribute(requestKey, configItem);
 
@@ -2492,6 +2499,45 @@ public class CMSService implements ICMSService {
         }
 
         return metadata;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, TabGroup> getTabGroups(CMSServiceCtx cmsContext) {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        return pluginManager.customizeTabGroups();
+    }
+
+
+    /**
+     * Adapt tab group properties.
+     *
+     * @param cmsContext CMS context
+     * @param cmsItem CMS item
+     */
+    private void adaptTabGroupProperties(CMSServiceCtx cmsContext, CMSItem cmsItem) {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+
+        // Document
+        Document document = (Document) cmsItem.getNativeItem();
+
+        // Tab Group
+        Map<String, TabGroup> tabGroups = this.getTabGroups(cmsContext);
+        for (TabGroup tabGroup : tabGroups.values()) {
+            if (tabGroup.contains(portalControllerContext, document)) {
+                cmsItem.getProperties().put(TabGroup.NAME_PROPERTY, tabGroup.getName());
+                if (tabGroup.maintains(portalControllerContext, document)) {
+                    cmsItem.getProperties().put(TabGroup.MAINTAINS_PROPERTY, String.valueOf(true));
+                }
+                break;
+            }
+        }
     }
 
 }
