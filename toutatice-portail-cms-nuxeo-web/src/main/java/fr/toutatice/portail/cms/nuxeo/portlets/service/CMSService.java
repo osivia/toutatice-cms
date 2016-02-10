@@ -235,9 +235,6 @@ public class CMSService implements ICMSService {
 
         this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
 
-        // Tab group properties
-        this.adaptTabGroupProperties(cmsCtx, cmsItem);
-
         return cmsItem;
     }
 
@@ -1196,9 +1193,6 @@ public class CMSService implements ICMSService {
                 configItem = this.fetchContent(cmsCtx, publishSpacePath);
 
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
-
-                // Tab group properties
-                this.adaptTabGroupProperties(cmsCtx, configItem);
 
                 portalRequest.setAttribute(requestKey, configItem);
 
@@ -2511,33 +2505,6 @@ public class CMSService implements ICMSService {
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
 
         return pluginManager.customizeTabGroups();
-    }
-
-
-    /**
-     * Adapt tab group properties.
-     *
-     * @param cmsContext CMS context
-     * @param cmsItem CMS item
-     */
-    private void adaptTabGroupProperties(CMSServiceCtx cmsContext, CMSItem cmsItem) {
-        // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
-
-        // Document
-        Document document = (Document) cmsItem.getNativeItem();
-
-        // Tab Group
-        Map<String, TabGroup> tabGroups = this.getTabGroups(cmsContext);
-        for (TabGroup tabGroup : tabGroups.values()) {
-            if (tabGroup.contains(portalControllerContext, document)) {
-                cmsItem.getProperties().put(TabGroup.NAME_PROPERTY, tabGroup.getName());
-                if (tabGroup.maintains(portalControllerContext, document)) {
-                    cmsItem.getProperties().put(TabGroup.MAINTAINS_PROPERTY, String.valueOf(true));
-                }
-                break;
-            }
-        }
     }
 
 }
