@@ -304,12 +304,15 @@ public class MenuBarFormater {
      * @param bundle internationalization bundle
      * @return menubar dropdown menu
      */
-    protected MenubarDropdown getCMSEditionDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
+    protected MenubarDropdown getCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
         if (dropdown == null) {
             dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "halflings halflings-pencil", MenubarGroup.CMS, 3);
             dropdown.setReducible(false);
+            if ((type != null) && (type.isFolderish())) {
+                dropdown.setHtmlClasses("content-navbar-hidden");
+            }
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
 
@@ -422,7 +425,7 @@ public class MenuBarFormater {
                 // Edition state
                 EditionState editionState;
 
-                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
                 if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                     editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
@@ -569,7 +572,7 @@ public class MenuBarFormater {
                     && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
                 if (pubInfos.isBeingModified() && pubInfos.isRemotePublished()) {
-                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
                     // Current modification indicator
                     MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);
                     modificationIndicator.setGlyphicon("halflings halflings-alert");
@@ -703,7 +706,7 @@ public class MenuBarFormater {
         DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
         if ((extendedInfos.getDriveEditURL() != null) && (cmsItemType != null) && cmsItemType.isLiveEditable()) {
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, cmsItemType, bundle);
 
             MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 2,
             		extendedInfos.getDriveEditURL(), null, null, null);
@@ -927,6 +930,8 @@ public class MenuBarFormater {
         // Current document
         Document document = (Document) cmsContext.getDoc();
 
+        DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
+
         if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
             // --------- EDIT OPTIONS IN NUXEO
@@ -949,7 +954,7 @@ public class MenuBarFormater {
 
             String editLabel = bundle.getString("EDIT");
 
-            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
             // Menubar item
             MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
@@ -972,8 +977,10 @@ public class MenuBarFormater {
      */
     protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-
+        // Document
         Document document = (Document) cmsContext.getDoc();
+        // Document type
+        DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
 
         if (!DocumentHelper.isFolder(document)) {
 
@@ -982,7 +989,7 @@ public class MenuBarFormater {
                 Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
                 String url = StringUtils.EMPTY;
 
-                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
                 MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
 
                 String onClick = this.generateCallbackParams(portalControllerContext, cmsContext);
@@ -1047,8 +1054,10 @@ public class MenuBarFormater {
      */
     protected void getRemotePublishingLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-
+        // Document
         Document document = (Document) cmsContext.getDoc();
+        // Document type
+        DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
 
         if (!DocumentHelper.isFolder(document)) {
 
@@ -1056,7 +1065,7 @@ public class MenuBarFormater {
             if (pubInfos.isRemotePublishable() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 String url = "#";
 
-                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
                 MenubarItem remotePubItem = new MenubarItem("REMOTE_PUBLISHING_URL", bundle.getString("REMOTE_PUBLISHING"), null, parent, 14, url, null, null, null);
 
                 Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
@@ -1134,7 +1143,7 @@ public class MenuBarFormater {
                         editLabel = bundle.getString("EDIT");
                     }
 
-                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, cmsItemType, bundle);
 
                     // Menubar item
                     MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
@@ -1198,7 +1207,7 @@ public class MenuBarFormater {
                 }
 
                 if (moveDocumentURL != null) {
-                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, cmsItemType, bundle);
 
                     MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL, null,
                             null, "fancyframe_refresh");
@@ -1256,7 +1265,7 @@ public class MenuBarFormater {
                 }
 
                 if (reorderDocumentsURL != null) {
-                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, cmsItemType, bundle);
 
                     MenubarItem item = new MenubarItem("REORDER", bundle.getString("REORDER"), "glyphicons glyphicons-sorting", parent, 3,
                             reorderDocumentsURL, null, null, "fancyframe_refresh");
@@ -1447,7 +1456,7 @@ public class MenuBarFormater {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 DocumentType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
-                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, bundle);
+                    MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, docTypeDef, bundle);
 
                     // Menubar item
                     MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "glyphicons glyphicons-bin", parent, 20, null, null, null, null);
