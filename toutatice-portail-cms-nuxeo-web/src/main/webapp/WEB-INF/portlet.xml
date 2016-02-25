@@ -289,7 +289,36 @@
         <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
     </portlet>
     
+
+    <portlet>
+        <description>Portlet selecteur vocabulaire Select2</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-vocabSelect2Portlet</portlet-name>
+        <display-name>Sélecteur vocabulaire Nuxeo (Select2)</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelect2Portlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
+
+        <supported-locale>en</supported-locale>
+        <supported-locale>fr</supported-locale>
+
+        <portlet-info>
+            <title>Nuxeo Cms Vocabulary Selector</title>
+            <short-title>Nuxeo Cms Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS,Vocabular,Select2</keywords>
+        </portlet-info>
+
+        <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
+    </portlet>
     
+        
     <!-- Move document -->
     <portlet>
         <description>Move document portlet</description>

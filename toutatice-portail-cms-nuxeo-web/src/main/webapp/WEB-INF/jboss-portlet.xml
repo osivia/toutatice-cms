@@ -240,6 +240,30 @@
         </portlet-info>
     </portlet>
     
+    <!-- Vocabulary select2 selector -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-vocabSelect2Portlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+
+        <header-content>
+            <link rel="stylesheet" href="/components/select2/select2.min.css" />
+            <link rel="stylesheet" href="/components/select2/select2-bootstrap.min.css" />
+            
+            <script type="text/javascript" src="/components/select2/select2.min.js"></script>
+            <script type="text/javascript" src="/js/selectors.js"></script>
+        </header-content>
+
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
+        
     
     <!-- Move document -->
     <portlet>
