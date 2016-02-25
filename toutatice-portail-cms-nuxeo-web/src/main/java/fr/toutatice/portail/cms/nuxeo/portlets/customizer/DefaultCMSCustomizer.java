@@ -1378,7 +1378,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder"), "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
+        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, new ArrayList<String>(0), "/default/templates/workspace",
+                "glyphicons glyphicons-wallet", true));
         // Portal site
         defaultTypes.add(new DocumentType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "Audio", "Video", "PortalPage",
                 "ContextualLink"), null, "glyphicons glyphicons-global", true));
