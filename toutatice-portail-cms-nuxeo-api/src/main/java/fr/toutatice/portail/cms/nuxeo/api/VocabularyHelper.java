@@ -21,7 +21,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import net.sf.json.JSONArray;
@@ -373,5 +372,56 @@ public class VocabularyHelper {
     }
 
 
+    /**
+     * Get vocabulary array in json format.
+     *
+     * @param ctx the ctx
+     * @param vocabularyName the vocabulary name
+     * @param multiLevel true if voc is multi level : parent/child
+     * @return json array
+     * @throws Exception the exception
+     */
+    public static JSONArray getJsonVocabulary(NuxeoController ctx, String vocabularyName, boolean multiLevel)  {
+
+        NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
+
+        vocabCtx.setCacheTimeOut(3600 * 1000L);
+
+        vocabCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        vocabCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+
+        JSONArray vocab = (JSONArray) vocabCtx.executeNuxeoCommand(new JsonVocabularyLoaderCommand(vocabularyName));
+
+        return vocab;
+    }
+    
+    /**
+     * The Class VocabularyLoaderCommand.
+     */
+    private static class JsonVocabularyLoaderCommand implements INuxeoCommand {
+
+    	String vocabName;
+    	
+    	public JsonVocabularyLoaderCommand(String vocabName) {
+    		
+    		this.vocabName = vocabName;
+    	}
+    	
+		@Override
+		public Object execute(Session nuxeoSession) throws Exception {
+			
+            Blob blob = (Blob) nuxeoSession.newRequest("Document.GetVocabularies").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
+                    .set("vocabularies", vocabName).execute();
+            String content = IOUtils.toString(blob.getStream(), "UTF-8");
+
+            return JSONArray.fromObject(content);
+		}
+
+		@Override
+		public String getId() {
+			return "JsonVocabularyLoaderCommand/"+vocabName;
+		}
+    	
+    }
 
 }
