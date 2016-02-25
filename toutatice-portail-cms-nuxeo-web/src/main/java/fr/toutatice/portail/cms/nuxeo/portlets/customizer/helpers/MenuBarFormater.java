@@ -310,9 +310,7 @@ public class MenuBarFormater {
         if (dropdown == null) {
             dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "halflings halflings-pencil", MenubarGroup.CMS, 3);
             dropdown.setReducible(false);
-            if ((type != null) && (type.isFolderish())) {
-                dropdown.setHtmlClasses("content-navbar-hidden");
-            }
+            dropdown.setBreadcrumb((type != null) && (type.isFolderish()));
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
 
