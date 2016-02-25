@@ -46,7 +46,7 @@ public class DocumentService {
 
     public static final String Query = "Document.Query";
 
-    public static final String SetPermission = "Document.SetACE";
+    public static final String SetPermission = "Document.AddPermission";
 
     public static final String RemoveAcl = "Document.RemoveACL";
 
@@ -205,9 +205,7 @@ public class DocumentService {
 
     public Document setPermission(DocRef doc, String user, String permission,
             String acl, boolean granted) throws Exception {
-        OperationRequest req = this.session.newRequest(SetPermission).setInput(doc).set(
-                "user", user).set("permission", permission).set("grant",
-                granted);
+        OperationRequest req = this.session.newRequest(SetPermission).setInput(doc).set("user", user).set("permission", permission);
         if (acl != null) {
             req.set("acl", acl);
         }
