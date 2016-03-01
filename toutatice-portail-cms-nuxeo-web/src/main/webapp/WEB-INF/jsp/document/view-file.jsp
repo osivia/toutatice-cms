@@ -10,13 +10,13 @@
 <c:set var="documentURL"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
 <c:set var="iconURL"><ttc:getDocumentIconURL document="${document}" /></c:set>
 <c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
-<c:set var="fileName" value="${document.properties['file:filename']}" />
+<c:set var="fileName" value="${document.properties['file:content']['name']}" />
 <c:set var="fileSize" value="${document.properties['file:content']['length']}" />
 <c:set var="description" value="${document.properties['dc:description']}" />
 <c:set var="mimeType" value="${document.properties['file:content']['mime-type']}" />
 
 
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="halflings halflings-download-alt" />
+<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" target="_blank" glyphicon="halflings halflings-download-alt" />
 
 <div class="file">
     <c:if test="${not empty description}">
@@ -30,7 +30,7 @@
         
         <div class="media-body">
             <p>
-                <a href="${documentURL}">${fileName}</a>
+                <a href="${documentURL}" target="_blank">${fileName}</a>
                 <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
             </p>
         </div>
@@ -51,10 +51,21 @@
         <!-- Video player -->
         <hr>
     
-        <div class="embed-responsive embed-responsive-16by9">
-            <video src="${documentURL}" controls="controls" preload="metadata" class="embed-responsive-item">
-                <source src="${documentURL}" type="${mimeType}">
-            </video>
-        </div>
+        <c:choose>
+            <c:when test="${(mimeType eq 'video/mp4') or (mimeType eq 'video/webm') or (mimeType eq 'video/ogg')}">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <video src="${documentURL}" controls="controls" preload="metadata" class="embed-responsive-item">
+                        <source src="${documentURL}" type="${mimeType}">
+                    </video>
+                </div>
+            </c:when>
+            
+            <c:otherwise>
+                <div class="alert alert-info">
+                    <i class="glyphicons glyphicons-circle-info"></i>
+                    <span><is:getProperty key="MESSAGE_VIDEO_CANNOT_BE_PLAYED" /></span>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </c:if>
 </div>
