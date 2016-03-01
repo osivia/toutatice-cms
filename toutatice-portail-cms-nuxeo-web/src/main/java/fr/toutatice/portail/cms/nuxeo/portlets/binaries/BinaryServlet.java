@@ -325,10 +325,16 @@ public class BinaryServlet extends HttpServlet
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append("attachment; filename=\"");
+        if ("application/pdf".equals(content.getMimeType())) {
+            // Open inside navigator
+            builder.append("inline; ");
+        } else {
+            // Force download
+            builder.append("attachment; ");
+        }
+        builder.append("filename=\"");
         builder.append(fileName);
         builder.append("\"");
-
         return builder.toString();
     }
 
