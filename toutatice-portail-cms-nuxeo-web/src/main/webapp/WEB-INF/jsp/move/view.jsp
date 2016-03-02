@@ -50,7 +50,7 @@
                 
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <div class="fancytree fancytree-selector-lazy fixed-height" data-lazyloadingurl="${lazyLoadingURL}">
+                        <div class="fancytree fancytree-selector fixed-height" data-lazyloadingurl="${lazyLoadingURL}">
                         </div>
                     </div>
                 </div>
