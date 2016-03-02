@@ -350,7 +350,6 @@ public class MenuBarFormater {
         if (dropdown == null) {
             dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"), "glyphicons glyphicons-option-vertical",
                     MenubarGroup.GENERIC, 40);
-            dropdown.setReducible(true);
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
 
@@ -618,8 +617,8 @@ public class MenuBarFormater {
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
      */
-    protected void getLiveContentBrowserLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle)
-            throws CMSException {
+    protected void getLiveContentBrowserLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
+            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -639,17 +638,22 @@ public class MenuBarFormater {
 
         // Current document
         Document document = (Document) cmsContext.getDoc();
+
         String navigationPath;
         boolean folderish;
+        DocumentType cmsItemType;
+
         if (document == null) {
             navigationPath = cmsContext.getCreationPath();
+
+            cmsItemType = null;
 
             // Items with creation path are presumed folderish
             folderish = (navigationPath != null);
         } else {
             navigationPath = nuxeoController.getContentPath();
 
-            DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
             folderish = (cmsItemType != null) && cmsItemType.isFolderish();
         }
 
@@ -671,11 +675,12 @@ public class MenuBarFormater {
                 browserURL = "#";
             }
 
-            MenubarDropdown parent = this.getOtherOptionsDropdown(portalControllerContext, bundle);
+            MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, cmsItemType, bundle);
 
-            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-book-open", parent,
-                    3, browserURL, null, null, "fancyframe_refresh");
+            MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-book-open",
+                    parent, 50, browserURL, null, null, "fancyframe_refresh");
             browserItem.setAjaxDisabled(true);
+            browserItem.setDivider(true);
 
             menubar.add(browserItem);
         }
