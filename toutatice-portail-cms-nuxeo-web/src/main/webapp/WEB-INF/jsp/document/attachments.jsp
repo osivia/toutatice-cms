@@ -19,7 +19,7 @@
             
                 <div class="list-group">
                     <c:forEach var="attachment" items="${document.attachments}">
-                        <a href="${attachment.url}" class="list-group-item">
+                        <a href="${attachment.url}" target="_blank" class="list-group-item">
                             <i class="halflings halflings-file"></i>
                             <span>${attachment.name}</span>
                         </a>
