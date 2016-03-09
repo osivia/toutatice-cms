@@ -89,21 +89,30 @@ public class NXQLFormater {
      * @return formatted vocabulary search
      */
     public String formatVocabularySearch(String fieldName, List<String> selectedVocabsEntries) {
-        StringBuffer clause = new StringBuffer();
+        StringBuilder clause = new StringBuilder();
         clause.append("(");
 
         boolean firstItem = true;
         for (String selectedVocabsEntry : selectedVocabsEntries) {
             if (!selectedVocabsEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE)) {
-                if (!firstItem) {
+                if (firstItem) {
+                    firstItem = false;
+                } else {
                     clause.append(" OR ");
                 }
-                clause.append(fieldName + " STARTSWITH '" + selectedVocabsEntry + "'");
-                firstItem = false;
+                clause.append(fieldName);
+                clause.append(" = '");
+                clause.append(selectedVocabsEntry);
+                clause.append("' OR ");
+                clause.append(fieldName);
+                clause.append(" STARTSWITH '");
+                clause.append(selectedVocabsEntry);
+                clause.append("/'");
             }
         }
 
         clause.append(")");
+
         return clause.toString();
     }
 

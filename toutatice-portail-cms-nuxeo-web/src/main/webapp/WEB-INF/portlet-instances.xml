@@ -205,13 +205,15 @@
         </instance>
     </deployment>
     
+    
+    <!-- Vocabulary Select2 -->
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
-            <display-name xml:lang="en">Nuxeo - Vocabulary selector (select2)</display-name>
-            <display-name xml:lang="fr">Nuxeo - Sélecteur par vocabulaires (select2)</display-name>
-            <instance-id>toutatice-portail-cms-nuxeo-vocabSelect2PortletInstance</instance-id>
-            <portlet-ref>toutatice-portail-cms-nuxeo-vocabSelect2Portlet</portlet-ref>
+            <display-name xml:lang="en">Nuxeo - Vocabulary selector (Select2)</display-name>
+            <display-name xml:lang="fr">Nuxeo - Sélecteur par vocabulaires (Select2)</display-name>
+            <instance-id>toutatice-portail-cms-nuxeo-vocabulary-select2-instance</instance-id>
+            <portlet-ref>toutatice-portail-cms-nuxeo-vocabulary-select2</portlet-ref>
             <security-constraint>
                 <policy-permission>
                     <action-name>admin</action-name>
@@ -223,7 +225,8 @@
                 </policy-permission>
             </security-constraint>
         </instance>
-    </deployment>    
+    </deployment>
+    
     
     <!-- Move document -->
     <deployment>
