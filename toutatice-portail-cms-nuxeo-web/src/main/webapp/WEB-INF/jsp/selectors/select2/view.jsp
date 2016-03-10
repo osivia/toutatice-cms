@@ -13,6 +13,7 @@
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 <c:set var="loadingLabel"><is:getProperty key="LOADING_LABEL"/></c:set>
+<c:set var="clearLabel"><is:getProperty key="CLEAR"/></c:set>
 
 
 <form action="${saveUrl}" method="post" role="form">
@@ -35,9 +36,9 @@
             
             <!-- Clear -->
             <span class="input-group-btn">
-                <button type="submit" name="clear" class="btn btn-default">
-                    <i class="glyphicons glyphicons-erase"></i>
-                    <span class="sr-only"><is:getProperty key="CLEAR"/></span>
+                <button type="submit" name="clear" class="btn btn-default" title="${clearLabel}" data-toggle="tooltip" data-placement="bottom">
+                    <i class="glyphicons glyphicons-delete"></i>
+                    <span class="sr-only">${clearLabel}</span>
                 </button>
             </span>
         </div>
