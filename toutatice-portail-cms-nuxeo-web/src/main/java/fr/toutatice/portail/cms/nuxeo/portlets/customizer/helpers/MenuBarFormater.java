@@ -1015,6 +1015,8 @@ public class MenuBarFormater {
             String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
 
             Map<String, String> requestParameters = new HashMap<String, String>();
+            String portalUrl = this.urlFactory.getBasePortalUrl(portalControllerContext);
+            requestParameters.put("fromUrl", portalUrl);            
             String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, pubInfos.getDocumentPath(), requestParameters);
 
             // On click action
