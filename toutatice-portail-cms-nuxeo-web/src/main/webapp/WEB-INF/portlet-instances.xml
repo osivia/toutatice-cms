@@ -206,6 +206,28 @@
     </deployment>
     
     
+    <!-- Vocabulary Select2 -->
+    <deployment>
+        <if-exists>overwrite</if-exists>
+        <instance>
+            <display-name xml:lang="en">Nuxeo - Vocabulary selector (Select2)</display-name>
+            <display-name xml:lang="fr">Nuxeo - Sélecteur par vocabulaires (Select2)</display-name>
+            <instance-id>toutatice-portail-cms-nuxeo-vocabulary-select2-instance</instance-id>
+            <portlet-ref>toutatice-portail-cms-nuxeo-vocabulary-select2</portlet-ref>
+            <security-constraint>
+                <policy-permission>
+                    <action-name>admin</action-name>
+                    <role-name>Administrators</role-name>
+                </policy-permission>
+                <policy-permission>
+                    <action-name>view</action-name>
+                    <unchecked />
+                </policy-permission>
+            </security-constraint>
+        </instance>
+    </deployment>
+    
+    
     <!-- Move document -->
     <deployment>
         <if-exists>overwrite</if-exists>

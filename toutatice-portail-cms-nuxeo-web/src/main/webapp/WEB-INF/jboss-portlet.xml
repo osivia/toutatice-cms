@@ -238,6 +238,23 @@
     </portlet>
     
     
+    <!-- Vocabulary Select2 -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-vocabulary-select2</portlet-name>
+        
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
+    
+    
     <!-- Move document -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-move</portlet-name>

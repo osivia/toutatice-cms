@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
@@ -21,8 +18,8 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -30,6 +27,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
+import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -38,201 +36,144 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
 /**
- * The Class VocabularyHelper.
- * 
+ * Vocabulary helper.
+ *
  * Useful utilities for manipulating nuxeo vocabularies
  */
 public class VocabularyHelper {
 
     /**
-     * Call the vocabulary commands
+     * Call vocabulary command.
      *
-     * @param ctx the ctx
-     * @param vocabularyNames the vocabulary name
-     * @param multiLevel true if voc is multi level : parent/child
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyNames vocabulary names
+     * @param multiLevel multi-level vocabulary indicator (eg: parent/child)
+     * @return vocabulary entry
      */
-    private static VocabularyEntry callCommand(NuxeoController ctx, List<String> vocabularyNames, boolean multiLevel)  {
+    private static VocabularyEntry callCommand(NuxeoController nuxeoController, List<String> vocabularyNames, boolean multiLevel) {
+        NuxeoController vocabularyController = new NuxeoController(nuxeoController.getRequest(), nuxeoController.getResponse(), nuxeoController.getPortletCtx());
+        vocabularyController.setCacheTimeOut(TimeUnit.HOURS.toMillis(1));
+        vocabularyController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        vocabularyController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-        NuxeoController vocabCtx = new NuxeoController(ctx.getRequest(), ctx.getResponse(), ctx.getPortletCtx());
-
-        vocabCtx.setCacheTimeOut(3600 * 1000L);
-
-        vocabCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-        vocabCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-
-        VocabularyEntry vocab = (VocabularyEntry) vocabCtx.executeNuxeoCommand(new VocabularyLoaderCommand(vocabularyNames, multiLevel));
-
-        return vocab;
+        VocabularyLoaderCommand command = new VocabularyLoaderCommand(vocabularyNames, multiLevel);
+        return (VocabularyEntry) vocabularyController.executeNuxeoCommand(command);
     }
 
 
     /**
-     * Gets the vocabulary label.
+     * Get vocabulary label.
      *
-     * @param ctx the ctx
-     * @param vocabularyName the vocabulary name
-     * @param key the key
-     * @return the vocabulary label
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyNames vocabulary names
+     * @param key vocabulary key
+     * @return vocabulary label
      */
-    public static String getVocabularyLabel(NuxeoController ctx, String vocabularyName, String key)  {
+    public static String getVocabularyLabel(NuxeoController nuxeoController, List<String> vocabularyNames, String key) {
+        String label = null;
 
-        List<String> vocabs = new ArrayList<String>();
-        vocabs.add(vocabularyName);
-        return getVocabularyLabel(ctx, vocabs, key);
-
-
-    }
-
-
-    /**
-     * Gets the vocabulary label.
-     *
-     * @param ctx the ctx
-     * @param vocabs the vocabs
-     * @param key the key
-     * @return the vocabulary label
-     * @throws Exception the exception
-     */
-    public static String getVocabularyLabel(NuxeoController ctx, List<String> vocabs, String key) {
-
-        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
-
-        if (vocab != null) {
-            VocabularyEntry child = vocab.getChild(key);
-            if (child != null)
-                return vocab.getChild(key).getLabel();
+        VocabularyEntry vocabularyEntry = callCommand(nuxeoController, vocabularyNames, false);
+        if (vocabularyEntry != null) {
+            VocabularyEntry child = vocabularyEntry.getChild(key);
+            if (child != null) {
+                label = child.getLabel();
+            }
         }
 
-        return null;
-
+        return label;
     }
 
 
     /**
-     * Gets the vocabulary entry.
+     * Get vocabulary label.
      *
-     * @param ctx the ctx
-     * @param vocabularyName the vocabulary name
-     * @param key the key
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyName vocabulary name
+     * @param key vocabulary key
+     * @return vocabulary label
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, String key)  {
-        List<String> vocabs = new ArrayList<String>();
-        vocabs.add(vocabularyName);
-        return getVocabularyEntry(ctx, vocabs, key);
+    public static String getVocabularyLabel(NuxeoController nuxeoController, String vocabularyName, String key) {
+        List<String> vocabularyNames = new ArrayList<String>(1);
+        vocabularyNames.add(vocabularyName);
+        return getVocabularyLabel(nuxeoController, vocabularyNames, key);
     }
 
-    
+
     /**
-     * Gets the vocabulary entry.
+     * Get vocabulary entry.
      *
-     * @param ctx the ctx
-     * @param vocabs the vocabs
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyNames vocabulary names
+     * @param multiLevel multi-level vocabulary indicator (eg: parent/child)
+     * @return vocabulary entry
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs)  {
-        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
-        return vocab;
+    public static VocabularyEntry getVocabularyEntry(NuxeoController nuxeoController, List<String> vocabularyNames, Boolean multiLevel) {
+        return callCommand(nuxeoController, vocabularyNames, multiLevel);
     }
 
+
     /**
-     * Gets the vocabulary entry.
+     * Get vocabulary entry.
      *
-     * @param ctx the ctx
-     * @param vocabs the vocabs
-     * @param key the key
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyName vocabulary name
+     * @param multiLevel multi-level vocabulary indicator (eg: parent/child)
+     * @return vocabulary entry
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, String key)  {
-        VocabularyEntry vocab = callCommand(ctx, vocabs, false);
-        return vocab;
+    public static VocabularyEntry getVocabularyEntry(NuxeoController nuxeoController, String vocabularyName, boolean multiLevel) {
+        List<String> vocabularyNames = new ArrayList<String>(1);
+        vocabularyNames.add(vocabularyName);
+        return getVocabularyEntry(nuxeoController, vocabularyNames, multiLevel);
     }
-    
+
+
     /**
-     * Gets the vocabulary entry.
+     * Get vocabulary entry.
      *
-     * @param ctx the ctx
-     * @param vocabularyName the vocabulary name
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyName vocabulary name
+     * @return vocabulary entry
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName, Boolean multiLevel)  {
-        List<String> vocabs = new ArrayList<String>();
-        vocabs.add(vocabularyName);
-        return getVocabularyEntry(ctx, vocabs, multiLevel);
+    public static VocabularyEntry getVocabularyEntry(NuxeoController nuxeoController, String vocabularyName) {
+        return getVocabularyEntry(nuxeoController, vocabularyName, false);
     }
 
-    
-    
+
     /**
-     * Gets the vocabulary entry.
+     * Get vocabulary entry.
      *
-     * @param ctx the ctx
-     * @param vocabularyName the vocabulary name
-     * @return the vocabulary entry
-     * @throws Exception the exception
+     * @param nuxeoController Nuxeo controller
+     * @param vocabularyNames vocabulary names
+     * @return vocabulary entry
      */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, String vocabularyName)  {
-        List<String> vocabs = new ArrayList<String>();
-        vocabs.add(vocabularyName);
-        return getVocabularyEntry(ctx, vocabs, false);
+    public static VocabularyEntry getVocabularyEntry(NuxeoController nuxeoController, List<String> vocabularyNames) {
+        return getVocabularyEntry(nuxeoController, vocabularyNames, false);
     }
 
 
     /**
-     * Gets the vocabulary entry.
+     * Vocabulary loader command.
      *
-     * @param ctx the ctx
-     * @param vocabs the vocabs
-     * @param multiLevel true if voc is multi level : parent/child
-     * @return the vocabulary entry
-     * @throws Exception the exception
-     */
-    public static VocabularyEntry getVocabularyEntry(NuxeoController ctx, List<String> vocabs, Boolean multiLevel)  {
-        VocabularyEntry vocab = callCommand(ctx, vocabs, multiLevel);
-        return vocab;
-    }
-    
-    
-    
-
-    /**
-     * The Class VocabularyLoaderCommand.
+     * @see INuxeoCommand
      */
     private static class VocabularyLoaderCommand implements INuxeoCommand {
 
+        /** Vocabulary names, separated by ";". */
+        private String vocabularyNames;
+        /** Multi-level vocabulary indicator. */
+        private final boolean multiLevel;
 
-        /** The vocab names. */
-        List<String> vocabNames;
-
-        /** The string vocab names. */
-        String stringVocabNames = null;
-        
-        boolean multiLevel = false;
 
         /**
-         * Instantiates a new vocabulary loader command.
+         * Constructor.
          *
-         * @param vocabNames the vocab names
-         * @param multiLevel true if voc is multi level : parent/child
+         * @param vocabularyNames vocabulary names
+         * @param multiLevel multi-level vocabulary indicator (eg: parent/child)
          */
         public VocabularyLoaderCommand(List<String> vocabNames, boolean multiLevel) {
             super();
-            this.vocabNames = vocabNames;
+            this.vocabularyNames = StringUtils.join(vocabNames, ";");
             this.multiLevel = multiLevel;
-
-            stringVocabNames = "";
-            for (String vocab : vocabNames) {
-                if (stringVocabNames.length() > 0)
-                    stringVocabNames += ";";
-                stringVocabNames += vocab;
-            }
         }
 
 
@@ -252,45 +193,46 @@ public class VocabularyHelper {
             }
 
             if (!vocabulariesObj.isEmpty()) {
-                Iterator itr = vocabulariesObj.iterator();
-                while (itr.hasNext()) {
-                    JSONObject vocabulary = (JSONObject) itr.next();
+                Iterator<?> iterator = vocabulariesObj.iterator();
+                while (iterator.hasNext()) {
+                    JSONObject vocabulary = (JSONObject) iterator.next();
                     String key = vocabulary.getString("key");
                     String label = vocabulary.getString("value");
                     String parentId = null;
-                    if(vocabulary.containsKey("parent")) {
-                    	parentId = vocabulary.getString("parent");
+                    if (vocabulary.containsKey("parent")) {
+                        parentId = vocabulary.getString("parent");
                     }
-                    
-                    if (label.startsWith("label.directories"))
+
+                    if (label.startsWith("label.directories")) {
                         label = key;
+                    }
                     String DecodedLabel = URLDecoder.decode(label, "UTF-8");
 
                     entry = new VocabularyEntry(key, DecodedLabel);
 
-                    
+
                     JSONArray children = null;
                     if (vocabulary.has("children")) {
                         children = vocabulary.getJSONArray("children");
                         if (null != children) {
-                            parseVocabularies(entry, children);
+                            this.parseVocabularies(entry, children);
                         }
                     }
 
-                    if(multiLevel == true && StringUtils.isNotBlank(parentId)) {
-                    	VocabularyEntry parentVoc = parent.getChildren().get(parentId);
-                    	if(parentVoc != null){// DCH FIXME: temporary fix in case of more than 2 levels vocabularies
-                    	    parentVoc.getChildren().put(entry.getId(), entry);
-                    	}
-                    }
-                    else {
-                    	parent.getChildren().put(entry.getId(), entry);
+                    if ((this.multiLevel == true) && StringUtils.isNotBlank(parentId)) {
+                        VocabularyEntry parentVoc = parent.getChildren().get(parentId);
+                        if (parentVoc != null) { // DCH FIXME: temporary fix in case of more than 2 levels vocabularies
+                            parentVoc.getChildren().put(entry.getId(), entry);
+                        }
+                    } else {
+                        parent.getChildren().put(entry.getId(), entry);
                     }
                 }
             }
 
             return entry;
         }
+
 
         /**
          * Checks if is a child.
@@ -303,52 +245,53 @@ public class VocabularyHelper {
             for (Map.Entry<String, VocabularyEntry> entry : vocab.getChildren().entrySet()) {
                 VocabularyEntry child = entry.getValue();
 
-                if (!"key_root".equals(vocab.getId()))
-                    if (id.equals(child.getId()))
+                if (!"key_root".equals(vocab.getId())) {
+                    if (id.equals(child.getId())) {
                         return true;
+                    }
+                }
 
-                if (isAChild(id, child))
+                if (this.isAChild(id, child)) {
                     return true;
+                }
             }
 
             return false;
         }
 
+
         /**
          * Permet de filtrer les élements qui sont également des enfants
-         * 
+         *
          * (cas des hiérarchies décrites dans un seul vocabulaire . ex : niveaux d'enseignements)
          *
          * @param vocab the vocab
          */
-
         public void removeDuplicatedChilds(VocabularyEntry vocab) {
-
             List<String> removedEntries = new ArrayList<String>();
 
             for (Map.Entry<String, VocabularyEntry> entry : vocab.getChildren().entrySet()) {
                 VocabularyEntry child = entry.getValue();
-                if (isAChild(child.getId(), vocab))
+                if (this.isAChild(child.getId(), vocab)) {
                     removedEntries.add(child.getId());
-
+                }
             }
 
             for (String key : removedEntries) {
                 vocab.getChildren().remove(key);
             }
-
-
         }
 
 
-        /* (non-Javadoc)
-         * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
+        /**
+         * {@inheritDoc}
          */
+        @Override
         public Object execute(Session nuxeoSession) throws Exception {
-
-
-            Blob blob = (Blob) nuxeoSession.newRequest("Document.GetVocabularies").setHeader(Constants.HEADER_NX_SCHEMAS, "*")
-                    .set("vocabularies", stringVocabNames).execute();
+            OperationRequest operationRequest = nuxeoSession.newRequest("Document.GetVocabularies");
+            operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
+            operationRequest.set("vocabularies", this.vocabularyNames);
+            Blob blob = (Blob) operationRequest.execute();
             String content = IOUtils.toString(blob.getStream(), "UTF-8");
 
             JSONObject rootObject = new JSONObject();
@@ -358,20 +301,26 @@ public class VocabularyHelper {
             JSONArray root = new JSONArray();
             root.element(rootObject);
 
-            VocabularyEntry entries = parseVocabularies(null, root);
-            removeDuplicatedChilds(entries);
+            VocabularyEntry entries = this.parseVocabularies(null, root);
+            this.removeDuplicatedChilds(entries);
             return entries;
         }
 
 
-        /* (non-Javadoc)
-         * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
+        /**
+         * {@inheritDoc}
          */
+        @Override
         public String getId() {
-            return stringVocabNames;
+            StringBuilder builder = new StringBuilder();
+            builder.append(this.getClass().getCanonicalName());
+            builder.append("/");
+            builder.append(this.vocabularyNames);
+            builder.append("/");
+            builder.append(this.multiLevel);
+            return builder.toString();
         }
+
     }
-
-
 
 }
