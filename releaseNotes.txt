@@ -1,3 +1,12 @@
+Version 4.1.5
+================
+10/03/2016
+
+Content
+------------
+[evol] backport of select2 selector
+
+
 Version 4.1.0
 ================
 17/06/2015
