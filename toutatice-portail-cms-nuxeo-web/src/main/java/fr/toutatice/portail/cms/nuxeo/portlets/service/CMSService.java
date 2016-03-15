@@ -608,47 +608,55 @@ public class CMSService implements ICMSService {
     }
 
 
-    private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsCtx, String docPath, String fieldName) throws Exception {
-        CMSBinaryContent content = null;
-        String savedScope = cmsCtx.getScope();
+    private CMSBinaryContent fetchFileContent(CMSServiceCtx cmsContext, String path, String fieldName) throws Exception {
+        CMSBinaryContent content;
+
+        // Saved scope
+        String savedScope = cmsContext.getScope();
+        if (StringUtils.isNotEmpty(savedScope)) {
+            cmsContext.setForcePublicationInfosScope(savedScope);
+        }
+
         try {
-            /*
-             * Si un scope a été posé dans la portlet appelant la resource,
-             * on applique celui-ci.
-             */
-            if (StringUtils.isNotEmpty(savedScope)) {
-                cmsCtx.setForcePublicationInfosScope(savedScope);
+            // Document
+            CMSItem document;
+            try {
+                document = this.fetchContent(cmsContext, path);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw e;
             }
-            CMSItem document = this.fetchContent(cmsCtx, docPath);
 
+
+            // File content
             if (document != null) {
+                // Nuxeo document
+                Document nuxeoDocument = (Document) document.getNativeItem();
 
-                cmsCtx.setScope("superuser_context");
+                // Command
+                FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
 
-                FileContentCommand cmd = new FileContentCommand((Document) document.getNativeItem(), fieldName);
+                cmsContext.setScope("superuser_context");
 
-                if (cmsCtx.isStreamingSupport()) {
-                    PropertyMap map = ((Document) document.getNativeItem()).getProperties().getMap("file:content");
-                    if ((map != null) && !map.isEmpty()) {
-                        String size = map.getString("length");
-
-
-                        if ((size != null) && (Long.parseLong(size) > 100000L)) {
-                            // Activation du mode streaming
-                            cmd.setStreamingSupport(true);
-                            // Pas de cache en mode streaming
-                            cmsCtx.setScope("superuser_no_cache");
+                if (cmsContext.isStreamingSupport()) {
+                    PropertyMap map = nuxeoDocument.getProperties().getMap("file:content");
+                    if (map != null) {
+                        Long length = map.getLong("length");
+                        if ((length != null) && (length > (100 * 1024l))) {
+                            command.setStreamingSupport(true);
+                            cmsContext.setScope("superuser_no_cache");
                         }
                     }
                 }
 
-                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (cmd));
-
-
+                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsContext, command);
+            } else {
+                content = null;
             }
         } finally {
-            cmsCtx.setScope(savedScope);
+            cmsContext.setScope(savedScope);
         }
+
         return content;
     }
 

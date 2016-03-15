@@ -1371,11 +1371,13 @@ public class NuxeoController {
      *
      * @param path the path
      * @param blobIndex the blob index
+     * @param fileName file name
      * @return the string
      */
-    public String createAttachedBlobLink(String path, String blobIndex) {
+    public String createAttachedBlobLink(String path, String blobIndex, String fileName) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
         binary.setIndex(blobIndex);
+        binary.setFileName(fileName);
         return this.getBinaryURL(binary);
 
     }
