@@ -110,7 +110,7 @@
                                 <c:choose>
                                     <c:when test="${'File' eq document.type.name}">
                                         <div class="file">
-                                            <a href="${fileLink.url}" class="thumbnail">
+                                            <a href="${fileLink.url}" target="_blank" class="thumbnail">
                                                 <i class="flaticon flaticon-${document.properties['mimeTypeIcon']}"></i>
                                             </a>
                                         </div>

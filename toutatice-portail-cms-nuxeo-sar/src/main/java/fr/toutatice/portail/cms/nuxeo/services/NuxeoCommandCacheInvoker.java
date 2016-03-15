@@ -24,10 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
-import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.api.PortalException;
@@ -36,7 +33,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
-import org.osivia.portal.core.cms.ILongLiveSessionResult;
+import org.osivia.portal.core.cms.IContentStreamingSupport;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -335,9 +332,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
             } finally {
 
-                if (res instanceof ILongLiveSessionResult) {
-                    if (((ILongLiveSessionResult) res).getLongLiveSession() == nuxeoSession)
-                        recyclableSession = false;
+                if (res instanceof IContentStreamingSupport) {
+                    IContentStreamingSupport contentStreamingSupport = (IContentStreamingSupport) res;
+                    recyclableSession = (contentStreamingSupport.getStream() == null);
                 }
 
 

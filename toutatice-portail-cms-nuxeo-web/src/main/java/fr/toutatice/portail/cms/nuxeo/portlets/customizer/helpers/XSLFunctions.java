@@ -397,7 +397,8 @@ public class XSLFunctions {
                             if (mBlobExp.groupCount() > 0) {
                                 String uid = mBlobExp.group(2);
                                 String blobIndex = mBlobExp.group(3);
-                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex);
+                                String fileName = mBlobExp.group(4);
+                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex, fileName);
                             }
                         }
 

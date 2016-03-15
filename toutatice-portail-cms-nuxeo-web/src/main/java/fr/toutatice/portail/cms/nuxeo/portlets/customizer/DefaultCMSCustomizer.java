@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
@@ -1611,9 +1612,38 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             boolean refresh = PageProperties.getProperties().isRefreshingPage();
 
-            StringBuilder sb = new StringBuilder();
 
-            sb.append(BINARY_SERVLET).append("?type=").append(binary.getType().name()).append("&path=").append(URLEncoder.encode(path, "UTF-8"));
+            // File name
+            String fileName = binary.getFileName();
+            if (fileName == null) {
+                if (binary.getDocument() != null) {
+                    Document document = (Document) binary.getDocument();
+                    PropertyMap fileMap = document.getProperties().getMap("file:content");
+                    if (fileMap != null) {
+                        fileName = fileMap.getString("name");
+                    }
+                } else if ((binary.getIndex() != null) && (cmsCtx.getDoc() != null)) {
+                    int index = NumberUtils.toInt(binary.getIndex());
+                    Document document = (Document) cmsCtx.getDoc();
+                    PropertyList files = document.getProperties().getList("files:files");
+                    if ((files != null) && (files.size() > index)) {
+                        PropertyMap fileMap = files.getMap(index);
+                        if (fileMap != null) {
+                            fileName = fileMap.getString("filename");
+                        }
+                    }
+                }
+            }
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(BINARY_SERVLET);
+
+            if (StringUtils.isNotBlank(fileName)) {
+                sb.append("/").append(fileName);
+            }
+
+            sb.append("?type=").append(binary.getType().name()).append("&path=").append(URLEncoder.encode(path, "UTF-8"));
 
             if (portalName != null) {
                 sb.append("&portalName=").append(portalName);

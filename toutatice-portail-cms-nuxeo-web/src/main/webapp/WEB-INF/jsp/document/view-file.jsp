@@ -40,11 +40,22 @@
         <!-- Audio player -->
         <hr>
         
-        <div>
-            <audio src="${documentURL}" controls="controls" preload="metadata" class="img-responsive">
-                <source src="${documentURL}" type="${mimeType}">
-            </audio>
-        </div>
+        <c:choose>
+            <c:when test="${(mimeType eq 'audio/mpeg') or (mimeType eq 'audio/ogg') or (mimeType eq 'audio/wav')}">
+                <div>
+                    <audio src="${documentURL}" controls="controls" preload="metadata" class="img-responsive">
+                        <source src="${documentURL}" type="${mimeType}">
+                    </audio>
+                </div>
+            </c:when>
+            
+            <c:otherwise>
+                <div class="alert alert-info">
+                    <i class="glyphicons glyphicons-circle-info"></i>
+                    <span><is:getProperty key="MESSAGE_AUDIO_CANNOT_BE_PLAYED" /></span>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </c:if>
     
     <c:if test="${('Video' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'video/'))}">

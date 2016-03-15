@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
-import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.Session;
@@ -62,7 +61,6 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
-import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
@@ -1343,11 +1341,13 @@ public class NuxeoController {
      *
      * @param path the path
      * @param blobIndex the blob index
+     * @param fileName file name
      * @return the string
      */
-    public String createAttachedBlobLink(String path, String blobIndex) {
+    public String createAttachedBlobLink(String path, String blobIndex, String fileName) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
         binary.setIndex(blobIndex);
+        binary.setFileName(fileName);
         return this.getBinaryURL(binary);
 
     }
