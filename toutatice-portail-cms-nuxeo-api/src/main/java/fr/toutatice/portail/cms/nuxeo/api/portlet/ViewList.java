@@ -59,8 +59,12 @@ public abstract class ViewList extends CMSPortlet {
     public static final String CREATION_PARENT_PATH_WINDOW_PROPERTY = "osivia.createParentPath";
     /** Creation content type window property name. */
     public static final String CREATION_CONTENT_TYPE_WINDOW_PROPERTY = "osivia.createDocType";
-    
-    
+    /** webid ordering property name */
+    public static final String WEBID_ORDERING_WINDOW_PROPERTY = "osivia.cms.ordering";
+    /** webid ordering size property name */
+    public static final String WEBID_ORDERING_SIZE_WINDOW_PROPERTY = "osivia.cms.ordering.size";
+
+
     /* Default style for lists */
     /** List template minimal. */
     public static final String LIST_TEMPLATE_MINI = "mini";
@@ -71,6 +75,6 @@ public abstract class ViewList extends CMSPortlet {
     /** List template editorial. */
     public static final String LIST_TEMPLATE_EDITORIAL = "editorial";
     /** List template contextual links. */
-    public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";    
-    
+    public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";
+
 }

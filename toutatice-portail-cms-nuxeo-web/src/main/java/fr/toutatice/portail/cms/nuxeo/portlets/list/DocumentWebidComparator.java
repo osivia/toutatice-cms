@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
@@ -25,19 +25,22 @@ import org.nuxeo.ecm.automation.client.model.Document;
  * Comparateur de documents Nuxeo en fnoction d'un ordre passé en paramètre
  *
  */
-public class DocumentComparator implements Comparator<Document> {
+public class DocumentWebidComparator implements Comparator<Document> {
+
+    private static final String webidProperty = "ttc:webid";
 
 	/** ordre défini par l'utilisateur */
 	private Map<String, Integer> documentOrder;
-	
-	public DocumentComparator(Map<String, Integer> documentOrder) {
+
+	public DocumentWebidComparator(Map<String, Integer> documentOrder) {
 		this.documentOrder = documentOrder;
 	}
-	
-	public int compare(Document docA, Document docB) {
-		Integer a = documentOrder.get(docA.getPath());
-		Integer b = documentOrder.get(docB.getPath());
-		
+
+	@Override
+    public int compare(Document docA, Document docB) {
+        Integer a = documentOrder.get(docA.getProperties().getString(webidProperty));
+        Integer b = documentOrder.get(docB.getProperties().getString(webidProperty));
+
 		return a.compareTo(b);
 	}
 }
