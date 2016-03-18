@@ -236,9 +236,8 @@ public class MoveDocumentPortlet extends CMSPortlet {
 
                 // Nuxeo command
                 INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
-                Documents movedDocuments = (Documents) nuxeoController.executeNuxeoCommand(command);
+                nuxeoController.executeNuxeoCommand(command);
 
-                this.refreshMovedDocuments(cmsCtx, movedDocuments);
 
                 // Redirection URL
                 String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, redirectionPath, null, null,
@@ -280,30 +279,6 @@ public class MoveDocumentPortlet extends CMSPortlet {
             // Space path
             String spacePath = request.getParameter("spacePath");
             response.setRenderParameter(SPACE_PATH_REQUEST_PARAMETER, spacePath);
-        }
-    }
-
-
-    /**
-     * Artefact waiting for Nuxeo cache clearing resolution...
-     *
-     * @param cmsCtx
-     * @param movedDocuments
-     */
-    private void refreshMovedDocuments(CMSServiceCtx cmsCtx, Documents movedDocuments) {
-        for (Document movedDocument : movedDocuments) {
-            try {
-                // cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
-                NuxeoDocumentContext publishedDocumentContext = NuxeoController.getDocumentContext(cmsCtx, movedDocument.getPath());
-                Document publishedDocument = publishedDocumentContext.getDoc();
-
-                cmsCtx.setDoc(publishedDocument);
-                cmsCtx.getRequest().setAttribute("osivia.cms.menuBar.forceContextualization", Boolean.TRUE);
-                NuxeoController.getCMSService().getExtendedDocumentInfos(cmsCtx, publishedDocument.getPath());
-
-            } catch (Exception e) {
-                // Nothig: there is no local published version.
-            }
         }
     }
 
