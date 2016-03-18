@@ -83,6 +83,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
+import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -2473,6 +2474,12 @@ public class CMSService implements ICMSService {
      */
     @Override
     public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext, String basePath, Long timestamp) throws CMSException {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        // Navigation adapters
+        List<INavigationAdapterModule> adapters = pluginManager.customizeNavigationAdapters();
+
+
         // Version
         RequestPublishStatus version;
         if ("1".equals(cmsContext.getDisplayLiveVersion())) {
@@ -2481,8 +2488,22 @@ public class CMSService implements ICMSService {
             version = RequestPublishStatus.published;
         }
 
+        // Symlinks
+        List<Symlink> symlinks = null;
+        for (INavigationAdapterModule adapter : adapters) {
+            List<Symlink> adapterSymlinks = adapter.getSymlinks(cmsContext);
+            if (CollectionUtils.isNotEmpty(adapterSymlinks)) {
+                if (CollectionUtils.isEmpty(symlinks)) {
+                    symlinks = adapterSymlinks;
+                } else {
+                    symlinks.addAll(adapterSymlinks);
+                }
+            }
+        }
+
+
         // Nuxeo command
-        INuxeoCommand command = new DocumentsMetadataCommand(basePath, version, timestamp);
+        INuxeoCommand command = new DocumentsMetadataCommand(basePath, version, symlinks, timestamp);
 
         // Super-user scope
         String savedScope = cmsContext.getScope();

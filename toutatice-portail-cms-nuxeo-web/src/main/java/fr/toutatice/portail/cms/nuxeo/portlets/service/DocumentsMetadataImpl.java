@@ -11,6 +11,8 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.web.IWebUrlService;
 
+import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
+
 /**
  * Documents metadata implementation.
  *
@@ -23,8 +25,13 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     public static final String WEB_ID_PROPERTY = "ttc:webid";
     /** Web URL segment Nuxeo document property name. */
     public static final String WEB_URL_SEGMENT_PROPERTY = "ottcweb:segment";
+    // /** Target Nuxeo document property name. */
+    // public static final String TARGET_PROPERTY = "syml:target";
     /** Modified Nuxeo document property name. */
     public static final String MODIFIED_PROPERTY = "dc:modified";
+
+    // /** Symlink Nuxeo document type. */
+    // public static final String SYMLINK_TYPE = "Symlink";
 
 
     /** WebId path prefix. */
@@ -35,6 +42,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     private final String basePath;
     /** Nuxeo documents. */
     private final List<Document> documents;
+    /** Symlinks. */
+    private final List<Symlink> symlinks;
 
     /** WebId to path association map. */
     private final Map<String, String> webIds;
@@ -42,6 +51,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     private final Map<String, PathValues> paths;
     /** Parent path and segment to child path association map. */
     private final Map<SegmentKey, String> segments;
+    /** Target path to symlink association map. */
+    private final Map<String, Symlink> targetPaths;
 
     /** WebId to web path association map cache. */
     private final Map<String, String> toWebPaths;
@@ -56,17 +67,34 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     /**
      * Constructor.
      *
+     * @param basePath CMS base path
      * @param documents Nuxeo documents
+     * @param symlinks symlinks
      */
-    public DocumentsMetadataImpl(String basePath, List<Document> documents) {
+    public DocumentsMetadataImpl(String basePath, List<Document> documents, List<Symlink> symlinks) {
         super();
         this.basePath = basePath;
         this.documents = documents;
+        this.symlinks = symlinks;
         this.webIds = new ConcurrentHashMap<String, String>(this.documents.size());
-        this.paths = new ConcurrentHashMap<String, PathValues>(this.documents.size());
-        this.segments = new ConcurrentHashMap<SegmentKey, String>(this.documents.size());
+        this.paths = new ConcurrentHashMap<String, PathValues>(this.documents.size() + this.symlinks.size());
+        this.segments = new ConcurrentHashMap<SegmentKey, String>(this.documents.size() + this.symlinks.size());
+        this.targetPaths = new ConcurrentHashMap<String, Symlink>(this.symlinks.size());
         this.toWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
         this.fromWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
+
+
+        // Symlinks
+        for (Symlink symlink : this.symlinks) {
+            this.targetPaths.put(symlink.getTargetPath(), symlink);
+
+            // Paths
+            this.paths.put(symlink.getPath(), new PathValues(null, symlink.getSegment()));
+
+            // Web URL segments
+            this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(symlink.getPath(), "/"), symlink.getSegment()), symlink.getTargetPath());
+        }
+
 
         // Maps & timestamp initialization
         this.timestamp = 0;
@@ -76,20 +104,24 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
             Date modified = document.getDate(MODIFIED_PROPERTY);
 
+            // WebIds
             if (webId != null) {
                 this.webIds.put(webId, path);
             }
 
+            // Paths
             if ((webId != null) || (segment != null)) {
                 this.paths.put(path, new PathValues(webId, segment));
             }
 
+            // Web URL segments
             if (!path.equals(basePath) && (segment != null)) {
                 this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
             }
 
             this.timestamp = Math.max(this.timestamp, modified.getTime());
         }
+
 
         // Increase time to exclude last modified document from the next request (Nuxeo documents timestamp are truncated to 10ms)
         this.timestamp += 10;
@@ -111,8 +143,27 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
             return null;
         }
 
+
+        // Symlink
+        Symlink symlink = null;
+        if (!path.startsWith(basePath)) {
+            for (Symlink link : this.symlinks) {
+                if (path.startsWith(link.getTargetPath())) {
+                    symlink = link;
+                    break;
+                }
+            }
+        }
+
+
         // Splitted path
-        String[] splittedPath = StringUtils.split(path, "/");
+        String[] splittedPath;
+        if (symlink == null) {
+            splittedPath = StringUtils.split(path, "/");
+        } else {
+            String lookupPath = symlink.getPath() + StringUtils.substringAfter(path, symlink.getTargetPath());
+            splittedPath = StringUtils.split(lookupPath, "/");
+        }
 
 
         // Search closest web path
@@ -165,6 +216,9 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
             // Current path
             String currentPath = workingPath.toString();
+            if ((symlink != null) && !currentPath.equals(symlink.getPath()) && currentPath.startsWith(symlink.getPath())) {
+                currentPath = symlink.getTargetPath() + StringUtils.substringAfter(currentPath, symlink.getPath());
+            }
             PathValues currentPathValues = this.paths.get(currentPath);
 
             // Segment

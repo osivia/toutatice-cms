@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.core.cms.DocumentsMetadata;
 
+import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
+
 /**
  * Documents metadata implementation test class.
  *
@@ -21,9 +23,11 @@ import org.osivia.portal.core.cms.DocumentsMetadata;
  */
 public class DocumentsMetadataImplTest {
 
-    /** Base path test value. */
+    /** Base path. */
     private static final String BASE_PATH = "/domain/site";
-
+    /** Other path. */
+    private static final String OTHER_PATH = "/domain/other";
+    /** Base timestamp. */
     private static final long BASE_TIMESTAMP = 1000000;
 
 
@@ -46,71 +50,121 @@ public class DocumentsMetadataImplTest {
      */
     @Before
     public void setUp() throws Exception {
+        // Documents
         List<Document> documents = new ArrayList<Document>();
+        // Symlinks
+        List<Symlink> symlinks = new ArrayList<Symlink>();
+        
+
+        String path;
+        String segment;
+        String webId;
+        Date modified;
+        String targetPath;
+        String targetWebId;
+
 
         // Portal site
-        Document portalSite = EasyMock.createMock(Document.class);
-        EasyMock.expect(portalSite.getPath()).andReturn(BASE_PATH).anyTimes();
-        EasyMock.expect(portalSite.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(StringUtils.EMPTY).anyTimes();
-        EasyMock.expect(portalSite.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("site").anyTimes();
-        EasyMock.expect(portalSite.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP)).anyTimes();
-        EasyMock.replay(portalSite);
+        path = BASE_PATH;
+        segment = null;
+        webId = "site";
+        modified = new Date(BASE_TIMESTAMP);
+
+        Document portalSite = this.createDocumentMock(path, segment, webId, modified);
         documents.add(portalSite);
 
 
         for (int i = 0; i < 4; i++) {
-            Document pageLevel1 = EasyMock.createMock(Document.class);
-            EasyMock.expect(pageLevel1.getPath()).andReturn(BASE_PATH + "/page" + i).anyTimes();
+            // Page level #1
+            path = BASE_PATH + "/page" + i;
             if (i < 2) {
-                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i).anyTimes();
+                segment = "page-" + i;
             } else {
-                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+                segment = null;
             }
             if ((i % 2) == 0) {
-                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i).anyTimes();
+                webId = "page" + i;
             } else {
-                EasyMock.expect(pageLevel1.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
+                webId = null;
             }
-            EasyMock.expect(pageLevel1.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP * (i + 1))).anyTimes();
-            EasyMock.replay(pageLevel1);
+            modified = new Date(BASE_TIMESTAMP * (i + 1));
+
+            Document pageLevel1 = this.createDocumentMock(path, segment, webId, modified);
             documents.add(pageLevel1);
 
+
+            // Symlink
+            path = BASE_PATH + "/page" + i + "/link";
+            segment = "link";
+            targetPath = OTHER_PATH + "/folder" + i;
+            targetWebId = "folder" + i;
+
+            Symlink symlink = new Symlink(path, segment, targetPath, targetWebId);
+            symlinks.add(symlink);
+
+
+            // Other path folder
+            path = OTHER_PATH + "/folder" + i;
+            segment = null;
+            webId = "folder" + i;
+
+            Document folder = this.createDocumentMock(path, segment, webId, modified);
+            documents.add(folder);
+
+
             for (int j = 0; j < 4; j++) {
-                Document pageLevel2 = EasyMock.createMock(Document.class);
-                EasyMock.expect(pageLevel2.getPath()).andReturn(BASE_PATH + "/page" + i + "/page" + i + j).anyTimes();
+                // Page level #2
+                path = BASE_PATH + "/page" + i + "/page" + i + j;
                 if (j < 2) {
-                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i + "-" + j).anyTimes();
+                    segment = "page-" + i + "-" + j;
                 } else {
-                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+                    segment = null;
                 }
                 if ((j % 2) == 0) {
-                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i + j).anyTimes();
+                    webId = "page" + i + j;
                 } else {
-                    EasyMock.expect(pageLevel2.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
+                    webId = null;
                 }
-                EasyMock.expect(pageLevel2.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(new Date(BASE_TIMESTAMP * (i + 1) * (j + 1))).anyTimes();
-                EasyMock.replay(pageLevel2);
+                modified = new Date(BASE_TIMESTAMP * (i + 1) * (j + 1));
+
+                Document pageLevel2 = this.createDocumentMock(path, segment, webId, modified);
                 documents.add(pageLevel2);
 
+
+                // Other path file
+                path = OTHER_PATH + "/folder" + i + "/file" + j;
+                if (j < 2) {
+                    segment = "file-" + j;
+                } else {
+                    segment = null;
+                }
+                if ((j % 2) == 0) {
+                    webId = "file" + i + j;
+                } else {
+                    webId = null;
+                }
+
+                Document file = this.createDocumentMock(path, segment, webId, modified);
+                documents.add(file);
+
+
                 for (int k = 0; k < 4; k++) {
-                    Document pageLevel3 = EasyMock.createMock(Document.class);
-                    EasyMock.expect(pageLevel3.getPath()).andReturn(BASE_PATH + "/page" + i + "/page" + i + j + "/page" + i + j + k).anyTimes();
+                    // Page level #3
+                    path = BASE_PATH + "/page" + i + "/page" + i + j + "/page" + i + j + k;
                     if (k < 2) {
-                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn("page-" + i + "-" + j + "-" + k)
-                                .anyTimes();
+                        segment = "page-" + i + "-" + j + "-" + k;
                     } else {
-                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(null).anyTimes();
+                        segment = null;
                     }
                     if ((k % 2) == 0) {
-                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn("page" + i + j + k).anyTimes();
+                        webId = "page" + i + j + k;
                     } else {
-                        EasyMock.expect(pageLevel3.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(null).anyTimes();
+                        webId = null;
                     }
-                    EasyMock.expect(pageLevel3.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY))
-                            .andReturn(new Date(BASE_TIMESTAMP * (i + 1) * (j + 1) * (k + 1))).anyTimes();
-                    EasyMock.replay(pageLevel3);
-                    documents.add(pageLevel3);
+                    modified = new Date(BASE_TIMESTAMP * (i + 1) * (j + 1) * (k + 1));
 
+                    Document pageLevel3 = this.createDocumentMock(path, segment, webId, modified);
+                    documents.add(pageLevel3);
                 }
             }
         }
@@ -118,7 +172,27 @@ public class DocumentsMetadataImplTest {
         // Shuffle
         Collections.shuffle(documents);
 
-        this.metadata = new DocumentsMetadataImpl(BASE_PATH, documents);
+        this.metadata = new DocumentsMetadataImpl(BASE_PATH, documents, symlinks);
+    }
+
+
+    /**
+     * Create document mock.
+     * 
+     * @param path document path
+     * @param segment document web URL segment
+     * @param webId document webId
+     * @param modified document modified date
+     * @return document mock
+     */
+    private Document createDocumentMock(String path, String segment, String webId, Date modified) {
+        Document document = EasyMock.createMock(Document.class);
+        EasyMock.expect(document.getPath()).andReturn(path).anyTimes();
+        EasyMock.expect(document.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY)).andReturn(segment).anyTimes();
+        EasyMock.expect(document.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY)).andReturn(webId).anyTimes();
+        EasyMock.expect(document.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(modified).anyTimes();
+        EasyMock.replay(document);
+        return document;
     }
 
 
@@ -159,6 +233,38 @@ public class DocumentsMetadataImplTest {
                         // Unknown test case
                         Assert.fail(webPath);
                     }
+                }
+            }
+        }
+
+
+        // Symlink
+        for (int i = 0; i < 4; i++) {
+            webPath = this.metadata.getWebPath("folder" + i);
+
+            if (i < 2) {
+                Assert.assertEquals("/page-" + i + "/link", webPath);
+            } else {
+                // Missing page segment
+                Assert.assertEquals("/id_folder" + i, webPath);
+            }
+
+
+            for (int j = 0; j < 4; j++) {
+                webPath = this.metadata.getWebPath("file" + i + j);
+
+                if ((j % 2) == 1) {
+                    // Missing webId
+                    Assert.assertNull(webPath);
+                } else if ((i < 2) && (j < 2)) {
+                    // Segment
+                    Assert.assertEquals("/page-" + i + "/link/file-" + j, webPath);
+                } else if (i < 2) {
+                    // WebId
+                    Assert.assertEquals("/page-" + i + "/link/id_file" + i + j, webPath);
+                } else {
+                    // Missing page segment
+                    Assert.assertEquals("/id_file" + i + j, webPath);
                 }
             }
         }
@@ -241,6 +347,43 @@ public class DocumentsMetadataImplTest {
                     } else {
                         Assert.assertNull(webId);
                     }
+                }
+            }
+        }
+
+
+        // Symlink
+        for (int i = 0; i < 4; i++) {
+            if (i < 2) {
+                webPath = "/page-" + i + "/link";
+            } else {
+                webPath = "/id_folder" + i;
+            }
+
+            webId = this.metadata.getWebId(webPath);
+            Assert.assertEquals("folder" + i, webId);
+
+
+            for (int j = 0; j < 4; j++) {
+                if ((j % 2) == 1) {
+                    // Missing webId
+                    webPath = null;
+                } else if ((i < 2) && (j < 2)) {
+                    // Segment
+                    webPath = "/page-" + i + "/link/file-" + j;
+                } else if (i < 2) {
+                    // WebId
+                    webPath = "/page-" + i + "/id_file" + i + j;
+                } else {
+                    // Missing page segment
+                    webPath = "/id_file" + i + j;
+                }
+
+                webId = this.metadata.getWebId(webPath);
+                if (webPath == null) {
+                    Assert.assertNull(webId);
+                } else {
+                    Assert.assertEquals("file" + i + j, webId);
                 }
             }
         }
@@ -363,8 +506,12 @@ public class DocumentsMetadataImplTest {
         documents.add(page011);
 
 
+        // Symlinks
+        List<Symlink> symlinks = new ArrayList<Symlink>();
+
+
         // Updates
-        DocumentsMetadata updates = new DocumentsMetadataImpl(BASE_PATH, documents);
+        DocumentsMetadata updates = new DocumentsMetadataImpl(BASE_PATH, documents, symlinks);
 
         this.metadata.update(updates);
 
