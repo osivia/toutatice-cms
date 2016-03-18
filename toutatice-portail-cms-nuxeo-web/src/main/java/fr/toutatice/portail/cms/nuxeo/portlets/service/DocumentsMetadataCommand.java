@@ -51,6 +51,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
      *
      * @param basePath CMS base path
      * @param version version
+     * @param symlinks symlinks
      * @param timestamp timestamp, may be null for full refresh
      */
     public DocumentsMetadataCommand(String basePath, RequestPublishStatus version, List<Symlink> symlinks, Long timestamp) {
@@ -75,7 +76,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
     @Override
     public DocumentsMetadata execute(Session nuxeoSession) throws Exception {
         // Documents
-        List<Document> documents = this.getDocuments(nuxeoSession, this.symlinks).list();
+        List<Document> documents = this.getDocuments(nuxeoSession).list();
 
         // Root
         if (this.timestamp == null) {
@@ -104,134 +105,20 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
     }
 
 
-    // private List<Symlink> getSymlinks(Session nuxeoSession) throws Exception {
-    // List<Symlink> symlinks;
-    //
-    // Documents sources = this.getSymlinkSources(nuxeoSession);
-    //
-    // if (sources.isEmpty()) {
-    // symlinks = new ArrayList<Symlink>(0);
-    // } else {
-    // Map<String, Document> lookup = new ConcurrentHashMap<String, Document>(sources.size());
-    // for (Document source : sources) {
-    // String segment = source.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY);
-    // String target = source.getString(DocumentsMetadataImpl.TARGET_PROPERTY);
-    // if (StringUtils.isNotBlank(segment) && StringUtils.isNotBlank(target)) {
-    // lookup.put(target, source);
-    // }
-    // }
-    //
-    // Documents targets = getSymlinkTargets(nuxeoSession, lookup.keySet());
-    //
-    // symlinks = new ArrayList<Symlink>(targets.size());
-    //
-    // for (Document target : targets) {
-    // String targetPath = StringUtils.removeEnd(target.getPath(), ".proxy");
-    // String targetWebId = target.getString(DocumentsMetadataImpl.WEB_ID_PROPERTY);
-    // Document source = lookup.get(targetWebId);
-    // String path = StringUtils.removeEnd(source.getPath(), ".proxy");
-    // String segment = source.getString(DocumentsMetadataImpl.WEB_URL_SEGMENT_PROPERTY);
-    //
-    // Symlink symlink = new Symlink(path, segment, targetPath, targetWebId);
-    // symlinks.add(symlink);
-    // }
-    // }
-    //
-    // return symlinks;
-    // }
-    //
-    //
-    // private Documents getSymlinkSources(Session nuxeoSession) throws Exception {
-    // // Request
-    // StringBuilder sourceRequest = new StringBuilder();
-    // sourceRequest.append("ecm:path STARTSWITH '");
-    // sourceRequest.append(this.basePath);
-    // sourceRequest.append("/' AND ecm:primaryType = '");
-    // sourceRequest.append(DocumentsMetadataImpl.SYMLINK_TYPE);
-    // sourceRequest.append("'");
-    //
-    // if (this.timestamp != null) {
-    // // Timestamp date
-    // Date date = new Date(this.timestamp);
-    // // Date format
-    // DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    //
-    // sourceRequest.append(" AND dc:modified > TIMESTAMP '");
-    // sourceRequest.append(dateFormat.format(date));
-    // sourceRequest.append("'");
-    // }
-    //
-    // // Filtered request
-    // int state = NuxeoQueryFilter.getState(this.version);
-    // NuxeoQueryFilterContext sourceFilterContext = new NuxeoQueryFilterContext(state, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
-    // String filteredRequest = NuxeoQueryFilter.addPublicationFilter(sourceFilterContext, sourceRequest.toString());
-    //
-    // // NXQL Query
-    // String query = "SELECT * FROM Document WHERE " + filteredRequest;
-    //
-    // return this.executeRequest(nuxeoSession, query);
-    // }
-    //
-    //
-    // private Documents getSymlinkTargets(Session nuxeoSession, Set<String> webIds) throws Exception {
-    // // Request
-    // StringBuilder request = new StringBuilder();
-    // request.append("NOT ecm:path STARTSWITH '");
-    // request.append(this.basePath);
-    // request.append("/' AND ");
-    // request.append(DocumentsMetadataImpl.WEB_ID_PROPERTY);
-    // request.append(" IN (");
-    // boolean first = true;
-    // for (String webId : webIds) {
-    // if (first) {
-    // first = false;
-    // } else {
-    // request.append(", ");
-    // }
-    //
-    // request.append("'");
-    // request.append(webId);
-    // request.append("'");
-    // }
-    // request.append(")");
-    //
-    // // Filtered request
-    // NuxeoQueryFilterContext filterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED,
-    // InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
-    // String filteredRequest = NuxeoQueryFilter.addPublicationFilter(filterContext, request.toString());
-    //
-    // // NXQL Query
-    // String query = "SELECT * FROM Document WHERE " + filteredRequest;
-    //
-    // return this.executeRequest(nuxeoSession, query);
-    // }
-
-
     /**
      * Get documents.
      *
      * @param nuxeoSession Nuxeo session
-     * @param symlinks symlinks
      * @return documents
      * @throws Exception
      */
-    private Documents getDocuments(Session nuxeoSession, List<Symlink> symlinks) throws Exception {
+    private Documents getDocuments(Session nuxeoSession) throws Exception {
         // Documents request
         StringBuilder documentsRequest = new StringBuilder();
         documentsRequest.append("ecm:path STARTSWITH '");
         documentsRequest.append(this.basePath);
         documentsRequest.append("/'");
-
-        if (this.timestamp != null) {
-            // Timestamp date
-            Date date = new Date(this.timestamp);
-            // Date format
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
-            documentsRequest.append(" AND dc:modified > TIMESTAMP '");
-            documentsRequest.append(dateFormat.format(date));
-            documentsRequest.append("'");
-        }
+        addTimestampClause(documentsRequest);
 
         // Filtered request
         int state = NuxeoQueryFilter.getState(this.version);
@@ -241,12 +128,12 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
 
         // Symlink targets request
         String targetsFilteredRequest;
-        if (symlinks.isEmpty()) {
+        if (this.symlinks.isEmpty()) {
             targetsFilteredRequest = null;
         } else {
             StringBuilder targetsRequest = new StringBuilder();
             boolean first = true;
-            for (Symlink symlink : symlinks) {
+            for (Symlink symlink : this.symlinks) {
                 if (first) {
                     first = false;
                 } else {
@@ -259,6 +146,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
                 targetsRequest.append(symlink.getTargetPath());
                 targetsRequest.append("/'");
             }
+            addTimestampClause(targetsRequest);
 
 
             // Filtered request
@@ -280,6 +168,25 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
         }
 
         return this.executeRequest(nuxeoSession, query.toString());
+    }
+
+
+    /**
+     * Add timestamp clause to NXQL request.
+     * 
+     * @param request NXQL request
+     */
+    private void addTimestampClause(StringBuilder request) {
+        if (this.timestamp != null) {
+            // Timestamp date
+            Date date = new Date(this.timestamp);
+            // Date format
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+            request.append(" AND dc:modified > TIMESTAMP '");
+            request.append(dateFormat.format(date));
+            request.append("'");
+        }
     }
 
 

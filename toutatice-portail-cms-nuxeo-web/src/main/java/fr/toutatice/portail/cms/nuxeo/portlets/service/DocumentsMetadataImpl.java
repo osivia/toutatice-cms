@@ -25,13 +25,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     public static final String WEB_ID_PROPERTY = "ttc:webid";
     /** Web URL segment Nuxeo document property name. */
     public static final String WEB_URL_SEGMENT_PROPERTY = "ottcweb:segment";
-    // /** Target Nuxeo document property name. */
-    // public static final String TARGET_PROPERTY = "syml:target";
     /** Modified Nuxeo document property name. */
     public static final String MODIFIED_PROPERTY = "dc:modified";
-
-    // /** Symlink Nuxeo document type. */
-    // public static final String SYMLINK_TYPE = "Symlink";
 
 
     /** WebId path prefix. */
@@ -51,8 +46,6 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
     private final Map<String, PathValues> paths;
     /** Parent path and segment to child path association map. */
     private final Map<SegmentKey, String> segments;
-    /** Target path to symlink association map. */
-    private final Map<String, Symlink> targetPaths;
 
     /** WebId to web path association map cache. */
     private final Map<String, String> toWebPaths;
@@ -79,15 +72,12 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         this.webIds = new ConcurrentHashMap<String, String>(this.documents.size());
         this.paths = new ConcurrentHashMap<String, PathValues>(this.documents.size() + this.symlinks.size());
         this.segments = new ConcurrentHashMap<SegmentKey, String>(this.documents.size() + this.symlinks.size());
-        this.targetPaths = new ConcurrentHashMap<String, Symlink>(this.symlinks.size());
         this.toWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
         this.fromWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
 
 
         // Symlinks
         for (Symlink symlink : this.symlinks) {
-            this.targetPaths.put(symlink.getTargetPath(), symlink);
-
             // Paths
             this.paths.put(symlink.getPath(), new PathValues(null, symlink.getSegment()));
 
@@ -146,7 +136,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
         // Symlink
         Symlink symlink = null;
-        if (!path.startsWith(basePath)) {
+        if (!path.startsWith(this.basePath)) {
             for (Symlink link : this.symlinks) {
                 if (path.startsWith(link.getTargetPath())) {
                     symlink = link;
