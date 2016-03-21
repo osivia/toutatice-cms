@@ -1193,8 +1193,14 @@ public class MenuBarFormater {
 
             // CMS item type
             DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
+            
+            // We do not authorize remote proxies move to keep consistent refrences
+            boolean isMovable = cmsItemType.isMovable();
+            if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
+                isMovable = false;
+            }
 
-            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms() && cmsItemType.isMovable()) {
+            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms() && isMovable) {
                 // Move document popup URL
                 String moveDocumentURL;
                 try {
