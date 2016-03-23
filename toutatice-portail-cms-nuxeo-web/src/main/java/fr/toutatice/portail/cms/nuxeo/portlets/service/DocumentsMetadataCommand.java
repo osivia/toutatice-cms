@@ -66,7 +66,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
         this.timestamp = timestamp;
 
         // Elastic-Search indicator
-        this.elasticSearch = NuxeoCompatibility.canUseES();
+        elasticSearch = NuxeoCompatibility.canUseES();
     }
 
 
@@ -76,15 +76,15 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
     @Override
     public DocumentsMetadata execute(Session nuxeoSession) throws Exception {
         // Documents
-        List<Document> documents = this.getDocuments(nuxeoSession).list();
+        List<Document> documents = getDocuments(nuxeoSession).list();
 
         // Root
-        if (this.timestamp == null) {
-            Document rootDocument = this.getRootDocument(nuxeoSession);
+        if (timestamp == null) {
+            Document rootDocument = getRootDocument(nuxeoSession);
             documents.add(rootDocument);
         }
 
-        return new DocumentsMetadataImpl(this.basePath, documents, this.symlinks);
+        return new DocumentsMetadataImpl(basePath, documents, symlinks);
     }
 
 
@@ -96,11 +96,11 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName());
         builder.append("/");
-        builder.append(this.basePath);
+        builder.append(basePath);
         builder.append("/");
-        builder.append(this.version);
+        builder.append(version);
         builder.append("/");
-        builder.append(this.timestamp);
+        builder.append(timestamp);
         return builder.toString();
     }
 
@@ -116,24 +116,24 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
         // Documents request
         StringBuilder documentsRequest = new StringBuilder();
         documentsRequest.append("ecm:path STARTSWITH '");
-        documentsRequest.append(this.basePath);
-        documentsRequest.append("/'");
+        documentsRequest.append(basePath);
+        documentsRequest.append("'");
         addTimestampClause(documentsRequest);
 
         // Filtered request
-        int state = NuxeoQueryFilter.getState(this.version);
+        int state = NuxeoQueryFilter.getState(version);
         NuxeoQueryFilterContext documentsFilterContext = new NuxeoQueryFilterContext(state, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
         String documentsFilteredRequest = NuxeoQueryFilter.addPublicationFilter(documentsFilterContext, documentsRequest.toString());
 
 
         // Symlink targets request
         String targetsFilteredRequest;
-        if (this.symlinks.isEmpty()) {
+        if (symlinks.isEmpty()) {
             targetsFilteredRequest = null;
         } else {
             StringBuilder targetsRequest = new StringBuilder();
             boolean first = true;
-            for (Symlink symlink : this.symlinks) {
+            for (Symlink symlink : symlinks) {
                 if (first) {
                     first = false;
                 } else {
@@ -144,7 +144,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
                 targetsRequest.append(symlink.getTargetPath());
                 targetsRequest.append("' OR ecm:path STARTSWITH '");
                 targetsRequest.append(symlink.getTargetPath());
-                targetsRequest.append("/'");
+                targetsRequest.append("'");
             }
             addTimestampClause(targetsRequest);
 
@@ -167,19 +167,19 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
             query.append(")");
         }
 
-        return this.executeRequest(nuxeoSession, query.toString());
+        return executeRequest(nuxeoSession, query.toString());
     }
 
 
     /**
      * Add timestamp clause to NXQL request.
-     * 
+     *
      * @param request NXQL request
      */
     private void addTimestampClause(StringBuilder request) {
-        if (this.timestamp != null) {
+        if (timestamp != null) {
             // Timestamp date
-            Date date = new Date(this.timestamp);
+            Date date = new Date(timestamp);
             // Date format
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
@@ -200,7 +200,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
      */
     private Documents executeRequest(Session nuxeoSession, String query) throws Exception {
         OperationRequest operationRequest;
-        if (this.elasticSearch) {
+        if (elasticSearch) {
             operationRequest = nuxeoSession.newRequest("Document.QueryES");
             operationRequest.set(Constants.HEADER_NX_SCHEMAS, SCHEMAS);
             operationRequest.set("pageSize", -1);
@@ -225,7 +225,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
     private Document getRootDocument(Session nuxeoSession) throws Exception {
         OperationRequest request = nuxeoSession.newRequest("Document.Fetch");
         request.setHeader(Constants.HEADER_NX_SCHEMAS, SCHEMAS);
-        request.set("value", this.basePath);
+        request.set("value", basePath);
         return (Document) request.execute();
     }
 
