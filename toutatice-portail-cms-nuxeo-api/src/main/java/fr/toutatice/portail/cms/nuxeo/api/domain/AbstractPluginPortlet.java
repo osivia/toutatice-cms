@@ -33,6 +33,7 @@ import org.osivia.portal.api.customization.ICustomizationModulesRepository;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.core.cms.DomainContextualization;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 
@@ -360,6 +361,27 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             attributes.put(Customizable.NAVIGATION_ADAPTERS.toString(), adapters);
         }
         return adapters;
+    }
+
+
+    /**
+     * Get domain contextualizations.
+     * 
+     * @param context customization context
+     * @return domain contextualizations
+     */
+    @SuppressWarnings("unchecked")
+    protected List<DomainContextualization> getDomainContextualizations(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        // Navigation adapters
+        List<DomainContextualization> contextualizations = (List<DomainContextualization>) attributes.get(Customizable.DOMAIN_CONTEXTUALIZATION.toString());
+        if (contextualizations == null) {
+            contextualizations = new ArrayList<DomainContextualization>();
+            attributes.put(Customizable.DOMAIN_CONTEXTUALIZATION.toString(), contextualizations);
+        }
+        return contextualizations;
     }
 
 

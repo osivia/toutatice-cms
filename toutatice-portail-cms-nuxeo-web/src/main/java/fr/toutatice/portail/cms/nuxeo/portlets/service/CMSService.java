@@ -45,6 +45,7 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
@@ -68,6 +69,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.DocumentMetadata;
 import org.osivia.portal.core.cms.DocumentsMetadata;
+import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
@@ -2416,8 +2418,13 @@ public class CMSService implements ICMSService {
      */
     @Override
     public String getAdaptedNavigationPath(CMSServiceCtx cmsContext) throws CMSException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        // Document
+        EcmDocument document = (EcmDocument) cmsContext.getDoc();
 
         // Adapted navigation path
         String navigationPath = null;
@@ -2425,10 +2432,35 @@ public class CMSService implements ICMSService {
         // Navigation adapters
         List<INavigationAdapterModule> adapters = pluginManager.customizeNavigationAdapters();
         for (INavigationAdapterModule adapter : adapters) {
-            navigationPath = adapter.adaptNavigationPath(cmsContext);
+            navigationPath = adapter.adaptNavigationPath(portalControllerContext, document);
         }
 
         return navigationPath;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DomainContextualization getDomainContextualization(CMSServiceCtx cmsContext, String domainPath) {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        // Domain contextualizations
+        List<DomainContextualization> domainContextualizations = pluginManager.customizeDomainContextualization();
+
+        DomainContextualization result = null;
+        for (DomainContextualization domainContextualization : domainContextualizations) {
+            if (domainContextualization.contextualize(portalControllerContext, domainPath)) {
+                result = domainContextualization;
+                break;
+            }
+        }
+
+        return result;
     }
 
 
@@ -2474,6 +2506,8 @@ public class CMSService implements ICMSService {
      */
     @Override
     public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext, String basePath, Long timestamp) throws CMSException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
         // Navigation adapters
@@ -2491,7 +2525,7 @@ public class CMSService implements ICMSService {
         // Symlinks
         List<Symlink> symlinks = null;
         for (INavigationAdapterModule adapter : adapters) {
-            List<Symlink> adapterSymlinks = adapter.getSymlinks(cmsContext);
+            List<Symlink> adapterSymlinks = adapter.getSymlinks(portalControllerContext);
             if (CollectionUtils.isNotEmpty(adapterSymlinks)) {
                 if (CollectionUtils.isEmpty(symlinks)) {
                     symlinks = adapterSymlinks;

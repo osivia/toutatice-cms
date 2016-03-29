@@ -38,6 +38,7 @@ import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
@@ -90,6 +91,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private Map<String, DocumentType> typesCache;
     /** Navigation adapters cache. */
     private List<INavigationAdapterModule> navigationAdaptersCache;
+    /** Domain contextualization cache. */
+    private List<DomainContextualization> domainContextualizationCache;
     /** Tab groups cache. */
     private Map<String, TabGroup> tabGroupsCache;
 
@@ -468,6 +471,30 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         return this.navigationAdaptersCache;
     }
 
+    
+    /**
+     * Customize domain contextualization.
+     * 
+     * @return domain contextualization
+     */
+    public List<DomainContextualization> customizeDomainContextualization() {
+        if (this.domainContextualizationCache == null) {
+            // Cache
+            this.domainContextualizationCache = new ArrayList<DomainContextualization>();
+
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            // Customized modules
+            List<?> customizedModules = (List<?>) attributes.get(Customizable.DOMAIN_CONTEXTUALIZATION.toString());
+            if (customizedModules != null) {
+                CollectionUtils.addAll(this.domainContextualizationCache, customizedModules.iterator());
+            }
+        }
+
+        return this.domainContextualizationCache;
+    }
+    
 
     /**
      * Customize tab groups.
@@ -505,6 +532,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.dynamicModules = null;
         this.typesCache = null;
         this.navigationAdaptersCache = null;
+        this.domainContextualizationCache = null;
         this.tabGroupsCache = null;
 
         // Clear caches

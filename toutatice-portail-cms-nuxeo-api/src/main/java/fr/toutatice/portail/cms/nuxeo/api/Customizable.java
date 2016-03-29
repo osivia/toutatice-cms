@@ -38,6 +38,8 @@ public enum Customizable {
     MENU_TEMPLATE("osivia.customizer.cms.menuTemplate"),
     /** Navigation adapters. */
     NAVIGATION_ADAPTERS("osivia.customizer.cms.navigationAdapters"),
+    /** Domain contextualization. */
+    DOMAIN_CONTEXTUALIZATION("osivia.customizer.cms.domainContextualization"),
     /** Tab groups. */
     TAB_GROUPS("osivia.customizer.cms.tabGroups");
 
