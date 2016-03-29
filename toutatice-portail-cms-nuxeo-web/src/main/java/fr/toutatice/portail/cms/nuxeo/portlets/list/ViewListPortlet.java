@@ -502,15 +502,16 @@ public class ViewListPortlet extends CMSPortlet {
                  * It's due to the fact that they expect to be run in contextualized mode
                  * Instead of generatig an exception, it's better to return a null value
                  * */
+   
                 
-                if( nuxeoRequest != null && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*"))  {
+                if( nuxeoRequest != null && nuxeoRequest.contains("'null"))  {
                     // Is it a contextualization error
-                    if(  nuxeoController.getBasePath() == null && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*"))  {
-                        nuxeoRequest = null;
+                    if (nuxeoController.getBasePath() == null) {
+                        if (orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*")) {
+                            nuxeoRequest = null;
+                        }
                     }
-                     
                 }
-                
 
                 
             }
