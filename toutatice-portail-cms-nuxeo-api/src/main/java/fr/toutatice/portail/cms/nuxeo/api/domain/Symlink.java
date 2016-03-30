@@ -7,38 +7,33 @@ package fr.toutatice.portail.cms.nuxeo.api.domain;
  */
 public class Symlink {
 
-    /** Symlink document path. */
-    private String path;
+    /** Symlink parent document path. */
+    private final String parentPath;
     /** Symlink web URL segment. */
-    private String segment;
-    /** Symlink target path. */
-    private String targetPath;
-    /** Symlink target webId. */
-    private String targetWebId;
-
-
-    /**
-     * Constructor.
-     */
-    public Symlink() {
-        super();
-    }
+    private final String segment;
+    /** Symlink target document path. */
+    private final String targetPath;
+    /** Symlink target document webId. */
+    private final String targetWebId;
+    /** Symlink virtual path. */
+    private final String virtualPath;
 
 
     /**
      * Constructor.
      *
-     * @param path symlink document path
+     * @param parentPath symlink parent document path
      * @param segment symlink web URL segment
-     * @param targetPath symlink target path
-     * @param targetWebId symlink target webId
+     * @param targetPath symlink target document path
+     * @param targetWebId symlink target document webId
      */
-    public Symlink(String path, String segment, String targetPath, String targetWebId) {
-        this();
-        this.path = path;
+    public Symlink(String parentPath, String segment, String targetPath, String targetWebId) {
+        super();
+        this.parentPath = parentPath;
         this.segment = segment;
         this.targetPath = targetPath;
         this.targetWebId = targetWebId;
+        this.virtualPath = parentPath + "/symlink_" + segment;
     }
 
 
@@ -48,8 +43,8 @@ public class Symlink {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Symlink [path=");
-        builder.append(this.path);
+        builder.append("Symlink [parentPath=");
+        builder.append(this.parentPath);
         builder.append(", segment=");
         builder.append(this.segment);
         builder.append(", targetPath=");
@@ -62,21 +57,12 @@ public class Symlink {
 
 
     /**
-     * Getter for path.
+     * Getter for parentPath.
      *
-     * @return the path
+     * @return the parentPath
      */
-    public String getPath() {
-        return this.path;
-    }
-
-    /**
-     * Setter for path.
-     *
-     * @param path the path to set
-     */
-    public void setPath(String path) {
-        this.path = path;
+    public String getParentPath() {
+        return this.parentPath;
     }
 
     /**
@@ -89,30 +75,12 @@ public class Symlink {
     }
 
     /**
-     * Setter for segment.
-     *
-     * @param segment the segment to set
-     */
-    public void setSegment(String segment) {
-        this.segment = segment;
-    }
-
-    /**
      * Getter for targetPath.
      *
      * @return the targetPath
      */
     public String getTargetPath() {
         return this.targetPath;
-    }
-
-    /**
-     * Setter for targetPath.
-     *
-     * @param targetPath the targetPath to set
-     */
-    public void setTargetPath(String targetPath) {
-        this.targetPath = targetPath;
     }
 
     /**
@@ -125,12 +93,12 @@ public class Symlink {
     }
 
     /**
-     * Setter for targetWebId.
+     * Getter for virtualPath.
      *
-     * @param targetWebId the targetWebId to set
+     * @return the virtualPath
      */
-    public void setTargetWebId(String targetWebId) {
-        this.targetWebId = targetWebId;
+    public String getVirtualPath() {
+        return this.virtualPath;
     }
 
 }

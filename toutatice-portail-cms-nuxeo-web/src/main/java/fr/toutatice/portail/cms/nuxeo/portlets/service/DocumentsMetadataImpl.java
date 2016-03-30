@@ -79,10 +79,10 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         // Symlinks
         for (Symlink symlink : this.symlinks) {
             // Paths
-            this.paths.put(symlink.getPath(), new PathValues(null, symlink.getSegment()));
+            this.paths.put(symlink.getVirtualPath(), new PathValues(null, symlink.getSegment()));
 
             // Web URL segments
-            this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(symlink.getPath(), "/"), symlink.getSegment()), symlink.getTargetPath());
+            this.segments.put(new SegmentKey(symlink.getParentPath(), symlink.getSegment()), symlink.getTargetPath());
         }
 
 
@@ -151,7 +151,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         if (symlink == null) {
             splittedPath = StringUtils.split(path, "/");
         } else {
-            String lookupPath = symlink.getPath() + StringUtils.substringAfter(path, symlink.getTargetPath());
+            String lookupPath = symlink.getVirtualPath() + StringUtils.substringAfter(path, symlink.getTargetPath());
             splittedPath = StringUtils.split(lookupPath, "/");
         }
 
@@ -206,8 +206,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
             // Current path
             String currentPath = workingPath.toString();
-            if ((symlink != null) && !currentPath.equals(symlink.getPath()) && currentPath.startsWith(symlink.getPath())) {
-                currentPath = symlink.getTargetPath() + StringUtils.substringAfter(currentPath, symlink.getPath());
+            if ((symlink != null) && !currentPath.equals(symlink.getVirtualPath()) && currentPath.startsWith(symlink.getVirtualPath())) {
+                currentPath = symlink.getTargetPath() + StringUtils.substringAfter(currentPath, symlink.getVirtualPath());
             }
             PathValues currentPathValues = this.paths.get(currentPath);
 

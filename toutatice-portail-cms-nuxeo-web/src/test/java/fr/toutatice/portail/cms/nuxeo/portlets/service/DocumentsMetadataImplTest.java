@@ -54,12 +54,14 @@ public class DocumentsMetadataImplTest {
         List<Document> documents = new ArrayList<Document>();
         // Symlinks
         List<Symlink> symlinks = new ArrayList<Symlink>();
-        
+
 
         String path;
         String segment;
         String webId;
         Date modified;
+
+        String parentPath;
         String targetPath;
         String targetWebId;
 
@@ -94,12 +96,12 @@ public class DocumentsMetadataImplTest {
 
 
             // Symlink
-            path = BASE_PATH + "/page" + i + "/link";
+            parentPath = BASE_PATH + "/page" + i;
             segment = "link";
             targetPath = OTHER_PATH + "/folder" + i;
             targetWebId = "folder" + i;
 
-            Symlink symlink = new Symlink(path, segment, targetPath, targetWebId);
+            Symlink symlink = new Symlink(parentPath, segment, targetPath, targetWebId);
             symlinks.add(symlink);
 
 
@@ -178,7 +180,7 @@ public class DocumentsMetadataImplTest {
 
     /**
      * Create document mock.
-     * 
+     *
      * @param path document path
      * @param segment document web URL segment
      * @param webId document webId
