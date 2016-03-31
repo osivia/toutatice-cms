@@ -30,7 +30,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 public class DocumentsMetadataCommand implements INuxeoCommand {
 
     /** Schemas. */
-    private static final String SCHEMAS = "dublincore, toutatice, ottc_web, symlink";
+    private static final String SCHEMAS = "dublincore, toutatice, ottc_web";
 
 
     /** CMS base path. */
