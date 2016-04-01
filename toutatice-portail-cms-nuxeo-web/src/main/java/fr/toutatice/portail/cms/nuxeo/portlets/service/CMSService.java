@@ -177,6 +177,11 @@ public class CMSService implements ICMSService {
         // Domain ID & web ID
         String domainId = doc.getString("ttc:domainID");
         String webId = doc.getString("ttc:webid");
+        
+        // For selectors saved in the doc
+        if(doc.getString("ttc:selectors") != null) {
+        	properties.put("selectors", doc.getString("ttc:selectors"));
+        }
 
         // CMS item
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
