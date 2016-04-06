@@ -74,9 +74,11 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -1938,6 +1940,27 @@ public class CMSService implements ICMSService {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
+            
+            if (command == EcmViews.editPage || command == EcmViews.editDocument) {
+                // If in web mode, we pass portal web URL to to editPage
+                Portal portal = PortalObjectUtils.getPortal(ControllerContextAdapter.getControllerContext(portalControllerContext));
+                if (PortalObjectUtils.isSpaceSite(portal)) {
+
+                    Document currentDoc = (Document) cmsCtx.getDoc();
+                    if (currentDoc != null) {
+                        String webId = (String) currentDoc.getProperties().get(DocumentsMetadataImpl.WEB_ID_PROPERTY);
+
+                        String webPath = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null,
+                                IWebIdService.CMS_PATH_PREFIX.concat("/").concat(webId), null, null, cmsCtx.getDisplayContext(), cmsCtx.getHideMetaDatas(),
+                                null, cmsCtx.getDisplayLiveVersion(), null);
+                        if (StringUtils.isNotBlank(webPath)) {
+                            webPath = StringUtils.substringBeforeLast(webPath, "/").concat("/");
+                        }
+
+                        requestParameters.put("portalWebPath", webPath);
+                    }
+                }
+            }
 
             for (Map.Entry<String, String> param : requestParameters.entrySet()) {
                 url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
