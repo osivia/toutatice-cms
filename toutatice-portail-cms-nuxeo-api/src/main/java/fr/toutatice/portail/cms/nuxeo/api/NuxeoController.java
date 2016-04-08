@@ -31,7 +31,6 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -54,7 +53,6 @@ import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -1593,23 +1591,8 @@ public class NuxeoController {
 
         Map<String, String> parameters = new HashMap<String, String>(0);
 
-        // path can have parameters
-        ExtendedParameters extendedParameters = null;
-        Map<String, String> nxPathParameters = getCMSService().getNxPathParameters(path);
-        if (MapUtils.isNotEmpty(nxPathParameters)) {
-            path = StringUtils.substringBefore(path, "?");
-            extendedParameters = new ExtendedParameters();
-            extendedParameters.setAllParameters(nxPathParameters);
-        }
-
-        String url = StringUtils.EMPTY;
-        if(extendedParameters != null){
-            url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
-                displayContext, null, null, null, null, extendedParameters);
-        } else {
-            url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
+        String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
                     displayContext, null, null, null, null);
-        }
 
         if (url != null) {
 
@@ -1673,20 +1656,12 @@ public class NuxeoController {
 
             String path = doc.getPath();
 
-            ExtendedParameters extendedParameters = null;
             if (PortalObjectUtils.isSpaceSite(page.getPortal())) {
                 path = nuxeoService.getCMSCustomizer().getContentWebIdPath(handlerCtx);
-                // CMS path can have parameters
-                Map<String, String> nxPathParameters = getCMSService().getNxPathParameters(path);
-                if (MapUtils.isNotEmpty(nxPathParameters)) {
-                    path = StringUtils.substringBefore(path, "?");
-                    extendedParameters = new ExtendedParameters();
-                    extendedParameters.setAllParameters(nxPathParameters);
-                }
             }
 
             String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, pageParams,
-                    localContextualization, displayContext, this.getHideMetaDatas(), null, displayLiveVersion, null, extendedParameters);
+                    localContextualization, displayContext, this.getHideMetaDatas(), null, displayLiveVersion, null);
 
 
             if (url != null) {

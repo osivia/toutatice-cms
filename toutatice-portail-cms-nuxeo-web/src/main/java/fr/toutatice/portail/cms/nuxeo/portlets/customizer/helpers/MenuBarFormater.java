@@ -55,7 +55,6 @@ import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
@@ -308,8 +307,8 @@ public class MenuBarFormater {
         MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
         if (dropdown == null) {
-            dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "halflings halflings-pencil", MenubarGroup.CMS, 3);
-            dropdown.setReducible(false);
+            dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "halflings halflings-pencil",
+                    MenubarGroup.CMS, 3, false, false);
             dropdown.setBreadcrumb((type != null) && (type.isFolderish()));
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
@@ -348,8 +347,8 @@ public class MenuBarFormater {
         MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
 
         if (dropdown == null) {
-            dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"), "glyphicons glyphicons-option-vertical",
-                    MenubarGroup.GENERIC, 40);
+            dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
+                    "glyphicons glyphicons-option-vertical", MenubarGroup.GENERIC, 40, false, false);
             this.menubarService.addDropdown(portalControllerContext, dropdown);
         }
 
@@ -1737,10 +1736,6 @@ public class MenuBarFormater {
             parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
         }
 
-
-        // Document
-        Document document = (Document) cmsContext.getDoc();
-
         String path = this.customizer.getContentWebIdPath(cmsContext);
 
         // URL
@@ -1748,40 +1743,14 @@ public class MenuBarFormater {
         String permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
 
         // url of type share for Workspaces and proxies
-        if (this.hasWebId(cmsContext)) {
-
+        if (this.hasWebId(cmsContext) && !DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && StringUtils.isNotBlank(pubInfos.getPublishSpacePath()))) {
                 permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
             }
         }
 
-        ExtendedParameters extendedParameters = null;
-        if (!StringUtils.contains(path, "?")) {
-
-            if (this.hasWebId(cmsContext)) {
-                if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-                    extendedParameters = new ExtendedParameters();
-
-                    String parentId = this.webIdService.getParentWebId(cmsContext, document.getPath());
-                    if (StringUtils.isNotBlank(parentId)) {
-                        extendedParameters.addParameter(IWebIdService.PARENT_ID, parentId);
-                    } else {
-                        String parentPath = this.cmsService.getParentPath(document.getPath());
-                        if (StringUtils.isNotBlank(parentPath)) {
-                            extendedParameters.addParameter(IWebIdService.PARENT_PATH, parentPath);
-                        }
-                    }
-                }
-            }
-        }
-
         try {
-            if(extendedParameters != null){
-                url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType, extendedParameters);
-            } else {
-                url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType);
-            }
-
+            url = this.getUrlFactory().getPermaLink(portalControllerContext, null, parameters, path, permaLinkType);
         } catch (PortalException e) {
             url = null;
         }

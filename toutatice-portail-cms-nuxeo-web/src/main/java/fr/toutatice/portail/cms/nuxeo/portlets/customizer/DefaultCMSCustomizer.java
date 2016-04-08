@@ -46,7 +46,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -83,7 +82,6 @@ import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarTask;
-import org.osivia.portal.api.urls.ExtendedParameters;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -1265,15 +1263,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             Map<String, String> parameters = new HashMap<String, String>(0);
 
-            // CMS path can have parameters
-            ExtendedParameters extendedParameters = null;
-            Map<String, String> nxPathParameters = this.cmsService.getNxPathParameters(cmsPath);
-            if(MapUtils.isNotEmpty(nxPathParameters)){
-                cmsPath = StringUtils.substringBefore(cmsPath, "?");
-                extendedParameters = new ExtendedParameters();
-                extendedParameters.setAllParameters(nxPathParameters);
-            }
-
             String currentPagePath = null;
             if( cmsContext.getRequest() != null)    {
                 Window window = (Window) cmsContext.getRequest().getAttribute("osivia.window");
@@ -1288,7 +1277,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // Portal URL
             String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null,
-                    null, extendedParameters);
+                    null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
@@ -1337,6 +1326,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // WebId (wich can have parameter
             String webId = StringUtils.removeStart(url, "/nuxeo/web/");
+            if (webId.contains("/")) {
+                webId = StringUtils.substringAfterLast(webId, "/");
+            }
+            if (webId.contains(".")) {
+                webId = StringUtils.substringBefore(webId, ".");
+            }
 
             cmsPath = this.getWebIdService().webIdToCmsPath(webId);
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
@@ -1531,7 +1526,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
-        if (StringUtils.isNotEmpty(webId)) {
+        if (StringUtils.isNotEmpty(webId) && !ContextDocumentsHelper.isRemoteProxy(doc)) {
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
 
@@ -1542,23 +1537,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
             if (extension != null) {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
-            }
-
-
-            // Case of remote proxy
-            if (!StringUtils.contains(webId, "?")) {
-
-                if (ContextDocumentsHelper.isRemoteProxy(doc)) {
-                    String parentId = this.getWebIdService().getParentWebId(cmsCtx, doc.getPath());
-                    if (StringUtils.isNotBlank(parentId)) {
-                        webId = webId.concat("?").concat(IWebIdService.PARENT_ID).concat("=").concat(parentId);
-                    } else {
-                        String parentPath = this.getCmsService().getParentPath(doc.getPath());
-                        if (StringUtils.isNotBlank(parentPath)) {
-                            webId = webId.concat("?").concat(IWebIdService.PARENT_PATH).concat("=").concat(parentPath);
-                        }
-                    }
-                }
             }
 
             permLinkPath = this.getWebIdService().webIdToCmsPath(webId);

@@ -36,7 +36,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,20 +47,15 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 
 public class PublishInfosCommand implements INuxeoCommand {
 
 	protected static Log logger = LogFactory.getLog(PublishInfosCommand.class);
 	
 	private final String path;
-	private final String parentId;
-	private final String parentPath;
 
-	public PublishInfosCommand(String parentId, String parentPath, String path) {
+    public PublishInfosCommand(String path) {
 		this.path = path;
-		this.parentId = parentId;
-		this.parentPath = parentPath;
 	}
 
 	@Override
@@ -72,17 +66,6 @@ public class PublishInfosCommand implements INuxeoCommand {
 		
         if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
             request.set("webid", path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
-            
-            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61)) {
-
-                if (StringUtils.isNotBlank(parentId)) {
-                    request.set("parentId", parentId);
-                } else if (StringUtils.isNotBlank(parentPath)) {
-                    request.set("parentPath", parentPath);
-                }
-
-            }
-            
         }
         else {
             request.set("path", path);
@@ -168,14 +151,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 
     @Override
     public String getId() {
-        StringBuffer id = new StringBuffer();
+        StringBuilder id = new StringBuilder();
         id.append("PublishInfosCommand/").append(StringUtils.removeEnd(this.path, ".proxy"));
-
-        if (this.path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
-            id.append(": ").append("/").append("/").append(this.parentId)
-                .append("/").append(this.parentPath);
-        } 
-        
         return id.toString();
     }
 

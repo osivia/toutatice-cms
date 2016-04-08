@@ -59,7 +59,7 @@ public class XSLFunctions {
     /** Picture pattern. */
     private static final Pattern PATTERN_PICTURE = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
     /** Web ID pattern. */
-    private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]/]*)(.*)");
+    private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]_/]+).*");
     /** Internal picture pattern. */
     private static final Pattern PATTERN_INTERNAL_PICTURE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
     /** Permalink pattern. */
@@ -410,7 +410,13 @@ public class XSLFunctions {
                         Matcher mWebId = PATTERN_WEB_ID.matcher(query);
                         if (mWebId.matches()) {
                             if (mWebId.groupCount() > 0) {
-                                String webpath = mWebId.group(1);
+                                String webPath = mWebId.group(1);
+                                String webId;
+                                if (webPath.contains("/")) {
+                                    webId = StringUtils.substringAfterLast(webPath, "/");
+                                } else {
+                                    webId = webPath;
+                                }
 
                                 String params = url.getQuery();
                                 if (params != null) {
@@ -420,8 +426,8 @@ public class XSLFunctions {
                                         // In case of resources url, serve the resource
                                         if (element.startsWith("content")) {
                                             String[] param = element.split("=");
-                                            String webId = this.webIdService.cmsPathToFetchPath(webpath);
-                                            return this.nuxeoController.createPictureLink(webId, param[1]);
+                                            String fetchPath = this.webIdService.webIdToFetchPath(webId);
+                                            return this.nuxeoController.createPictureLink(fetchPath, param[1]);
                                         }
                                     }
                                 }

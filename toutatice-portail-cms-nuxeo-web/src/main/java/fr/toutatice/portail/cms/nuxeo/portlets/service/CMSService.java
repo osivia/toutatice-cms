@@ -1071,10 +1071,7 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                String parentId = ctx.getParentId();
-                String parentPath = ctx.getParentPath();
-
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(parentId, parentPath, path)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();

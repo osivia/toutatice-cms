@@ -9,7 +9,7 @@
 
 
 <div>
-    <a href="${link.url}" target="${target}">
+    <a href="${link.url}" target="${target}" class="no-ajax-link">
         <span class="${cssClasses}">${name}</span>
     </a>
 </div>

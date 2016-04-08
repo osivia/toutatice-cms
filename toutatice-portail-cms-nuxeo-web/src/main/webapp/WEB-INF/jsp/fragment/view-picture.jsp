@@ -10,7 +10,7 @@
         </c:when>
         
         <c:otherwise>
-            <a href="${link.url}" class="thumbnail">
+            <a href="${link.url}" class="thumbnail no-ajax-link">
                 <img src="${imageSource}" alt="">
             </a>
         </c:otherwise>
