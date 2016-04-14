@@ -532,14 +532,16 @@ public class ViewListPortlet extends ViewList {
                  * Instead of generatig an exception, it's better to return a null value
                  */
 
-                if ((nuxeoRequest != null) && nuxeoRequest.matches("(.|\n|\r)*('null)(.|\n|\r)*")) {
+                if( nuxeoRequest != null && nuxeoRequest.contains("'null"))  {
                     // Is it a contextualization error
-                    if ((nuxeoController.getBasePath() == null) && orginalRequest.matches("(.|\n|\r)*(basePath|domainPath|spacePath|navigationPath)(.|\n|\r)*")) {
-                        nuxeoRequest = null;
+                    if (nuxeoController.getBasePath() == null) {
+                        if( orginalRequest.contains("basePath") || orginalRequest.contains("domainPath") || orginalRequest.contains("spacePath") || orginalRequest.contains("navigationPath") ) {
+                            request.setAttribute("error", "La requête ne peut pas être interprétée en mode template : valeur(s) à 'null' ");
+                        }
                     }
-
                 }
 
+  
 
             }
 
