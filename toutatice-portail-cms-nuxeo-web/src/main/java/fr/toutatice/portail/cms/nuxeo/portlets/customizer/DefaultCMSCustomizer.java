@@ -132,6 +132,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
@@ -238,32 +239,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         super();
 
         // Portlet context
-        this.portletCtx = ctx;
+        portletCtx = ctx;
 
         // Portal URL factory
-        this.portalUrlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute(Constants.URL_SERVICE_NAME);
+        portalUrlFactory = (IPortalUrlFactory) portletCtx.getAttribute(Constants.URL_SERVICE_NAME);
 
         // Bundle factory
-        IInternationalizationService internationalizationService = (IInternationalizationService) this.portletCtx
+        IInternationalizationService internationalizationService = (IInternationalizationService) portletCtx
                 .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
-        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
 
         // Customization Service
-        this.customizationService = Locator.findMBean(ICustomizationService.class,
+        customizationService = Locator.findMBean(ICustomizationService.class,
                 ICustomizationService.MBEAN_NAME);
 
         // initialise le player view document par défaut
-        this.players = new Hashtable<String, INuxeoPlayerModule>();
-        this.players.put("defaultPlayer", new DefaultPlayer());
+        players = new Hashtable<String, INuxeoPlayerModule>();
+        players.put("defaultPlayer", new DefaultPlayer());
 
         // Plugin
-        this.pluginMgr = new CustomizationPluginMgr(this);
+        pluginMgr = new CustomizationPluginMgr(this);
 
         try {
             // Initialisé ici pour résoudre problème de classloader
-            this.cl = Thread.currentThread().getContextClassLoader();
+            cl = Thread.currentThread().getContextClassLoader();
 
-            this.parser = WysiwygParser.getInstance().getParser();
+            parser = WysiwygParser.getInstance().getParser();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -276,11 +277,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return webId service
      */
     public IWebIdService getWebIdService() {
-        if (this.webIdService == null) {
-            this.webIdService = (IWebIdService) this.portletCtx.getAttribute("webIdService");
+        if (webIdService == null) {
+            webIdService = (IWebIdService) portletCtx.getAttribute("webIdService");
         }
 
-        return this.webIdService;
+        return webIdService;
     }
 
 
@@ -290,10 +291,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return web URL service
      */
     public IWebUrlService getWebUrlService() {
-        if (this.webUrlService == null) {
-            this.webUrlService = Locator.findMBean(IWebUrlService.class, IWebUrlService.MBEAN_NAME);
+        if (webUrlService == null) {
+            webUrlService = Locator.findMBean(IWebUrlService.class, IWebUrlService.MBEAN_NAME);
         }
-        return this.webUrlService;
+        return webUrlService;
     }
 
 
@@ -303,10 +304,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return Nuxeo connection properties
      */
     public NuxeoConnectionProperties getNuxeoConnectionProps() {
-        if (this.nuxeoConnection == null) {
-            this.nuxeoConnection = new NuxeoConnectionProperties();
+        if (nuxeoConnection == null) {
+            nuxeoConnection = new NuxeoConnectionProperties();
         }
-        return this.nuxeoConnection;
+        return nuxeoConnection;
     }
 
 
@@ -316,10 +317,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return user pages loader
      */
     public UserPagesLoader getUserPagesLoader()	{
-        if (this.userPagesLoader == null) {
-            this.userPagesLoader = new UserPagesLoader(this.portletCtx, this, this.cmsService);
+        if (userPagesLoader == null) {
+            userPagesLoader = new UserPagesLoader(portletCtx, this, cmsService);
         }
-        return this.userPagesLoader;
+        return userPagesLoader;
     }
 
 
@@ -329,10 +330,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return menu bar formatter
      */
     public MenuBarFormater getMenuBarFormater() {
-        if (this.menuBarFormater == null) {
-            this.menuBarFormater = new MenuBarFormater(this.portletCtx, this, this.cmsService);
+        if (menuBarFormater == null) {
+            menuBarFormater = new MenuBarFormater(portletCtx, this, cmsService);
         }
-        return this.menuBarFormater;
+        return menuBarFormater;
     }
 
 
@@ -343,10 +344,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Deprecated
     public NavigationItemAdapter getNavigationItemAdapter() {
-        if (this.navigationItemAdapter == null) {
-            this.navigationItemAdapter = new NavigationItemAdapter(this.portletCtx, this, this.cmsService);
+        if (navigationItemAdapter == null) {
+            navigationItemAdapter = new NavigationItemAdapter(portletCtx, this, cmsService);
         }
-        return this.navigationItemAdapter;
+        return navigationItemAdapter;
     }
 
 
@@ -355,7 +356,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public final Map<String,EditableWindow> getEditableWindows(Locale locale) {
-        return this.pluginMgr.customizeEditableWindows(locale);
+        return pluginMgr.customizeEditableWindows(locale);
     }
 
 
@@ -383,7 +384,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return browser adapter
      */
     public BrowserAdapter getBrowserAdapter() {
-        return BrowserAdapter.getInstance(this.cmsService);
+        return BrowserAdapter.getInstance(cmsService);
     }
 
 
@@ -394,7 +395,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the plugin mgr
      */
     public CustomizationPluginMgr getPluginMgr() {
-        return this.pluginMgr;
+        return pluginMgr;
     }
 
     /**
@@ -402,10 +403,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public INuxeoCommentsService getNuxeoCommentsService() {
-        if (this.commentsService == null) {
-            this.commentsService = new NuxeoCommentsServiceImpl(this.cmsService, this.directoryService);
+        if (commentsService == null) {
+            commentsService = new NuxeoCommentsServiceImpl(cmsService, directoryService);
         }
-        return this.commentsService;
+        return commentsService;
     }
 
 
@@ -417,7 +418,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final List<ListTemplate> getListTemplates(Locale locale) {
 
-        return this.pluginMgr.customizeListTemplates(locale);
+        return pluginMgr.customizeListTemplates(locale);
     }
 
 
@@ -426,7 +427,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<ListTemplate> templates = new ArrayList<ListTemplate>();
 
         // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(locale);
+        Bundle bundle = bundleFactory.getBundle(locale);
 
         // Minimal
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_MINI, bundle.getString("LIST_TEMPLATE_MINI"), DEFAULT_SCHEMAS));
@@ -449,7 +450,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
 
-        return this.pluginMgr.getFragments(locale);
+        return pluginMgr.getFragments(locale);
 
 
     }
@@ -469,9 +470,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
 
         // Portlet context
-        PortletContext portletContext = this.getPortletCtx();
+        PortletContext portletContext = getPortletCtx();
         // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(locale);
+        Bundle bundle = bundleFactory.getBundle(locale);
 
         // Text fragment
         fragmentTypes.add(new FragmentType(PropertyFragmentModule.TEXT_ID, bundle.getString("FRAGMENT_TYPE_TEXT"), new PropertyFragmentModule(portletContext,
@@ -504,7 +505,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public SortedMap<String, String> getMenuTemplates(Locale locale) {
-        return this.pluginMgr.customizeMenuTemplates(locale);
+        return pluginMgr.customizeMenuTemplates(locale);
     }
 
 
@@ -518,7 +519,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         SortedMap<String, String> templates = Collections.synchronizedSortedMap(new TreeMap<String, String>());
 
         // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(locale);
+        Bundle bundle = bundleFactory.getBundle(locale);
 
         // Default
         templates.put(StringUtils.EMPTY, bundle.getString("MENU_TEMPLATE_DEFAULT"));
@@ -570,7 +571,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public Player getCMSDefaultPlayer(DocumentContext<Document> docCtx) {
 
-        return this.players.get("defaultPlayer").getCMSPlayer(docCtx);
+        return players.get("defaultPlayer").getCMSPlayer(docCtx);
     }
 
 
@@ -755,12 +756,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Player getCMSPlayer(CMSServiceCtx cmsContext) throws Exception {
         Document document = (Document) cmsContext.getDoc();
-        CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
+        CMSPublicationInfos pubInfos = cmsService.getPublicationInfos(cmsContext, document.getPath());
 
         // Workspace indicator
         boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
 
-        List<INuxeoPlayerModule> modules = this.pluginMgr.customizeModules();
+        List<INuxeoPlayerModule> modules = pluginMgr.customizeModules();
         DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(cmsContext, document.getPath());
 
         for (INuxeoPlayerModule module : modules) {
@@ -774,7 +775,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if ("UserWorkspace".equals(document.getType())) {
             // Pas de filtre sur les versions publiées
             cmsContext.setDisplayLiveVersion("1");
-            return this.getCMSFileBrowser(docCtx);
+            return getCMSFileBrowser(docCtx);
         }
 
 
@@ -782,13 +783,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (workspace) {
                 // File browser
                 cmsContext.setDisplayLiveVersion("1");
-                Player props = this.getCMSFileBrowser(docCtx);
+                Player props = getCMSFileBrowser(docCtx);
                 props.getWindowProperties().put("osivia.title", document.getTitle());
                 return props;
             } else if ("Folder".equals(document.getType())) {
-                return this.getCMSFolderPlayer(docCtx);
+                return getCMSFolderPlayer(docCtx);
             } else {
-                return this.getCMSOrderedFolderPlayer(docCtx);
+                return getCMSOrderedFolderPlayer(docCtx);
             }
         }
 
@@ -807,7 +808,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             Documents configs = null;
             try {
 
-                configs = WebConfigurationHelper.executeWebConfigCmd(cmsContext, this.cmsService, command);
+                configs = WebConfigurationHelper.executeWebConfigCmd(cmsContext, cmsService, command);
 
             } catch (Exception e) {
                 // Can't get confs
@@ -818,7 +819,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
                     String playerInstance = config.getProperties().getString(WebConfigurationHelper.ADDITIONAL_CODE);
 
-                    if (document.getType().equals(documentType) && this.players.containsKey(playerInstance)) {
+                    if (document.getType().equals(documentType) && players.containsKey(playerInstance)) {
 
                         Map<String, String> windowProperties = new HashMap<String, String>();
                         PropertyList list = config.getProperties().getList(WebConfigurationHelper.OPTIONS);
@@ -833,13 +834,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                             }
                         }
 
-                        return this.players.get(playerInstance).getCMSPlayer(docCtx);
+                        return players.get(playerInstance).getCMSPlayer(docCtx);
                     }
                 }
             }
 
         }
-        return this.players.get("defaultPlayer").getCMSPlayer(docCtx);
+        return players.get("defaultPlayer").getCMSPlayer(docCtx);
     }
 
 
@@ -853,7 +854,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public String getDefaultExternalViewer(CMSServiceCtx ctx) {
         Document doc = (Document) ctx.getDoc();
 
-        this.getNuxeoConnectionProps();
+        getNuxeoConnectionProps();
         String externalUrl = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + doc.getId() + "/view_documents";
 
         // Par défaut, lien direct sur Nuxeo
@@ -910,7 +911,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public String getNuxeoNativeViewerUrl(CMSServiceCtx ctx) {
         if (("file-browser-menu-workspace".equals(ctx.getDisplayContext()))) {
-            return this.getDefaultExternalViewer(ctx);
+            return getDefaultExternalViewer(ctx);
         }
         return null;
     }
@@ -946,14 +947,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
 
             if ("ContextualLink".equals(document.getType()) && !("document".equals(displayContext) || "fileExplorer".equals(displayContext))) {
-                url = this.createPortletDelegatedExternalLink(cmsContext);
+                url = createPortletDelegatedExternalLink(cmsContext);
                 externalLink = true;
             }
 
             // Gestion des vues externes
             // Nécessaire pour poser une ancre au moment de la génération du lien
             if (url == null) {
-                url = this.getNuxeoNativeViewerUrl(cmsContext);
+                url = getNuxeoNativeViewerUrl(cmsContext);
                 externalLink = true;
             }
         }
@@ -978,15 +979,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         CMSExtendedDocumentInfos extendedDocumentInfos = null;
         if(ctx.getDoc() != null) {
         	Document doc = (Document) ctx.getDoc();
-        	publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
-        	extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
+        	publicationInfos = cmsService.getPublicationInfos(ctx, doc.getPath());
+        	extendedDocumentInfos = cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
         }
 
-        this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
+        getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
 
         List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-        List<IMenubarModule> customizeMenubars = this.pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
+        List<IMenubarModule> customizeMenubars = pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
 
 
         for(IMenubarModule menubarCustom : customizeMenubars) {
@@ -1003,7 +1004,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @throws Exception
      */
     public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
-        return this.getUserPagesLoader().computeUserPreloadedPages(cmsCtx);
+        return getUserPagesLoader().computeUserPreloadedPages(cmsCtx);
     }
 
 
@@ -1043,7 +1044,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
         }
 
-        return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
+        return addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
 
     }
 
@@ -1110,7 +1111,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 }
             }
 
-            String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
+            String extraFilter = getExtraRequestFilter(ctx, requestFilteringPolicy);
             if (extraFilter != null) {
                 requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
             }
@@ -1157,7 +1158,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         filter.append(" ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0");
         filter.append(" AND ecm:mixinType <> 'isLocalPublishLive'");
 
-        return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, filter.toString());
+        return addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, filter.toString());
     }
 
 
@@ -1180,7 +1181,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             WebConfigurationQueryCommand command = new WebConfigurationQueryCommand(domainPath, WebConfigurationType.EXTRA_REQUEST_FILTER);
             Documents configs = null;
 
-            configs = WebConfigurationHelper.executeWebConfigCmd(ctx, this.cmsService, command);
+            configs = WebConfigurationHelper.executeWebConfigCmd(ctx, cmsService, command);
 
 
             if (configs.size() > 0) {
@@ -1214,7 +1215,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // L'instanciation du parser Neko nécessite de passer dans le classloader du CMSCustomizer
         // (Sinon, on n'arrive pas à trouver la classe du parser)
-        Thread.currentThread().setContextClassLoader(this.cl);
+        Thread.currentThread().setContextClassLoader(cl);
 
         try {
             Transformer transformer = WysiwygParser.getInstance().getTemplate().newTransformer();
@@ -1259,7 +1260,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             String anchor = StringUtils.substringAfter(url, "#");
 
             // CMS path
-            String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
+            String cmsPath = transformNuxeoURL(cmsContext, nuxeoURL);
 
             Map<String, String> parameters = new HashMap<String, String>(0);
 
@@ -1276,7 +1277,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null,
+            String portalURL = portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null,
                     null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
@@ -1333,7 +1334,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 webId = StringUtils.substringBefore(webId, ".");
             }
 
-            cmsPath = this.getWebIdService().webIdToCmsPath(webId);
+            cmsPath = getWebIdService().webIdToCmsPath(webId);
         } else if (StringUtils.startsWith(url, "/nuxeo/nxpath/")) {
             // Nuxeo CMS path
             cmsPath = StringUtils.removeStart(url, "/nuxeo/nxpath/");
@@ -1356,7 +1357,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Map<String, DocumentType> getCMSItemTypes() {
 
-        return this.pluginMgr.customizeCMSItemTypes();
+        return pluginMgr.customizeCMSItemTypes();
 
     }
 
@@ -1406,7 +1407,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public String getCommentsHTMLContent(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        List<CommentDTO> comments = this.getNuxeoCommentsService().getDocumentComments(cmsContext, document);
+        List<CommentDTO> comments = getNuxeoCommentsService().getDocumentComments(cmsContext, document);
         CommentsFormatter formatter = new CommentsFormatter(comments);
         Locale locale = cmsContext.getRequest().getLocale();
         return formatter.generateHTMLContent(locale);
@@ -1419,7 +1420,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the cmsService
      */
     public CMSService getCmsService() {
-        return this.cmsService;
+        return cmsService;
     }
 
     /**
@@ -1435,7 +1436,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the directoryService
      */
     public IDirectoryService getDirectoryService() {
-        return this.directoryService;
+        return directoryService;
     }
 
 
@@ -1452,7 +1453,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 * @return the notificationsService
 	 */
 	public INotificationsService getNotificationsService() {
-		return this.notificationsService;
+		return notificationsService;
 	}
 
 	/**
@@ -1466,7 +1467,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 	 * @return the internationalizationService
 	 */
 	public IInternationalizationService getInternationalizationService() {
-		return this.internationalizationService;
+		return internationalizationService;
 	}
 
 	/**
@@ -1483,7 +1484,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the portletCtx
      */
     public PortletContext getPortletCtx() {
-        return this.portletCtx;
+        return portletCtx;
     }
 
     /**
@@ -1502,7 +1503,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the parser
      */
     public XMLReader getParser() {
-        return this.parser;
+        return parser;
     }
 
     /**
@@ -1539,7 +1540,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
             }
 
-            permLinkPath = this.getWebIdService().webIdToCmsPath(webId);
+            permLinkPath = getWebIdService().webIdToCmsPath(webId);
         }
 
         return permLinkPath;
@@ -1553,11 +1554,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         try {
 
             // get timestamp defined previously
-            String avatarTime = this.avatarMap.get(username);
+            String avatarTime = avatarMap.get(username);
 
             if (avatarTime == null) {
                 // if not defined, set ie
-                avatarTime = this.refreshUserAvatar(cmsCtx, username);
+                avatarTime = refreshUserAvatar(cmsCtx, username);
             }
 
             // timestamp is concated in the url to control the client cache
@@ -1575,7 +1576,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // renew the timestamp and map it to the user
         String avatarTime = Long.toString(new Date().getTime());
 
-        this.avatarMap.put(username, avatarTime);
+        avatarMap.put(username, avatarTime);
 
         return avatarTime;
     }
@@ -1649,7 +1650,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 Document doc = (Document) binary.getDocument();
 
                 path = doc.getPath();
-                liveState = this.isPathInLiveState(cmsCtx, doc);
+                liveState = isPathInLiveState(cmsCtx, doc);
                 delegation.setGrantedAccess(true);
             } else {
                 path = binary.getPath();
@@ -1666,7 +1667,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             delegation.setUserName(cmsCtx.getServletRequest().getRemoteUser());
 
-            Map<String, BinaryDelegation> delegationMap = this.getUserDelegation(cmsCtx);
+            Map<String, BinaryDelegation> delegationMap = getUserDelegation(cmsCtx);
             delegationMap.put(path, delegation);
 
             boolean refresh = PageProperties.getProperties().isRefreshingPage();
@@ -1698,11 +1699,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // URL builder
             StringBuilder sb = new StringBuilder();
             sb.append(BINARY_SERVLET);
-            
+
             if (StringUtils.isNotBlank(fileName)) {
                 sb.append("/").append(fileName);
             }
-            
+
             sb.append("?type=").append(binary.getType().name()).append("&path=").append(URLEncoder.encode(path, "UTF-8"));
 
             if (portalName != null) {
@@ -1734,10 +1735,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 sb.append("&fscope=").append(cmsCtx.getForcePublicationInfosScope());
             }
 
-            String binaryTimeStamp = this.binaryMap.get(path);
+            String binaryTimeStamp = binaryMap.get(path);
             if (binaryTimeStamp == null) {
                 // if not defined, set ie
-                binaryTimeStamp = this.refreshBinaryResource(cmsCtx, path);
+                binaryTimeStamp = refreshBinaryResource(cmsCtx, path);
             }
 
             // timestamp is concated in the url to control the client cache
@@ -1790,7 +1791,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // renew the timestamp and map it to the user
         String pathTime = Long.toString(new Date().getTime());
 
-        this.binaryMap.put(path, pathTime);
+        binaryMap.put(path, pathTime);
 
         return pathTime;
     }
@@ -1802,7 +1803,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the bundleFactory
      */
     public IBundleFactory getBundleFactory() {
-        return this.bundleFactory;
+        return bundleFactory;
     }
 
 
@@ -1812,7 +1813,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException {
         try {
-            return this.cmsService.executeNuxeoCommand(cmsContext, command);
+            return cmsService.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
             throw e;
         } catch (Exception e) {
@@ -1829,15 +1830,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 		Map<String, EcmCommand> commands = new ConcurrentHashMap<String, EcmCommand>();
 
-		commands.put(EcmCommonCommands.lock.name(), new LockCommand(this.getNotificationsService(), this.getInternationalizationService()));
-		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.lock.name(), new LockCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(getNotificationsService(), getInternationalizationService()));
 
-		commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.getNotificationsService(), this.getInternationalizationService()));
-		commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(getNotificationsService(), getInternationalizationService()));
 
-		commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(this.getNotificationsService(), this.getInternationalizationService()));
-		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.getNotificationsService(), this.getInternationalizationService()));
+		commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(getNotificationsService(), getInternationalizationService()));
+		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(getNotificationsService(), getInternationalizationService()));
 
+        commands.put(EcmCommonCommands.eraseModifications.name(), new EraseModificationsCommand(getNotificationsService(), getInternationalizationService()));
 
 		return commands;
 	}
@@ -1849,16 +1851,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return tasks
      */
     public List<TaskbarTask> getTaskbarTasks() {
-        if (this.tasks == null) {
-            this.tasks = new ArrayList<TaskbarTask>();
+        if (tasks == null) {
+            tasks = new ArrayList<TaskbarTask>();
 
             // Home
-            this.tasks.add(this.getHomeTask());
+            tasks.add(getHomeTask());
 
             // Search
-            this.tasks.add(this.getSearchTask());
+            tasks.add(getSearchTask());
         }
-        return this.tasks;
+        return tasks;
     }
 
 
@@ -1917,13 +1919,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return panel players, grouped by maximized window instance
      */
     public Map<String, PanelPlayer> getNavigationPanelPlayers() {
-        if (this.navigationPanelPlayers == null) {
-            this.navigationPanelPlayers = new ConcurrentHashMap<String, PanelPlayer>();
+        if (navigationPanelPlayers == null) {
+            navigationPanelPlayers = new ConcurrentHashMap<String, PanelPlayer>();
 
             // File browser
-            this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
+            navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", getFileBrowserPanelPlayer());
         }
-        return this.navigationPanelPlayers;
+        return navigationPanelPlayers;
     }
 
 
@@ -1952,7 +1954,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException {
         try {
-            CustomizedJsp customizedPage = this.pluginMgr.customizeJSP(name, portletContext, request);
+            CustomizedJsp customizedPage = pluginMgr.customizeJSP(name, portletContext, request);
 
             String customizedName;
             if (customizedPage != null) {
