@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -150,7 +151,8 @@ public class MenuBarFormater {
      * @throws PortalException
      */
     @SuppressWarnings("unchecked")
-    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, CMSExtendedDocumentInfos extendedInfos)
+            throws CMSException, PortalException {
         if ((cmsContext.getDoc() == null) && (cmsContext.getCreationPath() == null)) {
             return;
         }
@@ -402,7 +404,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     protected void getChangeModeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos)
-            throws CMSException {
+ throws CMSException, PortalException {
         if ((cmsContext.getRequest().getRemoteUser() == null) || StringUtils.isBlank(pubInfos.getPublishSpacePath())) {
             // cas non authentifié et hors espace de publication
             return;
@@ -423,15 +425,23 @@ public class MenuBarFormater {
 
                 final MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
+                // Current modification indicator
+                final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
+                modificationIndicator.setGlyphicon("halflings halflings-asterisk");
+                modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
+                menubar.add(modificationIndicator);
+
                 if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                     editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
 
                     // Live version indicator menubar item
-                    final MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12, "label label-info");
+                    final MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12,
+                            "label label-info");
                     liveIndicator.setGlyphicon("halflings halflings-pencil visible-xs-inline-block");
                     liveIndicator.setState(true);
 
                     menubar.add(liveIndicator);
+
 
                     if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
                         // Online workflow pending indicator menubar item
@@ -480,12 +490,14 @@ public class MenuBarFormater {
                     } else {
                         if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
 
-                            // Current modification indicator
-                            final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent,
-                                    0, null);
-                            modificationIndicator.setGlyphicon("halflings halflings-alert");
+                            // Erase modifications
+                            String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.eraseModifications);
+                            final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"),"halflings halflings-erase", parent,
+                                    11, "#erase_cms_page",null,null, "fancybox_inline");
 
-                            menubar.add(modificationIndicator);
+                            eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
+                            menubar.add(eraseItem);
+
 
                             if (pubInfos.isUserCanValidate()) {
                                 // Publish menubar item
@@ -542,14 +554,6 @@ public class MenuBarFormater {
                         menubar.add(unpublishItem);
                         }
 
-                    if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
-                        // Current modification indicator
-                        final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);
-                        modificationIndicator.setGlyphicon("halflings halflings-alert");
-
-                        menubar.add(modificationIndicator);
-                    }
-
                     if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
                         // Go to live version
                         final String liveURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
@@ -577,11 +581,14 @@ public class MenuBarFormater {
 
                 if (pubInfos.isBeingModified() && pubInfos.isRemotePublished()) {
                     final MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
-                    // Current modification indicator
-                    final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), parent, 0, null);
-                    modificationIndicator.setGlyphicon("halflings halflings-alert");
 
-                    menubar.add(modificationIndicator);
+                    // Erase modifications
+                    String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.eraseModifications);
+                    final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
+                            "#erase_cms_page", null, null, "fancybox_inline");
+
+                    eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
+                    menubar.add(eraseItem);
                 }
             }
         }
@@ -1511,6 +1518,41 @@ public class MenuBarFormater {
                 }
             }
         }
+    }
+
+    /**
+     * Generate erase confirmation fancybox.
+     *
+     * @param bundle bundle
+     * @param urlDelete the command for delete
+     * @return fancybox DOM element
+     * @throws UnsupportedEncodingException
+     */
+    private String generateEraseFancyBox(Bundle bundle, String urlErase) {
+        // Root
+        Element root = DOM4JUtils.generateDivElement("hidden");
+
+        // Container
+        Element container = DOM4JUtils.generateDivElement("container-fluid text-center");
+        DOM4JUtils.addAttribute(container, HTMLConstants.ID, "erase_cms_page");
+        root.add(container);
+
+        // Message
+        Element message = DOM4JUtils.generateElement(HTMLConstants.P, null, bundle.getString("ERASE_CONFIRM_MESSAGE"));
+        container.add(message);
+
+        // OK button
+        Element okButton = DOM4JUtils.generateLinkElement(urlErase, null, null, "btn btn-default btn-warning", bundle.getString("YES"),
+                "halflings halflings-alert");
+        container.add(okButton);
+
+        // Cancel button
+        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        DOM4JUtils.addAttribute(cancelButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "closeFancybox()");
+        container.add(cancelButton);
+
+        return DOM4JUtils.write(root);
     }
 
 
