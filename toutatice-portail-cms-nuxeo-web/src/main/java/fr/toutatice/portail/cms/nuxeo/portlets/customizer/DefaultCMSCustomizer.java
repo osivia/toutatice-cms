@@ -656,7 +656,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
         //TODO
         //windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
-        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.title", doc.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
         Player linkProps = new Player();

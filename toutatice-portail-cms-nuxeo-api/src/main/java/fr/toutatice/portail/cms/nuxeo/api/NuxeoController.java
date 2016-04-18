@@ -16,7 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -93,8 +92,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
  */
 public class NuxeoController {
 
-    /** Request attribute name. */
-    public static final String REQUEST_ATTRIBUTE = NuxeoController.class.getSimpleName();
     /** Slash separator. */
     private static final String SLASH = "/";
     /** Dot separator. */
@@ -824,13 +821,7 @@ public class NuxeoController {
                         this.forcedLivePath = editionState.getDocPath();
                     }
                 }
-
-
             }
-
-
-            // Inject Nuxeo controller into request
-            request.setAttribute(REQUEST_ATTRIBUTE, this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -2286,24 +2277,8 @@ public class NuxeoController {
         if(navigationInfos.getContentPath() != null) {
 			CMSServiceCtx cmsCtx = nxCtl.getCMSCtx();
 
-			ICMSService cmsService = getCMSService();
-
 			try {
 				addInfos(cmsCtx, navigationInfos.getContentPath(), docContext);
-
-
-				String contextualizationBasePath = cmsCtx.getContextualizationBasePath();
-				if(contextualizationBasePath != null) {
-					List<CMSItem> portalNavigationSubitems = cmsService.getPortalNavigationSubitems(cmsCtx, contextualizationBasePath, getLivePath(navigationInfos.getContentPath()));
-
-					if(portalNavigationSubitems.size() > 0) {
-						navigationInfos.setHasSubItems(Boolean.TRUE);
-					}
-				}
-
-
-
-
 			} catch (CMSException e) {
 				throw new PortletException(e);
 			}
@@ -2453,18 +2428,7 @@ public class NuxeoController {
         Document doc = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
-        //CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
-//
-//        List<CMSItem> navItems = null;
-
         if (navigationInfos.isContextualized()) {
-            // Publication dans un environnement contextualisé
-            // On se sert du menu de navigation et on décompose chaque niveau
-//            navItems = this.cmsService.getPortalNavigationSubitems(ctx, ctx.getContextualizationBasePath(),
-//                    DocumentPublishSpaceNavigationCommand.computeNavPath(doc.getPath()));
-        }
-
-        if (navigationInfos.isContextualized() && navigationInfos.isHasSubItems()) {
             // On exclut les folderish, car ils sont présentés dans le menu en mode contextualisé
             nuxeoRequest = "ecm:parentId = '" + navigationInfos.getLiveId() + "' AND ecm:mixinType != 'Folderish'";
             if (ordered) {
@@ -2473,8 +2437,7 @@ public class NuxeoController {
                 nuxeoRequest += " order by dc:modified desc";
             }
         } else {
-            nuxeoRequest = "ecm:path STARTSWITH '" + getLivePath(doc.getPath())
-                    + "' AND ecm:mixinType != 'Folderish' ";
+            nuxeoRequest = "ecm:path STARTSWITH '" + getLivePath(doc.getPath()) + "' AND ecm:mixinType != 'Folderish' ";
 
             if (ordered) {
                 nuxeoRequest += " order by ecm:pos";
