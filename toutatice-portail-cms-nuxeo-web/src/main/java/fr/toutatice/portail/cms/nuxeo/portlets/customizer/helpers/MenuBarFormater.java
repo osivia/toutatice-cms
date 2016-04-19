@@ -425,11 +425,14 @@ public class MenuBarFormater {
 
                 final MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
-                // Current modification indicator
-                final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
-                modificationIndicator.setGlyphicon("halflings halflings-asterisk");
-                modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
-                menubar.add(modificationIndicator);
+                if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                    // Current modification indicator
+                    final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
+                    modificationIndicator.setGlyphicon("halflings halflings-asterisk");
+                    modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
+                    menubar.add(modificationIndicator);
+                }
+
 
                 if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                     editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
@@ -575,20 +578,6 @@ public class MenuBarFormater {
 
                         menubar.add(previewItem);
                     }
-                }
-            } else if (!DocumentHelper.isFolder(document) && pubInfos.isEditableByUser() && pubInfos.isLiveSpace()
-                    && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-
-                if (pubInfos.isBeingModified() && pubInfos.isRemotePublished()) {
-                    final MenubarDropdown parent = this.getCMSEditionDropdown(portalControllerContext, documentType, bundle);
-
-                    // Erase modifications
-                    String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.eraseModifications);
-                    final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
-                            "#erase_cms_page", null, null, "fancybox_inline");
-
-                    eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
-                    menubar.add(eraseItem);
                 }
             }
         }
