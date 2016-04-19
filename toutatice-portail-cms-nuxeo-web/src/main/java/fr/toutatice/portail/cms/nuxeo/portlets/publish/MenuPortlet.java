@@ -177,12 +177,22 @@ public class MenuPortlet extends CMSPortlet {
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
 
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_SUCCESS");
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_SUCCESS_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_SUCCESS_MESSAGE", sourceIds.size());
+                    }
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                 } catch (NuxeoException e) {
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_ERROR");
-                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_WARNING_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_WARNING_MESSAGE", sourceIds.size());
+                    }
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
 
 
