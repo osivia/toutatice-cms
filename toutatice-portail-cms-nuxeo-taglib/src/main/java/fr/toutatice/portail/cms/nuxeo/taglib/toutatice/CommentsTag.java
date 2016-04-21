@@ -228,7 +228,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         fancyboxContainer.add(form);
 
         // Identifier hidden input
-        Element hidden = DOM4JUtils.generateElement(HTMLConstants.INPUT, null, StringUtils.EMPTY);
+        Element hidden = DOM4JUtils.generateElement(HTMLConstants.INPUT, null, null);
         DOM4JUtils.addAttribute(hidden, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_HIDDEN);
         DOM4JUtils.addAttribute(hidden, HTMLConstants.NAME, "id");
         form.add(hidden);
