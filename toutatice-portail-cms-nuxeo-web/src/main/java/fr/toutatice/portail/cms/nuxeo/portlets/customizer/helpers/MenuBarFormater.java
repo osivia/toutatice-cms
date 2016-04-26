@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -13,7 +13,6 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -489,15 +488,15 @@ public class MenuBarFormater {
                     } else {
                         if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
 
-                            // Erase modifications
-                            String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.eraseModifications);
-                            final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
-                                    "#erase_cms_page", null, null, "fancybox_inline");
-
-                            eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
-                            menubar.add(eraseItem);
-
-
+                            if (pubInfos.isPublished()) {
+                                // Erase modifications
+                                String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path,
+                                        EcmCommonCommands.eraseModifications);
+                                final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
+                                        "#erase_cms_page", null, null, "fancybox_inline");
+                                eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
+                                menubar.add(eraseItem);
+                            }
                             if (pubInfos.isUserCanValidate()) {
                                 // Publish menubar item
                                 final String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext,
