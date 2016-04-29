@@ -106,6 +106,14 @@
             <rtexprvalue>false</rtexprvalue>
             <type>java.lang.String</type>
         </attribute>
+        
+        <attribute>
+            <description>Enable inline content indicator.</description>
+            <name>inline</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
 
 

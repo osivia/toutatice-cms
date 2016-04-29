@@ -234,7 +234,7 @@ public class BinaryServlet extends HttpServlet {
         }
 
         StringBuilder builder = new StringBuilder();
-        if ("application/pdf".equals(content.getMimeType())) {
+        if ("application/pdf".equals(content.getMimeType()) && BooleanUtils.toBoolean(request.getParameter("inline"))) {
             // Open inside navigator
             builder.append("inline; ");
         } else {

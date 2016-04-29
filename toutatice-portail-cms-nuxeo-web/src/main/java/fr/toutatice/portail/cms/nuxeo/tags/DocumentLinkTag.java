@@ -46,6 +46,8 @@ public class DocumentLinkTag extends SimpleTagSupport {
     private Boolean permalink;
     /** Request variable name. */
     private String var;
+    /** Enable inline content indicator. */
+    private Boolean inline;
 
 
     /** WebId service. */
@@ -118,6 +120,31 @@ public class DocumentLinkTag extends SimpleTagSupport {
                     }
                 } else {
                     link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(this.displayContext));
+
+                    // Inline parameter
+                    if (BooleanUtils.isTrue(this.inline)) {
+                        String url = link.getUrl();
+                        String query = StringUtils.substringAfter(url, "?");
+                        String anchor = StringUtils.substringAfter(query, "#");
+                        if (StringUtils.isNotEmpty(anchor)) {
+                            query = StringUtils.substringBefore(query, "#");
+                        }
+                        
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(StringUtils.substringBefore(url, "?"));
+                        builder.append("?");
+                        if (StringUtils.isNotEmpty(query)) {
+                            builder.append(query);
+                            builder.append("&");
+                        }
+                        builder.append("inline=true");
+                        if (StringUtils.isNotEmpty(anchor)) {
+                            builder.append("#");
+                            builder.append(anchor);
+                        }
+                        
+                        link = new Link(builder.toString(), false);
+                    }
                 }
             } else {
                 // Property value
@@ -242,6 +269,24 @@ public class DocumentLinkTag extends SimpleTagSupport {
      */
     public void setVar(String var) {
         this.var = var;
+    }
+
+    /**
+     * Getter for inline.
+     * 
+     * @return the inline
+     */
+    public Boolean getInline() {
+        return inline;
+    }
+
+    /**
+     * Setter for inline.
+     * 
+     * @param inline the inline to set
+     */
+    public void setInline(Boolean inline) {
+        this.inline = inline;
     }
 
 }

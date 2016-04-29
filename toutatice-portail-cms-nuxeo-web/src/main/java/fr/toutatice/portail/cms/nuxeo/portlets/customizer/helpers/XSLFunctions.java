@@ -337,7 +337,9 @@ public class XSLFunctions {
 
                                 String fileIndex = mRes.group(3);
 
-                                return this.nuxeoController.createAttachedFileLink(uid, fileIndex);
+                                String attachedUrl = this.nuxeoController.createAttachedFileLink(uid, fileIndex);
+                                attachedUrl += "&inline=true";
+                                return attachedUrl;
                             }
                         }
 
@@ -398,7 +400,9 @@ public class XSLFunctions {
                                 String uid = mBlobExp.group(2);
                                 String blobIndex = mBlobExp.group(3);
                                 String fileName = mBlobExp.group(4);
-                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex, fileName);
+                                String blobUrl = this.nuxeoController.createAttachedBlobLink(uid, blobIndex, fileName);
+                                blobUrl += "&inline=true";
+                                return blobUrl;
                             }
                         }
 

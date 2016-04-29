@@ -377,6 +377,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 // Attachement URL
                 String url = nuxeoController.createAttachedFileLink(document.getPath(), String.valueOf(i));
+                url += "&inline=true";
                 attachment.setUrl(url);
 
                 attachments.add(attachment);
