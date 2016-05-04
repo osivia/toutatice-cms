@@ -46,7 +46,7 @@ public class DocumentService {
 
     public static final String Query = "Document.Query";
 
-    public static final String SetPermission = "Document.AddPermission";
+    public static final String SetPermission = "Document.SetACE";
 
     public static final String RemoveAcl = "Document.RemoveACL";
 
@@ -195,17 +195,16 @@ public class DocumentService {
 
     public Document setPermission(DocRef doc, String user, String permission)
             throws Exception {
-        return this.setPermission(doc, user, permission, null, true);
+        return setPermission(doc, user, permission, null, true);
     }
 
-    public Document setPermission(DocRef doc, String user, String permission,
-            boolean granted) throws Exception {
-        return this.setPermission(doc, user, permission, null, granted);
+    public Document setPermission(DocRef doc, String user, String permission, boolean granted) throws Exception {
+        return setPermission(doc, user, permission, null, granted);
     }
 
-    public Document setPermission(DocRef doc, String user, String permission,
-            String acl, boolean granted) throws Exception {
-        OperationRequest req = this.session.newRequest(SetPermission).setInput(doc).set("user", user).set("permission", permission);
+    public Document setPermission(DocRef doc, String user, String permission, String acl, boolean granted) throws Exception {
+        OperationRequest req = session.newRequest(SetPermission).setInput(doc).set("user", user).set("permission", permission).set("grant", granted)
+                .set("overwrite", false);
         if (acl != null) {
             req.set("acl", acl);
         }

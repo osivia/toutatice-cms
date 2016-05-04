@@ -192,6 +192,21 @@ $JQry(function() {
 	});
 	
 	
+	// Double click
+	$JQry(".file-browser .file-browser-lines li").dblclick(function(event) {
+		var $target = $JQry(event.target),
+			$li = $target.closest("li"),
+		    $link = $li.find("a"),
+		    url = $link.attr("href");
+		
+		if (url === undefined) {
+			console.log("Double click event failed: URL is undefined.");
+		} else {
+			window.location.href = $link.attr("href");
+		}
+	});
+	
+	
 	// Click on draggable
 	$JQry(".file-browser .draggable").click(function(event) {
 		var $row = $JQry(event.target).closest("li"),
