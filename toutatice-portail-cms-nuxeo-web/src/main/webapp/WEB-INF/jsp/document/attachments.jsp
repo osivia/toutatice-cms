@@ -12,7 +12,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <i class="halflings halflings-glyph-paperclip"></i>
+                        <i class="halflings halflings-paperclip"></i>
                         <span><op:translate key="ATTACHMENTS" /></span>
                     </h3>
                 </div>

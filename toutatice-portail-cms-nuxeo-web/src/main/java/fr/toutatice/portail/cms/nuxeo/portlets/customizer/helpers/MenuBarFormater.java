@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -303,7 +304,7 @@ public class MenuBarFormater {
         MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
         if (dropdown == null) {
-            dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "halflings halflings-pencil",
+            dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"), "glyphicons glyphicons-pencil",
                     MenubarGroup.CMS, 3, false, false);
             dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
             this.menubarService.addDropdown(portalControllerContext, dropdown);
@@ -502,7 +503,7 @@ public class MenuBarFormater {
                                 final String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext,
                                         pubInfos.getDocumentPath());
 
-                                final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok-2", parent,
+                                final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok", parent,
                                         12, publishURL, null, null, null);
                                 publishItem.setAjaxDisabled(true);
                                 publishItem.setDivider(true);
@@ -596,14 +597,14 @@ public class MenuBarFormater {
             List<MenubarItem> menubar, MenubarContainer parent, Bundle bundle) throws CMSException {
         // Validate
         final String validateURL = this.getContributionService().getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        final MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-ok-2", parent, 13,
+        final MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-ok", parent, 13,
                 validateURL, null, null, null);
         validateItem.setAjaxDisabled(true);
         menubar.add(validateItem);
 
         // Reject
         final String rejectURL = this.getContributionService().getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        final MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "glyphicons glyphicons-remove-2", parent, 14,
+        final MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "glyphicons glyphicons-remove", parent, 14,
                 rejectURL, null, null, null);
         rejectItem.setAjaxDisabled(true);
         menubar.add(rejectItem);
@@ -749,11 +750,11 @@ public class MenuBarFormater {
 
         if (extendedInfos.isCanSynchronize()) {
             command = "SYNCHRONIZE_ACTION";
-            icon = "glyphicons glyphicons-refresh";
+            icon = "glyphicons glyphicons-synchronization";
             ecmAction = EcmCommonCommands.synchronizeFolder;
         } else if (extendedInfos.isCanUnsynchronize()) {
             command = "UNSYNCHRONIZE_ACTION";
-            icon = "glyphicons glyphicons-ban";
+            icon = "glyphicons glyphicons-synchronization-ban";
             ecmAction = EcmCommonCommands.unsynchronizeFolder;
 
             // Synchronized indicator menubar item
@@ -828,7 +829,7 @@ public class MenuBarFormater {
                     url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
 
                     subscribeItem.setUrl(url);
-                    subscribeItem.setGlyphicon("glyphicons glyphicons-ban");
+                    subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
                     subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 
                     // Subscribed indicator menubar item
@@ -892,7 +893,7 @@ public class MenuBarFormater {
 
                     // Locked indicator menubar item
                     final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
-                    lockedIndicator.setGlyphicon("halflings halflings-glyph-lock");
+                    lockedIndicator.setGlyphicon("halflings halflings-lock");
                     lockedIndicator.setTooltip(bundle.getString("LOCKED"));
                     lockedIndicator.setState(true);
                     menubar.add(lockedIndicator);

@@ -103,7 +103,7 @@
                             </div>
                             <div class="col-xs-2">
                                 <button type="submit" name="remove" value="${item.key}" class="btn btn-default">
-                                    <i class="glyphicons glyphicons-remove-2"></i>
+                                    <i class="glyphicons glyphicons-remove"></i>
                                     <span class="sr-only"><op:translate key="REMOVE" /></span>
                                 </button>
                             </div>

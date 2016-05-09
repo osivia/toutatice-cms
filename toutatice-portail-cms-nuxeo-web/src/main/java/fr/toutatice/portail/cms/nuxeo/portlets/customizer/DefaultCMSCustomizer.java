@@ -1393,7 +1393,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file", false,
                 true, true));
         // Note
-        defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-notes-2"));
+        defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note"));
         // Contextual link
         defaultTypes.add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
                 "glyphicons glyphicons-link"));

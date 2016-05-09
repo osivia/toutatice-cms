@@ -33,7 +33,7 @@
                 <!-- Deselect -->
                 <c:set var="title"><op:translate key="DESELECT" /></c:set>
                 <button type="button" onclick="deselect(this)" class="btn btn-default" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-ban"></i>
+                    <i class="halflings halflings-unchecked"></i>
                     <span class="sr-only">${title}</span>
                 </button>
             </div>
@@ -42,21 +42,21 @@
                 <!-- Gallery -->
                 <c:set var="title"><op:translate key="VIEW_PICTURE_GALLERY" /></c:set>
                 <button type="button" onclick="gallery(this)" class="btn btn-default gallery" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-blackboard"></i>
+                    <i class="halflings halflings-blackboard"></i>
                     <span class="sr-only">${title}</span>
                 </button>
             
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                 <a href="" class="btn btn-default no-ajax-link download" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-download-alt"></i>
+                    <i class="halflings halflings-download-alt"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Edit -->
                 <c:set var="title"><op:translate key="EDIT" /></c:set>
                 <a href="" data-url="${editURL}" onclick="setCallbackFromEcmParams('${callbackURL}', '${ecmBaseURL}')" class="btn btn-default fancyframe_refresh no-ajax-link edit" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-pencil"></i>
+                    <i class="halflings halflings-pencil"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             </div>
@@ -65,14 +65,14 @@
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
                 <a href="" data-url="${moveURL}" class="btn btn-default fancyframe_refresh no-ajax-link move" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-move"></i>
+                    <i class="halflings halflings-move"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Delete -->
                 <c:set var="title"><op:translate key="DELETE" /></c:set>
                 <a href="#${namespace}-delete" class="btn btn-default fancybox_inline no-ajax-link delete" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-bin"></i>
+                    <i class="halflings halflings-trash"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             </div>

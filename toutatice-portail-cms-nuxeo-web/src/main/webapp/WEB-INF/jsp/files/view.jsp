@@ -70,7 +70,7 @@
             <div class="file-upload-shadowbox jumbotron bg-info-hover">
                 <div class="text-center">
                     <p><op:translate key="FILE_BROWSER_DROP_ZONE_MESSAGE" /></p>
-                    <p class="h1"><i class="glyphicons glyphicons-inbox"></i></p>
+                    <p class="h1"><i class="glyphicons glyphicons-drop"></i></p>
                 </div>
             </div>
         </c:if>
