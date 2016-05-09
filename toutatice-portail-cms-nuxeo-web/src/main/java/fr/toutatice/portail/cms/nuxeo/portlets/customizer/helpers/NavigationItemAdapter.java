@@ -258,7 +258,7 @@ public class NavigationItemAdapter {
 
 		/* Workspace et UserWorkspaces*/
 
-		if("Workspace".equals(doc.getType()))	{
+        if ("Workspace".equals(doc.getType()) || "Room".equals(doc.getType())) {
 			properties.put("displayLiveVersion", "1");
             properties.put("partialLoading", "1");
 			//properties.put("useES", String.valueOf(Boolean.TRUE));
