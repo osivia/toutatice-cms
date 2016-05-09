@@ -79,8 +79,9 @@ $JQry(function() {
 	$JQry(".file-browser .draggable").draggable({
 		addClasses: false,
 		connectToFancytree: true,
+		cursor: "move",
 		distance: 10,
-		
+
 		helper: function(event) {
 			var $target = $JQry(event.target),
 				$data = $target.closest(".data"),
@@ -176,10 +177,67 @@ $JQry(function() {
 		
 		start: function(event, ui) {
 			var $target = $JQry(event.target),
+				$browser = $target.closest(".file-browser"),
+				$toolbar = $browser.find(".btn-toolbar"),
+				$li = $target.closest("li"),
+				$data = $li.find(".data"),
 				$selectable = $target.closest(".selectable"),
-				$selected = $selectable.find(".ui-selected");
+				$selected = $selectable.find(".ui-selected"),
+				$elements, writable;
+
+			if ($data.hasClass("ui-selected")) {
+				$selected.addClass("dragged");
+			} else {
+				$selected.each(function(index, element) {
+					var $element = $JQry(element);
+					$element.removeClass("ui-selected bg-primary");
+				});
+				
+				$selected = $data;
+			}
 			
-			$selected.addClass("dragged");
+
+			// Update element infos
+			$elements = $selected.filter(function(index, element) {
+				var $element = $JQry(element);
+
+				return ($element.data("loaded") != true);
+			});
+			$elements.each(function(index, element) {
+				var $element = $JQry(element);
+				
+				jQuery.ajax({
+					url : $toolbar.data("infosurl"),
+					data : {
+						path : $element.data("path")
+					},
+					async : false,
+					success : function(data, status, xhr) {
+						$element.data("loaded", true);
+						
+						if ("success" == status) {
+							$element.data("writable", (data["writable"] == true));
+						}
+					}
+				});
+			});
+			
+			// Writable indicator
+			writable = true;
+			$selected.each(function(index, element) {
+				var $element = $JQry(element);
+				
+				if ($element.data("writable") != true) {
+					writable = false;
+
+					$selected.removeClass("dragged");
+					
+					// Break
+					return false;
+				}
+			});
+			
+			return writable;
 		},
 		
 		stop: function(event, ui) {
@@ -483,11 +541,15 @@ function updateSelectableControls($browser) {
 	var $selected = $browser.find(".ui-selected"),
 		$toolbar = $browser.find(".btn-toolbar"),
 		$single = $toolbar.find(".single-selection"),
+		$waiter = $toolbar.find(".ajax-waiter"),
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
+		$edit = $toolbar.find(".edit"),
+		$move = $toolbar.find(".move"),
+		$delete = $toolbar.find(".delete"),
+		$elements, writable
 		identifiers = "", paths = "", types = "";
 
-	
 	// Sortable
 	$browser.find(".sortable-handle").addClass("hidden");
 	
@@ -503,65 +565,124 @@ function updateSelectableControls($browser) {
 	if ($selected.length == 0) {
 		// No selection
 		$toolbar.hide();
-	} else if ($selected.length == 1) {
-		// Single element selected
-		$toolbar.show();
-		$single.show();
-		$messageSelection.children(".badge").text("1");
-		$messageSelection.children(".text").text($messageSelection.data("message-single-selection"));
-
-		
-		// Sortable
-		$selected.find(".sortable-handle").removeClass("hidden");
-		
-		
-		// Update links with single-selected properties
-		$links.each(function(index, element) {
-			var $element = $JQry(element),
-				url = $element.attr("href");
-			
-			// Update path
-			url = url.replace("_PATH_", $selected.data("path"));
-			
-			$element.attr("href", url);
-		});
-
-		
-		// Gallery
-		$gallery = $toolbar.find(".gallery");
-		$fancybox = $selected.find(".fancybox.thumbnail");
-		if ($fancybox.length) {
-			$gallery.removeClass("hidden");
-		} else {
-			$gallery.addClass("hidden");
-		}
-		
-		
-		// Download
-		$download = $toolbar.find(".download");
-		downloadURL = $selected.data("downloadurl");
-		if (downloadURL) {
-			$download.attr("href", downloadURL);
-			$download.removeClass("hidden");
-		} else {
-			$download.addClass("hidden");
-		}
-		
-		
-		// Edit
-		$edit = $toolbar.find(".edit");
-		if ($selected.data("editable")) {
-			$edit.removeClass("disabled");
-		} else {
-			$edit.addClass("disabled");
-		}
 	} else {
-		// Multiple elements selected
 		$toolbar.show();
-		$single.hide();
-		$messageSelection.children(".badge").text($selected.length);
-		$messageSelection.children(".text").text($messageSelection.data("message-multiple-selection"));
+		$waiter.hide();
+		
+		$edit.addClass("disabled");
+		$move.addClass("disabled");
+		$delete.addClass("disabled");
+		
+		if ($selected.length == 1) {
+			// Single element selected
+			$single.show();
+			$messageSelection.children(".badge").text("1");
+			$messageSelection.children(".text").text($messageSelection.data("message-single-selection"));
+			
+			
+			// Sortable
+			$selected.find(".sortable-handle").removeClass("hidden");
+			
+			
+			// Update links with single-selected properties
+			$links.each(function(index, element) {
+				var $element = $JQry(element),
+					url = $element.attr("href");
+				
+				// Update path
+				url = url.replace("_PATH_", $selected.data("path"));
+				
+				$element.attr("href", url);
+			});
+
+			
+			// Gallery
+			$gallery = $toolbar.find(".gallery");
+			$fancybox = $selected.find(".fancybox.thumbnail");
+			if ($fancybox.length) {
+				$gallery.removeClass("hidden");
+			} else {
+				$gallery.addClass("hidden");
+			}
+			
+			
+			// Download
+			$download = $toolbar.find(".download");
+			downloadURL = $selected.data("downloadurl");
+			if (downloadURL) {
+				$download.attr("href", downloadURL);
+				$download.removeClass("hidden");
+			} else {
+				$download.addClass("hidden");
+			}
+		} else {
+			// Multiple elements selected
+			$single.hide();
+			$messageSelection.children(".badge").text($selected.length);
+			$messageSelection.children(".text").text($messageSelection.data("message-multiple-selection"));
+		}
+			
+		
+		// Update element infos
+		$elements = $selected.filter(function(index, element) {
+			var $element = $JQry(element);
+
+			return ($element.data("loaded") != true);
+		});
+		if ($elements.length > 0) {
+			$waiter.show();
+			
+			$elements.each(function(index, element) {
+				var $element = $JQry(element);
+				
+				jQuery.ajax({
+					url : $toolbar.data("infosurl"),
+					data : {
+						path : $element.data("path")
+					},
+					async : false,
+					success : function(data, status, xhr) {
+						$element.data("loaded", true);
+						
+						if ("success" == status) {
+							$element.data("writable", (data["writable"] == true));
+						}
+					}
+				});
+			});
+			
+			$waiter.hide();
+		}
+
+		// Writable indicator
+		writable = true;
+		$selected.each(function(index, element) {
+			var $element = $JQry(element);
+			
+			if ($element.data("writable") != true) {
+				writable = false;
+
+				// Break
+				return false;
+			}
+		});
+		
+		
+		if ($selected.length == 1) {
+			// Edit
+			if ($selected.data("editable") && writable) {
+				$edit.removeClass("disabled");
+			}
+		}
+		
+		
+		// Move & delete
+		if (writable) {
+			$move.removeClass("disabled");
+			$delete.removeClass("disabled");
+		}
 	}
+	
 	
 	// Identifiers, paths and types
 	$selected.each(function(index, element) {

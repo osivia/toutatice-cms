@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,11 @@ import javax.portlet.PortletURL;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -331,6 +336,42 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             response.setPortletMode(PortletMode.VIEW);
             response.setWindowState(WindowState.NORMAL);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+        if ("infos".equals(request.getResourceID())) {
+            JSONObject data = new JSONObject();
+
+            // Document path
+            String path = request.getParameter("path");
+            if (path != null) {
+                NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+                CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
+                try {
+                    CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
+
+                    data.put("writable", publicationInfos.isEditableByUser());
+                } catch (CMSException e) {
+                    // Do nothing
+                }
+            }
+
+            // Content type
+            response.setContentType("application/json");
+
+            // Content
+            PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
+            printWriter.write(data.toString());
+            printWriter.close();
+        } else {
+            super.serveResource(request, response);
         }
     }
 

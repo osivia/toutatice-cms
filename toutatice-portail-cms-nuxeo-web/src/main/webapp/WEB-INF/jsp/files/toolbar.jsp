@@ -3,7 +3,11 @@
 <%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 
+<!-- Delete document URLS -->
 <portlet:actionURL name="delete" var="deleteURL" />
+
+<!-- Load document publication infos URL -->
+<portlet:resourceURL id="infos" var="infosUrl" />
 
 
 <c:set var="namespace"><portlet:namespace /></c:set>
@@ -14,15 +18,15 @@
 
 <div class="file-browser-affix-container">
     <div class="file-browser-affix">
-        <div class="btn-toolbar" role="toolbar">
-            <div class="btn-group btn-group-sm hidden-xs" role="group">
-                <!-- Indicator -->
-                <button type="button" class="btn btn-primary disabled">
+        <div class="btn-toolbar" role="toolbar" data-infosurl="${infosUrl}">
+            <!-- Selection indicator -->
+            <div class="btn-group btn-group-sm hidden-xs">
+                <span class="btn btn-primary disabled">
                     <span class="message-selection" data-message-single-selection="${messageSingleSelection}" data-message-multiple-selection="${messageMultipleSelection}">
                         <span class="badge"></span>
                         <span class="text hidden-xs"></span>
                     </span>
-                </button>
+                </span>
             </div>
             
             <div class="btn-group btn-group-sm" role="group">
@@ -60,17 +64,25 @@
             <div class="btn-group btn-group-sm multiple-selection" role="group">
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
-                <a href="" data-url="${moveURL}" class="btn btn-default fancyframe_refresh no-ajax-link" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="" data-url="${moveURL}" class="btn btn-default fancyframe_refresh no-ajax-link move" title="${title}" data-toggle="tooltip" data-placement="bottom">
                     <i class="glyphicons glyphicons-move"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Delete -->
                 <c:set var="title"><op:translate key="DELETE" /></c:set>
-                <a href="#${namespace}-delete" class="btn btn-default fancybox_inline no-ajax-link" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#${namespace}-delete" class="btn btn-default fancybox_inline no-ajax-link delete" title="${title}" data-toggle="tooltip" data-placement="bottom">
                     <i class="glyphicons glyphicons-bin"></i>
                     <span class="sr-only">${title}</span>
                 </a>
+            </div>
+            
+            <!-- Ajax waiter -->
+            <div class="btn-group btn-group-sm ajax-waiter">
+                <span class="btn btn-default disabled">
+                    <i class="halflings halflings-refresh"></i>
+                    <span class="sr-only"><op:translate key="REFRESH" /></span>
+                </span>
             </div>
         </div>
     </div>
