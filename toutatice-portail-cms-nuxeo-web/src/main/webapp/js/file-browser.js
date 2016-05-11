@@ -32,7 +32,7 @@ $JQry(function() {
 			var $target = $JQry(event.target),
 				$browser = $target.closest(".file-browser");
 			
-			updateSelectableControls($browser);
+			displayControls($browser);
 		},
 		
 		unselected: function(event, ui) {
@@ -192,52 +192,7 @@ $JQry(function() {
 					var $element = $JQry(element);
 					$element.removeClass("ui-selected bg-primary");
 				});
-				
-				$selected = $data;
 			}
-			
-
-			// Update element infos
-			$elements = $selected.filter(function(index, element) {
-				var $element = $JQry(element);
-
-				return ($element.data("loaded") != true);
-			});
-			$elements.each(function(index, element) {
-				var $element = $JQry(element);
-				
-				jQuery.ajax({
-					url : $toolbar.data("infosurl"),
-					data : {
-						path : $element.data("path")
-					},
-					async : false,
-					success : function(data, status, xhr) {
-						$element.data("loaded", true);
-						
-						if ("success" == status) {
-							$element.data("writable", (data["writable"] == true));
-						}
-					}
-				});
-			});
-			
-			// Writable indicator
-			writable = true;
-			$selected.each(function(index, element) {
-				var $element = $JQry(element);
-				
-				if ($element.data("writable") != true) {
-					writable = false;
-
-					$selected.removeClass("dragged");
-					
-					// Break
-					return false;
-				}
-			});
-			
-			return writable;
 		},
 		
 		stop: function(event, ui) {
@@ -283,7 +238,7 @@ $JQry(function() {
 			});
 		}
 		
-		updateSelectableControls($browser);
+		displayControls($browser);
 	});
 	
 	
@@ -537,29 +492,27 @@ $JQry(function() {
 });
 
 
-function updateSelectableControls($browser) {
-	var $selected = $browser.find(".ui-selected"),
-		$toolbar = $browser.find(".btn-toolbar"),
-		$single = $toolbar.find(".single-selection"),
-		$waiter = $toolbar.find(".ajax-waiter"),
+function displayControls($browser) {
+	var $toolbar = $browser.find(".btn-toolbar"),
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
+		$single = $toolbar.find(".single-selection"),
+		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
-		$elements, writable
-		identifiers = "", paths = "", types = "";
-
+		$selected = $browser.find(".ui-selected"),
+		identifiers = "", paths = "", types = "",
+		ajaxPendingCounter;
+	
 	// Sortable
 	$browser.find(".sortable-handle").addClass("hidden");
 	
-	
 	// Reset links
 	$links.each(function(index, element) {
-		var $element = $JQry(element),
-			url = $element.data("url");
+		var $element = $JQry(element);
 		
-		$element.attr("href", url);
+		$element.attr("href", $element.data("url"));
 	});
 	
 	if ($selected.length == 0) {
@@ -621,7 +574,7 @@ function updateSelectableControls($browser) {
 			$messageSelection.children(".badge").text($selected.length);
 			$messageSelection.children(".text").text($messageSelection.data("message-multiple-selection"));
 		}
-			
+		
 		
 		// Update element infos
 		$elements = $selected.filter(function(index, element) {
@@ -631,6 +584,7 @@ function updateSelectableControls($browser) {
 		});
 		if ($elements.length > 0) {
 			$waiter.show();
+			ajaxPendingCounter = $elements.length;
 			
 			$elements.each(function(index, element) {
 				var $element = $JQry(element);
@@ -640,77 +594,92 @@ function updateSelectableControls($browser) {
 					data : {
 						path : $element.data("path")
 					},
-					async : false,
 					success : function(data, status, xhr) {
 						$element.data("loaded", true);
 						
 						if ("success" == status) {
 							$element.data("writable", (data["writable"] == true));
 						}
+						
+						ajaxPendingCounter--;
+						
+						if (ajaxPendingCounter == 0) {
+							$waiter.hide();
+							
+							updateControlRights($browser);
+						}
 					}
 				});
 			});
-			
-			$waiter.hide();
+		} else {
+			updateControlRights($browser);
 		}
-
-		// Writable indicator
-		writable = true;
+		
+		// Identifiers, paths and types
 		$selected.each(function(index, element) {
 			var $element = $JQry(element);
 			
-			if ($element.data("writable") != true) {
-				writable = false;
-
-				// Break
-				return false;
+			if (index > 0) {
+				identifiers += ",";
+				paths += ",";
+				types += ",";
 			}
+			identifiers += $element.data("id");
+			paths += $element.data("path");
+			types += $element.data("type");
 		});
+		$browser.find("input[name=identifiers]").val(identifiers);
+
+		// Update links with multiple-selected properties
+		$links.each(function(index, element) {
+			var $element = $JQry(element),
+				url = $element.attr("href");
+			
+			// Update tokens
+			url = url.replace("_IDS_", identifiers);
+			url = url.replace("_PATHS_", paths)
+			url = url.replace("_TYPES_", types);
+			
+			$element.attr("href", url);
+		});
+	}
+}
+
+
+function updateControlRights($browser) {
+	var $toolbar = $browser.find(".btn-toolbar"),
+		$edit = $toolbar.find(".edit"),
+		$move = $toolbar.find(".move"),
+		$delete = $toolbar.find(".delete"),
+		$selected = $browser.find(".ui-selected"),
+		writable = true;
+	
+	// Writable indicator
+	$selected.each(function(index, element) {
+		var $element = $JQry(element);
 		
-		
-		if ($selected.length == 1) {
-			// Edit
-			if ($selected.data("editable") && writable) {
-				$edit.removeClass("disabled");
-			}
+		if ($element.data("writable") != true) {
+			writable = false;
+
+			// Break
+			return false;
 		}
-		
-		
-		// Move & delete
-		if (writable) {
-			$move.removeClass("disabled");
-			$delete.removeClass("disabled");
+	});
+	
+	
+	if ($selected.length == 1) {
+		// Edit
+		if ($selected.data("editable") && writable) {
+			$edit.removeClass("disabled");
 		}
 	}
 	
 	
-	// Identifiers, paths and types
-	$selected.each(function(index, element) {
-		var $element = $JQry(element);
-		
-		if (index > 0) {
-			identifiers += ",";
-			paths += ",";
-			types += ",";
-		}
-		identifiers += $element.data("id");
-		paths += $element.data("path");
-		types += $element.data("type");
-	});
-	$browser.find("input[name=identifiers]").val(identifiers);
-
-	// Update links with multiple-selected properties
-	$links.each(function(index, element) {
-		var $element = $JQry(element),
-			url = $element.attr("href");
-		
-		// Update tokens
-		url = url.replace("_IDS_", identifiers);
-		url = url.replace("_PATHS_", paths)
-		url = url.replace("_TYPES_", types);
-		
-		$element.attr("href", url);
-	});
+	// Move & delete
+	if (writable) {
+		$move.removeClass("disabled");
+		$delete.removeClass("disabled");
+	}
 }
 
 
@@ -722,7 +691,7 @@ function deselect(source) {
 		$JQry(element).removeClass("ui-selected bg-primary");
 	});
 	
-	updateSelectableControls($browser);
+	displayControls($browser);
 }
 
 
