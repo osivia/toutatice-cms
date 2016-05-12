@@ -1,5 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Symlink java-bean.
  *
@@ -29,11 +31,11 @@ public class Symlink {
      */
     public Symlink(String parentPath, String segment, String targetPath, String targetWebId) {
         super();
-        this.parentPath = parentPath;
+        this.parentPath = StringUtils.removeEnd(parentPath, ".proxy");
         this.segment = segment;
         this.targetPath = targetPath;
         this.targetWebId = targetWebId;
-        this.virtualPath = parentPath + "/symlink_" + segment;
+        this.virtualPath = this.parentPath + "/symlink_" + segment;
     }
 
 
