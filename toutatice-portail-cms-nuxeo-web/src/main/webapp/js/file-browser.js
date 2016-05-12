@@ -383,7 +383,7 @@ $JQry(function() {
 				$panel = $browser.find(".file-upload .panel"),
 				$list = $browser.find(".file-upload .file-upload-list");
 			
-			var $cancelGlyph = $JQry(document.createElement("i")).addClass("glyphicons halflings ban-circle");
+			var $cancelGlyph = $JQry(document.createElement("i")).addClass("halflings halflings-ban-circle");
 			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
 			
 

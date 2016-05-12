@@ -8,7 +8,6 @@
 <c:set var="thumbnailURL">
 	<ttc:pictureLink document="${doc}" property="ttc:vignette" />
 </c:set>
-<ttc:documentLink document="${doc}" var="link" />
 <c:set var="date" value="${doc.properties['dc:issued']}" />
 <c:if test="${empty date}">
 	<c:set var="date" value="${doc.properties['dc:modified']}" />
@@ -27,13 +26,7 @@
 	<div class="media-body">
 		<!-- Title -->
 		<h3 class="media-heading">
-			<a href="${link.url}"
-				<c:if test="${link.external}">target="_blank"</c:if>> <span>${doc.title}</span>
-			</a>
-
-			<c:if test="${link.external}">
-				<i class="glyphicons halflings new_window"></i>
-			</c:if>
+            <ttc:title document="${doc}" />
 		</h3>
 
 		<!-- Date -->

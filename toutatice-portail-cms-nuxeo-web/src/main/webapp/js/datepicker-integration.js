@@ -49,13 +49,13 @@ function customizeRendering(inst) {
 		var $previous = $header.find(".ui-datepicker-prev");
 		$previous.addClass("btn btn-default pull-left");
 		$previous.find("span").remove();
-		$previous.append($JQry(document.createElement("i")).addClass("glyphicons halflings circle-arrow-left"));
+		$previous.append($JQry(document.createElement("i")).addClass("halflings halflings-circle-arrow-left"));
 		
 		// Next button
 		var $next = $header.find(".ui-datepicker-next");
 		$next.addClass("btn btn-default pull-right");
 		$next.find("span").remove();
-		$next.append($JQry(document.createElement("i")).addClass("glyphicons halflings circle-arrow-right"));
+		$next.append($JQry(document.createElement("i")).addClass("halflings halflings-circle-arrow-right"));
 		
 		// Form
 		var $title = $header.find(".ui-datepicker-title");
