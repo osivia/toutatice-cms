@@ -828,6 +828,16 @@ public class NuxeoController {
     }
 
 
+    /**
+     * Constructor.
+     * 
+     * @param portalControllerContext portal controller context
+     */
+    public NuxeoController(PortalControllerContext portalControllerContext) {
+        this(portalControllerContext.getRequest(), portalControllerContext.getResponse(), portalControllerContext.getPortletCtx());
+    }
+
+
     public NuxeoException wrapNuxeoException(Exception e) {
 
         if (e instanceof CMSException) {
@@ -840,10 +850,17 @@ public class NuxeoController {
                 return new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
             }
             return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
+        } else if (e instanceof PortletException) {
+            Throwable cause = e.getCause();
+            if (cause != null && cause instanceof CMSException) {
+                CMSException cmsException = (CMSException) cause;
+                return this.wrapNuxeoException(cmsException);
+            } else {
+                return new NuxeoException(e);
+            }
         } else {
             return new NuxeoException(e);
         }
-
     }
 
 
@@ -2222,6 +2239,22 @@ public class NuxeoController {
         return p;
     }
 
+
+    /**
+     * Get document context.
+     * 
+     * @param path document path
+     * @return document context
+     */
+    public NuxeoDocumentContext getDocumentContext(String path) {
+        try {
+            return getDocumentContext(request, response, portletCtx, path);
+        } catch (PortletException e) {
+            throw this.wrapNuxeoException(e);
+        }
+    }
+
+
     /**
      * Instantiates a new nuxeo controller.
      *
@@ -2348,12 +2381,22 @@ public class NuxeoController {
      * @throws RuntimeException the runtime exception
      */
     public static NuxeoDocumentContext getDocumentContext(PortalControllerContext portalCtx, String path) throws PortletException {
+        // Portlet request
+        PortletRequest request = portalCtx.getRequest();
+        // Portlet response
+        PortletResponse response = portalCtx.getResponse();
+        // Portlet context
+        PortletContext portletContext = portalCtx.getPortletCtx();
 
-        // CMS context
-        CMSServiceCtx cmsContext = new CMSServiceCtx();
-        cmsContext.setPortalControllerContext(portalCtx);
+        if (request != null && response != null && portletContext != null) {
+            return getDocumentContext(request, response, portletContext, path);
+        } else {
+            // CMS context
+            CMSServiceCtx cmsContext = new CMSServiceCtx();
+            cmsContext.setPortalControllerContext(portalCtx);
 
-        return getDocumentContext(cmsContext, path);
+            return getDocumentContext(cmsContext, path);
+        }
     }
 
 

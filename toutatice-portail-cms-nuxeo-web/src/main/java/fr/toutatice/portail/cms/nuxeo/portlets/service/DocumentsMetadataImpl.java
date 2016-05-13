@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.web.IWebUrlService;
 
@@ -371,10 +373,21 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      * {@inheritDoc}
      */
     @Override
+    public List<EcmDocument> getDocuments() {
+        return new ArrayList<EcmDocument>(this.documents);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void update(DocumentsMetadata updates) {
-        if (updates instanceof DocumentsMetadataImpl) {
-            DocumentsMetadataImpl metadata = (DocumentsMetadataImpl) updates;
-            for (Document document : metadata.documents) {
+        for (EcmDocument ecmDocument : updates.getDocuments()) {
+            if (ecmDocument instanceof Document) {
+                // Nuxeo document
+                Document document = (Document) ecmDocument;
+
                 // WebId
                 String webId = document.getString(WEB_ID_PROPERTY);
                 // Path
@@ -449,10 +462,11 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                     }
                 }
             }
-
-            // Update timestamp
-            this.timestamp = Math.max(this.timestamp, metadata.timestamp);
         }
+
+
+        // Update timestamp
+        this.timestamp = Math.max(this.timestamp, updates.getTimestamp());
     }
 
 
