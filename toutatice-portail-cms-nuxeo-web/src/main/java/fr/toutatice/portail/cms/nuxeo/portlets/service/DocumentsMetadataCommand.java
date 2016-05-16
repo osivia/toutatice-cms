@@ -132,6 +132,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
             targetsFilteredRequest = null;
         } else {
             StringBuilder targetsRequest = new StringBuilder();
+            targetsRequest.append("(");
             boolean first = true;
             for (Symlink symlink : symlinks) {
                 if (first) {
@@ -146,6 +147,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
                 targetsRequest.append(symlink.getTargetPath());
                 targetsRequest.append("'");
             }
+            targetsRequest.append(")");
             addTimestampClause(targetsRequest);
 
 
@@ -181,7 +183,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
             // Timestamp date
             Date date = new Date(timestamp);
             // Date format
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
             request.append(" AND dc:modified > TIMESTAMP '");
             request.append(dateFormat.format(date));

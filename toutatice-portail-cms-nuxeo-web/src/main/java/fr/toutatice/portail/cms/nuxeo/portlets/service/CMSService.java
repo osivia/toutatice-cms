@@ -2566,7 +2566,7 @@ public class CMSService implements ICMSService {
 
         // Super-user scope
         String savedScope = cmsContext.getScope();
-        cmsContext.setScope("superuser_context");
+        cmsContext.setScope("superuser_no_cache");
 
         // Metadata
         DocumentsMetadata metadata;
