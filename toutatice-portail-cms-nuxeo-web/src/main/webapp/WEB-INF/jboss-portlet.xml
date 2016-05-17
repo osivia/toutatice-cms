@@ -109,10 +109,10 @@
             <script type="text/javascript" src="/js/file-browser.min.js"></script>
 
             <!-- jQuery File Upload -->
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-process.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-ui.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-validate.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-process.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-ui.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-validate.js" />
         </header-content>
         
         <portlet-info>

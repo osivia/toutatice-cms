@@ -3,311 +3,315 @@
 
 $JQry(function() {
 
-	var previousIndex = -1;
+	var previousIndex = -1,
+		isChromeAndroid = /Chrome/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent) && /Android/i.test(navigator.userAgent);
 	
-	// Selectable
-	$JQry(".file-browser .selectable").selectable({
-		cancel: ".sortable-handle, .draggable",
-		filter: ".data",
-		
-		selected: function(event, ui) {
-			$JQry(ui.selected).addClass("bg-primary").removeClass("bg-info");
-		},
-		
-		selecting: function(event, ui) {
-			var $selecting = $JQry(ui.selecting),
-				$seletable = $selecting.closest(".selectable"),
-				$selectee = $seletable.find(".data"),
-				currentIndex = $selectee.index(ui.selecting);
+	
+	if (!isChromeAndroid) {
+		// Selectable
+		$JQry(".file-browser .selectable").selectable({
+			cancel: ".sortable-handle, .draggable",
+			filter: ".data",
 			
-			if (event.shiftKey && previousIndex > -1) {
-				$selectee.slice(Math.min(previousIndex, currentIndex), Math.max(previousIndex, currentIndex) + 1).addClass("ui-selected bg-primary");
-			} else {
-				$selecting.addClass("bg-info");
-				previousIndex = currentIndex;
-			}
-		},
-		
-		stop: function(event, ui) {
-			var $target = $JQry(event.target),
-				$browser = $target.closest(".file-browser");
+			selected: function(event, ui) {
+				$JQry(ui.selected).addClass("bg-primary").removeClass("bg-info");
+			},
 			
-			displayControls($browser);
-		},
-		
-		unselected: function(event, ui) {
-			if (!event.shiftKey) {
-				$JQry(ui.unselected).removeClass("bg-primary");
-			}
-		},
-		
-		unselecting: function(event, ui) {
-			$JQry(ui.unselecting).removeClass("bg-primary bg-info");
-		}
-	});
-	
-	
-	// Affix
-	$JQry(".file-browser .file-browser-affix").each(function(index, element) {
-		var $element = $JQry(element),
-			$affixContainer = $element.closest(".file-browser-affix-container");
-			$browser = $affixContainer.closest(".file-browser"),
-			$body = $JQry("body");
-	
-		$element.affix({
-			offset: {
-				top: function() {
-					return Math.round($affixContainer.offset().top) - 55;
-				},
-				bottom: function() {
-					var top = Math.round($affixContainer.offset().top) - 55,
-						scrollTop = $JQry(window).scrollTop(),
-						bottom = 0;
-					
-					if (scrollTop > (top + 34)) {
-						bottom = Math.round($body.height() - $browser.offset().top - $browser.outerHeight(true)) - 34;
-					}
-					
-					return bottom;
+			selecting: function(event, ui) {
+				var $selecting = $JQry(ui.selecting),
+					$seletable = $selecting.closest(".selectable"),
+					$selectee = $seletable.find(".data"),
+					currentIndex = $selectee.index(ui.selecting);
+				
+				if (event.shiftKey && previousIndex > -1) {
+					$selectee.slice(Math.min(previousIndex, currentIndex), Math.max(previousIndex, currentIndex) + 1).addClass("ui-selected bg-primary");
+				} else {
+					$selecting.addClass("bg-info");
+					previousIndex = currentIndex;
 				}
+			},
+			
+			stop: function(event, ui) {
+				var $target = $JQry(event.target),
+					$browser = $target.closest(".file-browser");
+				
+				displayControls($browser);
+			},
+			
+			unselected: function(event, ui) {
+				if (!event.shiftKey) {
+					$JQry(ui.unselected).removeClass("bg-primary");
+				}
+			},
+			
+			unselecting: function(event, ui) {
+				$JQry(ui.unselecting).removeClass("bg-primary bg-info");
 			}
 		});
-	});
-	
-	
-	// Draggable
-	$JQry(".file-browser .draggable").draggable({
-		addClasses: false,
-		connectToFancytree: true,
-		cursor: "move",
-		distance: 10,
-
-		helper: function(event) {
-			var $target = $JQry(event.target),
-				$data = $target.closest(".data"),
-				direct = ($data.length > 0),
-				$selected = (direct ? $data : $target.closest(".selectable").find(".ui-selected")),
-				offset = $target.offset(),
-				click = {
-					top: event.pageY - offset.top,
-					left: event.pageX - offset.left
-				},
-				identifiers = "", types = "", text = "",
-				$helper;
-			
-			
-			// Identifiers & types
-			$selected.each(function(index, element) {
-				if (index > 0) {
-					identifiers += ",";
-					types += ",";
+		
+		
+		// Affix
+		$JQry(".file-browser .file-browser-affix").each(function(index, element) {
+			var $element = $JQry(element),
+				$affixContainer = $element.closest(".file-browser-affix-container");
+				$browser = $affixContainer.closest(".file-browser"),
+				$body = $JQry("body");
+		
+			$element.affix({
+				offset: {
+					top: function() {
+						return Math.round($affixContainer.offset().top) - 55;
+					},
+					bottom: function() {
+						var top = Math.round($affixContainer.offset().top) - 55,
+							scrollTop = $JQry(window).scrollTop(),
+							bottom = 0;
+						
+						if (scrollTop > (top + 34)) {
+							bottom = Math.round($body.height() - $browser.offset().top - $browser.outerHeight(true)) - 34;
+						}
+						
+						return bottom;
+					}
 				}
-				identifiers += $JQry(element).data("id");
-				types += $JQry(element).data("type");
 			});
-			
-			
-			// Helper
-			$helper = $JQry(document.createElement("div"));
-			$helper.addClass("helper");
-			$helper.data({
-				identifiers: identifiers,
-				types: types
-			});
-			$helper.css({
-				height: 0,
-				width: 0
-			});
-			
-			// Panel
-			$panel = $JQry(document.createElement("div"));
-			$panel.addClass("panel panel-primary");
-			if (direct) {
-				$panel.css({
-					width: $data.siblings(".draggable-shadowbox").width()
-				});
-			} else {
-				$panel.css({
-					width: $target.width()
-				});
-			}
-			$panel.animate({
-				top: click.top + 1,
-				left: click.left + 1,
-				width: 300
-			}, 300);
-			$panel.appendTo($helper);
-			
-			// Panel body
-			$panelBody = $JQry(document.createElement("div"));
-			$panelBody.addClass("panel-body bg-primary");
-			$panelBody.appendTo($panel);
-			
-			// Icon
-			$icon = $JQry(document.createElement("div"));
-			$icon.addClass("document-icon");
-			$icon.appendTo($panelBody);
-			$iconInner = $JQry(document.createElement("div"));
-			$iconInner.appendTo($icon);
-			if ($selected.length == 1) {
-				$selected.find(".document-icon").find("i").clone().appendTo($iconInner);
-			} else {
-				$strong = $JQry(document.createElement("strong"));
-				$strong.text($selected.length);
-				$strong.appendTo($iconInner);
-			}
-			
-			// Text
-			$selected.find(".document-icon").siblings().each(function(index, element) {
-				if (index > 0) {
-					text += ", ";
-				}
-				text += $JQry(element).text();
-			});
-			$textContainer = $JQry(document.createElement("div"));
-			$textContainer.addClass("text-overflow");
-			$textContainer.text(text);
-			$textContainer.appendTo($panelBody);
-
-			return $helper;
-		},
+		});
 		
-		revert: "invalid",
-		revertDuration: 200,
 		
-		start: function(event, ui) {
-			var $target = $JQry(event.target),
-				$browser = $target.closest(".file-browser"),
-				$toolbar = $browser.find(".btn-toolbar"),
-				$li = $target.closest("li"),
-				$data = $li.find(".data"),
-				$selectable = $target.closest(".selectable"),
-				$selected = $selectable.find(".ui-selected"),
-				$elements, writable;
-
-			if ($data.hasClass("ui-selected")) {
-				$selected.addClass("dragged");
-			} else {
-				$selected.each(function(index, element) {
-					var $element = $JQry(element);
-					$element.removeClass("ui-selected bg-primary");
-				});
-			}
-		},
-		
-		stop: function(event, ui) {
-			var $target = $JQry(event.target),
-				$selectable = $target.closest(".selectable"),
-				$selected = $selectable.find(".ui-selected");
-		
-			$selected.removeClass("dragged");
-		}
-	});
+		// Draggable
+		$JQry(".file-browser .draggable").draggable({
+			addClasses: false,
+			connectToFancytree: true,
+			cursor: "move",
+			distance: 10,
 	
-	
-	// Double click
-	$JQry(".file-browser .file-browser-lines li").dblclick(function(event) {
-		var $target = $JQry(event.target),
-			$li = $target.closest("li"),
-		    $link = $li.find("a"),
-		    url = $link.attr("href");
-		
-		if (url === undefined) {
-			console.log("Double click event failed: URL is undefined.");
-		} else {
-			window.location.href = $link.attr("href");
-		}
-	});
-	
-	
-	// Click on draggable
-	$JQry(".file-browser .draggable").click(function(event) {
-		var $row = $JQry(event.target).closest("li"),
-			$selected = $row.find(".ui-selected"),
-			$browser = $row.closest(".file-browser");
-		
-		if (event.ctrlKey) {
-			$selected.removeClass("ui-selected bg-primary");
-		} else {
-			$browser.find(".ui-selected").each(function(index, element) {
-				var $element = $JQry(element);
+			helper: function(event) {
+				var $target = $JQry(event.target),
+					$data = $target.closest(".data"),
+					direct = ($data.length > 0),
+					$selected = (direct ? $data : $target.closest(".selectable").find(".ui-selected")),
+					offset = $target.offset(),
+					click = {
+						top: event.pageY - offset.top,
+						left: event.pageX - offset.left
+					},
+					identifiers = "", types = "", text = "",
+					$helper;
 				
-				if (!$element.is($selected)) {
-					$element.removeClass("ui-selected bg-primary");
-				}
-			});
-		}
-		
-		displayControls($browser);
-	});
-	
-	
-	// Droppable
-	$JQry(".file-browser .droppable").droppable({
-		accept: function($draggable) {
-			var $droppable = $JQry(this);
-				$selectable = $droppable.closest(".selectable"),
-				$selected = $selectable.find(".ui-selected"),
-				targetAcceptedTypes = $droppable.data("acceptedtypes").split(","),
-				accepted = true;
-			
-			if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".ui-selected").hasClass("ui-selected")) {
-				// Prevent drop on sortable or selected element
-				accepted = false;
-			} else {
+				
+				// Identifiers & types
 				$selected.each(function(index, element) {
-					var sourceType = $JQry(element).data("type"),
-						match = false;
+					if (index > 0) {
+						identifiers += ",";
+						types += ",";
+					}
+					identifiers += $JQry(element).data("id");
+					types += $JQry(element).data("type");
+				});
+				
+				
+				// Helper
+				$helper = $JQry(document.createElement("div"));
+				$helper.addClass("helper");
+				$helper.data({
+					identifiers: identifiers,
+					types: types
+				});
+				$helper.css({
+					height: 0,
+					width: 0
+				});
+				
+				// Panel
+				$panel = $JQry(document.createElement("div"));
+				$panel.addClass("panel panel-primary");
+				if (direct) {
+					$panel.css({
+						width: $data.siblings(".draggable-shadowbox").width()
+					});
+				} else {
+					$panel.css({
+						width: $target.width()
+					});
+				}
+				$panel.animate({
+					top: click.top + 1,
+					left: click.left + 1,
+					width: 300
+				}, 300);
+				$panel.appendTo($helper);
+				
+				// Panel body
+				$panelBody = $JQry(document.createElement("div"));
+				$panelBody.addClass("panel-body bg-primary");
+				$panelBody.appendTo($panel);
+				
+				// Icon
+				$icon = $JQry(document.createElement("div"));
+				$icon.addClass("document-icon");
+				$icon.appendTo($panelBody);
+				$iconInner = $JQry(document.createElement("div"));
+				$iconInner.appendTo($icon);
+				if ($selected.length == 1) {
+					$selected.find(".document-icon").find("i").clone().appendTo($iconInner);
+				} else {
+					$strong = $JQry(document.createElement("strong"));
+					$strong.text($selected.length);
+					$strong.appendTo($iconInner);
+				}
+				
+				// Text
+				$selected.find(".document-icon").siblings().each(function(index, element) {
+					if (index > 0) {
+						text += ", ";
+					}
+					text += $JQry(element).text();
+				});
+				$textContainer = $JQry(document.createElement("div"));
+				$textContainer.addClass("text-overflow");
+				$textContainer.text(text);
+				$textContainer.appendTo($panelBody);
+	
+				return $helper;
+			},
+			
+			revert: "invalid",
+			revertDuration: 200,
+			
+			start: function(event, ui) {
+				var $target = $JQry(event.target),
+					$browser = $target.closest(".file-browser"),
+					$toolbar = $browser.find(".btn-toolbar"),
+					$li = $target.closest("li"),
+					$data = $li.find(".data"),
+					$selectable = $target.closest(".selectable"),
+					$selected = $selectable.find(".ui-selected"),
+					$elements, writable;
+	
+				if ($data.hasClass("ui-selected")) {
+					$selected.addClass("dragged");
+				} else {
+					$selected.each(function(index, element) {
+						var $element = $JQry(element);
+						$element.removeClass("ui-selected bg-primary");
+					});
+				}
+			},
+			
+			stop: function(event, ui) {
+				var $target = $JQry(event.target),
+					$selectable = $target.closest(".selectable"),
+					$selected = $selectable.find(".ui-selected");
+			
+				$selected.removeClass("dragged");
+			}
+		});
+		
+		
+		// Double click
+		$JQry(".file-browser .file-browser-lines li").dblclick(function(event) {
+			var $target = $JQry(event.target),
+				$li = $target.closest("li"),
+			    $link = $li.find("a"),
+			    url = $link.attr("href");
+			
+			if (url === undefined) {
+				console.log("Double click event failed: URL is undefined.");
+			} else {
+				window.location.href = $link.attr("href");
+			}
+		});
+		
+		
+		// Click on draggable
+		$JQry(".file-browser .draggable").click(function(event) {
+			var $row = $JQry(event.target).closest("li"),
+				$selected = $row.find(".ui-selected"),
+				$browser = $row.closest(".file-browser");
+			
+			if (event.ctrlKey) {
+				$selected.removeClass("ui-selected bg-primary");
+			} else {
+				$browser.find(".ui-selected").each(function(index, element) {
+					var $element = $JQry(element);
 					
-					jQuery.each(targetAcceptedTypes, function(index, targetType) {
-						if (sourceType === targetType) {
-							match = true;
+					if (!$element.is($selected)) {
+						$element.removeClass("ui-selected bg-primary");
+					}
+				});
+			}
+			
+			displayControls($browser);
+		});
+		
+		
+		// Droppable
+		$JQry(".file-browser .droppable").droppable({
+			accept: function($draggable) {
+				var $droppable = $JQry(this);
+					$selectable = $droppable.closest(".selectable"),
+					$selected = $selectable.find(".ui-selected"),
+					targetAcceptedTypes = $droppable.data("acceptedtypes").split(","),
+					accepted = true;
+				
+				if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".ui-selected").hasClass("ui-selected")) {
+					// Prevent drop on sortable or selected element
+					accepted = false;
+				} else {
+					$selected.each(function(index, element) {
+						var sourceType = $JQry(element).data("type"),
+							match = false;
+						
+						jQuery.each(targetAcceptedTypes, function(index, targetType) {
+							if (sourceType === targetType) {
+								match = true;
+								return false;
+							}
+						});
+						
+						if (!match) {
+							accepted = false;
 							return false;
 						}
 					});
+				}
+				
+				return accepted;
+			},
+			
+			addClasses: false,
+			hoverClass: "droppable-hover bg-info border-info",
+			tolerance: "pointer",
+			
+			drop: function(event, ui) {
+				var $browser = $JQry(this).closest(".file-browser"),
 					
-					if (!match) {
-						accepted = false;
-						return false;
-					}
-				});
+					// Source
+					$source = $JQry(ui.helper.context),
+					sourceIdentifiers = $source.data("identifiers"),
+					
+					// Target
+					$target = $JQry(event.target),
+					targetId = $target.closest(".data").data("id"),
+					
+					// AJAX parameters
+					container = null,
+					options = {
+						requestHeaders : [ "ajax", "true", "bilto" ],
+						method : "post",
+						postBody : "sourceIds=" + sourceIdentifiers + "&targetId=" + targetId,
+						onSuccess : function(t) {
+							onAjaxSuccess(t, null);
+						}
+					},
+					url = $browser.data("dropurl"),
+					eventToStop = null,
+					callerId = null;
+				
+				directAjaxCall(container, options, url, eventToStop, callerId);
 			}
-			
-			return accepted;
-		},
-		
-		addClasses: false,
-		hoverClass: "droppable-hover bg-info border-info",
-		tolerance: "pointer",
-		
-		drop: function(event, ui) {
-			var $browser = $JQry(this).closest(".file-browser"),
-				
-				// Source
-				$source = $JQry(ui.helper.context),
-				sourceIdentifiers = $source.data("identifiers"),
-				
-				// Target
-				$target = $JQry(event.target),
-				targetId = $target.closest(".data").data("id"),
-				
-				// AJAX parameters
-				container = null,
-				options = {
-					requestHeaders : [ "ajax", "true", "bilto" ],
-					method : "post",
-					postBody : "sourceIds=" + sourceIdentifiers + "&targetId=" + targetId,
-					onSuccess : function(t) {
-						onAjaxSuccess(t, null);
-					}
-				},
-				url = $browser.data("dropurl"),
-				eventToStop = null,
-				callerId = null;
-			
-			directAjaxCall(container, options, url, eventToStop, callerId);
-		}
-	});
+		});
+	} // if (isChromeAndroid)
 
 	
 	// Sortable
@@ -373,9 +377,8 @@ $JQry(function() {
 	
 	// File Upload
 	$JQry(".file-browser .file-upload").fileupload({
-		autoUpload : false,
-		dataType : "json",
 		dropZone : ".drop-zone",
+		singleFileUploads : false,
 		
 		add : function(e, data) {
 			var $this = $JQry(this),
@@ -395,27 +398,28 @@ $JQry(function() {
 			data.context.addClass("template-upload list-group-item")
 			data.context.appendTo($list);
 			
+			// List item
+			$listItem = $JQry(document.createElement("div"));
+			$listItem.addClass("clearfix");
+			$listItem.appendTo(data.context);
+			
+			// Upload button
+			$uploadButton =  $JQry(document.createElement("button"));
+			$uploadButton.addClass("start hidden");
+			$uploadButton.click(function() {
+				data.submit();
+			});
+			$uploadButton.appendTo($listItem);
+			
+			// Cancel button
+			$cancelButton = $JQry(document.createElement("button"));
+			$cancelButton.addClass("cancel btn btn-default pull-right");
+			$cancelButton.append($cancelGlyph);
+			$cancelButton.append($cancelText);
+			$cancelButton.appendTo($listItem);
+			
+			
 			$JQry.each(data.files, function(index, file) {
-				// List item
-				$listItem = $JQry(document.createElement("div"));
-				$listItem.addClass("clearfix");
-				$listItem.appendTo(data.context);
-				
-				// Upload button
-				$uploadButton =  $JQry(document.createElement("button"));
-				$uploadButton.addClass("start hidden");
-				$uploadButton.click(function() {
-					data.submit();
-				});
-				$uploadButton.appendTo($listItem);
-				
-				// Cancel button
-				$cancelButton = $JQry(document.createElement("button"));
-				$cancelButton.addClass("cancel btn btn-default pull-right");
-				$cancelButton.append($cancelGlyph);
-				$cancelButton.append($cancelText);
-				$cancelButton.appendTo($listItem);
-				
 				// Item content
 				$content = $JQry(document.createElement("p"));
 				$content.text(file.name);
