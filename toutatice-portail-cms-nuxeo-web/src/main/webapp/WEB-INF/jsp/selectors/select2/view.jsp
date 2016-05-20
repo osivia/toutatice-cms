@@ -25,7 +25,7 @@
         
         <!-- Selector -->
         <div class="input-group select2-bootstrap-append">
-            <select id="${namespace}-select" name="vocabulary" class="form-control select2" data-url="${loadUrl}" data-loading-label="${loadingLabel}" data-onchange="submit"
+            <select id="${namespace}-select" name="vocabulary" class="form-control select2 select2-default" data-url="${loadUrl}" data-loading-label="${loadingLabel}" data-onchange="submit"
                 <c:if test="${not empty configuration.label}">data-placeholder="${configuration.label}"</c:if>
                 <c:if test="${not configuration.monoValued}">multiple="multiple"</c:if>
             >
