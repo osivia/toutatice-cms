@@ -28,16 +28,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.JspWriter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.directory.IDirectoryService;
-import org.osivia.portal.api.directory.IDirectoryServiceLocator;
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
+import org.osivia.portal.api.directory.v2.IDirProvider;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
@@ -73,50 +72,17 @@ public class AvatarServlet extends HttpServlet {
 
     private static final int AVATAR_TIMEOUT = 3600;
 
-    /** Directory service locator. */
-    private static final IDirectoryServiceLocator DIRECTORY_SERVICE_LOCATOR = Locator.findMBean(IDirectoryServiceLocator.class,
-            IDirectoryServiceLocator.MBEAN_NAME);
+	private PersonService personService;
 
+    
+    
+    
+    public AvatarServlet() {
+    	IDirProvider provider = Locator.findMBean(IDirProvider.class, IDirProvider.MBEAN_NAME);
+    	
+    	personService = provider.getDirService(PersonService.class);
+    }
 
-    // public boolean isResourceExpired(String sOriginalDate) {
-    //
-    // boolean isExpired = true;
-    //
-    // if (sOriginalDate != null) {
-    //
-    // SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    // inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
-    // try {
-    // Date originalDate = inputFormater.parse(sOriginalDate);
-    // if (System.currentTimeMillis() < originalDate.getTime() + AVATAR_TIMEOUT * 1000)
-    // isExpired = false;
-    // } catch (Exception e) {
-    //
-    // }
-    // }
-    //
-    // return isExpired;
-    // }
-
-    // public boolean serveResourceByCache(HttpServletRequest resourceRequest, HttpServletResponse resourceResponse) throws PortletException, IOException {
-    //
-    // String sOriginalDate = resourceRequest.getHeader("if-modified-since");
-    // if (sOriginalDate == null)
-    // sOriginalDate = resourceRequest.getHeader("If-Modified-Since");
-    //
-    // if (!isResourceExpired(sOriginalDate)) { // validation
-    // // request
-    //
-    // // resourceResponse.setContentLength(0);
-    // resourceResponse.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-    //
-    // resourceResponse.setHeader("Last-Modified", sOriginalDate);
-    //
-    // return true;
-    // }
-    //
-    // return false;
-    // }
 
     public String formatResourceLastModified() {
 
@@ -145,18 +111,12 @@ public class AvatarServlet extends HttpServlet {
 
 
             // Directory service
-            IDirectoryService directoryService = DIRECTORY_SERVICE_LOCATOR.getDirectoryService();
-
-            if (directoryService != null) {
-                // User LDAP person
-
-
-                DirectoryPerson person = directoryService.getPerson(username);
-                if (person != null) {
-                    userId = person.getUid();
-                }
+            Person person = personService.getPerson(username);
+            if (person != null) {
+                userId = person.getUid();
             }
 
+            
             boolean genericAvatar = true;
 
             theResponse.setHeader("Cache-Control", "max-age=" + AVATAR_TIMEOUT);
