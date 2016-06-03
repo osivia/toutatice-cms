@@ -30,8 +30,12 @@ import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarFactory;
+import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.core.cms.DomainContextualization;
 
@@ -60,6 +64,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     /** Class loader. */
     private final ClassLoader classLoader;
 
+    /** Taskbar service. */
+    private final ITaskbarService taskbarService;
+
 
     /**
      * Constructor.
@@ -67,6 +74,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     public AbstractPluginPortlet() {
         super();
         this.classLoader = this.getClass().getClassLoader();
+
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
 
 
@@ -149,6 +159,8 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     public void customize(String customizationID, CustomizationContext context) {
         // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
+
+        CLASS_LOADER_CONTEXT.set(this.classLoader);
 
         this.customizeCMSProperties(customizationID, context);
 
@@ -366,7 +378,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /**
      * Get domain contextualizations.
-     * 
+     *
      * @param context customization context
      * @return domain contextualizations
      */
@@ -403,6 +415,36 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             attributes.put(Customizable.TAB_GROUPS.toString(), tabGroups);
         }
         return tabGroups;
+    }
+
+
+    /**
+     * Get taskbar items.
+     *
+     * @param context customization context
+     * @return taskbar items
+     */
+    protected TaskbarItems getTaskbarItems(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        TaskbarItems taskbarItems = (TaskbarItems) attributes.get(Customizable.TASKBAR_ITEMS.toString());
+        if (taskbarItems == null) {
+            TaskbarFactory factory = this.taskbarService.getFactory();
+            taskbarItems = factory.createTaskbarItems();
+            attributes.put(Customizable.TASKBAR_ITEMS.toString(), taskbarItems);
+        }
+        return taskbarItems;
+    }
+
+
+    /**
+     * Getter for taskbarService.
+     *
+     * @return the taskbarService
+     */
+    public ITaskbarService getTaskbarService() {
+        return this.taskbarService;
     }
 
 }

@@ -491,11 +491,11 @@ public class MenuBarFormater {
 
                             if (pubInfos.isPublished()) {
                                 // Erase modifications
-                                String cmsEraseModificationURL = urlFactory.getEcmCommandUrl(portalControllerContext, path,
+                                String cmsEraseModificationURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, path,
                                         EcmCommonCommands.eraseModifications);
                                 final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
                                         "#erase_cms_page", null, null, "fancybox_inline");
-                                eraseItem.setAssociatedHTML(generateEraseFancyBox(bundle, cmsEraseModificationURL));
+                                eraseItem.setAssociatedHTML(this.generateEraseFancyBox(bundle, cmsEraseModificationURL));
                                 menubar.add(eraseItem);
                             }
                             if (pubInfos.isUserCanValidate()) {
@@ -1403,10 +1403,10 @@ public class MenuBarFormater {
 
                     // Type name
                     final String typeName = StringUtils.upperCase(cmsItemType.getName());
-                    final String name = bundle.getString(typeName);
+                    final String displayName = bundle.getString(typeName, cmsItemType.getCustomizedClassLoader());
 
                     // Menubar item
-                    final MenubarItem item = new MenubarItem("ADD_" + typeName, name, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
+                    final MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
@@ -1422,10 +1422,10 @@ public class MenuBarFormater {
 
                     // Type name
                     final String typeName = StringUtils.upperCase(cmsItemType.getName());
-                    final String name = bundle.getString(typeName);
+                    final String displayName = bundle.getString(typeName, cmsItemType.getCustomizedClassLoader());
 
                     // Menubar item
-                    final MenubarItem item = new MenubarItem("ADD_" + typeName, name, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
+                    final MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
                     item.setDivider(divider);

@@ -37,7 +37,9 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
@@ -95,6 +97,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private List<DomainContextualization> domainContextualizationCache;
     /** Tab groups cache. */
     private Map<String, TabGroup> tabGroupsCache;
+    /** Taskbar items cache. */
+    private TaskbarItems taskbarItemsCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
@@ -471,10 +475,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         return this.navigationAdaptersCache;
     }
 
-    
+
     /**
      * Customize domain contextualization.
-     * 
+     *
      * @return domain contextualization
      */
     public List<DomainContextualization> customizeDomainContextualization() {
@@ -494,7 +498,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
         return this.domainContextualizationCache;
     }
-    
+
 
     /**
      * Customize tab groups.
@@ -521,6 +525,29 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Customize taskbar items.
+     *
+     * @return taskbar items
+     * @throws CMSException
+     */
+    public TaskbarItems customizeTaskbarItems() throws CMSException {
+        if (this.taskbarItemsCache == null) {
+            this.taskbarItemsCache = this.customizer.getDefaultTaskbarItems();
+
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            // Customized taskbar items
+            TaskbarItems customizedTaskbarItems = (TaskbarItems) attributes.get(Customizable.TASKBAR_ITEMS.toString());
+            if (customizedTaskbarItems != null) {
+                this.taskbarItemsCache.add(customizedTaskbarItems.getAll());
+            }
+        }
+        return this.taskbarItemsCache;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -534,6 +561,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.navigationAdaptersCache = null;
         this.domainContextualizationCache = null;
         this.tabGroupsCache = null;
+        this.taskbarItemsCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

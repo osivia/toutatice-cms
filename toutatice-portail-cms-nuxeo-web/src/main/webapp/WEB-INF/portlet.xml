@@ -351,6 +351,21 @@
             <title>Reorder documents</title>
         </portlet-info>
     </portlet>
+    
+    
+    <!-- Internationalization customizer -->
+    <portlet>
+        <portlet-name>cms-nuxeo-web-internationalization-customizer</portlet-name>
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.customizer.internationalization.InternationalizationCustomizer</portlet-class>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+        </supports>
+          
+        <portlet-info>
+            <title>Internationalization customizer</title>
+        </portlet-info>
+    </portlet>
 
 
     <public-render-parameter>

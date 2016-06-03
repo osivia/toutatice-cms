@@ -1,6 +1,5 @@
-<!DOCTYPE portlet-app PUBLIC
-   "-//JBoss Portal//DTD JBoss Portlet 2.6//EN"
-   "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE portlet-app PUBLIC "-//JBoss Portal//DTD JBoss Portlet 2.6//EN" "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
 
 <portlet-app>
 
@@ -269,6 +268,14 @@
             <script type="text/javascript" src="/js/reorder.min.js"></script>
         </header-content>
     </portlet>
+
+
+    <!-- Customization modules repository -->
+    <service>
+        <service-name>CustomizationModulesRepository</service-name>
+        <service-class>org.osivia.portal.api.customization.ICustomizationModulesRepository</service-class>
+        <service-ref>osivia:service=CustomizationService</service-ref>
+    </service>
 
 </portlet-app>
 	

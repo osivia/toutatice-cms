@@ -41,7 +41,9 @@ public enum Customizable {
     /** Domain contextualization. */
     DOMAIN_CONTEXTUALIZATION("osivia.customizer.cms.domainContextualization"),
     /** Tab groups. */
-    TAB_GROUPS("osivia.customizer.cms.tabGroups");
+    TAB_GROUPS("osivia.customizer.cms.tabGroups"),
+    /** Taskbar items. */
+    TASKBAR_ITEMS("osivia.customizer.cms.taskbarItems");
 
 
     /** Property name. */

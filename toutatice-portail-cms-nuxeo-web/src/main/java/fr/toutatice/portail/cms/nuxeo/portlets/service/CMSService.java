@@ -49,8 +49,13 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarFactory;
+import org.osivia.portal.api.taskbar.TaskbarItem;
+import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -142,6 +147,10 @@ public class CMSService implements ICMSService {
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
+    /** Taskbar service. */
+    private final ITaskbarService taskbarService;
+
+
     /**
      * Constructor.
      *
@@ -150,7 +159,11 @@ public class CMSService implements ICMSService {
     public CMSService(PortletContext portletCtx) {
         super();
         this.portletCtx = portletCtx;
+
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
+
 
     public DefaultCMSCustomizer getCustomizer() {
         return this.customizer;
@@ -179,7 +192,7 @@ public class CMSService implements ICMSService {
         // Domain ID & web ID
         String domainId = doc.getString("ttc:domainID");
         String webId = doc.getString("ttc:webid");
-        
+
         // For selectors saved in the doc
         if(doc.getString("ttc:selectors") != null) {
         	properties.put("selectors", doc.getString("ttc:selectors"));
@@ -1937,7 +1950,7 @@ public class CMSService implements ICMSService {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
-            
+
             if (command == EcmViews.editPage || command == EcmViews.editDocument) {
                 // If in web mode, we pass portal web URL to to editPage
                 Portal portal = PortalObjectUtils.getPortal(ControllerContextAdapter.getControllerContext(portalControllerContext));
@@ -2315,39 +2328,11 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<TaskbarTask> getTaskbarNavigationTasks(CMSServiceCtx cmsContext, String basePath) throws CMSException {
-        // Navigations items
-        List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
+    public TaskbarItems getTaskbarItems(CMSServiceCtx cmsContext) throws CMSException {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
 
-        // Tasks
-        List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
-        for (CMSItem navigationItem : navigationItems) {
-            if ("1".equals(navigationItem.getProperties().get("menuItem"))) {
-                // Document
-                Document document = (Document) navigationItem.getNativeItem();
-                // Type
-                DocumentType type = navigationItem.getType();
-                if (type != null) {
-                    TaskbarTask task = new TaskbarTask();
-
-                    // Identifier
-                    task.setId(document.getId());
-                    // Name
-                    task.setName(document.getTitle());
-                    // Icon
-                    task.setIcon(type.getGlyph());
-
-                    // Path
-                    task.setPath(document.getPath());
-                    // Type
-                    task.setType(type.getName());
-
-                    tasks.add(task);
-                }
-            }
-        }
-
-        return tasks;
+        return pluginManager.customizeTaskbarItems();
     }
 
 
@@ -2355,8 +2340,68 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<TaskbarTask> getTaskbarCustomTasks(CMSServiceCtx cmsContext) {
-        return new ArrayList<TaskbarTask>(this.customizer.getTaskbarTasks());
+    public List<TaskbarTask> getTaskbarTasks(CMSServiceCtx cmsContext, String basePath) throws CMSException {
+        // Space shortname
+        CMSItem spaceCmsItem = this.getSpaceConfig(cmsContext, basePath);
+        Document spaceDocument = (Document) spaceCmsItem.getNativeItem();
+        String shortname = spaceDocument.getString("webc:url");
+
+        // Navigations items
+        List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
+        // Taskbar items
+        TaskbarItems taskbarItems = this.getTaskbarItems(cmsContext);
+
+        // Factory
+        TaskbarFactory factory = this.taskbarService.getFactory();
+
+        // Tasks
+        List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
+        for (CMSItem navigationItem : navigationItems) {
+            // Document
+            Document document = (Document) navigationItem.getNativeItem();
+            // Type
+            DocumentType type = navigationItem.getType();
+            // WebId
+            String webId = document.getString("ttc:webid");
+            // Disabled indicator
+            boolean disabled = !"1".equals(navigationItem.getProperties().get("menuItem"));
+
+            // Taskbar item
+            TaskbarItem taskbarItem = null;
+            if ("Staple".equals(document.getType())) {
+                String id = document.getString("stpl:stapleId");
+                taskbarItem = taskbarItems.get(id);
+            } else {
+                for (TaskbarItem item : taskbarItems.getAll()) {
+                    if (document.getType().equals(item.getDocumentType())) {
+                        String expectedWebId = shortname + "_" + StringUtils.lowerCase(item.getId());
+                        if (expectedWebId.equals(webId)) {
+                            taskbarItem = item;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Task
+            TaskbarTask task;
+            try {
+                if ((taskbarItem == null) && (type != null)) {
+                    task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
+                } else if (taskbarItem != null) {
+                    task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+                } else {
+                    task = null;
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new CMSException(e);
+            }
+            if (task != null) {
+                tasks.add(task);
+            }
+        }
+
+        return tasks;
     }
 
 
