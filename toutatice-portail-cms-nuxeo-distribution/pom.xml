@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,39 +14,30 @@
     <artifactId>toutatice-portail-cms-nuxeo-distribution</artifactId>
     <name>Toutatice Portal - Distribution</name>
 
-	<properties>
-		<aop.version>1.0</aop.version>
-		<ehcache.version>2.7.2</ehcache.version>
-
-		<spring-ldap.version>2.1.0.RELEASE</spring-ldap.version>
-		<spring-data.version>1.12.1.RELEASE</spring-data.version>
-		<spring-security.version>3.2.5.RELEASE</spring-security.version>
-
-	</properties>
+    <properties>
+        <ehcache.version>2.7.2</ehcache.version>
+    </properties>
 
     <prerequisites>
         <maven>2.1.0</maven>
     </prerequisites>
-    
+
 
     <dependencies>
 
-		<!-- Socle -->
-
+        <!-- Toutatice -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-sar</artifactId>
             <version>${project.version}</version>
             <type>sar</type>
         </dependency>
-    
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-    
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-taglib</artifactId>
@@ -51,66 +45,20 @@
             <type>jar</type>
         </dependency>
 
-
-		<!-- libs tiers -->
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc-portlet</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.springframework.ldap</groupId>
-			<artifactId>spring-ldap-core</artifactId>
-			<version>${spring-ldap.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-commons</artifactId>
-			<version>${spring-data.version}</version>
-		</dependency>
-		
-        <!-- 
-		<dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>${spring-security.version}</version>
-		</dependency>
-         -->
+        <!-- libs tiers -->
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
-        
         <dependency>
-            <groupId>aopalliance</groupId>
-            <artifactId>aopalliance</artifactId>
-            <version>${aop.version}</version>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>${ehcache.version}</version>
         </dependency>
-
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>${ehcache.version}</version>
-		</dependency>
 
     </dependencies>
 
@@ -158,30 +106,27 @@
                                     </artifactItems>
                                 </configuration>
                             </execution>
-                            
+
                             <execution>
-                            	<id>import-dependencies</id>
-                            	<phase>generate-resources</phase>
+                                <id>import-dependencies</id>
+                                <phase>generate-resources</phase>
                                 <goals>
                                     <goal>copy-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                	<includeGroupIds>org.springframework,
-                                					org.springframework.ldap,
-                                					org.springframework.data,
-                                					org.slf4j,
-                                					net.sf.ehcache,
-                                					net.sf.json-lib,
-                                					org.codehaus.jackson,
-                                					aopalliance,
-                                					displaytag
-                                	</includeGroupIds>
-                                	
-                                	<!-- exclude slf4j in conflict with JBP libs -->
-                                	<excludeArtifactIds>
-                                		jcl104-over-slf4j,
-                                		slf4j-log4j12
-                                	</excludeArtifactIds>
+                                    <includeGroupIds>
+                                        org.slf4j,
+                                        net.sf.ehcache,
+                                        net.sf.json-lib,
+                                        org.codehaus.jackson,
+                                        displaytag
+                                    </includeGroupIds>
+
+                                    <!-- exclude slf4j in conflict with JBP libs -->
+                                    <excludeArtifactIds>
+                                        jcl104-over-slf4j,
+                                        slf4j-log4j12
+                                    </excludeArtifactIds>
                                 </configuration>
                             </execution>
                         </executions>
@@ -207,7 +152,6 @@
                                     </descriptors>
                                     <finalName>toutatice-portail-distribution-${project.version}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
-                                    <!--<attach>false</attach> -->
                                 </configuration>
                                 <goals>
                                     <goal>single</goal>
@@ -218,7 +162,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
 
 </project>

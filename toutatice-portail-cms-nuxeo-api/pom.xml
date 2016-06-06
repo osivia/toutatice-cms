@@ -13,11 +13,14 @@
     <name>Toutatice Portal - API</name>
 
     <dependencies>
+    
+        <!-- Nuxeo automation client -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+
     </dependencies>
 
     <profiles>
