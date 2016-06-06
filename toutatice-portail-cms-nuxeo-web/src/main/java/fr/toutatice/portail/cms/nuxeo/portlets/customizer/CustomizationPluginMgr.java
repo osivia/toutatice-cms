@@ -532,16 +532,17 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     public TaskbarItems customizeTaskbarItems() throws CMSException {
         if (this.taskbarItemsCache == null) {
-            this.taskbarItemsCache = this.customizer.getDefaultTaskbarItems();
+            // Default taskbar items
+            TaskbarItems defaultTaskbarItems = this.customizer.getDefaultTaskbarItems();
 
             // Customization attributes
             Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
 
             // Customized taskbar items
             TaskbarItems customizedTaskbarItems = (TaskbarItems) attributes.get(Customizable.TASKBAR_ITEMS.toString());
-            if (customizedTaskbarItems != null) {
-                this.taskbarItemsCache.add(customizedTaskbarItems.getAll());
-            }
+
+            this.taskbarItemsCache = customizedTaskbarItems;
+            this.taskbarItemsCache.add(defaultTaskbarItems.getAll());
         }
         return this.taskbarItemsCache;
     }
