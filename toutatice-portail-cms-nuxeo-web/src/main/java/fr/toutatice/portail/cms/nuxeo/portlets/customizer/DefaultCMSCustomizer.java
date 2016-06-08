@@ -76,7 +76,6 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
@@ -107,7 +106,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
@@ -975,9 +973,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
-
         CMSPublicationInfos publicationInfos = null;
         CMSExtendedDocumentInfos extendedDocumentInfos = null;
         if(ctx.getDoc() != null) {
@@ -987,16 +983,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
-
-        List<MenubarItem> menuBar = (List<MenubarItem>) ctx.getRequest().getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-        List<IMenubarModule> customizeMenubars = this.pluginMgr.customizeMenubars(ctx.getRequest().getLocale());
-
-
-        for(IMenubarModule menubarCustom : customizeMenubars) {
-        	menubarCustom.adaptContentMenuBar(ctx, menuBar, publicationInfos, extendedDocumentInfos);
-        }
-
     }
 
     /**

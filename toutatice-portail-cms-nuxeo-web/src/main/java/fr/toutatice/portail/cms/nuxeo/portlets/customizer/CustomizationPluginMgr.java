@@ -37,6 +37,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.core.cms.CMSException;
@@ -48,7 +49,6 @@ import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IMenubarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
@@ -82,8 +82,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private final Map<Locale, Map<String, EditableWindow>> ewCache;
     /** List templates cache. */
     private final Map<Locale, List<ListTemplate>> templatesCache;
-    /** Menubar contributions cache. */
-    private final Map<Locale, List<IMenubarModule>> menubarCache;
     /** Menu templates cache. */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
 
@@ -99,6 +97,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private Map<String, TabGroup> tabGroupsCache;
     /** Taskbar items cache. */
     private TaskbarItems taskbarItemsCache;
+    /** Menubar modules cache. */
+    private List<MenubarModule> menubarModulesCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
@@ -122,7 +122,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.fragmentsCache = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
         this.ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
         this.templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
-        this.menubarCache = new ConcurrentHashMap<Locale, List<IMenubarModule>>();
         this.menuTemplatesCache = new ConcurrentHashMap<Locale, SortedMap<String, String>>();
 
         this.customizationDeployementTS = System.currentTimeMillis();
@@ -371,26 +370,17 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return the list
      */
     @SuppressWarnings("unchecked")
-    public List<IMenubarModule> customizeMenubars(Locale locale) {
-        List<IMenubarModule> menubars = this.menubarCache.get(locale);
+    public List<MenubarModule> customizeMenubarModules() {
+        if (this.menubarModulesCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
 
-        if (menubars == null) {
-            menubars = new ArrayList<IMenubarModule>();
-
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
-
-            List<IMenubarModule> menubarList = (List<IMenubarModule>) customizationAttributes.get(Customizable.MENUBAR.toString());
-
-            if (menubarList != null) {
-                for (IMenubarModule customMenubarModule : menubarList) {
-                    menubars.add(customMenubarModule);
-                }
+            this.menubarModulesCache = (List<MenubarModule>) attributes.get(Customizable.MENUBAR.toString());
+            if (this.menubarModulesCache == null) {
+                this.menubarModulesCache = new ArrayList<MenubarModule>(0);
             }
-
-            this.menubarCache.put(locale, menubars);
         }
-
-        return menubars;
+        return this.menubarModulesCache;
     }
 
 
@@ -563,6 +553,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.domainContextualizationCache = null;
         this.tabGroupsCache = null;
         this.taskbarItemsCache = null;
+        this.menubarModulesCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();
@@ -570,7 +561,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.fragmentsCache.clear();
         this.ewCache.clear();
         this.templatesCache.clear();
-        this.menubarCache.clear();
         this.menuTemplatesCache.clear();
     }
 

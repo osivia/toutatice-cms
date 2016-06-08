@@ -31,6 +31,7 @@ import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -313,20 +314,20 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
-     * Gets the menubar contributors.
+     * Get menubar modules.
      *
-     * @param context the context
-     * @return the players
+     * @param context customization modules
+     * @return menubar modules
      */
     @SuppressWarnings("unchecked")
-    protected List<IMenubarModule> getMenubars(CustomizationContext context) {
+    protected List<MenubarModule> getMenubarModules(CustomizationContext context) {
         // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
 
         // Players
-        List<IMenubarModule> menubars = (List<IMenubarModule>) attributes.get(Customizable.MENUBAR.toString());
+        List<MenubarModule> menubars = (List<MenubarModule>) attributes.get(Customizable.MENUBAR.toString());
         if (menubars == null) {
-            menubars = new ArrayList<IMenubarModule>();
+            menubars = new ArrayList<MenubarModule>();
             attributes.put(Customizable.MENUBAR.toString(), menubars);
         }
         return menubars;

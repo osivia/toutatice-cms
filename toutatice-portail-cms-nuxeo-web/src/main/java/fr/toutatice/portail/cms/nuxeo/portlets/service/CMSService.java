@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -44,12 +45,14 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -88,6 +91,7 @@ import org.osivia.portal.core.web.IWebIdService;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
@@ -2638,6 +2642,33 @@ public class CMSService implements ICMSService {
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
 
         return pluginManager.customizeTabGroups();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MenubarModule> getMenubarModules(CMSServiceCtx cmsContext) {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        return pluginManager.customizeMenubarModules();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DocumentContext<? extends EcmDocument> getDocumentContext(CMSServiceCtx cmsContext, String path) throws CMSException {
+        DocumentContext<? extends EcmDocument> documentContext;
+        try {
+            documentContext = NuxeoController.getDocumentContext(cmsContext, path);
+        } catch (PortletException e) {
+            throw new CMSException(e);
+        }
+        return documentContext;
     }
 
 }

@@ -830,7 +830,7 @@ public class NuxeoController {
 
     /**
      * Constructor.
-     * 
+     *
      * @param portalControllerContext portal controller context
      */
     public NuxeoController(PortalControllerContext portalControllerContext) {
@@ -2242,13 +2242,13 @@ public class NuxeoController {
 
     /**
      * Get document context.
-     * 
+     *
      * @param path document path
      * @return document context
      */
     public NuxeoDocumentContext getDocumentContext(String path) {
         try {
-            return getDocumentContext(request, response, portletCtx, path);
+            return getDocumentContext(this.request, this.response, this.portletCtx, path);
         } catch (PortletException e) {
             throw this.wrapNuxeoException(e);
         }
@@ -2256,86 +2256,116 @@ public class NuxeoController {
 
 
     /**
-     * Instantiates a new nuxeo controller.
+     * Get document context.
      *
-     * @param request the request
-     * @param response the response
-     * @param portletCtx the portlet ctx
-     * @throws PortletException
-     * @throws RuntimeException the runtime exception
+     * @param path document path
+     * @param reload force reload indicator
+     * @return document context
      */
-    public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletCtx) throws PortletException{
-    	return getDocumentContext(request, response, portletCtx, null);
+    public NuxeoDocumentContext getDocumentContext(String path, boolean reload) {
+        try {
+            return getDocumentContext(this.request, this.response, this.portletCtx, path, reload);
+        } catch (PortletException e) {
+            throw this.wrapNuxeoException(e);
+        }
     }
 
+
     /**
-     * Instantiates a new nuxeo controller.
+     * Get document context.
      *
-     * @param request the request
-     * @param response the response
-     * @param portletCtx the portlet ctx
-     * @param path a specific path
+     * @param request portlet request
+     * @param response portlet response
+     * @param portletContext portlet context
+     * @return document context
      * @throws PortletException
-     * @throws RuntimeException the runtime exception
      */
-    public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletCtx, String path) throws PortletException{
+    public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletContext)
+            throws PortletException {
+        return getDocumentContext(request, response, portletContext, null, false);
+    }
 
-    	NuxeoDocumentContext docContext = new NuxeoDocumentContext();
 
-        NuxeoController nxCtl = new NuxeoController(request, response, portletCtx);
+    /**
+     * Get document context.
+     *
+     * @param request portlet request
+     * @param response portlet response
+     * @param portletContext portlet context
+     * @param path document path
+     * @return document context
+     * @throws PortletException
+     */
+    public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletContext, String path)
+            throws PortletException {
+        return getDocumentContext(request, response, portletContext, path, false);
+    }
 
+
+    /**
+     * Get document context.
+     *
+     * @param request portlet request
+     * @param response portlet response
+     * @param portletContext portlet context
+     * @param path document path
+     * @param reload force reload indicator
+     * @return document context
+     * @throws PortletException
+     */
+    public static NuxeoDocumentContext getDocumentContext(PortletRequest request, PortletResponse response, PortletContext portletContext, String path,
+            boolean reload) throws PortletException {
+        // Document context
+    	NuxeoDocumentContext documentContext = new NuxeoDocumentContext();
+
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
+
+        // Window
         PortalWindow window = WindowFactory.getWindow(request);
 
-
-        BasicPublicationInfos navigationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
-		navigationInfos.setBasePath(window.getPageProperty(BasicPublicationInfos.BASE_PATH));
-
-        navigationInfos.setNavigationPath(request.getParameter(BasicPublicationInfos.NAVIGATION_PATH));
+        // Publication infos
+        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+        publicationInfos.setBasePath(window.getPageProperty(BasicPublicationInfos.BASE_PATH));
+        publicationInfos.setNavigationPath(request.getParameter(BasicPublicationInfos.NAVIGATION_PATH));
 
         if(path == null) {
-        	navigationInfos.setContentPath(request.getParameter(BasicPublicationInfos.CONTENT_PATH));
+            publicationInfos.setContentPath(request.getParameter(BasicPublicationInfos.CONTENT_PATH));
+        } else {
+            publicationInfos.setContentPath(path);
         }
-        else {
-        	navigationInfos.setContentPath(path);
-        }
-
 
         if (request instanceof ResourceRequest) {
             if (request.getParameter(BasicPublicationInfos.RELOAD_RESOURCE) != null) {
-
-                navigationInfos.setReloadResource(Boolean.TRUE);
+                publicationInfos.setReloadResource(Boolean.TRUE);
             }
         }
 
-        if(navigationInfos.getContentPath() != null) {
-			CMSServiceCtx cmsCtx = nxCtl.getCMSCtx();
+        if (publicationInfos.getContentPath() != null) {
+            CMSServiceCtx cmsCtx = nuxeoController.getCMSCtx();
+            cmsCtx.setForceReload(reload);
 
 			try {
-				addInfos(cmsCtx, navigationInfos.getContentPath(), docContext);
+                addInfos(cmsCtx, publicationInfos.getContentPath(), documentContext);
 			} catch (CMSException e) {
 				throw new PortletException(e);
 			}
 
             // Preview mode
             if (request != null) {
-
                 EditionState editionState = (EditionState) request.getAttribute("osivia.editionState");
                 if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                    navigationInfos.setForcedLivePath(editionState.getDocPath());
+                    publicationInfos.setForcedLivePath(editionState.getDocPath());
                 } else {
-
                     // mode web page
                     String webPageEditionPath = (String) request.getAttribute("osivia.cms.webPageEditionPath");
                     if (webPageEditionPath != null) {
-                    	navigationInfos.setForcedLivePath(editionState.getDocPath());
+                        publicationInfos.setForcedLivePath(editionState.getDocPath());
                     }
                 }
-
-
             }
 
-
-			return docContext;
+			return documentContext;
         } else {
             return null;
         }
@@ -2352,16 +2382,13 @@ public class NuxeoController {
      * @throws RuntimeException the runtime exception
      */
     public static NuxeoDocumentContext getDocumentContext(CMSServiceCtx cmsCtx, String path) throws PortletException{
-
     	NuxeoDocumentContext docContext = null;
 
     	if(path != null) {
-
     		docContext = new NuxeoDocumentContext();
 
 			try {
 				addInfos(cmsCtx, path, docContext);
-
 			} catch (CMSException e) {
 				throw new PortletException(e);
 			}
@@ -2408,7 +2435,6 @@ public class NuxeoController {
      * @throws CMSException
      */
     private static void addInfos(CMSServiceCtx cmsCtx, String path, NuxeoDocumentContext docContext) throws CMSException {
-
         BasicPublicationInfos publicationInfos = docContext.getPublicationInfos(BasicPublicationInfos.class);
 		BasicPermissions perms = docContext.getPermissions(BasicPermissions.class);
 
@@ -2450,9 +2476,6 @@ public class NuxeoController {
 
 		DocumentType documentType = cmsCustomizer.getCMSItemTypes().get(nativeItem.getType());
 		docContext.setDocumentType(documentType);
-
-
-
     }
 
 
