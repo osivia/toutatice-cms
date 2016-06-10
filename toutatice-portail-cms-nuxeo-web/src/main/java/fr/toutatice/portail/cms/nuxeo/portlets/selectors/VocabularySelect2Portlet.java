@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -51,7 +50,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 /**
  * Vocabulary Select2 component portlet.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see CMSPortlet
  */
@@ -104,7 +103,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 // Selected items
                 Map<String, String> selectedItems = new LinkedHashMap<String, String>(selector.size());
                 request.setAttribute("selectedItems", selectedItems);
-                
+
                 for (String key : selector) {
                     String vocabularyKey;
                     if (key.contains("/")) {
@@ -158,11 +157,11 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         // Current action
         String action = request.getParameter(ActionRequest.ACTION_NAME);
-        
+
         // Configuration
         Configuration configuration = getConfiguration(window);
 
-        
+
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
@@ -207,7 +206,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 window.setProperty(VOCABULARY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("vocabulary")));
                 window.setProperty(MONO_VALUED_WINDOW_PROPERTY, String.valueOf(BooleanUtils.toBoolean(request.getParameter("monoValued"))));
             }
-            
+
             response.setPortletMode(PortletMode.VIEW);
             response.setWindowState(WindowState.NORMAL);
         }
@@ -266,7 +265,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Get vocabulary configuration.
-     * 
+     *
      * @param window portal window
      * @return configuration
      */
@@ -282,7 +281,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Parse JSON array with filter.
-     * 
+     *
      * @param array JSON array
      * @param filter filter, may be null
      * @return results
@@ -304,7 +303,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 parent = object.getString("parent");
             }
             boolean matches = this.matches(value, filter);
-            
+
             Item item = items.get(key);
             if (item == null) {
                 item = new Item(key);
@@ -353,7 +352,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Check if value matches filter.
-     * 
+     *
      * @param value value
      * @param filter filter
      * @return true if value matches filter
@@ -367,7 +366,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
             String decodedValue = URLDecoder.decode(value, "UTF-8");
             // Diacritical value
             String diacriticalValue = Normalizer.normalize(decodedValue, Normalizer.Form.NFD).replaceAll("\\p{IsM}+", StringUtils.EMPTY);
-            
+
             // Filter
             String[] splittedFilters = StringUtils.split(filter, "*");
             for (String splittedFilter : splittedFilters) {
@@ -380,14 +379,14 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 }
             }
         }
-        
+
         return matches;
     }
 
 
     /**
      * Generate children.
-     * 
+     *
      * @param items vocabulary items
      * @param array results JSON array
      * @param children children
@@ -431,7 +430,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Vocabulary configuration java-bean.
-     * 
+     *
      * @author Cédric Krommenhoek
      */
     public class Configuration {
@@ -456,7 +455,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Getter for label.
-         * 
+         *
          * @return the label
          */
         public String getLabel() {
@@ -465,7 +464,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Setter for label.
-         * 
+         *
          * @param label the label to set
          */
         public void setLabel(String label) {
@@ -474,7 +473,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Getter for id.
-         * 
+         *
          * @return the id
          */
         public String getId() {
@@ -483,7 +482,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Setter for id.
-         * 
+         *
          * @param id the id to set
          */
         public void setId(String id) {
@@ -492,7 +491,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Getter for vocabulary.
-         * 
+         *
          * @return the vocabulary
          */
         public String getVocabulary() {
@@ -501,7 +500,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Setter for vocabulary.
-         * 
+         *
          * @param vocabulary the vocabulary to set
          */
         public void setVocabulary(String vocabulary) {
@@ -510,7 +509,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Getter for monoValued.
-         * 
+         *
          * @return the monoValued
          */
         public boolean isMonoValued() {
@@ -519,7 +518,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Setter for monoValued.
-         * 
+         *
          * @param monoValued the monoValued to set
          */
         public void setMonoValued(boolean monoValued) {
@@ -531,7 +530,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Vocabulary item java-bean.
-     * 
+     *
      * @author Cédric Krommenhoek
      */
     private class Item {
@@ -553,13 +552,13 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /**
          * Constructor.
-         * 
+         *
          * @param key vocabulary key
          */
         public Item(String key) {
             super();
             this.key = key;
-            this.children = new HashSet<String>();
+            this.children = new LinkedHashSet<String>();
         }
 
     }
@@ -567,7 +566,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
     /**
      * Load vocabulary command.
-     * 
+     *
      * @author Cédric Krommenhoek
      * @see INuxeoCommand
      */
@@ -575,8 +574,8 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
         /** Vocabulary name. */
         private final String name;
-        
-        
+
+
         /**
          * Constructor.
          */
