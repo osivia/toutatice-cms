@@ -179,12 +179,23 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Get the user avatar.
      *
-     * @param cmsCtx cms context
      * @param username username
      * @return the user avatar
      * @throws CMSException the CMS exception
      */
-    Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
+    Link getUserAvatar(String username);
+    
+    /**
+     * Get the user avatar.
+     *
+     * @param cmsCtx cms context
+     * @param username username
+     * @return the user avatar
+     * @throws CMSException the CMS exception
+     * @deprecated use getUserAvatar(String username);
+     */
+    @Deprecated
+	Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
 
     /**
      * Refresh the user avatar.
@@ -193,9 +204,18 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param username username
      * @return the timestamp associated with the refresh event
      */
-    String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
-
-
+    String refreshUserAvatar(String username);
+    
+    /**
+     * Refresh the user avatar.
+     *
+     * @param cmsCtx cms context
+     * @param username username
+     * @return the timestamp associated with the refresh event
+     * @deprecated use refreshUserAvatar(String username);
+     */
+    @Deprecated
+	String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
 
     /**
      * Get templates list.

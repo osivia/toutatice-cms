@@ -2247,19 +2247,9 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
-        return this.customizer.getUserAvatar(cmsCtx, username);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
         return this.customizer.refreshUserAvatar(cmsCtx, username);
     }
-
 
     /**
      * {@inheritDoc}

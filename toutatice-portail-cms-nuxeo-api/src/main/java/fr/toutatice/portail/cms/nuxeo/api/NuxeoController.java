@@ -2206,7 +2206,8 @@ public class NuxeoController {
      * @throws CMSException
      */
     public Link getUserAvatar(String username) throws CMSException {
-        return getCMSService().getUserAvatar(this.getCMSCtx(), username);
+    	
+    	return getNuxeoCMSService().getCMSCustomizer().getUserAvatar(username);
 
     }
 

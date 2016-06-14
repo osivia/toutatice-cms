@@ -1538,32 +1538,36 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return permLinkPath;
     }
 
-
     @Override
-    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
-
+    public Link getUserAvatar(String username) {
         String src = "";
-        try {
+        
+        // get timestamp defined previously
+        String avatarTime = this.avatarMap.get(username);
 
-            // get timestamp defined previously
-            String avatarTime = this.avatarMap.get(username);
-
-            if (avatarTime == null) {
-                // if not defined, set ie
-                avatarTime = this.refreshUserAvatar(cmsCtx, username);
-            }
-
-            // timestamp is concated in the url to control the client cache
-            src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8")).concat("&t=").concat(avatarTime.toString());
-        } catch (UnsupportedEncodingException e) {
-            throw new CMSException(e);
+        if (avatarTime == null) {
+            // if not defined, set ie
+            avatarTime = this.refreshUserAvatar(username);
         }
+
+        // timestamp is concated in the url to control the client cache
+        try {
+			src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8")).concat("&t=").concat(avatarTime.toString());
+		} catch (UnsupportedEncodingException e) {
+			LOGGER.error(e);
+		}
 
         return new Link(src, false);
     }
 
     @Override
-    public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
+    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
+    	return getUserAvatar(username);
+
+    }
+    
+    @Override
+    public String refreshUserAvatar(String username) {
 
         // renew the timestamp and map it to the user
         String avatarTime = Long.toString(new Date().getTime());
@@ -1571,6 +1575,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.avatarMap.put(username, avatarTime);
 
         return avatarTime;
+    }    
+
+    @Override
+    public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
+
+        return refreshUserAvatar(username);
     }
 
 
