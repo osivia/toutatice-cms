@@ -58,6 +58,7 @@ import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
+import org.osivia.portal.api.taskbar.TaskbarItemType;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.theming.TabGroup;
@@ -1955,7 +1956,7 @@ public class CMSService implements ICMSService {
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
 
-            if (command == EcmViews.editPage || command == EcmViews.editDocument) {
+            if ((command == EcmViews.editPage) || (command == EcmViews.editDocument)) {
                 // If in web mode, we pass portal web URL to to editPage
                 Portal portal = PortalObjectUtils.getPortal(ControllerContextAdapter.getControllerContext(portalControllerContext));
                 if (PortalObjectUtils.isSpaceSite(portal)) {
@@ -2362,17 +2363,12 @@ public class CMSService implements ICMSService {
 
             // Taskbar item
             TaskbarItem taskbarItem = null;
-            if ("Staple".equals(document.getType())) {
-                String id = document.getString("stpl:stapleId");
-                taskbarItem = taskbarItems.get(id);
-            } else {
-                for (TaskbarItem item : taskbarItems.getAll()) {
-                    if (document.getType().equals(item.getDocumentType())) {
-                        String expectedWebId = shortname + "_" + StringUtils.lowerCase(item.getId());
-                        if (expectedWebId.equals(webId)) {
-                            taskbarItem = item;
-                            break;
-                        }
+            for (TaskbarItem item : taskbarItems.getAll()) {
+                if (TaskbarItemType.STAPLED.equals(item.getType()) || document.getType().equals(item.getDocumentType())) {
+                    String expectedWebId = shortname + "_" + StringUtils.lowerCase(item.getId());
+                    if (expectedWebId.equals(webId)) {
+                        taskbarItem = item;
+                        break;
                     }
                 }
             }

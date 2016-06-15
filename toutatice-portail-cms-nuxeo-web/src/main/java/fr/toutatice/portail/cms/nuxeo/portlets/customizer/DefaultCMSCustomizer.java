@@ -985,6 +985,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
     }
 
+
     /**
      * Compute preloading pages when user log in.
      *
@@ -1389,6 +1390,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Room
         defaultTypes.add(new DocumentType("Room", true, false, false, true, false, false, new ArrayList<String>(0), "/default/templates/room",
                 "glyphicons glyphicons-cube-black"));
+        // Staple
+        defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
 
         return defaultTypes;
     }
@@ -1875,7 +1878,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         taskbarItems.add(search);
 
         // Documents
-        TaskbarItem documents = factory.createDefaultCmsTaskbarItem("DOCUMENTS", "DOCUMENTS_TASK", "glyphicons glyphicons-folder-closed", "Folder", 1);
+        TaskbarItem documents = factory.createCmsTaskbarItem("DOCUMENTS", "DOCUMENTS_TASK", "glyphicons glyphicons-folder-closed", "Folder");
+        documents.setToDefault(1);
         taskbarItems.add(documents);
 
         return taskbarItems;

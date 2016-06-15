@@ -23,6 +23,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
@@ -56,6 +57,7 @@ import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
@@ -71,6 +73,7 @@ import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
@@ -148,9 +151,17 @@ public class MenuBarFormater {
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, CMSExtendedDocumentInfos extendedInfos)
             throws CMSException, PortalException {
+        // Document
         Document document = (Document) cmsContext.getDoc();
         if ((document == null) && (cmsContext.getCreationPath() == null)) {
             return;
+        }
+        // Document context
+        NuxeoDocumentContext documentContext;
+        try {
+            documentContext = NuxeoController.getDocumentContext(cmsContext, document.getPath());
+        } catch (PortletException e) {
+            throw new CMSException(e);
         }
 
         // Request
@@ -266,6 +277,13 @@ public class MenuBarFormater {
             } else {
                 throw e;
             }
+        }
+
+
+        // Menubar modules
+        List<MenubarModule> modules = this.customizer.getPluginMgr().customizeMenubarModules();
+        for (MenubarModule module : modules) {
+            module.customizeDocument(portalControllerContext, menubar, documentContext);
         }
     }
 
@@ -1176,35 +1194,37 @@ public class MenuBarFormater {
             // CMS item type
             final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
-            // We do not authorize remote proxies move to keep consistent refrences
-            boolean isMovable = cmsItemType.isMovable();
-            if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-                isMovable = false;
-            }
-
-            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms() && isMovable) {
-                // Move document popup URL
-                String moveDocumentURL;
-                try {
-                    final Map<String, String> properties = new HashMap<String, String>();
-                    properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
-                    properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
-                    properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
-
-                    moveDocumentURL = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
-                            properties, true);
-                } catch (final PortalException e) {
-                    moveDocumentURL = null;
+            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+                // We do not authorize remote proxies move to keep consistent refrences
+                boolean isMovable = cmsItemType.isMovable();
+                if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
+                    isMovable = false;
                 }
 
-                if (moveDocumentURL != null) {
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                if (isMovable) {
+                    // Move document popup URL
+                    String moveDocumentURL;
+                    try {
+                        final Map<String, String> properties = new HashMap<String, String>();
+                        properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
+                        properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
+                        properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
-                    final MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL, null,
-                            null, "fancyframe_refresh");
-                    item.setAjaxDisabled(true);
+                        moveDocumentURL = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+                                properties, true);
+                    } catch (final PortalException e) {
+                        moveDocumentURL = null;
+                    }
 
-                    menubar.add(item);
+                    if (moveDocumentURL != null) {
+                        final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+
+                        final MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL,
+                                null, null, "fancyframe_refresh");
+                        item.setAjaxDisabled(true);
+
+                        menubar.add(item);
+                    }
                 }
             }
         }

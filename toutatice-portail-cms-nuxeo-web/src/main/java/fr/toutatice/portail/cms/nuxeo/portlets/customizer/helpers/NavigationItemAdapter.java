@@ -37,6 +37,7 @@ public class NavigationItemAdapter {
 	DefaultCMSCustomizer customizer;
 	PortletContext portletCtx;
 
+
 	public NavigationItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
 		super();
 		this.CMSService = cmsService;
@@ -76,18 +77,14 @@ public class NavigationItemAdapter {
 
 
 	/**
-	 * Cet element doit-il être affiché dans une page (ou par défaut via un player spécifique)
-	 *
-	 * @param doc
-	 * @return
-	 */
-	protected boolean isDisplayedAsAPage(Document doc)	{
-
-		if (doc.getType().equals("PortalPage") ||(doc.getType().equals("SimplePage"))) {
-            return true;
-        }
-
-		return false;
+     * Cet element doit-il être affiché dans une page (ou par défaut via un player spécifique).
+     *
+     * @param document Nuxeo document
+     * @return
+     */
+	protected boolean isDisplayedAsAPage(Document document)	{
+        String type = document.getType();
+        return ("PortalPage".equals(type) || "SimplePage".equals(type) || "Staple".equals(type));
 	}
 
 
@@ -139,6 +136,8 @@ public class NavigationItemAdapter {
 			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);
 				properties.put("defaultTemplate", "1");
+            } else if ("Staple".equals(doc.getType())) {
+                properties.put("staple", String.valueOf(true));
 			}
 		}
 
