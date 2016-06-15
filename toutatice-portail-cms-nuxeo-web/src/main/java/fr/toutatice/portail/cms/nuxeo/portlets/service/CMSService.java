@@ -62,6 +62,7 @@ import org.osivia.portal.api.taskbar.TaskbarItemType;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
@@ -94,6 +95,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
@@ -193,6 +195,9 @@ public class CMSService implements ICMSService {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("displayName", displayName);
         properties.put("type", doc.getType());
+        if (BooleanUtils.toBoolean(doc.getString("ttc:showInMenu"))) {
+            properties.put("menuItem", "1");
+        }
 
         // Domain ID & web ID
         String domainId = doc.getString("ttc:domainID");
@@ -264,12 +269,6 @@ public class CMSService implements ICMSService {
         this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
 
         return cmsItem;
-    }
-
-
-    public List<CMSItem> getChildren(CMSServiceCtx ctx, String path) throws CMSException {
-
-        return new ArrayList<CMSItem>();
     }
 
     public IProfilManager getProfilManager() throws Exception {
@@ -2335,14 +2334,20 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<TaskbarTask> getTaskbarTasks(CMSServiceCtx cmsContext, String basePath) throws CMSException {
+    public List<TaskbarTask> getTaskbarTasks(CMSServiceCtx cmsContext, String basePath, boolean navigation) throws CMSException {
         // Space shortname
         CMSItem spaceCmsItem = this.getSpaceConfig(cmsContext, basePath);
         Document spaceDocument = (Document) spaceCmsItem.getNativeItem();
         String shortname = spaceDocument.getString("webc:url");
 
-        // Navigations items
-        List<CMSItem> navigationItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
+        // CMS items
+        List<CMSItem> cmsItems;
+        if (navigation) {
+            cmsItems = this.getPortalNavigationSubitems(cmsContext, basePath, basePath);
+        } else {
+            cmsItems = this.getChildren(cmsContext, spaceDocument.getId(), NuxeoQueryFilterContext.STATE_LIVE);
+        }
+
         // Taskbar items
         TaskbarItems taskbarItems = this.getTaskbarItems(cmsContext);
 
@@ -2350,16 +2355,16 @@ public class CMSService implements ICMSService {
         TaskbarFactory factory = this.taskbarService.getFactory();
 
         // Tasks
-        List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(navigationItems.size());
-        for (CMSItem navigationItem : navigationItems) {
+        List<TaskbarTask> tasks = new ArrayList<TaskbarTask>(cmsItems.size());
+        for (CMSItem cmsItem : cmsItems) {
             // Document
-            Document document = (Document) navigationItem.getNativeItem();
+            Document document = (Document) cmsItem.getNativeItem();
             // Type
-            DocumentType type = navigationItem.getType();
+            DocumentType type = cmsItem.getType();
             // WebId
             String webId = document.getString("ttc:webid");
             // Disabled indicator
-            boolean disabled = !"1".equals(navigationItem.getProperties().get("menuItem"));
+            boolean disabled = !"1".equals(cmsItem.getProperties().get("menuItem"));
 
             // Taskbar item
             TaskbarItem taskbarItem = null;
@@ -2375,21 +2380,54 @@ public class CMSService implements ICMSService {
 
             // Task
             TaskbarTask task;
-
-                if ((taskbarItem == null) && (type != null)) {
-                    task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
-                } else if (taskbarItem != null) {
-                    task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
-                } else {
-                    task = null;
-                }
-
+            if ((taskbarItem == null) && (type != null)) {
+                task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
+            } else if (taskbarItem != null) {
+                task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+            } else {
+                task = null;
+            }
             if (task != null) {
                 tasks.add(task);
             }
         }
 
         return tasks;
+    }
+
+
+    /**
+     * Get children CMS items.
+     *
+     * @param cmsContext CMS context
+     * @param parentId parent Nuxeo document identifier
+     * @param state Nuxeo query filter context state
+     * @return CMS items
+     * @throws CMSException
+     */
+    private List<CMSItem> getChildren(CMSServiceCtx cmsContext, String parentId, int state) throws CMSException {
+        // Nuxeo documents
+        Documents documents;
+        try {
+            // Nuxeo command
+            INuxeoCommand command = new GetChildrenCommand(parentId, state);
+            documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        // CMS items
+        List<CMSItem> cmsItems = new ArrayList<CMSItem>(documents.size());
+        for (Document document : documents) {
+            // CMS item
+            CMSItem cmsItem = this.createItem(cmsContext, document.getPath(), document.getTitle(), document);
+
+            cmsItems.add(cmsItem);
+        }
+
+        return cmsItems;
     }
 
 
@@ -2653,6 +2691,18 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
         return documentContext;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<TemplateAdapter> getTemplateAdapters(CMSServiceCtx cmsContext) {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+
+        return pluginManager.customizeTemplateAdapters();
     }
 
 }

@@ -43,7 +43,9 @@ public enum Customizable {
     /** Tab groups. */
     TAB_GROUPS("osivia.customizer.cms.tabGroups"),
     /** Taskbar items. */
-    TASKBAR_ITEMS("osivia.customizer.cms.taskbarItems");
+    TASKBAR_ITEMS("osivia.customizer.cms.taskbarItems"),
+    /** Template adapters. */
+    TEMPLATE_ADAPTERS("osivia.customizer.cms.templateAdapters");
 
 
     /** Property name. */

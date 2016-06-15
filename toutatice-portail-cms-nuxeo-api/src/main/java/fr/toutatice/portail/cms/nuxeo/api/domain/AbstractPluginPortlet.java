@@ -38,6 +38,7 @@ import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.core.cms.DomainContextualization;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
@@ -196,7 +197,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * @param context the context
      * @return the players
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected List<IPlayerModule> getPlayers(CustomizationContext context) {
         // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
@@ -436,6 +437,26 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             attributes.put(Customizable.TASKBAR_ITEMS.toString(), taskbarItems);
         }
         return taskbarItems;
+    }
+
+
+    /**
+     * Get template adapters.
+     *
+     * @param context customization context
+     * @return template adapters
+     */
+    @SuppressWarnings("unchecked")
+    protected List<TemplateAdapter> getTemplateAdapters(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        List<TemplateAdapter> templateAdapters = (List<TemplateAdapter>) attributes.get(Customizable.TEMPLATE_ADAPTERS.toString());
+        if (templateAdapters == null) {
+            templateAdapters = new ArrayList<TemplateAdapter>();
+            attributes.put(Customizable.TEMPLATE_ADAPTERS.toString(), templateAdapters);
+        }
+        return templateAdapters;
     }
 
 

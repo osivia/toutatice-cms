@@ -40,6 +40,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
+import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
@@ -99,6 +100,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private TaskbarItems taskbarItemsCache;
     /** Menubar modules cache. */
     private List<MenubarModule> menubarModulesCache;
+    /** Template adapters cache. */
+    private List<TemplateAdapter> templateAdaptersCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
@@ -539,6 +542,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Customize template adapters.
+     *
+     * @return template adapters
+     */
+    @SuppressWarnings("unchecked")
+    public List<TemplateAdapter> customizeTemplateAdapters() {
+        if (this.templateAdaptersCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            this.templateAdaptersCache = (List<TemplateAdapter>) attributes.get(Customizable.TEMPLATE_ADAPTERS.toString());
+            if (this.templateAdaptersCache == null) {
+                this.templateAdaptersCache = new ArrayList<TemplateAdapter>(0);
+            }
+        }
+        return this.templateAdaptersCache;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -554,6 +577,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.tabGroupsCache = null;
         this.taskbarItemsCache = null;
         this.menubarModulesCache = null;
+        this.templateAdaptersCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();
