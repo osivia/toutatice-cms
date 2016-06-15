@@ -2375,7 +2375,7 @@ public class CMSService implements ICMSService {
 
             // Task
             TaskbarTask task;
-            try {
+
                 if ((taskbarItem == null) && (type != null)) {
                     task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
                 } else if (taskbarItem != null) {
@@ -2383,9 +2383,7 @@ public class CMSService implements ICMSService {
                 } else {
                     task = null;
                 }
-            } catch (ReflectiveOperationException e) {
-                throw new CMSException(e);
-            }
+
             if (task != null) {
                 tasks.add(task);
             }
