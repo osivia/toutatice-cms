@@ -40,6 +40,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
@@ -58,6 +59,9 @@ import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.menubar.MenubarModule;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarItem;
+import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
@@ -109,6 +113,8 @@ public class MenuBarFormater {
     private final DefaultCMSCustomizer customizer;
     /** Contribution service. */
     private final IContributionService contributionService;
+    /** Taskbar service. */
+    private final ITaskbarService taskbarService;
     /** Bundle factory. */
     private final IBundleFactory bundleFactory;
 
@@ -133,6 +139,8 @@ public class MenuBarFormater {
         this.customizer = customizer;
         // Contribution service
         this.contributionService = Locator.findMBean(IContributionService.class, IContributionService.MBEAN_NAME);
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
         // Bundle factory
         final IInternationalizationService internationalizationService = (IInternationalizationService) portletCtx
                 .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
@@ -190,19 +198,12 @@ public class MenuBarFormater {
         }
 
 
-        // Check if current item is in user workspaces
-        boolean userWorkspace = false;
-        if (document != null) {
-            final String path = document.getPath() + "/";
-
-            final List<CMSItem> userWorkspaces = this.cmsService.getWorkspaces(cmsContext, true, false);
-            for (final CMSItem cmsItem : userWorkspaces) {
-                if (StringUtils.startsWith(path, cmsItem.getPath() + "/")) {
-                    userWorkspace = true;
-                    break;
-                }
-            }
-        }
+        // Check if current is a workspace
+        boolean workspace = this.isWorkspace(document);
+        // Check if current item is a taskbar item
+        boolean taskbarItem = !workspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+        // Check if current item is located inside a user workspace
+        boolean insideUserWorkspace = isInUserWorkspace(cmsContext, document);
 
 
         try {
@@ -228,21 +229,22 @@ public class MenuBarFormater {
                 // Contextualization
                 this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                // Change edition mode
-                this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                if (!workspace && !taskbarItem) {
+                    // Change edition mode
+                    this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
 
-                // Edition
-                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                // Nuxeo drive edit
-                this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                    // Edition
+                    this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    // Nuxeo drive edit
+                    this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                // Move
-                this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                // Reorder
-                this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                // Delete
-                this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-
+                    // Move
+                    this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    // Reorder
+                    this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    // Delete
+                    this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                }
 
                 // === other tools
                 // Live version browser
@@ -254,21 +256,21 @@ public class MenuBarFormater {
 
                 // Nuxeo administration
                 this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                // Manage (for workspaces)
-                this.getEditWksLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
 
-                if (!userWorkspace) {
+                if (!insideUserWorkspace) {
                     // Follow
                     this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                    // Lock
-                    this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                    if (!workspace && !taskbarItem) {
+                        // Lock
+                        this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                    // Validation workflow(s)
-                    this.getValidationWfLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                    // Remote publishing
-                    this.getRemotePublishingLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                        // Validation workflow(s)
+                        this.getValidationWfLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                        // Remote publishing
+                        this.getRemotePublishingLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                    }
                 }
             }
         } catch (final CMSException e) {
@@ -285,6 +287,100 @@ public class MenuBarFormater {
         for (MenubarModule module : modules) {
             module.customizeDocument(portalControllerContext, menubar, documentContext);
         }
+    }
+
+
+    /**
+     * Check if current document is a workspace.
+     * 
+     * @param document current Nuxeo document
+     * @return true if current document is a workspace
+     */
+    protected boolean isWorkspace(Document document) {
+        String type = document.getType();
+        return ("Workspace".equals(type) || "Room".equals(type));
+    }
+
+
+    /**
+     * Check if current document is located in a user workspace.
+     * 
+     * @param cmsContext CMS context
+     * @param document current Nuxeo document
+     * @return true if current document is located in a user workspace
+     * @throws CMSException
+     */
+    protected boolean isInUserWorkspace(CMSServiceCtx cmsContext, Document document) throws CMSException {
+        boolean userWorkspace = false;
+        if (document != null) {
+            final String path = document.getPath() + "/";
+
+            final List<CMSItem> userWorkspaces = this.cmsService.getWorkspaces(cmsContext, true, false);
+            for (final CMSItem cmsItem : userWorkspaces) {
+                if (StringUtils.startsWith(path, cmsItem.getPath() + "/")) {
+                    userWorkspace = true;
+                    break;
+                }
+            }
+        }
+        return userWorkspace;
+    }
+
+
+    /**
+     * Check if current document is a taskbar item.
+     * 
+     * @param portalControllerContext portal controller controller
+     * @param cmsContext CMS context
+     * @param documentContext current Nuxeo document context
+     * @return true if current document is a taskbar item
+     * @throws CMSException
+     * @throws PortalException
+     */
+    protected boolean isTaskbarItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, NuxeoDocumentContext documentContext)
+            throws CMSException, PortalException {
+        // Document
+        Document document = documentContext.getDoc();
+        // Publication infos
+        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+        // Base path
+        String basePath = publicationInfos.getBasePath();
+        // Parent path
+        String parentPath = StringUtils.substringBeforeLast(document.getPath(), "/");
+        
+        // Taskbar item indicator
+        boolean taskbarItem;
+
+        if (StringUtils.equals(basePath, parentPath)) {
+            // Space config
+            CMSItem spaceConfig = this.cmsService.getSpaceConfig(cmsContext, basePath);
+            // Space document
+            Document space = (Document) spaceConfig.getNativeItem();
+            // Space identifier
+            String spaceId = space.getString("webc:url");
+
+            // WebId
+            String webId = document.getString("ttc:webid");
+            // WebId prefix
+            String prefix = spaceId + "_";
+
+            if (StringUtils.startsWith(webId, prefix)) {
+                // Task identifier
+                String taskId = StringUtils.upperCase(StringUtils.removeStart(webId, prefix));
+
+                // Taskbar items
+                TaskbarItems items = this.taskbarService.getItems(portalControllerContext);
+                TaskbarItem item = items.get(taskId);
+
+                taskbarItem = (item != null);
+            } else {
+                taskbarItem = false;
+            }
+        } else {
+            taskbarItem = false;
+        }
+
+        return taskbarItem;
     }
 
 
@@ -814,48 +910,49 @@ public class MenuBarFormater {
         final Document document = (Document) cmsContext.getDoc();
         final String path = document.getPath();
 
+        if (!"Staple".equals(document.getType())) {
+            final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
-        final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
+            if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
+                String url = "";
 
-        if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
-            String url = "";
+                try {
+                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
+                    final MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 11, url, null, null, null);
+                    subscribeItem.setAjaxDisabled(true);
+                    subscribeItem.setDivider(true);
 
-            try {
-                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
-                final MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 11, url, null, null, null);
-                subscribeItem.setAjaxDisabled(true);
-                subscribeItem.setDivider(true);
+                    if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
+                        url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
 
-                if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
-                    url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
+                        subscribeItem.setUrl(url);
+                        subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                        subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
+                    } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
+                        url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
 
-                    subscribeItem.setUrl(url);
-                    subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
-                    subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
-                } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
-                    url = this.urlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
+                        subscribeItem.setUrl(url);
+                        subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
+                        subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 
-                    subscribeItem.setUrl(url);
-                    subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
-                    subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
+                        // Subscribed indicator menubar item
+                        final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "label label-success");
+                        subscribedIndicator.setGlyphicon("halflings halflings-flag");
+                        subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
+                        subscribedIndicator.setState(true);
+                        menubar.add(subscribedIndicator);
+                    } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+                        subscribeItem.setUrl("#");
+                        subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                        subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
+                        subscribeItem.setDisabled(true);
+                    }
 
-                    // Subscribed indicator menubar item
-                    final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "label label-success");
-                    subscribedIndicator.setGlyphicon("halflings halflings-flag");
-                    subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
-                    subscribedIndicator.setState(true);
-                    menubar.add(subscribedIndicator);
-                } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
-                    subscribeItem.setUrl("#");
-                    subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
-                    subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
-                    subscribeItem.setDisabled(true);
+                    menubar.add(subscribeItem);
+
+                } catch (final PortalException ex) {
+                    LOGGER.warn(ex.getMessage());
                 }
-
-                menubar.add(subscribeItem);
-
-            } catch (final PortalException ex) {
-                LOGGER.warn(ex.getMessage());
             }
         }
     }
@@ -918,55 +1015,6 @@ public class MenuBarFormater {
             }
         }
 
-    }
-
-
-    /**
-     * Get Administrations links.
-     *
-     * @param portalControllerContext
-     * @param cmsContext
-     * @param menubar
-     * @param bundle
-     * @throws CMSException
-     */
-    private void getEditWksLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
-
-        // Current document
-        final Document document = (Document) cmsContext.getDoc();
-
-        if (document.getType().equals("Workspace") && pubInfos.isManageableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-
-            // --------- EDIT OPTIONS IN NUXEO
-
-            // Callback URL
-            final String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
-            // ECM base URL
-            final String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
-
-            final Map<String, String> requestParameters = new HashMap<String, String>();
-            final String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, pubInfos.getDocumentPath(), requestParameters);
-
-            // On click action
-            final StringBuilder onClick = new StringBuilder();
-            onClick.append("javascript:setCallbackFromEcmParams('");
-            onClick.append(callbackURL);
-            onClick.append("', '");
-            onClick.append(ecmBaseURL);
-            onClick.append("');");
-
-            final String editLabel = bundle.getString("EDIT");
-
-            final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
-            // Menubar item
-            final MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
-                    "fancyframe_refresh");
-            item.setAjaxDisabled(true);
-
-            menubar.add(item);
-        }
     }
 
 
