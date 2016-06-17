@@ -211,9 +211,10 @@ public class MenuBarFormater {
             this.addShareDropdown(portalControllerContext, bundle);
             this.addOtherOptionsDropdown(portalControllerContext, bundle);
 
-
-            // Creation
-            this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+            if (!workspace) {
+                // Creation
+                this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+            }
 
             if ((cmsContext.getDoc() != null) && !webPageFragment) {
                 // Document type
