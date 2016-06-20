@@ -1365,8 +1365,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false,
-                Arrays.asList("Folder", "File", "Note", "ContextualLink", "Room"), "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
+        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder", "Note", "ContextualLink", "Room"),
+                "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
         // Portal site
         defaultTypes.add(new DocumentType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink"), null,
                 "glyphicons glyphicons-global", true));
@@ -1385,10 +1385,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Note
         defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note"));
         // Contextual link
-        defaultTypes.add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
-                "glyphicons glyphicons-link"));
+        defaultTypes
+                .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
         // Room
-        defaultTypes.add(new DocumentType("Room", true, false, false, true, false, false, Arrays.asList("Folder", "File", "Note", "ContextualLink", "Room"),
+        defaultTypes.add(new DocumentType("Room", true, false, false, true, false, false, Arrays.asList("Folder", "Note", "ContextualLink", "Room"),
                 "/default/templates/room", "glyphicons glyphicons-cube-black"));
         // Staple
         defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
