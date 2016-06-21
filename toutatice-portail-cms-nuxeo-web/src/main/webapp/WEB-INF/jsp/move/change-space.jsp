@@ -7,6 +7,7 @@
 
 <portlet:defineObjects />
 
+
 <portlet:renderURL var="viewURL" />
 
 <portlet:resourceURL id="fancytreeLazyLoading" var="lazyLoadingURL">
@@ -15,6 +16,10 @@
 </portlet:resourceURL>
 
 <portlet:actionURL name="changeSpace" var="changeSpaceURL"></portlet:actionURL>
+
+
+<c:set var="filterLabel"><op:translate key="FILTER" /></c:set>
+<c:set var="clearFilterLabel"><op:translate key="CLEAR_FILTER" /></c:set>
 
 
 <form action="${changeSpaceURL}" method="post" class="form-horizontal" role="form">

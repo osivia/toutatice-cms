@@ -13,6 +13,7 @@
 
 <portlet:resourceURL id="fancytreeLazyLoading" var="lazyLoadingURL">
     <portlet:param name="live" value="true" />
+    <portlet:param name="excludedTypes" value="Workspace,Room" />
 
     <c:if test="${not empty ignoredPaths}">
         <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
