@@ -68,20 +68,16 @@ public class AvatarServlet extends HttpServlet {
 
     public static void setPortletContext(PortletContext documentPortletCtx) {
         portletCtx = documentPortletCtx;
+        
+        // Directory service
+    	IDirProvider provider = Locator.findMBean(IDirProvider.class, IDirProvider.MBEAN_NAME);
+    	
+    	PERSON_SERVICE = provider.getDirService(PersonService.class);        
     }
 
     private static final int AVATAR_TIMEOUT = 3600;
 
-	private PersonService personService;
-
-    
-    
-    
-    public AvatarServlet() {
-    	IDirProvider provider = Locator.findMBean(IDirProvider.class, IDirProvider.MBEAN_NAME);
-    	
-    	personService = provider.getDirService(PersonService.class);
-    }
+	private static PersonService PERSON_SERVICE;
 
 
     public String formatResourceLastModified() {
@@ -109,9 +105,8 @@ public class AvatarServlet extends HttpServlet {
 
             String userId = null;
 
-
-            // Directory service
-            Person person = personService.getPerson(username);
+            
+            Person person = PERSON_SERVICE.getPerson(username);
             if (person != null) {
                 userId = person.getUid();
             }
