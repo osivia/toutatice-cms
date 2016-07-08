@@ -52,6 +52,8 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormFilterModule;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 
 
@@ -92,6 +94,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private Map<String, DocumentType> typesCache;
     /** Navigation adapters cache. */
     private List<INavigationAdapterModule> navigationAdaptersCache;
+    /** Navigation adapters cache. */
+    private Map<Locale, Map<String, FormFilter>>  formFiltersCache;    
     /** Domain contextualization cache. */
     private List<DomainContextualization> domainContextualizationCache;
     /** Tab groups cache. */
@@ -126,6 +130,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
         this.templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
         this.menuTemplatesCache = new ConcurrentHashMap<Locale, SortedMap<String, String>>();
+        this.formFiltersCache = new ConcurrentHashMap<Locale, Map<String, FormFilter>>();
 
         this.customizationDeployementTS = System.currentTimeMillis();
     }
@@ -312,6 +317,37 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
         return fragments;
     }
+    
+    /**
+     * Customize form filters.
+     *
+     * @return form filters
+     */
+
+   @SuppressWarnings("unchecked")    
+    public Map<String, FormFilter> getFormFilters(Locale locale) {
+        Map<String, FormFilter> filters = this.formFiltersCache.get(locale);
+
+        if (filters == null) {
+            filters = new Hashtable<String, FormFilter>();
+
+            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+
+            List<FormFilter> filtersList = (List<FormFilter>) customizationAttributes.get(Customizable.FORM_FILTERS.toString() + locale);
+
+            if (filtersList != null) {
+                for (FormFilter customFilter : filtersList) {
+                    filters.put(customFilter.getKey(), customFilter);
+                }
+            }
+
+            this.formFiltersCache.put(locale, filters);
+        }
+
+        return filters;
+
+    }
+    
 
 
     /**
@@ -467,6 +503,17 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
         return this.navigationAdaptersCache;
     }
+    
+    
+    
+    
+    
+    
+    
+       
+    
+    
+    
 
 
     /**
@@ -583,6 +630,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.customizationAttributesCache.clear();
         this.customizedJavaServerPagesCache.clear();
         this.fragmentsCache.clear();
+        this.formFiltersCache.clear();
         this.ewCache.clear();
         this.templatesCache.clear();
         this.menuTemplatesCache.clear();

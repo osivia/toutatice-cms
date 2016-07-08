@@ -42,6 +42,8 @@ import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.core.cms.DomainContextualization;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormFilterModule;
 
 /**
  * Plugin portlet abstract super-class.
@@ -358,6 +360,29 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
+     * Get form filters adapters.
+     *
+     * @param context customization context
+     * @return form filters
+     */
+    @SuppressWarnings("unchecked")
+    protected List<FormFilter> getFormFilters(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        // Navigation adapters
+        List<FormFilter> filters = (List<FormFilter>) attributes.get(Customizable.FORM_FILTERS.toString()+ context.getLocale());
+        if (filters == null) {
+            filters = new ArrayList<FormFilter>();
+            attributes.put(Customizable.FORM_FILTERS.toString()+ context.getLocale(), filters);
+        }
+        return filters;
+    }
+
+   
+    
+    
+    /**
      * Get navigation adapters.
      *
      * @param context customization context
@@ -376,7 +401,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         }
         return adapters;
     }
-
+    
 
     /**
      * Get domain contextualizations.

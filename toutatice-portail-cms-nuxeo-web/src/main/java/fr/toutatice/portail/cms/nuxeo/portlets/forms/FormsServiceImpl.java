@@ -17,7 +17,14 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormFilterModule;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -28,12 +35,15 @@ import net.sf.json.JSONObject;
  * @see IFormsService
  */
 public class FormsServiceImpl implements IFormsService {
+    
+    private DefaultCMSCustomizer customizer;
 
     /**
      * Constructor.
      */
-    public FormsServiceImpl() {
+    public FormsServiceImpl(DefaultCMSCustomizer customizer) {
         super();
+        this.customizer = customizer;
     }
 
 
@@ -75,10 +85,37 @@ public class FormsServiceImpl implements IFormsService {
         // Task title
         String title = nextStepProperties.getString("name");
         
-        // User & group names
-        // TODO
-        List<String> groups = new ArrayList<String>();
-        List<String> users = new ArrayList<String>();
+ 
+ 
+        
+        // Appel des filtres
+        // Portal controller context
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();        
+        
+        
+        // Navigation adapters
+        FormFilterContext filterContext = new FormFilterContext();
+ 
+        FormActors actors = new FormActors();
+        filterContext.setActors(actors);
+
+        
+        filterContext.setActionId(actionId);
+        filterContext.setVariables(variables);
+       
+        
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters(portalControllerContext.getHttpServletRequest().getLocale());
+        
+        PropertyList actionFilters = actionProperties.getList("filtersList");
+        
+        
+        for (Object filterObject : actionFilters.list()) {
+            PropertyMap filterMap = (PropertyMap) filterObject;
+            
+            FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
+            filter.getModule().execute(filterContext);
+         }
+
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -86,8 +123,9 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:procedureModelPath", model.getPath());
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
+        
         // Nuxeo command
-        INuxeoCommand command = new StartProcedureCommand(title, groups, users, properties);
+        INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
     }
 
@@ -118,15 +156,42 @@ public class FormsServiceImpl implements IFormsService {
         String nextStep = actionProperties.getString("stepReference");
         // Next step properties
         PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-
-
+        
+        
         // Task title
         String title = nextStepProperties.getString("name");
+        
+ 
+ 
+        
+        // Appel des filtres
+        // Portal controller context
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();        
+        
+        
+        // Navigation adapters
+        FormFilterContext filterContext = new FormFilterContext();
+ 
+        FormActors actors = new FormActors();
+        filterContext.setActors(actors);
 
-        // User & group names
-        // TODO
-        List<String> groups = new ArrayList<String>();
-        List<String> users = new ArrayList<String>();
+        
+        filterContext.setActionId(actionId);
+        filterContext.setVariables(variables);
+       
+        
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters(portalControllerContext.getHttpServletRequest().getLocale());
+        
+        PropertyList actionFilters = actionProperties.getList("filtersList");
+        
+        
+        for (Object filterObject : actionFilters.list()) {
+            PropertyMap filterMap = (PropertyMap) filterObject;
+            
+            FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
+            filter.getModule().execute(filterContext);
+         }
+
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -135,7 +200,7 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instance, title, groups, users, properties);
+        INuxeoCommand command = new UpdateProcedureCommand(instance, title,filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
     }
 

@@ -1952,7 +1952,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public IFormsService getFormsService() {
         if (this.formsService == null) {
-            this.formsService = new FormsServiceImpl();
+            this.formsService = new FormsServiceImpl( this);
         }
         return this.formsService;
     }
