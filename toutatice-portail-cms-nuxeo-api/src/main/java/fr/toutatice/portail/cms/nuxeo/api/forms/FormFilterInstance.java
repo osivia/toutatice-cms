@@ -1,5 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * FormFilterInstance
  * 
@@ -28,9 +30,14 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
     }
 
     @Override
-    public int compareTo(FormFilterInstance o) {
-        // TODO réutiliser le principe de sort des fields
-        return 0;
+    public int compareTo(FormFilterInstance comparedFormFilterInstance) {
+
+        String indexS = StringUtils.substringAfterLast(getPath(), ",");
+        int index = Integer.parseInt(indexS);
+        String compIndexS = StringUtils.substringAfterLast(comparedFormFilterInstance.getPath(), ",");
+        int compIndex = Integer.parseInt(compIndexS);
+
+        return Integer.compare(index, compIndex);
     }
 
     /**
