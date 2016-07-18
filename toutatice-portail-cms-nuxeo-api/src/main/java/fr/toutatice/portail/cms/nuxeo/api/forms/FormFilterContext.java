@@ -1,6 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -14,7 +13,6 @@ public class FormFilterContext {
     
     /** The filter params. */
     Map<String, String> filterParams ;
-    
     
     /**
      * Gets the filter params.
