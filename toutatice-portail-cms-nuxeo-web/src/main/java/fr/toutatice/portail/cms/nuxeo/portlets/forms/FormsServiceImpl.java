@@ -1,8 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -17,11 +15,9 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormFilterModule;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -30,20 +26,24 @@ import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see IFormsService
  */
 public class FormsServiceImpl implements IFormsService {
-    
-    private DefaultCMSCustomizer customizer;
+
+    /** CMS customizer. */
+    private final DefaultCMSCustomizer cmsCustomizer;
+
 
     /**
      * Constructor.
+     *
+     * @param cmsCustomizer CMS customizer
      */
-    public FormsServiceImpl(DefaultCMSCustomizer customizer) {
+    public FormsServiceImpl(DefaultCMSCustomizer cmsCustomizer) {
         super();
-        this.customizer = customizer;
+        this.cmsCustomizer = cmsCustomizer;
     }
 
 
@@ -64,7 +64,7 @@ public class FormsServiceImpl implements IFormsService {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
-        
+
         // Model
         Document model = this.getModel(portalControllerContext, modelId);
 
@@ -80,41 +80,41 @@ public class FormsServiceImpl implements IFormsService {
         String nextStep = actionProperties.getString("stepReference");
         // Next step properties
         PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-        
-        
+
+
         // Task title
         String title = nextStepProperties.getString("name");
-        
- 
- 
-        
+
+
         // Appel des filtres
         // Portal controller context
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();        
-        
-        
+        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
+
+
         // Navigation adapters
         FormFilterContext filterContext = new FormFilterContext();
- 
+
         FormActors actors = new FormActors();
         filterContext.setActors(actors);
 
-        
+        actors.getUsers().add("gpoitoux"); // FIXME
+
+
         filterContext.setActionId(actionId);
         filterContext.setVariables(variables);
-       
-        
-        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters(portalControllerContext.getHttpServletRequest().getLocale());
-        
+
+
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
+
         PropertyList actionFilters = actionProperties.getList("filtersList");
-        
-        
+
+
         for (Object filterObject : actionFilters.list()) {
             PropertyMap filterMap = (PropertyMap) filterObject;
-            
+
             FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
-            filter.getModule().execute(filterContext);
-         }
+            filter.execute(filterContext);
+        }
 
 
         // Properties
@@ -123,7 +123,7 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:procedureModelPath", model.getPath());
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
-        
+
         // Nuxeo command
         INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
@@ -156,41 +156,39 @@ public class FormsServiceImpl implements IFormsService {
         String nextStep = actionProperties.getString("stepReference");
         // Next step properties
         PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-        
-        
+
+
         // Task title
         String title = nextStepProperties.getString("name");
-        
- 
- 
-        
+
+
         // Appel des filtres
         // Portal controller context
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();        
-        
-        
+        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
+
+
         // Navigation adapters
         FormFilterContext filterContext = new FormFilterContext();
- 
+
         FormActors actors = new FormActors();
         filterContext.setActors(actors);
 
-        
+
         filterContext.setActionId(actionId);
         filterContext.setVariables(variables);
-       
-        
-        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters(portalControllerContext.getHttpServletRequest().getLocale());
-        
+
+
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
+
         PropertyList actionFilters = actionProperties.getList("filtersList");
-        
-        
+
+
         for (Object filterObject : actionFilters.list()) {
             PropertyMap filterMap = (PropertyMap) filterObject;
-            
+
             FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
-            filter.getModule().execute(filterContext);
-         }
+            filter.execute(filterContext);
+        }
 
 
         // Properties
@@ -200,14 +198,15 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instance, title,filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
+        INuxeoCommand command = new UpdateProcedureCommand(instance, title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(),
+                properties);
         nuxeoController.executeNuxeoCommand(command);
     }
 
 
     /**
      * Get model document.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param modelId model identifier
      * @return document
@@ -228,7 +227,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Get model document.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param instance instance document
      * @return document
@@ -249,7 +248,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Get instance document.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param task task document
      * @return document
@@ -273,7 +272,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Get step properties.
-     * 
+     *
      * @param model model document
      * @param step step name
      * @return properties
@@ -298,7 +297,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Get action properties.
-     * 
+     *
      * @param stepProperties step properties
      * @param actionId action identifier
      * @return properties
@@ -328,7 +327,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Generate variables JSON content.
-     * 
+     *
      * @param variables variables
      * @return JSON
      */

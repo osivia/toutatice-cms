@@ -43,7 +43,6 @@ import org.osivia.portal.core.cms.DomainContextualization;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormFilterModule;
 
 /**
  * Plugin portlet abstract super-class.
@@ -88,7 +87,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * Constructor.
      */
     public int getOrder() {
-       return DEFAULT_DEPLOYMENT_ORDER;
+        return DEFAULT_DEPLOYMENT_ORDER;
     }
 
 
@@ -187,10 +186,10 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     /**
      * Generate customization module metadatas.
      *
-     * @param customizationID customization identifier
+     * @param customizationId customization identifier
      * @param context customization context
      */
-    protected abstract void customizeCMSProperties(String customizationID, CustomizationContext context);
+    protected abstract void customizeCMSProperties(String customizationId, CustomizationContext context);
 
 
     /**
@@ -226,8 +225,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         Map<String, Object> attributes = context.getAttributes();
 
         // List templates
-        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) attributes.get(
-                Customizable.LIST_TEMPLATE.toString() + context.getLocale());
+        Map<String, ListTemplate> templates = (Map<String, ListTemplate>) attributes.get(Customizable.LIST_TEMPLATE.toString() + context.getLocale());
         if (templates == null) {
             templates = new ConcurrentHashMap<String, ListTemplate>();
             attributes.put(Customizable.LIST_TEMPLATE.toString() + context.getLocale(), templates);
@@ -268,9 +266,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         Map<String, DocumentType> docTypes = this.getDocTypes(context);
 
         DocumentType parentDocType = docTypes.get(parentDocTypeName);
-        if(parentDocType != null)   {
+        if (parentDocType != null) {
             parentDocType.getPortalFormSubTypes().add(childDocTypeName);
-         }
+        }
     }
 
 
@@ -306,8 +304,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         Map<String, Object> attributes = context.getAttributes();
 
         // Editable windows
-        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) attributes.get(
-                Customizable.EDITABLE_WINDOW.toString() + context.getLocale());
+        Map<String, EditableWindow> ew = (Map<String, EditableWindow>) attributes.get(Customizable.EDITABLE_WINDOW.toString() + context.getLocale());
         if (ew == null) {
             ew = new ConcurrentHashMap<String, EditableWindow>();
             attributes.put(Customizable.EDITABLE_WINDOW.toString() + context.getLocale(), ew);
@@ -349,8 +346,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         Map<String, Object> attributes = context.getAttributes();
 
         // Menu templates
-        SortedMap<String, String> templates = (SortedMap<String, String>) attributes.get(
-                Customizable.MENU_TEMPLATE.toString() + context.getLocale());
+        SortedMap<String, String> templates = (SortedMap<String, String>) attributes.get(Customizable.MENU_TEMPLATE.toString() + context.getLocale());
         if (templates == null) {
             templates = new TreeMap<String, String>();
             attributes.put(Customizable.MENU_TEMPLATE.toString() + context.getLocale(), templates);
@@ -359,29 +355,6 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     }
 
 
-    /**
-     * Get form filters adapters.
-     *
-     * @param context customization context
-     * @return form filters
-     */
-    @SuppressWarnings("unchecked")
-    protected List<FormFilter> getFormFilters(CustomizationContext context) {
-        // Customization context attributes
-        Map<String, Object> attributes = context.getAttributes();
-
-        // Navigation adapters
-        List<FormFilter> filters = (List<FormFilter>) attributes.get(Customizable.FORM_FILTERS.toString()+ context.getLocale());
-        if (filters == null) {
-            filters = new ArrayList<FormFilter>();
-            attributes.put(Customizable.FORM_FILTERS.toString()+ context.getLocale(), filters);
-        }
-        return filters;
-    }
-
-   
-    
-    
     /**
      * Get navigation adapters.
      *
@@ -401,7 +374,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         }
         return adapters;
     }
-    
+
 
     /**
      * Get domain contextualizations.
@@ -482,6 +455,26 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
             attributes.put(Customizable.TEMPLATE_ADAPTERS.toString(), templateAdapters);
         }
         return templateAdapters;
+    }
+
+
+    /**
+     * Get form filters.
+     *
+     * @param context customization context
+     * @return form filters
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<String, FormFilter> getFormFilters(CustomizationContext context) {
+        // Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+
+        Map<String, FormFilter> filters = (Map<String, FormFilter>) attributes.get(Customizable.FORM_FILTERS.toString());
+        if (filters == null) {
+            filters = new ConcurrentHashMap<String, FormFilter>();
+            attributes.put(Customizable.FORM_FILTERS.toString(), filters);
+        }
+        return filters;
     }
 
 

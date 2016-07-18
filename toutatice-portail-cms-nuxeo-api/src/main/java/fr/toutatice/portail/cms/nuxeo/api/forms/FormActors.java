@@ -3,19 +3,28 @@ package fr.toutatice.portail.cms.nuxeo.api.forms;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 /**
- * The Class FormActors.
+ * Form actors java-bean.
  */
 public class FormActors {
-    
-    /** The groups. */
-    List<String> groups = new ArrayList<String>();
-    
-    /** The users. */
-    List<String> users = new ArrayList<String>();
-    
+
+    /** Actors groups. */
+    private final List<String> groups;
+
+    /** Actors users. */
+    private final List<String> users;
+
+
+    /**
+     * Constructor.
+     */
+    public FormActors() {
+        super();
+        this.groups = new ArrayList<String>();
+        this.users = new ArrayList<String>();
+    }
+
+
     /**
      * Gets the users.
      *
@@ -24,7 +33,7 @@ public class FormActors {
     public List<String> getUsers() {
         return users;
     }
-    
+
     /**
      * Gets the groups.
      *
@@ -33,6 +42,5 @@ public class FormActors {
     public List<String> getGroups() {
         return groups;
     }
-    
 
 }
