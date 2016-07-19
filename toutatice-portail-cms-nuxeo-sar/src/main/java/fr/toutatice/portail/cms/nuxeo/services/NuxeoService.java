@@ -27,6 +27,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 import org.osivia.portal.api.profiler.IProfilerService;
 
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
@@ -51,8 +52,19 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     private INuxeoCustomizer nuxeoCustomizer;
     /** Nuxeo tag service. */
     private INuxeoTagService tagService;
+    /** Forms service. */
+    private IFormsService formsService;
+
     /** Profiler. */
     private transient IProfilerService profiler;
+
+
+    /**
+     * Constructor.
+     */
+    public NuxeoService() {
+        super();
+    }
 
 
     /**
@@ -168,6 +180,24 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     @Override
     public INuxeoTagService getTagService() {
         return this.tagService;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void registerFormsService(IFormsService formsService) {
+        this.formsService = formsService;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IFormsService getFormsService() {
+        return this.formsService;
     }
 
 
