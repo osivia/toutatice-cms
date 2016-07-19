@@ -24,9 +24,9 @@ public interface FormFilter {
     /**
      * Execute form filter.
      * 
-     * @param ctx form filter context
+     * @param context form filter context
      * @param executor form filter executor
      */
-    void execute(FormFilterContext ctx, FormFilterExecutor executor);
+    void execute(FormFilterContext context, FormFilterExecutor executor);
 
 }

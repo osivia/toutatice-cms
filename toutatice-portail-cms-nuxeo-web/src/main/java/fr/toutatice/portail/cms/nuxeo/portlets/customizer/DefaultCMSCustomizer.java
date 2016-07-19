@@ -107,7 +107,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
@@ -126,7 +125,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.forms.FormsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
@@ -205,8 +203,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private INotificationsService notificationsService;
     /** Internationalization service */
     private IInternationalizationService internationalizationService;
-    /** Forms service. */
-    private IFormsService formsService;
 
     /** The plugin mgr. */
     private CustomizationPluginMgr pluginMgr;
@@ -273,8 +269,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-        
-        this.formsService = new FormsServiceImpl( this);
     }
 
 
@@ -1945,15 +1939,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         } catch( IOException e){
             throw new CMSException( e);
         }
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public IFormsService getFormsService() {
-        return this.formsService;
     }
 
 }

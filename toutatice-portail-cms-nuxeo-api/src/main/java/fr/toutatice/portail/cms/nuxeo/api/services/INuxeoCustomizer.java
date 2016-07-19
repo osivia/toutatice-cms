@@ -40,7 +40,6 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 
 
 /**
@@ -305,12 +304,5 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
 	Player getCMSFileBrowser(DocumentContext<Document> docCtx);
 
-
-    /**
-     * Get forms service.
-     * 
-     * @return forms service
-     */
-    IFormsService getFormsService();
 
 }

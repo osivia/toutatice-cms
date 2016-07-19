@@ -21,6 +21,7 @@ import javax.portlet.PortletContext;
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
@@ -84,5 +85,21 @@ public interface INuxeoService extends ICMSIntegration {
      * @return Nuxeo tag service
      */
     INuxeoTagService getTagService();
+
+
+    /**
+     * Register forms service.
+     * 
+     * @param formsService forms service
+     */
+    void registerFormsService(IFormsService formsService);
+
+
+    /**
+     * Get forms service.
+     * 
+     * @return forms service
+     */
+    IFormsService getFormsService();
 
 }

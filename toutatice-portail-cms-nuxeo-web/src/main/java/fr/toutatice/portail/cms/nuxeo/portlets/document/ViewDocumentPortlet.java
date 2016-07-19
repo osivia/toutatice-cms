@@ -27,9 +27,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -66,6 +63,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
@@ -77,10 +75,13 @@ import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.FormsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -148,6 +149,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // Nuxeo tag service
             INuxeoTagService tagService = new NuxeoTagService();
             this.nuxeoService.registerTagService(tagService);
+
+            // Forms service
+            IFormsService formsService = new FormsServiceImpl(customizer);
+            this.nuxeoService.registerFormsService(formsService);
 
             // DAO
             this.documentDAO = DocumentDAO.getInstance();
