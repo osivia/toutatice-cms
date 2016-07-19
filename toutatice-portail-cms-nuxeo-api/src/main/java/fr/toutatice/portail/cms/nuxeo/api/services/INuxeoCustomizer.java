@@ -17,7 +17,6 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +39,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 
 
 /**
@@ -233,6 +233,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return fragments list
      */
     Map<String, FragmentType> getFragmentTypes(Locale locale);
+
+
+    /**
+     * get forms filters
+     * 
+     * @return the filters
+     */
+    Map<String, FormFilter> getFormsFilters();
 
 
     /**

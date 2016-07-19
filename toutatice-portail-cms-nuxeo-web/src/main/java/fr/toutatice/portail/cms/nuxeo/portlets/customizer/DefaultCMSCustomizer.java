@@ -107,6 +107,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
@@ -450,14 +451,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public final Map<String, FragmentType> getFragmentTypes(Locale locale) {
-
         return this.pluginMgr.getFragments(locale);
-
-
     }
 
-
-
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, FormFilter> getFormsFilters() {
+        return this.pluginMgr.getFormFilters();
+    }
 
 
     /**
