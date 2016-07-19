@@ -113,58 +113,8 @@ public class FormsServiceImpl implements IFormsService {
                 }
             }
 
-
-            actors.getUsers().add("gpoitoux"); // FIXME
-
-
-            // ////////////////////////
-            // Appel des filtres
-            // ////////////////////////
-
-            // on retrouve les filtres installés
-            CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
-            Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
-
-            // on retrouve les filtres de l'actions voulu
-            PropertyList actionFilters = actionProperties.getList("filtersList");
-            Map<String, List<FormFilterInstance>> filtersByParentPathMap = new HashMap<String, List<FormFilterInstance>>();
-            for (Object filterObject : actionFilters.list()) {
-                PropertyMap filterMap = (PropertyMap) filterObject;
-                FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
-                if (filter != null) {
-                    FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"));
-                    // on garde le path du parent du filtre pour l'ajouter à la map
-                    String parentPath = StringUtils.split(",").length > 1 ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",") : StringUtils.EMPTY;
-                    List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
-                    if (parentFiltersList == null) {
-                        parentFiltersList = new ArrayList<FormFilterInstance>();
-                    }
-                    parentFiltersList.add(filterInstance);
-                    filtersByParentPathMap.put(parentPath, parentFiltersList);
-
-                    // on ajoute les arguments du filtre à la liste des variables
-                    PropertyList ArgumentsList = filterMap.getList("argumentsList");
-                    if (ArgumentsList != null) {
-                        for (Object ArgumentO : ArgumentsList.list()) {
-                            PropertyMap argumentMap = (PropertyMap) ArgumentO;
-                            variables.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
-                        }
-                    }
-                }
-            }
-
-            // init du contexte des filtres
-            FormFilterContext filterContext = new FormFilterContext();
-            filterContext.setActors(actors);
-            filterContext.setActionId(actionId);
-            filterContext.setVariables(variables);
-
-
-            // on construit l'executor parent
-            FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY);
-            // on execute les filtres de premier niveau
-            parentExecutor.executeChildren(filterContext);
-
+            // construction du contexte et appel des filtres
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null);
 
             // Properties
             Map<String, Object> properties = new HashMap<String, Object>();
@@ -178,6 +128,74 @@ public class FormsServiceImpl implements IFormsService {
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
+    }
+
+
+    /**
+     * Appel des filtres
+     * 
+     * @param actionId
+     * @param variables
+     * @param actionProperties
+     * @param actors
+     * @return
+     */
+    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
+            Map<String, String> globalVariableValues) {
+        // on retrouve les filtres installés
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
+
+        // on retrouve les filtres de l'actions voulu
+        PropertyList actionFilters = actionProperties.getList("filtersList");
+        Map<String, List<FormFilterInstance>> filtersByParentPathMap = new HashMap<String, List<FormFilterInstance>>();
+        Map<String, Map<String, String>> filtersParams = new HashMap<String, Map<String, String>>();
+        for (Object filterObject : actionFilters.list()) {
+            PropertyMap filterMap = (PropertyMap) filterObject;
+            FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
+            if (filter != null) {
+                FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"));
+                // on garde le path du parent du filtre pour l'ajouter à la map
+                String parentPath = StringUtils.split(",").length > 1 ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",") : StringUtils.EMPTY;
+                List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
+                if (parentFiltersList == null) {
+                    parentFiltersList = new ArrayList<FormFilterInstance>();
+                }
+                parentFiltersList.add(filterInstance);
+                filtersByParentPathMap.put(parentPath, parentFiltersList);
+
+                // on ajoute les arguments du filtre à la liste des variables
+                PropertyList argumentsList = filterMap.getList("argumentsList");
+                if (argumentsList != null) {
+                    Map<String, String> filterParams = new HashMap<String, String>(argumentsList.size());
+                    for (int i = 0; i < argumentsList.size(); i++) {
+                        PropertyMap argumentMap = argumentsList.getMap(i);
+                        if (StringUtils.isNotBlank(argumentMap.getString("argumentName"))) {
+                            filterParams.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
+                        }
+                    }
+                    filtersParams.put(filterInstance.getName(), filterParams);
+                }
+            }
+        }
+
+        // init du contexte des filtres
+        FormFilterContext filterContext = new FormFilterContext(filtersParams);
+        filterContext.setActors(actors);
+        filterContext.setActionId(actionId);
+        if (globalVariableValues != null) {
+            // Copy submitted variables into Global Variables Values
+            globalVariableValues.putAll(variables);
+            filterContext.setVariables(globalVariableValues);
+        } else {
+            filterContext.setVariables(variables);
+        }
+
+        // on construit l'executor parent
+        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY);
+        // on execute les filtres de premier niveau
+        parentExecutor.executeChildren(filterContext);
+        return filterContext;
     }
 
 
@@ -242,57 +260,9 @@ public class FormsServiceImpl implements IFormsService {
             for (Entry<String, Object> gvvEntry : globalVariableValuesMap.entrySet()) {
                 globalVariableValues.put(gvvEntry.getKey(), String.valueOf(gvvEntry.getValue()));
             }
-            // Copy submitted variables into Global Variables Values
-            globalVariableValues.putAll(variables);
 
-
-            // ////////////////////////
-            // Appel des filtres
-            // ////////////////////////
-
-            // on retrouve les filtres installés
-            CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
-            Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
-
-            // on retrouve les filtres de l'actions voulu
-            PropertyList actionFilters = actionProperties.getList("filtersList");
-            Map<String, List<FormFilterInstance>> filtersByParentPathMap = new HashMap<String, List<FormFilterInstance>>();
-            for (Object filterObject : actionFilters.list()) {
-                PropertyMap filterMap = (PropertyMap) filterObject;
-                FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
-                if (filter != null) {
-                    FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"));
-                    // on garde le path du parent du filtre pour l'ajouter à la map
-                    String parentPath = StringUtils.split(",").length > 1 ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",") : StringUtils.EMPTY;
-                    List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
-                    if (parentFiltersList == null) {
-                        parentFiltersList = new ArrayList<FormFilterInstance>();
-                    }
-                    parentFiltersList.add(filterInstance);
-                    filtersByParentPathMap.put(parentPath, parentFiltersList);
-
-                    // on ajoute les arguments du filtre à la liste des variables
-                    PropertyList ArgumentsList = filterMap.getList("argumentsList");
-                    if (ArgumentsList != null) {
-                        for (Object ArgumentO : ArgumentsList.list()) {
-                            PropertyMap argumentMap = (PropertyMap) ArgumentO;
-                            variables.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
-                        }
-                    }
-                }
-            }
-
-            // init du contexte des filtres
-            FormFilterContext filterContext = new FormFilterContext();
-            filterContext.setActors(actors);
-            filterContext.setActionId(actionId);
-            filterContext.setVariables(variables);
-
-
-            // on construit l'executor parent
-            FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY);
-            // on execute les filtres de premier niveau
-            parentExecutor.executeChildren(filterContext);
+            // construction du contexte et appel des filtres
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues);
 
             // Properties
             Map<String, Object> properties = new HashMap<String, Object>();

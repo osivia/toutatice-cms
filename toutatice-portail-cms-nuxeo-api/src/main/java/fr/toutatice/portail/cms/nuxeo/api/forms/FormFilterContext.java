@@ -9,29 +9,12 @@ import java.util.Map;
 public class FormFilterContext {
     
     /** The variables. */
-    Map<String, String> variables ;
-    
-    /** The filter params. */
-    Map<String, String> filterParams ;
-    
-    /**
-     * Gets the filter params.
-     *
-     * @return the filter params
-     */
-    public Map<String, String> getFilterParams() {
-        return filterParams;
-    }
+    private Map<String, String> variables;
 
     
-    /**
-     * Sets the filter params.
-     *
-     * @param filterParams the filter params
-     */
-    public void setFilterParams(Map<String, String> filterParams) {
-        this.filterParams = filterParams;
-    }
+    /** The filters params. */
+    private Map<String, Map<String, String>> filtersParams;
+    
 
     /** The actors. */
     FormActors actors ;
@@ -42,8 +25,9 @@ public class FormFilterContext {
     /**
      * Instantiates a new form filter context.
      */
-    public FormFilterContext() {
+    public FormFilterContext(Map<String, Map<String, String>> filtersParams) {
         super();
+        this.filtersParams = filtersParams;
     }
 
     /**
@@ -100,4 +84,20 @@ public class FormFilterContext {
         this.actionId = actionId;
     }
 
+    /**
+     * returns the parameter value of a filter
+     * 
+     * @param filter
+     * @param paramKey
+     * @return
+     */
+    public String getParamValue(FormFilter filter, String paramKey) {
+        if (filter instanceof FormFilterInstance) {
+            Map<String, String> paramsMap = filtersParams.get(((FormFilterInstance) filter).getName());
+            if (paramsMap != null) {
+                return paramsMap.get(paramKey);
+            }
+        }
+        return null;
+    }
 }
