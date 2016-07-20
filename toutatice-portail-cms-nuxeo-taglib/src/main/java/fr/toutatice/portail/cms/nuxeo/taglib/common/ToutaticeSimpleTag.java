@@ -8,12 +8,11 @@ import javax.portlet.PortletResponse;
 import javax.servlet.jsp.JspException;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.taglib.common.PortalSimpleTag;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
@@ -31,8 +30,6 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
     /** Document DTO. */
     private DocumentDTO document;
 
-    /** Nuxeo service. */
-    private final INuxeoService nuxeoService;
     /** Nuxeo tag service. */
     private final INuxeoTagService tagService;
 
@@ -43,11 +40,8 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
     public ToutaticeSimpleTag() {
         super();
 
-        // Nuxeo service
-        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
-
         // Tag service
-        this.tagService = this.nuxeoService.getTagService();
+        this.tagService = NuxeoServiceFactory.getTagService();
     }
 
 
@@ -119,14 +113,6 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
         this.document = document;
     }
 
-    /**
-     * Getter for nuxeoService.
-     *
-     * @return the nuxeoService
-     */
-    public INuxeoService getNuxeoService() {
-        return this.nuxeoService;
-    }
 
     /**
      * Getter for tagService.

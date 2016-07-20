@@ -15,6 +15,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
@@ -63,9 +64,9 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
@@ -148,11 +149,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             // Nuxeo tag service
             INuxeoTagService tagService = new NuxeoTagService();
-            this.nuxeoService.registerTagService(tagService);
+            this.registerService(this.nuxeoService.getTagService(), tagService);
 
             // Forms service
-            IFormsService formsService = new FormsServiceImpl(customizer);
-            this.nuxeoService.registerFormsService(formsService);
+            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
+            this.registerService(this.nuxeoService.getFormsService(), formsService);
 
             // DAO
             this.documentDAO = DocumentDAO.getInstance();
@@ -165,7 +166,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
             cmsLocator.register(cmsService);
             cmsService.setCustomizer(customizer);
             customizer.setCmsService(cmsService);
-
 
 
             // Directory service locator
@@ -195,6 +195,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
         } catch (Exception e) {
             throw new PortletException(e);
         }
+    }
+
+
+    /**
+     * Register service.
+     * 
+     * @param proxy proxy
+     * @param instance instance
+     */
+    private void registerService(Object proxy, Object instance) {
+        NuxeoServiceInvocationHandler invocationHandler = (NuxeoServiceInvocationHandler) Proxy.getInvocationHandler(proxy);
+        invocationHandler.setInstance(instance);
     }
 
 

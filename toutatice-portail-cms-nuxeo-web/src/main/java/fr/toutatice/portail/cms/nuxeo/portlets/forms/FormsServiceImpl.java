@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -28,6 +25,8 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -42,20 +41,17 @@ public class FormsServiceImpl implements IFormsService {
 
 
     /** CMS customizer. */
-    private DefaultCMSCustomizer customizer;
-
-
-    /** Class loader. */
-    private final ClassLoader classLoader;
+    private DefaultCMSCustomizer cmsCustomizer;
 
 
     /**
      * Constructor.
+     * 
+     * @param cmsCustomizer CMS customizer
      */
-    public FormsServiceImpl(DefaultCMSCustomizer customizer) {
+    public FormsServiceImpl(DefaultCMSCustomizer cmsCustomizer) {
         super();
-        this.customizer = customizer;
-        this.classLoader = Thread.currentThread().getContextClassLoader();
+        this.cmsCustomizer = cmsCustomizer;
     }
 
 
@@ -73,62 +69,53 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException {
-        // L'instanciation du parser Neko nécessite de passer dans le classloader du CMSCustomizer
-        // (Sinon, on n'arrive pas à trouver la classe du parser)
-        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.classLoader);
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
-        try {
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+        // Model
+        Document model = this.getModel(portalControllerContext, modelId);
 
-            // Model
-            Document model = this.getModel(portalControllerContext, modelId);
+        // Starting step
+        String startingStep = model.getString("pcd:startingStep");
+        // Starting step properties
+        PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
 
-            // Starting step
-            String startingStep = model.getString("pcd:startingStep");
-            // Starting step properties
-            PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
+        // Action properties
+        PropertyMap actionProperties = this.getActionProperties(startingStepProperties, actionId);
 
-            // Action properties
-            PropertyMap actionProperties = this.getActionProperties(startingStepProperties, actionId);
+        // Next step
+        String nextStep = actionProperties.getString("stepReference");
 
-            // Next step
-            String nextStep = actionProperties.getString("stepReference");
-
-            // Task title
-            String title = StringUtils.EMPTY;
-            // Actors
-            FormActors actors = new FormActors();
-            if (!StringUtils.equals(ENDSTEP, nextStep)) {
-                // Next step properties
-                PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-                title = nextStepProperties.getString("name");
-                // add authorizedGroups to actors
-                final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-                if (groupsObjectsList != null) {
-                    for (final Object groupsObject : groupsObjectsList.list()) {
-                        actors.getGroups().add((String) groupsObject);
-                    }
+        // Task title
+        String title = StringUtils.EMPTY;
+        // Actors
+        FormActors actors = new FormActors();
+        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+            // Next step properties
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+            title = nextStepProperties.getString("name");
+            // add authorizedGroups to actors
+            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
+            if (groupsObjectsList != null) {
+                for (final Object groupsObject : groupsObjectsList.list()) {
+                    actors.getGroups().add((String) groupsObject);
                 }
             }
-
-            // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, nuxeoController);
-
-            // Properties
-            Map<String, Object> properties = new HashMap<String, Object>();
-            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-            properties.put("pi:procedureModelPath", model.getPath());
-            properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
-
-            // Nuxeo command
-            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
-            nuxeoController.executeNuxeoCommand(command);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
+
+        // construction du contexte et appel des filtres
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, nuxeoController);
+
+        // Properties
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("pi:currentStep", actionProperties.getString("stepReference"));
+        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
+
+        // Nuxeo command
+        INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
+        nuxeoController.executeNuxeoCommand(command);
     }
 
 
@@ -144,7 +131,7 @@ public class FormsServiceImpl implements IFormsService {
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
             Map<String, String> globalVariableValues, NuxeoController nuxeoController) {
         // on retrouve les filtres installés
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
 
         // on retrouve les filtres de l'actions voulu
@@ -206,79 +193,70 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+
+        // Instance document
+        Document instance = this.getInstance(portalControllerContext, task);
+        // Model document
+        Document model = this.getModel(portalControllerContext, instance);
+
+        // Previous step
+        String previousStep = instance.getString("pi:currentStep");
+        // Previous step properties
+        PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
+
+        // Action properties
+        PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
+
+        // Next step
+        String nextStep = actionProperties.getString("stepReference");
+
+        // Task title
+        String title = StringUtils.EMPTY;
+        // Actors
+        FormActors actors = new FormActors();
+        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+            // Next step properties
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+            title = nextStepProperties.getString("name");
+            // add authorizedGroups to actors
+            // add authorizedGroups to actors
+            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
+            if (groupsObjectsList != null) {
+                for (final Object groupsObject : groupsObjectsList.list()) {
+                    actors.getGroups().add((String) groupsObject);
+                }
+            }
+        }
+
+        // Global Variables Values
+        PropertyMap taskProperties = task.getProperties();
+        PropertyMap procedureInstance = taskProperties.getMap("nt:pi");
+        Map<String, Object> globalVariableValuesMap = procedureInstance.getMap("pi:globalVariablesValues").map();
+        Map<String, String> globalVariableValues = new HashMap<String, String>(globalVariableValuesMap.size());
+        for (Entry<String, Object> gvvEntry : globalVariableValuesMap.entrySet()) {
+            globalVariableValues.put(gvvEntry.getKey(), String.valueOf(gvvEntry.getValue()));
+        }
+
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
 
-        // L'instanciation du parser Neko nécessite de passer dans le classloader du CMSCustomizer
-        // (Sinon, on n'arrive pas à trouver la classe du parser)
-        Thread.currentThread().setContextClassLoader(this.classLoader);
-        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        // construction du contexte et appel des filtres
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, nuxeoController);
 
-        try {
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+        // Properties
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("pi:currentStep", actionProperties.getString("stepReference"));
+        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
-            // Instance document
-            Document instance = this.getInstance(portalControllerContext, task);
-            // Model document
-            Document model = this.getModel(portalControllerContext, instance);
-
-            // Previous step
-            String previousStep = instance.getString("pi:currentStep");
-            // Previous step properties
-            PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
-
-            // Action properties
-            PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
-
-            // Next step
-            String nextStep = actionProperties.getString("stepReference");
-
-            // Task title
-            String title = StringUtils.EMPTY;
-            // Actors
-            FormActors actors = new FormActors();
-            if (!StringUtils.equals(ENDSTEP, nextStep)) {
-                // Next step properties
-                PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-                title = nextStepProperties.getString("name");
-                // add authorizedGroups to actors
-                // add authorizedGroups to actors
-                final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-                if (groupsObjectsList != null) {
-                    for (final Object groupsObject : groupsObjectsList.list()) {
-                        actors.getGroups().add((String) groupsObject);
-                    }
-                }
-            }
-
-            // Global Variables Values
-            PropertyMap taskProperties = task.getProperties();
-            PropertyMap procedureInstance = taskProperties.getMap("nt:pi");
-            Map<String, Object> globalVariableValuesMap = procedureInstance.getMap("pi:globalVariablesValues").map();
-            Map<String, String> globalVariableValues = new HashMap<String, String>(globalVariableValuesMap.size());
-            for (Entry<String, Object> gvvEntry : globalVariableValuesMap.entrySet()) {
-                globalVariableValues.put(gvvEntry.getKey(), String.valueOf(gvvEntry.getValue()));
-            }
-
-            // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, nuxeoController);
-
-            // Properties
-            Map<String, Object> properties = new HashMap<String, Object>();
-            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-            properties.put("pi:procedureModelPath", model.getPath());
-            properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
-
-            // Nuxeo command
-            INuxeoCommand command = new UpdateProcedureCommand(instance, title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(),
-                    properties);
-            nuxeoController.executeNuxeoCommand(command);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);
-        }
+        // Nuxeo command
+        INuxeoCommand command = new UpdateProcedureCommand(instance, title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(),
+                properties);
+        nuxeoController.executeNuxeoCommand(command);
     }
 
 

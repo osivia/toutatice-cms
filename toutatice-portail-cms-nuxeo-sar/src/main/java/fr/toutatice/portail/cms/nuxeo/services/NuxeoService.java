@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 
 import javax.portlet.PortletContext;
@@ -31,6 +32,7 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
@@ -48,15 +50,16 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     /** Logger. */
     private static Log logger = LogFactory.getLog(NuxeoService.class);
 
-    /** Nuxeo customizer. */
-    private INuxeoCustomizer nuxeoCustomizer;
-    /** Nuxeo tag service. */
-    private INuxeoTagService tagService;
-    /** Forms service. */
-    private IFormsService formsService;
+    /** CMS customizer. */
+    private INuxeoCustomizer cmsCustomizer;
 
     /** Profiler. */
     private transient IProfilerService profiler;
+
+    /** Tag service. */
+    private final INuxeoTagService tagService;
+    /** Forms service. */
+    private final IFormsService formsService;
 
 
     /**
@@ -64,6 +67,23 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
      */
     public NuxeoService() {
         super();
+
+        // Tag service
+        this.tagService = createProxy(INuxeoTagService.class);
+        // Forms service proxy
+        this.formsService = createProxy(IFormsService.class);
+    }
+
+
+    /**
+     * Create proxy.
+     * 
+     * @param clazz proxy class
+     * @return proxy
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T createProxy(Class<T> clazz) {
+        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, new NuxeoServiceInvocationHandler());
     }
 
 
@@ -151,8 +171,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
      */
     @Override
     public void registerCMSCustomizer(INuxeoCustomizer CMSCustomizer) {
-        this.nuxeoCustomizer = CMSCustomizer;
-
+        this.cmsCustomizer = CMSCustomizer;
     }
 
 
@@ -161,16 +180,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
      */
     @Override
     public INuxeoCustomizer getCMSCustomizer() {
-        return this.nuxeoCustomizer;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void registerTagService(INuxeoTagService tagService) {
-        this.tagService = tagService;
+        return this.cmsCustomizer;
     }
 
 
@@ -180,15 +190,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     @Override
     public INuxeoTagService getTagService() {
         return this.tagService;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void registerFormsService(IFormsService formsService) {
-        this.formsService = formsService;
     }
 
 

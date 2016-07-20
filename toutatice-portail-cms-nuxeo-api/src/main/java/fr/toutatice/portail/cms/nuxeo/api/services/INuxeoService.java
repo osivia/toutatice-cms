@@ -45,38 +45,30 @@ public interface INuxeoService extends ICMSIntegration {
     Session createUserSession(String userId) throws Exception;
 
 
-	/**
-	 * Register cms customizer.
-	 *
-	 * @param linkManager the link manager
-	 */
-    void registerCMSCustomizer(INuxeoCustomizer linkManager);
-
-
-	/**
-	 * Gets the CMS customizer.
-	 *
-	 * @return the CMS customizer
-	 */
-    INuxeoCustomizer getCMSCustomizer();
-
-
-	/**
-	 * Start nuxeo command service.
-	 *
-	 * @param portletCtx the portlet ctx
-	 * @return the i nuxeo command service
-	 * @throws Exception the exception
-	 */
+    /**
+     * Start nuxeo command service.
+     *
+     * @param portletCtx the portlet ctx
+     * @return the i nuxeo command service
+     * @throws Exception the exception
+     */
     INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx) throws Exception;
 
 
-    /**
-     * Register Nuxeo tag service.
+	/**
+     * Register CMS customizer.
      *
-     * @param tagService Nuxeo tag service
+     * @param cmsCustomizer CMS customizer
      */
-    void registerTagService(INuxeoTagService tagService);
+    void registerCMSCustomizer(INuxeoCustomizer cmsCustomizer);
+
+
+    /**
+     * Get CMS customizer.
+     *
+     * @return CMS customizer
+     */
+    INuxeoCustomizer getCMSCustomizer();
 
 
     /**
@@ -85,14 +77,6 @@ public interface INuxeoService extends ICMSIntegration {
      * @return Nuxeo tag service
      */
     INuxeoTagService getTagService();
-
-
-    /**
-     * Register forms service.
-     * 
-     * @param formsService forms service
-     */
-    void registerFormsService(IFormsService formsService);
 
 
     /**
