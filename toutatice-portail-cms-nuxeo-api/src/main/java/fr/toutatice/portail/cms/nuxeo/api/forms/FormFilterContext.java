@@ -2,6 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.api.forms;
 
 import java.util.Map;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+
 
 /**
  * The Class FormFilterContext.
@@ -15,6 +17,9 @@ public class FormFilterContext {
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
     
+    /** nuxeoController */
+    private NuxeoController nuxeoController;
+
 
     /** The actors. */
     FormActors actors ;
@@ -99,5 +104,23 @@ public class FormFilterContext {
             }
         }
         return null;
+    }
+
+    /**
+     * Getter for nuxeoController.
+     * 
+     * @return the nuxeoController
+     */
+    public NuxeoController getNuxeoController() {
+        return nuxeoController;
+    }
+
+    /**
+     * Setter for nuxeoController.
+     * 
+     * @param nuxeoController the nuxeoController to set
+     */
+    public void setNuxeoController(NuxeoController nuxeoController) {
+        this.nuxeoController = nuxeoController;
     }
 }

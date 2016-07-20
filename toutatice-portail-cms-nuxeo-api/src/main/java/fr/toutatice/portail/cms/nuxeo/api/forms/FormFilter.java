@@ -1,5 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
+import java.util.Map;
+
 /**
  * Form filter.
  */
@@ -18,8 +20,22 @@ public interface FormFilter {
      * 
      * @return internationalization key
      */
-    String getKey();
+    String getLabelKey();
 
+    /**
+     * get the form filter description internationalization key
+     * 
+     * @return
+     */
+    String getDescriptionKey();
+
+
+    /**
+     * get the parameters used by the filter
+     * 
+     * @return
+     */
+    Map<String, FormFilterParameterType> getParameters();
 
     /**
      * Execute form filter.

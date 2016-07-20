@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -25,8 +28,6 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -114,7 +115,7 @@ public class FormsServiceImpl implements IFormsService {
             }
 
             // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null);
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, nuxeoController);
 
             // Properties
             Map<String, Object> properties = new HashMap<String, Object>();
@@ -141,7 +142,7 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues) {
+            Map<String, String> globalVariableValues, NuxeoController nuxeoController) {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -181,6 +182,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // init du contexte des filtres
         FormFilterContext filterContext = new FormFilterContext(filtersParams);
+        filterContext.setNuxeoController(nuxeoController);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
         if (globalVariableValues != null) {
@@ -262,7 +264,7 @@ public class FormsServiceImpl implements IFormsService {
             }
 
             // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues);
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, nuxeoController);
 
             // Properties
             Map<String, Object> properties = new HashMap<String, Object>();
