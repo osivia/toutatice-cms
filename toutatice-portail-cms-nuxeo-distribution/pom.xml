@@ -5,18 +5,15 @@
     <parent>
         <groupId>toutatice-portail.cms</groupId>
         <artifactId>cms-parent</artifactId>
-        <version>4.0.21</version>
+        <version>4.0.22-SNAPSHOT</version>
     </parent>
 
     <artifactId>toutatice-portail-cms-nuxeo-distribution</artifactId>
     <name>Toutatice Portal - Distribution</name>
 
-	<properties>
-		<aop.version>1.0</aop.version>
-		<ehcache.version>2.7.2</ehcache.version>
-		<spring-ldap.version>1.3.1.RELEASE</spring-ldap.version>
-		<spring-security.version>3.2.5.RELEASE</spring-security.version>
-	</properties>
+    <properties>
+        <ehcache.version>2.7.2</ehcache.version>
+    </properties>
 
     <prerequisites>
         <maven>2.1.0</maven>
@@ -40,30 +37,7 @@
             <type>jar</type>
         </dependency>
 
-
-		<!-- libs tiers -->
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc-portlet</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-	
-		<dependency>
-			<groupId>org.springframework.ldap</groupId>
-			<artifactId>spring-ldap-core-tiger</artifactId>
-			<version>${spring-ldap.version}</version>
-		</dependency>
-		<dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>${spring-security.version}</version>
-		</dependency>
+        <!-- libs tiers -->
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
@@ -73,15 +47,15 @@
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
         <dependency>
-            <groupId>aopalliance</groupId>
-            <artifactId>aopalliance</artifactId>
-            <version>${aop.version}</version>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>${ehcache.version}</version>
         </dependency>
 
 		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>${ehcache.version}</version>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.6.6</version>
 		</dependency>
 
     </dependencies>
@@ -138,21 +112,18 @@
                                     <goal>copy-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                	<includeGroupIds>org.springframework,
-                                					org.springframework.ldap,
-                                					org.slf4j,
-                                					net.sf.ehcache,
-                                					net.sf.json-lib,
-                                					org.codehaus.jackson,
-                                					aopalliance,
-                                					displaytag
-                                	</includeGroupIds>
-                                	
-                                	<!-- exclude slf4j in conflict with JBP libs -->
-                                	<excludeArtifactIds>
-                                		jcl104-over-slf4j,
-                                		slf4j-log4j12
-                                	</excludeArtifactIds>
+                                    <includeGroupIds>
+                                        org.slf4j,
+                                        net.sf.ehcache,
+                                        net.sf.json-lib,
+                                        org.codehaus.jackson,
+                                        displaytag
+                                    </includeGroupIds>
+
+                                    <!-- exclude slf4j in conflict with JBP libs -->
+                                    <excludeArtifactIds>
+                                        jcl104-over-slf4j
+                                    </excludeArtifactIds>
                                 </configuration>
                             </execution>
                         </executions>
