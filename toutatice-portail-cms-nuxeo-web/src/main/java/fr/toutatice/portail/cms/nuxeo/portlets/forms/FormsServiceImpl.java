@@ -104,8 +104,8 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
 
-        // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, nuxeoController);
+            // construction du contexte et appel des filtres
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -129,7 +129,7 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, NuxeoController nuxeoController) {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext) {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -169,7 +169,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // init du contexte des filtres
         FormFilterContext filterContext = new FormFilterContext(filtersParams);
-        filterContext.setNuxeoController(nuxeoController);
+        filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
         if (globalVariableValues != null) {
@@ -244,8 +244,8 @@ public class FormsServiceImpl implements IFormsService {
             variables = new HashMap<String, String>();
         }
 
-        // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, nuxeoController);
+            // construction du contexte et appel des filtres
+            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
