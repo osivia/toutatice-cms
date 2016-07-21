@@ -96,12 +96,10 @@ public class FormFilterContext {
      * @param paramKey
      * @return
      */
-    public String getParamValue(FormFilter filter, String paramKey) {
-        if (filter instanceof FormFilterInstance) {
-            Map<String, String> paramsMap = filtersParams.get(((FormFilterInstance) filter).getName());
-            if (paramsMap != null) {
-                return paramsMap.get(paramKey);
-            }
+    public String getParamValue(FormFilterExecutor executor, String paramKey) {
+        Map<String, String> paramsMap = filtersParams.get(executor.getCurrentFilterName());
+        if (paramsMap != null) {
+            return paramsMap.get(paramKey);
         }
         return null;
     }

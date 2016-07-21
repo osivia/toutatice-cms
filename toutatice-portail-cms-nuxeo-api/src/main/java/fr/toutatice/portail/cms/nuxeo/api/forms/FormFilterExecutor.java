@@ -16,13 +16,17 @@ public class FormFilterExecutor {
     /** currentPath */
     private String currentPath;
 
+    /** currentFilterName */
+    private String currentFilterName;
+
     /**
      * @param filtersByParentPathMap
      * @param currentPath
      */
-    public FormFilterExecutor(Map<String, List<FormFilterInstance>> filtersByParentPathMap, String currentPath) {
+    public FormFilterExecutor(Map<String, List<FormFilterInstance>> filtersByParentPathMap, String currentPath, String currentFilterName) {
         this.filtersByParentPathMap = filtersByParentPathMap;
         this.currentPath = currentPath;
+        this.currentFilterName = currentFilterName;
     }
 
     /**
@@ -35,8 +39,18 @@ public class FormFilterExecutor {
         if (filters != null) {
             Collections.sort(filters);
             for (FormFilterInstance formFilterI : filters) {
-                formFilterI.getFormFilter().execute(filterContext, new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath()));
+                formFilterI.getFormFilter()
+                        .execute(filterContext, new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getName()));
             }
         }
     }
+
+    /**
+     * Getter for currentFilterName.
+     * @return the currentFilterName
+     */
+    public String getCurrentFilterName() {
+        return currentFilterName;
+    }
+
 }

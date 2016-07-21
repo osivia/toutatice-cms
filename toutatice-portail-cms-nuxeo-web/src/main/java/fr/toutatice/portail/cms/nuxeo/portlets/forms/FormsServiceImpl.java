@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -25,8 +28,6 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -181,7 +182,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // on construit l'executor parent
-        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY);
+        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY, StringUtils.EMPTY);
         // on execute les filtres de premier niveau
         parentExecutor.executeChildren(filterContext);
         return filterContext;
