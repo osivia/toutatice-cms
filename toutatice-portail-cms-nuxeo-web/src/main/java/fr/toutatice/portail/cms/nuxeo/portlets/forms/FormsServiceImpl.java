@@ -105,8 +105,8 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
 
-            // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext);
+        // construction du contexte et appel des filtres
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -143,7 +143,8 @@ public class FormsServiceImpl implements IFormsService {
             PropertyMap filterMap = (PropertyMap) filterObject;
             FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
             if (filter != null) {
-                FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"));
+                FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"),
+                        filterMap.getString("filterInstanceId"));
                 // on garde le path du parent du filtre pour l'ajouter à la map
                 String parentPath = StringUtils.split(",").length > 1 ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",") : StringUtils.EMPTY;
                 List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
@@ -245,8 +246,8 @@ public class FormsServiceImpl implements IFormsService {
             variables = new HashMap<String, String>();
         }
 
-            // construction du contexte et appel des filtres
-            FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext);
+        // construction du contexte et appel des filtres
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();

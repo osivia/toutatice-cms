@@ -12,6 +12,9 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
     /** formFilter */
     private FormFilter formFilter;
 
+    /** id */
+    private String id;
+
     /** path */
     private String path;
 
@@ -23,10 +26,11 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
      * @param path
      * @param name
      */
-    public FormFilterInstance(FormFilter formFilter, String path, String name) {
+    public FormFilterInstance(FormFilter formFilter, String path, String name, String id) {
         setFormFilter(formFilter);
         setPath(path);
         setName(name);
+        setId(id);
     }
 
     @Override
@@ -80,5 +84,23 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
      */
     public void setFormFilter(FormFilter formFilter) {
         this.formFilter = formFilter;
+    }
+
+    /**
+     * Getter for id.
+     * 
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Setter for id.
+     * 
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
     }
 }

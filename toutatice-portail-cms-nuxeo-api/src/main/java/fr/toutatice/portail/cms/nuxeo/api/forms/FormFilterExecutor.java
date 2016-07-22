@@ -16,17 +16,17 @@ public class FormFilterExecutor {
     /** currentPath */
     private String currentPath;
 
-    /** currentFilterName */
-    private String currentFilterName;
+    /** currentFilterInstanceId */
+    private String currentFilterInstanceId;
 
     /**
      * @param filtersByParentPathMap
      * @param currentPath
      */
-    public FormFilterExecutor(Map<String, List<FormFilterInstance>> filtersByParentPathMap, String currentPath, String currentFilterName) {
+    public FormFilterExecutor(Map<String, List<FormFilterInstance>> filtersByParentPathMap, String currentPath, String currentFilterInstanceId) {
         this.filtersByParentPathMap = filtersByParentPathMap;
         this.currentPath = currentPath;
-        this.currentFilterName = currentFilterName;
+        this.currentFilterInstanceId = currentFilterInstanceId;
     }
 
     /**
@@ -39,18 +39,18 @@ public class FormFilterExecutor {
         if (filters != null) {
             Collections.sort(filters);
             for (FormFilterInstance formFilterI : filters) {
-                formFilterI.getFormFilter()
-                        .execute(filterContext, new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getName()));
+                formFilterI.getFormFilter().execute(filterContext, new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getId()));
             }
         }
     }
 
     /**
-     * Getter for currentFilterName.
-     * @return the currentFilterName
+     * Getter for currentFilterInstanceId.
+     * 
+     * @return the currentFilterInstanceId
      */
-    public String getCurrentFilterName() {
-        return currentFilterName;
+    public String getCurrentFilterInstanceId() {
+        return currentFilterInstanceId;
     }
 
 }
