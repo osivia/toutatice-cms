@@ -164,7 +164,7 @@ public class FormsServiceImpl implements IFormsService {
                             filterParams.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
                         }
                     }
-                    filtersParams.put(filterInstance.getName(), filterParams);
+                    filtersParams.put(filterInstance.getId(), filterParams);
                 }
             }
         }
