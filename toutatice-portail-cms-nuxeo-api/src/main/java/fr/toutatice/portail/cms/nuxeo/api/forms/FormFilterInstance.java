@@ -36,9 +36,11 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
     @Override
     public int compareTo(FormFilterInstance comparedFormFilterInstance) {
 
-        String indexS = StringUtils.substringAfterLast(getPath(), ",");
+        String[] pathTab = StringUtils.split(getPath(), ',');
+        String indexS = pathTab.length <= 1 ? pathTab[0] : pathTab[pathTab.length - 1];
         int index = Integer.parseInt(indexS);
-        String compIndexS = StringUtils.substringAfterLast(comparedFormFilterInstance.getPath(), ",");
+        String[] comparedPathTab = StringUtils.split(comparedFormFilterInstance.getPath(), ',');
+        String compIndexS = comparedPathTab.length <= 1 ? comparedPathTab[0] : comparedPathTab[comparedPathTab.length - 1];
         int compIndex = Integer.parseInt(compIndexS);
 
         return Integer.compare(index, compIndex);
