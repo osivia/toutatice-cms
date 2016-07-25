@@ -146,7 +146,7 @@ public class FormsServiceImpl implements IFormsService {
                 FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"),
                         filterMap.getString("filterInstanceId"));
                 // on garde le path du parent du filtre pour l'ajouter à la map
-                String parentPath = StringUtils.split(",").length > 1 ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",") : StringUtils.EMPTY;
+                String parentPath = StringUtils.substringAfter(filterInstance.getPath(), ",");
                 List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
                 if (parentFiltersList == null) {
                     parentFiltersList = new ArrayList<FormFilterInstance>();
