@@ -31,6 +31,8 @@ public class DocumentService {
     public static final String FetchDocument = "Document.Fetch";
 
     public static final String CreateDocument = "Document.Create";
+    
+    public static final String SaveDocument = "Document.Save";
 
     public static final String DeleteDocument = "Document.Delete";
 
@@ -136,6 +138,10 @@ public class DocumentService {
             req.set("properties", properties);
         }
         return (Document) req.execute();
+    }
+    
+    public Document save(DocRef doc) throws Exception {
+        return (Document) this.session.newRequest(SaveDocument).setInput(doc).execute();
     }
 
     public void remove(DocRef doc) throws Exception {
