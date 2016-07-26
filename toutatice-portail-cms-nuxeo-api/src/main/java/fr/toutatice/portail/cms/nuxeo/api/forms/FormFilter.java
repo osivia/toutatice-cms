@@ -25,7 +25,7 @@ public interface FormFilter {
     /**
      * get the form filter description internationalization key
      * 
-     * @return
+     * @return t
      */
     String getDescriptionKey();
 
@@ -33,9 +33,16 @@ public interface FormFilter {
     /**
      * get the parameters used by the filter
      * 
-     * @return
+     * @return a map listing the parameters and their types
      */
     Map<String, FormFilterParameterType> getParameters();
+
+    /**
+     * return true if the filter calls the execution of children filter
+     * 
+     * @return
+     */
+    boolean hasChildren();
 
     /**
      * Execute form filter.
