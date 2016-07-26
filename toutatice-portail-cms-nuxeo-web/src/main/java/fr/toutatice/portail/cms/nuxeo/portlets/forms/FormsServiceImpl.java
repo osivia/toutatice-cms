@@ -76,6 +76,8 @@ public class FormsServiceImpl implements IFormsService {
 
         // Model
         Document model = this.getModel(portalControllerContext, modelId);
+        
+        String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
         // Starting step
         String startingStep = model.getString("pcd:startingStep");
@@ -106,7 +108,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -130,7 +132,7 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext) {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator) {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -170,7 +172,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
@@ -203,6 +205,8 @@ public class FormsServiceImpl implements IFormsService {
         Document instance = this.getInstance(portalControllerContext, task);
         // Model document
         Document model = this.getModel(portalControllerContext, instance);
+
+        String initiator = task.getProperties().getString("nt:initiator");
 
         // Previous step
         String previousStep = instance.getString("pi:currentStep");
@@ -247,7 +251,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();

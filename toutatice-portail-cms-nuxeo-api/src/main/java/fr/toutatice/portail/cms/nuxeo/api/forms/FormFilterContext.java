@@ -22,17 +22,20 @@ public class FormFilterContext {
 
 
     /** The actors. */
-    FormActors actors ;
+    private FormActors actors;
     
     /** The action id. */
-    String actionId;
+    private String actionId;
+
+    private String initiator;
     
     /**
      * Instantiates a new form filter context.
      */
-    public FormFilterContext(Map<String, Map<String, String>> filtersParams) {
+    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String initiator) {
         super();
         this.filtersParams = filtersParams;
+        this.initiator = initiator;
     }
 
     /**
@@ -118,5 +121,13 @@ public class FormFilterContext {
      */
     public void setPortalControllerContext(PortalControllerContext portalControllerContext) {
         this.portalControllerContext = portalControllerContext;
+    }
+
+    /**
+     * Getter for initiator.
+     * @return the initiator
+     */
+    public String getInitiator() {
+        return initiator;
     }
 }
