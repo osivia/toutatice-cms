@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -24,8 +24,8 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class UpdateProcedureCommand implements INuxeoCommand {
 
-    /** Instance document. */
-    private final Document instance;
+    /** Procedure instance path. */
+    private final String path;
     /** Task title */
     private final String taskTitle;
     /** Groups. */
@@ -39,15 +39,15 @@ public class UpdateProcedureCommand implements INuxeoCommand {
     /**
      * Constructor.
      *
-     * @param instance instance document
+     * @param path procedure instance path
      * @param title task title
      * @param groups groups
      * @param users users
      * @param properties properties
      */
-    public UpdateProcedureCommand(Document instance, String title, List<String> groups, List<String> users, Map<String, Object> properties) {
+    public UpdateProcedureCommand(String path, String title, List<String> groups, List<String> users, Map<String, Object> properties) {
         super();
-        this.instance = instance;
+        this.path = path;
         this.taskTitle = title;
         this.groups = StringUtils.join(groups, ",");
         this.users = StringUtils.join(users, ",");
@@ -62,7 +62,7 @@ public class UpdateProcedureCommand implements INuxeoCommand {
     public Object execute(Session nuxeoSession) throws Exception {
         // Operation request
         OperationRequest request = nuxeoSession.newRequest("Services.UpdateProcedure");
-        request.setInput(this.instance);
+        request.setInput(new DocRef(this.path));
         request.set("taskTitle", this.taskTitle);
         request.set("groups", this.groups);
         request.set("users", this.users);

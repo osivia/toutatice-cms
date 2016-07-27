@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -28,6 +25,8 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -75,7 +74,8 @@ public class FormsServiceImpl implements IFormsService {
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Model
-        Document model = this.getModel(portalControllerContext, modelId);
+        String modelPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
+        Document model = this.getModel(portalControllerContext, modelPath);
         
         String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
@@ -201,15 +201,20 @@ public class FormsServiceImpl implements IFormsService {
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
-        // Instance document
-        Document instance = this.getInstance(portalControllerContext, task);
-        // Model document
-        Document model = this.getModel(portalControllerContext, instance);
+        // Task properties
+        PropertyMap taskProperties = task.getProperties();
+        // Procedure instance properties
+        PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
 
-        String initiator = task.getProperties().getString("nt:initiator");
+        // Model document
+        String modelPath = instanceProperties.getString("pi:procedureModelPath");
+        Document model = this.getModel(portalControllerContext, modelPath);
+
+        // Initiator
+        String initiator = task.getString("nt:initiator");
 
         // Previous step
-        String previousStep = instance.getString("pi:currentStep");
+        String previousStep = instanceProperties.getString("pi:currentStep");
         // Previous step properties
         PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
 
@@ -227,8 +232,7 @@ public class FormsServiceImpl implements IFormsService {
             // Next step properties
             PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
-            // add authorizedGroups to actors
-            // add authorizedGroups to actors
+            // Add authorizedGroups to actors
             final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
             if (groupsObjectsList != null) {
                 for (final Object groupsObject : groupsObjectsList.list()) {
@@ -238,9 +242,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Global Variables Values
-        PropertyMap taskProperties = task.getProperties();
-        PropertyMap procedureInstance = taskProperties.getMap("nt:pi");
-        Map<String, Object> globalVariableValuesMap = procedureInstance.getMap("pi:globalVariablesValues").map();
+        Map<String, Object> globalVariableValuesMap = instanceProperties.getMap("pi:globalVariablesValues").map();
         Map<String, String> globalVariableValues = new HashMap<String, String>(globalVariableValuesMap.size());
         for (Entry<String, Object> gvvEntry : globalVariableValuesMap.entrySet()) {
             globalVariableValues.put(gvvEntry.getKey(), String.valueOf(gvvEntry.getValue()));
@@ -260,8 +262,8 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instance, title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(),
-                properties);
+        INuxeoCommand command = new UpdateProcedureCommand(instanceProperties.getString("ecm:path"), title, filterContext.getActors().getGroups(),
+                filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
     }
 
@@ -270,60 +272,12 @@ public class FormsServiceImpl implements IFormsService {
      * Get model document.
      *
      * @param portalControllerContext portal controller context
-     * @param modelId model identifier
+     * @param path model path
      * @return document
      */
-    private Document getModel(PortalControllerContext portalControllerContext, String modelId) {
+    private Document getModel(PortalControllerContext portalControllerContext, String path) {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-
-        // Fetch path
-        String fetchPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
-
-        // Nuxeo document context
-        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(fetchPath);
-
-        return documentContext.getDoc();
-    }
-
-
-    /**
-     * Get model document.
-     *
-     * @param portalControllerContext portal controller context
-     * @param instance instance document
-     * @return document
-     */
-    private Document getModel(PortalControllerContext portalControllerContext, Document instance) {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-
-        // Path
-        String path = instance.getString("pi:procedureModelPath");
-
-        // Document context
-        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-
-        return documentContext.getDoc();
-    }
-
-
-    /**
-     * Get instance document.
-     *
-     * @param portalControllerContext portal controller context
-     * @param task task document
-     * @return document
-     */
-    private Document getInstance(PortalControllerContext portalControllerContext, Document task) {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-
-        // Instance properties
-        PropertyMap properties = task.getProperties().getMap("nt:pi");
-
-        // Path
-        String path = properties.getString("ecm:path");
 
         // Document context
         NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);

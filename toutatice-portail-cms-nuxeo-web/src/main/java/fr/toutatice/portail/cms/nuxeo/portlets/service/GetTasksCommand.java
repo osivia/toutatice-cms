@@ -8,7 +8,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
 /**
  * Get tasks Nuxeo command.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see INuxeoCommand
  */
@@ -22,7 +22,7 @@ public class GetTasksCommand implements INuxeoCommand {
 
     /**
      * Constructor.
-     * 
+     *
      * @param user user UID
      * @param notifiable notifiable task indicator
      */
@@ -42,8 +42,8 @@ public class GetTasksCommand implements INuxeoCommand {
         StringBuilder query = new StringBuilder();
         query.append("SELECT * FROM Document ");
         query.append("WHERE ecm:primaryType = 'TaskDoc' ");
-        query.append("AND ecm:currentLifeCycleState <> 'ended' ");
-        if (notifiable) {
+        query.append("AND ecm:currentLifeCycleState = 'opened' ");
+        if (this.notifiable) {
             query.append("AND nt:task_variables.notifiable = 'true' ");
         }
         query.append("AND nt:actors = '").append(this.user).append("' ");
