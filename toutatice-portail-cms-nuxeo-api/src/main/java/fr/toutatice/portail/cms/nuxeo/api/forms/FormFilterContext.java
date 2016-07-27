@@ -13,13 +13,11 @@ public class FormFilterContext {
     /** The variables. */
     private Map<String, String> variables;
 
-    
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
     
     /** portalControllerContext */
     private PortalControllerContext portalControllerContext;
-
 
     /** The actors. */
     private FormActors actors;
@@ -27,6 +25,7 @@ public class FormFilterContext {
     /** The action id. */
     private String actionId;
 
+    /** initiator */
     private String initiator;
     
     /**
