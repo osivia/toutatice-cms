@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import javax.el.ExpressionFactory;
+import javax.el.ValueExpression;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -17,6 +18,7 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 
+import de.odysseus.el.util.SimpleContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -28,6 +30,8 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -39,6 +43,10 @@ public class FormsServiceImpl implements IFormsService {
 
     /** End step name. */
     private static final String ENDSTEP = "endStep";
+
+
+    /** Portal controller context thread local. */
+    private static ThreadLocal<PortalControllerContext> portalControllerContextThreadLocal = new ThreadLocal<PortalControllerContext>();
 
 
     /** CMS customizer. */
@@ -124,72 +132,11 @@ public class FormsServiceImpl implements IFormsService {
 
 
     /**
-     * Appel des filtres
-     * 
-     * @param actionId
-     * @param variables
-     * @param actionProperties
-     * @param actors
-     * @return
+     * {@inheritDoc}
      */
-    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator) {
-        // on retrouve les filtres installés
-        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
-        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
-
-        // on retrouve les filtres de l'actions voulu
-        PropertyList actionFilters = actionProperties.getList("filtersList");
-        Map<String, List<FormFilterInstance>> filtersByParentPathMap = new HashMap<String, List<FormFilterInstance>>();
-        Map<String, Map<String, String>> filtersParams = new HashMap<String, Map<String, String>>();
-        for (Object filterObject : actionFilters.list()) {
-            PropertyMap filterMap = (PropertyMap) filterObject;
-            FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
-            if (filter != null) {
-                FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"),
-                        filterMap.getString("filterInstanceId"));
-                // on garde le path du parent du filtre pour l'ajouter à la map
-                String parentPath = StringUtils.substringAfter(filterInstance.getPath(), ",");
-                List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
-                if (parentFiltersList == null) {
-                    parentFiltersList = new ArrayList<FormFilterInstance>();
-                }
-                parentFiltersList.add(filterInstance);
-                filtersByParentPathMap.put(parentPath, parentFiltersList);
-
-                // on ajoute les arguments du filtre à la liste des variables
-                PropertyList argumentsList = filterMap.getList("argumentsList");
-                if (argumentsList != null) {
-                    Map<String, String> filterParams = new HashMap<String, String>(argumentsList.size());
-                    for (int i = 0; i < argumentsList.size(); i++) {
-                        PropertyMap argumentMap = argumentsList.getMap(i);
-                        if (StringUtils.isNotBlank(argumentMap.getString("argumentName"))) {
-                            filterParams.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
-                        }
-                    }
-                    filtersParams.put(filterInstance.getId(), filterParams);
-                }
-            }
-        }
-
-        // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator);
-        filterContext.setPortalControllerContext(portalControllerContext);
-        filterContext.setActors(actors);
-        filterContext.setActionId(actionId);
-        if (globalVariableValues != null) {
-            // Copy submitted variables into Global Variables Values
-            globalVariableValues.putAll(variables);
-            filterContext.setVariables(globalVariableValues);
-        } else {
-            filterContext.setVariables(variables);
-        }
-
-        // on construit l'executor parent
-        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY, StringUtils.EMPTY);
-        // on execute les filtres de premier niveau
-        parentExecutor.executeChildren(filterContext);
-        return filterContext;
+    @Override
+    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException {
+        this.proceed(portalControllerContext, task, null, variables);
     }
 
 
@@ -266,6 +213,76 @@ public class FormsServiceImpl implements IFormsService {
         INuxeoCommand command = new UpdateProcedureCommand(instanceProperties.getString("ecm:path"), title, filterContext.getActors().getGroups(),
                 filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
+    }
+
+
+    /**
+     * Appel des filtres
+     * 
+     * @param actionId
+     * @param variables
+     * @param actionProperties
+     * @param actors
+     * @return
+     */
+    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator) {
+        // on retrouve les filtres installés
+        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
+        Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
+
+        // on retrouve les filtres de l'actions voulu
+        PropertyList actionFilters = actionProperties.getList("filtersList");
+        Map<String, List<FormFilterInstance>> filtersByParentPathMap = new HashMap<String, List<FormFilterInstance>>();
+        Map<String, Map<String, String>> filtersParams = new HashMap<String, Map<String, String>>();
+        for (Object filterObject : actionFilters.list()) {
+            PropertyMap filterMap = (PropertyMap) filterObject;
+            FormFilter filter = portalFilters.get(filterMap.getString("filterId"));
+            if (filter != null) {
+                FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"),
+                        filterMap.getString("filterInstanceId"));
+                // on garde le path du parent du filtre pour l'ajouter à la map
+                String parentPath = StringUtils.substringAfter(filterInstance.getPath(), ",");
+                List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
+                if (parentFiltersList == null) {
+                    parentFiltersList = new ArrayList<FormFilterInstance>();
+                }
+                parentFiltersList.add(filterInstance);
+                filtersByParentPathMap.put(parentPath, parentFiltersList);
+
+                // on ajoute les arguments du filtre à la liste des variables
+                PropertyList argumentsList = filterMap.getList("argumentsList");
+                if (argumentsList != null) {
+                    Map<String, String> filterParams = new HashMap<String, String>(argumentsList.size());
+                    for (int i = 0; i < argumentsList.size(); i++) {
+                        PropertyMap argumentMap = argumentsList.getMap(i);
+                        if (StringUtils.isNotBlank(argumentMap.getString("argumentName"))) {
+                            filterParams.put(argumentMap.getString("argumentName"), argumentMap.getString("argumentValue"));
+                        }
+                    }
+                    filtersParams.put(filterInstance.getId(), filterParams);
+                }
+            }
+        }
+
+        // init du contexte des filtres
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator);
+        filterContext.setPortalControllerContext(portalControllerContext);
+        filterContext.setActors(actors);
+        filterContext.setActionId(actionId);
+        if (globalVariableValues != null) {
+            // Copy submitted variables into Global Variables Values
+            globalVariableValues.putAll(variables);
+            filterContext.setVariables(globalVariableValues);
+        } else {
+            filterContext.setVariables(variables);
+        }
+
+        // on construit l'executor parent
+        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY, StringUtils.EMPTY);
+        // on execute les filtres de premier niveau
+        parentExecutor.executeChildren(filterContext);
+        return filterContext;
     }
 
 
@@ -357,6 +374,61 @@ public class FormsServiceImpl implements IFormsService {
             array.add(object);
         }
         return array.toString();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException {
+        // Expression factory
+        ExpressionFactory factory = ExpressionFactory.newInstance();
+
+        // Simple context
+        SimpleContext context = new SimpleContext();
+        
+        // Variables
+        if (MapUtils.isNotEmpty(variables)) {
+            for (Entry<String, String> entry : variables.entrySet()) {
+                context.setVariable(entry.getKey(), factory.createValueExpression(entry.getValue(), String.class));
+            }
+        }
+
+        // Functions
+        try {
+            context.setFunction("user", "name", TransformationFunctions.getUserNameMethod());
+            context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+            context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
+        } catch (NoSuchMethodException e) {
+            throw new PortalException(e);
+        } catch (SecurityException e) {
+            throw new PortalException(e);
+        }
+
+        // Value expression
+        ValueExpression value = factory.createValueExpression(context, StringUtils.trimToEmpty(expression), String.class);
+
+        // Transformed expression
+        String transformedExpression;
+        try {
+            portalControllerContextThreadLocal.set(portalControllerContext);
+            transformedExpression = String.valueOf(value.getValue(context));
+        } finally {
+            portalControllerContextThreadLocal.remove();
+        }
+
+        return transformedExpression;
+    }
+
+
+    /**
+     * Get portal controller context.
+     * 
+     * @return portal controller context
+     */
+    public static PortalControllerContext getPortalControllerContext() {
+        return portalControllerContextThreadLocal.get();
     }
 
 }

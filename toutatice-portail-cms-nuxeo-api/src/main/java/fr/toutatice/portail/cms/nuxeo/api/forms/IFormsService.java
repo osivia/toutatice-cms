@@ -18,7 +18,7 @@ public interface IFormsService {
 
 
     /**
-     * Start.
+     * Start with default action.
      * 
      * @param portalControllerContext portal controller context
      * @param modelId model identifier
@@ -41,6 +41,17 @@ public interface IFormsService {
 
 
     /**
+     * Proceed with default action.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param task task document
+     * @param variables variables
+     * @throws PortalException
+     */
+    void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException;
+
+
+    /**
      * Proceed.
      * 
      * @param portalControllerContext portal controller context
@@ -50,5 +61,17 @@ public interface IFormsService {
      * @throws PortalException
      */
     void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException;
+
+
+    /**
+     * Tranform expression with Expression-Language resolver.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param expression expression
+     * @param variables task variables
+     * @return tranformed expression
+     * @throws PortalException
+     */
+    String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException;
 
 }
