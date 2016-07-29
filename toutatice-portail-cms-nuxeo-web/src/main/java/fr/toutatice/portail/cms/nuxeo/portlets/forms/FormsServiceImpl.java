@@ -18,6 +18,7 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 
+import de.odysseus.el.ExpressionFactoryImpl;
 import de.odysseus.el.util.SimpleContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -383,7 +384,7 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException {
         // Expression factory
-        ExpressionFactory factory = ExpressionFactory.newInstance();
+        ExpressionFactory factory = new ExpressionFactoryImpl();
 
         // Simple context
         SimpleContext context = new SimpleContext();

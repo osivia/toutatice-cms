@@ -1,33 +1,42 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 
 
 /**
  * The Class FormFilterContext.
  */
 public class FormFilterContext {
-    
+
     /** The variables. */
     private Map<String, String> variables;
 
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
-    
+
     /** portalControllerContext */
     private PortalControllerContext portalControllerContext;
 
     /** The actors. */
     private FormActors actors;
-    
+
     /** The action id. */
     private String actionId;
 
     /** initiator */
     private String initiator;
-    
+
+    /** Forms service. */
+    private final IFormsService formsService;
+
+
     /**
      * Instantiates a new form filter context.
      */
@@ -35,6 +44,9 @@ public class FormFilterContext {
         super();
         this.filtersParams = filtersParams;
         this.initiator = initiator;
+
+        // Forms service
+        this.formsService = NuxeoServiceFactory.getFormsService();
     }
 
     /**
@@ -43,9 +55,9 @@ public class FormFilterContext {
      * @return the variables
      */
     public Map<String, String> getVariables() {
-        return variables;
+        return this.variables;
     }
-    
+
     /**
      * Sets the variables.
      *
@@ -54,16 +66,16 @@ public class FormFilterContext {
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
     }
-    
+
     /**
      * Gets the actors.
      *
      * @return the actors
      */
     public FormActors getActors() {
-        return actors;
+        return this.actors;
     }
-    
+
     /**
      * Sets the actors.
      *
@@ -72,16 +84,16 @@ public class FormFilterContext {
     public void setActors(FormActors actors) {
         this.actors = actors;
     }
-    
+
     /**
      * Gets the action id.
      *
      * @return the action id
      */
     public String getActionId() {
-        return actionId;
+        return this.actionId;
     }
-    
+
     /**
      * Sets the action id.
      *
@@ -93,29 +105,38 @@ public class FormFilterContext {
 
     /**
      * returns the parameter value of a filter
-     * 
+     *
      * @param filter
      * @param paramKey
      * @return
      */
     public String getParamValue(FormFilterExecutor executor, String paramKey) {
-        Map<String, String> paramsMap = filtersParams.get(executor.getCurrentFilterInstanceId());
+        Map<String, String> paramsMap = this.filtersParams.get(executor.getCurrentFilterInstanceId());
         if (paramsMap != null) {
-            return paramsMap.get(paramKey);
+            String filterParameters = paramsMap.get(paramKey);
+            try {
+                Map<String, String> variables = new HashMap<String, String>(this.variables);
+                variables.put("initiator", this.initiator);
+                return this.formsService.transform(this.portalControllerContext, filterParameters, variables);
+            } catch (PortalException e) {
+                throw new NuxeoException(e);
+            }
         }
         return null;
     }
 
     /**
      * Getter for portalControllerContext.
+     * 
      * @return the portalControllerContext
      */
     public PortalControllerContext getPortalControllerContext() {
-        return portalControllerContext;
+        return this.portalControllerContext;
     }
 
     /**
      * Setter for portalControllerContext.
+     * 
      * @param portalControllerContext the portalControllerContext to set
      */
     public void setPortalControllerContext(PortalControllerContext portalControllerContext) {
@@ -124,9 +145,10 @@ public class FormFilterContext {
 
     /**
      * Getter for initiator.
+     * 
      * @return the initiator
      */
     public String getInitiator() {
-        return initiator;
+        return this.initiator;
     }
 }
