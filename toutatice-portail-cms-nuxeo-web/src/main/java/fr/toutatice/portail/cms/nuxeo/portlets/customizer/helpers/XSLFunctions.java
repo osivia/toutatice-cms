@@ -62,6 +62,8 @@ public class XSLFunctions {
     private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]_/]+).*");
     /** Internal picture pattern. */
     private static final Pattern PATTERN_INTERNAL_PICTURE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
+    /** Internal picture pattern which doesn't reference Nx document's id. */
+    private static final Pattern NO_DOC_REF_PATTERN_INTERNAL_PICTURE = Pattern.compile("/nxfile/default/attachedImages/ttc:images/([0-9]*)/(.*)");
     /** Permalink pattern. */
     private static final Pattern PATTERN_PERMALINK = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
     /** Document pattern. */
@@ -310,7 +312,8 @@ public class XSLFunctions {
 
 
             // On traite uniquement les liens absolus ou commencant par /nuxeo
-            if (!link.startsWith("http") && !link.startsWith(NuxeoConnectionProperties.getNuxeoContext())) {
+            if (!link.startsWith("http") && !link.startsWith(NuxeoConnectionProperties.getNuxeoContext())
+                    && !link.startsWith("nxfile")) {
                 // correction v2 pour le mailto
                 // return "";
                 return link;
@@ -355,6 +358,21 @@ public class XSLFunctions {
 
                                 String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
                                 return portalLink;
+                            }
+                        }
+                        
+                        // Internal picture which doesn't reference Nx doc's id
+                        Matcher mResSAInternalPicture = NO_DOC_REF_PATTERN_INTERNAL_PICTURE.matcher(query);
+                        if (mResSAInternalPicture.matches()) {
+                            if (mResSAInternalPicture.groupCount() > 0) {
+                                // Get current document
+                                if (this.cmsContext.getDoc() != null) {
+                                    String uid = ((Document) this.cmsContext.getDoc()).getId();
+                                    String pictureIndex = mResSAInternalPicture.group(1);
+
+                                    String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
+                                    return portalLink;
+                                }
                             }
                         }
 

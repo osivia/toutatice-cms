@@ -6,6 +6,11 @@
 <!-- Delete document URLS -->
 <portlet:actionURL name="delete" var="deleteURL" />
 
+<!-- Copy document URL -->
+<portlet:actionURL name="copy" var="copyURL">
+    <portlet:param name="sourcePath" value="_PATH_" />
+</portlet:actionURL>
+
 <!-- Load document publication infos URL -->
 <portlet:resourceURL id="infos" var="infosUrl" />
 
@@ -57,6 +62,13 @@
                 <c:set var="title"><op:translate key="EDIT" /></c:set>
                 <a href="" data-url="${editURL}" onclick="setCallbackFromEcmParams('${callbackURL}', '${ecmBaseURL}')" class="btn btn-default fancyframe_refresh no-ajax-link edit" title="${title}" data-toggle="tooltip" data-placement="bottom">
                     <i class="halflings halflings-pencil"></i>
+                    <span class="sr-only">${title}</span>
+                </a>
+                
+                <!-- Copy -->
+                <c:set var="title"><op:translate key="COPY" /></c:set>
+                <a href="" data-url="${copyURL}" class="btn btn-default copy" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                    <i class="halflings halflings-duplicate"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             </div>

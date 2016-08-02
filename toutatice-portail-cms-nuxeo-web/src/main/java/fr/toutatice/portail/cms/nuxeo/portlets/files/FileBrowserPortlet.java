@@ -221,6 +221,18 @@ public class FileBrowserPortlet extends CMSPortlet {
                 status.getViews().put(type, view);
                 this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), status);
 
+            } else if ("copy".equals(action)) {
+                // Copy action
+                
+                String sourcePath = request.getParameter("sourcePath");
+                String targetPath = getPath(window);
+        
+                INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
+                nuxeoController.executeNuxeoCommand(command);
+        
+                // Refresh navigation
+                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+            
             } else if ("delete".equals(action)) {
                 // Delete action
 
