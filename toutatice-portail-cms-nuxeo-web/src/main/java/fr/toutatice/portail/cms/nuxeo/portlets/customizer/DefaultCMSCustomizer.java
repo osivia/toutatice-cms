@@ -89,6 +89,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
@@ -197,6 +198,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Directory service. */
     private IDirectoryService directoryService;
 
+    /** The plugin mgr. */
+    private CustomizationPluginMgr pluginMgr;
+
     /** Avatar map. */
     private Map<String, String> avatarMap = new ConcurrentHashMap<String, String>();
 
@@ -231,6 +235,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.players = new HashMap<String, IPlayer>();
         this.players.put("defaultPlayer", new DefaultPlayer(this));
 
+        
+
+        // Plugin
+        this.pluginMgr = new CustomizationPluginMgr(this);
+        
         try {
             // Initialisé ici pour résoudre problème de classloader
             this.cl = Thread.currentThread().getContextClassLoader();
@@ -300,6 +309,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.navigationItemAdapter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, FormFilter> getFormsFilters() {
+        return this.pluginMgr.getFormFilters();
+    }
+
 
     /**
      * Get CMS item adapter.
@@ -326,6 +342,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.editableWindowAdapter;
     }
 
+
+
+    /**
+     * Gets the plugin mgr.
+     *
+     * @return the plugin mgr
+     */
+    public CustomizationPluginMgr getPluginMgr() {
+        return this.pluginMgr;
+    }
 
     /**
      * {@inheritDoc}

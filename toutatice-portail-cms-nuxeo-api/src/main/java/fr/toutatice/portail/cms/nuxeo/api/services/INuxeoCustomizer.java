@@ -34,6 +34,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 
 
 /**
@@ -201,6 +202,12 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     List<ListTemplate> getListTemplates(Locale locale);
 
+    /**
+     * get forms filters
+     * 
+     * @return the filters
+     */
+    Map<String, FormFilter> getFormsFilters();
 
     /**
      * Get fragments list.

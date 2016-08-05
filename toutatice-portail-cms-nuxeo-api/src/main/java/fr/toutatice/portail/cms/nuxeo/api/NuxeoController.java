@@ -84,6 +84,10 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
  */
 public class NuxeoController {
 
+
+    /** Prefix used to query document in the ECM. */
+    private static final String FETCH_PATH_PREFIX = "webId:";
+
     /** The request. */
     PortletRequest request;
 
@@ -808,6 +812,15 @@ public class NuxeoController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param portalControllerContext portal controller context
+     */
+    public NuxeoController(PortalControllerContext portalControllerContext) {
+        this(portalControllerContext.getRequest(), portalControllerContext.getResponse(), portalControllerContext.getPortletCtx());
     }
 
 
@@ -2116,6 +2129,23 @@ public class NuxeoController {
     public String refreshUserAvatar(String username) {
         return getCMSService().refreshUserAvatar(this.getCMSCtx(), username);
     }
+    
+        /**
+     * Convert webId to fetch publication infos path.
+     *
+     * @param webId webId
+     * @return fetch publication infos path (e.g. webId:example)
+     */
+    public static String webIdToFetchPath(String webId) {
+        String fetchPath;
+        if (webId != null) {
+            fetchPath = FETCH_PATH_PREFIX.concat(webId);
+        } else {
+            fetchPath = null;
+        }
+        return fetchPath;
+    }
+    
 
     /**
      * Get a person

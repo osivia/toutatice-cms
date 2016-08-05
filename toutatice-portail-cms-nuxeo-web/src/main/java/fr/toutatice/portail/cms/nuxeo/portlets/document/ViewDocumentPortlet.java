@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
@@ -56,6 +57,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
@@ -68,6 +70,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentComma
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.FormsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
@@ -128,6 +131,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
             this.nuxeoService.registerCMSCustomizer(customizer);
 
+            // Forms service
+            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
+            this.registerService(this.nuxeoService.getFormsService(), formsService);
+            
             // DAO
             this.documentDAO = DocumentDAO.getInstance();
             this.commentDAO = CommentDAO.getInstance();
@@ -156,6 +163,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
     }
 
 
+    /**
+     * Register service.
+     * 
+     * @param proxy proxy
+     * @param instance instance
+     */
+    private void registerService(Object proxy, Object instance) {
+        NuxeoServiceInvocationHandler invocationHandler = (NuxeoServiceInvocationHandler) Proxy.getInvocationHandler(proxy);
+        invocationHandler.setInstance(instance);
+    }
+
+    
     /**
      * {@inheritDoc}
      */

@@ -203,4 +203,11 @@ public class PropertyMap implements Serializable {
         }
         return buf.toString();
     }
+    
+    /**
+	 * @return the map
+	 */
+	public LinkedHashMap<String, Object> getMap() {
+		return map;
+	}
 }

@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
@@ -21,14 +21,19 @@ import javax.portlet.PortletContext;
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
-
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+//import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
- * The Interface INuxeoService.
+ * Nuxeo service interface.
+ *
+ * @see ICMSIntegration
  */
 public interface INuxeoService extends ICMSIntegration {
-	
+
+    /** MBean name. */
 	String MBEAN_NAME = "osivia:service=NuxeoService";
+
 
 	/**
 	 * Creates the user session.
@@ -37,29 +42,48 @@ public interface INuxeoService extends ICMSIntegration {
 	 * @return the session
 	 * @throws Exception the exception
 	 */
-	public Session createUserSession(String userId) throws Exception ;
-	
-	/**
-	 * Register cms customizer.
-	 *
-	 * @param linkManager the link manager
-	 */
-	public void registerCMSCustomizer( INuxeoCustomizer linkManager);
+    Session createUserSession(String userId) throws Exception;
+
+
+    /**
+     * Start nuxeo command service.
+     *
+     * @param portletCtx the portlet ctx
+     * @return the i nuxeo command service
+     * @throws Exception the exception
+     */
+    INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx) throws Exception;
+
 
 	/**
-	 * Gets the CMS customizer.
-	 *
-	 * @return the CMS customizer
-	 */
-	public INuxeoCustomizer getCMSCustomizer();
-	
-	/**
-	 * Start nuxeo command service.
-	 *
-	 * @param portletCtx the portlet ctx
-	 * @return the i nuxeo command service
-	 * @throws Exception the exception
-	 */
-	public INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx)  throws Exception ;
+     * Register CMS customizer.
+     *
+     * @param cmsCustomizer CMS customizer
+     */
+    void registerCMSCustomizer(INuxeoCustomizer cmsCustomizer);
+
+
+    /**
+     * Get CMS customizer.
+     *
+     * @return CMS customizer
+     */
+    INuxeoCustomizer getCMSCustomizer();
+
+
+//    /**
+//     * Get Nuxeo tag service.
+//     *
+//     * @return Nuxeo tag service
+//     */
+//    INuxeoTagService getTagService();
+
+
+    /**
+     * Get forms service.
+     * 
+     * @return forms service
+     */
+    IFormsService getFormsService();
 
 }

@@ -48,6 +48,10 @@ public class DocumentService {
 
     public static final String SetPermission = "Document.SetACE";
 
+    public static final String AddPermission = "Document.AddPermission";
+
+    public static final String RemovePermissions = "Document.RemovePermission";
+
     public static final String RemoveAcl = "Document.RemoveACL";
 
     public static final String SetDocumentState = "Document.SetLifeCycle";
@@ -190,29 +194,53 @@ public class DocumentService {
     }
 
     public Documents query(String query) throws Exception {
-        return (Documents) session.newRequest(Query).set("query", query).execute();
+        return (Documents) this.session.newRequest(Query).set("query", query).execute();
+    }
+
+    /**
+     * Set a local ACE before block inheritance if it exists.
+     */
+    public Document addPermission(DocRef doc, String user, String permission) throws Exception {
+        return this.addPermission(doc, user, permission, null, false);
+    }
+
+    public Document addPermission(DocRef doc, String user, String permission, String acl) throws Exception {
+        return this.addPermission(doc, user, permission, acl, false);
+    }
+
+    public Document addPermission(DocRef doc, String user, String permission, String acl, boolean blockInheritance) throws Exception {
+        OperationRequest req = this.session.newRequest(AddPermission).setInput(doc).set("user", user).set("permission", permission).set("blockInheritance",
+                blockInheritance);
+        return (Document) req.execute();
     }
 
     public Document setPermission(DocRef doc, String user, String permission)
             throws Exception {
-        return setPermission(doc, user, permission, null, true);
+        return this.setPermission(doc, user, permission, null, true);
     }
 
-    public Document setPermission(DocRef doc, String user, String permission,
-            boolean granted) throws Exception {
-        return setPermission(doc, user, permission, null, granted);
+    public Document setPermission(DocRef doc, String user, String permission, boolean granted) throws Exception {
+        return this.setPermission(doc, user, permission, null, granted);
     }
 
-    public Document setPermission(DocRef doc, String user, String permission,
-            String acl, boolean granted) throws Exception {
-        OperationRequest req = session.newRequest(SetPermission).setInput(doc).set(
-                "user", user).set("permission", permission).set("grant",
-                granted);
+    public Document setPermission(DocRef doc, String user, String permission, String acl, boolean granted) throws Exception {
+        OperationRequest req = this.session.newRequest(SetPermission).setInput(doc).set("user", user).set("permission", permission).set("grant", granted)
+                .set("overwrite", false);
         if (acl != null) {
             req.set("acl", acl);
         }
         return (Document) req.execute();
     }
+
+    public Document removePermissions(DocRef doc, String user, String acl) throws Exception {
+        OperationRequest req = this.session.newRequest(RemovePermissions).setInput(doc).set("user", user);
+        if (acl != null) {
+            req.set("acl", acl);
+        }
+        return (Document) req.execute();
+    }
+
+
 
     public Document removeAcl(DocRef doc, String acl) throws Exception {
         return (Document) session.newRequest(RemoveAcl).setInput(doc).set(
