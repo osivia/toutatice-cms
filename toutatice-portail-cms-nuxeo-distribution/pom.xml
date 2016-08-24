@@ -122,7 +122,8 @@
 
                                     <!-- exclude slf4j in conflict with JBP libs -->
                                     <excludeArtifactIds>
-                                        jcl104-over-slf4j
+                                        jcl104-over-slf4j,
+                                        slf4j-log4j12
                                     </excludeArtifactIds>
                                 </configuration>
                             </execution>
