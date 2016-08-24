@@ -367,8 +367,6 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Path
         String path = this.getPath(window);
-        // Document context
-        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
@@ -386,6 +384,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 path = nuxeoController.getComputedPath(path);
 
                 // Fetch current Nuxeo document
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
                 request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
