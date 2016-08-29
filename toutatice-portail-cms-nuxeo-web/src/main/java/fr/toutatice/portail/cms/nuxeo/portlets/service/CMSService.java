@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+* (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -51,8 +51,11 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
+import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -154,6 +157,9 @@ public class CMSService implements ICMSService {
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
+    private final INotificationsService notifsService;
+    private final IInternationalizationService internationalizationService;
+    
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
 
@@ -169,6 +175,8 @@ public class CMSService implements ICMSService {
 
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        this.notifsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+        this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
     }
 
 
@@ -1907,7 +1915,10 @@ public class CMSService implements ICMSService {
         } else if (command == EcmViews.createDocument) {
             url = uri.toString() + "/nxpath/default" + path + "@toutatice_create?";
         } else if (command == EcmViews.editDocument) {
-            url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
+        	url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
+        	
+        	// TODO LBI réserver un doc
+            //url = uri.toString() + "/nxpath/default" + path + "@osivia_checkin?";
         } else if (command == EcmViews.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmViews.createFgtInRegion) {
@@ -2520,8 +2531,21 @@ public class CMSService implements ICMSService {
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
 
         // Document
-        EcmDocument document = (EcmDocument) cmsContext.getDoc();
-
+        Document document = (Document) cmsContext.getDoc();
+        // TODO [LBI] Réserver un document à déplacer
+//        CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, document.getPath());
+//        if(publicationInfos.getDraftContentPath() != null) {
+//        	
+//        	PortalControllerContext pcc = new PortalControllerContext(cmsContext.getControllerContext());
+//        	
+//        	String msg = internationalizationService.getString("CURRENT_DOC_IS_DRAFT", cmsContext.getServerInvocation().getRequest().getLocale());
+//        	
+//        	notifsService.addSimpleNotification(pcc, msg, NotificationsType.INFO);
+//        	
+//        	return publicationInfos.getDraftContentPath();
+//        }
+//        
+        
         // Adapted navigation path
         String navigationPath = null;
 

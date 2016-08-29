@@ -85,7 +85,19 @@ public class PublishInfosCommand implements INuxeoCommand {
 
                 publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
 
-                publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
+                
+                if (infos.containsKey("draftPath")) {
+                	publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("draftPath"))));
+                	publiInfos.setDraft(true);
+                }
+                else {
+                	publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
+                }
+                
+                if(infos.containsKey("draftContentPath")) {
+                	publiInfos.setDraftContentPath(decode(adaptType(String.class, infos.get("draftContentPath"))));
+                }
+                
                 publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 
                 publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));

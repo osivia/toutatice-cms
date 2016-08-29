@@ -2462,8 +2462,11 @@ public class NuxeoController {
 		publicationInfos.setLiveId(pub.getLiveId());
 		publicationInfos.setLiveSpace(pub.isLiveSpace());
 		publicationInfos.setBasePath(pub.getPublishSpacePath());
+		
 		publicationInfos.setScope(cmsCtx.getScope());
 		publicationInfos.setDisplayContext(cmsCtx.getDisplayContext());
+		
+		publicationInfos.setDraft(pub.isDraft());
 
 		if(cmsCtx.getContextualizationBasePath()!=null) {
 			publicationInfos.setContextualized(Boolean.TRUE);
