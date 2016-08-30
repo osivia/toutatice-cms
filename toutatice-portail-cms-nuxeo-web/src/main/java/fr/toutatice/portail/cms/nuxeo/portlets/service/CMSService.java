@@ -2178,5 +2178,24 @@ public class CMSService implements ICMSService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getTasksCount(CMSServiceCtx cmsContext, String user) throws CMSException {
+        // Nuxeo command
+        INuxeoCommand command = new GetTasksCommand(user, true);
 
+        // Documents
+        Documents documents;
+        try {
+            documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        return documents.size();
+    }
 }
