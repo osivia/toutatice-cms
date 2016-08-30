@@ -51,11 +51,8 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
-import org.osivia.portal.api.notifications.INotificationsService;
-import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -68,6 +65,7 @@ import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -144,9 +142,10 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCo
 public class CMSService implements ICMSService {
 
     /** Logger. */
-    protected static final Log logger = LogFactory.getLog(CMSService.class);
+    private static final Log LOG = LogFactory.getLog(CMSService.class);
     /** Slash separator. */
     private static final String SLASH = "/";
+
 
     /** Portlet context. */
     private final PortletContext portletCtx;
@@ -156,9 +155,6 @@ public class CMSService implements ICMSService {
     private ICacheService serviceCache;
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
-
-    private final INotificationsService notifsService;
-    private final IInternationalizationService internationalizationService;
     
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
@@ -175,8 +171,6 @@ public class CMSService implements ICMSService {
 
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-        this.notifsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
-        this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
     }
 
 
@@ -658,7 +652,7 @@ public class CMSService implements ICMSService {
             try {
                 document = this.fetchContent(cmsContext, path);
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 throw e;
             }
 
@@ -1391,7 +1385,7 @@ public class CMSService implements ICMSService {
                                 regionWindowsCount++;
                             } else {
                                 // Si type de portlet non trouvé, erreur.
-                                logger.warn("Type de fragment " + category + " non géré");
+                                LOG.warn("Type de fragment " + category + " non géré");
                             }
                         }
                     }
@@ -2477,7 +2471,8 @@ public class CMSService implements ICMSService {
             properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
             try {
-                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance", properties, true);
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance", properties,
+                        PortalUrlType.POPUP);
             } catch (PortalException e) {
                 throw new CMSException(e);
             }
@@ -2510,7 +2505,8 @@ public class CMSService implements ICMSService {
             properties.put(ReorderDocumentsPortlet.PATH_WINDOW_PROPERTY, document.getPath());
 
             try {
-                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties, true);
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties,
+                        PortalUrlType.POPUP);
             } catch (PortalException e) {
                 throw new CMSException(e);
             }
