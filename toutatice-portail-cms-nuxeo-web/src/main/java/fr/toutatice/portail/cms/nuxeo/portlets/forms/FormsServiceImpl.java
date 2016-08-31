@@ -9,6 +9,9 @@ import java.util.Map.Entry;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -26,13 +29,12 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterException;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterExecutor;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -69,7 +71,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException {
+    public void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException,
+            FormFilterException {
         this.start(portalControllerContext, modelId, null, variables);
     }
 
@@ -78,7 +81,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException {
+    public void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException,
+            FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
@@ -118,7 +122,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -136,7 +140,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException {
+    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
+            FormFilterException {
         this.proceed(portalControllerContext, task, null, variables);
     }
 
@@ -145,7 +150,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException {
+    public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException,
+            FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
@@ -202,7 +208,8 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator,
+                nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -227,7 +234,8 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator) {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator, String nextStep)
+            throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -267,7 +275,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);

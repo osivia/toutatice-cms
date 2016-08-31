@@ -34,7 +34,7 @@ public class FormFilterExecutor {
      * 
      * @param filterContext
      */
-    public void executeChildren(FormFilterContext filterContext) {
+    public void executeChildren(FormFilterContext filterContext) throws FormFilterException {
         List<FormFilterInstance> filters = filtersByParentPathMap.get(currentPath);
         if (filters != null) {
             Collections.sort(filters);

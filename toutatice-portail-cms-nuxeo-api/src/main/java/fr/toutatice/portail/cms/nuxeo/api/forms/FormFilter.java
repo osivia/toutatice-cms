@@ -50,6 +50,6 @@ public interface FormFilter {
      * @param context form filter context
      * @param executor form filter executor
      */
-    void execute(FormFilterContext context, FormFilterExecutor executor);
+    void execute(FormFilterContext context, FormFilterExecutor executor) throws FormFilterException;
 
 }
