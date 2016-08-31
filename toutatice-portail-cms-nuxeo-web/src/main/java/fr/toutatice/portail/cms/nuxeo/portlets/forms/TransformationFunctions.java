@@ -15,12 +15,8 @@ import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-//import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-//import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
  * Transformation functions.
@@ -35,10 +31,6 @@ public class TransformationFunctions {
 
     /** Portal URL factory. */
     private final IPortalUrlFactory portalUrlFactory;
-    /** Person service. */
-    private final PersonService personService;
-    /** Tag service. */
-//    private final INuxeoTagService tagService;
 
 
     /**
@@ -49,12 +41,6 @@ public class TransformationFunctions {
 
         // Portal URL factory
         this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
-
-        // Person service
-        this.personService = DirServiceFactory.getService(PersonService.class);
-
-        // Tag service
-//        this.tagService = NuxeoServiceFactory.getTagService();
     }
 
 
@@ -83,28 +69,6 @@ public class TransformationFunctions {
 
 
     /**
-     * Get person service.
-     * 
-     * @return person service
-     */
-    private static PersonService getPersonService() {
-        TransformationFunctions instance = getInstance();
-        return instance.personService;
-    }
-
-
-    /**
-     * Get tag service.
-     * 
-     * @return tag service
-     */
-//    private static INuxeoTagService getTagService() {
-//        TransformationFunctions instance = getInstance();
-//        return instance.tagService;
-//    }
-
-
-    /**
      * Get user display name.
      * 
      * @param user user identifier
@@ -112,7 +76,7 @@ public class TransformationFunctions {
      */
     public static String getUserDisplayName(String user) {
         // Person service
-        PersonService personService = getPersonService();
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
 
         // Search criteria
         Person criteria = personService.getEmptyPerson();
@@ -175,15 +139,8 @@ public class TransformationFunctions {
      */
     public static String getUserLink(String user) {
         // Person service
-        PersonService personService = getPersonService();
-        // Tag service
-//        INuxeoTagService tagService = getTagService();
-
-        // Portal controller context
-        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
+        
         // Search criteria
         Person criteria = personService.getEmptyPerson();
         criteria.setUid(user);
