@@ -101,12 +101,14 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
@@ -158,6 +160,8 @@ public class CMSService implements ICMSService {
     
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
+    /** Forms service. */
+    private final IFormsService formsService;
 
 
     /**
@@ -171,6 +175,8 @@ public class CMSService implements ICMSService {
 
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        // Forms service
+        this.formsService = NuxeoServiceFactory.getFormsService();
     }
 
 
@@ -2745,6 +2751,42 @@ public class CMSService implements ICMSService {
         }
 
         return documents.size();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateTask(CMSServiceCtx cmsContext, String path, String actionId, Map<String, String> variables) throws CMSException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        // User
+        String user = cmsContext.getServletRequest().getRemoteUser();
+
+        if (StringUtils.isNotEmpty(user)) {
+            // Nuxeo command
+            INuxeoCommand command = new GetTasksCommand(user, path);
+
+            try {
+                // Documents
+                Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+                if (documents.size() == 1) {
+                    Document task = documents.get(0);
+
+                    // Proceed
+                    this.formsService.proceed(portalControllerContext, task, actionId, variables);
+                } else {
+                    throw new CMSException(CMSException.ERROR_NOTFOUND);
+                }
+            } catch (CMSException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CMSException(e);
+            }
+        } else {
+            throw new CMSException("Unknown user error.");
+        }
     }
 
 }

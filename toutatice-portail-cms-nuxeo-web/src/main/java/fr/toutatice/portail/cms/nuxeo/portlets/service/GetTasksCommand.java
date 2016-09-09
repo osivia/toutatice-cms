@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -18,6 +19,22 @@ public class GetTasksCommand implements INuxeoCommand {
     private final String user;
     /** Notifiable task indicator. */
     private final boolean notifiable;
+    /** Task path. */
+    private final String path;
+
+
+    /**
+     * Constructor.
+     * 
+     * @param user user UID
+     * @param path task path
+     */
+    public GetTasksCommand(String user, String path) {
+        super();
+        this.user = user;
+        this.notifiable = false;
+        this.path = path;
+    }
 
 
     /**
@@ -30,6 +47,7 @@ public class GetTasksCommand implements INuxeoCommand {
         super();
         this.user = user;
         this.notifiable = notifiable;
+        this.path = null;
     }
 
 
@@ -45,6 +63,9 @@ public class GetTasksCommand implements INuxeoCommand {
         query.append("AND ecm:currentLifeCycleState = 'opened' ");
         if (this.notifiable) {
             query.append("AND nt:task_variables.notifiable = 'true' ");
+        }
+        if (StringUtils.isNotEmpty(this.path)) {
+            query.append("AND ecm:path = '").append(this.path).append("' ");
         }
         query.append("AND nt:actors = '").append(this.user).append("' ");
 
@@ -68,6 +89,10 @@ public class GetTasksCommand implements INuxeoCommand {
         builder.append(this.user);
         builder.append("/");
         builder.append(this.notifiable);
+        if (this.path != null) {
+            builder.append("/");
+            builder.append(this.path);
+        }
         return builder.toString();
     }
 
