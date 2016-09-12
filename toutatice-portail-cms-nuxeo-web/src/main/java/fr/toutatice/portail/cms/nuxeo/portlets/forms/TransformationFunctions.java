@@ -20,7 +20,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * Transformation functions.
- * 
+ *
  * @author Cédric Krommenhoek
  */
 public class TransformationFunctions {
@@ -46,7 +46,7 @@ public class TransformationFunctions {
 
     /**
      * Get singleton instance.
-     * 
+     *
      * @return instance
      */
     private static TransformationFunctions getInstance() {
@@ -59,7 +59,7 @@ public class TransformationFunctions {
 
     /**
      * Get portal URL factory.
-     * 
+     *
      * @return portal URL factory
      */
     private static IPortalUrlFactory getPortalUrlFactory() {
@@ -70,7 +70,7 @@ public class TransformationFunctions {
 
     /**
      * Get user display name.
-     * 
+     *
      * @param user user identifier
      * @return display name
      */
@@ -121,7 +121,7 @@ public class TransformationFunctions {
 
     /**
      * Get user:name method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -133,14 +133,14 @@ public class TransformationFunctions {
 
     /**
      * Get user link.
-     * 
+     *
      * @param user user identifier
      * @return link
      */
     public static String getUserLink(String user) {
         // Person service
         PersonService personService = DirServiceFactory.getService(PersonService.class);
-        
+
         // Search criteria
         Person criteria = personService.getEmptyPerson();
         criteria.setUid(user);
@@ -175,9 +175,9 @@ public class TransformationFunctions {
             String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
 
             // Link
-//            Link link = tagService.getUserProfileLink(nuxeoController, user, displayName);
-//            Element linkElement = DOM4JUtils.generateLinkElement(link.getUrl(), null, null, "no-ajax-link", displayName);
-//            container.add(linkElement);
+            //            Link link = tagService.getUserProfileLink(nuxeoController, user, displayName);
+            //            Element linkElement = DOM4JUtils.generateLinkElement(link.getUrl(), null, null, "no-ajax-link", displayName);
+            //            container.add(linkElement);
             Element displayNameSpan = DOM4JUtils.generateElement(HTMLConstants.SPAN, "", displayName);
             container.add(displayNameSpan);
         }
@@ -188,7 +188,7 @@ public class TransformationFunctions {
 
     /**
      * Get user:link method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -206,23 +206,23 @@ public class TransformationFunctions {
     public static String getDocumentLink(String path) {
         // Portal URL factory
         IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
-        
+
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
 
-//        // Nuxeo document context
-//        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-//        // Nuxeo document
-//        Document document = documentContext.getDoc();
-        
+        //        // Nuxeo document context
+        //        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        //        // Nuxeo document
+        //        Document document = documentContext.getDoc();
+
         Document document = nuxeoController.fetchDocument(path);
-        
+
         // URL
         String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-        
-        
+
+
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", document.getTitle());
 
@@ -232,7 +232,7 @@ public class TransformationFunctions {
 
     /**
      * Get document:link method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException

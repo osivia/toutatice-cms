@@ -9,6 +9,9 @@ import java.util.Map.Entry;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -25,13 +28,12 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterException;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterExecutor;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -55,7 +57,7 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Constructor.
-     * 
+     *
      * @param cmsCustomizer CMS customizer
      */
     public FormsServiceImpl(DefaultCMSCustomizer cmsCustomizer) {
@@ -68,8 +70,9 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException {
-        this.start(portalControllerContext, modelId, null, variables);
+    public void start(PortalControllerContext portalControllerContext, String modelPath, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+        this.start(portalControllerContext, modelPath, null, variables);
     }
 
 
@@ -77,16 +80,15 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelPath, String actionId, Map<String, String> variables) throws PortalException {
+    public void start(PortalControllerContext portalControllerContext, String modelPath, String actionId, Map<String, String> variables) throws PortalException,
+    FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Model
-        //String modelPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
-
         Document model = this.getModel(portalControllerContext, modelPath);
-        
+
         String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
         // Starting step
@@ -118,12 +120,12 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:procedureModelWebId", model.getString("ttc:webid"));
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
         // Nuxeo command
@@ -136,7 +138,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException {
+    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
+    FormFilterException {
         this.proceed(portalControllerContext, task, null, variables);
     }
 
@@ -145,19 +148,37 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException {
+    public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+        proceed(portalControllerContext, task.getProperties(), actionId, variables);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+        proceed(portalControllerContext, taskProperties, null, variables);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
+            throws PortalException, FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
-        // Task properties
-        PropertyMap taskProperties = task.getProperties();
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
 
         // Model document
-        String modelPath = instanceProperties.getString("pi:procedureModelPath");
-        Document model = this.getModel(portalControllerContext, modelPath);
+        String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
+        String modelFetchPath = NuxeoController.webIdToFetchPath(modelWebId);
+        Document model = this.getModel(portalControllerContext, modelFetchPath);
 
         // Initiator
         String initiator = instanceProperties.getString("pi:procedureInitiator");
@@ -202,7 +223,8 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator,
+                nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -214,12 +236,13 @@ public class FormsServiceImpl implements IFormsService {
         INuxeoCommand command = new UpdateProcedureCommand(instanceProperties.getString("ecm:path"), title, filterContext.getActors().getGroups(),
                 filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
+
     }
 
 
     /**
      * Appel des filtres
-     * 
+     *
      * @param actionId
      * @param variables
      * @param actionProperties
@@ -227,7 +250,8 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator) {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator, String nextStep)
+                    throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -243,7 +267,8 @@ public class FormsServiceImpl implements IFormsService {
                 FormFilterInstance filterInstance = new FormFilterInstance(filter, filterMap.getString("filterPath"), filterMap.getString("filterName"),
                         filterMap.getString("filterInstanceId"));
                 // on garde le path du parent du filtre pour l'ajouter à la map
-                String parentPath = StringUtils.substringAfter(filterInstance.getPath(), ",");
+                String parentPath = StringUtils.contains(filterInstance.getPath(), ',') ? StringUtils.substringBeforeLast(filterInstance.getPath(), ",")
+                        : StringUtils.EMPTY;
                 List<FormFilterInstance> parentFiltersList = filtersByParentPathMap.get(parentPath);
                 if (parentFiltersList == null) {
                     parentFiltersList = new ArrayList<FormFilterInstance>();
@@ -267,7 +292,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
@@ -299,9 +324,9 @@ public class FormsServiceImpl implements IFormsService {
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
 
         // Document context
-//        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-//
-//        return documentContext.getDoc();
+        // NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        //
+        // return documentContext.getDoc();
         return nuxeoController.fetchDocument(path);
     }
 
@@ -389,7 +414,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Simple context
         SimpleContext context = new SimpleContext();
-        
+
         // Variables
         if (MapUtils.isNotEmpty(variables)) {
             for (Entry<String, String> entry : variables.entrySet()) {
@@ -426,11 +451,12 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * Get portal controller context.
-     * 
+     *
      * @return portal controller context
      */
     public static PortalControllerContext getPortalControllerContext() {
         return portalControllerContextThreadLocal.get();
     }
+
 
 }
