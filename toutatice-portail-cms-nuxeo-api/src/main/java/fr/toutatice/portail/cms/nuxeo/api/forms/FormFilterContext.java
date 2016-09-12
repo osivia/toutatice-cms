@@ -33,6 +33,9 @@ public class FormFilterContext {
     /** initiator */
     private String initiator;
 
+    /** nextStep */
+    private String nextStep;
+
     /** Forms service. */
     private final IFormsService formsService;
 
@@ -40,10 +43,11 @@ public class FormFilterContext {
     /**
      * Instantiates a new form filter context.
      */
-    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String initiator) {
+    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String initiator, String nextStep) {
         super();
         this.filtersParams = filtersParams;
         this.initiator = initiator;
+        this.nextStep = nextStep;
 
         // Forms service
         this.formsService = NuxeoServiceFactory.getFormsService();
@@ -150,5 +154,23 @@ public class FormFilterContext {
      */
     public String getInitiator() {
         return this.initiator;
+    }
+
+    /**
+     * Getter for nextStep.
+     * 
+     * @return the nextStep
+     */
+    public String getNextStep() {
+        return nextStep;
+    }
+
+    /**
+     * Setter for nextStep.
+     * 
+     * @param nextStep the nextStep to set
+     */
+    public void setNextStep(String nextStep) {
+        this.nextStep = nextStep;
     }
 }

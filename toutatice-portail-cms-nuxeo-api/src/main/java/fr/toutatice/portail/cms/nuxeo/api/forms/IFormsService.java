@@ -3,69 +3,92 @@ package fr.toutatice.portail.cms.nuxeo.api.forms;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 
 /**
  * Forms service interface.
- * 
+ *
  * @author Cédric Krommenhoek
  */
 public interface IFormsService {
 
     /** Forms webId prefix. */
-    String FORMS_WEB_ID_PREFIX = "default-domain/procedure_";
+    String FORMS_WEB_ID_PREFIX = "procedure_";
 
 
     /**
      * Start with default action.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param modelId model identifier
      * @param variables variables
      * @throws PortalException
      */
-    void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException;
+    void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException, FormFilterException;
 
 
     /**
      * Start.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param modelId model identifier
      * @param actionId action identifier
      * @param variables variables
      * @throws PortalException
      */
-    void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException;
+    void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException,
+    FormFilterException;
 
 
     /**
      * Proceed with default action.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param task task document
      * @param variables variables
      * @throws PortalException
      */
-    void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException;
+    void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException, FormFilterException;
 
 
     /**
      * Proceed.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param task task document
      * @param actionId action identifier
      * @param variables variables
      * @throws PortalException
      */
-    void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException;
+    void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException,
+    FormFilterException;
 
+    /**
+     * @param portalControllerContext
+     * @param taskProperties
+     * @param variables
+     * @throws PortalException
+     * @throws FormFilterException
+     */
+    void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables) throws PortalException,
+            FormFilterException;
+
+    /**
+     * @param portalControllerContext
+     * @param taskProperties
+     * @param actionId
+     * @param variables
+     * @throws PortalException
+     * @throws FormFilterException
+     */
+    void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
+            throws PortalException, FormFilterException;
 
     /**
      * Tranform expression with Expression-Language resolver.
-     * 
+     *
      * @param portalControllerContext portal controller context
      * @param expression expression
      * @param variables task variables
