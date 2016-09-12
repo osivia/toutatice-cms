@@ -229,7 +229,7 @@ public class FormsServiceImpl implements IFormsService {
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:procedureModelWebId", model.getString("ttc:webid"));
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
