@@ -1,9 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -35,10 +33,6 @@ public class TransformationFunctions {
 
     /** Portal URL factory. */
     private final IPortalUrlFactory portalUrlFactory;
-    /** Person service. */
-    private final PersonService personService;
-    /** Tag service. */
-    private final INuxeoTagService tagService;
 
 
     /**
@@ -49,12 +43,6 @@ public class TransformationFunctions {
 
         // Portal URL factory
         this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
-
-        // Person service
-        this.personService = DirServiceFactory.getService(PersonService.class);
-
-        // Tag service
-        this.tagService = NuxeoServiceFactory.getTagService();
     }
 
 
@@ -83,28 +71,6 @@ public class TransformationFunctions {
 
 
     /**
-     * Get person service.
-     * 
-     * @return person service
-     */
-    private static PersonService getPersonService() {
-        TransformationFunctions instance = getInstance();
-        return instance.personService;
-    }
-
-
-    /**
-     * Get tag service.
-     * 
-     * @return tag service
-     */
-    private static INuxeoTagService getTagService() {
-        TransformationFunctions instance = getInstance();
-        return instance.tagService;
-    }
-
-
-    /**
      * Get user display name.
      * 
      * @param user user identifier
@@ -112,46 +78,24 @@ public class TransformationFunctions {
      */
     public static String getUserDisplayName(String user) {
         // Person service
-        PersonService personService = getPersonService();
-
-        // Search criteria
-        Person criteria = personService.getEmptyPerson();
-        criteria.setUid(user);
-
-        // Search results
-        List<Person> results = personService.findByCriteria(criteria);
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
 
         // Person
-        Person person;
-        if (CollectionUtils.isNotEmpty(results)) {
-            person = results.get(0);
-        } else {
-            person = null;
-        }
+        Person person = personService.getPerson(user);
 
-
-        // Container
-        Element container;
+        // DOM4J element
+        Element element;
 
         if (person == null) {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user, "glyphicons glyphicons-user", null);
+            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user);
         } else {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
-
-            // Avatar
-            Element avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, person.getAvatar().getUrl());
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
-            container.add(avatar);
-
             // Display name
             String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
-            Element displayNameElement = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
 
-            container.add(displayNameElement);
+            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
         }
 
-        return DOM4JUtils.write(container);
+        return DOM4JUtils.write(element);
     }
 
 
@@ -175,55 +119,35 @@ public class TransformationFunctions {
      */
     public static String getUserLink(String user) {
         // Person service
-        PersonService personService = getPersonService();
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
         // Tag service
-        INuxeoTagService tagService = getTagService();
+        INuxeoTagService tagService = NuxeoServiceFactory.getTagService();
 
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
 
-        // Search criteria
-        Person criteria = personService.getEmptyPerson();
-        criteria.setUid(user);
-
-        // Search results
-        List<Person> results = personService.findByCriteria(criteria);
-
         // Person
-        Person person;
-        if (CollectionUtils.isNotEmpty(results)) {
-            person = results.get(0);
-        } else {
-            person = null;
-        }
+        Person person = personService.getPerson(user);
 
 
-        // Container
-        Element container;
+        // DOM4J element
+        Element element;
 
         if (person == null) {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user, "glyphicons glyphicons-user", null);
+            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user);
         } else {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
-
-            // Avatar
-            Element avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, person.getAvatar().getUrl());
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
-            container.add(avatar);
-
             // Display name
             String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
 
             // Link
             Link link = tagService.getUserProfileLink(nuxeoController, user, displayName);
-            Element linkElement = DOM4JUtils.generateLinkElement(link.getUrl(), null, null, "no-ajax-link", displayName);
-            container.add(linkElement);
+
+            element = DOM4JUtils.generateLinkElement(link.getUrl(), null, null, "no-ajax-link", displayName);
         }
 
-        return DOM4JUtils.write(container);
+        return DOM4JUtils.write(element);
     }
 
 

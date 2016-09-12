@@ -114,6 +114,7 @@ public class FormsServiceImplTest {
         PersonService personService = EasyMock.createMock(PersonService.class);
         EasyMock.expect(personService.getEmptyPerson()).andStubReturn(emptyPerson);
         EasyMock.expect(personService.findByCriteria(emptyPerson)).andStubReturn(Arrays.asList(new Person[]{person}));
+        EasyMock.expect(personService.getPerson(USER_ID)).andStubReturn(person);
 
         // Directory service factory
         PowerMock.mockStatic(DirServiceFactory.class);
@@ -178,13 +179,11 @@ public class FormsServiceImplTest {
         expression = "user = ${user:name(user)}";
         variables.put("user", USER_ID);
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);
-        Assert.assertTrue(StringUtils.contains(transformedExpression, "<img class=\"avatar\" src=\"" + USER_AVATAR_URL + "\" alt=\"\">"));
         Assert.assertTrue(StringUtils.contains(transformedExpression, "<span>" + USER_DISPLAY_NAME + "</span>"));
 
         // #7 : user:link function
         expression = "user = ${user:link(user)}";
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);
-        Assert.assertTrue(StringUtils.contains(transformedExpression, "<img class=\"avatar\" src=\"" + USER_AVATAR_URL + "\" alt=\"\">"));
         Assert.assertTrue(
                 StringUtils.contains(transformedExpression, "<a class=\"no-ajax-link\" href=\"" + USER_PROFILE_URL + "\">" + USER_DISPLAY_NAME + "</a>"));
 
