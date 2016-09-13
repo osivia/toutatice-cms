@@ -73,12 +73,14 @@ import org.osivia.portal.core.profils.IProfilManager;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentSetSynchronizationCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NotificationsSubscribe;
@@ -124,6 +126,9 @@ public class CMSService implements ICMSService {
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
+    /** Forms service. */
+    private final IFormsService formsService;
+
     /**
      * Constructor.
      *
@@ -132,6 +137,8 @@ public class CMSService implements ICMSService {
     public CMSService(PortletContext portletCtx) {
         super();
         this.portletCtx = portletCtx;
+        
+        this.formsService = NuxeoServiceFactory.getFormsService();        
     }
 
     public DefaultCMSCustomizer getCustomizer() {
@@ -2198,4 +2205,41 @@ public class CMSService implements ICMSService {
 
         return documents.size();
     }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateTask(CMSServiceCtx cmsContext, String path, String actionId, Map<String, String> variables) throws CMSException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        // User
+        String user = cmsContext.getServletRequest().getRemoteUser();
+
+        if (StringUtils.isNotEmpty(user)) {
+            // Nuxeo command
+            INuxeoCommand command = new GetTasksCommand(user, path);
+
+            try {
+                // Documents
+                Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+                if (documents.size() == 1) {
+                    Document task = documents.get(0);
+
+                    // Proceed
+                    this.formsService.proceed(portalControllerContext, task, actionId, variables);
+                } else {
+                    throw new CMSException(CMSException.ERROR_NOTFOUND);
+                }
+            } catch (CMSException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CMSException(e);
+            }
+        } else {
+            throw new CMSException("Unknown user error.");
+        }
+    }
+    
 }

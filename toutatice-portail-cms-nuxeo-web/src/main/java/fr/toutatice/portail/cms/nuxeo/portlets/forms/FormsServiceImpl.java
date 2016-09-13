@@ -70,9 +70,8 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelPath, Map<String, String> variables) throws PortalException,
-    FormFilterException {
-        this.start(portalControllerContext, modelPath, null, variables);
+    public void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException, FormFilterException {
+        this.start(portalControllerContext, modelId, null, variables);
     }
 
 
@@ -80,14 +79,14 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelPath, String actionId, Map<String, String> variables) throws PortalException,
+    public void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException,
     FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Model
-        Document model = this.getModel(portalControllerContext, modelPath);
+        Document model = this.getModel(portalControllerContext, modelId);
 
         String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
@@ -178,7 +177,8 @@ public class FormsServiceImpl implements IFormsService {
         // Model document
         String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
         String modelFetchPath = NuxeoController.webIdToFetchPath(modelWebId);
-        Document model = this.getModel(portalControllerContext, modelFetchPath);
+        
+        Document model = nuxeoController.fetchDocument(modelFetchPath);
 
         // Initiator
         String initiator = instanceProperties.getString("pi:procedureInitiator");
@@ -316,17 +316,16 @@ public class FormsServiceImpl implements IFormsService {
      * Get model document.
      *
      * @param portalControllerContext portal controller context
-     * @param path model path
+     * @param modelId model identifier
      * @return document
      */
-    private Document getModel(PortalControllerContext portalControllerContext, String path) {
+    private Document getModel(PortalControllerContext portalControllerContext, String modelId) {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        
+        // Model path
+        String path = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
 
-        // Document context
-        // NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-        //
-        // return documentContext.getDoc();
         return nuxeoController.fetchDocument(path);
     }
 
