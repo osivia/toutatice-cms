@@ -1032,7 +1032,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if (portalName != null) {
             PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
             
-            // Timeout window
+            // Timeout window ?
+            // TODO : non réellement expliqué mias arrive à Rennes
             if( portalObjectContainer != null){
             PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
