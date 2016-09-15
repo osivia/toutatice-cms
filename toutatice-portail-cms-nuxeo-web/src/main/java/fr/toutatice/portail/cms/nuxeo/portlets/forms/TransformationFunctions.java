@@ -1,9 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -20,7 +18,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * Transformation functions.
- *
+ * 
  * @author Cédric Krommenhoek
  */
 public class TransformationFunctions {
@@ -46,7 +44,7 @@ public class TransformationFunctions {
 
     /**
      * Get singleton instance.
-     *
+     * 
      * @return instance
      */
     private static TransformationFunctions getInstance() {
@@ -59,7 +57,7 @@ public class TransformationFunctions {
 
     /**
      * Get portal URL factory.
-     *
+     * 
      * @return portal URL factory
      */
     private static IPortalUrlFactory getPortalUrlFactory() {
@@ -70,7 +68,7 @@ public class TransformationFunctions {
 
     /**
      * Get user display name.
-     *
+     * 
      * @param user user identifier
      * @return display name
      */
@@ -78,50 +76,28 @@ public class TransformationFunctions {
         // Person service
         PersonService personService = DirServiceFactory.getService(PersonService.class);
 
-        // Search criteria
-        Person criteria = personService.getEmptyPerson();
-        criteria.setUid(user);
-
-        // Search results
-        List<Person> results = personService.findByCriteria(criteria);
-
         // Person
-        Person person;
-        if (CollectionUtils.isNotEmpty(results)) {
-            person = results.get(0);
-        } else {
-            person = null;
-        }
+        Person person = personService.getPerson(user);
 
-
-        // Container
-        Element container;
+        // DOM4J element
+        Element element;
 
         if (person == null) {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user, "glyphicons glyphicons-user", null);
+            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user);
         } else {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
-
-            // Avatar
-            Element avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, person.getAvatar().getUrl());
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
-            container.add(avatar);
-
             // Display name
             String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
-            Element displayNameElement = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
 
-            container.add(displayNameElement);
+            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
         }
 
-        return DOM4JUtils.write(container);
+        return DOM4JUtils.write(element);
     }
 
 
     /**
      * Get user:name method.
-     *
+     * 
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -129,74 +105,6 @@ public class TransformationFunctions {
     public static Method getUserNameMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getUserDisplayName", String.class);
     }
-
-
-    /**
-     * Get user link.
-     *
-     * @param user user identifier
-     * @return link
-     */
-    public static String getUserLink(String user) {
-        // Person service
-        PersonService personService = DirServiceFactory.getService(PersonService.class);
-
-        // Search criteria
-        Person criteria = personService.getEmptyPerson();
-        criteria.setUid(user);
-
-        // Search results
-        List<Person> results = personService.findByCriteria(criteria);
-
-        // Person
-        Person person;
-        if (CollectionUtils.isNotEmpty(results)) {
-            person = results.get(0);
-        } else {
-            person = null;
-        }
-
-
-        // Container
-        Element container;
-
-        if (person == null) {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user, "glyphicons glyphicons-user", null);
-        } else {
-            container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
-
-            // Avatar
-            Element avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, person.getAvatar().getUrl());
-            DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
-            container.add(avatar);
-
-            // Display name
-            String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
-
-            // Link
-            //            Link link = tagService.getUserProfileLink(nuxeoController, user, displayName);
-            //            Element linkElement = DOM4JUtils.generateLinkElement(link.getUrl(), null, null, "no-ajax-link", displayName);
-            //            container.add(linkElement);
-            Element displayNameSpan = DOM4JUtils.generateElement(HTMLConstants.SPAN, "", displayName);
-            container.add(displayNameSpan);
-        }
-
-        return DOM4JUtils.write(container);
-    }
-
-
-    /**
-     * Get user:link method.
-     *
-     * @return method
-     * @throws NoSuchMethodException
-     * @throws SecurityException
-     */
-    public static Method getUserLinkMethod() throws NoSuchMethodException, SecurityException {
-        return TransformationFunctions.class.getMethod("getUserLink", String.class);
-    }
-
 
     /**
      * Get document link.
@@ -206,23 +114,20 @@ public class TransformationFunctions {
     public static String getDocumentLink(String path) {
         // Portal URL factory
         IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
-
+        
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
 
-        //        // Nuxeo document context
-        //        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-        //        // Nuxeo document
-        //        Document document = documentContext.getDoc();
-
+        // Nuxeo document context
         Document document = nuxeoController.fetchDocument(path);
-
+        
+        
         // URL
         String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-
-
+        
+        
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", document.getTitle());
 
@@ -232,7 +137,7 @@ public class TransformationFunctions {
 
     /**
      * Get document:link method.
-     *
+     * 
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
