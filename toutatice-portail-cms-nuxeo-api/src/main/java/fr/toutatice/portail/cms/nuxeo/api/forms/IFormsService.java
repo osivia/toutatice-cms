@@ -26,7 +26,8 @@ public interface IFormsService {
      * @param variables variables
      * @throws PortalException
      */
-    void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException, FormFilterException;
+    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException,
+    FormFilterException;
 
 
     /**
@@ -36,10 +37,12 @@ public interface IFormsService {
      * @param modelId model identifier
      * @param actionId action identifier
      * @param variables variables
+     * @return
      * @throws PortalException
      */
-    void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException,
-    FormFilterException;
+    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
+            throws PortalException,
+            FormFilterException;
 
 
     /**
@@ -50,7 +53,8 @@ public interface IFormsService {
      * @param variables variables
      * @throws PortalException
      */
-    void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException, FormFilterException;
+    Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
+            FormFilterException;
 
 
     /**
@@ -62,7 +66,8 @@ public interface IFormsService {
      * @param variables variables
      * @throws PortalException
      */
-    void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException,
+    Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables)
+            throws PortalException,
     FormFilterException;
 
     /**
@@ -72,8 +77,9 @@ public interface IFormsService {
      * @throws PortalException
      * @throws FormFilterException
      */
-    void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables) throws PortalException,
-            FormFilterException;
+    Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables)
+            throws PortalException,
+    FormFilterException;
 
     /**
      * @param portalControllerContext
@@ -83,7 +89,7 @@ public interface IFormsService {
      * @throws PortalException
      * @throws FormFilterException
      */
-    void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
+    Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException;
 
     /**

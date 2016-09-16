@@ -68,10 +68,13 @@ public class FormsServiceImpl implements IFormsService {
 
     /**
      * {@inheritDoc}
+     *
+     * @return
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException, FormFilterException {
-        this.start(portalControllerContext, modelId, null, variables);
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+        return start(portalControllerContext, modelId, null, variables);
     }
 
 
@@ -79,8 +82,9 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public void start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables) throws PortalException,
-    FormFilterException {
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
+            throws PortalException,
+            FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
@@ -130,43 +134,56 @@ public class FormsServiceImpl implements IFormsService {
         // Nuxeo command
         INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
+
+        return filterContext.getVariables();
     }
 
 
     /**
      * {@inheritDoc}
+     *
+     * @return
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
     FormFilterException {
-        this.proceed(portalControllerContext, task, null, variables);
+        return proceed(portalControllerContext, task, null, variables);
     }
 
 
     /**
      * {@inheritDoc}
+     *
+     * @return
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables) throws PortalException,
-    FormFilterException {
-        proceed(portalControllerContext, task.getProperties(), actionId, variables);
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables)
+            throws PortalException,
+            FormFilterException {
+        return proceed(portalControllerContext, task.getProperties(), actionId, variables);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @return
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables) throws PortalException,
-    FormFilterException {
-        proceed(portalControllerContext, taskProperties, null, variables);
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables)
+            throws PortalException,
+            FormFilterException {
+        return proceed(portalControllerContext, taskProperties, null, variables);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @return
      */
     @Override
-    public void proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
-            throws PortalException, FormFilterException {
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
+            Map<String, String> variables)
+                    throws PortalException, FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
@@ -176,9 +193,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Model document
         String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
-        String modelFetchPath = NuxeoController.webIdToFetchPath(modelWebId);
-        
-        Document model = nuxeoController.fetchDocument(modelFetchPath);
+        Document model = this.getModel(portalControllerContext, modelWebId);
 
         // Initiator
         String initiator = instanceProperties.getString("pi:procedureInitiator");
@@ -237,6 +252,7 @@ public class FormsServiceImpl implements IFormsService {
                 filterContext.getActors().getUsers(), properties);
         nuxeoController.executeNuxeoCommand(command);
 
+        return filterContext.getVariables();
     }
 
 
@@ -424,7 +440,7 @@ public class FormsServiceImpl implements IFormsService {
         // Functions
         try {
             context.setFunction("user", "name", TransformationFunctions.getUserNameMethod());
-            //context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+//            context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);
