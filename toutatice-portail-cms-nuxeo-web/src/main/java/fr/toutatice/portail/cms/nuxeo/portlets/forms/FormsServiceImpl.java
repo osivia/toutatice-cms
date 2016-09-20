@@ -83,24 +83,24 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
-            throws PortalException,
-            FormFilterException {
+            throws PortalException, FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Model
-        Document model = this.getModel(portalControllerContext, modelId);
+        String fetchPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
+        Document model = nuxeoController.fetchDocument(fetchPath);
 
-        String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+        String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
         // Starting step
         String startingStep = model.getString("pcd:startingStep");
         // Starting step properties
-        PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
+        PropertyMap startingStepProperties = getStepProperties(model, startingStep);
 
         // Action properties
-        PropertyMap actionProperties = this.getActionProperties(startingStepProperties, actionId);
+        PropertyMap actionProperties = getActionProperties(startingStepProperties, actionId);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -111,7 +111,7 @@ public class FormsServiceImpl implements IFormsService {
         FormActors actors = new FormActors();
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
-            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+            PropertyMap nextStepProperties = getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
             // add authorizedGroups to actors
             final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
@@ -123,13 +123,14 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, initiator, nextStep);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator, null,
+                nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
         properties.put("pi:procedureModelWebId", model.getString("ttc:webid"));
-        properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
+        properties.put("pi:globalVariablesValues", generateVariablesJSON(variables));
 
         // Nuxeo command
         INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
@@ -158,8 +159,7 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables)
-            throws PortalException,
-            FormFilterException {
+            throws PortalException, FormFilterException {
         return proceed(portalControllerContext, task.getProperties(), actionId, variables);
     }
 
@@ -170,8 +170,7 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables)
-            throws PortalException,
-            FormFilterException {
+            throws PortalException, FormFilterException {
         return proceed(portalControllerContext, taskProperties, null, variables);
     }
 
@@ -182,29 +181,32 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
-            Map<String, String> variables)
-                    throws PortalException, FormFilterException {
+            Map<String, String> variables) throws PortalException, FormFilterException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
+        // Task initiator
+        String previousTaskInitiator = taskProperties.getString("nt:initiator");
 
         // Model document
         String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
-        Document model = this.getModel(portalControllerContext, modelWebId);
+        String fetchPath = NuxeoController.webIdToFetchPath(modelWebId);
+        Document model = nuxeoController.fetchDocument(fetchPath);
 
-        // Initiator
-        String initiator = instanceProperties.getString("pi:procedureInitiator");
+        // Procedure initiator
+        String procedureInitiator = instanceProperties.getString("pi:procedureInitiator");
+
 
         // Previous step
         String previousStep = instanceProperties.getString("pi:currentStep");
         // Previous step properties
-        PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
+        PropertyMap previousStepProperties = getStepProperties(model, previousStep);
 
         // Action properties
-        PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
+        PropertyMap actionProperties = getActionProperties(previousStepProperties, actionId);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -215,7 +217,7 @@ public class FormsServiceImpl implements IFormsService {
         FormActors actors = new FormActors();
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
-            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+            PropertyMap nextStepProperties = getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
             // Add authorizedGroups to actors
             final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
@@ -238,8 +240,8 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext, initiator,
-                nextStep);
+        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
+                procedureInitiator, previousTaskInitiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -266,8 +268,8 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String initiator, String nextStep)
-                    throws FormFilterException {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String procedureInitiator, String taskInitiator,
+            String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -308,7 +310,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, initiator, nextStep);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
@@ -325,24 +327,6 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         parentExecutor.executeChildren(filterContext);
         return filterContext;
-    }
-
-
-    /**
-     * Get model document.
-     *
-     * @param portalControllerContext portal controller context
-     * @param modelId model identifier
-     * @return document
-     */
-    private Document getModel(PortalControllerContext portalControllerContext, String modelId) {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-        
-        // Model path
-        String path = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
-
-        return nuxeoController.fetchDocument(path);
     }
 
 
@@ -440,7 +424,7 @@ public class FormsServiceImpl implements IFormsService {
         // Functions
         try {
             context.setFunction("user", "name", TransformationFunctions.getUserNameMethod());
-//            context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+            // context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);
