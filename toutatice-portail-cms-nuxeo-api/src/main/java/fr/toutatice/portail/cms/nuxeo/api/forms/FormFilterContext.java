@@ -30,8 +30,11 @@ public class FormFilterContext {
     /** The action id. */
     private String actionId;
 
-    /** initiator */
-    private String initiator;
+    /** procedureInitiator */
+    private String procedureInitiator;
+
+    /** taskInitiator */
+    private String taskInitiator;
 
     /** nextStep */
     private String nextStep;
@@ -43,11 +46,12 @@ public class FormFilterContext {
     /**
      * Instantiates a new form filter context.
      */
-    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String initiator, String nextStep) {
+    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String procedureInitiator, String taskInitiator, String nextStep) {
         super();
         this.filtersParams = filtersParams;
-        this.initiator = initiator;
+        this.procedureInitiator = procedureInitiator;
         this.nextStep = nextStep;
+        this.taskInitiator = taskInitiator;
 
         // Forms service
         this.formsService = NuxeoServiceFactory.getFormsService();
@@ -119,9 +123,10 @@ public class FormFilterContext {
         if (paramsMap != null) {
             String filterParameters = paramsMap.get(paramKey);
             try {
-                Map<String, String> variables = new HashMap<String, String>(this.variables);
-                variables.put("initiator", this.initiator);
-                return this.formsService.transform(this.portalControllerContext, filterParameters, variables);
+                Map<String, String> variables = new HashMap<String, String>(getVariables());
+                variables.put("procedureInitiator", procedureInitiator);
+                variables.put("taskInitiator", taskInitiator);
+                return formsService.transform(portalControllerContext, filterParameters, variables);
             } catch (PortalException e) {
                 throw new NuxeoException(e);
             }
@@ -131,7 +136,7 @@ public class FormFilterContext {
 
     /**
      * Getter for portalControllerContext.
-     * 
+     *
      * @return the portalControllerContext
      */
     public PortalControllerContext getPortalControllerContext() {
@@ -140,25 +145,36 @@ public class FormFilterContext {
 
     /**
      * Setter for portalControllerContext.
-     * 
+     *
      * @param portalControllerContext the portalControllerContext to set
      */
     public void setPortalControllerContext(PortalControllerContext portalControllerContext) {
         this.portalControllerContext = portalControllerContext;
     }
 
+
     /**
-     * Getter for initiator.
-     * 
-     * @return the initiator
+     * Getter for filtersParams.
+     *
+     * @return the filtersParams
      */
-    public String getInitiator() {
-        return this.initiator;
+    public Map<String, Map<String, String>> getFiltersParams() {
+        return filtersParams;
+    }
+
+
+    /**
+     * Getter for procedureInitiator.
+     *
+     * @return the procedureInitiator
+     */
+    public String getProcedureInitiator() {
+        return procedureInitiator;
     }
 
     /**
      * Getter for nextStep.
-     * 
+     *
      * @return the nextStep
      */
     public String getNextStep() {
@@ -167,7 +183,7 @@ public class FormFilterContext {
 
     /**
      * Setter for nextStep.
-     * 
+     *
      * @param nextStep the nextStep to set
      */
     public void setNextStep(String nextStep) {
