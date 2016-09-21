@@ -55,6 +55,7 @@ public class RemotePublishedDocumentDAO implements IDAO<JSONObject, RemotePublis
         
         publishedDocDTO.setNxUrl(jsonObject.getString("url"));
         publishedDocDTO.setSectionTitle(jsonObject.getString("sectionTitle"));
+        publishedDocDTO.setVersionLabel(jsonObject.getString("versionLabel"));
         
         return publishedDocDTO;
     }

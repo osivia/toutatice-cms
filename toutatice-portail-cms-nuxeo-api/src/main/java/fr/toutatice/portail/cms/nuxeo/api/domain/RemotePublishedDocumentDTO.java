@@ -35,6 +35,8 @@ public class RemotePublishedDocumentDTO {
     private String nxUrl;
     /** Name of publication section. */
     private String sectionTitle;
+    /** Version of remote published document. */
+    private String versionLabel;
     
     /**
      * @return the nxUrl
@@ -79,6 +81,20 @@ public class RemotePublishedDocumentDTO {
      */
     public void setSectionTitle(String sectionTitle) {
         this.sectionTitle = sectionTitle;
+    }
+
+    /**
+     * @return the versionLabel
+     */
+    public String getVersionLabel() {
+        return versionLabel;
+    }
+    
+    /**
+     * @param versionLabel the versionLabel to set
+     */
+    public void setVersionLabel(String versionLabel) {
+        this.versionLabel = versionLabel;
     }
 
 }
