@@ -407,9 +407,10 @@ public class FormsServiceImpl implements IFormsService {
 
         // Functions
         try {
-            context.setFunction("user", "name", TransformationFunctions.getUserNameMethod());
+            context.setFunction("user", "name", TransformationFunctions.getUserDisplayNameMethod());
             context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("user", "email", TransformationFunctions.getUserEmailMethod());
+            context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);

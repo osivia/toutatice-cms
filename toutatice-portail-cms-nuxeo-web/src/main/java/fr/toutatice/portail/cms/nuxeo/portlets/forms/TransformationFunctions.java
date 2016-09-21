@@ -84,7 +84,7 @@ public class TransformationFunctions {
      * @throws NoSuchMethodException
      * @throws SecurityException
      */
-    public static Method getUserNameMethod() throws NoSuchMethodException, SecurityException {
+    public static Method getUserDisplayNameMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getUserDisplayName", String.class);
     }
 
@@ -176,6 +176,39 @@ public class TransformationFunctions {
      */
     public static Method getUserEmailMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getUserEmail", String.class);
+    }
+
+
+    /**
+     * Get document title.
+     * 
+     * @param path document path
+     * @return title
+     */
+    public static String getDocumentTitle(String path) {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+
+        // Nuxeo document context
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        // Nuxeo document
+        Document document = documentContext.getDoc();
+
+        return document.getTitle();
+    }
+
+
+    /**
+     * Get document:title method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getDocumentTitleMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getDocumentTitle", String.class);
     }
 
 
