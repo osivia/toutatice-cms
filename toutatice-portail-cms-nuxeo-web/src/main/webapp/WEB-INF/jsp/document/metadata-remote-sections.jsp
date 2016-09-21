@@ -21,12 +21,18 @@
 		
 			<c:if test="${isInLiveSpace}">
 				<dt><op:translate key="DOCUMENT_REMOTE_SECTIONS" /></dt>
-				<c:forEach items="${publishedDocuments}" var="publishedDocument">
-					<c:set var="publishedDocumentURL"><ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" /></c:set>
-					<dd>
-						<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
-					</dd>
-				</c:forEach>
+				<dd>
+				    <ul class="list-unstyled">
+				    <c:forEach items="${publishedDocuments}" var="publishedDocument">
+						<li>
+							<c:set var="publishedDocumentURL"><ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" /></c:set>
+							<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
+									
+							<span class="label label-info"><op:translate key="DOCUMENT_REMOTE_VERSION_PREFIX" />${publishedDocument.versionLabel}</span>
+						</li>
+					</c:forEach>
+					</ul>
+				</dd>
 			</c:if>
 			
         </c:if>

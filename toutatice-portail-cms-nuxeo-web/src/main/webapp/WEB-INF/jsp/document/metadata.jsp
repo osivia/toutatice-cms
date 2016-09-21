@@ -5,6 +5,7 @@
 
 <%@ page isELIgnored="false"%>
 
+<c:set var="doc" value="${document}" scope="request" />
 
 <c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
 <c:set var="author" value="${document.properties['dc:creator']}" />
@@ -36,19 +37,18 @@
                 </c:if>
                 
                 <div class="media-body">
-                    <!-- Author -->
-                    <p>
-                        <strong><op:translate key="AUTHOR" /></strong>
-                        <span> : </span>
-                        <ttc:user name="${author}"/>
-                    </p>
+                    <dl class="dl-horizontal">
+                        <!-- Author -->
+                        <dt><op:translate key="AUTHOR" /></dt>
+                        <dd><ttc:user name="${author}"/></dd>
                     
-                    <!-- Publication date -->
-                    <p>
-                        <strong><op:translate key="DOCUMENT_PUBLICATION_DATE" /></strong>
-                        <span> : </span>
-                        <span><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></span>
-                    </p>
+                        <!-- Publication date -->
+                        <dt><op:translate key="DOCUMENT_PUBLICATION_DATE" /></dt>
+                        <dd><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></dd>
+                    
+                        <!-- Remote publication spaces -->
+                        <jsp:include page="metadata-remote-sections.jsp" />
+                    </dl>
                 </div>
             </div>
         </div>
