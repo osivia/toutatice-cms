@@ -179,7 +179,7 @@ public class FormsServiceImplTest {
         expression = "user = ${user:name(user)}";
         variables.put("user", USER_ID);
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);
-        Assert.assertTrue(StringUtils.contains(transformedExpression, "<span>" + USER_DISPLAY_NAME + "</span>"));
+        Assert.assertEquals(transformedExpression, "user = " + USER_DISPLAY_NAME);
 
         // #7 : user:link function
         expression = "user = ${user:link(user)}";

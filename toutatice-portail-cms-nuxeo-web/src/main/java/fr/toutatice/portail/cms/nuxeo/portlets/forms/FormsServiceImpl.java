@@ -9,9 +9,6 @@ import java.util.Map.Entry;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -35,6 +32,8 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -88,7 +87,8 @@ public class FormsServiceImpl implements IFormsService {
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Model
-        String modelPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
+        String webId = FORMS_WEB_ID_PREFIX + modelId;
+        String modelPath = NuxeoController.webIdToFetchPath(webId);
         Document model = this.getModel(portalControllerContext, modelPath);
         
         String initiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
@@ -127,7 +127,7 @@ public class FormsServiceImpl implements IFormsService {
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:procedureModelWebId", webId);
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
         // Nuxeo command
@@ -162,7 +162,8 @@ public class FormsServiceImpl implements IFormsService {
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
 
         // Model document
-        String modelPath = instanceProperties.getString("pi:procedureModelPath");
+        String webId = instanceProperties.getString("pi:procedureModelWebId");
+        String modelPath = NuxeoController.webIdToFetchPath(webId);
         Document model = this.getModel(portalControllerContext, modelPath);
 
         // Initiator
@@ -214,7 +215,7 @@ public class FormsServiceImpl implements IFormsService {
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelPath", model.getPath());
+        properties.put("pi:procedureModelWebId", webId);
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
@@ -408,6 +409,7 @@ public class FormsServiceImpl implements IFormsService {
         try {
             context.setFunction("user", "name", TransformationFunctions.getUserNameMethod());
             context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+            context.setFunction("user", "email", TransformationFunctions.getUserEmailMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);

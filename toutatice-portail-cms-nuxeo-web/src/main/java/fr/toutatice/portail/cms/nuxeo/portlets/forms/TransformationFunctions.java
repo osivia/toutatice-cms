@@ -27,12 +27,8 @@ import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
  */
 public class TransformationFunctions {
 
-    /** Singleton instance. */
-    private static TransformationFunctions instance;
-
-
     /** Portal URL factory. */
-    private final IPortalUrlFactory portalUrlFactory;
+    private static IPortalUrlFactory portalUrlFactory;
 
 
     /**
@@ -40,22 +36,6 @@ public class TransformationFunctions {
      */
     private TransformationFunctions() {
         super();
-
-        // Portal URL factory
-        this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
-    }
-
-
-    /**
-     * Get singleton instance.
-     * 
-     * @return instance
-     */
-    private static TransformationFunctions getInstance() {
-        if (instance == null) {
-            instance = new TransformationFunctions();
-        }
-        return instance;
     }
 
 
@@ -65,8 +45,10 @@ public class TransformationFunctions {
      * @return portal URL factory
      */
     private static IPortalUrlFactory getPortalUrlFactory() {
-        TransformationFunctions instance = getInstance();
-        return instance.portalUrlFactory;
+        if (portalUrlFactory == null) {
+            portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
+        }
+        return portalUrlFactory;
     }
 
 
@@ -83,19 +65,15 @@ public class TransformationFunctions {
         // Person
         Person person = personService.getPerson(user);
 
-        // DOM4J element
-        Element element;
-
+        // Display name
+        String displayName;
         if (person == null) {
-            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user);
+            displayName = user;
         } else {
-            // Display name
-            String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
-
-            element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, displayName);
+            displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
         }
 
-        return DOM4JUtils.write(element);
+        return displayName;
     }
 
 
@@ -160,6 +138,44 @@ public class TransformationFunctions {
      */
     public static Method getUserLinkMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getUserLink", String.class);
+    }
+
+
+    /**
+     * Get user email.
+     * 
+     * @param user user identifier
+     * @return email
+     */
+    public static String getUserEmail(String user) {
+        // Person service
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
+
+        // Person
+        Person person = personService.getPerson(user);
+
+        // Email
+        String email;
+
+        if (person == null) {
+            email = null;
+        } else {
+            email = person.getMail();
+        }
+
+        return email;
+    }
+
+
+    /**
+     * Get user:email method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getUserEmailMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getUserEmail", String.class);
     }
 
 

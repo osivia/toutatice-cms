@@ -2351,6 +2351,9 @@ public class CMSService implements ICMSService {
         Document spaceDocument = (Document) spaceCmsItem.getNativeItem();
         String shortname = spaceDocument.getString("webc:url");
 
+        // WebId prefix
+        String webIdPrefix = ITaskbarService.WEBID_PREFIX + shortname + "_";
+
         // CMS items
         List<CMSItem> cmsItems;
         if (navigation) {
@@ -2381,7 +2384,7 @@ public class CMSService implements ICMSService {
             TaskbarItem taskbarItem = null;
             for (TaskbarItem item : taskbarItems.getAll()) {
                 if (TaskbarItemType.STAPLED.equals(item.getType()) || document.getType().equals(item.getDocumentType())) {
-                    String expectedWebId = shortname + "_" + StringUtils.lowerCase(item.getId());
+                    String expectedWebId = webIdPrefix + StringUtils.lowerCase(item.getId());
                     if (expectedWebId.equals(webId)) {
                         taskbarItem = item;
                         break;
