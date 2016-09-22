@@ -49,6 +49,9 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.notifications.Notifications;
+import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.TaskbarTask;
@@ -130,6 +133,7 @@ public class CMSService implements ICMSService {
 
     /** Logger. */
     protected static final Log logger = LogFactory.getLog(CMSService.class);
+
     /** Slash separator. */
     private static final String SLASH = "/";
 
@@ -179,11 +183,23 @@ public class CMSService implements ICMSService {
         // Domain ID & web ID
         String domainId = doc.getString("ttc:domainID");
         String webId = doc.getString("ttc:webid");
-        
+
         // For selectors saved in the doc
         if(doc.getString("ttc:selectors") != null) {
-        	properties.put("selectors", doc.getString("ttc:selectors"));
+            try {
+                PageParametersEncoder.decodeProperties(doc.getString("ttc:selectors"));
+                properties.put("selectors", doc.getString("ttc:selectors"));
+            } catch (Throwable t) {
+                // si les ttc:selectors du documents sont invalides, on ne les ajoutes pas aux selectors de la page
+                final String warnMsgselectors = getCustomizer().getBundleFactory().getBundle(cmsCtx.getRequest().getLocale())
+                        .getString("WARN_MSG_TTC_SELECTORS");
+                Notifications selectorsNotification = new Notifications(NotificationsType.WARNING);
+                selectorsNotification.addMessage(warnMsgselectors);
+                getCustomizer().getNotificationsService().addNotifications(new PortalControllerContext(cmsCtx.getControllerContext()), selectorsNotification);
+                logger.warn(warnMsgselectors, t);
+            }
         }
+
 
         // CMS item
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
@@ -1937,8 +1953,8 @@ public class CMSService implements ICMSService {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
-            
-            if (command == EcmViews.editPage || command == EcmViews.editDocument) {
+
+            if ((command == EcmViews.editPage) || (command == EcmViews.editDocument)) {
                 // If in web mode, we pass portal web URL to to editPage
                 Portal portal = PortalObjectUtils.getPortal(ControllerContextAdapter.getControllerContext(portalControllerContext));
                 if (PortalObjectUtils.isSpaceSite(portal)) {
