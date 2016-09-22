@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -49,8 +50,6 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
-import org.osivia.portal.api.notifications.Notifications;
-import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
@@ -190,12 +189,8 @@ public class CMSService implements ICMSService {
                 PageParametersEncoder.decodeProperties(doc.getString("ttc:selectors"));
                 properties.put("selectors", doc.getString("ttc:selectors"));
             } catch (Throwable t) {
-                // si les ttc:selectors du documents sont invalides, on ne les ajoutes pas aux selectors de la page
-                final String warnMsgselectors = getCustomizer().getBundleFactory().getBundle(cmsCtx.getRequest().getLocale())
-                        .getString("WARN_MSG_TTC_SELECTORS");
-                Notifications selectorsNotification = new Notifications(NotificationsType.WARNING);
-                selectorsNotification.addMessage(warnMsgselectors);
-                getCustomizer().getNotificationsService().addNotifications(new PortalControllerContext(cmsCtx.getControllerContext()), selectorsNotification);
+                final Locale locale = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getLocale();
+                final String warnMsgselectors = getCustomizer().getBundleFactory().getBundle(locale).getString("WARN_MSG_TTC_SELECTORS");
                 logger.warn(warnMsgselectors, t);
             }
         }
