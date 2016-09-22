@@ -25,6 +25,7 @@ import de.odysseus.el.ExpressionFactoryImpl;
 import de.odysseus.el.util.SimpleContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
@@ -90,7 +91,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Model
         String fetchPath = NuxeoController.webIdToFetchPath(FORMS_WEB_ID_PREFIX + modelId);
-        Document model = nuxeoController.fetchDocument(fetchPath);
+        Document model = getModel(portalControllerContext, fetchPath);
 
         String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
@@ -194,7 +195,7 @@ public class FormsServiceImpl implements IFormsService {
         // Model document
         String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
         String fetchPath = NuxeoController.webIdToFetchPath(modelWebId);
-        Document model = nuxeoController.fetchDocument(fetchPath);
+        Document model = getModel(portalControllerContext, fetchPath);
 
         // Procedure initiator
         String procedureInitiator = instanceProperties.getString("pi:procedureInitiator");
@@ -327,6 +328,23 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         parentExecutor.executeChildren(filterContext);
         return filterContext;
+    }
+
+    /**
+     * Get model document.
+     *
+     * @param portalControllerContext portal controller context
+     * @param path model path
+     * @return document
+     */
+    private Document getModel(PortalControllerContext portalControllerContext, String path) {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+
+        // Document context
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+
+        return documentContext.getDoc();
     }
 
 
