@@ -19,6 +19,10 @@ import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.api.easymock.annotation.Mock;
 import org.powermock.api.extension.listener.AnnotationEnabler;
@@ -81,6 +85,7 @@ public class FormsServiceImplTest {
      * 
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
         // Document
@@ -95,12 +100,25 @@ public class FormsServiceImplTest {
         NuxeoController nuxeoController = EasyMock.createMock(NuxeoController.class);
         EasyMock.expect(nuxeoController.getDocumentContext(DOCUMENT_PATH)).andStubReturn(documentContext);
         PowerMock.expectNew(NuxeoController.class, this.portalControllerContext).andStubReturn(nuxeoController);
-        
+
+        // CMS item
+        CMSItem cmsItem = EasyMock.createMock(CMSItem.class);
+        EasyMock.expect(cmsItem.getNativeItem()).andStubReturn(document);
+
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = EasyMock.createMock(DefaultCMSCustomizer.class);
 
-        // Forms service
-        this.formsService = new FormsServiceImpl(cmsCustomizer);
+        // CMS context
+        CMSServiceCtx cmsContext = EasyMock.createMock(CMSServiceCtx.class);
+        cmsContext.setPortalControllerContext(portalControllerContext);
+        EasyMock.expectLastCall();
+        cmsContext.setScope(EasyMock.anyObject(String.class));
+        EasyMock.expectLastCall();
+        PowerMock.expectNew(CMSServiceCtx.class).andStubReturn(cmsContext);
+        
+        // CMS service
+        ICMSService cmsService = EasyMock.createMock(ICMSService.class);
+        EasyMock.expect(cmsService.getContent(cmsContext, DOCUMENT_PATH)).andStubReturn(cmsItem);
 
         // Empty person
         Person emptyPerson = EasyMock.createNiceMock(Person.class);
@@ -132,12 +150,28 @@ public class FormsServiceImplTest {
         IPortalUrlFactory portalUrlFactory = EasyMock.createMock(IPortalUrlFactory.class);
         EasyMock.expect(portalUrlFactory.getCMSUrl(portalControllerContext, null, DOCUMENT_PATH, null, null, null, null, null, null, null))
                 .andReturn(DOCUMENT_URL).anyTimes();
+        EasyMock.expect(portalUrlFactory.getStartPortletInNewPage(EasyMock.anyObject(PortalControllerContext.class), EasyMock.anyObject(String.class),
+                EasyMock.anyObject(String.class), EasyMock.anyObject(String.class), EasyMock.anyObject(Map.class), EasyMock.anyObject(Map.class)))
+                .andReturn(USER_PROFILE_URL).anyTimes();
+
+        // CMS service locator
+        ICMSServiceLocator cmsServiceLocator = EasyMock.createMock(ICMSServiceLocator.class);
+        EasyMock.expect(cmsServiceLocator.getCMSService()).andStubReturn(cmsService);
 
         // Locator
         PowerMock.mockStatic(Locator.class);
         EasyMock.expect(Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME)).andStubReturn(portalUrlFactory);
+        EasyMock.expect(Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME)).andStubReturn(cmsServiceLocator);
 
-        PowerMock.replayAll(document, documentContext, nuxeoController, cmsCustomizer, emptyPerson, person, personService, tagService, portalUrlFactory);
+
+        // Replay
+        PowerMock.replayAll(document, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, emptyPerson, person, personService,
+                tagService,
+                portalUrlFactory, cmsServiceLocator);
+
+
+        // Forms service
+        this.formsService = new FormsServiceImpl(cmsCustomizer);
     }
 
 

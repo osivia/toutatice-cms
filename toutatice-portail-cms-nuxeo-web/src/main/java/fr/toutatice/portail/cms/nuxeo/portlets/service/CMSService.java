@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.server.UserInterceptor;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
@@ -2763,15 +2765,17 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public void updateTask(CMSServiceCtx cmsContext, String path, String actionId, Map<String, String> variables) throws CMSException {
+    public void updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
         // User
-        String user = cmsContext.getServletRequest().getRemoteUser();
+        String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
 
         if (StringUtils.isNotEmpty(user)) {
             // Nuxeo command
-            INuxeoCommand command = new GetTasksCommand(user, path);
+            INuxeoCommand command = new GetTasksCommand(user, uuid);
 
             try {
                 // Documents
