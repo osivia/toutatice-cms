@@ -1,21 +1,28 @@
+/* Constants
+ * // FIXME: calculate prevMarginBottom
+ */
+var prevMarginBottom = 20;
+var previewMinHPercent = 0.77;
+
 function customPreviewContent(preview){
-	var $body = $JQry(preview.contentWindow.document.body); 						console.log("$body: " + $body);
+	var $body = $JQry(preview.contentWindow.document.body); 						
 	$body.attr("style", "background-color: #f5f5f5");
-	var $pages = $JQry(preview.contentWindow.document.body).find("div").first();	
-	var $styleValue = $pages.attr("style");
-	$pages.attr("style", $styleValue + " margin: 0 auto;");
+	var $pages = $JQry(preview.contentWindow.document.body).find("div");	
+	$pages.each(function(){
+		var $styleValue = $JQry(this).attr("style");
+		$JQry(this).attr("style", $styleValue + " margin: 0 auto;");
+	});
 }
 
 function adaptPreviewToContent (preview){
 	var $firstPage = $JQry(preview.contentWindow.document.body).find("div").first();
-	var pageH = $firstPage.height();          console.log("pageH: " + pageH);       
+	var pageH = $firstPage.height();                
 	$JQry(preview).height(pageH);
 }
 
 function resizePreview(){
 	var $preview = $JQry(".file iframe.embed-preview"); 
 	var preview = $preview.get(0); 
-	var prevMarginBottom = 25;
 	
 	var winH = window.innerHeight;                 
 	var prevTop = $preview.offset().top;     		
@@ -24,12 +31,10 @@ function resizePreview(){
 	var $firstPage = $JQry(preview.contentWindow.document.body).find("div").first();
 	var firstPageH = $firstPage.height();
 	
-	var prevTopPosition = prevTop - scrollTop;    console.log("prevTopPosition: " + prevTopPosition);
+	var prevTopPosition = prevTop - scrollTop;    
 	var firstPageBottom = prevTopPosition + firstPageH; 
-	var prevVisiblePart = winH;      
-	if(prevTop > 0){
-		prevVisiblePart = winH - prevTopPosition;
-	}       console.log("prevVisiblePart: " + prevVisiblePart);   
+	var previewMinH = 700;
+	var prevVisiblePart = previewMinHPercent*winH;     
 	
 	if(scrollTop < firstPageBottom){  	 
 		$preview.height(prevVisiblePart - prevMarginBottom);
@@ -48,4 +53,3 @@ function adaptPreview(){
 
 window.onload = adaptPreview;
 window.onresize = resizePreview;
-window.onscroll = resizePreview;
