@@ -65,6 +65,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
@@ -77,6 +78,7 @@ import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -85,6 +87,7 @@ import org.osivia.portal.api.taskbar.TaskbarItem;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSException;
@@ -100,6 +103,7 @@ import org.osivia.portal.core.web.IWebUrlService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
@@ -126,6 +130,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
@@ -133,6 +138,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.service.commands.DeleteDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
@@ -983,8 +989,75 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         	publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
         	extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
         }
-
+        // FIXME: For Cédric: to move as Window decorator.
+        this.addDefaultNotification(ctx, publicationInfos, extendedDocumentInfos);
+        
         this.getMenuBarFormater().formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
+    }
+    
+    /**
+     * Add default Notifications for Draft cases.
+     * 
+     * @param ctx
+     * @param docInfos
+     * @param extDocInfos
+     * @throws PortalException 
+     * @throws CMSException 
+     * @throws IllegalStateException 
+     */
+    protected void addDefaultNotification(CMSServiceCtx ctx, CMSPublicationInfos docInfos, CMSExtendedDocumentInfos extDocInfos) throws PortalException, IllegalStateException, CMSException{
+        Document doc = (Document) ctx.getDoc();
+        if(doc != null && ContextualizationHelper.isCurrentDocContextualized(ctx)){
+            PortalControllerContext pcc = new PortalControllerContext(ctx.getControllerContext());
+            Locale locale = ctx.getControllerContext().getServerInvocation().getRequest().getLocale();
+            
+            if(DocumentHelper.isLeaf(doc)){
+                if(docInfos.isDraft()) {
+                    addSimpleNotification(pcc, locale, "CURRENT_DOC_IS_DRAFT", NotificationsType.INFO);
+                } else if(docInfos.hasDraft()){ 
+                    String cmsDraftUrl = this.portalUrlFactory.getCMSUrl(pcc, null, docInfos.getDraftPath(), null, null, IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, "1", null);
+                    Object[] args = {cmsDraftUrl};
+                    addSimpleNotification(pcc, locale, "CURRENT_DOC_HAS_DRAFT", NotificationsType.INFO, args);
+                }
+            } else {
+                if(extDocInfos.hasDrafts()){
+                    Map<String, String> windowProperties = new HashMap<String, String>(1);
+                    windowProperties.put("osivia.drafts.folderWebId", DocumentHelper.getWebId(doc));
+                    
+                    String draftsListURL = this.portalUrlFactory.getStartPortletUrl(pcc, "toutatice-portail-cms-nuxeo-viewDraftsListPortletInstance", windowProperties, PortalUrlType.POPUP);
+                    
+                    final String typeName = StringUtils.upperCase(StringUtils.upperCase(doc.getType()));
+                    final String displayName = this.internationalizationService.getString(typeName, locale);
+                    Object[] args = {displayName, draftsListURL};
+                    
+                    addSimpleNotification(pcc, locale, "INFO_MESSAGE_DRAFTS_IN", NotificationsType.INFO, args);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Adds a notification.
+     * 
+     * @param pcc
+     * @param message
+     * @param type
+     */
+    private void addSimpleNotification(PortalControllerContext pcc, Locale locale, String message, NotificationsType type){
+        addSimpleNotification(pcc, locale, message, type, new Object[0]);
+    }
+    
+    /**
+     * Adds a notification.
+     * 
+     * @param pcc
+     * @param message
+     * @param type
+     * @param args
+     */
+    private void addSimpleNotification(PortalControllerContext pcc, Locale locale, String message, NotificationsType type, Object... args){
+        String msg = this.internationalizationService.getString(message, locale, args);
+        getNotificationsService().addSimpleNotification(pcc, msg, type);
     }
 
 
@@ -1847,6 +1920,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 		commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.getNotificationsService(), this.getInternationalizationService()));
 
         commands.put(EcmCommonCommands.eraseModifications.name(), new EraseModificationsCommand(this.getNotificationsService(), this.getInternationalizationService()));
+        
+        commands.put(EcmCommonCommands.deleteDocument.name(), new DeleteDocumentCommand(this.getNotificationsService(), this.getInternationalizationService()));
 
 		return commands;
 	}

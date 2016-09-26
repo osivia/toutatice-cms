@@ -51,8 +51,12 @@ import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.ecm.IEcmCommandervice;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
+import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -109,6 +113,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
@@ -123,6 +128,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.list.draft.ViewDraftsListPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
@@ -157,11 +164,16 @@ public class CMSService implements ICMSService {
     private ICacheService serviceCache;
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
+
+    private final INotificationsService notifsService;
+    private final IInternationalizationService internationalizationService;
     
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
     /** Forms service. */
     private final IFormsService formsService;
+    /** Command service. */
+    private final IEcmCommandervice ecmCmdService;
 
 
     /**
@@ -173,10 +185,12 @@ public class CMSService implements ICMSService {
         super();
         this.portletCtx = portletCtx;
 
-        // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-        // Forms service
+        this.notifsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+        this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
         this.formsService = NuxeoServiceFactory.getFormsService();
+        this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
+        
     }
 
 
@@ -1916,9 +1930,6 @@ public class CMSService implements ICMSService {
             url = uri.toString() + "/nxpath/default" + path + "@toutatice_create?";
         } else if (command == EcmViews.editDocument) {
         	url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
-        	
-        	// TODO LBI réserver un doc
-            //url = uri.toString() + "/nxpath/default" + path + "@osivia_checkin?";
         } else if (command == EcmViews.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmViews.createFgtInRegion) {
@@ -2301,14 +2312,13 @@ public class CMSService implements ICMSService {
         try {
 
         	this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
-
-
-            // On force le rechargement du cache de la page
+        	
+        	// On force le rechargement du cache de la page
+        	String refreshCmsPath = command.getStrategy().getRedirectionPathPath();
             cmsCtx.setDisplayLiveVersion("0");
             cmsCtx.setForceReload(true);
-            this.getContent(cmsCtx, cmsPath);
+            this.getContent(cmsCtx, refreshCmsPath);
             cmsCtx.setForceReload(false);
-
 
         } catch (Exception e) {
             throw new CMSException(e);
@@ -2534,22 +2544,14 @@ public class CMSService implements ICMSService {
         PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
-
         // Document
         Document document = (Document) cmsContext.getDoc();
-        // TODO [LBI] Réserver un document à déplacer
-//        CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, document.getPath());
-//        if(publicationInfos.getDraftContentPath() != null) {
-//        	
-//        	PortalControllerContext pcc = new PortalControllerContext(cmsContext.getControllerContext());
-//        	
-//        	String msg = internationalizationService.getString("CURRENT_DOC_IS_DRAFT", cmsContext.getServerInvocation().getRequest().getLocale());
-//        	
-//        	notifsService.addSimpleNotification(pcc, msg, NotificationsType.INFO);
-//        	
-//        	return publicationInfos.getDraftContentPath();
-//        }
-//        
+        
+        // Draft case
+        CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, document.getPath());
+        if(publicationInfos.isDraft()) {
+        	return publicationInfos.getDraftContextualizationPath();
+        }
         
         // Adapted navigation path
         String navigationPath = null;

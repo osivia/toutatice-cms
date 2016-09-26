@@ -99,7 +99,7 @@ public class ViewListPortlet extends ViewList {
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/list/admin.jsp";
     /** View JSP path. */
-    private static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
+    protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;

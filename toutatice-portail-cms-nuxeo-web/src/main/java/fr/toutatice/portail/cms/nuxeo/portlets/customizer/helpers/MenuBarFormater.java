@@ -18,9 +18,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
+import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -40,10 +41,14 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommonCommands;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.html.AccessibilityRoles;
@@ -65,13 +70,16 @@ import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemTypeComparator;
+import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
@@ -519,171 +527,209 @@ public class MenuBarFormater {
         final DocumentType documentType = managedTypes.get(document.getType());
 
         if ((documentType != null) && documentType.isSupportsPortalForms()) {
-            if (pubInfos.isEditableByUser() && !pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                // Edition state
-                EditionState editionState;
-
-                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
-                if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
-                    // Current modification indicator
-                    final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
-                    modificationIndicator.setGlyphicon("halflings halflings-asterisk");
-                    modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
-                    modificationIndicator.setState(true);
-                    menubar.add(modificationIndicator);
-                }
-
-                if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
-                    editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
-
-                    // Live version indicator menubar item
-                    final MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12,
-                            "label label-info");
-                    liveIndicator.setGlyphicon("halflings halflings-pencil visible-xs-inline-block");
-                    liveIndicator.setState(true);
-
-                    menubar.add(liveIndicator);
-
-
-                    if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
-                        // Online workflow pending indicator menubar item
-                        final MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"), MenubarGroup.CMS,
-                                -11, "label label-warning");
-                        pendingIndicator.setGlyphicon("glyphicons glyphicons-history");
-                        pendingIndicator.setState(true);
-
-                        menubar.add(pendingIndicator);
+            if (pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                // Publish Spaces
+                if(!pubInfos.isLiveSpace()){
+                    // Edition state
+                    EditionState editionState;
+    
+                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+    
+                    if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                        // Current modification indicator
+                        final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
+                        modificationIndicator.setGlyphicon("halflings halflings-asterisk");
+                        modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
+                        modificationIndicator.setState(true);
+                        menubar.add(modificationIndicator);
                     }
-                } else {
-                    editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
-
-                    // Forget old state
-                    this.contributionService.removeWindowEditionState(portalControllerContext);
-                }
-
-                if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
-                    if (extendedInfos.isOnlineTaskPending()) {
-                        if (extendedInfos.canUserValidateOnlineTask()) {
-
-                            if (DocumentConstants.VALIDATE_ONLINE_TASK_NAME.equals(extendedInfos.getTaskName())) {
-                                // Online workflow validation items
-                                this.addValidatePublishingItems(portalControllerContext, cmsContext, pubInfos, menubar, parent, bundle);
-                            } else {
-                                final Map<String, String> requestParameters = new HashMap<String, String>();
-                                final String validateURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.validateRemotePublishing, pubInfos.getDocumentPath(),
-                                        requestParameters);
-                                final MenubarItem validateItem = new MenubarItem("REMOTE_ONLINE_WF_VALIDATE", bundle.getString("REMOTE_ONLINE_WF_VALIDATE"),
-                                        null, parent, 14, validateURL, null, null, null);
-                                validateItem.setAjaxDisabled(true);
-                                menubar.add(validateItem);
-                            }
-
-                        } else if (extendedInfos.isUserOnlineTaskInitiator()) {
-                            // Cancel publishing ask (workflow) item
-                            final String cancelAskPublishURL = this.getContributionService().getCancelPublishingAskContributionURL(portalControllerContext,
-                                    pubInfos.getDocumentPath());
-
-                            final MenubarItem cancelAskPublishItem = new MenubarItem("CANCEL_ASK_PUBLISH", bundle.getString("CANCEL_ASK_PUBLISH"), null,
-                                    MenubarGroup.CMS, 12, cancelAskPublishURL, null, null, null);
-                            cancelAskPublishItem.setAjaxDisabled(true);
-
-                            menubar.add(cancelAskPublishItem);
+    
+                    if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
+                        editionState = new EditionState(EditionState.CONTRIBUTION_MODE_ONLINE, path);
+    
+                        // Live version indicator menubar item
+                        final MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12,
+                                "label label-info");
+                        liveIndicator.setGlyphicon("halflings halflings-pencil visible-xs-inline-block");
+                        liveIndicator.setState(true);
+    
+                        menubar.add(liveIndicator);
+    
+    
+                        if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
+                            // Online workflow pending indicator menubar item
+                            final MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"), MenubarGroup.CMS,
+                                    -11, "label label-warning");
+                            pendingIndicator.setGlyphicon("glyphicons glyphicons-history");
+                            pendingIndicator.setState(true);
+    
+                            menubar.add(pendingIndicator);
                         }
                     } else {
-                        if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
-
-                            if (pubInfos.isPublished()) {
-                                // Erase modifications
-                                String cmsEraseModificationURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, path,
-                                        EcmCommonCommands.eraseModifications);
-                                final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
-                                        "#erase_cms_page", null, null, "fancybox_inline");
-                                eraseItem.setAssociatedHTML(this.generateEraseFancyBox(bundle, cmsEraseModificationURL));
-                                menubar.add(eraseItem);
-                            }
-                            if (pubInfos.isUserCanValidate()) {
-                                // Publish menubar item
-                                final String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext,
-                                        pubInfos.getDocumentPath());
-
-                                final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok", parent,
-                                        12, publishURL, null, null, null);
-                                publishItem.setAjaxDisabled(true);
-                                publishItem.setDivider(true);
-
-                                menubar.add(publishItem);
-                            } else {
-                                // Ask Publication (workflow) item
-                                final String askPublishURL = this.getContributionService().getAskPublishContributionURL(portalControllerContext,
-                                        pubInfos.getDocumentPath());
-
-                                final MenubarItem askPublishItem = new MenubarItem("ASK_PUBLISH", bundle.getString("ASK_PUBLISH"), null, parent, 12,
-                                        askPublishURL, null, null, null);
-                                askPublishItem.setAjaxDisabled(true);
-
-                                menubar.add(askPublishItem);
-                            }
-                        }
+                        editionState = new EditionState(EditionState.CONTRIBUTION_MODE_EDITION, path);
+    
+                        // Forget old state
+                        this.contributionService.removeWindowEditionState(portalControllerContext);
                     }
-
-                    // Go to proxy menubar item
-                    if (pubInfos.isPublished()) {
-                        final String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
-
-                        final MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), "halflings halflings-eye-close",
-                                parent, 1, proxyURL, null, null, null);
-                        proxyItem.setAjaxDisabled(true);
-
-                        menubar.add(proxyItem);
-                    }
-                } else {
-                    if (pubInfos.isUserCanValidate()) {
-                        // user can not unpublish root documents like portalsite, blogsite, website, ...
-                        final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
-                        unpublishItem.setAjaxDisabled(true);
-                        unpublishItem.setDivider(true);
-
-                        if ((documentType == null) || !documentType.isRootType()) {
-                            // Unpublish menubar item
-                            final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
-                                    pubInfos.getDocumentPath());
-
-                            unpublishItem.setUrl(unpublishURL);
+    
+                    if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
+                        if (extendedInfos.isOnlineTaskPending()) {
+                            if (extendedInfos.canUserValidateOnlineTask()) {
+    
+                                if (DocumentConstants.VALIDATE_ONLINE_TASK_NAME.equals(extendedInfos.getTaskName())) {
+                                    // Online workflow validation items
+                                    this.addValidatePublishingItems(portalControllerContext, cmsContext, pubInfos, menubar, parent, bundle);
+                                } else {
+                                    final Map<String, String> requestParameters = new HashMap<String, String>();
+                                    final String validateURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.validateRemotePublishing, pubInfos.getDocumentPath(),
+                                            requestParameters);
+                                    final MenubarItem validateItem = new MenubarItem("REMOTE_ONLINE_WF_VALIDATE", bundle.getString("REMOTE_ONLINE_WF_VALIDATE"),
+                                            null, parent, 14, validateURL, null, null, null);
+                                    validateItem.setAjaxDisabled(true);
+                                    menubar.add(validateItem);
+                                }
+    
+                            } else if (extendedInfos.isUserOnlineTaskInitiator()) {
+                                // Cancel publishing ask (workflow) item
+                                final String cancelAskPublishURL = this.getContributionService().getCancelPublishingAskContributionURL(portalControllerContext,
+                                        pubInfos.getDocumentPath());
+    
+                                final MenubarItem cancelAskPublishItem = new MenubarItem("CANCEL_ASK_PUBLISH", bundle.getString("CANCEL_ASK_PUBLISH"), null,
+                                        MenubarGroup.CMS, 12, cancelAskPublishURL, null, null, null);
+                                cancelAskPublishItem.setAjaxDisabled(true);
+    
+                                menubar.add(cancelAskPublishItem);
+                            }
                         } else {
-                            unpublishItem.setUrl("#");
-                            unpublishItem.setDisabled(true);
-                            unpublishItem.setTooltip(bundle.getString("CANNOT_UNPUBLISH_ROOT"));
+                            if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+    
+                                if (pubInfos.isPublished()) {
+                                    // Erase modifications
+                                    String cmsEraseModificationURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, path,
+                                            EcmCommonCommands.eraseModifications);
+                                    final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
+                                            "#erase_cms_page", null, null, "fancybox_inline");
+                                    eraseItem.setAssociatedHTML(this.generateEraseFancyBox(bundle, cmsEraseModificationURL));
+                                    menubar.add(eraseItem);
+                                }
+                                if (pubInfos.isUserCanValidate()) {
+                                    // Publish menubar item
+                                    final String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext,
+                                            pubInfos.getDocumentPath());
+    
+                                    final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok", parent,
+                                            12, publishURL, null, null, null);
+                                    publishItem.setAjaxDisabled(true);
+                                    publishItem.setDivider(true);
+    
+                                    menubar.add(publishItem);
+                                } else {
+                                    // Ask Publication (workflow) item
+                                    final String askPublishURL = this.getContributionService().getAskPublishContributionURL(portalControllerContext,
+                                            pubInfos.getDocumentPath());
+    
+                                    final MenubarItem askPublishItem = new MenubarItem("ASK_PUBLISH", bundle.getString("ASK_PUBLISH"), null, parent, 12,
+                                            askPublishURL, null, null, null);
+                                    askPublishItem.setAjaxDisabled(true);
+    
+                                    menubar.add(askPublishItem);
+                                }
+                            }
                         }
-
-                        menubar.add(unpublishItem);
-                    }
-
-                    if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-                        // Go to live version
-                        final String liveURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
-                                IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
-
-                        final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent, 1,
-                                liveURL, null, null, null);
-                        liveItem.setAjaxDisabled(true);
-
-                        menubar.add(liveItem);
-
+    
+                        // Go to proxy menubar item
+                        if (pubInfos.isPublished()) {
+                            final String proxyURL = this.getContributionService().getChangeEditionStateUrl(portalControllerContext, editionState);
+    
+                            final MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), "halflings halflings-eye-close",
+                                    parent, 1, proxyURL, null, null, null);
+                            proxyItem.setAjaxDisabled(true);
+    
+                            menubar.add(proxyItem);
+                        }
                     } else {
-                        // Go to preview menubar item
-                        final String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
+                        if (pubInfos.isUserCanValidate()) {
+                            // user can not unpublish root documents like portalsite, blogsite, website, ...
+                            final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
+                            unpublishItem.setAjaxDisabled(true);
+                            unpublishItem.setDivider(true);
+    
+                            if ((documentType == null) || !documentType.isRootType()) {
+                                // Unpublish menubar item
+                                final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
+                                        pubInfos.getDocumentPath());
+    
+                                unpublishItem.setUrl(unpublishURL);
+                            } else {
+                                unpublishItem.setUrl("#");
+                                unpublishItem.setDisabled(true);
+                                unpublishItem.setTooltip(bundle.getString("CANNOT_UNPUBLISH_ROOT"));
+                            }
+    
+                            menubar.add(unpublishItem);
+                        }
+    
+                        if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
+                            // Go to live version
+                            final String liveURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
+                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
+    
+                            final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent, 1,
+                                    liveURL, null, null, null);
+                            liveItem.setAjaxDisabled(true);
+    
+                            menubar.add(liveItem);
+    
+                        } else {
+                            // Go to preview menubar item
+                            final String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
+    
+                            final MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), "halflings halflings-eye-open",
+                                    parent, 1, previewURL, null, null, null);
+                            previewItem.setAjaxDisabled(true);
+    
+                            menubar.add(previewItem);
+                        }
+                    }
+                } else {
+                    // Collaboratives Spaces
+                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    
+                    if (pubInfos.hasDraft()) {
+                        // Go to draft menubar item
+                        String draftURL = this.urlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getDraftPath(), null, null, null, null, null, "1", null);
+                        
+                        final MenubarItem draftItem = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-notes", parent, 1,
+                                draftURL, null, null, null);
+                        draftItem.setAjaxDisabled(true);
+                        
+                        menubar.add(draftItem);
+                        
+                    } else if(pubInfos.isDraft()){
+                        // Draft indicator menubar item
+                        final MenubarItem draftIndicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12,
+                                "label label-info");
+                        draftIndicator.setGlyphicon("glyphicons glyphicons-notes visible-xs-inline-block");
+                        draftIndicator.setState(true);
 
-                        final MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), "halflings halflings-eye-open",
-                                parent, 1, previewURL, null, null, null);
-                        previewItem.setAjaxDisabled(true);
-
-                        menubar.add(previewItem);
+                        menubar.add(draftIndicator);
+                        
+                        // Go to public version
+                        if(pubInfos.isNotOrphanDraft()){
+                            String publicLiveId = DocumentHelper.getDocWebIdHavingDraft(document);
+                            String cmsPublicLiveId = IWebIdService.CMS_PATH_PREFIX.concat("/").concat(publicLiveId);
+                            String publicLiveURL = this.urlFactory.getCMSUrl(portalControllerContext, null, cmsPublicLiveId, null, null, null, null, null, "1", null);
+                            
+                            final MenubarItem publicLiveItem = new MenubarItem("PUBLIC_LIVE_RETURN", bundle.getString("PUBLIC_LIVE_RETURN"), "halflings halflings-eye-open",
+                                    parent, 1, publicLiveURL, null, null, null);
+                            publicLiveItem.setAjaxDisabled(true);
+                            
+                            menubar.add(publicLiveItem);
+                        }
                     }
                 }
-            }
+            } 
         }
-
     }
 
 
@@ -967,7 +1013,7 @@ public class MenuBarFormater {
      */
     private void getLockLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) {
-
+        
         // Current document
         final Document document = (Document) cmsContext.getDoc();
         final String path = document.getPath();
@@ -995,18 +1041,16 @@ public class MenuBarFormater {
                     lockItem.setUrl(url);
                     lockItem.setGlyphicon("glyphicons glyphicons-unlock");
                     lockItem.setTitle(bundle.getString("UNLOCK_ACTION"));
+                    
+                    menubar.add(makeLockedIndicator(cmsContext, bundle, extendedInfos));
 
-                    // Locked indicator menubar item
-                    final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
-                    lockedIndicator.setGlyphicon("halflings halflings-lock");
-                    lockedIndicator.setTooltip(bundle.getString("LOCKED"));
-                    lockedIndicator.setState(true);
-                    menubar.add(lockedIndicator);
                 } else if (lockStatus == LockStatus.locked) {
                     lockItem.setUrl("#");
                     lockItem.setGlyphicon("glyphicons glyphicons-lock");
                     lockItem.setTitle(bundle.getString("INHERITED_LOCK"));
                     lockItem.setDisabled(true);
+                    
+                    menubar.add(makeLockedIndicator(cmsContext, bundle, extendedInfos));
                 }
 
                 menubar.add(lockItem);
@@ -1016,6 +1060,57 @@ public class MenuBarFormater {
             }
         }
 
+    }
+
+
+    /**
+     * Makes MenuBar locked indicator item.
+     * 
+     * @param cmsContext
+     * @param bundle
+     * @param extendedInfos
+     * @param lockedIndicator
+     * 
+     */
+    protected MenubarItem makeLockedIndicator(CMSServiceCtx cmsContext, Bundle bundle, CMSExtendedDocumentInfos extendedInfos) {
+     // Locked indicator menubar item
+        final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
+        lockedIndicator.setGlyphicon("halflings halflings-lock");
+        
+        // Display name of lock owner
+        String displayName = getUserDisplayName(extendedInfos);
+        Object[] args = {displayName};
+        String tooltip = bundle.getString("LOCKED_BY", args);
+        
+        lockedIndicator.setTooltip(tooltip);
+        lockedIndicator.setState(true);
+               
+        String currentUser = cmsContext.getRequest().getRemoteUser();
+        boolean currentUserIsOwner = StringUtils.equals(currentUser, extendedInfos.getLockOwner());
+        if(currentUserIsOwner){
+            lockedIndicator.setGlyphicon("glyphicons glyphicons-user-lock");
+            lockedIndicator.setTooltip(bundle.getString("LOCKED"));
+        }
+        return lockedIndicator;
+    }
+
+
+    /**
+     * Gets current user display name.
+     * 
+     * @param extendedInfos
+     * @return current user display name
+     */
+    protected String getUserDisplayName(CMSExtendedDocumentInfos extendedInfos) {
+        PersonService personService = DirServiceFactory.getService(PersonService.class);
+        Person person = personService.getPerson(extendedInfos.getLockOwner());
+        String displayName;
+        if ((person != null) && StringUtils.isNotBlank(person.getDisplayName())) {
+            displayName = person.getDisplayName();
+        } else {
+            displayName = extendedInfos.getLockOwner();
+        }
+        return displayName;
     }
 
 
@@ -1035,7 +1130,7 @@ public class MenuBarFormater {
 
         if (!DocumentHelper.isFolder(document)) {
 
-            if (pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+            if (pubInfos.isLiveSpace() && !pubInfos.hasDraft() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
                 final Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
                 final String url = StringUtils.EMPTY;
@@ -1112,31 +1207,34 @@ public class MenuBarFormater {
         if (!DocumentHelper.isFolder(document)) {
 
             // DCH: FIXME: state is "ExtendedInfo"...
-            if (pubInfos.isRemotePublishable() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                final String url = "#";
-
-                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-                final MenubarItem remotePubItem = new MenubarItem("REMOTE_PUBLISHING_URL", bundle.getString("REMOTE_PUBLISHING"), null, parent, 14, url, null,
-                        null, null);
-
-                final Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
-
-                if (BooleanUtils.isFalse(isValidationWfRunning)) {
-                    // We can publish remotly
-                    final Map<String, String> requestParameters = new HashMap<String, String>();
-                    final String remotePublishingURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.remotePublishing, pubInfos.getDocumentPath(),
-                            requestParameters);
-
-                    remotePubItem.setUrl(remotePublishingURL);
-                    remotePubItem.setHtmlClasses("fancyframe_refresh");
-                    menubar.add(remotePubItem);
-                } else {
-                    remotePubItem.setDisabled(true);
-                    menubar.add(remotePubItem);
+            // DCH: FIXME: condition for collaboratives sapces?: config
+            boolean isDraftActivated = pubInfos.hasDraft() || pubInfos.isDraft();
+            if(!isDraftActivated){
+                if (pubInfos.isRemotePublishable() && pubInfos.isLiveSpace() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                    final String url = "#";
+    
+                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    final MenubarItem remotePubItem = new MenubarItem("REMOTE_PUBLISHING_URL", bundle.getString("REMOTE_PUBLISHING"), null, parent, 14, url, null,
+                            null, null);
+    
+                    final Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
+    
+                    if (BooleanUtils.isFalse(isValidationWfRunning)) {
+                        // We can publish remotly
+                        final Map<String, String> requestParameters = new HashMap<String, String>();
+                        final String remotePublishingURL = this.cmsService.getEcmUrl(cmsContext, EcmViews.remotePublishing, pubInfos.getDocumentPath(),
+                                requestParameters);
+    
+                        remotePubItem.setUrl(remotePublishingURL);
+                        remotePubItem.setHtmlClasses("fancyframe_refresh");
+                        menubar.add(remotePubItem);
+                    } else {
+                        remotePubItem.setDisabled(true);
+                        menubar.add(remotePubItem);
+                    }
+    
                 }
-
             }
-
         }
 
     }
@@ -1172,7 +1270,11 @@ public class MenuBarFormater {
                     final String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
 
                     final Map<String, String> requestParameters = new HashMap<String, String>();
-                    final String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, pubInfos.getDocumentPath(), requestParameters);
+                    String docPathToEdit = pubInfos.getDocumentPath();
+                    if(pubInfos.hasDraft()){
+                        docPathToEdit = pubInfos.getDraftPath();
+                    }
+                    final String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, docPathToEdit, requestParameters);
 
                     // On click action
                     final StringBuilder onClick = new StringBuilder();
@@ -1186,6 +1288,8 @@ public class MenuBarFormater {
                     if (StringUtils.isNotBlank(pubInfos.getPublishSpacePath())) {
                         if (!pubInfos.isLiveSpace() && !DocumentHelper.isInLiveMode(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                             editLabel = bundle.getString("EDIT_LIVE_VERSION");
+                        } else if (pubInfos.isLiveSpace() && (pubInfos.isDraft() || pubInfos.hasDraft())) {
+                            editLabel = bundle.getString("EDIT_DRAFT");
                         } else {
                             editLabel = bundle.getString("EDIT");
                         }
@@ -1203,6 +1307,8 @@ public class MenuBarFormater {
                     item.setAjaxDisabled(true);
 
                     menubar.add(item);
+                } else if (pubInfos.hasDraft()) {
+
                 }
             }
         }
@@ -1235,7 +1341,7 @@ public class MenuBarFormater {
             authorizedSpace = pubInfos.isLiveSpace();
         }
 
-        if (authorizedSpace && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+        if (authorizedSpace && pubInfos.isEditableByUser() && !pubInfos.isDraft() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // Nuxeo controller
             final NuxeoController nuxeoController = new NuxeoController(portalControllerContext.getRequest(), portalControllerContext.getResponse(),
                     portalControllerContext.getPortletCtx());
@@ -1500,7 +1606,7 @@ public class MenuBarFormater {
      * @param bundle internationalization bundle
      */
     protected void getDeleteLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle) throws CMSException, PortalException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1521,8 +1627,11 @@ public class MenuBarFormater {
                     final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
                     // Menubar item
-                    final MenubarItem item = new MenubarItem("DELETE", bundle.getString("DELETE"), "glyphicons glyphicons-bin", parent, 20, null, null, null,
-                            null);
+                    String itemLabel = bundle.getString("DELETE");
+                    if (pubInfos.isDraft()) {
+                        itemLabel = bundle.getString("DELETE_DRAFT");
+                    }
+                    final MenubarItem item = new MenubarItem("DELETE", itemLabel, "glyphicons glyphicons-bin", parent, 20, null, null, null, null);
                     item.setAjaxDisabled(true);
                     item.setDivider(true);
 
@@ -1540,11 +1649,22 @@ public class MenuBarFormater {
                         final String fancyboxId = cmsContext.getResponse().getNamespace() + "_PORTAL_DELETE";
 
                         // Fancybox delete action URL
-                        final String putInTrashUrl = this.urlFactory.getPutDocumentInTrashUrl(portalControllerContext, pubInfos.getLiveId(),
-                                pubInfos.getDocumentPath());
+                        String removeURL = this.urlFactory.getPutDocumentInTrashUrl(portalControllerContext, pubInfos.getLiveId(), pubInfos.getDocumentPath());
+                        // Draft document is directly deleted
+                        if (pubInfos.isDraft()) {
+                            
+                            String redirectionPath;
+                            if(!pubInfos.isNotOrphanDraft()){
+                                redirectionPath = pubInfos.getDraftContextualizationPath();
+                            } else {
+                                String hasDraftDocWebId = DocumentHelper.getDocWebIdHavingDraft(document);
+                                redirectionPath = IWebIdService.FETCH_PATH_PREFIX.concat(hasDraftDocWebId);
+                            }
+                            removeURL = this.urlFactory.getEcmCommandUrl(portalControllerContext, document.getPath(), EcmCommonCommands.deleteDocument, redirectionPath);
+                        }
 
                         // Fancybox HTML data
-                        final String fancybox = this.generateDeleteConfirmationFancybox(properties, bundle, fancyboxId, putInTrashUrl);
+                        final String fancybox = this.generateDeleteConfirmationFancybox(properties, bundle, fancyboxId, removeURL);
                         item.setAssociatedHTML(fancybox);
 
                         // URL
@@ -1683,6 +1803,11 @@ public class MenuBarFormater {
         final PortletRequest request = cmsContext.getRequest();
 
         if (!WindowState.MAXIMIZED.equals(request.getWindowState())) {
+            return;
+        }
+        
+        // Draft
+        if(pubInfos.isDraft()){
             return;
         }
 
@@ -1861,8 +1986,10 @@ public class MenuBarFormater {
         boolean displayPermalink = false;
 
         if (WindowState.MAXIMIZED.equals(cmsContext.getRequest().getWindowState()) && (cmsContext.getDoc() != null)) {
-            // Maximized document: we don't show permalink for lives of publish spaces.
-            displayPermalink = !DocumentHelper.isLocalPublishLive((Document) cmsContext.getDoc());
+            // Maximized document: we don't show permalink for lives of publish spaces
+            // and Drafts of collaboratives spaces
+            displayPermalink = !DocumentHelper.isLocalPublishLive((Document) cmsContext.getDoc())
+                    && !DocumentHelper.isDraft((Document) cmsContext.getDoc());
         } else {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 displayPermalink = true;

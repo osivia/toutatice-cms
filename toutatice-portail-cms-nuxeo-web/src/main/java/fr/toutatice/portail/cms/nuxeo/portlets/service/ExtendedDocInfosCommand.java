@@ -113,6 +113,10 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
                 	docInfos.setDriveEditURL(infos.get("driveEditURL").toString());
                 }
 
+                /* Drafts infos for Folderish */
+                if(infos.containsKey("hasDrafts")){
+                    docInfos.setHasDrafts(BooleanUtils.toBoolean(infos.get("hasDrafts").toString()));
+                }
 
             }
 

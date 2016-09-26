@@ -547,9 +547,18 @@ function displayControls($browser) {
 					url = $element.attr("href");
 				
 				// Update path
-				url = url.replace("_PATH_", $selected.data("path"));
+				var path = $selected.data("path");
+				
+				// Edition of document having draft
+				var draftPath = $selected.data("draft-path");
+				if(draftPath && $element.hasClass('edit')){
+					path = draftPath;
+				}
+				
+				url = url.replace("_PATH_", path);
 				
 				$element.attr("href", url);
+				
 			});
 
 			
@@ -667,7 +676,7 @@ function updateControlRights($browser) {
 
 			// Break
 			return false;
-		}
+		} 
 	});
 	
 	

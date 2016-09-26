@@ -12,6 +12,7 @@
         </transaction>
         
         <header-content>
+            <script type="text/javascript" src="/js/preview.js" />
             <link rel="stylesheet" href="/css/document.min.css" />
         </header-content>
         
@@ -39,7 +40,24 @@
             </icon>
         </portlet-info>
     </portlet>
+    
 
+    <!-- Drafts List -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewDraftsListPortlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+        
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
+    
 
     <!-- Portal site navigation -->
     <portlet>

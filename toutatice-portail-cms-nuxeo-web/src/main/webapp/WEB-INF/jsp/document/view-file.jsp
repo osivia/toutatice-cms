@@ -13,6 +13,7 @@
 <c:set var="size" value="${document.properties['file:content']['length']}" />
 <c:set var="mimeType" value="${document.properties['file:content']['mime-type']}" />
 
+<c:set var="previewSrc"><ttc:filePreview document='${document}'/></c:set>
 
 <!-- Download menubar item -->
 <ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${url}" target="_blank" glyphicon="glyphicons glyphicons-download-alt" />
@@ -24,12 +25,26 @@
         <p>${description}</p>
     </c:if>
 
-    <p>
-        <!-- Title -->
-        <i class="${document.type.glyph}"></i>
-        <a href="${url}" target="_blank" class="no-ajax-link">${name}</a>
-        
-        <!-- Size -->
-        <span>(<ttc:fileSize size="${size}" />)</span>
-    </p>
+    <div class="row">
+        <div class="col-sm-9">
+		    <!-- Preview -->
+			<div class="embed-preview-container">
+			    <iframe class="embed-preview" src="${previewSrc}"></iframe>
+			</div>
+        </div>
+        <div class="col-sm-3">
+		    <p>
+		        <!-- Title -->
+		        <i class="${document.type.glyph}"></i>
+		        <a href="${url}" target="_blank" class="no-ajax-link">${name}</a>
+		        
+		        <!-- Size -->
+		        <span>(<ttc:fileSize size="${size}" />)</span>
+		     </p> 
+		     <div>
+		        <jsp:include page="metadata.jsp" />
+		     </div>
+        </div>
+     </div>
+    
 </div>

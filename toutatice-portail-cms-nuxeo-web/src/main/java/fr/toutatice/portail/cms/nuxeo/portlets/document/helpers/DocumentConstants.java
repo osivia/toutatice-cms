@@ -28,6 +28,17 @@ public interface DocumentConstants {
     String REMOTE_PROXY_FACET = "isRemoteProxy";
     /** Indicates if document is a live in a publish space. */
     String LOCAL_PUBLISH_LIVE_FACET = "isLocalPublishLive";
+    /** Indicates if document is a draft of collaborative space. */
+    String DRAFT_FACET = "OttcDraft";
+    /** Indicates if document has a draft of collaborative space. */
+    String CHECKINED_FACET = "OttcCheckedIn";
+    
+    /** WebId property key. */
+    String WEBID = "ttc:webid";
+    /** Draft path property key. */
+    String DRAFT_PATH = "ottcChk:draftPath";
+    /** Draft schema. */
+    String DRAFT_SCHEMA = "ottcDraft";
      
     
     /** Approved document state. */
@@ -40,5 +51,9 @@ public interface DocumentConstants {
     
     /** Suffix of local proxies. */
     String LOCAL_PROXIES_SUFFIX = ".proxy";
+    /** Id frefix of drafts. */
+    String DRAFT_WEBID_PREFIX = "draft_";
+    
+    
 
 }

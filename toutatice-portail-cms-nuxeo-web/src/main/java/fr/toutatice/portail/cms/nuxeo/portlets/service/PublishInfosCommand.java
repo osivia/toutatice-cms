@@ -84,20 +84,8 @@ public class PublishInfosCommand implements INuxeoCommand {
                 JSONObject infos = (JSONObject) it.next();
 
                 publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
-
                 
-                if (infos.containsKey("draftPath")) {
-                	publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("draftPath"))));
-                	publiInfos.setDraft(true);
-                }
-                else {
-                	publiInfos.setDocumentPath(decode(adaptType(String.class, infos.get("documentPath"))));
-                }
-                
-                if(infos.containsKey("draftContentPath")) {
-                	publiInfos.setDraftContentPath(decode(adaptType(String.class, infos.get("draftContentPath"))));
-                }
-                
+                publiInfos.setDocumentPath((decode(adaptType(String.class,infos.get("documentPath")))));
                 publiInfos.setLiveId(adaptType(String.class, infos.get("liveId")));
 
                 publiInfos.setEditableByUser(adaptBoolean(infos.get("editableByUser")));
@@ -114,6 +102,16 @@ public class PublishInfosCommand implements INuxeoCommand {
 
                 publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
                 publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
+                
+                if (infos.containsKey("draftPath")) {
+                    publiInfos.setHasDraft(true);
+                    publiInfos.setDraftPath((decode(adaptType(String.class, infos.get("draftPath")))));
+                }
+                if(infos.containsKey("draftContextualizationPath")) {
+                    publiInfos.setDraft(true);
+                    publiInfos.setNotOrphanDraft(adaptBoolean(infos.get("hasCheckinedDoc")));
+                    publiInfos.setDraftContextualizationPath((decode(adaptType(String.class, infos.get("draftContextualizationPath")))));
+                }
 
                 if (infos.containsKey("spaceID")) {
                     publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));

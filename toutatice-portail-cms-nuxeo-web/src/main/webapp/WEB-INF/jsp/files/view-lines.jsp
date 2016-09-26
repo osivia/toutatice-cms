@@ -100,7 +100,13 @@
             
             <div class="col-sm-7 col-md-6 col-lg-5">
                 <div class="row">
-                    <div class="col-xs-9">
+                     <div class="col-xs-1">
+                        <div class="table-cell">
+                            <span>&nbsp;</span>
+                        </div>
+                    </div>
+                
+                    <div class="col-xs-8">
                         <div class="table-cell">
                             <a href="${sortDateURL}">
                                 <span><op:translate key="FILE_BROWSER_LAST_CONTRIBUTION" /></span>
@@ -165,6 +171,20 @@
                         <c:set var="glyph" value="glyphicons glyphicons-file" />
                     </c:otherwise>
                 </c:choose>
+                <!-- Lock glyph -->
+                <c:set var="lockGlyph" value="glyphicons glyphicons-lock" />
+                
+                <!-- Lock -->
+                <c:set var="locked" value="${document.document.locked}" />
+                <c:if test="${locked}">
+                    <c:set var="lockOwner" value="${document.document.lockOwner}" />
+                    <c:set var="lockCreated" value="${document.document.lockCreated}" />
+                    
+                    <c:set var="user" value="${pageContext.request.remoteUser}" />
+                    <c:if test="${user eq lockOwner}">
+                        <c:set var="lockGlyph" value="glyphicons glyphicons-user-lock" />
+                    </c:if>
+                </c:if>
             
                 <!-- Date -->
                 <c:set var="date" value="${document.properties['dc:modified']}" />
@@ -177,7 +197,7 @@
             
             
                 <li>
-                    <div class="data" data-id="${document.id}" data-path="${document.path}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
+                    <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
                         <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
                     >
                         <div
@@ -228,13 +248,29 @@
                                     
                                     <div class="col-sm-7 col-md-6 col-lg-5">
                                         <div class="row">
-                                            <div class="col-xs-9">
+                                                <div class="col-xs-1">
+                                                <!-- Lock -->
+                                                <div class="table-cell text-overflow">
+                                                    <c:choose>
+                                                        <c:when test="${locked}">
+                                                            <i class="${lockGlyph}"></i>
+                                                        </c:when>
+                                                        
+                                                        <c:otherwise>
+                                                            <span>&nbsp;</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                        
+                                            <div class="col-xs-8">
                                                 <!-- Last contribution -->
                                                 <div class="table-cell text-overflow">
                                                     <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
                                                     <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
                                                 </div>
                                             </div>
+                                            
                                             
                                             <div class="col-xs-3">
                                                 <!-- Size -->
@@ -249,7 +285,7 @@
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>
-                                            </div>
+                                                
                                         </div>
                                     </div>
                                 </div>

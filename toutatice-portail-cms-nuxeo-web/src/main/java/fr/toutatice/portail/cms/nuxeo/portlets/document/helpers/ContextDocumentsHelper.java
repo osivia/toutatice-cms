@@ -17,12 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 
 
 /**
- * Utility class for documents, generally issued from CmsServiceContext.
+ * Utility class for documents, generally issued from CmsServiceContext and / or list request.
  * 
  * @author David Chevrier.
  *
@@ -51,6 +52,22 @@ public class ContextDocumentsHelper {
     }
     
     /**
+     * @param document
+     * @return true if document is a draft in live space
+     */
+    public static boolean isDraft(Document document){
+        return getFacets(document).contains(DocumentConstants.DRAFT_FACET);
+    }
+    
+    /**
+     * @param document
+     * @return true if document has a draft in live space
+     */
+    public static boolean hasDraft(Document document){
+        return getFacets(document).contains(DocumentConstants.CHECKINED_FACET);
+    }
+    
+    /**
      * @param document (possibly in context).
      * @return true if document is a remote proxy.
      */
@@ -71,6 +88,15 @@ public class ContextDocumentsHelper {
         }
         
         return facets;
+    }
+    
+    /**
+     * @param document
+     * @param propertyKey
+     * @return value of property with given key.
+     */
+    public static Object getPropertyValue(Document document, String propertyKey){
+        return document.getProperties().get(propertyKey);
     }
     
 }

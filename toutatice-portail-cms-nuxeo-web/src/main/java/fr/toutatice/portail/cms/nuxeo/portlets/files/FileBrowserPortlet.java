@@ -80,6 +80,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 
 /**
@@ -458,6 +459,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
                 for (Document document : documents) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    documentDTO = setDraftInfos(document, documentDTO);
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
                     fileBrowserItem.setIndex(index++);
 
@@ -607,6 +609,21 @@ public class FileBrowserPortlet extends CMSPortlet {
         }
 
         documentDTO.getProperties().put("mimeTypeIcon", icon);
+    }
+    
+    /**
+     * Set draft informations if document has draft.
+     * 
+     * @param publicationInfos
+     * @param document
+     * @return document with modified properies
+     */
+    private DocumentDTO setDraftInfos(Document document, DocumentDTO documentDTO) {
+        if(DocumentHelper.hasDraft(document)){
+            String draftPath = DocumentHelper.getDraftPath(document);
+            documentDTO.getProperties().put("draftPath", draftPath);
+        }
+        return documentDTO;
     }
 
 

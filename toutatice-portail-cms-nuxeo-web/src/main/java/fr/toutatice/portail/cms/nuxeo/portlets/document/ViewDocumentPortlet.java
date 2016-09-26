@@ -28,6 +28,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -36,12 +39,15 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -81,8 +87,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -375,7 +379,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 if (StringUtils.isNotBlank(title)) {
                     response.setTitle(title);
                 }
-
+                
+                // File case: metadata managed in view-file.jsp
+                if(StringUtils.equalsIgnoreCase("File", document.getType())){
+                    request.setAttribute("metadata", false);
+                }
+                
                 if(onlyRemoteSections && maximized){
 
                     // Remote Published documents
@@ -406,6 +415,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                             // Comments
                             this.generateComments(nuxeoController, document, documentDTO);
                         }
+                        
                     }
                 }
             }

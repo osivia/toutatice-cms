@@ -276,6 +276,23 @@
         </attribute>
     </tag>
     
+    <!-- File preview -->
+    <tag>
+        <description>Preview file.</description>
+        <display-name>File preview</display-name>
+        <name>filePreview</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.FilePreviewTag</tag-class>
+        <body-content>empty</body-content>
+
+      <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+      </attribute>
+    </tag>
+    
     
     <!-- Add menubar item -->
     <tag>

@@ -15,6 +15,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document.helpers;
 
 import javax.portlet.PortletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
@@ -36,10 +37,18 @@ public class DocumentHelper {
     private DocumentHelper(){
 
     }
+    
+    /**
+     * @param document
+     * @return true if document is a leaf.
+     */
+    public static boolean isLeaf(Document document){
+        return !isFolder(document);
+    }
 
     /**
      * @param document studied document
-     * @return true if document is a folder
+     * @return true if document is a folder.
      */
     public static boolean isFolder(Document document) {
         return ContextDocumentsHelper.isFolder(document);
@@ -47,19 +56,34 @@ public class DocumentHelper {
     
     /**
      * @param document
-     * @return true if document is a live in a publish space
+     * @return true if document is a live in a publish space.
      */
     public static boolean isLocalPublishLive(Document document){
         return ContextDocumentsHelper.isLocalPublishLive(document);
     }
+    
+    /**
+     * @param document
+     * @return true if document is a draft in live space.
+     */
+    public static boolean isDraft(Document document){
+        return ContextDocumentsHelper.isDraft(document);
+    }
 
+    /**
+     * @param document
+     * @return true if document has a draft in live space.
+     */
+    public static boolean hasDraft(Document document){
+        return ContextDocumentsHelper.hasDraft(document);
+    }
 
     /**
      * Checks if current document is a remote proxy.
      *
      * @param cmsCtx CMS context
      * @param pubInfos CMS publication informations
-     * @return true if current document is a remote proxy
+     * @return true if current document is a remote proxy.
      */
     public static boolean isRemoteProxy(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
         if (cmsCtx.getDoc() == null) {
@@ -103,6 +127,58 @@ public class DocumentHelper {
             }
         }
         return liveMode;
+    }
+    
+    /**
+     * 
+     * @param document
+     * @return name (last segment path) of a document.
+     */
+    public static String getName(Document document){
+        String path = document.getPath();
+        return StringUtils.substringAfterLast(path, "/");
+    }
+    
+    
+    /**
+     * @param document
+     * @return WebId of given document.
+     */
+    public static String getWebId(Document document){
+        String webId = (String) ContextDocumentsHelper.getPropertyValue(document, DocumentConstants.WEBID);
+        return StringUtils.isNotBlank(webId) ? webId : StringUtils.EMPTY;
+    }
+    
+    /**
+     * Getter for document's webid
+     * for corresponding given draft.
+     * 
+     * @param draft
+     * @return WebId of given draft.
+     */
+    public static String getDocWebIdHavingDraft(Document draft){
+        if(DocumentHelper.isDraft(draft)){
+            String webId = getWebId(draft);
+            if(StringUtils.isNotBlank(webId) && StringUtils.contains(webId, DocumentConstants.DRAFT_WEBID_PREFIX)){
+                return StringUtils.remove(webId, DocumentConstants.DRAFT_WEBID_PREFIX);
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+    
+    /**
+     * Getter for path of Draft of a document
+     * (if it has one).
+     * 
+     * @param document
+     * @return draft path of document if it has a draft
+     */
+    public static String getDraftPath(Document document){
+        if(hasDraft(document)){
+            String draftPath = (String) ContextDocumentsHelper.getPropertyValue(document, DocumentConstants.DRAFT_PATH);
+            return StringUtils.isNotBlank(draftPath) ? draftPath : StringUtils.EMPTY;
+        }
+        return StringUtils.EMPTY;
     }
 
     /**

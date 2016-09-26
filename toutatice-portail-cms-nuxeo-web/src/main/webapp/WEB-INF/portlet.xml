@@ -90,6 +90,30 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>           
     </portlet>
+    
+    <portlet>
+        <description>Portlet Nuxeo drafts list</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewDraftsListPortlet</portlet-name>
+        <display-name>Portlet Liste Brouillons Nuxeo</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.list.draft.ViewDraftsListPortlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+        </supports>
+
+        <supported-locale>en</supported-locale>
+        <supported-locale>fr</supported-locale>
+
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Nuxeo Cms Drafts Liste Portlet</short-title>
+            <keywords>Portlet,Nuxeo,CMS, Drafts</keywords>
+        </portlet-info>
+    </portlet>
 
 
     <portlet>
