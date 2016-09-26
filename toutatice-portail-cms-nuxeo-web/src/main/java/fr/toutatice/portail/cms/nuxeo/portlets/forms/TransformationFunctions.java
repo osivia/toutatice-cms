@@ -337,7 +337,11 @@ public class TransformationFunctions {
         if (StringUtils.isEmpty(redirectionPath)) {
             redirectionUrl = null;
         } else {
-            redirectionUrl = portalUrlFactory.getCMSUrl(portalControllerContext, null, redirectionPath, null, null, null, null, null, null, null);
+            try {
+                redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+            } catch (PortalException e) {
+                redirectionUrl = null;
+            }
         }
 
         // URL

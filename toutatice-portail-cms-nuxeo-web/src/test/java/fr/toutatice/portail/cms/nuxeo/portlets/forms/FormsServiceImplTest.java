@@ -112,7 +112,7 @@ public class FormsServiceImplTest {
         CMSServiceCtx cmsContext = EasyMock.createMock(CMSServiceCtx.class);
         cmsContext.setPortalControllerContext(portalControllerContext);
         EasyMock.expectLastCall();
-        cmsContext.setScope(EasyMock.anyObject(String.class));
+        cmsContext.setForcePublicationInfosScope(EasyMock.anyObject(String.class));
         EasyMock.expectLastCall();
         PowerMock.expectNew(CMSServiceCtx.class).andStubReturn(cmsContext);
         

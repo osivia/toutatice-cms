@@ -58,7 +58,6 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.notifications.INotificationsService;
-import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -115,7 +114,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
@@ -130,8 +128,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.list.draft.ViewDraftsListPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
@@ -1920,8 +1916,12 @@ public class CMSService implements ICMSService {
 
     @Override
     public String getEcmUrl(CMSServiceCtx cmsCtx, EcmViews command, String path, Map<String, String> requestParameters) throws CMSException {
-        // get the défault domain and app name
+        // get the default domain and app name
         String uri = NuxeoConnectionProperties.getPublicBaseUri().toString();
+
+        if (requestParameters == null) {
+            requestParameters = new HashMap<String, String>();
+        }
 
         String url = "";
 
@@ -1955,14 +1955,10 @@ public class CMSService implements ICMSService {
         } else if (command == EcmViews.globalAdministration) {
             url = uri.toString() + "/nxadmin/default@view_admin?";
         } else if (command == EcmViews.gotoMediaLibrary) {
-
             Document mediaLibrary;
             try {
-
                 String baseDomainPath = "/".concat(path.split("/")[1]);
                 mediaLibrary = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentGetMediaLibraryCommand(baseDomainPath)));
-
-
             } catch (Exception e) {
                 throw new CMSException(e);
             }
@@ -1971,10 +1967,12 @@ public class CMSService implements ICMSService {
             } else {
                 url = "";
             }
+        } else if (EcmViews.RELOAD.equals(command)) {
+            url = uri.toString() + "/logout";
         }
 
         // params are used with fancyboxes
-        if (command != EcmViews.gotoMediaLibrary) {
+        if (!EcmViews.gotoMediaLibrary.equals(command) && !EcmViews.RELOAD.equals(command)) {
             PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
             String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
             requestParameters.put("fromUrl", portalUrl);
