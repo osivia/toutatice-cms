@@ -16,6 +16,8 @@ public interface IFormsService {
 
     /** Forms webId prefix. */
     String FORMS_WEB_ID_PREFIX = "procedure_";
+    /** End step name. */
+    String ENDSTEP = "endStep";
 
 
     /**

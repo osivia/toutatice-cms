@@ -48,10 +48,6 @@ import net.sf.json.JSONObject;
  */
 public class FormsServiceImpl implements IFormsService {
 
-    /** End step name. */
-    private static final String ENDSTEP = "endStep";
-
-
     /** Thread local. */
     private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
@@ -148,18 +144,20 @@ public class FormsServiceImpl implements IFormsService {
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator,
                 null, nextStep);
 
-        // Properties
-        Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelWebId", modelWebId);
-        properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
+        if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
+            // Properties
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
+            properties.put("pi:procedureModelWebId", modelWebId);
+            properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
-        // Nuxeo command
-        INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
-        try {
-            this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
-        } catch (CMSException e) {
-            throw new PortalException(e);
+            // Nuxeo command
+            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
+            try {
+                this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            }
         }
 
         return filterContext.getVariables();
