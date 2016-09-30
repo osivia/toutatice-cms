@@ -957,7 +957,7 @@ public class MenuBarFormater {
         final Document document = (Document) cmsContext.getDoc();
         final String path = document.getPath();
 
-        if (!"Staple".equals(document.getType())) {
+        if (!"Staple".equals(document.getType()) && !DocumentHelper.hasDraft(document)) {
             final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
             if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
@@ -1650,7 +1650,8 @@ public class MenuBarFormater {
 
                         // Fancybox delete action URL
                         String removeURL = this.urlFactory.getPutDocumentInTrashUrl(portalControllerContext, pubInfos.getLiveId(), pubInfos.getDocumentPath());
-                        // Draft document is directly deleted
+                        
+                        // Case of Draft document directly deleted
                         if (pubInfos.isDraft()) {
                             
                             String redirectionPath;
