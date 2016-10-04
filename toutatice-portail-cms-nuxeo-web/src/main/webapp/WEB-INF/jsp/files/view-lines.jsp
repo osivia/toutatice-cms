@@ -248,7 +248,7 @@
                                     
                                     <div class="col-sm-7 col-md-6 col-lg-5">
                                         <div class="row">
-                                                <div class="col-xs-1">
+                                            <div class="col-xs-1">
                                                 <!-- Lock -->
                                                 <div class="table-cell text-overflow">
                                                     <c:choose>
@@ -285,7 +285,7 @@
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>
-                                                
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
