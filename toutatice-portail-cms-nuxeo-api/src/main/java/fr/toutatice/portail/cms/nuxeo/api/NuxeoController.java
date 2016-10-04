@@ -1942,8 +1942,24 @@ public class NuxeoController {
      * @return the CMS binary content
      */
     public CMSBinaryContent fetchFileContent(String docPath, String fieldName) {
+        return this.fetchFileContent(docPath, fieldName, false);
+    }
+
+
+    /**
+     * Fetch file content.
+     *
+     * @param docPath the doc path
+     * @param fieldName the field name
+     * @param reload force reload indicator
+     * @return the CMS binary content
+     */
+    public CMSBinaryContent fetchFileContent(String docPath, String fieldName, boolean reload) {
         try {
-            return getCMSService().getBinaryContent(this.getCMSCtx(), "file", docPath, fieldName);
+            ICMSService cmsService = getCMSService();
+            CMSServiceCtx cmsContext = this.getCMSCtx();
+            cmsContext.setForceReload(reload);
+            return cmsService.getBinaryContent(cmsContext, "file", docPath, fieldName);
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
