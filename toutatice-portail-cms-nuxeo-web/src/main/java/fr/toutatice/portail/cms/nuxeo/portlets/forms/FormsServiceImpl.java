@@ -11,6 +11,7 @@ import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -206,6 +207,8 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
             Map<String, String> variables) throws PortalException, FormFilterException {
+        // CMS service
+        ICMSService cmsService = cmsServiceLocator.getCMSService();
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
@@ -213,6 +216,8 @@ public class FormsServiceImpl implements IFormsService {
 
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
+        // Procedure instance path
+        String instancePath = instanceProperties.getString("ecm:path");
         // Task initiator
         String previousTaskInitiator = taskProperties.getString("nt:initiator");
 
@@ -274,7 +279,7 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instanceProperties.getString("ecm:path"), title, filterContext.getActors().getGroups(),
+        INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors().getGroups(),
                 filterContext.getActors().getUsers(), properties);
         try {
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
@@ -282,7 +287,29 @@ public class FormsServiceImpl implements IFormsService {
             throw new PortalException(e);
         }
 
-        return filterContext.getVariables();
+
+        // Updated variables
+        Map<String, String> updatedVariables = filterContext.getVariables();
+
+        // Check if workflow must be deleted
+        boolean deleteOnEnding = BooleanUtils.toBoolean(updatedVariables.get(DELETE_ON_ENDING_PARAMETER));
+        boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
+        if (deleteOnEnding && endStep) {
+            // Save current scope
+            String savedScope = cmsContext.getScope();
+
+            try {
+                cmsContext.setScope("superuser_no_cache");
+
+                cmsService.deleteDocument(cmsContext, instancePath);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            } finally {
+                cmsContext.setScope(savedScope);
+            }
+        }
+
+        return updatedVariables;
     }
 
 

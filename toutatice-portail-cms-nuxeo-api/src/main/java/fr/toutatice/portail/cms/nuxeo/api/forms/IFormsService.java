@@ -18,6 +18,8 @@ public interface IFormsService {
     String FORMS_WEB_ID_PREFIX = "procedure_";
     /** End step name. */
     String ENDSTEP = "endStep";
+    /** Delete on workflow ending parameter. */
+    String DELETE_ON_ENDING_PARAMETER = "deleteOnEnding";
 
 
     /**
