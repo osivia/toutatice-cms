@@ -2796,4 +2796,20 @@ public class CMSService implements ICMSService {
         }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reloadSession(CMSServiceCtx cmsContext) throws CMSException {
+        INuxeoCommand command = new ReloadNuxeoSessionCommand();
+        try {
+            this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+
 }
