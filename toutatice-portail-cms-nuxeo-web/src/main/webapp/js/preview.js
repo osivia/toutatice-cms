@@ -23,32 +23,33 @@ function adaptPreviewToContent (preview){
 function resizePreview(){
 	var $preview = $JQry(".file iframe.embed-preview"); 
 	var preview = $preview.get(0); 
-	
-	var winH = window.innerHeight;                 
-	var prevTop = $preview.offset().top;     		
-	var scrollTop = $JQry(window).scrollTop();           
-	
-	var $firstPage = $JQry(preview.contentWindow.document.body).find("div").first();
-	var firstPageH = $firstPage.height();
-	
-	var prevTopPosition = prevTop - scrollTop;    
-	var firstPageBottom = prevTopPosition + firstPageH; 
-	var previewMinH = 700;
-	var prevVisiblePart = previewMinHPercent*winH;     
-	
-	if(scrollTop < firstPageBottom){  	 
-		$preview.height(prevVisiblePart - prevMarginBottom);
+	if(preview){	
+		var winH = window.innerHeight;                 
+		var prevTop = $preview.offset().top;     		
+		var scrollTop = $JQry(window).scrollTop();           
+		
+		var $firstPage = $JQry(preview.contentWindow.document.body).find("div").first();
+		var firstPageH = $firstPage.height();
+		
+		var prevTopPosition = prevTop - scrollTop;    
+		var firstPageBottom = prevTopPosition + firstPageH; 
+		var previewMinH = 700;
+		var prevVisiblePart = previewMinHPercent*winH;     
+		
+		if(scrollTop < firstPageBottom){  	 
+			$preview.height(prevVisiblePart - prevMarginBottom);
+		}
 	}
-	
 }
 
 function adaptPreview(){
-	var $preview = $JQry(".file iframe.embed-preview"); 			
+	var $preview = $JQry(".file iframe.embed-preview"); 
 	var preview = $preview.get(0);  						
-	
-	customPreviewContent(preview)
-	adaptPreviewToContent(preview);
-	resizePreview()
+	if(preview){	
+		customPreviewContent(preview)
+		adaptPreviewToContent(preview);
+		resizePreview();
+	}
 }
 
 window.onload = adaptPreview;
