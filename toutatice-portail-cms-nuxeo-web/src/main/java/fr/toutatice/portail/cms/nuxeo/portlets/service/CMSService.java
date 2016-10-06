@@ -1968,7 +1968,7 @@ public class CMSService implements ICMSService {
                 url = "";
             }
         } else if (EcmViews.RELOAD.equals(command)) {
-            url = uri.toString() + "/logout";
+            url = uri.toString() + "/nxpath/default@refresh_principal";
         }
 
         // params are used with fancyboxes
