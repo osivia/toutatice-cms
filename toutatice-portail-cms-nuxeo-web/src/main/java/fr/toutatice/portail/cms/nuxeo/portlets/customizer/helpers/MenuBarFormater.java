@@ -18,9 +18,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
@@ -32,7 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
-import org.jboss.portal.core.controller.ControllerCommand;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -41,7 +40,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
@@ -70,14 +68,12 @@ import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemTypeComparator;
-import org.osivia.portal.core.cms.CMSObjectPath;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
-import org.osivia.portal.core.context.ControllerContextAdapter;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemTypeComparator;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
@@ -365,13 +361,13 @@ public class MenuBarFormater {
             CMSItem spaceConfig = this.cmsService.getSpaceConfig(cmsContext, basePath);
             // Space document
             Document space = (Document) spaceConfig.getNativeItem();
-            // Space identifier
-            String spaceId = space.getString("webc:url");
+            // Space shortname
+            String shortname = space.getString("webc:url");
 
             // WebId
             String webId = document.getString("ttc:webid");
             // WebId prefix
-            String prefix = spaceId + "_";
+            String prefix = ITaskbarService.WEBID_PREFIX + shortname + "_";
 
             if (StringUtils.startsWith(webId, prefix)) {
                 // Task identifier
