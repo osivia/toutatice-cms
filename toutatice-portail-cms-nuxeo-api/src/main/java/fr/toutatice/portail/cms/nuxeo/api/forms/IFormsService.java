@@ -16,6 +16,10 @@ public interface IFormsService {
 
     /** Forms webId prefix. */
     String FORMS_WEB_ID_PREFIX = "procedure_";
+    /** End step name. */
+    String ENDSTEP = "endStep";
+    /** Delete on workflow ending parameter. */
+    String DELETE_ON_ENDING_PARAMETER = "deleteOnEnding";
 
 
     /**
@@ -24,10 +28,12 @@ public interface IFormsService {
      * @param portalControllerContext portal controller context
      * @param modelId model identifier
      * @param variables variables
+     * @return updated variables
      * @throws PortalException
+     * @throws FormFilterException
      */
-    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException,
-    FormFilterException;
+    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables)
+            throws PortalException, FormFilterException;
 
 
     /**
@@ -37,12 +43,12 @@ public interface IFormsService {
      * @param modelId model identifier
      * @param actionId action identifier
      * @param variables variables
-     * @return
+     * @return updated variables
      * @throws PortalException
+     * @throws FormFilterException
      */
     Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
-            throws PortalException,
-            FormFilterException;
+            throws PortalException, FormFilterException;
 
 
     /**
@@ -51,10 +57,12 @@ public interface IFormsService {
      * @param portalControllerContext portal controller context
      * @param task task document
      * @param variables variables
+     * @return updated variables
      * @throws PortalException
+     * @throws FormFilterException
      */
-    Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
-            FormFilterException;
+    Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables)
+            throws PortalException, FormFilterException;
 
 
     /**
@@ -64,33 +72,42 @@ public interface IFormsService {
      * @param task task document
      * @param actionId action identifier
      * @param variables variables
+     * @return updated variables
      * @throws PortalException
+     * @throws FormFilterException
      */
     Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables)
-            throws PortalException,
-    FormFilterException;
+            throws PortalException, FormFilterException;
+
 
     /**
-     * @param portalControllerContext
-     * @param taskProperties
-     * @param variables
+     * Proceed with default action.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param taskProperties task properties
+     * @param variables variables
+     * @return updated variables
      * @throws PortalException
      * @throws FormFilterException
      */
     Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables)
-            throws PortalException,
-    FormFilterException;
+            throws PortalException, FormFilterException;
+
 
     /**
-     * @param portalControllerContext
-     * @param taskProperties
-     * @param actionId
-     * @param variables
+     * Proceed.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param taskProperties task properties
+     * @param actionId action identifier
+     * @param variables variables
+     * @return updated variables
      * @throws PortalException
      * @throws FormFilterException
      */
     Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException;
+
 
     /**
      * Tranform expression with Expression-Language resolver.

@@ -5,18 +5,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.PortalException;
-import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 import de.odysseus.el.util.SimpleContext;
@@ -42,16 +49,15 @@ import net.sf.json.JSONObject;
  */
 public class FormsServiceImpl implements IFormsService {
 
-    /** End step name. */
-    private static final String ENDSTEP = "endStep";
-
-
-    /** Portal controller context thread local. */
-    private static ThreadLocal<PortalControllerContext> portalControllerContextThreadLocal = new ThreadLocal<PortalControllerContext>();
+    /** Thread local. */
+    private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
 
     /** CMS customizer. */
-    private DefaultCMSCustomizer cmsCustomizer;
+    private final DefaultCMSCustomizer cmsCustomizer;
+
+    /** CMS service locator. */
+    private final ICMSServiceLocator cmsServiceLocator;
 
 
     /**
@@ -62,6 +68,9 @@ public class FormsServiceImpl implements IFormsService {
     public FormsServiceImpl(DefaultCMSCustomizer cmsCustomizer) {
         super();
         this.cmsCustomizer = cmsCustomizer;
+
+        // CMS service locator
+        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
     }
 
 
@@ -71,9 +80,9 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     @Override
-    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables) throws PortalException,
-    FormFilterException {
-        return start(portalControllerContext, modelId, null, variables);
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables)
+            throws PortalException, FormFilterException {
+        return this.start(portalControllerContext, modelId, null, variables);
     }
 
 
@@ -83,24 +92,25 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setPortalControllerContext(portalControllerContext);
+
 
         // Model
         String modelWebId = FORMS_WEB_ID_PREFIX + modelId;
-        String modelPath = NuxeoController.webIdToFetchPath(modelWebId);
-        Document model = nuxeoController.fetchDocument(modelPath);
+        Document model = this.getModel(portalControllerContext, modelWebId);
 
+        // Procedure initiator
         String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
 
         // Starting step
         String startingStep = model.getString("pcd:startingStep");
         // Starting step properties
-        PropertyMap startingStepProperties = getStepProperties(model, startingStep);
+        PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
 
         // Action properties
-        PropertyMap actionProperties = getActionProperties(startingStepProperties, actionId);
+        PropertyMap actionProperties = this.getActionProperties(startingStepProperties, actionId);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -111,7 +121,7 @@ public class FormsServiceImpl implements IFormsService {
         FormActors actors = new FormActors();
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
-            PropertyMap nextStepProperties = getStepProperties(model, nextStep);
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
             // add authorizedGroups to actors
             final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
@@ -122,19 +132,34 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
 
-        // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator, null,
-                nextStep);
 
-        // Properties
-        Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-        properties.put("pi:procedureModelWebId", modelWebId);
-        properties.put("pi:globalVariablesValues", generateVariablesJSON(variables));
+        if (variables == null) {
+            variables = new HashMap<String, String>();
+        }
 
-        // Nuxeo command
-        INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
-        nuxeoController.executeNuxeoCommand(command);
+        // UUID
+        String uuid = UUID.randomUUID().toString();
+        variables.put("uuid", uuid);
+
+        // Construction du contexte et appel des filtres
+        FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator,
+                null, nextStep);
+
+        if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
+            // Properties
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
+            properties.put("pi:procedureModelWebId", modelWebId);
+            properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
+
+            // Nuxeo command
+            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
+            try {
+                this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            }
+        }
 
         return filterContext.getVariables();
     }
@@ -146,9 +171,9 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     @Override
-    public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables) throws PortalException,
-    FormFilterException {
-        return proceed(portalControllerContext, task, null, variables);
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, Map<String, String> variables)
+            throws PortalException, FormFilterException {
+        return this.proceed(portalControllerContext, task, null, variables);
     }
 
 
@@ -160,7 +185,7 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, Document task, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException {
-        return proceed(portalControllerContext, task.getProperties(), actionId, variables);
+        return this.proceed(portalControllerContext, task.getProperties(), actionId, variables);
     }
 
     /**
@@ -171,7 +196,7 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, Map<String, String> variables)
             throws PortalException, FormFilterException {
-        return proceed(portalControllerContext, taskProperties, null, variables);
+        return this.proceed(portalControllerContext, taskProperties, null, variables);
     }
 
     /**
@@ -182,19 +207,23 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
             Map<String, String> variables) throws PortalException, FormFilterException {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+        // CMS service
+        ICMSService cmsService = cmsServiceLocator.getCMSService();
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setPortalControllerContext(portalControllerContext);
+
 
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
+        // Procedure instance path
+        String instancePath = instanceProperties.getString("ecm:path");
         // Task initiator
         String previousTaskInitiator = taskProperties.getString("nt:initiator");
 
         // Model document
         String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
-        String modelPath = NuxeoController.webIdToFetchPath(modelWebId);
-        Document model = nuxeoController.fetchDocument(modelPath);
+        Document model = this.getModel(portalControllerContext, modelWebId);
 
         // Procedure initiator
         String procedureInitiator = instanceProperties.getString("pi:procedureInitiator");
@@ -203,10 +232,10 @@ public class FormsServiceImpl implements IFormsService {
         // Previous step
         String previousStep = instanceProperties.getString("pi:currentStep");
         // Previous step properties
-        PropertyMap previousStepProperties = getStepProperties(model, previousStep);
+        PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
 
         // Action properties
-        PropertyMap actionProperties = getActionProperties(previousStepProperties, actionId);
+        PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -217,7 +246,7 @@ public class FormsServiceImpl implements IFormsService {
         FormActors actors = new FormActors();
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
-            PropertyMap nextStepProperties = getStepProperties(model, nextStep);
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
             // Add authorizedGroups to actors
             final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
@@ -240,7 +269,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // construction du contexte et appel des filtres
-        FormFilterContext filterContext = callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
+        FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
                 procedureInitiator, previousTaskInitiator, nextStep);
 
         // Properties
@@ -250,11 +279,37 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instanceProperties.getString("ecm:path"), title, filterContext.getActors().getGroups(),
+        INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors().getGroups(),
                 filterContext.getActors().getUsers(), properties);
-        nuxeoController.executeNuxeoCommand(command);
+        try {
+            this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw new PortalException(e);
+        }
 
-        return filterContext.getVariables();
+
+        // Updated variables
+        Map<String, String> updatedVariables = filterContext.getVariables();
+
+        // Check if workflow must be deleted
+        boolean deleteOnEnding = BooleanUtils.toBoolean(updatedVariables.get(DELETE_ON_ENDING_PARAMETER));
+        boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
+        if (deleteOnEnding && endStep) {
+            // Save current scope
+            String savedScope = cmsContext.getScope();
+
+            try {
+                cmsContext.setScope("superuser_no_cache");
+
+                cmsService.deleteDocument(cmsContext, instancePath);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            } finally {
+                cmsContext.setScope(savedScope);
+            }
+        }
+
+        return updatedVariables;
     }
 
 
@@ -327,6 +382,37 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         parentExecutor.executeChildren(filterContext);
         return filterContext;
+    }
+
+
+    /**
+     * Get model document.
+     *
+     * @param portalControllerContext portal controller context
+     * @param webId model webId
+     * @return document
+     * @throws PortalException
+     */
+    private Document getModel(PortalControllerContext portalControllerContext, String webId) throws PortalException {
+        // CMS service
+        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setPortalControllerContext(portalControllerContext);
+        cmsContext.setScope("superuser_context");
+
+        // Path
+        String path = NuxeoController.webIdToFetchPath(webId);
+
+        // CMS item
+        CMSItem cmsItem;
+        try {
+            cmsItem = cmsService.getContent(cmsContext, path);
+        } catch (CMSException e) {
+            throw new PortalException(e);
+        }
+
+        return (Document) cmsItem.getNativeItem();
     }
 
 
@@ -408,6 +494,19 @@ public class FormsServiceImpl implements IFormsService {
      */
     @Override
     public String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException {
+        // UUID
+        UUID uuid = null;
+        if (variables != null) {
+            String value = variables.get("uuid");
+            if (StringUtils.isNotBlank(value)) {
+                uuid = UUID.fromString(value);
+            }
+        }
+
+        // Thread local container
+        ThreadLocalContainer container = new ThreadLocalContainer(portalControllerContext, uuid);
+
+
         // Expression factory
         ExpressionFactory factory = new ExpressionFactoryImpl();
 
@@ -424,10 +523,11 @@ public class FormsServiceImpl implements IFormsService {
         // Functions
         try {
             context.setFunction("user", "name", TransformationFunctions.getUserDisplayNameMethod());
-            // context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+            //context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("user", "email", TransformationFunctions.getUserEmailMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
+            //context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);
         } catch (SecurityException e) {
@@ -440,10 +540,11 @@ public class FormsServiceImpl implements IFormsService {
         // Transformed expression
         String transformedExpression;
         try {
-            portalControllerContextThreadLocal.set(portalControllerContext);
+            threadLocal.set(container);
+
             transformedExpression = String.valueOf(value.getValue(context));
         } finally {
-            portalControllerContextThreadLocal.remove();
+            threadLocal.remove();
         }
 
         return transformedExpression;
@@ -456,8 +557,67 @@ public class FormsServiceImpl implements IFormsService {
      * @return portal controller context
      */
     public static PortalControllerContext getPortalControllerContext() {
-        return portalControllerContextThreadLocal.get();
+        // Thread local container
+        ThreadLocalContainer container = threadLocal.get();
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext;
+        if (container == null) {
+            portalControllerContext = null;
+        } else {
+            portalControllerContext = container.portalControllerContext;
+        }
+
+        return portalControllerContext;
     }
 
+
+    /**
+     * Get UUID.
+     *
+     * @return UUID
+     */
+    public static UUID getUuid() {
+        // Thread local container
+        ThreadLocalContainer container = threadLocal.get();
+
+        // UUID
+        UUID uuid;
+        if (container == null) {
+            uuid = null;
+        } else {
+            uuid = container.uuid;
+        }
+
+        return uuid;
+    }
+
+
+    /**
+     * Thread local container.
+     *
+     * @author Cédric Krommenhoek
+     */
+    private class ThreadLocalContainer {
+
+        /** Portal controller context. */
+        private final PortalControllerContext portalControllerContext;
+        /** UUID. */
+        private final UUID uuid;
+
+
+        /**
+         * Constructor.
+         *
+         * @param portalControllerContext portal controller context
+         * @param uuid UUID
+         */
+        public ThreadLocalContainer(PortalControllerContext portalControllerContext, UUID uuid) {
+            super();
+            this.portalControllerContext = portalControllerContext;
+            this.uuid = uuid;
+        }
+
+    }
 
 }
