@@ -55,7 +55,7 @@ public class XSLFunctions {
     /** Resource pattern. */
     private static final Pattern PATTERN_RESOURCE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
     /** Blob pattern. */
-    private static final Pattern PATTERN_BLOB = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
+    private static final Pattern PATTERN_BLOB = Pattern.compile("(/nuxeo/|/nxfile)([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
     /** Picture pattern. */
     private static final Pattern PATTERN_PICTURE = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
     /** Web ID pattern. */
@@ -418,9 +418,9 @@ public class XSLFunctions {
                         Matcher mBlobExp = PATTERN_BLOB.matcher(query);
                         if (mBlobExp.matches()) {
                             if (mBlobExp.groupCount() > 0) {
-                                String uid = mBlobExp.group(2);
-                                String blobIndex = mBlobExp.group(3);
-                                String fileName = mBlobExp.group(4);
+                                String uid = mBlobExp.group(3);
+                                String blobIndex = mBlobExp.group(4);
+                                String fileName = mBlobExp.group(5);
                                 return this.nuxeoController.createAttachedBlobLink(uid, blobIndex, fileName);
                             }
                         }
