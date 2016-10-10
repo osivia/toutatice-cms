@@ -30,8 +30,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -62,6 +60,7 @@ import org.osivia.portal.api.panels.IPanelsService;
 import org.osivia.portal.api.panels.Panel;
 import org.osivia.portal.api.portlet.IPortletStatusService;
 import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -82,6 +81,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -421,8 +421,6 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Path
         String path = this.getPath(window);
-        // Document context
-        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
@@ -440,6 +438,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 path = nuxeoController.getComputedPath(path);
 
                 // Fetch current Nuxeo document
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
                 request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
@@ -818,7 +817,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         moveProperties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
         moveProperties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, "_TYPES_");
         String moveURL = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
-                moveProperties, true);
+                moveProperties, PortalUrlType.POPUP);
         request.setAttribute("moveURL", moveURL);
     }
 
