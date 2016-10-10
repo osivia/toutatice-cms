@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,11 +62,13 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
         String key = "SYNC_" + ctx.hashCode();
 
-        if (virtualUser != null)
+        if (virtualUser != null) {
             key += "_" + virtualUser;
+        }
 
-        if (sessionCreationSynchronizers.get(key) == null)
+        if (sessionCreationSynchronizers.get(key) == null) {
             sessionCreationSynchronizers.put(key, key);
+        }
 
         return sessionCreationSynchronizers.get(key);
     }
@@ -83,9 +86,14 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
     @Override
     public Object invoke() throws PortalException {
+        return this.invokeOnce(0);
+    }
+
+
+    private Object invokeOnce(int tentative) throws PortalException {
+        boolean recyclableSession = true;
 
         try {
-
             Object res = null;
 
             boolean error = false;
@@ -97,98 +105,83 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
             HttpSession userSession = null;
 
             Session nuxeoSession = null;
-            boolean recyclableSession = true;
 
             try {
-
                 if (this.ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
+                    HttpServletRequest userRequest = null;
+                    String userName = null;
 
-                    {
+                    ServerInvocation invocation = this.ctx.getServerInvocation();
 
-                        HttpServletRequest userRequest = null;
-                        String userName = null;                        
-
-
-                        {
-
-                            ServerInvocation invocation = this.ctx.getServerInvocation();
-
-
-                            if (invocation == null) {
-                                ControllerContext controllerCtx = this.ctx.getControlerContext();
-                                if( controllerCtx != null)
-                                    invocation = controllerCtx.getServerInvocation();
-                            }
-
-
-                            if (invocation != null) {
-                                userRequest = invocation.getServerContext().getClientRequest();
-                                userName = userRequest.getRemoteUser();
-                            }
-                            else    {
-                                userRequest = (HttpServletRequest) ctx.getRequest();
-                                userName = (String) userRequest.getAttribute("osivia.delegation.userName");
-                            }
+                    if (invocation == null) {
+                        ControllerContext controllerCtx = this.ctx.getControlerContext();
+                        if (controllerCtx != null) {
+                            invocation = controllerCtx.getServerInvocation();
                         }
+                    }
 
 
-                        userSession = userRequest.getSession();
+                    if (invocation != null) {
+                        userRequest = invocation.getServerContext().getClientRequest();
+                        userName = userRequest.getRemoteUser();
+                    } else {
+                        userRequest = (HttpServletRequest) this.ctx.getRequest();
+                        userName = (String) userRequest.getAttribute("osivia.delegation.userName");
+                    }
 
 
+                    userSession = userRequest.getSession();
 
-                        profilerUser = userName;
-                        if (profilerUser == null)
-                            profilerUser = "unlogged-user";
 
-                        // On regarde s'il existe déjà une session pour cet utilisateur
-                        try {
+                    profilerUser = userName;
+                    if (profilerUser == null) {
+                        profilerUser = "unlogged-user";
+                    }
+
+                    // On regarde s'il existe déjà une session pour cet utilisateur
+                    try {
+                        nuxeoSession = (Session) userSession.getAttribute("osivia.nuxeoSession");
+                    } catch (ClassCastException e) {
+                        // Peut arriver si rechargement des classes de Nuxeo
+                    }
+
+                    String sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
+
+                    String sessionCreationSynchronizer = (String) userSession.getAttribute("osivia.sessionCreationSynchronizer");
+
+                    if (sessionCreationSynchronizer == null) {
+                        sessionCreationSynchronizer = "sessionCreationSynchronizer";
+                        userSession.setAttribute("osivia.sessionCreationSynchronizer", sessionCreationSynchronizer);
+                    }
+
+                    if ((nuxeoSession == null) || ((nuxeoSession != null) && (userName != null) && (sessionUserName == null))) {
+                        // Création d'une nouvelle session
+
+                        synchronized (sessionCreationSynchronizer) {
+
+                            // On refait les controles pour la synchronisation
+
                             nuxeoSession = (Session) userSession.getAttribute("osivia.nuxeoSession");
-                        } catch (ClassCastException e) {
-                            // Peut arriver si rechargement des classes de Nuxeo
-                        }
 
-                        String sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
+                            sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
 
-                        String sessionCreationSynchronizer = (String) userSession.getAttribute("osivia.sessionCreationSynchronizer");
+                            if ((nuxeoSession == null) || ((nuxeoSession != null) && (userName != null) && (sessionUserName == null))) {
 
-                        if (sessionCreationSynchronizer == null) {
-                            sessionCreationSynchronizer = "sessionCreationSynchronizer";
-                            userSession.setAttribute("osivia.sessionCreationSynchronizer", sessionCreationSynchronizer);
-                        }
+                                INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-                        if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
-                            // Création d'une nouvelle session
+                                nuxeoSession = nuxeoService.createUserSession(userName);
 
-                            synchronized (sessionCreationSynchronizer) {
+                                userSession.setAttribute("osivia.nuxeoSession", nuxeoSession);
 
-                                // On refait les controles pour la synchronisation
+                                userSession.setAttribute("osivia.nuxeoProfilerUserSessionTs", System.currentTimeMillis());
 
-                                nuxeoSession = (Session) userSession.getAttribute("osivia.nuxeoSession");
-
-                                sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
-
-                                if (nuxeoSession == null || (nuxeoSession != null && userName != null && sessionUserName == null)) {
-
-                                    INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-
-                                    nuxeoSession = nuxeoService.createUserSession(userName);
-
-                                    userSession.setAttribute("osivia.nuxeoSession", nuxeoSession);
-
-                                    userSession.setAttribute("osivia.nuxeoProfilerUserSessionTs", System.currentTimeMillis());
-
-                                    if (userName != null)
-                                        userSession.setAttribute("osivia.nuxeoSessionUser", userName);
+                                if (userName != null) {
+                                    userSession.setAttribute("osivia.nuxeoSessionUser", userName);
                                 }
-
-
                             }
                         }
                     }
-                }
-
-
-                else {
+                } else {
                     /* Gestion des sessions atypiques (ANONYMOUS, PROFIL SUPERUSER) */
 
                     // Il a une session nuxeo par contexte de portlet et virtual
@@ -211,8 +204,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     }
 
                     profilerUser = virtualUser;
-                    if (profilerUser == null)
+                    if (profilerUser == null) {
                         profilerUser = "vu-anonymous";
+                    }
 
 
                     // Profils session list creation
@@ -253,8 +247,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     }
                 } catch (Exception e) {
 
-                    if (e.getCause() instanceof IllegalStateException)
+                    if ((e.getCause() instanceof IllegalStateException) || (e.getCause() instanceof SocketTimeoutException)) {
                         recyclableSession = false;
+                    }
 
                     error = true;
                     throw e;
@@ -298,8 +293,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                                 // On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
                                 // Le but est de determiner des mini-pics
 
-                                if (elapsedTime < 1000)
+                                if (elapsedTime < 1000) {
                                     AVERAGE_LIST.add((int) elapsedTime);
+                                }
 
                                 if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
 
@@ -331,8 +327,8 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                 }
 
 
+                return res;
             } finally {
-
                 if (res instanceof IContentStreamingSupport) {
                     IContentStreamingSupport contentStreamingSupport = (IContentStreamingSupport) res;
                     recyclableSession = (contentStreamingSupport.getStream() == null);
@@ -340,18 +336,20 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                 // recycle the session
-                if (sessionsProfils != null && recyclableSession == true)
+                if ((sessionsProfils != null) && (recyclableSession == true)) {
                     sessionsProfils.add(nuxeoSession);
+                }
 
-                if (userSession != null && recyclableSession == false)
+                if ((userSession != null) && (recyclableSession == false)) {
                     userSession.removeAttribute("osivia.nuxeoSession");
-
-
+                }
             }
-
-            return res;
         } catch (Exception e) {
-            throw PortalException.wrap(e);
+            if (!recyclableSession && (tentative < 3)) {
+                return this.invokeOnce(tentative++);
+            } else {
+                throw PortalException.wrap(e);
+            }
         }
     }
 
