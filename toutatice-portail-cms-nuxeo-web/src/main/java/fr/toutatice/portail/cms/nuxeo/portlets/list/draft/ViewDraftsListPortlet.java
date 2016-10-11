@@ -49,7 +49,7 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
     protected static final String DRAFTS_LIST_TEMPLATE = "drafts";
     /** Drafts query. */
     // FIXME: build userWorkspace path instaed of hard coded
-    public static final String DRAFTS_QUERY_WHERE_CLAUSE = " ecm:mixinType = 'OttcDraft' and dc:creator = '%s'"
+    public static final String DRAFTS_QUERY_WHERE_CLAUSE = " ecm:mixinType = 'OttcDraft' and dc:lastContributor = '%s'"
             .concat(" and ottcDft:checkoutParentId = '%s'");
     
     /**
