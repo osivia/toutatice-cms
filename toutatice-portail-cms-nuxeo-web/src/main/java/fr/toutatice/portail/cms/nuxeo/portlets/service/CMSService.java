@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -2802,6 +2803,14 @@ public class CMSService implements ICMSService {
      */
     @Override
     public void reloadSession(CMSServiceCtx cmsContext) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
+        // HTTP servlet request
+        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        // HTTP session
+        HttpSession session = servletRequest.getSession();
+
+        // Reload Nuxeo Automation session
         INuxeoCommand command = new ReloadNuxeoSessionCommand();
         try {
             this.executeNuxeoCommand(cmsContext, command);
@@ -2810,6 +2819,9 @@ public class CMSService implements ICMSService {
         } catch (Exception e) {
             throw new CMSException(e);
         }
+
+        // Reload Nuxeo web session
+        session.setAttribute(Constants.SESSION_RELOAD_ATTRIBUTE, true);
     }
 
 }
