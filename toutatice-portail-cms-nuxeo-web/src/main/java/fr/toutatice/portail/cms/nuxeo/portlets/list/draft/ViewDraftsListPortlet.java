@@ -49,7 +49,7 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
     protected static final String DRAFTS_LIST_TEMPLATE = "drafts";
     /** Drafts query. */
     // FIXME: build userWorkspace path instaed of hard coded
-    public static final String DRAFTS_QUERY_WHERE_CLAUSE = " ecm:path startswith '/default-domain/UserWorkspaces/%s/drafts' and ecm:mixinType = 'OttcDraft'"
+    public static final String DRAFTS_QUERY_WHERE_CLAUSE = " ecm:mixinType = 'OttcDraft' and dc:creator = '%s'"
             .concat(" and ottcDft:checkoutParentId = '%s'");
     
     /**
@@ -76,7 +76,7 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
             Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
             String folderPath = window.getProperty("osivia.drafts.folderWebId");
-
+            
             String query = String.format(ViewDraftsListPortlet.DRAFTS_QUERY_WHERE_CLAUSE, request.getRemoteUser(), folderPath);
             int pageSize = Integer.valueOf(CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS).intValue();
 
