@@ -16,7 +16,7 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
 /**
  * Update procedure Nuxeo command.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see INuxeoCommand
  */
@@ -64,8 +64,13 @@ public class UpdateProcedureCommand implements INuxeoCommand {
         OperationRequest request = nuxeoSession.newRequest("Services.UpdateProcedure");
         request.setInput(new DocRef(this.path));
         request.set("taskTitle", this.taskTitle);
-        request.set("groups", this.groups);
-        request.set("users", this.users);
+        if (StringUtils.isNotEmpty(this.groups)) {
+            request.set("groups", this.groups);
+        }
+
+        if (StringUtils.isNotEmpty(this.users)) {
+            request.set("users", this.users);
+        }
         request.set("properties", this.properties);
         return request.execute();
     }
