@@ -7,7 +7,7 @@
 <%@ page isELIgnored="false"%>
 
 
-<c:forEach var="document" items="${documents}">
+<c:forEach var="document" items="${documents}" varStatus="status">
 	<!-- Document properties -->
     
     <!-- Vignette -->
@@ -29,12 +29,12 @@
 	<div class="media">
 		<!-- Vignette -->
         <c:if test="${not empty vignetteURL}">
-            <div class="media-left">
+            <div class="media-left media-middle">
                 <img src="${vignetteURL}" alt="" class="media-object">
             </div>
         </c:if>
 
-		<div class="media-body">
+		<div class="media-body media-middle">
 			<!-- Title -->
 			<h3 class="h4 media-heading"><ttc:title document="${document}" /></h3>
 
@@ -53,3 +53,10 @@
 		</div>
 	</div>
 </c:forEach>
+
+
+<c:if test="${empty documents}">
+    <p class="text-center">
+        <span class="text-muted"><op:translate key="LIST_NO_ITEMS" /></span>
+    </p>
+</c:if>
