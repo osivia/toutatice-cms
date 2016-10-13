@@ -525,6 +525,7 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("user", "name", TransformationFunctions.getUserDisplayNameMethod());
             context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("user", "email", TransformationFunctions.getUserEmailMethod());
+            context.setFunction("group", "emails", TransformationFunctions.getGroupEmailsMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());

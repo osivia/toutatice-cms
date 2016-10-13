@@ -2,16 +2,24 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import javax.naming.Name;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Group;
 import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
@@ -224,6 +232,63 @@ public class TransformationFunctions {
      */
     public static Method getUserEmailMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getUserEmail", String.class);
+    }
+
+
+    /**
+     * Get group emails.
+     * 
+     * @param id group identifier
+     * @return emails
+     */
+    public static String getGroupEmails(String id) {
+        // LDAP group service
+        GroupService groupService = DirServiceFactory.getService(GroupService.class);
+
+        // Group
+        Group group = groupService.get(id);
+
+        // Emails
+        String emails;
+
+        if (group == null) {
+            emails = null;
+        } else {
+            // Group DN
+            Name dn = group.getDn();
+
+            // Group members
+            List<Person> members = groupService.getMembers(dn);
+
+            if (CollectionUtils.isEmpty(members)) {
+                emails = null;
+            } else {
+                // Email list
+                Set<String> list = new HashSet<String>(members.size());
+                for (Person member : members) {
+                    String email = member.getMail();
+                    if (StringUtils.isNotBlank(email)) {
+                        list.add(email);
+                    }
+                }
+
+                emails = StringUtils.join(list, ";");
+            }
+        }
+
+        return emails;
+    }
+
+
+    /**
+     * Get group:emails method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getGroupEmailsMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getGroupEmails", String.class);
     }
 
 
