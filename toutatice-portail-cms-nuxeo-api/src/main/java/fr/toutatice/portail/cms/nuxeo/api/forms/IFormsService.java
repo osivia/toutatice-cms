@@ -114,8 +114,20 @@ public interface IFormsService {
      *
      * @param portalControllerContext portal controller context
      * @param expression expression
+     * @param task task document
+     * @return transformed expression
+     * @throws PortalException
+     */
+    String transform(PortalControllerContext portalControllerContext, String expression, Document task) throws PortalException;
+
+
+    /**
+     * Tranform expression with Expression-Language resolver.
+     *
+     * @param portalControllerContext portal controller context
+     * @param expression expression
      * @param variables task variables
-     * @return tranformed expression
+     * @return transformed expression
      * @throws PortalException
      */
     String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException;

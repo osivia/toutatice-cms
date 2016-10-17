@@ -16,7 +16,10 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
 import org.osivia.portal.api.directory.v2.service.PersonService;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSItem;
@@ -115,7 +118,7 @@ public class FormsServiceImplTest {
         cmsContext.setForcePublicationInfosScope(EasyMock.anyObject(String.class));
         EasyMock.expectLastCall();
         PowerMock.expectNew(CMSServiceCtx.class).andStubReturn(cmsContext);
-        
+
         // CMS service
         ICMSService cmsService = EasyMock.createMock(ICMSService.class);
         EasyMock.expect(cmsService.getContent(cmsContext, DOCUMENT_PATH)).andStubReturn(cmsItem);
@@ -127,7 +130,7 @@ public class FormsServiceImplTest {
         Person person = EasyMock.createMock(Person.class);
         EasyMock.expect(person.getAvatar()).andReturn(new Link(USER_AVATAR_URL, false)).anyTimes();
         EasyMock.expect(person.getDisplayName()).andReturn(USER_DISPLAY_NAME).anyTimes();
-        
+
         // Person service
         PersonService personService = EasyMock.createMock(PersonService.class);
         EasyMock.expect(personService.getEmptyPerson()).andStubReturn(emptyPerson);
@@ -158,16 +161,29 @@ public class FormsServiceImplTest {
         ICMSServiceLocator cmsServiceLocator = EasyMock.createMock(ICMSServiceLocator.class);
         EasyMock.expect(cmsServiceLocator.getCMSService()).andStubReturn(cmsService);
 
+        // Tasks service
+        ITasksService tasksService = EasyMock.createMock(ITasksService.class);
+
+        // Bundle factory
+        IBundleFactory bundleFactory = EasyMock.createMock(IBundleFactory.class);
+
+        // Internationalization service
+        IInternationalizationService internationalizationService = EasyMock.createMock(IInternationalizationService.class);
+        EasyMock.expect(internationalizationService.getBundleFactory(EasyMock.anyObject(ClassLoader.class))).andStubReturn(bundleFactory);
+
+
         // Locator
         PowerMock.mockStatic(Locator.class);
         EasyMock.expect(Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME)).andStubReturn(portalUrlFactory);
         EasyMock.expect(Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME)).andStubReturn(cmsServiceLocator);
+        EasyMock.expect(Locator.findMBean(ITasksService.class, ITasksService.MBEAN_NAME)).andStubReturn(tasksService);
+        EasyMock.expect(Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME))
+                .andStubReturn(internationalizationService);
 
 
         // Replay
         PowerMock.replayAll(document, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, emptyPerson, person, personService,
-                tagService,
-                portalUrlFactory, cmsServiceLocator);
+                tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory, internationalizationService);
 
 
         // Forms service
@@ -180,13 +196,13 @@ public class FormsServiceImplTest {
         String expression;
         Map<String, String> variables;
         String transformedExpression;
-        
+
         // #1 : nominal test without variable or function
         expression = "Test #1.";
         variables = null;
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);
         Assert.assertEquals(expression, transformedExpression);
-        
+
         // #2 : null expression
         expression = null;
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);

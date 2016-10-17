@@ -1,29 +1,58 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.portlet.PortletContext;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
+import org.osivia.portal.api.html.DOM4JUtils;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+
+import com.sun.mail.smtp.SMTPTransport;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 import de.odysseus.el.util.SimpleContext;
@@ -36,8 +65,10 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterException;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterExecutor;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.GetTasksCommand;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -55,9 +86,16 @@ public class FormsServiceImpl implements IFormsService {
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer cmsCustomizer;
-
+    /** Log. */
+    private final Log log;
     /** CMS service locator. */
     private final ICMSServiceLocator cmsServiceLocator;
+    /** Tasks service. */
+    private final ITasksService tasksService;
+    /** Internationalization bundle factory. */
+    private final IBundleFactory bundleFactory;
+    /** Person service. */
+    private final PersonService personService;
 
 
     /**
@@ -68,9 +106,18 @@ public class FormsServiceImpl implements IFormsService {
     public FormsServiceImpl(DefaultCMSCustomizer cmsCustomizer) {
         super();
         this.cmsCustomizer = cmsCustomizer;
+        this.log = LogFactory.getLog(this.getClass());
 
         // CMS service locator
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+        // Tasks service
+        this.tasksService = Locator.findMBean(ITasksService.class, ITasksService.MBEAN_NAME);
+        // Internationalization bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        // Person service
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -160,6 +207,15 @@ public class FormsServiceImpl implements IFormsService {
                 throw new PortalException(e);
             }
         }
+
+
+        // Email notification
+        try {
+            this.sendEmailNotification(portalControllerContext, uuid, procedureInitiator);
+        } catch (CMSException e) {
+            throw new PortalException(e);
+        }
+
 
         return filterContext.getVariables();
     }
@@ -288,12 +344,25 @@ public class FormsServiceImpl implements IFormsService {
         }
 
 
+        // End step indicator
+        boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
+
+
+        // Email notification
+        if (!endStep) {
+            try {
+                this.sendEmailNotification(portalControllerContext, variables.get("uuid"), previousTaskInitiator);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            }
+        }
+
+
         // Updated variables
         Map<String, String> updatedVariables = filterContext.getVariables();
 
         // Check if workflow must be deleted
         boolean deleteOnEnding = BooleanUtils.toBoolean(updatedVariables.get(DELETE_ON_ENDING_PARAMETER));
-        boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
         if (deleteOnEnding && endStep) {
             // Save current scope
             String savedScope = cmsContext.getScope();
@@ -490,10 +559,211 @@ public class FormsServiceImpl implements IFormsService {
 
 
     /**
+     * Send email notification.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param procedureInstanceId procedure instance identifier
+     * @param initiator task initiator
+     * @throws CMSException
+     * @throws PortalException
+     */
+    private void sendEmailNotification(PortalControllerContext portalControllerContext, String procedureInstanceId, String initiator)
+            throws CMSException, PortalException {
+        // Portlet context
+        PortletContext portletContext = this.cmsCustomizer.getPortletCtx();
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portletContext);
+        nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
+
+        // Internationalization bundle
+        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        if (StringUtils.isNotEmpty(procedureInstanceId)) {
+            // UUID
+            UUID uuid = UUID.fromString(procedureInstanceId);
+
+            // Nuxeo command
+            INuxeoCommand command = new GetTasksCommand(null, uuid);
+            Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
+
+            // Task document
+            Document task;
+            if (documents.size() == 1) {
+                task = documents.get(0);
+            } else {
+                throw new CMSException(CMSException.ERROR_NOTFOUND);
+            }
+
+            // Task variables
+            PropertyMap variables = task.getProperties().getMap("nt:task_variables");
+
+            // if (BooleanUtils.isTrue(variables.getBoolean("notifEmail"))) {
+            if (true) { // FIXME
+                // Actors
+                PropertyList actors = task.getProperties().getList("nt:actors");
+
+                if (!actors.isEmpty()) {
+                    // Email recipients
+                    Set<String> emailRecipients = new HashSet<String>(actors.size());
+                    for (int i = 0; i < actors.size(); i++) {
+                        Person person = this.personService.getPerson(actors.getString(i));
+                        if (person != null) {
+                            String email = person.getMail();
+                            if (StringUtils.isNotBlank(email)) {
+                                emailRecipients.add(email);
+                            }
+                        }
+                    }
+
+                    if (!emailRecipients.isEmpty()) {
+                        // Sender email
+                        Person sender = this.personService.getPerson(initiator);
+                        String emailSender = StringUtils.defaultIfBlank(sender.getMail(), initiator);
+
+                        // Expression
+                        String expression = variables.getString("stringMsg");
+
+                        try {
+                            // Mail session
+                            Session mailSession = Session.getInstance(System.getProperties(), null);
+
+                            // Message
+                            MimeMessage message = new MimeMessage(mailSession);
+                            message.setSentDate(new Date());
+
+                            // From
+                            InternetAddress from = new InternetAddress(emailSender);
+                            message.setFrom(from);
+
+                            // To
+                            InternetAddress[] to = InternetAddress.parse(StringUtils.join(emailRecipients, ","));
+                            message.setRecipients(Message.RecipientType.TO, to);
+
+                            // Reply to
+                            InternetAddress[] replyTo = new InternetAddress[]{from};
+                            message.setReplyTo(replyTo);
+
+                            // Subject
+                            String subject = StringUtils.substringBefore(this.transform(portalControllerContext, expression, task, true),
+                                    System.lineSeparator());
+                            message.setSubject(subject, CharEncoding.UTF_8);
+
+                            // Body
+                            String inlineBody = this.transform(portalControllerContext, expression, task, false);
+                            StringBuilder body = new StringBuilder();
+                            for (String line : StringUtils.split(inlineBody, System.lineSeparator())) {
+                                body.append("<p>");
+                                body.append(line);
+                                body.append("</p>");
+                            }
+                            // Body actions
+                            if (BooleanUtils.isTrue(variables.getBoolean("acquitable"))) {
+                                // Accept
+                                String acceptActionId = variables.getString("actionIdYes");
+                                if (StringUtils.isNotBlank(acceptActionId)) {
+                                    String url = this.tasksService.getCommandUrl(portalControllerContext, uuid, acceptActionId, null);
+                                    String title = bundle.getString("ACCEPT");
+                                    Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
+                                    
+                                    body.append("<p>");
+                                    body.append(DOM4JUtils.writeCompact(link));
+                                    body.append("</p>");
+                                }
+                            }
+
+
+                            // TODO
+
+                            // Multipart
+                            Multipart multipart = new MimeMultipart();
+                            MimeBodyPart htmlPart = new MimeBodyPart();
+                            htmlPart.setContent(body.toString(), "text/html; charset=UTF-8");
+                            multipart.addBodyPart(htmlPart);
+                            message.setContent(multipart);
+
+                            // SMTP transport
+                            SMTPTransport transport = (SMTPTransport) mailSession.getTransport();
+                            transport.connect();
+                            transport.sendMessage(message, message.getAllRecipients());
+                            transport.close();
+                        } catch (MessagingException e) {
+                            this.log.warn("Email sending error", e.getCause());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String transform(PortalControllerContext portalControllerContext, String expression, Document task) throws PortalException {
+        return this.transform(portalControllerContext, expression, task, false);
+    }
+
+
+    /**
+     * Tranform expression with Expression-Language resolver.
+     *
+     * @param portalControllerContext portal controller context
+     * @param expression expression
+     * @param task task document
+     * @param disabledLinks disabled links indicator
+     * @return transformed expression
+     * @throws PortalException
+     */
+    private String transform(PortalControllerContext portalControllerContext, String expression, Document task, boolean disabledLinks) throws PortalException {
+        // Procedure instance properties
+        PropertyMap instanceProperties = task.getProperties().getMap("nt:pi");
+
+        // Global variables
+        PropertyMap globalVariables = instanceProperties.getMap("pi:globalVariablesValues");
+
+        // Task variables
+        PropertyMap taskVariables = task.getProperties().getMap("nt:task_variables");
+
+
+        // Variables
+        Map<String, String> variables = new HashMap<String, String>(globalVariables.size() + taskVariables.size());
+        for (Entry<String, Object> entry : globalVariables.getMap().entrySet()) {
+            variables.put(entry.getKey(), String.valueOf(entry.getValue()));
+        }
+        for (Entry<String, Object> entry : taskVariables.getMap().entrySet()) {
+            variables.put(entry.getKey(), String.valueOf(entry.getValue()));
+        }
+        variables.put("procedureInitiator", instanceProperties.getString("pi:procedureInitiator"));
+        variables.put("taskInitiator", task.getString("nt:initiator"));
+
+        return this.transform(portalControllerContext, expression, variables, disabledLinks);
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException {
+        return this.transform(portalControllerContext, expression, variables, false);
+    }
+
+
+    /**
+     * Tranform expression with Expression-Language resolver.
+     *
+     * @param portalControllerContext portal controller context
+     * @param expression expression
+     * @param variables task variables
+     * @param disabledLinks disabled links indicator
+     * @return transformed expression
+     * @throws PortalException
+     */
+    private String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables, boolean disabledLinks)
+            throws PortalException {
         // UUID
         UUID uuid = null;
         if (variables != null) {
@@ -504,7 +774,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Thread local container
-        ThreadLocalContainer container = new ThreadLocalContainer(portalControllerContext, uuid);
+        ThreadLocalContainer container = new ThreadLocalContainer(portalControllerContext, uuid, disabledLinks);
 
 
         // Expression factory
@@ -523,12 +793,17 @@ public class FormsServiceImpl implements IFormsService {
         // Functions
         try {
             context.setFunction("user", "name", TransformationFunctions.getUserDisplayNameMethod());
-            context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
             context.setFunction("user", "email", TransformationFunctions.getUserEmailMethod());
             context.setFunction("group", "emails", TransformationFunctions.getGroupEmailsMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
-            context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
+            if (disabledLinks) {
+                context.setFunction("user", "link", TransformationFunctions.getUserDisplayNameMethod());
+                context.setFunction("document", "link", TransformationFunctions.getDocumentTitleMethod());
+            } else {
+                context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
+                context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
+            }
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);
         } catch (SecurityException e) {
@@ -595,6 +870,27 @@ public class FormsServiceImpl implements IFormsService {
 
 
     /**
+     * Check if links are disabled.
+     * 
+     * @return true if links are disabled
+     */
+    public static boolean areLinksDisabled() {
+        // Thread local container
+        ThreadLocalContainer container = threadLocal.get();
+
+        // Disabled links indicator
+        boolean disabledLinks;
+        if (container == null) {
+            disabledLinks = false;
+        } else {
+            disabledLinks = container.disabledLinks;
+        }
+
+        return disabledLinks;
+    }
+
+
+    /**
      * Thread local container.
      *
      * @author Cédric Krommenhoek
@@ -605,6 +901,8 @@ public class FormsServiceImpl implements IFormsService {
         private final PortalControllerContext portalControllerContext;
         /** UUID. */
         private final UUID uuid;
+        /** Disabled links indicator. */
+        private final boolean disabledLinks;
 
 
         /**
@@ -612,11 +910,13 @@ public class FormsServiceImpl implements IFormsService {
          *
          * @param portalControllerContext portal controller context
          * @param uuid UUID
+         * @param disabledLinks disabled links indicator
          */
-        public ThreadLocalContainer(PortalControllerContext portalControllerContext, UUID uuid) {
+        public ThreadLocalContainer(PortalControllerContext portalControllerContext, UUID uuid, boolean disabledLinks) {
             super();
             this.portalControllerContext = portalControllerContext;
             this.uuid = uuid;
+            this.disabledLinks = disabledLinks;
         }
 
     }

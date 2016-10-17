@@ -181,7 +181,7 @@ public class TransformationFunctions {
             element = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", displayName);
         }
 
-        return DOM4JUtils.write(element);
+        return DOM4JUtils.writeCompact(element);
     }
 
 
@@ -272,7 +272,7 @@ public class TransformationFunctions {
                     }
                 }
 
-                emails = StringUtils.join(list, ";");
+                emails = StringUtils.join(list, ",");
             }
         }
 
@@ -393,34 +393,45 @@ public class TransformationFunctions {
         
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+        // Disabled links indicator
+        boolean disabledLinks = FormsServiceImpl.areLinksDisabled();
 
-        // UUID
-        UUID uuid = FormsServiceImpl.getUuid();
+        // Result
+        String result;
 
-        // Redirection URL
-        String redirectionUrl;
-        if (StringUtils.isEmpty(redirectionPath)) {
-            redirectionUrl = null;
+        if (disabledLinks) {
+            result = StringUtils.EMPTY;
         } else {
-            try {
-                redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-            } catch (PortalException e) {
+            // UUID
+            UUID uuid = FormsServiceImpl.getUuid();
+
+            // Redirection URL
+            String redirectionUrl;
+            if (StringUtils.isEmpty(redirectionPath)) {
                 redirectionUrl = null;
+            } else {
+                try {
+                    redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                } catch (PortalException e) {
+                    redirectionUrl = null;
+                }
             }
+
+            // URL
+            String url;
+            try {
+                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl);
+            } catch (PortalException e) {
+                url = "#";
+            }
+
+            // Link
+            Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
+
+            result = DOM4JUtils.write(link);
         }
 
-        // URL
-        String url;
-        try {
-            url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl);
-        } catch (PortalException e) {
-            url = "#";
-        }
-
-        // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
-
-        return DOM4JUtils.write(link);
+        return result;
     }
 
 

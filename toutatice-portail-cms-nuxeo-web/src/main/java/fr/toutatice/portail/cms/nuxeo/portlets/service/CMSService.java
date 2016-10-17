@@ -2785,7 +2785,7 @@ public class CMSService implements ICMSService {
                     // Proceed
                     this.formsService.proceed(portalControllerContext, task, actionId, variables);
                 } else {
-                    throw new CMSException(CMSException.ERROR_NOTFOUND);
+                    // 404 not found: do nothing
                 }
             } catch (CMSException e) {
                 throw e;
