@@ -149,7 +149,7 @@ public class FormsServiceImpl implements IFormsService {
         Document model = this.getModel(portalControllerContext, modelWebId);
 
         // Procedure initiator
-        String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+        String procedureInitiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
 
         // Starting step
         String startingStep = model.getString("pcd:startingStep");
@@ -209,11 +209,17 @@ public class FormsServiceImpl implements IFormsService {
         }
 
 
+        // End step indicator
+        boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
+
+
         // Email notification
-        try {
-            this.sendEmailNotification(portalControllerContext, uuid, procedureInitiator);
-        } catch (CMSException e) {
-            throw new PortalException(e);
+        if (!endStep) {
+            try {
+                this.sendEmailNotification(portalControllerContext, uuid, procedureInitiator);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            }
         }
 
 
@@ -350,8 +356,10 @@ public class FormsServiceImpl implements IFormsService {
 
         // Email notification
         if (!endStep) {
+            String uuid = globalVariableValues.get("uuid");
+            String initiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
             try {
-                this.sendEmailNotification(portalControllerContext, variables.get("uuid"), previousTaskInitiator);
+                this.sendEmailNotification(portalControllerContext, uuid, initiator);
             } catch (CMSException e) {
                 throw new PortalException(e);
             }
@@ -599,8 +607,7 @@ public class FormsServiceImpl implements IFormsService {
             // Task variables
             PropertyMap variables = task.getProperties().getMap("nt:task_variables");
 
-            // if (BooleanUtils.isTrue(variables.getBoolean("notifEmail"))) {
-            if (true) { // FIXME
+            if (BooleanUtils.isTrue(variables.getBoolean("notifEmail"))) {
                 // Actors
                 PropertyList actors = task.getProperties().getList("nt:actors");
 
@@ -672,9 +679,6 @@ public class FormsServiceImpl implements IFormsService {
                                     body.append("</p>");
                                 }
                             }
-
-
-                            // TODO
 
                             // Multipart
                             Multipart multipart = new MimeMultipart();

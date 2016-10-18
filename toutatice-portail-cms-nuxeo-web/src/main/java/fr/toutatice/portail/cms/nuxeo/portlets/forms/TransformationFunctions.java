@@ -361,7 +361,7 @@ public class TransformationFunctions {
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", title);
 
-        return DOM4JUtils.write(link);
+        return DOM4JUtils.writeCompact(link);
     }
 
 
