@@ -24,6 +24,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.nuxeo.ecm.automation.client.model.StreamBlob;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -37,6 +38,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
  * @see INuxeoCommand
  */
 public class FileContentCommand implements INuxeoCommand {
+    
 
     Document document;
     String docPath;
@@ -64,6 +66,30 @@ public class FileContentCommand implements INuxeoCommand {
         this.streamingSupport = streamingSupport;
     }
 
+    public static PropertyMap getFileMap(Document nuxeoDocument, String fieldName)  {
+        
+        PropertyMap map = null;
+        
+        if( fieldName.contains("/")){
+            //files:files/1/file
+            
+            String tokens[] = fieldName.split("/");
+            int index = Integer.parseInt(tokens[1]);
+
+            PropertyList files = nuxeoDocument.getProperties().getList(tokens[0]);
+            if ((files != null) && (files.size() > index)) {
+                PropertyMap descFileMap = files.getMap(index);
+                if (descFileMap != null) {
+                    map = descFileMap.getMap(tokens[2]);
+                }
+            }
+
+        }
+        else
+            map = nuxeoDocument.getProperties().getMap(fieldName);
+
+        return map;
+    }
 
     /**
      * {@inheritDoc}
@@ -74,7 +100,7 @@ public class FileContentCommand implements INuxeoCommand {
             this.document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", this.docPath).execute();
         }
 
-        PropertyMap map = this.document.getProperties().getMap(this.fieldName);
+        PropertyMap map = getFileMap(document, fieldName);
 
         String pathFile = map.getString("data");
 
@@ -101,10 +127,11 @@ public class FileContentCommand implements INuxeoCommand {
 
 
             // File size
-            Long fileSize = this.document.getProperties().getLong("common:size");
+            //Long fileSize = this.document.getProperties().getLong("common:size");
+            Long length = map.getLong("length");
 
             content.setName(fileName);
-            content.setFileSize(fileSize);
+            content.setFileSize(length);
             content.setMimeType(blob.getMimeType());
             content.setStream(blob.getStream());
             content.setLongLiveSession(session);

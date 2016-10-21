@@ -52,6 +52,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 
 
 /**
@@ -173,7 +174,9 @@ public class BinaryServlet extends HttpServlet {
             } else if (Type.PICTURE.equals(binaryType)) {
                 content = nuxeoController.fetchPicture(path, pictureContent);
             } else if (Type.ATTACHED_FILE.equals(binaryType)) {
-                content = ResourceUtil.getCMSBinaryContent(nuxeoController, path, index);
+                nuxeoController.setStreamingSupport(true);
+                content = nuxeoController.fetchFileContent(path, "files:files/"+index+"/file");
+                
             } else if (Type.BLOB.equals(binaryType)) {
                 content = ResourceUtil.getBlobHolderContent(nuxeoController, path, index);
             } else if (Type.FILE.equals(binaryType)) {

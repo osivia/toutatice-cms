@@ -563,12 +563,12 @@ public class CMSService implements ICMSService {
         try {
             // Document
             CMSItem document;
-            try {
+//            try {
                 document = this.fetchContent(cmsContext, path);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                throw e;
-            }
+//            } catch (Exception e) {
+               //logger.error(e.getMessage(), e);
+//                throw e;
+//            }
 
 
             // File content
@@ -582,7 +582,9 @@ public class CMSService implements ICMSService {
                 cmsContext.setScope("superuser_context");
 
                 if (cmsContext.isStreamingSupport()) {
-                    PropertyMap map = nuxeoDocument.getProperties().getMap("file:content");
+                    
+                    PropertyMap map = FileContentCommand.getFileMap(nuxeoDocument, fieldName);
+                    
                     if (map != null) {
                         Long length = map.getLong("length");
                         if ((length != null) && (length > (100 * 1024l))) {
