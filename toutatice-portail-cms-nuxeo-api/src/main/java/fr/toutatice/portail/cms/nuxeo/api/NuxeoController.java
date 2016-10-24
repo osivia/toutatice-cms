@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -40,6 +41,7 @@ import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentState;
@@ -52,6 +54,8 @@ import org.osivia.portal.api.directory.IDirectoryService;
 import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -180,6 +184,12 @@ public class NuxeoController {
         }
         return this.directoryService;
     }
+
+
+    /** Taskbar service. */
+    private final ITaskbarService taskbarService;
+
+
 
 
     /**
@@ -825,6 +835,10 @@ public class NuxeoController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
 
 
@@ -921,6 +935,9 @@ public class NuxeoController {
     public NuxeoController(PortletContext portletCtx) {
         super();
         this.portletCtx = portletCtx;
+
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
 
 
@@ -1094,6 +1111,43 @@ public class NuxeoController {
                 computedPath = computedPath.replaceAll("\\$\\{domainPath\\}", path);
             }
 
+            if (computedPath.contains("${taskPath}")) {
+                // Window
+                PortalWindow window = WindowFactory.getWindow(this.request);
+                
+                // Linked taskbar item identifier
+                String taskId = window.getProperty(ITaskbarService.LINKED_TASK_ID_WINDOW_PROPERTY);
+                
+                // Task path
+                String path;
+                if (StringUtils.isEmpty(taskId)) {
+                    path = StringUtils.EMPTY;
+                } else {
+                    // Linked task
+                    TaskbarTask linkedTask = null;
+
+                    try {
+                        // Tasks
+                        List<TaskbarTask> tasks = this.taskbarService.getTasks(this.portalCtx, this.spacePath, true);
+                        for (TaskbarTask task : tasks) {
+                            if (taskId.equals(task.getId())) {
+                                linkedTask = task;
+                                break;
+                            }
+                        }
+                    } catch (PortalException e) {
+                        // Do nothing
+                    }
+
+                    if (linkedTask == null) {
+                        path = StringUtils.EMPTY;
+                    } else {
+                        path = linkedTask.getPath();
+                    }
+                }
+
+                computedPath = computedPath.replaceAll("\\$\\{taskPath\\}", path);
+            }
 
         }
 
