@@ -43,7 +43,7 @@ public class FormFilterInstance implements Comparable<FormFilterInstance> {
         String compIndexS = comparedPathTab.length <= 1 ? comparedPathTab[0] : comparedPathTab[comparedPathTab.length - 1];
         int compIndex = Integer.parseInt(compIndexS);
 
-        return Integer.compare(index, compIndex);
+        return Integer.valueOf(index).compareTo(Integer.valueOf(compIndex));
     }
 
     /**
