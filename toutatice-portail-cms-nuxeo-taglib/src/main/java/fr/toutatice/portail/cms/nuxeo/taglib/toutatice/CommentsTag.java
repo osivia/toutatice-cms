@@ -102,10 +102,6 @@ public class CommentsTag extends ToutaticeSimpleTag {
         // Container
         Element container = DOM4JUtils.generateDivElement("hidden-print");
 
-        // Horizontal row
-        Element hr = DOM4JUtils.generateElement(HTMLConstants.HR, null, null);
-        container.add(hr);
-
         // Comments container
         Element commentsContainer = DOM4JUtils.generateDivElement("comments");
         container.add(commentsContainer);

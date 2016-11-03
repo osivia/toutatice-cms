@@ -24,18 +24,27 @@
 		                </c:when>
 		                
 		                <c:otherwise>
-		                    <!-- Document view -->
-		                    <ttc:include page="view-${dispatchJsp}.jsp" />
-		                    
-		                    <!-- Document attachments view -->
-		                    <c:if test="${attachments}">
-		                        <jsp:include page="attachments.jsp" />
-		                    </c:if>
-		                    
-		                    <!-- Metadata -->
-		                    <c:if test="${metadata}">
-		                        <jsp:include page="metadata.jsp" />
-		                    </c:if>
+                            <div class="row">
+                                <div class="col-md-8 col-lg-9">
+                                    <!-- Document view -->
+                                    <ttc:include page="view-${dispatchJsp}.jsp" />
+                                </div>
+                                
+                                <div class="col-md-4 col-lg-3">
+                                    <!-- Document extra view -->
+                                    <ttc:include page="view-${dispatchExtraJsp}-extra.jsp" />
+                                
+                                    <!-- Document attachments view -->
+                                    <c:if test="${attachments}">
+                                        <jsp:include page="attachments.jsp" />
+                                    </c:if>
+                                    
+                                    <!-- Metadata -->
+                                    <c:if test="${metadata}">
+                                        <jsp:include page="metadata.jsp" />
+                                    </c:if>
+                                </div>
+                            </div>
 		                    
 		                    <!-- Document comments view -->
                             <ttc:comments document="${document}" />

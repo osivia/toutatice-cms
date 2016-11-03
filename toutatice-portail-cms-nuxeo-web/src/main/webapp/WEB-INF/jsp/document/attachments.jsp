@@ -6,8 +6,6 @@
 
 <c:if test="${not empty document.attachments}">
     <div class="hidden-print">
-        <hr>
-    
         <div class="attachments">
             <div class="panel panel-default">
                 <div class="panel-heading">
