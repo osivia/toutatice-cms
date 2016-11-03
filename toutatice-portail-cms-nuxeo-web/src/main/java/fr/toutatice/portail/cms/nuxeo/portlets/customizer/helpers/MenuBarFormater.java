@@ -40,6 +40,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.impl.BasicPermissions;
 import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
@@ -203,11 +204,13 @@ public class MenuBarFormater {
 
 
         // Check if current is a workspace
-        boolean workspace = this.isWorkspace(document);
-        // Check if current item is a taskbar item
-        boolean taskbarItem = !workspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+        boolean isWorkspace = this.isWorkspace(document);
         // Check if current item is located inside a user workspace
         boolean insideUserWorkspace = isInUserWorkspace(cmsContext, document);
+        // Check if current item is a taskbar item
+        boolean isTaskbarItem = !isWorkspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+        // Check if current document is inside a workspace and current user is an administrator of this workspace
+        boolean isWorkspaceAdmin = (isWorkspace || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
 
 
         try {
@@ -215,8 +218,8 @@ public class MenuBarFormater {
             this.addShareDropdown(portalControllerContext, bundle);
             this.addOtherOptionsDropdown(portalControllerContext, bundle);
 
-            if (!workspace) {
-                // Creation
+            // Creation
+            if (!isWorkspace) {
                 this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
             }
 
@@ -234,21 +237,24 @@ public class MenuBarFormater {
                 // Contextualization
                 this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                if (!workspace && !taskbarItem) {
-                    // Change edition mode
-                    this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                if (!isWorkspace) {
+                    if (!isTaskbarItem || isWorkspaceAdmin) {
+                        // Reorder
+                        this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                        // Delete
+                        this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    }
 
-                    // Edition
-                    this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                    // Nuxeo drive edit
-                    this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
-                    // Move
-                    this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                    // Reorder
-                    this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                    // Delete
-                    this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    if (!isTaskbarItem) {
+                        // Change edition mode
+                        this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                        // Edition
+                        this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                        // Nuxeo drive edit
+                        this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                        // Move
+                        this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    }
                 }
 
                 // === other tools
@@ -267,7 +273,7 @@ public class MenuBarFormater {
                     // Follow
                     this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                    if (!workspace && !taskbarItem) {
+                    if (!isWorkspace && !isTaskbarItem) {
                         // Lock
                         this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
@@ -386,6 +392,41 @@ public class MenuBarFormater {
         }
 
         return taskbarItem;
+    }
+
+
+    /**
+     * Check if current document is inside a workspace and if current user is an administrator of this workspace.
+     * 
+     * @param cmsContext CMS context
+     * @param documentContext current document context
+     * @return true if current document is inside a workspace and if current user is an administrator of this workspace.
+     * @throws CMSException
+     */
+    protected boolean isWorkspaceAdmin(CMSServiceCtx cmsContext, NuxeoDocumentContext documentContext) throws CMSException {
+        // Publication infos
+        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+
+        // Base path
+        String basePath = publicationInfos.getBasePath();
+
+        // Workspace document context
+        NuxeoDocumentContext workspaceDocumentContext;
+
+        if (StringUtils.equals(basePath, publicationInfos.getContentPath())) {
+            workspaceDocumentContext = documentContext;
+        } else {
+            try {
+                workspaceDocumentContext = NuxeoController.getDocumentContext(cmsContext, basePath);
+            } catch (PortletException e) {
+                throw new CMSException(e);
+            }
+        }
+
+        // Check permissions
+        BasicPermissions permissions = workspaceDocumentContext.getPermissions(BasicPermissions.class);
+
+        return permissions.isManageableByUser();
     }
 
 
