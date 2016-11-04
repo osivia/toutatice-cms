@@ -25,6 +25,9 @@ public class UploadFilesCommand implements INuxeoCommand {
     /** File items. */
     private final List<FileItem> fileItems;
 
+    /** overwite */
+    private boolean overwite;
+
 
     /**
      * Constructor.
@@ -33,6 +36,15 @@ public class UploadFilesCommand implements INuxeoCommand {
         super();
         this.parentId = parentId;
         this.fileItems = fileItems;
+        this.overwite = false;
+    }
+
+
+    public UploadFilesCommand(String parentId, List<FileItem> fileItems, boolean overwite) {
+        super();
+        this.parentId = parentId;
+        this.fileItems = fileItems;
+        this.overwite = overwite;
     }
 
 
@@ -46,6 +58,7 @@ public class UploadFilesCommand implements INuxeoCommand {
         // Operation request
         OperationRequest operationRequest = nuxeoSession.newRequest("FileManager.Import").setInput(blobs);
         operationRequest.setContextProperty("currentDocument", this.parentId);
+        operationRequest.set("overwite", overwite);
 
         return operationRequest.execute();
     }

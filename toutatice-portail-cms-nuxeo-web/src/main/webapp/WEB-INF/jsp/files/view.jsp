@@ -55,6 +55,10 @@
                                 <span><op:translate key="CANCEL" /></span>
                             </button>
                         </div>
+                        
+                        <div class="alert alert-warning hidden"><op:translate key="FILE_BROWSER_DOCUMENTS_OVERWRITTEN" />
+                            <ul></ul>
+                        </div>
                             
                         <div class="form-group">
                             <div class="progress">

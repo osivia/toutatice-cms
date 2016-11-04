@@ -425,8 +425,25 @@
             }
         }
     }
+    
+    .file-upload {
+        right: 15px;
+        bottom: 0px;
+        position: fixed;
+        width: 33%;
+        z-index: 20;
+        max-height: 500px;
+        
+        .panel {
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+        }
+        
+        .file-upload-list{
+            overflow: scroll;
+            max-height: 200px;
+        }
+    }
 }
-
 
 .box-shadow(@shadow) {
     -webkit-box-shadow: @shadow;

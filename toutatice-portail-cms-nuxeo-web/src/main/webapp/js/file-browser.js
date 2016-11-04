@@ -384,11 +384,11 @@ $JQry(function() {
 			var $this = $JQry(this),
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
-				$list = $browser.find(".file-upload .file-upload-list");
+				$list = $browser.find(".file-upload .file-upload-list"),
+				$overwritteAlert = $browser.find(".file-upload .alert-warning");
 			
 			var $cancelGlyph = $JQry(document.createElement("i")).addClass("halflings halflings-ban-circle");
 			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
-			
 
 			// Display panel
 			$panel.removeClass("hidden");
@@ -419,14 +419,30 @@ $JQry(function() {
 			$cancelButton.appendTo($listItem);
 			
 			
+			var nameConflicts = [];
 			$JQry.each(data.files, function(index, file) {
 				// Item content
 				$content = $JQry(document.createElement("p"));
 				$content.text(file.name);
 				$content.appendTo($listItem);
+				
+				$browser.find("li").each(function(index, li) {
+					if($JQry(this).find("a").text() === file.name){
+						$JQry(this).addClass("bg-warning");
+						nameConflicts.push(file.name);
+					}
+				});
+				
 			});
+			if(nameConflicts.length > 0){
+				var $nameList = $overwritteAlert.children("ul");
+				for (i = 0; i < nameConflicts.length; i++) {
+					$nameList.append("<li>"+nameConflicts[i]+"</li>");
+				}
+				$overwritteAlert.removeClass("hidden");
+			}
 		},
-
+		
 		stop : function(e, data) {
 			var $this = $JQry(this),
 				$browser = $this.closest(".file-browser"),
@@ -439,13 +455,44 @@ $JQry(function() {
 			// Refresh
 			updatePortletContent(this, url);
 		},
-
+		
+		finished : function (e) {
+			var $this = $JQry(this),
+				$browser = $this.closest(".file-browser"),
+				$panel = $browser.find(".file-upload .panel"),
+				$list = $browser.find(".file-upload .file-upload-list"),
+				$overwritteAlert = $browser.find(".file-upload .alert-warning");
+			
+			$browser.find("li").removeClass("bg-warning");
+			$overwritteAlert.addClass("hidden");
+			
+			var $paragraphs = $list.find("p");
+			if($paragraphs.length){
+				var alert = false;
+				$paragraphs.each(function(index, paragraph) {
+					var fileName = $JQry(paragraph).text();
+					
+					$browser.find("li").each(function(index, li) {
+						if($JQry(this).find("a").text() === fileName){
+							$JQry(this).addClass("bg-warning");
+							alert = true;
+						}
+					});
+				});
+				if(alert){
+					$overwritteAlert.removeClass("hidden");
+				}
+			}else{
+				$panel.addClass("hidden");
+			}
+		},
+		
 		progressall : function(e, data) {
 			var progress = parseInt(data.loaded / data.total * 100, 10) + "%";
 			$JQry(".file-browser .progress-bar").css("width", progress);
 		}
 	});
-
+	
 	$JQry(document).bind("dragover", function(e) {
 		e.preventDefault();
 		
