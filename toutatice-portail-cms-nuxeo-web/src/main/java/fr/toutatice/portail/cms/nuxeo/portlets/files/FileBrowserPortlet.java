@@ -437,17 +437,19 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Computed path
                 path = nuxeoController.getComputedPath(path);
+                
+                // Publication informations
+                CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
+                boolean editable = publicationInfos.isEditableByUser();
+                request.setAttribute("editable", editable);
 
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
-                request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
-
-                // Publication informations
-                CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
-                boolean editable = publicationInfos.isEditableByUser();
-                request.setAttribute("editable", editable);
+                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDAO.toDTO(currentDocument),
+                        publicationInfos.getSubTypes());
+                request.setAttribute("document", fileBrowser);
 
                 // Fetch Nuxeo children documents
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());
@@ -460,7 +462,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 for (Document document : documents) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                     documentDTO = setDraftInfos(document, documentDTO);
-                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
+                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO,  publicationInfos.getSubTypes());
                     fileBrowserItem.setIndex(index++);
 
                     if ("File".equals(document.getType())) {

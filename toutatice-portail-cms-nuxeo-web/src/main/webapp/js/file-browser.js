@@ -384,8 +384,7 @@ $JQry(function() {
 			var $this = $JQry(this),
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
-				$list = $browser.find(".file-upload .file-upload-list"),
-				$overwritteAlert = $browser.find(".file-upload .alert-warning");
+				$list = $browser.find(".file-upload .file-upload-list");
 			
 			var $cancelGlyph = $JQry(document.createElement("i")).addClass("halflings halflings-ban-circle");
 			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
@@ -550,6 +549,7 @@ function displayControls($browser) {
 		$single = $toolbar.find(".single-selection"),
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
+		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
 		$selected = $browser.find(".ui-selected"),
@@ -574,6 +574,7 @@ function displayControls($browser) {
 		$waiter.hide();
 		
 		$edit.addClass("disabled");
+		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
 		
@@ -709,6 +710,7 @@ function displayControls($browser) {
 function updateControlRights($browser) {
 	var $toolbar = $browser.find(".btn-toolbar"),
 		$edit = $toolbar.find(".edit"),
+		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
 		$selected = $browser.find(".ui-selected"),
@@ -731,6 +733,10 @@ function updateControlRights($browser) {
 		// Edit
 		if ($selected.data("editable") && writable) {
 			$edit.removeClass("disabled");
+		}
+		// Copy: parent editable
+		if ($selected.data("can-copy")) {
+			$copy.removeClass("disabled");
 		}
 	}
 	

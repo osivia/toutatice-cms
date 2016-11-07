@@ -3,17 +3,13 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
-import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.IdRef;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
-import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 
 /**
