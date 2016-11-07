@@ -159,7 +159,9 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
             String name = "createAutomationSession,user='" + nuxeoUserId;
             
-            name += ", nuxeoSession=" + session.hashCode();
+            if(session != null) {
+            	name += ", nuxeoSession=" + session.hashCode();
+            }
 
             this.profiler.logEvent("NUXEO", name, elapsedTime, error);
         }
