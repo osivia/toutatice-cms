@@ -76,17 +76,22 @@ public class FileContentCommand implements INuxeoCommand {
 
         String tokens[] = this.fieldName.split("/");
         
+        boolean pdfConversion = false;
+        
+        if("pdf:content".equals(tokens[0])){
+            tokens[0] = "file:content";
+            pdfConversion = true;
+        }
+        
         PropertyMap map = this.document.getProperties().getMap(tokens[0]);
         
         for(int i=1; i<tokens.length; i++){
             map = map.getMap(tokens[i]);
         }
-       
-        
 
         String pathFile = map.getString("data");
 
-        if (this.streamingSupport) {
+        if (!pdfConversion && this.streamingSupport) {
             String url = null;
 
             if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
@@ -120,9 +125,14 @@ public class FileContentCommand implements INuxeoCommand {
             return content;
         }
 
+        FileBlob blob;
+        
         // download the file from its remote location
-        FileBlob blob = (FileBlob) session.getFile(pathFile);
-
+        if(pdfConversion) {
+             blob = (FileBlob) session.newRequest("Blob.ToPDF").setInput(this.document).execute();
+        } else {
+             blob = (FileBlob) session.getFile(pathFile);
+        }
 
         /* Construction résultat */
 

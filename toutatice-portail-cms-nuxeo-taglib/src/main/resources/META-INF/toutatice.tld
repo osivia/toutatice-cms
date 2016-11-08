@@ -291,6 +291,7 @@
             <rtexprvalue>true</rtexprvalue>
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
       </attribute>
+      
     </tag>
     
     

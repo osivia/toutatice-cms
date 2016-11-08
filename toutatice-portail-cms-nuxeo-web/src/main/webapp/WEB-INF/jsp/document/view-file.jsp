@@ -9,7 +9,7 @@
 
 <c:set var="url"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
 <c:set var="description" value="${document.properties['dc:description']}" />
-<c:set var="previewSrc"><ttc:filePreview document='${document}'/></c:set>
+<c:set var="previewURL"><ttc:filePreview document="${document}" /></c:set>
 
 
 <!-- Download menubar item -->
@@ -17,8 +17,7 @@
 
 
 <div class="file">
-    <!-- Preview -->
-	<div class="embed-preview-container">
-	    <iframe class="embed-preview" src="${previewSrc}"></iframe>
-	</div>
+    <c:if test="${not empty previewURL}">
+         <iframe src="${previewURL}" width="100%" height="800" webkitallowfullscreen="" allowfullscreen=""></iframe>
+    </c:if>
 </div>

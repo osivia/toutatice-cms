@@ -12,7 +12,6 @@
         </transaction>
         
         <header-content>
-            <script type="text/javascript" src="/js/preview.js" />
             <link rel="stylesheet" href="/css/document.min.css" />
         </header-content>
         
