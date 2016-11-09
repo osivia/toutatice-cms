@@ -30,7 +30,7 @@ public class DocumentService {
 
     public static final String FetchDocument = "Document.Fetch";
 
-    public static final String CreateDocument = "Document.Create";
+    public static final String CreateDocument = "Document.TTCCreate";
     
     public static final String SaveDocument = "Document.Save";
 
