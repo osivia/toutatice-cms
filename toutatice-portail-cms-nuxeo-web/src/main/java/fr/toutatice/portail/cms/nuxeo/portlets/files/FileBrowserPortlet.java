@@ -442,7 +442,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
-
+                
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
@@ -450,6 +450,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDAO.toDTO(currentDocument),
                         publicationInfos.getSubTypes());
                 request.setAttribute("document", fileBrowser);
+                
+                String[] acceptedTypes = fileBrowser.getAcceptedTypes();
+                request.setAttribute("canUpload", ArrayUtils.isNotEmpty(acceptedTypes));
 
                 // Fetch Nuxeo children documents
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());

@@ -32,13 +32,12 @@
 
 <div class="file-browser" data-refreshurl="${refreshURL}" data-dropurl="${dropURL}" data-sorturl="${sortURL}">
     <div
-        <c:if test="${editable}">class="drop-zone"</c:if>
+        <c:if test="${canUpload}">class="drop-zone"</c:if>
     >
         <jsp:include page="view-${view}.jsp" />
         
-        
         <!-- File upload -->
-        <c:if test="${editable}">
+        <c:if test="${canUpload}">
             <form action="${fileUploadURL}" method="post" enctype="multipart/form-data" class="file-upload" role="form">
                 <input type="file" name="files[]" class="hidden" multiple="multiple">
             
