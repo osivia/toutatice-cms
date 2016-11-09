@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Window;
+import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -171,7 +172,7 @@ public class NuxeoTagService implements INuxeoTagService {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("osivia.hideTitle", "1");
         properties.put("osivia.ajaxLink", "1");
-        properties.put("theme.dyna.partial_refresh_enabled", "true");
+        properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
         properties.put("uidFichePersonne", name);
 
         // Page parameters
