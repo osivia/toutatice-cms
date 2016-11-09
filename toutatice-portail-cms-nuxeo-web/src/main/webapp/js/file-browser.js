@@ -385,6 +385,7 @@ $JQry(function() {
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
 				$list = $browser.find(".file-upload .file-upload-list");
+			    $overwritteAlert = $browser.find(".file-upload .alert-warning");
 			
 			var $cancelGlyph = $JQry(document.createElement("i")).addClass("halflings halflings-ban-circle");
 			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
@@ -455,7 +456,7 @@ $JQry(function() {
 			updatePortletContent(this, url);
 		},
 		
-		finished : function (e) {
+		finished : function (e, data) {
 			var $this = $JQry(this),
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
