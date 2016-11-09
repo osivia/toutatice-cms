@@ -164,7 +164,7 @@ public class TransformationFunctions {
             properties.put("osivia.hideTitle", "1");
             properties.put("osivia.ajaxLink", "1");
             properties.put("theme.dyna.partial_refresh_enabled", "true");
-            properties.put("uidFichePersonne", displayName);
+            properties.put("uidFichePersonne", user);
 
             // Page parameters
             Map<String, String> parameters = new HashMap<String, String>(0);
