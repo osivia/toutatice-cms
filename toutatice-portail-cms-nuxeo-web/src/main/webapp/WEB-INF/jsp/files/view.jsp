@@ -44,7 +44,7 @@
                 <div class="panel panel-default hidden">
                     <div class="panel-body">
                         <div class="form-group fileupload-buttonbar">
-                            <button type="submit" class="btn btn-primary start">
+                            <button type="button" class="btn btn-primary start">
                                 <i class="halflings halflings-upload"></i>
                                 <span><op:translate key="FILE_BROWSER_START_UPLOAD" /></span>
                             </button>
