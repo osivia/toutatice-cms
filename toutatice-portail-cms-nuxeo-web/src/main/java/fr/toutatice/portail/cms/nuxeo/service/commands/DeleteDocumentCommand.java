@@ -12,7 +12,6 @@ import org.osivia.portal.api.ecm.EcmCommonCommands;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.NotificationsType;
-import org.osivia.portal.core.cms.ICMSService;
 
 
 /**
@@ -33,7 +32,7 @@ public class DeleteDocumentCommand extends EcmCommand {
      * @param realCommandParameters
      */
     public DeleteDocumentCommand(INotificationsService notifService, IInternationalizationService itlzService) {
-        super(EcmCommonCommands.deleteDocument.toString(), ReloadAfterCommandStrategy.refreshNavigation, "Document.Delete",
+        super(EcmCommonCommands.deleteDocument.toString(), ReloadAfterCommandStrategy.moveToParent, "Document.Delete",
                 new HashMap<String, Object>());
         this.itlzService = itlzService;
         this.notifService = notifService;
