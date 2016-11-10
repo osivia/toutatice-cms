@@ -19,9 +19,6 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
  */
 public class CopyDocumentCommand implements INuxeoCommand {
     
-    /** Default prefix title. */
-    public final static String DEFAULT_COPY_TITLE_PREFIX = "Copie de ";
-    
     /** Document's id to copy. */
     private String sourceId;
     /** Folderish target's id. */
@@ -50,11 +47,7 @@ public class CopyDocumentCommand implements INuxeoCommand {
         DocRef sourceRef = new IdRef(this.sourceId); 
         DocRef targetRef = new IdRef(this.targetId);
         
-        Document copiedDocument = docService.copy(sourceRef, targetRef);
-        
-        String title = DEFAULT_COPY_TITLE_PREFIX.concat(copiedDocument.getTitle());
-        docService.setProperty(copiedDocument, "dc:title", title);
-        return copiedDocument;
+        return docService.copy(sourceRef, targetRef);
     }
     
     /**
