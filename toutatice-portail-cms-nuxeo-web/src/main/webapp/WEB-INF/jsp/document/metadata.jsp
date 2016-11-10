@@ -7,11 +7,8 @@
 
 
 <c:set var="author" value="${document.properties['dc:creator']}" />
-
-<c:set var="date" value="${document.properties['dc:modified']}" />
-<c:if test="${empty date}">
-    <c:set var="date" value="${document.properties['dc:created']}" />
-</c:if>
+<c:set var="created" value="${document.properties['dc:created']}" />
+<c:set var="modified" value="${document.properties['dc:modified']}" />
 
 
 <div class="metadata">
@@ -31,10 +28,16 @@
                     <p><ttc:user name="${author}"/></p>
                 </dd>
             
-                <!-- Publication date -->
-                <dt><op:translate key="DOCUMENT_PUBLICATION_DATE" /></dt>
+                <!-- Creation date -->
+                <dt><op:translate key="DOCUMENT_CREATED_DATE" /></dt>
                 <dd>
-                    <p><fmt:formatDate value="${date}" type="both" dateStyle="full" timeStyle="short" /></p>
+                    <p><fmt:formatDate value="${created}" type="both" dateStyle="full" timeStyle="short" /></p>
+                </dd>
+                
+                <!-- Modification date -->
+                <dt><op:translate key="DOCUMENT_MODIFIED_DATE" /></dt>
+                <dd>
+                    <p><fmt:formatDate value="${modified}" type="both" dateStyle="full" timeStyle="short" /></p>
                 </dd>
             
                 <!-- Remote publication spaces -->
