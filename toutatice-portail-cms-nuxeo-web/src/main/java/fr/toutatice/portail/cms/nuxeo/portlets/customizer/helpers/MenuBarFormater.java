@@ -1907,18 +1907,20 @@ public class MenuBarFormater {
     protected void addPermaLinkItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             String url) throws CMSException {
         // Fancybox identifier
-        final String id = cmsContext.getResponse().getNamespace() + "_PERMALINK_DISPLAY";
+        String id = cmsContext.getResponse().getNamespace() + "PermalinkModal";
 
         // Fancybox HTML content
-        final String htmlContent = this.generatePermalinkFancybox(bundle, id, url);
+        String htmlContent = this.generatePermalinkModal(bundle, id, url);
 
 
         // Parent dropdown menu
-        final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.SHARE_DROPDOWN_MENU_ID);
+        MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.SHARE_DROPDOWN_MENU_ID);
 
         // Menubar item
-        final MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", parent, 1, "#" + id, null, null,
-                "fancybox_inline");
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", parent, 1, "#", null, null, null);
+        item.getData().put("toggle", "modal");
+        item.getData().put("target", "#" + id);
+        item.getData().put("backdrop", String.valueOf(false));
         item.setAjaxDisabled(true);
         item.setAssociatedHTML(htmlContent);
 
@@ -2069,61 +2071,65 @@ public class MenuBarFormater {
 
 
     /**
-     * Generate permalink fancybox HTML content.
-     *
+     * Generate permalink modal HTML content.
+     * 
      * @param bundle internationalization bundle
-     * @param id fancybox identifier
+     * @param id modal identifier
      * @param url permalink URL
      * @return HTML content
      */
-    private String generatePermalinkFancybox(Bundle bundle, String id, String url) {
-        // Fancybox container
-        final Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+    private String generatePermalinkModal(Bundle bundle, String id, String url) {
+        // ARIA label identifier
+        String labelId = id + "Label";
+        
+        // Modal container
+        Element container = DOM4JUtils.generateDivElement("modal fade", AccessibilityRoles.DIALOG);
+        DOM4JUtils.addAttribute(container, "id", id);
+        DOM4JUtils.addAttribute(container, "tabindex", "-1");
+        DOM4JUtils.addAriaAttribute(container, "labelledby", labelId);
 
-        // Container
-        final Element container = DOM4JUtils.generateDivElement(null);
-        DOM4JUtils.addAttribute(container, HTMLConstants.ID, id);
-        fancyboxContainer.add(container);
+        // Modal document
+        Element document = DOM4JUtils.generateDivElement("modal-dialog", AccessibilityRoles.DOCUMENT);
+        container.add(document);
 
-        // Form
-        final Element form = DOM4JUtils.generateDivElement("form-horizontal");
-        container.add(form);
+        // Modal content
+        Element content = DOM4JUtils.generateDivElement("modal-content");
+        document.add(content);
 
-        // Form group #1
-        final Element formGroup1 = DOM4JUtils.generateDivElement("form-group");
-        form.add(formGroup1);
+        // Modal header
+        Element header = DOM4JUtils.generateDivElement("modal-header");
+        content.add(header);
 
-        // Label
-        final Element label = DOM4JUtils.generateElement(HTMLConstants.LABEL, "control-label col-sm-2", bundle.getString("PERMALINK"));
-        formGroup1.add(label);
+        // Modal close button
+        Element close = DOM4JUtils.generateElement("button", "close", null);
+        DOM4JUtils.addAttribute(close, "type", "button");
+        DOM4JUtils.addDataAttribute(close, "dismiss", "modal");
+        DOM4JUtils.addAriaAttribute(close, "label", bundle.getString("CLOSE"));
+        header.add(close);
 
-        // Link col
-        final Element linkCol = DOM4JUtils.generateDivElement("col-sm-10");
-        formGroup1.add(linkCol);
+        // Modal close button label
+        Element closeLabel = DOM4JUtils.generateElement("span", null, "&times;");
+        DOM4JUtils.addAriaAttribute(closeLabel, "hidden", String.valueOf(true));
+        close.add(closeLabel);
 
-        // Form control static
-        final Element formControlStatic = DOM4JUtils.generateElement(HTMLConstants.P, "form-control-static", null);
-        linkCol.add(formControlStatic);
+        // Modal title
+        Element title = DOM4JUtils.generateElement("h4", "modal-title", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", null);
+        DOM4JUtils.addAttribute(title, "id", labelId);
+        header.add(title);
 
-        // Link
-        final Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", url);
-        formControlStatic.add(link);
+        // Modal body
+        Element body = DOM4JUtils.generateDivElement("modal-body");
+        content.add(body);
 
-        // Form group #2
-        final Element formGroup2 = DOM4JUtils.generateDivElement("form-group");
-        form.add(formGroup2);
+        // Modal body paragraph
+        Element paragraph = DOM4JUtils.generateElement("p", null, null);
+        body.add(paragraph);
 
-        // Button col
-        final Element buttonCol = DOM4JUtils.generateDivElement("col-sm-offset-2 col-sm-10");
-        formGroup2.add(buttonCol);
+        // Modal body link
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
+        paragraph.add(link);
 
-        // Close button
-        final Element button = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CLOSE"));
-        DOM4JUtils.addAttribute(button, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
-        DOM4JUtils.addAttribute(button, HTMLConstants.ONCLICK, "closeFancybox()");
-        buttonCol.add(button);
-
-        return DOM4JUtils.write(fancyboxContainer);
+        return DOM4JUtils.write(container);
     }
 
 

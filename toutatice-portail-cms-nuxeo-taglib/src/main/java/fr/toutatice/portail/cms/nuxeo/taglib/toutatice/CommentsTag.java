@@ -14,7 +14,9 @@ import javax.servlet.jsp.JspException;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.html.AccessibilityRoles;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
@@ -38,8 +40,10 @@ import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
  */
 public class CommentsTag extends ToutaticeSimpleTag {
 
-    /** Internationalization service. */
+    /** Internationalization bundle factory. */
     private final IBundleFactory bundleFactory;
+    /** Person service. */
+    private final PersonService personService;
 
 
     /**
@@ -52,6 +56,9 @@ public class CommentsTag extends ToutaticeSimpleTag {
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+
+        // Person service
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -358,16 +365,20 @@ public class CommentsTag extends ToutaticeSimpleTag {
         try {
             // Avatar link
             Link avatarLink = nuxeoController.getUserAvatar(author);
-            // User name & link
-            DirectoryPerson person = this.getTagService().getDirectoryPerson(nuxeoController, author);
+            // Person
+            Person person = this.personService.getPerson(author);
+            // Display name
             String displayName;
-            if ((person != null) && StringUtils.isNotBlank(person.getDisplayName())) {
-                displayName = person.getDisplayName();
-            } else {
+            if (person == null) {
                 displayName = author;
+            } else {
+                displayName = StringUtils.defaultIfEmpty(person.getDisplayName(), author);
             }
-            Link profileLink = null;
-            if (person != null) {
+            // User link
+            Link profileLink;
+            if (person == null) {
+                profileLink = null;
+            } else {
                 profileLink = this.getTagService().getUserProfileLink(nuxeoController, author, displayName);
             }
 

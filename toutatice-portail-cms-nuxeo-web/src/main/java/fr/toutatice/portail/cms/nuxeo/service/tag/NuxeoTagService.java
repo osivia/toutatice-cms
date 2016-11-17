@@ -11,14 +11,12 @@ import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.directory.IDirectoryService;
-import org.osivia.portal.api.directory.IDirectoryServiceLocator;
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
@@ -43,8 +41,6 @@ public class NuxeoTagService implements INuxeoTagService {
     private final IPortalUrlFactory portalUrlFactory;
     /** WebId service. */
     private final IWebIdService webIdService;
-    /** Directory service locator. */
-    private final IDirectoryServiceLocator directoryServiceLocator;
 
 
     /**
@@ -57,8 +53,6 @@ public class NuxeoTagService implements INuxeoTagService {
         this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
         // WebId service
         this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
-        // Directory service locator
-        this.directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
     }
 
 
@@ -146,30 +140,13 @@ public class NuxeoTagService implements INuxeoTagService {
      * {@inheritDoc}
      */
     @Override
-    public DirectoryPerson getDirectoryPerson(NuxeoController nuxeoController, String name) {
-        DirectoryPerson person = null;
-
-        // Directory service
-        IDirectoryService directoryService = this.directoryServiceLocator.getDirectoryService();
-        if (directoryService != null) {
-            // User LDAP person
-            person = directoryService.getPerson(name);
-        }
-
-        return person;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Link getUserProfileLink(NuxeoController nuxeoController, String name, String displayName) {
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
 
         // Page properties
         Map<String, String> properties = new HashMap<String, String>();
+        properties.put(InternalConstants.PROP_WINDOW_TITLE, displayName);
         properties.put("osivia.hideTitle", "1");
         properties.put("osivia.ajaxLink", "1");
         properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));

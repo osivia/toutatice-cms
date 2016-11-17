@@ -13,6 +13,7 @@ import javax.naming.Name;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
+import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -31,6 +32,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.constants.InternalConstants;
 
 /**
  * Transformation functions.
@@ -157,13 +159,14 @@ public class TransformationFunctions {
             element = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, user);
         } else {
             // Display name
-            String displayName = StringUtils.defaultIfBlank(person.getDisplayName(), user);
+            String displayName = StringUtils.defaultIfEmpty(person.getDisplayName(), user);
 
             // Page properties
             Map<String, String> properties = new HashMap<String, String>();
+            properties.put(InternalConstants.PROP_WINDOW_TITLE, displayName);
             properties.put("osivia.hideTitle", "1");
             properties.put("osivia.ajaxLink", "1");
-            properties.put("theme.dyna.partial_refresh_enabled", "true");
+            properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
             properties.put("uidFichePersonne", user);
 
             // Page parameters

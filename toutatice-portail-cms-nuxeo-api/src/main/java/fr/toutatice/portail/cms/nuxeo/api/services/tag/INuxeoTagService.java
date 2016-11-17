@@ -2,7 +2,6 @@ package fr.toutatice.portail.cms.nuxeo.api.services.tag;
 
 import java.io.IOException;
 
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -28,16 +27,6 @@ public interface INuxeoTagService {
      * @return link
      */
     Link getDocumentLink(NuxeoController nuxeoController, DocumentDTO document, String property, String displayContext, boolean picture, boolean permalink);
-
-
-    /**
-     * Get directory person.
-     *
-     * @param nuxeoController Nuxeo controller
-     * @param name person name
-     * @return directory person
-     */
-    DirectoryPerson getDirectoryPerson(NuxeoController nuxeoController, String name);
 
 
     /**
