@@ -15,29 +15,29 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
  */
 public class FormFilterContext {
 
+    /** Portal controller context. */
+    private PortalControllerContext portalControllerContext;
+
     /** The variables. */
     private Map<String, String> variables;
-
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
 
-    /** portalControllerContext */
-    private PortalControllerContext portalControllerContext;
-
     /** The actors. */
     private FormActors actors;
-
+    /** Model webId. */
+    private String modelWebId;
+    /** Procedure instance UUID. */
+    private String procedureInstanceUuid;
     /** The action id. */
     private String actionId;
-
     /** procedureInitiator */
     private String procedureInitiator;
-
     /** taskInitiator */
     private String taskInitiator;
-
     /** nextStep */
     private String nextStep;
+
 
     /** Forms service. */
     private final IFormsService formsService;
@@ -56,6 +56,7 @@ public class FormFilterContext {
         // Forms service
         this.formsService = NuxeoServiceFactory.getFormsService();
     }
+
 
     /**
      * Gets the variables.
@@ -91,6 +92,42 @@ public class FormFilterContext {
      */
     public void setActors(FormActors actors) {
         this.actors = actors;
+    }
+
+    /**
+     * Getter for modelWebId.
+     * 
+     * @return the modelWebId
+     */
+    public String getModelWebId() {
+        return modelWebId;
+    }
+
+    /**
+     * Setter for modelWebId.
+     * 
+     * @param modelWebId the modelWebId to set
+     */
+    public void setModelWebId(String modelWebId) {
+        this.modelWebId = modelWebId;
+    }
+
+    /**
+     * Getter for procedureInstanceUuid.
+     * 
+     * @return the procedureInstanceUuid
+     */
+    public String getProcedureInstanceUuid() {
+        return procedureInstanceUuid;
+    }
+
+    /**
+     * Setter for procedureInstanceUuid.
+     * 
+     * @param procedureInstanceUuid the procedureInstanceUuid to set
+     */
+    public void setProcedureInstanceUuid(String procedureInstanceUuid) {
+        this.procedureInstanceUuid = procedureInstanceUuid;
     }
 
     /**

@@ -189,8 +189,8 @@ public class FormsServiceImpl implements IFormsService {
         variables.put("uuid", uuid);
 
         // Construction du contexte et appel des filtres
-        FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator,
-                null, nextStep);
+        FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
+                procedureInitiator, null, nextStep);
 
         if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
             // Properties
@@ -330,9 +330,12 @@ public class FormsServiceImpl implements IFormsService {
             variables = new HashMap<String, String>();
         }
 
-        // construction du contexte et appel des filtres
-        FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
-                procedureInitiator, previousTaskInitiator, nextStep);
+        // Procedure instance UUID
+        String procedureInstanceUuid = globalVariableValues.get("uuid");
+
+        // Construction du contexte et appel des filtres
+        FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
+                globalVariableValues, portalControllerContext, procedureInitiator, previousTaskInitiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -391,17 +394,19 @@ public class FormsServiceImpl implements IFormsService {
 
 
     /**
-     * Appel des filtres
+     * Appel des filtres.
      *
+     * @param modelWebId model webId
+     * @param procedureInstanceUuid procedure instance UUID
      * @param actionId
      * @param variables
      * @param actionProperties
      * @param actors
      * @return
      */
-    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String procedureInitiator, String taskInitiator,
-            String nextStep) throws FormFilterException {
+    private FormFilterContext callFilters(String modelWebId, String procedureInstanceUuid, String actionId, Map<String, String> variables,
+            PropertyMap actionProperties, FormActors actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
+            String procedureInitiator, String taskInitiator, String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -445,6 +450,8 @@ public class FormsServiceImpl implements IFormsService {
         FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
+        filterContext.setModelWebId(modelWebId);
+        filterContext.setProcedureInstanceUuid(procedureInstanceUuid);
         filterContext.setActionId(actionId);
         if (globalVariableValues != null) {
             // Copy submitted variables into Global Variables Values
