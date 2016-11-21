@@ -5,7 +5,7 @@
     <parent>
         <groupId>toutatice-portail.cms</groupId>
         <artifactId>cms-parent</artifactId>
-        <version>4.2.17-RC01</version>
+        <version>4.2.17-SNAPSHOT</version>
     </parent>
 
     <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
