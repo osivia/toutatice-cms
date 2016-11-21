@@ -7,6 +7,7 @@
 
 
 <c:set var="author" value="${document.properties['dc:creator']}" />
+<c:set var="lastContributor" value="${document.properties['dc:lastContributor']}" />
 <c:set var="created" value="${document.properties['dc:created']}" />
 <c:set var="modified" value="${document.properties['dc:modified']}" />
 
@@ -22,22 +23,28 @@
     
         <div class="panel-body">
             <dl>
-                <!-- Author -->
-                <dt><op:translate key="AUTHOR" /></dt>
+                <!-- Creation -->
+                <dt><op:translate key="DOCUMENT_METADATA_CREATION" /></dt>
                 <dd>
-                    <p><ttc:user name="${author}"/></p>
-                </dd>
-            
-                <!-- Creation date -->
-                <dt><op:translate key="DOCUMENT_CREATED_DATE" /></dt>
-                <dd>
-                    <p><fmt:formatDate value="${created}" type="both" dateStyle="full" timeStyle="short" /></p>
+                    <p>
+                        <span><op:translate key="DOCUMENT_METADATA_CREATED_ON" /></span>
+                        <span><op:formatRelativeDate value="${created}" /></span>
+                        <br>
+                        <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                        <span><ttc:user name="${author}"/></span>
+                    </p>
                 </dd>
                 
-                <!-- Modification date -->
-                <dt><op:translate key="DOCUMENT_MODIFIED_DATE" /></dt>
+                <!-- Modification -->
+                <dt><op:translate key="DOCUMENT_METADATA_MODIFICATION" /></dt>
                 <dd>
-                    <p><fmt:formatDate value="${modified}" type="both" dateStyle="full" timeStyle="short" /></p>
+                    <p>
+                        <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
+                        <span><op:formatRelativeDate value="${modified}" /></span>
+                        <br>
+                        <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                        <span><ttc:user name="${lastContributor}"/></span>
+                    </p>
                 </dd>
             
                 <!-- Remote publication spaces -->
