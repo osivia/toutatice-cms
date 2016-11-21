@@ -1773,7 +1773,7 @@ public class MenuBarFormater {
             parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
         }
 
-        final String path = this.customizer.getContentWebIdPath(cmsContext);
+        final String path = this.customizer.getContentWebIdPath(cmsContext, pubInfos);
 
         // URL
         String url;
