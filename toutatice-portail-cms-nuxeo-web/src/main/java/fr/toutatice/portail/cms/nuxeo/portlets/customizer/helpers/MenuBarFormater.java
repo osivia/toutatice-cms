@@ -241,6 +241,8 @@ public class MenuBarFormater {
                     if (!isTaskbarItem || isWorkspaceAdmin) {
                         // Reorder
                         this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                        // Edition
+                        this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
                         // Delete
                         this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                     }
@@ -248,8 +250,6 @@ public class MenuBarFormater {
                     if (!isTaskbarItem) {
                         // Change edition mode
                         this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                        // Edition
-                        this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                         // Nuxeo drive edit
                         this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                         // Move
@@ -1276,15 +1276,20 @@ public class MenuBarFormater {
 
     }
 
+
     /**
      * Get edit CMS content link.
-     *
+     * 
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
+     * @param cmsContext CMS context
+     * @param pubInfos publication infos
+     * @param menubar menubar
      * @param bundle internationalization bundle
+     * @param isTaskbarItem is taskbar item indicator
+     * @throws CMSException
      */
     protected void getEditLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1295,8 +1300,22 @@ public class MenuBarFormater {
         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
         }
+        
+        // Identifier
+        String id = "EDIT";
+        // Icon
+        String icon = "glyphicons glyphicons-pencil";
+        // Parent
+        MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+        // Order
+        int order = 1;
 
-        if (pubInfos.isEditableByUser()) {
+        if (isTaskbarItem) {
+            String title = bundle.getString("EDIT");
+            MenubarItem item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
+            item.setDisabled(true);
+            menubar.add(item);
+        } else if (pubInfos.isEditableByUser()) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                 final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
                 if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
@@ -1336,16 +1355,12 @@ public class MenuBarFormater {
                         editLabel = bundle.getString("EDIT");
                     }
 
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
                     // Menubar item
-                    final MenubarItem item = new MenubarItem("EDIT", editLabel, "glyphicons glyphicons-pencil", parent, 1, url, null, onClick.toString(),
+                    final MenubarItem item = new MenubarItem(id, editLabel, icon, parent, 1, url, null, onClick.toString(),
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
                     menubar.add(item);
-                } else if (pubInfos.hasDraft()) {
-
                 }
             }
         }
