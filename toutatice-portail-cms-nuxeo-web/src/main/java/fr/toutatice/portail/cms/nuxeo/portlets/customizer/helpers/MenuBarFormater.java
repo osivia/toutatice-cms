@@ -1310,30 +1310,34 @@ public class MenuBarFormater {
         // Order
         int order = 1;
 
-        if (isTaskbarItem) {
-            String title = bundle.getString("EDIT");
-            MenubarItem item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
-            item.setDisabled(true);
-            menubar.add(item);
-        } else if (pubInfos.isEditableByUser()) {
+        if (pubInfos.isEditableByUser()) {
             if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
-                if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
-                    // Callback URL
-                    final String callbackURL = this.urlFactory
-                            .getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
-                    // ECM base URL
-                    final String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
+                // Document type
+                DocumentType type = this.customizer.getCMSItemTypes().get(document.getType());
 
-                    final Map<String, String> requestParameters = new HashMap<String, String>();
+                // Menubar item
+                MenubarItem item;
+
+                if (isTaskbarItem) {
+                    String title = bundle.getString("EDIT");
+                    item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
+                    item.setDisabled(true);
+                    menubar.add(item);
+                } else if ((type != null) && type.isSupportsPortalForms()) {
+                    // Callback URL
+                    String callbackURL = this.urlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
+                    // ECM base URL
+                    String ecmBaseURL = this.cmsService.getEcmDomain(cmsContext);
+
+                    Map<String, String> requestParameters = new HashMap<String, String>();
                     String docPathToEdit = pubInfos.getDocumentPath();
-                    if(pubInfos.hasDraft()){
+                    if (pubInfos.hasDraft()) {
                         docPathToEdit = pubInfos.getDraftPath();
                     }
-                    final String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, docPathToEdit, requestParameters);
+                    String url = this.cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, docPathToEdit, requestParameters);
 
                     // On click action
-                    final StringBuilder onClick = new StringBuilder();
+                    StringBuilder onClick = new StringBuilder();
                     onClick.append("javascript:setCallbackFromEcmParams('");
                     onClick.append(callbackURL);
                     onClick.append("', '");
@@ -1356,10 +1360,13 @@ public class MenuBarFormater {
                     }
 
                     // Menubar item
-                    final MenubarItem item = new MenubarItem(id, editLabel, icon, parent, 1, url, null, onClick.toString(),
-                            "fancyframe_refresh");
+                    item = new MenubarItem(id, editLabel, icon, parent, 1, url, null, onClick.toString(), "fancyframe_refresh");
                     item.setAjaxDisabled(true);
+                } else {
+                    item = null;
+                }
 
+                if (item != null) {
                     menubar.add(item);
                 }
             }
