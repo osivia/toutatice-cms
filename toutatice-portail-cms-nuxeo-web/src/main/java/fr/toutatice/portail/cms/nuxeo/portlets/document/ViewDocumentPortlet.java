@@ -21,6 +21,7 @@ import java.util.List;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
@@ -37,12 +38,9 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.directory.IDirectoryServiceLocator;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -135,15 +133,24 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
+        // Portlet context
+        PortletContext portletContext = this.getPortletContext();
+
         try {
             // Nuxeo service
-            this.nuxeoService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
+            this.nuxeoService = (INuxeoService) portletContext.getAttribute("NuxeoService");
             if (this.nuxeoService == null) {
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
             }
 
+            // CMS service
+            CMSService cmsService = new CMSService(portletContext);
+            ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
+            cmsLocator.register(cmsService);
+
             // CMS customizer
-            CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
+            CMSCustomizer customizer = new CMSCustomizer(portletContext, cmsService);
+            cmsService.setCustomizer(customizer);
             this.nuxeoService.registerCMSCustomizer(customizer);
 
             // Nuxeo tag service
@@ -159,23 +166,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
             this.commentDAO = CommentDAO.getInstance();
             this.publishedDocumentsDAO = RemotePublishedDocumentDAO.getInstance();
 
-            // CMS service
-            CMSService cmsService = new CMSService(this.getPortletContext());
-            ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
-            cmsLocator.register(cmsService);
-            cmsService.setCustomizer(customizer);
-            customizer.setCmsService(cmsService);
-
-
-            // Directory service locator
-            IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
-            customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
-
-            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                    IInternationalizationService.MBEAN_NAME);
-            customizer.setInternationalizationService(internationalizationService);
-            INotificationsService notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
-            customizer.setNotificationsService(notificationsService);
 
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
@@ -186,10 +176,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
             // v1.0.16
-            ThumbnailServlet.setPortletContext(this.getPortletContext());
-            SitePictureServlet.setPortletContext(this.getPortletContext());
-            AvatarServlet.setPortletContext(this.getPortletContext());
-            BinaryServlet.setPortletContext(this.getPortletContext());
+            ThumbnailServlet.setPortletContext(portletContext);
+            SitePictureServlet.setPortletContext(portletContext);
+            AvatarServlet.setPortletContext(portletContext);
+            BinaryServlet.setPortletContext(portletContext);
         } catch (PortletException e) {
             throw e;
         } catch (Exception e) {

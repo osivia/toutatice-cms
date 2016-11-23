@@ -2294,8 +2294,8 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public String refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
-        return this.customizer.refreshBinaryResource(cmsCtx, path);
+    public void refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
+        this.customizer.refreshBinaryResource(path);
     }
 
 
@@ -2346,7 +2346,7 @@ public class CMSService implements ICMSService {
     @Override
     public TaskbarItems getTaskbarItems(CMSServiceCtx cmsContext) throws CMSException {
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         return pluginManager.customizeTaskbarItems();
     }
@@ -2544,7 +2544,7 @@ public class CMSService implements ICMSService {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
         // Document
         Document document = (Document) cmsContext.getDoc();
         
@@ -2575,7 +2575,7 @@ public class CMSService implements ICMSService {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         // Domain contextualizations
         List<DomainContextualization> domainContextualizations = pluginManager.customizeDomainContextualization();
@@ -2637,7 +2637,7 @@ public class CMSService implements ICMSService {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
         // Navigation adapters
         List<INavigationAdapterModule> adapters = pluginManager.customizeNavigationAdapters();
 
@@ -2693,7 +2693,7 @@ public class CMSService implements ICMSService {
     @Override
     public Map<String, TabGroup> getTabGroups(CMSServiceCtx cmsContext) {
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         return pluginManager.customizeTabGroups();
     }
@@ -2705,7 +2705,7 @@ public class CMSService implements ICMSService {
     @Override
     public List<MenubarModule> getMenubarModules(CMSServiceCtx cmsContext) {
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         return pluginManager.customizeMenubarModules();
     }
@@ -2732,7 +2732,7 @@ public class CMSService implements ICMSService {
     @Override
     public List<TemplateAdapter> getTemplateAdapters(CMSServiceCtx cmsContext) {
         // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         return pluginManager.customizeTemplateAdapters();
     }

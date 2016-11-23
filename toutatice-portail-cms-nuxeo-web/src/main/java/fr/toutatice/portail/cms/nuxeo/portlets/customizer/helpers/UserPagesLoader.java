@@ -16,15 +16,14 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.portlet.PortletContext;
-
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
@@ -41,24 +40,25 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
  */
 public class UserPagesLoader {
 
-    /** CMS service. */
-    private CMSService cmsService;
+    /** CMS service locator. */
+    private final ICMSServiceLocator cmsServiceLocator;
 
 
     /**
      * Constructor.
-     * 
-     * @param portletCtx portlet context
-     * @param customizer CMS customizer
-     * @param cmsService CMS service
      */
-    public UserPagesLoader(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+    public UserPagesLoader() {
         super();
-        this.cmsService = cmsService;
+
+        // CMS service locator
+        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
     }
 
 
     public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
+        // CMS service
+        CMSService cmsService = (CMSService) this.cmsServiceLocator.getCMSService();
+        
         // Conversion en CMSItem
         List<CMSPage> pages = new ArrayList<CMSPage>();
 
@@ -66,14 +66,14 @@ public class UserPagesLoader {
             String userName = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal().getName();
 
             // Vérifier l'init de l'espace perso avant de calculer des pages
-            this.cmsService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(userName));
+            cmsService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(userName));
 
-            Documents children = (Documents) this.cmsService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand());
+            Documents children = (Documents) cmsService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand());
 
             for (Document child : children) {
                 String spacePath = DocumentHelper.computeNavPath(child.getPath());
 
-                CMSItem publishSpace = this.cmsService.createNavigationItem(cmsCtx, spacePath, child.getTitle(), child, spacePath);
+                CMSItem publishSpace = cmsService.createNavigationItem(cmsCtx, spacePath, child.getTitle(), child, spacePath);
 
                 CMSPage userPage = new CMSPage();
                 userPage.setPublishSpace(publishSpace);

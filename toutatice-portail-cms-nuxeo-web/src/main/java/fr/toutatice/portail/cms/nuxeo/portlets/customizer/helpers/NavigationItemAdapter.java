@@ -18,8 +18,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.Map;
 
-import javax.portlet.PortletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
@@ -28,20 +26,15 @@ import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 @Deprecated
 public class NavigationItemAdapter {
 
-	CMSService CMSService;
-	DefaultCMSCustomizer customizer;
-	PortletContext portletCtx;
+    private DefaultCMSCustomizer customizer;
 
 
-	public NavigationItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+    public NavigationItemAdapter(DefaultCMSCustomizer customizer) {
 		super();
-		this.CMSService = cmsService;
-		this.portletCtx = portletCtx;
 		this.customizer = customizer;
 
 	};

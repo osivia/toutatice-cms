@@ -2,14 +2,13 @@ package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
 import java.util.Date;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.osivia.portal.api.directory.IDirectoryService;
-import org.osivia.portal.api.directory.IDirectoryServiceLocator;
-import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -26,8 +25,8 @@ public final class CommentDAO implements IDAO<JSONObject, CommentDTO> {
     private static CommentDAO instance;
 
 
-    /** Directory service locator. */
-    private final IDirectoryServiceLocator directoryServiceLocator;
+    /** Person service. */
+    private final PersonService personService;
 
 
     /**
@@ -36,8 +35,7 @@ public final class CommentDAO implements IDAO<JSONObject, CommentDTO> {
     private CommentDAO() {
         super();
 
-        // Directory service locator
-        this.directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -72,10 +70,8 @@ public final class CommentDAO implements IDAO<JSONObject, CommentDTO> {
         dto.setAuthor(author);
 
         // LDAP person
-        IDirectoryService directoryService = this.directoryServiceLocator.getDirectoryService();
-        if (directoryService != null) {
-            dto.setPerson(directoryService.getPerson(author));
-        }
+        Person person = this.personService.getPerson(author);
+        dto.setPerson(person);
 
         // Creation date
         JSONObject jsonDate = jsonObject.getJSONObject("creationDate");

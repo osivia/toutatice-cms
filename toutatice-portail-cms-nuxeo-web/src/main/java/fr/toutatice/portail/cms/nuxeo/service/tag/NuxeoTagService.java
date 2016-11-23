@@ -187,7 +187,7 @@ public class NuxeoTagService implements INuxeoTagService {
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = (DefaultCMSCustomizer) nuxeoController.getNuxeoCMSService().getCMSCustomizer();
         // Plugin manager
-        CustomizationPluginMgr pluginManager = cmsCustomizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = cmsCustomizer.getPluginManager();
 
         return pluginManager.customizeJSP(name, nuxeoController.getPortletCtx(), nuxeoController.getRequest());
     }

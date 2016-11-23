@@ -21,14 +21,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.directory.IDirectoryService;
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -38,6 +36,8 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPostDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Nuxeo comments service implementation.
@@ -49,19 +49,21 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
 
     /** CMS service. */
     private final CMSService cmsService;
-    /** Directory service. */
-    private final IDirectoryService directoryService;
+    /** Person service. */
+    private final PersonService personService;
+
 
     /**
-     * Default constructor.
+     * Constructor.
      *
      * @param cmsService CMS service
-     * @param directoryService directory service
      */
-    public NuxeoCommentsServiceImpl(CMSService cmsService, IDirectoryService directoryService) {
+    public NuxeoCommentsServiceImpl(CMSService cmsService) {
         super();
         this.cmsService = cmsService;
-        this.directoryService = directoryService;
+
+        // Person service
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -145,11 +147,8 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
                 String author = jsonObject.getString("author");
                 comment.setAuthor(author);
 
-                if (this.directoryService != null) {
-                    DirectoryPerson person = this.directoryService.getPerson(author);
-                    comment.setPerson(person);
-                }
-
+                Person person = this.personService.getPerson(author);
+                comment.setPerson(person);
             }
 
             // Creation date

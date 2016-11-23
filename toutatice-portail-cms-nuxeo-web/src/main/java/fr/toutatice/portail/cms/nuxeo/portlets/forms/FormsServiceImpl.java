@@ -408,7 +408,7 @@ public class FormsServiceImpl implements IFormsService {
             PropertyMap actionProperties, FormActors actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
             String procedureInitiator, String taskInitiator, String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
-        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
+        CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginManager();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
 
         // on retrouve les filtres de l'actions voulu
@@ -585,7 +585,7 @@ public class FormsServiceImpl implements IFormsService {
     private void sendEmailNotification(PortalControllerContext portalControllerContext, String procedureInstanceId, String initiator)
             throws CMSException, PortalException {
         // Portlet context
-        PortletContext portletContext = this.cmsCustomizer.getPortletCtx();
+        PortletContext portletContext = this.cmsCustomizer.getPortletContext();
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portletContext);
         nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
