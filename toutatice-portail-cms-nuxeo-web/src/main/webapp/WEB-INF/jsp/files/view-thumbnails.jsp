@@ -128,9 +128,9 @@
                                         </c:when>
                                         
                                         <c:when test="${'Picture' eq document.type.name}">
-                                            <ttc:documentLink document="${document}" picture="true" displayContext="Medium" var="mediumPictureLink" />
+                                            <ttc:documentLink document="${document}" picture="true" displayContext="Small" var="thumbnailLink" />
                                             
-                                            <img src="${mediumPictureLink.url}" alt="" class="img-responsive text-middle">
+                                            <img src="${thumbnailLink.url}" alt="" class="img-responsive text-middle">
                                         </c:when>
     
                                         <c:otherwise>
