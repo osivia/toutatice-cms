@@ -43,8 +43,6 @@
     </c:if>
 </portlet:renderURL>
 
-<!-- Current Folder -->
-<c:set var="containerAcceptedTypes" value="${fn:join(document.acceptedTypes, ',')}" />
 <!-- Description -->
 <c:set var="description" value="${document.properties['dc:description']}" />
 
@@ -186,9 +184,6 @@
                         <c:set var="lockGlyph" value="glyphicons glyphicons-user-lock" />
                     </c:if>
                 </c:if>
-                
-                <!-- Copy -->
-                <c:set var="canCopy" value="${fn:containsIgnoreCase(containerAcceptedTypes, document.type.name)}" /> 
             
                 <!-- Date -->
                 <c:set var="date" value="${document.properties['dc:modified']}" />
@@ -202,7 +197,6 @@
             
                 <li>
                     <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
-                        data-can-copy="${canCopy}"
                         <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
                     >
                         <div

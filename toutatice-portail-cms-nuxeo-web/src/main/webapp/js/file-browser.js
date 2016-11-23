@@ -661,6 +661,7 @@ function displayControls($browser) {
 						
 						if ("success" == status) {
 							$element.data("writable", (data["writable"] == true));
+							$element.data("copiable", (data["copiable"] == true));
 						}
 						
 						ajaxPendingCounter--;
@@ -715,7 +716,20 @@ function updateControlRights($browser) {
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
 		$selected = $browser.find(".ui-selected"),
-		writable = true;
+		writable = true,
+		copiable = true;
+	
+	// Copiable indicator
+	$selected.each(function(index, element) {
+		var $element = $JQry(element);
+		
+		if ($element.data("copiable") != true) {
+			copiable = false;
+
+			// Break
+			return false;
+		} 
+	});
 	
 	// Writable indicator
 	$selected.each(function(index, element) {
@@ -735,8 +749,8 @@ function updateControlRights($browser) {
 		if ($selected.data("editable") && writable) {
 			$edit.removeClass("disabled");
 		}
-		// Copy: parent editable
-		if ($selected.data("can-copy")) {
+		// Copy
+		if (copiable) {
 			$copy.removeClass("disabled");
 		}
 	}

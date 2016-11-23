@@ -372,6 +372,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
 
                     data.put("writable", publicationInfos.isEditableByUser());
+                    data.put("copiable", publicationInfos.get("canCopy"));
                 } catch (CMSException e) {
                     // Do nothing
                 }
@@ -465,7 +466,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 for (Document document : documents) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                     documentDTO = setDraftInfos(document, documentDTO);
-                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO,  publicationInfos.getSubTypes());
+                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
                     fileBrowserItem.setIndex(index++);
 
                     if ("File".equals(document.getType())) {

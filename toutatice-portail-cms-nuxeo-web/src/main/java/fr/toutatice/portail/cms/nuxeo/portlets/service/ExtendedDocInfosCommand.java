@@ -50,7 +50,7 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
     @Override
     public CMSExtendedDocumentInfos execute(Session nuxeoSession) throws Exception {
 
-        CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
+        CMSExtendedDocumentInfos docInfos = new InternalCMSExtendedDocumentInfos();
 
         OperationRequest request = nuxeoSession.newRequest("Document.FetchExtendedDocInfos");
         if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
@@ -62,7 +62,6 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
 
         if (infosAsBlob != null) {
 
-            docInfos = new CMSExtendedDocumentInfos();
 
             String infosContentStr = IOUtils.toString(infosAsBlob.getStream(), "UTF-8");
             JSONArray infosContent = JSONArray.fromObject(infosContentStr);
@@ -70,6 +69,8 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
             Iterator<?> iterator = infosContent.iterator();
             while (iterator.hasNext()) {
                 JSONObject infos = (JSONObject) iterator.next();
+                // Set flux
+                ((InternalCMSExtendedDocumentInfos) docInfos).setFlux(infos);
                 
                 // DCH: FIXME: abstract task infos (like name)
                 if (infos.containsKey("taskName")) {

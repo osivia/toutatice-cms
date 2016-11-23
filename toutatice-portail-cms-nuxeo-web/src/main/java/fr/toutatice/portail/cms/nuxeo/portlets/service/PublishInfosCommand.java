@@ -74,7 +74,7 @@ public class PublishInfosCommand implements INuxeoCommand {
         Blob binariesInfos = (Blob) request.execute();
 
         if (binariesInfos != null) {
-            publiInfos = new CMSPublicationInfos();
+            publiInfos = new InternalCMSPublicationInfos();
 
             String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8");
 
@@ -82,6 +82,8 @@ public class PublishInfosCommand implements INuxeoCommand {
             Iterator<?> it = infosContent.iterator();
             while (it.hasNext()) {
                 JSONObject infos = (JSONObject) it.next();
+                // Set flux
+                ((InternalCMSPublicationInfos) publiInfos).setFlux(infos);
 
                 publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
                 
