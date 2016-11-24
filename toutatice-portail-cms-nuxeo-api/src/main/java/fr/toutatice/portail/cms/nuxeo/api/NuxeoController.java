@@ -1902,7 +1902,7 @@ public class NuxeoController {
             ICMSService cmsService = getCMSService();
             // CMS context
             CMSServiceCtx cmsContext = this.getCMSCtx();
-            this.setForcePublicationInfosScope("superuser_context");
+            cmsContext.setForcePublicationInfosScope("superuser_context");
 
             // Publication infos
             CMSPublicationInfos pubInfos = cmsService.getPublicationInfos(cmsContext, path);
