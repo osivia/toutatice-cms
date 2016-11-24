@@ -188,6 +188,9 @@ public class FormsServiceImpl implements IFormsService {
         String uuid = UUID.randomUUID().toString();
         variables.put("uuid", uuid);
 
+        // Required fields validation
+        this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
+
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
                 procedureInitiator, null, nextStep);
@@ -333,6 +336,9 @@ public class FormsServiceImpl implements IFormsService {
         // Procedure instance UUID
         String procedureInstanceUuid = globalVariableValues.get("uuid");
 
+        // Required fields validation
+        this.requiredFieldsValidation(portalControllerContext, previousStepProperties, variables);
+
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
                 globalVariableValues, portalControllerContext, procedureInitiator, previousTaskInitiator, nextStep);
@@ -390,6 +396,49 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         return updatedVariables;
+    }
+
+
+    /**
+     * Process required fields validation.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param step current step properties
+     * @param variables current variables
+     * @throws FormFilterException
+     */
+    private void requiredFieldsValidation(PortalControllerContext portalControllerContext, PropertyMap step, Map<String, String> variables)
+            throws FormFilterException {
+        // Internationalization bundle
+        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        // Step fields
+        PropertyList fields = step.getList("globalVariablesReferences");
+
+        for (int i = 0; i < fields.size(); i++) {
+            PropertyMap field = fields.getMap(i);
+
+            // Required field indicator
+            boolean required = BooleanUtils.isTrue(field.getBoolean("required"));
+
+            if (required) {
+                // Field name
+                String name = field.getString("variableName");
+                // Field value
+                String value = variables.get(name);
+
+                if (StringUtils.isBlank(value)) {
+                    // Field label
+                    String label = StringUtils.defaultIfEmpty(field.getString("superLabel"), name);
+
+                    // Error message
+                    String message = bundle.getString("MESSAGE_MISSING_REQUIRED_FIELD_ERROR", label);
+
+                    throw new FormFilterException(message);
+                }
+            }
+        }
     }
 
 

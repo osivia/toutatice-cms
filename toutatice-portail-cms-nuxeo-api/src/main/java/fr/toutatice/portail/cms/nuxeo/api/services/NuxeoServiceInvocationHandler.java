@@ -1,9 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Nuxeo service invocation handler.
@@ -42,8 +41,8 @@ public class NuxeoServiceInvocationHandler implements InvocationHandler {
         try {
             // Method invocation
             result = method.invoke(this.instance, args);
-        } catch(Exception e){
-            ReflectionUtils.handleReflectionException(e);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
         } finally {
             // Restore context class loader
             Thread.currentThread().setContextClassLoader(contextClassLoader);
