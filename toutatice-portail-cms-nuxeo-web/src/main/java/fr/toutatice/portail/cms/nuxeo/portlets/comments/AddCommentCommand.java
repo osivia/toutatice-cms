@@ -117,9 +117,6 @@ public class AddCommentCommand implements INuxeoCommand {
             tmpFile.delete();
         }
 
-        // Update thread
-        documentService.setProperty(this.document, "dc:title", this.document.getTitle());
-
         // return blob;
         return blob;
     }
