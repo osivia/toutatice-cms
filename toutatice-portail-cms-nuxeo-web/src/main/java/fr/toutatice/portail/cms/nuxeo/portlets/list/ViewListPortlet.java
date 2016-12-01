@@ -63,7 +63,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
-import sun.org.mozilla.javascript.EvaluatorException;
+
 
 import bsh.EvalError;
 import bsh.Interpreter;

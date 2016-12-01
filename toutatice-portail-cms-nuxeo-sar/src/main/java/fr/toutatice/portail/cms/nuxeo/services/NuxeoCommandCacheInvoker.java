@@ -30,10 +30,12 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.log.LoggerMessage;
 import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
 import org.osivia.portal.core.cms.IContentStreamingSupport;
+import org.osivia.portal.core.error.IPortalLogger;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -240,6 +242,15 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                 }
 
                 logger.debug("Execution commande " + this.command.getId());
+                
+                if( IPortalLogger.logger.isDebugEnabled()){
+                    String commandName = "";
+                    if(this.command.getId() != null)
+                        commandName = this.command.getId().replaceAll("\"", "'");
+                    IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo request  \""+commandName +"\""));
+                }
+                
+            
 
                 long begin = 0;
 
@@ -328,6 +339,19 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                     profiler.logEvent("NUXEO", name, elapsedTime, error);
+                    
+                    
+                    
+                    
+                    if( IPortalLogger.logger.isDebugEnabled()){
+                        String nuxeoHost = NuxeoConnectionProperties.getPrivateBaseUri().getHost();
+                        if( error == false)
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo result "+ nuxeoHost+ " " + elapsedTime));
+                        else
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo result "+ nuxeoHost+ " " + elapsedTime + " \"an error as occured\""));
+                           
+                    }
+
                 }
 
             } finally {
