@@ -127,17 +127,23 @@
     </xsl:template>
 
 
-
     <xsl:template match="@src">
         <xsl:attribute name="src">
          	<xsl:value-of select="bridge:link($bridge,  .)" />
       </xsl:attribute>
     </xsl:template>
 
-    <xsl:template match="@href">
-        <xsl:attribute name="href">
-         	<xsl:value-of select="bridge:link($bridge,  .)" />
-      </xsl:attribute>
+	<xsl:template match="A[@href]">
+       <xsl:element name="a">
+       		<xsl:variable name="url" select="bridge:link($bridge,  @href)" />
+      		<xsl:attribute name="href"><xsl:value-of select="$url" /></xsl:attribute>
+     		
+			<xsl:if test="not(@target) and not(contains($url,bridge:getBasePath($bridge))) ">     		
+	     		<xsl:attribute name="target">_blank</xsl:attribute>
+	     	 </xsl:if>
+	     	 
+ 			<xsl:apply-templates select="@*[name(.)!='href']|node()" />
+        </xsl:element>        
     </xsl:template>
 
     <xsl:template match="OBJECT/@data">
