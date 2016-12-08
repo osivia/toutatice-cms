@@ -81,38 +81,50 @@ $JQry(function() {
 		// Draggable
 		$JQry(".file-browser .draggable").draggable({
 			addClasses: false,
+			appendTo: "body",
 			connectToFancytree: true,
 			cursor: "move",
 			distance: 10,
 	
 			helper: function(event) {
 				var $target = $JQry(event.target),
-					$data = $target.closest(".data"),
-					direct = ($data.length > 0),
-					$selected = (direct ? $data : $target.closest(".selectable").find(".ui-selected")),
+					$li = $target.closest("li"),
+					$data = $li.find(".data"),
+					$selectable = $data.closest(".selectable"),
 					offset = $target.offset(),
 					click = {
 						top: event.pageY - offset.top,
 						left: event.pageX - offset.left
 					},
 					identifiers = "", types = "", text = "",
-					$helper;
+					$selected, $helper, $content, $icon, $title;
 				
-				
-				// Identifiers & types
+				// Selected items
+				if ($data.hasClass("ui-selected")) {
+					$selected = $selectable.find(".ui-selected");
+				} else {
+					$selected = $data;
+				}
+
+				// Identifiers, types & text
 				$selected.each(function(index, element) {
+					var $element = $JQry(element),
+						$draggable = $element.find(".draggable");
+					
 					if (index > 0) {
 						identifiers += ",";
 						types += ",";
+						text += ", ";
 					}
-					identifiers += $JQry(element).data("id");
-					types += $JQry(element).data("type");
+					
+					identifiers += $element.data("id");
+					types += $element.data("type");
+					text += jQuery.trim($draggable.text());
 				});
-				
 				
 				// Helper
 				$helper = $JQry(document.createElement("div"));
-				$helper.addClass("helper");
+				$helper.addClass("file-browser-helper");
 				$helper.data({
 					identifiers: identifiers,
 					types: types
@@ -122,56 +134,42 @@ $JQry(function() {
 					width: 0
 				});
 				
-				// Panel
-				$panel = $JQry(document.createElement("div"));
-				$panel.addClass("panel panel-primary");
-				if (direct) {
-					$panel.css({
-						width: $data.siblings(".draggable-shadowbox").width()
-					});
-				} else {
-					$panel.css({
-						width: $target.width()
-					});
-				}
-				$panel.animate({
+				// Helper content
+				$content = $JQry(document.createElement("div"));
+				$content.addClass("bg-primary");
+				$content.appendTo($helper);
+				
+				// Helper content animation
+				$content.css({
+					width: $data.width()
+				});
+				$content.animate({
 					top: click.top + 1,
 					left: click.left + 1,
 					width: 300
 				}, 300);
-				$panel.appendTo($helper);
-				
-				// Panel body
-				$panelBody = $JQry(document.createElement("div"));
-				$panelBody.addClass("panel-body bg-primary");
-				$panelBody.appendTo($panel);
 				
 				// Icon
 				$icon = $JQry(document.createElement("div"));
 				$icon.addClass("document-icon");
-				$icon.appendTo($panelBody);
-				$iconInner = $JQry(document.createElement("div"));
-				$iconInner.appendTo($icon);
+				$icon.appendTo($content);
 				if ($selected.length == 1) {
-					$selected.find(".document-icon").find("i").clone().appendTo($iconInner);
+					$selected.find(".document-icon").children().clone().appendTo($icon);
 				} else {
+					$iconInner = $JQry(document.createElement("div"));
+					$iconInner.appendTo($icon);
+					
 					$strong = $JQry(document.createElement("strong"));
 					$strong.text($selected.length);
 					$strong.appendTo($iconInner);
 				}
 				
-				// Text
-				$selected.find(".document-icon").siblings().each(function(index, element) {
-					if (index > 0) {
-						text += ", ";
-					}
-					text += $JQry(element).text();
-				});
-				$textContainer = $JQry(document.createElement("div"));
-				$textContainer.addClass("text-overflow");
-				$textContainer.text(text);
-				$textContainer.appendTo($panelBody);
-	
+				// Title
+				$title = $JQry(document.createElement("div"));
+				$title.addClass("text-overflow");
+				$title.text(text);
+				$title.appendTo($content);
+				
 				return $helper;
 			},
 			
@@ -180,30 +178,25 @@ $JQry(function() {
 			
 			start: function(event, ui) {
 				var $target = $JQry(event.target),
-					$browser = $target.closest(".file-browser"),
-					$toolbar = $browser.find(".btn-toolbar"),
 					$li = $target.closest("li"),
 					$data = $li.find(".data"),
-					$selectable = $target.closest(".selectable"),
-					$selected = $selectable.find(".ui-selected"),
-					$elements, writable;
+					$selectable = $li.closest(".selectable"),
+					$selected = $selectable.find(".ui-selected");
 	
 				if ($data.hasClass("ui-selected")) {
 					$selected.addClass("dragged");
 				} else {
-					$selected.each(function(index, element) {
-						var $element = $JQry(element);
-						$element.removeClass("ui-selected bg-primary");
-					});
+					deselect($selectable);
+					$data.addClass("dragged");
 				}
 			},
 			
 			stop: function(event, ui) {
 				var $target = $JQry(event.target),
 					$selectable = $target.closest(".selectable"),
-					$selected = $selectable.find(".ui-selected");
+					$dragged = $selectable.find(".dragged");
 			
-				$selected.removeClass("dragged");
+				$dragged.removeClass("dragged");
 			}
 		});
 		
@@ -248,13 +241,13 @@ $JQry(function() {
 		// Droppable
 		$JQry(".file-browser .droppable").droppable({
 			accept: function($draggable) {
-				var $droppable = $JQry(this);
+				var $droppable = $JQry(this),
 					$selectable = $droppable.closest(".selectable"),
 					$selected = $selectable.find(".ui-selected"),
-					targetAcceptedTypes = $droppable.data("acceptedtypes").split(","),
+					targetAcceptedTypes = $droppable.data("accepted-types").split(","),
 					accepted = true;
-				
-				if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".ui-selected").hasClass("ui-selected")) {
+					
+				if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".data").hasClass("dragged")) {
 					// Prevent drop on sortable or selected element
 					accepted = false;
 				} else {
@@ -544,7 +537,7 @@ $JQry(function() {
 
 
 function displayControls($browser) {
-	var $toolbar = $browser.find(".btn-toolbar"),
+	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
 		$single = $toolbar.find(".single-selection"),
@@ -567,11 +560,8 @@ function displayControls($browser) {
 		$element.attr("href", $element.data("url"));
 	});
 	
-	if ($selected.length == 0) {
-		// No selection
-		$toolbar.hide();
-	} else {
-		$toolbar.show();
+	if ($selected.length) {
+		$toolbar.addClass("in");
 		$waiter.hide();
 		
 		$edit.addClass("disabled");
@@ -582,8 +572,7 @@ function displayControls($browser) {
 		if ($selected.length == 1) {
 			// Single element selected
 			$single.show();
-			$messageSelection.children(".badge").text("1");
-			$messageSelection.children(".text").text($messageSelection.data("message-single-selection"));
+			$messageSelection.children().text("1 " + $messageSelection.data("message-single-selection"));
 			
 			
 			// Sortable
@@ -633,8 +622,7 @@ function displayControls($browser) {
 		} else {
 			// Multiple elements selected
 			$single.hide();
-			$messageSelection.children(".badge").text($selected.length);
-			$messageSelection.children(".text").text($messageSelection.data("message-multiple-selection"));
+			$messageSelection.children().text($selected.length + " " + $messageSelection.data("message-multiple-selection"));
 		}
 		
 		
@@ -705,12 +693,15 @@ function displayControls($browser) {
 			
 			$element.attr("href", url);
 		});
+	} else {
+		// No selection
+		$toolbar.removeClass("in");
 	}
 }
 
 
 function updateControlRights($browser) {
-	var $toolbar = $browser.find(".btn-toolbar"),
+	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),

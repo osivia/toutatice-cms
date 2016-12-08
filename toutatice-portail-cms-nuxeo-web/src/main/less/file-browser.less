@@ -75,23 +75,18 @@
         
         visibility: hidden;
     }
-    
-    
-    // Helper
-    .helper {
-        .panel {
-            position: relative;
-            z-index: 10;
-        }   
-    }
-    
+        
     
     // Droppable
     .droppable-hover {
-        margin: -2px;
+        margin-top: -1px;
         
         border-style: solid;
         border-width: 2px;
+        
+        > * {
+            margin: -1px -2px -2px;
+        }
     }
 
 
@@ -127,21 +122,6 @@
                     right: 15px;
                 }
             }
-        }
-    }
-    
-    
-    // Toolbar
-    .btn-toolbar {
-        display: none;
-        
-        margin-bottom: 0;
-        
-        .btn-group {
-            background-color: #fff;
-            border-radius: 3px;
-            
-            .box-shadow(@shadow: 0 1px 1px fade(#000, 5%));
         }
     }
     
@@ -187,63 +167,20 @@
     // View lines
     .file-browser-lines {
         @border-color: #ddd;
-        @cell-padding: 8px;
         @line-height: 32px;
         
-        .row {
-            margin: 0;
-            
-            > * {
-                padding: 0;
-            }
-        }
-        
-        .table-header {
-            .table-cell {
-                font-weight: bold;
-                
-                a {
-                    display: inline-block;
-                    
-                    color: inherit;
-                }     
-            }
-            
-            @media screen and (max-width: @screen-xs-max) {
-                &.table-row {
-                    padding-bottom: 0;
+        .table {
+            .table-body {
+                .row {
+                    [class*="col-"] {
+                        line-height: @line-height;
+                    }
                 }
                 
-                .table-cell {
-                    margin-bottom: @cell-padding;
+                li {
+                    position: relative;
                 }
             }
-        }
-        
-        .table-body {
-            li {
-                position: relative;
-            }
-            
-            .table-cell {
-                line-height: @line-height;
-            }
-        }
-        
-        .table-row {
-            padding: @cell-padding 0;
-            
-            border-bottom-style: solid;
-            border-width: 1px;
-            border-color: @border-color;
-            
-            &.table-header {
-                border-width: 2px;
-            }
-        }
-        
-        .table-cell {
-            padding: 0 @cell-padding;
         }
     
     
@@ -256,7 +193,7 @@
         .document-icon {
             float: left;
             width: @line-height;
-            margin-right: @cell-padding;
+            margin-right: 8px;
     
             text-align: center;
             
@@ -299,18 +236,6 @@
         .draggable-shadowbox {
             border-bottom-style: solid;
             border-width: 1px;
-        }
-        
-        
-        // Helper
-        .helper {
-            .panel {
-                .panel-body {
-                    padding: @cell-padding;
-                    
-                    .table-body .table-cell;
-                }
-            }   
         }
         
         
@@ -444,6 +369,23 @@
         }
     }
 }
+
+
+.file-browser-helper {
+    > * {
+        position: relative;
+        z-index: 10;
+        
+        padding: 8px;
+        
+        &:extend(.file-browser .file-browser-lines .table .table-body .row [class*="col-"]);
+    }
+    
+    .document-icon {
+        &:extend(.file-browser .file-browser-lines .document-icon all);
+    }
+}
+
 
 .box-shadow(@shadow) {
     -webkit-box-shadow: @shadow;

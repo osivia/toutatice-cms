@@ -30,8 +30,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -83,6 +82,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -443,17 +443,14 @@ public class FileBrowserPortlet extends CMSPortlet {
                 CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
-                
+                request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
+
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
-                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDAO.toDTO(currentDocument),
-                        publicationInfos.getSubTypes());
+                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDAO.toDTO(currentDocument));
                 request.setAttribute("document", fileBrowser);
-                
-                String[] acceptedTypes = fileBrowser.getAcceptedTypes();
-                request.setAttribute("canUpload", ArrayUtils.isNotEmpty(acceptedTypes));
 
                 // Fetch Nuxeo children documents
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());

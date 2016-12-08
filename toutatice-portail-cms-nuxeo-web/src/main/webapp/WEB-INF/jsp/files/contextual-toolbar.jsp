@@ -21,53 +21,43 @@
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
 
 
-<div class="file-browser-affix-container">
-    <div class="file-browser-affix">
-        <div class="btn-toolbar" role="toolbar" data-infosurl="${infosUrl}">
-            <!-- Selection indicator -->
-            <div class="btn-group btn-group-sm hidden-xs">
-                <span class="btn btn-primary disabled">
-                    <span class="message-selection" data-message-single-selection="${messageSingleSelection}" data-message-multiple-selection="${messageMultipleSelection}">
-                        <span class="badge"></span>
-                        <span class="text hidden-xs"></span>
-                    </span>
+<div class="contextual-toolbar" data-infosurl="${infosUrl}">
+    <nav class="navbar navbar-default" role="toolbar">
+        <h3 class="sr-only"><op:translate key="FILE_BROWSER_TOOLBAR_TITLE"/></h3>
+    
+        <div class="container-fluid">
+            <!-- Information text -->
+            <p class="navbar-text hidden-xs hidden-sm">
+                <span class="message-selection small" data-message-single-selection="${messageSingleSelection}" data-message-multiple-selection="${messageMultipleSelection}">
+                    <span></span>
                 </span>
-            </div>
+            </p>
             
-            <div class="btn-group btn-group-sm" role="group">
-                <!-- Deselect -->
-                <c:set var="title"><op:translate key="DESELECT" /></c:set>
-                <button type="button" onclick="deselect(this)" class="btn btn-default" title="${title}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="halflings halflings-unchecked"></i>
-                    <span class="sr-only">${title}</span>
-                </button>
-            </div>
-        
             <div class="btn-group btn-group-sm single-selection" role="group">
                 <!-- Gallery -->
                 <c:set var="title"><op:translate key="VIEW_PICTURE_GALLERY" /></c:set>
-                <button type="button" onclick="gallery(this)" class="btn btn-default gallery" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <button type="button" onclick="gallery(this)" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn gallery">
                     <i class="halflings halflings-blackboard"></i>
                     <span class="sr-only">${title}</span>
                 </button>
             
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
-                <a href="" class="btn btn-default no-ajax-link download" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn no-ajax-link download">
                     <i class="halflings halflings-download-alt"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Edit -->
                 <c:set var="title"><op:translate key="EDIT" /></c:set>
-                <a href="" data-url="${editURL}" onclick="setCallbackFromEcmParams('${callbackURL}', '${ecmBaseURL}')" class="btn btn-default fancyframe_refresh no-ajax-link edit" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#" data-url="${editURL}" onclick="setCallbackFromEcmParams('${callbackURL}', '${ecmBaseURL}')" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
                     <i class="halflings halflings-pencil"></i>
                     <span class="sr-only">${title}</span>
                 </a>
                 
                 <!-- Copy -->
                 <c:set var="title"><op:translate key="COPY" /></c:set>
-                <a href="" data-url="${copyURL}" class="btn btn-default copy" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#" data-url="${copyURL}" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn copy">
                     <i class="halflings halflings-duplicate"></i>
                     <span class="sr-only">${title}</span>
                 </a>
@@ -76,28 +66,33 @@
             <div class="btn-group btn-group-sm multiple-selection" role="group">
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
-                <a href="" data-url="${moveURL}" class="btn btn-default fancyframe_refresh no-ajax-link move" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#" data-url="${moveURL}" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
                     <i class="halflings halflings-move"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Delete -->
                 <c:set var="title"><op:translate key="DELETE" /></c:set>
-                <a href="#${namespace}-delete" class="btn btn-default fancybox_inline no-ajax-link delete" title="${title}" data-toggle="tooltip" data-placement="bottom">
+                <a href="#${namespace}-delete" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancybox_inline no-ajax-link delete">
                     <i class="halflings halflings-trash"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             </div>
             
+            <!-- Unselect -->
+            <button type="button" onclick="deselect(this)" class="btn btn-link btn-sm navbar-btn hidden-xs">
+                <span><op:translate key="DESELECT" /></span>
+            </button>
+            
             <!-- Ajax waiter -->
-            <div class="btn-group btn-group-sm ajax-waiter">
-                <span class="btn btn-default disabled">
+            <div class="btn-group pull-right ajax-waiter">
+                <span class="btn btn-link navbar-btn disabled">
                     <i class="halflings halflings-refresh"></i>
                     <span class="sr-only"><op:translate key="REFRESH" /></span>
                 </span>
             </div>
         </div>
-    </div>
+    </nav>
 </div>
 
 
