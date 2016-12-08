@@ -97,7 +97,11 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
             }
             tok = jp.nextToken();
         }
-        return new Document(uid, type, facets, changeToken, path, state, lockOwner, lockCreated, repository, versionLabel, props, null);
+        if (tok == null) {
+            throw new IllegalArgumentException(
+                    "Unexpected end of stream.");
+        }
+        return new Document(uid, type, facets, changeToken, path, state, lockOwner, lockCreated, repository, versionLabel, props, contextParameters);
     }
 
     protected static void readProperties(JsonParser jp, PropertyMap props) throws Exception {
