@@ -64,6 +64,7 @@ import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
+import org.osivia.portal.api.taskbar.TaskbarItemRestriction;
 import org.osivia.portal.api.taskbar.TaskbarItemType;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.taskbar.TaskbarTask;
@@ -2362,6 +2363,9 @@ public class CMSService implements ICMSService {
         Document spaceDocument = (Document) spaceCmsItem.getNativeItem();
         String shortname = spaceDocument.getString("webc:url");
 
+        // Publication infos
+        CMSPublicationInfos publicationInfos = null;
+
         // WebId prefix
         String webIdPrefix = ITaskbarService.WEBID_PREFIX + shortname + "_";
 
@@ -2408,7 +2412,35 @@ public class CMSService implements ICMSService {
             if ((taskbarItem == null) && (type != null)) {
                 task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
             } else if (taskbarItem != null) {
-                task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+                // Restriction
+                TaskbarItemRestriction restriction = taskbarItem.getRestriction();
+
+                // Check if item access is granted
+                boolean granted;
+                if (restriction == null) {
+                    granted = true;
+                } else {
+                    if (publicationInfos == null) {
+                        publicationInfos = this.getPublicationInfos(cmsContext, basePath);
+                    }
+
+                    if (TaskbarItemRestriction.EDITION.equals(restriction)) {
+                        // Check if editable by user
+                        granted = publicationInfos.isEditableByUser();
+                    } else if (TaskbarItemRestriction.MANAGEMENT.equals(restriction)) {
+                        // Check if manageable by user
+                        granted = publicationInfos.isManageableByUser();
+                    } else {
+                        // Unknown case, deny access
+                        granted = false;
+                    }
+                }
+
+                if (granted) {
+                    task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+                } else {
+                    task = null;
+                }
             } else {
                 task = null;
             }
