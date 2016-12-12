@@ -27,17 +27,19 @@
         <li>
             <p>
                 <!-- Title -->
-                <ttc:title document="${document}" icon="true" />
+                <span><ttc:title document="${document}" icon="true" /></span>
                 
-                <br>
-                
-                <!-- Informations -->
-                <span class="text-muted">
-                    <span><op:translate key="EDITED_BY" /></span>
-                    <ttc:user name="${author}" linkable="true" />
-                    <span><op:translate key="DATE_ARTICLE_PREFIX" /></span>
-                    <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
-                </span>
+                <!-- Last edition informations -->
+                <c:if test="${not document.type.rootType}">
+                    <br>
+                    
+                    <small class="text-muted">
+                        <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
+                        <span><op:formatRelativeDate value="${date}" /></span>
+                        <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                        <span><ttc:user name="${author}" /></span>
+                    </small>
+                </c:if>
             </p>
         </li>
     </c:forEach>

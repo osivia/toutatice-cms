@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.api.portlet;
 import javax.portlet.PortletContext;
 
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.context.PortalControllerContext;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
@@ -14,6 +15,10 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
  * @see IPrivilegedModule
  */
 public abstract class PrivilegedPortletModule extends PortletModule implements IPrivilegedModule {
+
+    /** No results request filter. */
+    protected static final String FILTER_NO_RESULTS = "1 = 0";
+
 
     /**
      * Constructor.
@@ -47,7 +52,7 @@ public abstract class PrivilegedPortletModule extends PortletModule implements I
      * {@inheritDoc}
      */
     @Override
-    public String getFilter() {
+    public String getFilter(PortalControllerContext portalControllerContext) {
         return null;
     }
 

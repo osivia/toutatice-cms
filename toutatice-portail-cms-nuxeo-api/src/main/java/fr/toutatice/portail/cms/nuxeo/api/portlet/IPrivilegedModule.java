@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.portlet;
 
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.context.PortalControllerContext;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
@@ -32,8 +33,9 @@ public interface IPrivilegedModule {
     /**
      * Get request filter.
      * 
+     * @param portalControllerContext portal controller context
      * @return filter
      */
-    String getFilter();
+    String getFilter(PortalControllerContext portalControllerContext);
 
 }

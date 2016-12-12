@@ -491,7 +491,7 @@ public class ViewListPortlet extends ViewList {
                 IPrivilegedModule privilegedModule = (IPrivilegedModule) module;
                 nuxeoController.setAuthType(privilegedModule.getAuthType());
                 nuxeoController.setCacheType(privilegedModule.getCacheType());
-                filter = privilegedModule.getFilter();
+                filter = privilegedModule.getFilter(portalControllerContext);
             }
 
             // Feed mode
