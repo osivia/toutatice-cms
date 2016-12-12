@@ -1045,8 +1045,7 @@ public class NuxeoController {
      * @return the computed path
      */
     public String getComputedPath(String portletPath) {
-
-        String computedPath = null;
+        String computedPath;
 
         if (portletPath == null) {
             computedPath = "";
@@ -1062,7 +1061,6 @@ public class NuxeoController {
                 computedPath = computedPath.replaceAll("\\$\\{basePath\\}", path);
             }
 
-
             if (computedPath.contains("${spacePath}")) {
                 String path = this.getSpacePath();
                 if (path == null) {
@@ -1072,9 +1070,7 @@ public class NuxeoController {
                 computedPath = computedPath.replaceAll("\\$\\{spacePath\\}", path);
             }
 
-
             if (computedPath.contains("${navigationPath}")) {
-
                 String path = this.getNavigationPath();
                 if (path == null) {
                     path = "";
@@ -1084,7 +1080,6 @@ public class NuxeoController {
             }
 
             if (computedPath.contains("${contentPath}")) {
-
                 String path = this.getContentPath();
                 if (path == null) {
                     path = "";
@@ -1149,6 +1144,9 @@ public class NuxeoController {
                 computedPath = computedPath.replaceAll("\\$\\{taskPath\\}", path);
             }
 
+            if (StringUtils.isNotEmpty(computedPath) && !computedPath.startsWith("/")) {
+                computedPath = webIdToFetchPath(computedPath);
+            }
         }
 
         return computedPath;

@@ -32,6 +32,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
@@ -167,28 +168,29 @@ public class NavigationPictureFragmentModule extends FragmentModule {
     /**
      * Compute picture.
      *
-     * @param ctx nuxeo controller
+     * @param nuxeoController nuxeo controller
      * @param navCtx CMS context
      * @param propertyName property name
      * @return picture document
      * @throws PortletException
      */
-    private Document computePicture(NuxeoController ctx, CMSServiceCtx navCtx, String propertyName) throws PortletException {
+    private Document computePicture(NuxeoController nuxeoController, CMSServiceCtx navCtx, String propertyName) throws PortletException {
         try {
             Document pictureContainer = null;
             boolean hasPicture = false;
 
-            String pathToCheck = ctx.getNavigationPath();
+            String pathToCheck = nuxeoController.getNavigationPath();
 
-            // On regarde dans le document courant
-            Document currentDoc = ctx.fetchDocument(ctx.getContentPath());
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(nuxeoController.getContentPath());
+            Document document = documentContext.getDoc();
 
-            if (this.docHasPicture(currentDoc, propertyName)) {
-                return currentDoc;
+            if (this.docHasPicture(document, propertyName)) {
+                return document;
             } else {
                 // Puis dans l'arbre de navigation
                 do {
-                    CMSItem cmsItemNav = NuxeoController.getCMSService().getPortalNavigationItem(navCtx, ctx.getSpacePath(), pathToCheck);
+                    CMSItem cmsItemNav = NuxeoController.getCMSService().getPortalNavigationItem(navCtx, nuxeoController.getSpacePath(), pathToCheck);
                     if ((cmsItemNav != null) && (cmsItemNav.getNativeItem() != null)) {
                         pictureContainer = (Document) cmsItemNav.getNativeItem();
                         hasPicture = this.docHasPicture(pictureContainer, propertyName);
@@ -197,7 +199,7 @@ public class NavigationPictureFragmentModule extends FragmentModule {
                     // One level up
                     CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
                     pathToCheck = parentPath.toString();
-                } while (!hasPicture && pathToCheck.contains(ctx.getSpacePath()));
+                } while (!hasPicture && pathToCheck.contains(nuxeoController.getSpacePath()));
             }
             if (hasPicture) {
                 return pictureContainer;

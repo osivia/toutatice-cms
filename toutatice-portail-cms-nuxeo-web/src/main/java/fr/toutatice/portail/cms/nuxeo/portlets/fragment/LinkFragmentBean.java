@@ -18,6 +18,10 @@ public class LinkFragmentBean extends Link {
     public static final String ICON_PROPERTY = "icon";
 
 
+    /** Default serial version identifier. */
+    private static final long serialVersionUID = 1L;
+
+
     /** Link title. */
     private String title;
     /** Link glyphicon. */

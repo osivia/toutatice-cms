@@ -33,6 +33,7 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
@@ -169,7 +170,9 @@ public class DocumentPictureFragmentModule extends FragmentModule {
      * @return document with input path
      */
     protected Document setAsCurrentDocNGet(NuxeoController nuxeoController, String path){
-        Document document = nuxeoController.fetchDocument(path);
+        // Nuxeo document
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        Document document = documentContext.getDoc();
         nuxeoController.setCurrentDoc(document);
         return document;
     }

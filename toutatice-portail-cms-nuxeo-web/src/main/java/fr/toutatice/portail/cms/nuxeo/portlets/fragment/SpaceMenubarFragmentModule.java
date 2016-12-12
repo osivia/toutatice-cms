@@ -12,6 +12,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
@@ -52,17 +53,15 @@ public class SpaceMenubarFragmentModule extends FragmentModule {
         String navigationPath = nuxeoController.getNavigationPath();
 
         if (navigationPath != null) {
-            Document doc = nuxeoController.fetchDocument(navigationPath);
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(navigationPath);
+            Document document = documentContext.getDoc();
+            nuxeoController.setCurrentDoc(document);
 
-            nuxeoController.setCurrentDoc(doc);
             request.setAttribute("osivia.cms.menuBar.forceContextualization", true);
             nuxeoController.insertContentMenuBarItems();
 
-            // List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-            // if (menubar.isEmpty()) {
-                request.setAttribute("osivia.emptyResponse", "1");
-            // }
+            request.setAttribute("osivia.emptyResponse", "1");
         }
     }
 

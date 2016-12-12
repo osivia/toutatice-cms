@@ -18,6 +18,7 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
@@ -84,8 +85,9 @@ public class LinkFragmentModule extends FragmentModule {
                 nuxeoController.setDisplayLiveVersion("1");
             }
 
-            // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(targetPath);
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(targetPath);
+            Document document = documentContext.getDoc();
 
             // Update link name with property value
             String property = document.getProperties().getString(name);

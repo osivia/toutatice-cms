@@ -537,12 +537,9 @@ public class ViewListPortlet extends ViewList {
                 nuxeoRequest = configuration.getNuxeoRequest();
             }
 
-            // Apply request filter
-            nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
 
             // BeanShell
             if (configuration.isBeanShell()) {
-
                 String orginalRequest = nuxeoRequest;
 
                 nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
@@ -552,7 +549,6 @@ public class ViewListPortlet extends ViewList {
                  * It's due to the fact that they expect to be run in contextualized mode
                  * Instead of generatig an exception, it's better to return a null value
                  */
-
                 if ((nuxeoRequest != null) && nuxeoRequest.contains("'null")) {
                     // Is it a contextualization error
                     if (nuxeoController.getBasePath() == null) {
@@ -562,9 +558,12 @@ public class ViewListPortlet extends ViewList {
                         }
                     }
                 }
-
-
             }
+
+
+            // Apply request filter
+            nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
+
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
                 request.setAttribute("osivia.emptyResponse", "1");
