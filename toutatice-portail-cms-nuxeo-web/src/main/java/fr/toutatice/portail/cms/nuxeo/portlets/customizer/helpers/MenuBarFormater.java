@@ -762,7 +762,7 @@ public class MenuBarFormater {
 
                         // Go to public version
                         if (pubInfos.isNotOrphanDraft()) {
-                            String publicLiveId = DocumentHelper.getDocWebIdHavingDraft(document);
+                            String publicLiveId = DocumentHelper.getCheckinedWebIdFromDraft(document);
                             String cmsPublicLiveId = IWebIdService.CMS_PATH_PREFIX.concat("/").concat(publicLiveId);
                             String publicLiveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, cmsPublicLiveId, null, null, null, null, null,
                                     "1", null);
@@ -1743,7 +1743,7 @@ public class MenuBarFormater {
                             if (!pubInfos.isNotOrphanDraft()) {
                                 redirectionPath = pubInfos.getDraftContextualizationPath();
                             } else {
-                                String hasDraftDocWebId = DocumentHelper.getDocWebIdHavingDraft(document);
+                                String hasDraftDocWebId = DocumentHelper.getCheckinedWebIdFromDraft(document);
                                 redirectionPath = IWebIdService.FETCH_PATH_PREFIX.concat(hasDraftDocWebId);
                             }
                             removeURL = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, document.getPath(), EcmCommonCommands.deleteDocument,

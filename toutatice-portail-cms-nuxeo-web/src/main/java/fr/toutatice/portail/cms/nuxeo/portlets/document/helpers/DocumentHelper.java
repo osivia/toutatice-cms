@@ -156,12 +156,9 @@ public class DocumentHelper {
      * @param draft
      * @return WebId of given draft.
      */
-    public static String getDocWebIdHavingDraft(Document draft){
+    public static String getCheckinedWebIdFromDraft(Document draft){
         if(DocumentHelper.isDraft(draft)){
-            String webId = getWebId(draft);
-            if(StringUtils.isNotBlank(webId) && StringUtils.contains(webId, DocumentConstants.DRAFT_WEBID_PREFIX)){
-                return StringUtils.remove(webId, DocumentConstants.DRAFT_WEBID_PREFIX);
-            }
+            return (String) ContextDocumentsHelper.getPropertyValue(draft, DocumentConstants.CHECKINED_DOC_ID);
         }
         return StringUtils.EMPTY;
     }

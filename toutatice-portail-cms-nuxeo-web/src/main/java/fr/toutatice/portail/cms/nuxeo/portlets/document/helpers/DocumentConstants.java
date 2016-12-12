@@ -35,8 +35,12 @@ public interface DocumentConstants {
     
     /** WebId property key. */
     String WEBID = "ttc:webid";
+    /** Draft id property key. */
+    String DRAFT_ID = "ottcChk:draftId";
     /** Draft path property key. */
     String DRAFT_PATH = "ottcChk:draftPath";
+    /** Checkined document webId property key on Draft. */
+    String CHECKINED_DOC_ID = "ottcDft:checkinedDocId";
     /** Draft schema. */
     String DRAFT_SCHEMA = "ottcDraft";
      
@@ -51,9 +55,5 @@ public interface DocumentConstants {
     
     /** Suffix of local proxies. */
     String LOCAL_PROXIES_SUFFIX = ".proxy";
-    /** Id frefix of drafts. */
-    String DRAFT_WEBID_PREFIX = "draft_";
-    
-    
 
 }
