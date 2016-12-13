@@ -77,6 +77,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
@@ -203,6 +204,8 @@ public class MenuBarFormater {
         }
 
 
+        // Check if current user is a global administrator
+        boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
         // Check if current is a workspace
         boolean isWorkspace = this.isWorkspace(document);
         // Check if current item is located inside a user workspace
@@ -266,7 +269,9 @@ public class MenuBarFormater {
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
                 // Nuxeo administration
-                this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                if (isGlobalAdministrator) {
+                    this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                }
 
 
                 if (!insideUserWorkspace) {
@@ -528,7 +533,7 @@ public class MenuBarFormater {
             return;
         }
 
-        if (!pubInfos.isDraft() && pubInfos.isEditableByUser() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+        if (!pubInfos.isDraft() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             // URL
             final String url = NuxeoConnectionProperties.getPublicBaseUri().toString() + "/nxdoc/default/" + pubInfos.getLiveId() + "/view_documents";
 
