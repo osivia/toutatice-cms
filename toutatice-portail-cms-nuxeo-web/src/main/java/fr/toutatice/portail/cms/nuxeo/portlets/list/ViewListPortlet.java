@@ -51,12 +51,15 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.sequencing.IPortletSequencingService;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -101,6 +104,7 @@ public class ViewListPortlet extends ViewList {
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
+
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
     /** Document DAO. */
@@ -110,12 +114,18 @@ public class ViewListPortlet extends ViewList {
     /** Portlet sequencing service. */
     private IPortletSequencingService portletSequencingService;
 
+    /** Taskbar service. */
+    private final ITaskbarService taskbarService;
+
 
     /**
-     * Default constructor.
+     * Constructor.
      */
     public ViewListPortlet() {
         super();
+
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
 
 
@@ -838,6 +848,8 @@ public class ViewListPortlet extends ViewList {
     private String beanShellInterpretation(NuxeoController nuxeoController, String nuxeoRequest) throws EvalError, CMSException {
         // Request
         PortletRequest request = nuxeoController.getRequest();
+        // Window
+        PortalWindow window = WindowFactory.getWindow(request);
 
         // BeanShell
         Interpreter interpreter = new Interpreter();
@@ -864,6 +876,36 @@ public class ViewListPortlet extends ViewList {
 
         // Storage attributes
         interpreter.set("storage", this.portletSequencingService.getAttributes(nuxeoController.getPortalCtx()));
+
+        // Task path
+        String taskPath;
+        String taskId = window.getProperty(ITaskbarService.LINKED_TASK_ID_WINDOW_PROPERTY);
+        if (StringUtils.isEmpty(taskId)) {
+            taskPath = null;
+        } else {
+            // Linked task
+            TaskbarTask linkedTask = null;
+
+            try {
+                // Tasks
+                List<TaskbarTask> tasks = this.taskbarService.getTasks(nuxeoController.getPortalCtx(), nuxeoController.getSpacePath(), true);
+                for (TaskbarTask task : tasks) {
+                    if (taskId.equals(task.getId())) {
+                        linkedTask = task;
+                        break;
+                    }
+                }
+            } catch (PortalException e) {
+                // Do nothing
+            }
+
+            if (linkedTask == null) {
+                taskPath = null;
+            } else {
+                taskPath = linkedTask.getPath();
+            }
+        }
+        interpreter.set("taskPath", taskPath);
 
         return (String) interpreter.eval(nuxeoRequest);
     }
