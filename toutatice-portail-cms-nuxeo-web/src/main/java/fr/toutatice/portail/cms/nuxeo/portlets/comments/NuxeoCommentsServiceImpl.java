@@ -19,7 +19,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.comments;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -97,13 +96,10 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      */
     private <T extends CommentDTO> List<T> getGenericComments(CMSServiceCtx cmsContext, Document document, Class<T> type) throws CMSException {
         try {
-            // Locale
-            Locale locale = cmsContext.getControllerContext().getServerInvocation().getRequest().getLocale();
-
             INuxeoCommand command = new GetCommentsCommand(document);
             JSONArray jsonArray = (JSONArray) this.cmsService.executeNuxeoCommand(cmsContext, command);
 
-            List<T> comments = this.convertJSONArrayToComments(jsonArray, type, locale);
+            List<T> comments = this.convertJSONArrayToComments(jsonArray, type);
 
             return comments;
         } catch (Exception e) {
@@ -118,12 +114,11 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * @param <T> comments parameterized type
      * @param jsonArray JSON array
      * @param type comments type
-     * @param locale current locale
      * @return comments list
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    private <T extends CommentDTO> List<T> convertJSONArrayToComments(JSONArray jsonArray, Class<T> type, Locale locale)
+    private <T extends CommentDTO> List<T> convertJSONArrayToComments(JSONArray jsonArray, Class<T> type)
             throws InstantiationException, IllegalAccessException {
         List<T> comments = new ArrayList<T>(jsonArray.size());
         for (Object object : jsonArray) {
@@ -190,7 +185,7 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
             // Children handling
             if (jsonObject.containsKey("children")) {
                 JSONArray children = jsonObject.getJSONArray("children");
-                List<? extends CommentDTO> commentChildren = this.convertJSONArrayToComments(children, type, locale);
+                List<? extends CommentDTO> commentChildren = this.convertJSONArrayToComments(children, type);
                 comment.getChildren().addAll(commentChildren);
             }
 

@@ -230,9 +230,15 @@ public class MenuBarFormater {
                 // Document type
                 DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
 
+                // Drafts dropdown menu
+                this.addDraftsDropdown(portalControllerContext, bundle);
+
                 // Edition dropdown menu
                 this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
+
+                // Draft options
+                this.addDraftLinks(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
 
                 // Permalink
                 this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
@@ -475,6 +481,20 @@ public class MenuBarFormater {
 
 
     /**
+     * Add drafts dropdown menu.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param bundle internationalization bundle
+     */
+    protected void addDraftsDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
+        MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.DRAFTS_DROPDOWN_MENU_ID, bundle.getString("DRAFTS_MENU"),
+                "glyphicons glyphicons-construction-cone", MenubarGroup.CMS, 3);
+        dropdown.setReducible(false);
+        this.menubarService.addDropdown(portalControllerContext, dropdown);
+    }
+
+
+    /**
      * Get menubar CMS edition dropdown menu.
      *
      * @param portalControllerContext portal controller context
@@ -482,7 +502,7 @@ public class MenuBarFormater {
      */
     protected void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
-                "glyphicons glyphicons-pencil", MenubarGroup.CMS, 3, false, false);
+                "glyphicons glyphicons-pencil", MenubarGroup.CMS, 4, false, false);
         dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
@@ -546,6 +566,72 @@ public class MenuBarFormater {
             item.setDivider(true);
 
             menubar.add(item);
+        }
+    }
+
+
+    protected void addDraftLinks(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
+            CMSExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) {
+        // Document
+        Document document = (Document) cmsContext.getDoc();
+
+        // Dropdown menu
+        MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.DRAFTS_DROPDOWN_MENU_ID);
+
+        if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+            if (DocumentHelper.isLeaf(document)) {
+                if (pubInfos.isDraft()) {
+                    // Draft indicator
+                    MenubarItem indicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12, "label label-info");
+                    indicator.setState(true);
+                    menubar.add(indicator);
+
+                    // Go to source
+                    if (pubInfos.isNotOrphanDraft()) {
+                        String webId = DocumentHelper.getCheckinedWebIdFromDraft(document);
+                        String path = NuxeoController.webIdToCmsPath(webId);
+                        String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
+
+                        MenubarItem item = new MenubarItem("GO_TO_DRAFT_SOURCE", bundle.getString("GO_TO_DRAFT_SOURCE"), "glyphicons glyphicons-undo", dropdown,
+                                1, url, null, null, null);
+                        item.setAjaxDisabled(true);
+
+                        menubar.add(item);
+                    }
+                } else if (pubInfos.hasDraft()) {
+                    // Go to draft
+                    String path = pubInfos.getDraftPath();
+                    String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
+
+                    MenubarItem item = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-redo", dropdown, 1, url, null,
+                            null, null);
+                    item.setAjaxDisabled(true);
+
+                    menubar.add(item);
+                }
+            } else if (extendedInfos.hasDrafts()) {
+                // Drafts list
+                String webId = DocumentHelper.getWebId(document);
+
+                Map<String, String> properties = new HashMap<String, String>(1);
+                properties.put("osivia.drafts.folderWebId", webId);
+
+                String url;
+                try {
+                    url = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-viewDraftsListPortletInstance",
+                            properties, PortalUrlType.MODAL);
+                } catch (PortalException e) {
+                    url = "#";
+                }
+
+                MenubarItem item = new MenubarItem("DRAFTS_LIST", bundle.getString("DRAFTS_LIST"), null, dropdown, 1, "#", null, null, null);
+                item.getData().put("target", "#osivia-modal");
+                item.getData().put("load-url", url);
+                item.getData().put("title", bundle.getString("DRAFTS_LIST"));
+                item.getData().put("footer", String.valueOf(true));
+
+                menubar.add(item);
+            }
         }
     }
 
@@ -740,43 +826,6 @@ public class MenuBarFormater {
                             previewItem.setAjaxDisabled(true);
 
                             menubar.add(previewItem);
-                        }
-                    }
-                } else {
-                    // Collaboratives Spaces
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
-                    if (pubInfos.hasDraft()) {
-                        // Go to draft menubar item
-                        String draftURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getDraftPath(), null, null, null, null, null,
-                                "1", null);
-
-                        final MenubarItem draftItem = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-notes", parent, 1,
-                                draftURL, null, null, null);
-                        draftItem.setAjaxDisabled(true);
-
-                        menubar.add(draftItem);
-
-                    } else if (pubInfos.isDraft()) {
-                        // Draft indicator menubar item
-                        final MenubarItem draftIndicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12, "label label-info");
-                        draftIndicator.setGlyphicon("glyphicons glyphicons-notes visible-xs-inline-block");
-                        draftIndicator.setState(true);
-
-                        menubar.add(draftIndicator);
-
-                        // Go to public version
-                        if (pubInfos.isNotOrphanDraft()) {
-                            String publicLiveId = DocumentHelper.getCheckinedWebIdFromDraft(document);
-                            String cmsPublicLiveId = IWebIdService.CMS_PATH_PREFIX.concat("/").concat(publicLiveId);
-                            String publicLiveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, cmsPublicLiveId, null, null, null, null, null,
-                                    "1", null);
-
-                            final MenubarItem publicLiveItem = new MenubarItem("PUBLIC_LIVE_RETURN", bundle.getString("PUBLIC_LIVE_RETURN"),
-                                    "halflings halflings-eye-open", parent, 1, publicLiveURL, null, null, null);
-                            publicLiveItem.setAjaxDisabled(true);
-
-                            menubar.add(publicLiveItem);
                         }
                     }
                 }
