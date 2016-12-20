@@ -30,5 +30,7 @@ public class DocumentServiceFactory implements AdapterFactory<DocumentService> {
     public DocumentService getAdapter(Object toAdapt) {
         return new DocumentService((Session) toAdapt);
     }
+    
+    
 
 }
