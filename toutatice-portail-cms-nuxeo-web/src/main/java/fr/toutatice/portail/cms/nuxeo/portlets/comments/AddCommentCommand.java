@@ -8,8 +8,6 @@ import java.io.File;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.adapters.DocumentService;
-import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 
@@ -54,8 +52,6 @@ public class AddCommentCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
-        // Document service
-        DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
         // Request
         OperationRequest request;
 
@@ -76,49 +72,31 @@ public class AddCommentCommand implements INuxeoCommand {
         if (StringUtils.isBlank(this.parentId)) {
             // Add comment request
             request = nuxeoSession.newRequest("Document.AddComment");
-
-            // Comment content
-            request.set("comment", this.comment.getContent());
-            // Thread post title
-            if (title != null) {
-                request.set("title", title);
-            }
         } else {
             // Create child comment request
             request = nuxeoSession.newRequest("Document.CreateChildComment");
 
             // Comment parent identifier
-            request.set("comment", this.parentId);
-            // Comment content
-            request.set("childComment", this.comment.getContent());
-            // Thread post title
-            if (title != null) {
-                request.set("childCommentTitle", title);
-            }
+            request.set("parent", this.parentId);
         }
 
-        // Parent document identifier
-        request.set("commentableDoc", this.document.getId());
-        File tmpFile = null;
+        // Commentable document
+        request.set("document", this.document.getId());
+        // Comment content
+        request.set("content", this.comment.getContent());
+        // Comment author
+        request.set("author", this.comment.getAuthor());
+        // Comment creation date
+        request.set("creationDate", this.comment.getCreationDate());
+        // Thread post title
+        request.set("title", title);
         // Thread post attachment
         if (attachment != null) {
             request.set("fileName", filename);
             request.setInput(new FileBlob(attachment));
-        } else {
-            /* Nuxeo operation need no null input */
-            tmpFile = File.createTempFile("tmp_com", ".tmp");
-            request.setInput(new FileBlob(tmpFile));
         }
 
-        Blob blob = (Blob) request.execute();
-
-        /* To avoid temporary file persistence */
-        if (tmpFile != null) {
-            tmpFile.delete();
-        }
-
-        // return blob;
-        return blob;
+        return request.execute();
     }
 
 
@@ -127,14 +105,7 @@ public class AddCommentCommand implements INuxeoCommand {
      */
     @Override
     public String getId() {
-        StringBuilder builder = new StringBuilder();
-        if (StringUtils.isBlank(this.parentId)) {
-            builder.append("Document.AddComment: ");
-        } else {
-            builder.append("Document.CreateChildComment: ");
-        }
-        builder.append(this.document.getTitle());
-        return builder.toString();
+        return null;
     }
 
 }

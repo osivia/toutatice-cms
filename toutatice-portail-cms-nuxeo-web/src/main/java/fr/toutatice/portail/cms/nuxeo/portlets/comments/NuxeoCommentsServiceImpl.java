@@ -199,10 +199,10 @@ public class NuxeoCommentsServiceImpl implements INuxeoCommentsService {
      * {@inheritDoc}
      */
     @Override
-    public void addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException {
+    public Document addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException {
         try {
             INuxeoCommand command = new AddCommentCommand(document, comment, parentId);
-            this.cmsService.executeNuxeoCommand(cmsContext, command);
+            return (Document) this.cmsService.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
             throw e;
         } catch (Exception e) {
