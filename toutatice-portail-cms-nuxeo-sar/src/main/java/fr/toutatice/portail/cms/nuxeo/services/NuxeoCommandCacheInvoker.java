@@ -243,12 +243,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                 logger.debug("Execution commande " + this.command.getId());
                 
-                if( IPortalLogger.logger.isDebugEnabled()){
-                    String commandName = "";
-                    if(this.command.getId() != null)
-                        commandName = this.command.getId().replaceAll("\"", "'");
-                    IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo request  \""+commandName +"\""));
-                }
+
                 
             
 
@@ -344,11 +339,14 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     
                     
                     if( IPortalLogger.logger.isDebugEnabled()){
-                        String nuxeoHost = NuxeoConnectionProperties.getPrivateBaseUri().getHost();
+                        String commandName = "";
+                        if(this.command.getId() != null)
+                            commandName = this.command.getId().replaceAll("\"", "'");
+
                         if( error == false)
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo result "+ nuxeoHost+ " " + elapsedTime));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo  \""+commandName +"\" " + elapsedTime));
                         else
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo result "+ nuxeoHost+ " " + elapsedTime + " \"an error as occured\""));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo  \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
                            
                     }
 
