@@ -230,9 +230,6 @@ public class MenuBarFormater {
                 // Document type
                 DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
 
-                // Drafts dropdown menu
-                this.addDraftsDropdown(portalControllerContext, bundle);
-
                 // Edition dropdown menu
                 this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
@@ -481,20 +478,6 @@ public class MenuBarFormater {
 
 
     /**
-     * Add drafts dropdown menu.
-     * 
-     * @param portalControllerContext portal controller context
-     * @param bundle internationalization bundle
-     */
-    protected void addDraftsDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
-        MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.DRAFTS_DROPDOWN_MENU_ID, bundle.getString("DRAFTS_MENU"),
-                "glyphicons glyphicons-construction-cone", MenubarGroup.CMS, 3);
-        dropdown.setReducible(false);
-        this.menubarService.addDropdown(portalControllerContext, dropdown);
-    }
-
-
-    /**
      * Get menubar CMS edition dropdown menu.
      *
      * @param portalControllerContext portal controller context
@@ -502,7 +485,7 @@ public class MenuBarFormater {
      */
     protected void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
-                "glyphicons glyphicons-pencil", MenubarGroup.CMS, 4, false, false);
+                "glyphicons glyphicons-pencil", MenubarGroup.CMS, 6, false, false);
         dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
@@ -575,11 +558,13 @@ public class MenuBarFormater {
         // Document
         Document document = (Document) cmsContext.getDoc();
 
-        // Dropdown menu
-        MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.DRAFTS_DROPDOWN_MENU_ID);
-
         if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
             if (DocumentHelper.isLeaf(document)) {
+                // Parent dropdown menu
+                MenubarDropdown dropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                // Order
+                int order = 1;
+
                 if (pubInfos.isDraft()) {
                     // Draft indicator
                     MenubarItem indicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12, "label label-info");
@@ -593,7 +578,7 @@ public class MenuBarFormater {
                         String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
 
                         MenubarItem item = new MenubarItem("GO_TO_DRAFT_SOURCE", bundle.getString("GO_TO_DRAFT_SOURCE"), "glyphicons glyphicons-undo", dropdown,
-                                1, url, null, null, null);
+                                order, url, null, null, null);
                         item.setAjaxDisabled(true);
 
                         menubar.add(item);
@@ -603,13 +588,13 @@ public class MenuBarFormater {
                     String path = pubInfos.getDraftPath();
                     String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
 
-                    MenubarItem item = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-redo", dropdown, 1, url, null,
+                    MenubarItem item = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-redo", dropdown, order, url, null,
                             null, null);
                     item.setAjaxDisabled(true);
 
                     menubar.add(item);
                 }
-            } else if (extendedInfos.hasDrafts()) {
+            } else if (extendedInfos.getDraftCount() > 0) {
                 // Drafts list
                 String webId = DocumentHelper.getWebId(document);
 
@@ -624,11 +609,16 @@ public class MenuBarFormater {
                     url = "#";
                 }
 
-                MenubarItem item = new MenubarItem("DRAFTS_LIST", bundle.getString("DRAFTS_LIST"), null, dropdown, 1, "#", null, null, null);
+                String title = bundle.getString("DRAFTS_LIST");
+
+                MenubarItem item = new MenubarItem("DRAFTS_LIST", title, "glyphicons glyphicons-construction-cone", MenubarGroup.CMS, 4, "#", null, null, null);
                 item.getData().put("target", "#osivia-modal");
                 item.getData().put("load-url", url);
-                item.getData().put("title", bundle.getString("DRAFTS_LIST"));
+                item.getData().put("title", title);
                 item.getData().put("footer", String.valueOf(true));
+
+                // Counter
+                item.setCounter(extendedInfos.getDraftCount());
 
                 menubar.add(item);
             }
@@ -711,7 +701,7 @@ public class MenuBarFormater {
 
                     if (DocumentHelper.isInLiveMode(cmsContext, pubInfos)) {
                         if (extendedInfos.isOnlineTaskPending()) {
-                            if (extendedInfos.canUserValidateOnlineTask()) {
+                            if (extendedInfos.isCanUserValidateOnlineTask()) {
 
                                 if (DocumentConstants.VALIDATE_ONLINE_TASK_NAME.equals(extendedInfos.getTaskName())) {
                                     // Online workflow validation items
@@ -1237,7 +1227,7 @@ public class MenuBarFormater {
 
             if (pubInfos.isLiveSpace() && !pubInfos.hasDraft() && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
 
-                final Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
+                final Boolean isValidationWfRunning = extendedInfos.isValidationWorkflowRunning();
                 final String url = StringUtils.EMPTY;
 
                 final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
@@ -1327,7 +1317,7 @@ public class MenuBarFormater {
                     final MenubarItem remotePubItem = new MenubarItem("REMOTE_PUBLISHING_URL", bundle.getString("REMOTE_PUBLISHING"), null, parent, 14, url,
                             null, null, null);
 
-                    final Boolean isValidationWfRunning = extendedInfos.getIsValidationWorkflowRunning();
+                    final Boolean isValidationWfRunning = extendedInfos.isValidationWorkflowRunning();
 
                     if (BooleanUtils.isFalse(isValidationWfRunning)) {
                         // We can publish remotly

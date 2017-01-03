@@ -3,16 +3,16 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import net.sf.json.JSONObject;
-
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
+
+import net.sf.json.JSONObject;
 
 
 /**
- * Allows setting of internal Json flux.
+ * Allows setting of internal JSON flux.
  * 
- * @author david
- *
+ * @author David Chevrier
+ * @see CMSExtendedDocumentInfos
  */
 public class InternalCMSExtendedDocumentInfos extends CMSExtendedDocumentInfos {
 
@@ -22,12 +22,15 @@ public class InternalCMSExtendedDocumentInfos extends CMSExtendedDocumentInfos {
     public InternalCMSExtendedDocumentInfos() {
         super();
     }
+
     
     /**
      * Setter for internal flux.
+     * 
+     * @param flux JSON flux
      */
     public void setFlux(JSONObject flux) {
-        super.flux = flux;
+        super.setFlux(flux);
     }
     
 }
