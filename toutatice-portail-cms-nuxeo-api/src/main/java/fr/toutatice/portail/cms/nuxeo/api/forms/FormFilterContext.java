@@ -1,7 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -23,8 +25,6 @@ public class FormFilterContext {
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
 
-    /** The actors. */
-    private FormActors actors;
     /** Model webId. */
     private String modelWebId;
     /** Procedure instance UUID. */
@@ -37,6 +37,12 @@ public class FormFilterContext {
     private String taskInitiator;
     /** nextStep */
     private String nextStep;
+
+
+    /** Actors. */
+    private final Set<String> actors;
+    /** Additional authorizations. */
+    private final Set<String> additionalAuthorizations;
 
 
     /** Forms service. */
@@ -52,6 +58,8 @@ public class FormFilterContext {
         this.procedureInitiator = procedureInitiator;
         this.nextStep = nextStep;
         this.taskInitiator = taskInitiator;
+        this.actors = new HashSet<>();
+        this.additionalAuthorizations = new HashSet<>();
 
         // Forms service
         this.formsService = NuxeoServiceFactory.getFormsService();
@@ -74,24 +82,6 @@ public class FormFilterContext {
      */
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
-    }
-
-    /**
-     * Gets the actors.
-     *
-     * @return the actors
-     */
-    public FormActors getActors() {
-        return this.actors;
-    }
-
-    /**
-     * Sets the actors.
-     *
-     * @param actors the new actors
-     */
-    public void setActors(FormActors actors) {
-        this.actors = actors;
     }
 
     /**
@@ -226,4 +216,23 @@ public class FormFilterContext {
     public void setNextStep(String nextStep) {
         this.nextStep = nextStep;
     }
+
+    /**
+     * Getter for actors.
+     * 
+     * @return the actors
+     */
+    public Set<String> getActors() {
+        return actors;
+    }
+
+    /**
+     * Getter for additionalAuthorizations.
+     * 
+     * @return the additionalAuthorizations
+     */
+    public Set<String> getAdditionalAuthorizations() {
+        return additionalAuthorizations;
+    }
+
 }

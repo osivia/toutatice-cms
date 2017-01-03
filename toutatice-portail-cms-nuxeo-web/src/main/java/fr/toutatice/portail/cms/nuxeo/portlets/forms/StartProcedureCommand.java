@@ -1,7 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
@@ -26,13 +26,13 @@ public class StartProcedureCommand implements INuxeoCommand {
 
     /** Task title */
     private final String taskTitle;
-    /** Groups. */
-    private final String groups;
-    /** Users. */
+    /** Task users and groups. */
     private final String users;
-    /** Properties */
+    /** Task additional authorizations. */
+    private final String additionalAuthorizations;
+    /** Task properties */
     private final PropertyMap properties;
-    /** blobs */
+    /** Task associated BLOBs */
     private final Blobs blobs;
 
 
@@ -40,28 +40,29 @@ public class StartProcedureCommand implements INuxeoCommand {
      * Constructor.
      *
      * @param title task title
-     * @param groups groups
-     * @param users users
-     * @param properties properties
+     * @param actors task actors
+     * @param additionalAuthorizations task additional authorizations
+     * @param properties task properties
      */
-    public StartProcedureCommand(String title, List<String> groups, List<String> users, Map<String, Object> properties) {
-        this(title, groups, users, properties, null);
+    public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties) {
+        this(title, actors, additionalAuthorizations, properties, null);
     }
 
     /**
      * Constructor.
      *
      * @param title task title
-     * @param groups groups
-     * @param users users
-     * @param properties properties
-     * @param blobs blobs
+     * @param actors task actors
+     * @param additionalAuthorizations task additional authorizations
+     * @param properties task properties
+     * @param blobs task BLOBs
      */
-    public StartProcedureCommand(String title, List<String> groups, List<String> users, Map<String, Object> properties, Blobs blobs) {
+    public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties,
+            Blobs blobs) {
         super();
         this.taskTitle = title;
-        this.groups = StringUtils.join(groups, ",");
-        this.users = StringUtils.join(users, ",");
+        this.users = StringUtils.trimToNull(StringUtils.join(actors, ","));
+        this.additionalAuthorizations = StringUtils.trimToNull(StringUtils.join(additionalAuthorizations, ","));
         this.properties = new PropertyMap(properties);
         this.blobs = blobs;
     }
@@ -76,15 +77,8 @@ public class StartProcedureCommand implements INuxeoCommand {
         OperationRequest request = nuxeoSession.newRequest("Services.StartProcedure");
 
         request.set("taskTitle", this.taskTitle);
-
-        if (StringUtils.isNotEmpty(this.groups)) {
-            request.set("groups", this.groups);
-        }
-
-        if (StringUtils.isNotEmpty(this.users)) {
-            request.set("users", this.users);
-        }
-
+        request.set("users", this.users);
+        request.set("additionalAuthorizations", this.additionalAuthorizations);
         request.set("properties", this.properties);
 
         if (this.blobs != null) {
