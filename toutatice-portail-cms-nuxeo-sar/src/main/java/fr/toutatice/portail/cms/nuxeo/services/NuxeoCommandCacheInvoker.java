@@ -335,8 +335,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                     profiler.logEvent("NUXEO", name, elapsedTime, error);
                     
-                    
-                    
+                     
                     
                     if( IPortalLogger.logger.isDebugEnabled()){
                         String commandName = "";
@@ -344,9 +343,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                             commandName = this.command.getId().replaceAll("\"", "'");
 
                         if( error == false)
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo  \""+commandName +"\" " + elapsedTime));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime));
                         else
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo  \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
                            
                     }
 
