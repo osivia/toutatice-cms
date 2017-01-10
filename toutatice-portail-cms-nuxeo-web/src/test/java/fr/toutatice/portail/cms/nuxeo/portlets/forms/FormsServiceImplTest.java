@@ -15,6 +15,7 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -94,6 +95,7 @@ public class FormsServiceImplTest {
         // Document
         Document document = EasyMock.createMock(Document.class);
         EasyMock.expect(document.getTitle()).andReturn(DOCUMENT_TITLE).anyTimes();
+        EasyMock.expect(document.getPath()).andReturn(DOCUMENT_PATH).anyTimes();
 
         // Document context
         NuxeoDocumentContext documentContext = EasyMock.createMock(NuxeoDocumentContext.class);
@@ -137,9 +139,13 @@ public class FormsServiceImplTest {
         EasyMock.expect(personService.findByCriteria(emptyPerson)).andStubReturn(Arrays.asList(new Person[]{person}));
         EasyMock.expect(personService.getPerson(USER_ID)).andStubReturn(person);
 
+        // Group service
+        GroupService groupService = EasyMock.createMock(GroupService.class);
+
         // Directory service factory
         PowerMock.mockStatic(DirServiceFactory.class);
         EasyMock.expect(DirServiceFactory.getService(PersonService.class)).andStubReturn(personService);
+        EasyMock.expect(DirServiceFactory.getService(GroupService.class)).andStubReturn(groupService);
 
         // Tag service
         INuxeoTagService tagService = EasyMock.createMock(INuxeoTagService.class);
@@ -183,7 +189,7 @@ public class FormsServiceImplTest {
 
         // Replay
         PowerMock.replayAll(document, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, emptyPerson, person, personService,
-                tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory, internationalizationService);
+                groupService, tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory, internationalizationService);
 
 
         // Forms service

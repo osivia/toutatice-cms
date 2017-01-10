@@ -302,29 +302,18 @@ public class TransformationFunctions {
      * @return title
      */
     public static String getDocumentTitle(String path) {
-        // CMS service
-        ICMSService cmsService = getCmsService();
-
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
 
-        // CMS context
-        CMSServiceCtx cmsContext = new CMSServiceCtx();
-        cmsContext.setPortalControllerContext(portalControllerContext);
-        cmsContext.setForcePublicationInfosScope("superuser_context");
-
+        // Document
+        Document document = getDocument(portalControllerContext, path);
 
         // Document title
         String title;
-
-        try {
-            // Nuxeo document
-            CMSItem cmsItem = cmsService.getContent(cmsContext, path);
-            Document document = (Document) cmsItem.getNativeItem();
-
-            title = document.getTitle();
-        } catch (CMSException e) {
+        if (document == null) {
             title = null;
+        } else {
+            title = document.getTitle();
         }
 
         return title;
@@ -345,6 +334,7 @@ public class TransformationFunctions {
 
     /**
      * Get document link.
+     * 
      * @param path document path
      * @return link
      */
@@ -355,16 +345,23 @@ public class TransformationFunctions {
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
 
-        // Document title
-        String title = getDocumentTitle(path);
+        // Document
+        Document document = getDocument(portalControllerContext, path);
 
-        // URL
-        String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-        
-        // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", title);
+        // Result
+        String result;
+        if (document == null) {
+            result = null;
+        } else {
+            // URL
+            String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, document.getPath(), null, null, null, null, null, null, null);
+            // Link
+            Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", document.getTitle());
 
-        return DOM4JUtils.writeCompact(link);
+            result = DOM4JUtils.writeCompact(link);
+        }
+
+        return result;
     }
 
 
@@ -381,6 +378,34 @@ public class TransformationFunctions {
 
 
     /**
+     * Get document.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param path document path
+     * @return document
+     */
+    private static Document getDocument(PortalControllerContext portalControllerContext, String path) {
+        // CMS service
+        ICMSService cmsService = getCmsService();
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setPortalControllerContext(portalControllerContext);
+        cmsContext.setForcePublicationInfosScope("superuser_context");
+
+        // Nuxeo document
+        Document document;
+        try {
+            CMSItem cmsItem = cmsService.getContent(cmsContext, path);
+            document = (Document) cmsItem.getNativeItem();
+        } catch (CMSException e) {
+            document = null;
+        }
+
+        return document;
+    }
+
+
+    /**
      * Get update task command link.
      * 
      * @param title link title
@@ -393,7 +418,7 @@ public class TransformationFunctions {
         IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
         // Tasks service
         ITasksService tasksService = getTasksService();
-        
+
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
         // Disabled links indicator

@@ -21,6 +21,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.naming.Name;
 import javax.portlet.PortletContext;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -39,7 +40,9 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Group;
 import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.internationalization.Bundle;
@@ -96,6 +99,8 @@ public class FormsServiceImpl implements IFormsService {
     private final IBundleFactory bundleFactory;
     /** Person service. */
     private final PersonService personService;
+    /** Group service. */
+    private final GroupService groupService;
 
 
     /**
@@ -118,6 +123,8 @@ public class FormsServiceImpl implements IFormsService {
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
         // Person service
         this.personService = DirServiceFactory.getService(PersonService.class);
+        // Group service
+        this.groupService = DirServiceFactory.getService(GroupService.class);
     }
 
 
@@ -651,7 +658,7 @@ public class FormsServiceImpl implements IFormsService {
             UUID uuid = UUID.fromString(procedureInstanceId);
 
             // Nuxeo command
-            INuxeoCommand command = new GetTasksCommand(null, uuid);
+            INuxeoCommand command = new GetTasksCommand(null, null, uuid);
             Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
 
             // Task document
@@ -670,10 +677,35 @@ public class FormsServiceImpl implements IFormsService {
                 PropertyList actors = task.getProperties().getList("nt:actors");
 
                 if (!actors.isEmpty()) {
-                    // Email recipients
-                    Set<String> emailRecipients = new HashSet<String>(actors.size());
+                    // User names
+                    Set<Name> names = new HashSet<>(actors.size());
                     for (int i = 0; i < actors.size(); i++) {
-                        Person person = this.personService.getPerson(actors.getString(i));
+                        String actor = actors.getString(i);
+
+                        // Group
+                        Group group;
+                        if (StringUtils.startsWith(actor, ACTOR_USER_PREFIX)) {
+                            group = null;
+                        } else if (StringUtils.startsWith(actor, ACTOR_GROUP_PREFIX)) {
+                            group = this.groupService.get(StringUtils.removeStart(actor, ACTOR_GROUP_PREFIX));
+                        } else {
+                            group = this.groupService.get(actor);
+                        }
+
+                        if (group == null) {
+                            String user = StringUtils.removeStart(actor, ACTOR_USER_PREFIX);
+                            names.add(this.personService.getEmptyPerson().buildDn(user));
+                        } else {
+                            for (Name member : group.getMembers()) {
+                                names.add(member);
+                            }
+                        }
+                    }
+
+                    // Email recipients
+                    Set<String> emailRecipients = new HashSet<String>(names.size());
+                    for (Name name : names) {
+                        Person person = this.personService.getPerson(name);
                         if (person != null) {
                             String email = person.getMail();
                             if (StringUtils.isNotBlank(email)) {
@@ -782,9 +814,15 @@ public class FormsServiceImpl implements IFormsService {
     private String transform(PortalControllerContext portalControllerContext, String expression, Document task, boolean disabledLinks) throws PortalException {
         // Procedure instance properties
         PropertyMap instanceProperties = task.getProperties().getMap("nt:pi");
+        if (instanceProperties == null) {
+            instanceProperties = new PropertyMap(0);
+        }
 
         // Global variables
         PropertyMap globalVariables = instanceProperties.getMap("pi:globalVariablesValues");
+        if (globalVariables == null) {
+            globalVariables = new PropertyMap(0);
+        }
 
         // Task variables
         PropertyMap taskVariables = task.getProperties().getMap("nt:task_variables");

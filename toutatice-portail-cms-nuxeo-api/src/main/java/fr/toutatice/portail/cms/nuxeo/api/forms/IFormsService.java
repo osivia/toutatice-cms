@@ -21,6 +21,11 @@ public interface IFormsService {
     /** Delete on workflow ending parameter. */
     String DELETE_ON_ENDING_PARAMETER = "deleteOnEnding";
 
+    /** Nuxeo task actor user prefix. */
+    String ACTOR_USER_PREFIX = "user:";
+    /** Nuxeo task actor group prefix. */
+    String ACTOR_GROUP_PREFIX = "group:";
+
 
     /**
      * Start with default action.
