@@ -28,10 +28,8 @@ public class UpdateProcedureCommand implements INuxeoCommand {
     private final String path;
     /** Task title */
     private final String taskTitle;
-    /** Groups. */
-    private final String groups;
-    /** Users. */
-    private final String users;
+    /** actors. */
+    private final String actors;
     /** Properties */
     private final PropertyMap properties;
 
@@ -41,16 +39,14 @@ public class UpdateProcedureCommand implements INuxeoCommand {
      *
      * @param path procedure instance path
      * @param title task title
-     * @param groups groups
-     * @param users users
+     * @param actors actors
      * @param properties properties
      */
-    public UpdateProcedureCommand(String path, String title, List<String> groups, List<String> users, Map<String, Object> properties) {
+    public UpdateProcedureCommand(String path, String title, List<String> actors, Map<String, Object> properties) {
         super();
         this.path = path;
         this.taskTitle = title;
-        this.groups = StringUtils.join(groups, ",");
-        this.users = StringUtils.join(users, ",");
+        this.actors = StringUtils.join(actors, ",");
         this.properties = new PropertyMap(properties);
     }
 
@@ -64,12 +60,8 @@ public class UpdateProcedureCommand implements INuxeoCommand {
         OperationRequest request = nuxeoSession.newRequest("Services.UpdateProcedure");
         request.setInput(new DocRef(this.path));
         request.set("taskTitle", this.taskTitle);
-        if (StringUtils.isNotEmpty(this.groups)) {
-            request.set("groups", this.groups);
-        }
-
-        if (StringUtils.isNotEmpty(this.users)) {
-            request.set("users", this.users);
+        if (StringUtils.isNotEmpty(this.actors)) {
+            request.set("actors", this.actors);
         }
         request.set("properties", this.properties);
         return request.execute();

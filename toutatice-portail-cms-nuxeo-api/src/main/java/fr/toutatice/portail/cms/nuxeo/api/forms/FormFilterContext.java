@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.forms;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.osivia.portal.api.PortalException;
@@ -25,7 +26,7 @@ public class FormFilterContext {
     private PortalControllerContext portalControllerContext;
 
     /** The actors. */
-    private FormActors actors;
+    private List<String> actors;
 
     /** The action id. */
     private String actionId;
@@ -73,24 +74,6 @@ public class FormFilterContext {
      */
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
-    }
-
-    /**
-     * Gets the actors.
-     *
-     * @return the actors
-     */
-    public FormActors getActors() {
-        return this.actors;
-    }
-
-    /**
-     * Sets the actors.
-     *
-     * @param actors the new actors
-     */
-    public void setActors(FormActors actors) {
-        this.actors = actors;
     }
 
     /**
@@ -188,5 +171,21 @@ public class FormFilterContext {
      */
     public void setNextStep(String nextStep) {
         this.nextStep = nextStep;
+    }
+
+    /**
+     * Getter for actors.
+     * @return the actors
+     */
+    public List<String> getActors() {
+        return actors;
+    }
+
+    /**
+     * Setter for actors.
+     * @param actors the actors to set
+     */
+    public void setActors(List<String> actors) {
+        this.actors = actors;
     }
 }

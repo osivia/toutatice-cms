@@ -26,10 +26,8 @@ public class StartProcedureCommand implements INuxeoCommand {
 
     /** Task title */
     private final String taskTitle;
-    /** Groups. */
-    private final String groups;
-    /** Users. */
-    private final String users;
+    /** actors. */
+    private final String actors;
     /** Properties */
     private final PropertyMap properties;
     /** blobs */
@@ -40,28 +38,25 @@ public class StartProcedureCommand implements INuxeoCommand {
      * Constructor.
      *
      * @param title task title
-     * @param groups groups
-     * @param users users
+     * @param actors actors
      * @param properties properties
      */
-    public StartProcedureCommand(String title, List<String> groups, List<String> users, Map<String, Object> properties) {
-        this(title, groups, users, properties, null);
+    public StartProcedureCommand(String title, List<String> actors, Map<String, Object> properties) {
+        this(title, actors, properties, null);
     }
 
     /**
      * Constructor.
      *
      * @param title task title
-     * @param groups groups
-     * @param users users
+     * @param actors actors
      * @param properties properties
      * @param blobs blobs
      */
-    public StartProcedureCommand(String title, List<String> groups, List<String> users, Map<String, Object> properties, Blobs blobs) {
+    public StartProcedureCommand(String title, List<String> actors, Map<String, Object> properties, Blobs blobs) {
         super();
         this.taskTitle = title;
-        this.groups = StringUtils.join(groups, ",");
-        this.users = StringUtils.join(users, ",");
+        this.actors = StringUtils.join(actors, ",");
         this.properties = new PropertyMap(properties);
         this.blobs = blobs;
     }
@@ -77,12 +72,8 @@ public class StartProcedureCommand implements INuxeoCommand {
 
         request.set("taskTitle", this.taskTitle);
 
-        if (StringUtils.isNotEmpty(this.groups)) {
-            request.set("groups", this.groups);
-        }
-
-        if (StringUtils.isNotEmpty(this.users)) {
-            request.set("users", this.users);
+        if (StringUtils.isNotEmpty(this.actors)) {
+            request.set("actors", this.actors);
         }
 
         request.set("properties", this.properties);

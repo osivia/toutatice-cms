@@ -10,6 +10,9 @@ import java.util.UUID;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,7 +32,6 @@ import de.odysseus.el.ExpressionFactoryImpl;
 import de.odysseus.el.util.SimpleContext;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.forms.FormActors;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterException;
@@ -38,8 +40,6 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterInstance;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -117,20 +117,13 @@ public class FormsServiceImpl implements IFormsService {
 
         // Task title
         String title = StringUtils.EMPTY;
+
+        // Next step properties
+        PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+        title = nextStepProperties.getString("name");
+
         // Actors
-        FormActors actors = new FormActors();
-        if (!StringUtils.equals(ENDSTEP, nextStep)) {
-            // Next step properties
-            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-            title = nextStepProperties.getString("name");
-            // add authorizedGroups to actors
-            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-            if (groupsObjectsList != null) {
-                for (final Object groupsObject : groupsObjectsList.list()) {
-                    actors.getGroups().add((String) groupsObject);
-                }
-            }
-        }
+        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
 
 
         if (variables == null) {
@@ -153,7 +146,7 @@ public class FormsServiceImpl implements IFormsService {
             properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
 
             // Nuxeo command
-            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors().getGroups(), filterContext.getActors().getUsers(), properties);
+            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), properties);
             try {
                 this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
             } catch (CMSException e) {
@@ -164,6 +157,27 @@ public class FormsServiceImpl implements IFormsService {
         return filterContext.getVariables();
     }
 
+
+    /**
+     * @param model
+     * @param nextStep
+     * @param title
+     * @param actors
+     * @return
+     */
+    private List<String> getActors(Document model, String nextStep, String title, PropertyMap nextStepProperties) {
+        List<String> actors = new ArrayList<String>();
+        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+            // add authorizedGroups to actors
+            final PropertyList groupsObjectsList = nextStepProperties.getList("actors");
+            if (groupsObjectsList != null) {
+                for (final Object groupsObject : groupsObjectsList.list()) {
+                    actors.add((String) groupsObject);
+                }
+            }
+        }
+        return actors;
+    }
 
     /**
      * {@inheritDoc}
@@ -242,20 +256,13 @@ public class FormsServiceImpl implements IFormsService {
 
         // Task title
         String title = StringUtils.EMPTY;
+
+        // Next step properties
+        PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+        title = nextStepProperties.getString("name");
+
         // Actors
-        FormActors actors = new FormActors();
-        if (!StringUtils.equals(ENDSTEP, nextStep)) {
-            // Next step properties
-            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-            title = nextStepProperties.getString("name");
-            // Add authorizedGroups to actors
-            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-            if (groupsObjectsList != null) {
-                for (final Object groupsObject : groupsObjectsList.list()) {
-                    actors.getGroups().add((String) groupsObject);
-                }
-            }
-        }
+        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
 
         // Global Variables Values
         Map<String, Object> globalVariableValuesMap = instanceProperties.getMap("pi:globalVariablesValues").map();
@@ -279,8 +286,7 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
 
         // Nuxeo command
-        INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors().getGroups(),
-                filterContext.getActors().getUsers(), properties);
+        INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), properties);
         try {
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
@@ -322,7 +328,7 @@ public class FormsServiceImpl implements IFormsService {
      * @param actors
      * @return
      */
-    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, FormActors actors,
+    private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, List<String> actors,
             Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String procedureInitiator, String taskInitiator,
             String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
