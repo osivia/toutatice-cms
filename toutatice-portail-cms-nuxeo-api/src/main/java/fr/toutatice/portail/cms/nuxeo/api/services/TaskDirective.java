@@ -9,8 +9,12 @@ public enum TaskDirective {
 
     /** Serial document review. */
     SERIAL_DOCUMENT_REVIEW("wf.serialDocumentReview.AcceptReject"),
+    /** Serial document review update. */
+    SERIAL_DOCUMENT_REVIEW_UPDATE("wf.serialDocumentReview.updateRequest.directive"),
     /** Parallel document review. */
-    PARALLEL_DOCUMENT_REVIEW("wf.parallelDocumentReview.give_opinion.directive");
+    PARALLEL_DOCUMENT_REVIEW("wf.parallelDocumentReview.give_opinion.directive"),
+    /** Parallel document review consolidation. */
+    PARALLEL_DOCUMENT_REVIEW_CONSOLIDATION("wf.parallelDocumentReview.consolidate.directive");
 
 
     /** Directive identifier. */
