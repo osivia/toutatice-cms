@@ -7,8 +7,6 @@
 <c:set var="url"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
 <c:set var="name" value="${document.properties['file:content']['name']}" />
 <c:set var="size" value="${document.properties['file:content']['length']}" />
-<c:set var="vignetteUrl"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
-<c:set var="description" value="${document.properties['dc:description']}" />
 
 
 <div class="panel panel-default">

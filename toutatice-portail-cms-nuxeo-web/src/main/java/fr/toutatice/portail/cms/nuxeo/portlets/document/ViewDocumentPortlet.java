@@ -16,7 +16,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -44,6 +46,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -75,6 +78,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.forms.FormsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
@@ -286,6 +290,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            // CMS service
+            ICMSService cmsService = NuxeoController.getCMSService();
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -360,7 +366,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, onlyRemoteSections);
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, true);
                 } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
@@ -369,16 +375,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     this.generateAttachments(nuxeoController, document, documentDTO);
 
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, Boolean.FALSE);
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, false);
 
-                    // Comments
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                        // CMS service
-                        ICMSService cmsService = NuxeoController.getCMSService();
-
-                        // Publication infos
+                        // Publication informations
                         CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+                        // Extended document informations
+                        CMSExtendedDocumentInfos extendedDocumentInfos = cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
 
+                        // Validation state
+                        this.addValidationState(document, documentDTO, extendedDocumentInfos);
+
+                        // Comments
                         boolean commentsEnabled = this.areCommentsEnabled(cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
                             documentDTO.setCommentable(true);
@@ -446,7 +454,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         return dispatchJspName;
     }
-
+    
 
     /**
      * Generate document attachments.
@@ -474,6 +482,49 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 attachments.add(attachment);
             }
+        }
+    }
+
+
+    /**
+     * Add document validation state.
+     * 
+     * @param document Nuxeo document
+     * @param documentDTO document DTO
+     * @param extendedDocumentInfos extended document informations
+     */
+    private void addValidationState(Document document, DocumentDTO documentDTO, CMSExtendedDocumentInfos extendedDocumentInfos) {
+        // Validation state internationalization key
+        String key;
+        // Validation state icon
+        String icon;
+        // Validation state color
+        String color;
+
+        if (extendedDocumentInfos.isValidationWorkflowRunning()) {
+            // Validation in progress
+            key = "DOCUMENT_STATE_VALIDATION_IN_PROGRESS";
+            icon = "glyphicons glyphicons-hourglass";
+            color = "info";
+        } else if (DocumentConstants.APPROVED_DOC_STATE.equals(document.getState())) {
+            // Valid
+            key = "DOCUMENT_STATE_VALID";
+            icon = "glyphicons glyphicons-ok";
+            color = "success";
+        } else {
+            key = null;
+            icon = null;
+            color = null;
+        }
+
+        if (key != null) {
+            // Validation state map
+            Map<String, String> validationState = new HashMap<>();
+            validationState.put("key", key);
+            validationState.put("icon", icon);
+            validationState.put("color", color);
+
+            documentDTO.getProperties().put("validationState", validationState);
         }
     }
 

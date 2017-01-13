@@ -1182,23 +1182,16 @@ public class CMSService implements ICMSService {
      */
     @Override
     public CMSExtendedDocumentInfos getExtendedDocumentInfos(CMSServiceCtx ctx, String path) throws CMSException {
-
         CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
-
         try {
-
             if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-                if (ctx.getDoc() != null) {
-                    if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
-                        if (ctx.getRequest().getRemoteUser() != null) {
-
-                        	docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
-                        }
+                if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
+                    if (ctx.getRequest().getRemoteUser() != null) {
+                        docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
                     }
                 }
             }
-
         } catch (NuxeoException e) {
             e.rethrowCMSException();
         } catch (Exception e) {
