@@ -28,8 +28,8 @@ public class UpdateProcedureCommand implements INuxeoCommand {
     private final String path;
     /** Task title */
     private final String taskTitle;
-    /** Task users and groups. */
-    private final String users;
+    /** Task actors. */
+    private final String actors;
     /** Task additional authorizations. */
     private final String additionalAuthorizations;
     /** Task properties */
@@ -50,7 +50,7 @@ public class UpdateProcedureCommand implements INuxeoCommand {
         super();
         this.path = path;
         this.taskTitle = title;
-        this.users = StringUtils.trimToNull(StringUtils.join(actors, ","));
+        this.actors = StringUtils.trimToNull(StringUtils.join(actors, ","));
         this.additionalAuthorizations = StringUtils.trimToNull(StringUtils.join(additionalAuthorizations, ","));
         this.properties = new PropertyMap(properties);
     }
@@ -66,7 +66,7 @@ public class UpdateProcedureCommand implements INuxeoCommand {
 
         request.setInput(new DocRef(this.path));
         request.set("taskTitle", this.taskTitle);
-        request.set("users", this.users);
+        request.set("actors", this.actors);
         request.set("additionalAuthorizations", this.additionalAuthorizations);
         request.set("properties", this.properties);
 

@@ -26,8 +26,8 @@ public class StartProcedureCommand implements INuxeoCommand {
 
     /** Task title */
     private final String taskTitle;
-    /** Task users and groups. */
-    private final String users;
+    /** Task actors. */
+    private final String actors;
     /** Task additional authorizations. */
     private final String additionalAuthorizations;
     /** Task properties */
@@ -61,7 +61,7 @@ public class StartProcedureCommand implements INuxeoCommand {
             Blobs blobs) {
         super();
         this.taskTitle = title;
-        this.users = StringUtils.trimToNull(StringUtils.join(actors, ","));
+        this.actors = StringUtils.trimToNull(StringUtils.join(actors, ","));
         this.additionalAuthorizations = StringUtils.trimToNull(StringUtils.join(additionalAuthorizations, ","));
         this.properties = new PropertyMap(properties);
         this.blobs = blobs;
@@ -77,7 +77,7 @@ public class StartProcedureCommand implements INuxeoCommand {
         OperationRequest request = nuxeoSession.newRequest("Services.StartProcedure");
 
         request.set("taskTitle", this.taskTitle);
-        request.set("users", this.users);
+        request.set("actors", this.actors);
         request.set("additionalAuthorizations", this.additionalAuthorizations);
         request.set("properties", this.properties);
 
