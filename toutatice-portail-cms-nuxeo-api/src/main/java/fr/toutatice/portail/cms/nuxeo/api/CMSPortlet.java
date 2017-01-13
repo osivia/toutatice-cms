@@ -31,6 +31,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -387,9 +388,15 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 // Fetch document
                 Document document = nuxeoController.fetchDocument(id);
 
+                // URL
+                String url = document.getString("clink:link");
+                if (!StringUtils.startsWith(url, "http")) {
+                    url = "http://" + url;
+                }
+
                 // Response
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-                resourceResponse.setProperty("Location", document.getString("clink:link"));
+                resourceResponse.setProperty("Location", url);
                 resourceResponse.getPortletOutputStream().close();
             } else if ("fancytreeLazyLoading".equals(resourceRequest.getResourceID())) {
                 // Fancytree lazy-loading

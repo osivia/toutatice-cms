@@ -9,26 +9,18 @@
 <ttc:documentLink document="${document}" var="link" />
 
 <!-- Target -->
-<c:remove var="target" />
-<c:if test="${link.external}">
-    <c:set var="target" value="_blank" />
-</c:if>
+<c:set var="target" value="${link.external ? '_blank' : ''}" />
 
 <!-- Contextual link value -->
 <c:set var="clink" value="${document.properties['clink:link']}" />
-
-<!-- Description -->
-<c:set var="description" value="${document.properties['dc:description']}" />
 
 
 <ttc:addMenubarItem id="LINK" labelKey="OPEN_LINK" url="${link.url}" target="${target}" glyphicon="halflings halflings-new-window" />
 
 
 <div class="contextual-link">
-    <p>${description}</p>
-    
     <p>
-        <a href="${clink}" target="${target}">
+        <a href="${link.url}" target="${target}">
             <span>${clink}</span>
         </a>
         
