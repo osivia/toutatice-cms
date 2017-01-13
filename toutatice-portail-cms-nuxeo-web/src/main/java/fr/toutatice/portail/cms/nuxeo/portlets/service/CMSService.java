@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +55,8 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
-import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.model.Group;
+import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
@@ -181,6 +183,8 @@ public class CMSService implements ICMSService {
     private final IEcmCommandervice ecmCmdService;
     /** Person service. */
     private final PersonService personService;
+    /** Directory group service. */
+    private final GroupService groupService;
 
 
     /**
@@ -198,6 +202,7 @@ public class CMSService implements ICMSService {
         this.formsService = NuxeoServiceFactory.getFormsService();
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
+        this.groupService = DirServiceFactory.getService(GroupService.class);
     }
 
 
@@ -2890,22 +2895,26 @@ public class CMSService implements ICMSService {
      * @return actors
      */
     private Set<String> getTaskActors(String user) {
-        // Person
-        Person person = this.personService.getPerson(user);
-        // Profiles
-        List<Name> profiles = person.getProfiles();
+        // User DN
+        Name dn = this.personService.getEmptyPerson().buildDn(user);
 
-        // Matched actors
-        Set<String> actors = new HashSet<>((profiles.size() + 1) * 2);
+        // Search user groups
+        Group criteria = this.groupService.getEmptyGroup();
+        criteria.setMembers(Arrays.asList(new Name[]{dn}));
+        List<Group> groups = this.groupService.search(criteria);
 
+        // Actors
+        Set<String> actors = new HashSet<>((groups.size() + 1) * 2);
+        
         actors.add(user);
         actors.add(IFormsService.ACTOR_USER_PREFIX + user);
+        
+        for (Group group : groups) {
+            // Group CN
+            String cn = group.getCn();
 
-        for (Name name : profiles) {
-            String group = StringUtils.substringAfter(name.get(name.size() - 1), "=");
-
-            actors.add(group);
-            actors.add(IFormsService.ACTOR_GROUP_PREFIX + group);
+            actors.add(cn);
+            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
         }
 
         return actors;
