@@ -1185,6 +1185,23 @@ public class NuxeoController {
             throw this.wrapNuxeoException(e);
         }
     }
+    
+    
+    /**
+     * Update picture upload Timestamp
+     *
+     * @param link Nuxeo link URL
+     * @return transformed Nuxeo link URL
+     */
+    public void updatePictureUploadTimestamp(String parentPath) {
+        try {
+            INuxeoService nuxeoService = this.getNuxeoCMSService();
+            nuxeoService.getCMSCustomizer().updatePictureTS(parentPath);
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
+    }
+
 
 
     /**

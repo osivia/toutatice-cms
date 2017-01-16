@@ -162,6 +162,10 @@ public class BinaryServlet extends HttpServlet {
             String type = request.getParameter("type");
             Type binaryType = BinaryDescription.Type.valueOf(type);
 
+            // Force portal cache refresh
+            if( request.getParameter("refreshTs") != null)
+                PageProperties.getProperties().setRefreshingPage(true);
+
             // Binary content
             CMSBinaryContent content = null;
             if (Type.ATTACHED_PICTURE.equals(binaryType)) {

@@ -29,6 +29,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
@@ -310,6 +311,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 String parentId = request.getParameter("parentId");
 
+
                 // Notification
                 Notifications notifications;
 
@@ -321,6 +323,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Nuxeo command
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
+                    
+                    // Upload refreshing
+                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), parentId);
+                    Document document = documentContext.getDoc();
+                    nuxeoController.updatePictureUploadTimestamp(document.getPath());
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
@@ -335,7 +342,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 }
 
                 this.notificationsService.addNotifications(portalControllerContext, notifications);
-            }
+             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {
             // Admin

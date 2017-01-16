@@ -40,6 +40,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -50,6 +51,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
@@ -90,6 +92,7 @@ import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
@@ -180,6 +183,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private final Map<String, String> avatarMap;
     /** Binary timestamps. */
     private final Map<String, Long> binaryTimestamps;
+    /** Picture timestamps. */
+    private final Map<String, Long> pictureTs;
 
     /** Plugin manager. */
     private final CustomizationPluginMgr pluginManager;
@@ -244,6 +249,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.avatarMap = new ConcurrentHashMap<String, String>();
         // Binary timestamps
         this.binaryTimestamps = new ConcurrentHashMap<String, Long>();
+        // Picture timestamps        
+        this.pictureTs = new ConcurrentHashMap<String, Long>();
 
         // Plugin manager
         this.pluginManager = new CustomizationPluginMgr(this);
@@ -1396,6 +1403,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
+    
+
+
+    @Override
+    public void updatePictureTS(String parentPath) {
+       this.pictureTs.put(parentPath, System.currentTimeMillis());
+    }
+    
+    
     /**
      * Gets the binary resource URL.
      *
@@ -1504,9 +1520,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 sb.append("&fscope=").append(cmsCtx.getForcePublicationInfosScope());
             }
 
+            // Picture uploading
 
+            if (Type.PICTURE.equals(binary.getType()) && (cmsCtx.getRequest() != null)) {
+                
+                if (path != null) {
+
+
+                    int lastIndex = StringUtils.lastIndexOf(path, '/');
+                    String parentPath = path.substring(0, lastIndex);
+
+                    Long uploadTs = pictureTs.get(parentPath);
+                    if (uploadTs != null) {
+                        // During a delay of 10s, pictures will be refreshed (due to asynchronous treatments)
+                        sb.append("&refreshTs=");
+                        sb.append(System.currentTimeMillis());
+
+                        if (System.currentTimeMillis() - uploadTs > 10000) {
+                            pictureTs.remove(parentPath);
+                        }
+                    }
+                }
+            }
+   
             // Timestamp
-            Long timestamp;
+            Long timestamp = null;
+
             if (binary.getDocument() != null) {
                 Document document = (Document) binary.getDocument();
                 Date modified = document.getDate("dc:modified");
@@ -1521,9 +1560,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (timestamp == null) {
                 timestamp = this.refreshBinaryResource(path);
             }
+
             // Timestamp is concated in the url to control the client cache
             sb.append("&t=");
             sb.append(timestamp);
+            
 
 
             src = sb.toString();
@@ -1919,5 +1960,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public INotificationsService getNotificationsService() {
         return notificationsService;
     }
+
+
+
+
 
 }
