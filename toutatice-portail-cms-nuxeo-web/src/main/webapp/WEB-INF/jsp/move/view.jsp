@@ -12,20 +12,12 @@
 </portlet:renderURL>
 
 <portlet:resourceURL id="fancytreeLazyLoading" var="lazyLoadingURL">
+    <portlet:param name="cmsBasePath" value="${cmsBasePath}" />
+    <portlet:param name="cmsNavigationPath" value="${cmsNavigationPath}" />
     <portlet:param name="live" value="true" />
+    <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
     <portlet:param name="excludedTypes" value="Workspace,Room" />
-
-    <c:if test="${not empty ignoredPaths}">
-        <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
-    </c:if>
-
-    <c:if test="${not empty cmsBasePath}">
-        <portlet:param name="cmsBasePath" value="${cmsBasePath}" />
-    </c:if>
-
-    <c:if test="${not empty acceptedTypes}">
-        <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
-    </c:if>
+    <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
 </portlet:resourceURL>
 
 <portlet:actionURL name="move" var="moveURL"></portlet:actionURL>
@@ -41,20 +33,28 @@
     </p>
 
     <!-- Target path -->
-    <div class="form-group">
-        <label for="${namespace}-target-path" class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_TARGET_PATH" /></label>
+    <div class="form-group required ${error eq 'emptyTargetPath' ? 'has-error' : ''} ${error eq '403' ? 'has-warning' : ''}">
+        <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_TARGET_PATH" /></label>
         <div class="col-sm-9">
             <div class="selector">
-                <p>
-                    <input id="${namespace}-target-path" type="text" name="targetPath" class="form-control selector-value">
-                </p>
-                
+                <input type="hidden" name="targetPath" class="selector-value">
+
                 <div class="panel panel-default">
                     <div class="panel-body">
                         <div class="fancytree fancytree-selector fixed-height" data-lazyloadingurl="${lazyLoadingURL}">
                         </div>
                     </div>
                 </div>
+                
+                <c:choose>
+                    <c:when test="${error eq 'emptyTargetPath'}">
+                        <p class="help-block"><op:translate key="DOCUMENT_MOVE_EMPTY_TARGET_PATH_MESSAGE" /></p>
+                    </c:when>
+                    
+                    <c:when test="${error eq '403'}">
+                        <p class="help-block"><op:translate key="DOCUMENT_MOVE_FORBIDDEN_MESSAGE" /></p>
+                    </c:when>
+                </c:choose>
             </div>
         </div>
     </div>
