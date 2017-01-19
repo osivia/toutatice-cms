@@ -192,4 +192,37 @@ public class TransformationFunctions {
         return TransformationFunctions.class.getMethod("getDocumentLink", String.class);
     }
 
+    
+    /**
+     * Get document link.
+     * @param path document path
+     * @return link
+     */
+    public static String getDocumentLinkWithText(String path, String text) {
+        // Portal URL factory
+        IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
+        
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+
+        // URL
+        String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
+        
+        // Link
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", text);
+
+        return DOM4JUtils.write(link);
+    }
+
+    /**
+     * Get document:link method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getDocumentLinkWithTextMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getDocumentLinkWithText", String.class, String.class);
+    }
+
 }
