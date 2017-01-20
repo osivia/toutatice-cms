@@ -13,6 +13,7 @@ import javax.el.ValueExpression;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -257,12 +258,15 @@ public class FormsServiceImpl implements IFormsService {
         // Task title
         String title = StringUtils.EMPTY;
 
-        // Next step properties
-        PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-        title = nextStepProperties.getString("name");
+        List<String> actors = ListUtils.EMPTY_LIST;
+        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+            // Next step properties
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+            title = nextStepProperties.getString("name");
+            // Actors
+            actors = getActors(model, nextStep, title, nextStepProperties);
+        }
 
-        // Actors
-        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
 
         // Global Variables Values
         Map<String, Object> globalVariableValuesMap = instanceProperties.getMap("pi:globalVariablesValues").map();
