@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -20,8 +21,12 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -60,6 +65,8 @@ public class FormsServiceImpl implements IFormsService {
     /** CMS service locator. */
     private final ICMSServiceLocator cmsServiceLocator;
 
+    /** Bundle factory. */
+    private final IBundleFactory bundleFactory;
 
     /**
      * Constructor.
@@ -72,6 +79,11 @@ public class FormsServiceImpl implements IFormsService {
 
         // CMS service locator
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+
+        // Bundle factory
+        IInternationalizationService internationalizationService = (IInternationalizationService) cmsCustomizer.getPortletCtx()
+                .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -135,6 +147,9 @@ public class FormsServiceImpl implements IFormsService {
         String uuid = UUID.randomUUID().toString();
         variables.put("uuid", uuid);
 
+        // Required fields validation
+        this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
+
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator,
                 null, nextStep);
@@ -178,6 +193,48 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
         return actors;
+    }
+
+    /**
+     * Process required fields validation.
+     *
+     * @param portalControllerContext portal controller context
+     * @param step current step properties
+     * @param variables current variables
+     * @throws FormFilterException
+     */
+    private void requiredFieldsValidation(PortalControllerContext portalControllerContext, PropertyMap step, Map<String, String> variables)
+            throws FormFilterException {
+        // Internationalization bundle
+        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        // Step fields
+        PropertyList fields = step.getList("globalVariablesReferences");
+
+        for (int i = 0; i < fields.size(); i++) {
+            PropertyMap field = fields.getMap(i);
+
+            // Required field indicator
+            boolean required = BooleanUtils.isTrue(field.getBoolean("required"));
+
+            if (required) {
+                // Field name
+                String name = field.getString("variableName");
+                // Field value
+                String value = variables.get(name);
+
+                if (StringUtils.isBlank(value)) {
+                    // Field label
+                    String label = StringUtils.defaultIfEmpty(field.getString("superLabel"), name);
+
+                    // Error message
+                    String message = bundle.getString("MESSAGE_MISSING_REQUIRED_FIELD_ERROR", label);
+
+                    throw new FormFilterException(message);
+                }
+            }
+        }
     }
 
     /**
@@ -278,6 +335,9 @@ public class FormsServiceImpl implements IFormsService {
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
+
+        // Required fields validation
+        this.requiredFieldsValidation(portalControllerContext, previousStepProperties, variables);
 
         // construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
