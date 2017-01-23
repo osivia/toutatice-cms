@@ -21,6 +21,8 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -35,12 +37,12 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SliderListEditableW
  *
  */
 public class SliderTemplateModule implements ITemplateModule {
-    
+
     /** Type of document displayed in slider. */
     public static final String SLIDER_DOC_TYPE = "docType";
     /** Temporisation of slider */
     public static final String SLIDER_TIMER = "timer";
-    
+
     /**
      * Constructor.
      */
@@ -48,16 +50,16 @@ public class SliderTemplateModule implements ITemplateModule {
         super();
     }
 
-   /**
-    * {@inheritDoc}}
-    */
+    /**
+     * {@inheritDoc}}
+     */
     @Override
     public void doView(PortalControllerContext portalControllerContext, PortalWindow window, RenderRequest request, RenderResponse response)
             throws PortletException {
         /* Value filled for EditableWindows */
         String docType = window.getProperty(SLIDER_DOC_TYPE);
         if(StringUtils.isBlank(docType)){
-           docType = SliderListEditableWindow.ALL_DOC_TYPES;
+            docType = SliderListEditableWindow.ALL_DOC_TYPES;
         }
         request.setAttribute(SLIDER_DOC_TYPE, docType);
         request.setAttribute(SLIDER_TIMER, window.getProperty(SLIDER_TIMER));
@@ -69,6 +71,11 @@ public class SliderTemplateModule implements ITemplateModule {
     @Override
     public void processAction(PortalControllerContext portalControllerContext, PortalWindow window, ActionRequest request, ActionResponse response)
             throws PortletException {
+        // Nothing
+    }
+
+    @Override
+    public void serveResource(ResourceRequest request, ResourceResponse response, PortalControllerContext portalControllerContext) throws PortletException {
         // Nothing
     }
 

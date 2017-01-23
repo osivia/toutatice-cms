@@ -5,6 +5,8 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -40,4 +42,14 @@ public interface ITemplateModule {
     void processAction(PortalControllerContext portalControllerContext, PortalWindow window, ActionRequest request, ActionResponse response)
             throws PortletException;
 
+
+    /**
+     * Portlet serve resource
+     *
+     * @param request
+     * @param response
+     * @param portalControllerContext
+     * @throws PortletException
+     */
+    void serveResource(ResourceRequest request, ResourceResponse response, PortalControllerContext portalControllerContext) throws PortletException;
 }

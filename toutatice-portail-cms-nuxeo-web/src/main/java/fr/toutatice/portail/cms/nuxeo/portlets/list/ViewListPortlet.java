@@ -221,49 +221,55 @@ public class ViewListPortlet extends CMSPortlet {
             // Configuration
             ListConfiguration configuration = this.getConfiguration(window);
 
+            // Nuxeo request
+            String nuxeoRequest = configuration.getNuxeoRequest();
+
+            if (configuration.isBeanShell()) {
+                // BeanShell interpretation
+                Interpreter interpreter = new Interpreter();
+                interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
+                interpreter.set("request", request);
+                interpreter.set("NXQLFormater", new NXQLFormater());
+
+                interpreter.set("basePath", nuxeoController.getBasePath());
+                interpreter.set("spacePath", nuxeoController.getSpacePath());
+                interpreter.set("navigationPath", nuxeoController.getNavigationPath());
+                interpreter.set("contentPath", nuxeoController.getContentPath());
+
+                nuxeoRequest = (String) interpreter.eval(nuxeoRequest);
+            }
+
+
+            // Results limit
+            int resultsLimit = DEFAULT_RSS_RESULTS_LIMIT;
+            if (configuration.getMaximizedPagination() != null) {
+                resultsLimit = configuration.getMaximizedPagination();
+            }
+
+            // Template
+            ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+            String schemas = template.getSchemas();
+
+            // Nuxeo command
+            INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), 0, resultsLimit, schemas,
+                    configuration.getContentFilter(), configuration.isUseES());
+
+            // Nuxeo documents
+            PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
+
+            // Result list
+            List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documents.size());
+            for (Document document : documents) {
+                DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                documentsDTO.add(documentDTO);
+            }
+            request.setAttribute("documents", documentsDTO);
+
 
             if ("rss".equals(request.getParameter("type"))) {
                 // RSS generation
 
-                // Nuxeo request
-                String nuxeoRequest = configuration.getNuxeoRequest();
-
-                if (configuration.isBeanShell()) {
-                    // BeanShell interpretation
-                    Interpreter interpreter = new Interpreter();
-                    interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
-                    interpreter.set("request", request);
-                    interpreter.set("NXQLFormater", new NXQLFormater());
-
-                    interpreter.set("basePath", nuxeoController.getBasePath());
-                    interpreter.set("spacePath", nuxeoController.getSpacePath());
-                    interpreter.set("navigationPath", nuxeoController.getNavigationPath());
-                    interpreter.set("contentPath", nuxeoController.getContentPath());
-
-                    nuxeoRequest = (String) interpreter.eval(nuxeoRequest);
-                }
-
-
-                // Results limit
-                int resultsLimit = DEFAULT_RSS_RESULTS_LIMIT;
-                if (configuration.getMaximizedPagination() != null) {
-                    resultsLimit = configuration.getMaximizedPagination();
-                }
-
-
                 if (nuxeoRequest != null) {
-                    // Template
-                    ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
-                    String schemas = template.getSchemas();
-
-
-                    // Nuxeo command
-                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.isDisplayingLiveVersion(), 0, resultsLimit, schemas,
-                            configuration.getContentFilter(), configuration.isUseES());
-
-                    // Nuxeo documents
-                    PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
-
                     // RSS document
                     org.w3c.dom.Document document = RssGenerator.createDocument(nuxeoController, portalControllerContext, configuration.getRssTitle(),
                             documents, configuration.getRssReference());
@@ -289,7 +295,12 @@ public class ViewListPortlet extends CMSPortlet {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
             } else {
-                super.serveResource(request, response);
+                if (template.getModule() != null) {
+                    template.getModule().serveResource(request, response, portalControllerContext);
+                }
+                if (!response.isCommitted()) {
+                    super.serveResource(request, response);
+                }
             }
         } catch (PortletException e) {
             throw e;
@@ -320,7 +331,7 @@ public class ViewListPortlet extends CMSPortlet {
 
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
-                
+
                 // Use of ElasticSearch
                 window.setProperty(USE_ES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("useES")));
 
@@ -489,22 +500,22 @@ public class ViewListPortlet extends CMSPortlet {
             }
 
 
-            
+
             // BeanShell
             if (configuration.isBeanShell()) {
-                
+
                 String orginalRequest = nuxeoRequest;
-                
+
 
                 nuxeoRequest = this.beanShellInterpretation(nuxeoController, nuxeoRequest);
-                
+
                 /* many request (almost templates) generate null values which are not accepted bu Nuxeo
                  * It's due to the fact that they expect to be run in contextualized mode
                  * Instead of generatig an exception, it's better to return a null value
                  * */
-   
-                
-                if( nuxeoRequest != null && nuxeoRequest.contains("'null"))  {
+
+
+                if( (nuxeoRequest != null) && nuxeoRequest.contains("'null"))  {
                     // Is it a contextualization error
                     if (nuxeoController.getBasePath() == null) {
                         if( orginalRequest.contains("basePath") || orginalRequest.contains("domainPath") || orginalRequest.contains("spacePath") || orginalRequest.contains("navigationPath") ) {
@@ -513,7 +524,7 @@ public class ViewListPortlet extends CMSPortlet {
                     }
                 }
 
-                
+
             }
 
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
@@ -810,7 +821,7 @@ public class ViewListPortlet extends CMSPortlet {
 
         // Bean Shell interpretation
         configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
-        
+
         // Use of ElasticSearch
         configuration.setUseES(BooleanUtils.toBoolean(window.getProperty(USE_ES_WINDOW_PROPERTY)));
 
