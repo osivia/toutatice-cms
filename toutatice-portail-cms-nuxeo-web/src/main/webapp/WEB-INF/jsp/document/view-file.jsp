@@ -11,13 +11,14 @@
 <c:set var="description" value="${document.properties['dc:description']}" />
 <c:set var="previewURL"><ttc:filePreview document="${document}" /></c:set>
 
-
-<!-- Download menubar item -->
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${url}" target="_blank" glyphicon="glyphicons glyphicons-download-alt" />
-
-
 <div class="file">
-    <c:if test="${not empty previewURL}">
-         <iframe src="${previewURL}" width="100%" height="800" webkitallowfullscreen="" allowfullscreen=""></iframe>
-    </c:if>
+    <c:choose>
+	    <c:when test="${not empty previewURL}">
+	         <!-- Preview in iframe -->
+	         <iframe src="${previewURL}" width="100%" height="800" webkitallowfullscreen="" allowfullscreen=""></iframe>
+	    </c:when>
+	    <c:otherwise>
+	        <p class="text-center text-muted"><op:translate key="DOCUMENT_FILE_NO_PREVIEW" /></p>
+	    </c:otherwise>
+    </c:choose>
 </div>

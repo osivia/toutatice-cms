@@ -9,11 +9,14 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Window;
 import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
@@ -121,7 +124,7 @@ public class NuxeoTagService implements INuxeoTagService {
                     link = new Link("#", false);
                 }
             } else if (StringUtils.isEmpty(property)) {
-                // Document link
+                // Document link:
                 link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(displayContext));
             } else {
                 // Property value
@@ -133,6 +136,45 @@ public class NuxeoTagService implements INuxeoTagService {
         }
 
         return link;
+    }
+    
+    /**
+     * {@Override}
+     */
+    public Link getPreviewFileLink(NuxeoController nuxeoController, DocumentDTO document) {
+        // Preview link
+        Link previewLink = null;
+
+        // Extended infos.
+        CMSExtendedDocumentInfos extDocInfos = null;
+
+        try {
+            extDocInfos = NuxeoController.getCMSService().getExtendedDocumentInfos(nuxeoController.getCMSCtx(), document.getPath());
+        } catch (CMSException e) {
+            // Nothing to do
+        }
+
+        if (extDocInfos != null) {
+            // Is convertible to pdf
+            boolean isConvertibleToPdf = (Boolean) extDocInfos.get("isPdfConvertible");
+
+            if (isConvertibleToPdf) {
+
+                String createFileLink = nuxeoController.createFileLink(document.getDocument(), "pdf:content");
+
+                PropertyMap fileContent = document.getDocument().getProperties().getMap("file:content");
+                String fileName = (String) fileContent.get("name");
+
+                String contextPath = nuxeoController.getRequest().getContextPath();
+
+                StringBuffer previewLinkStr = new StringBuffer(contextPath).append("/components/ViewerJS/?title=").append(fileName).append("#../..")
+                        .append(StringUtils.substringAfter(createFileLink, contextPath));
+
+                previewLink = new Link(previewLinkStr.toString(), false);
+            }
+        }
+
+        return previewLink;
     }
 
 

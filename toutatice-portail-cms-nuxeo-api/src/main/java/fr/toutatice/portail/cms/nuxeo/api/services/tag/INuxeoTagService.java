@@ -27,13 +27,21 @@ public interface INuxeoTagService {
      * @return link
      */
     Link getDocumentLink(NuxeoController nuxeoController, DocumentDTO document, String property, String displayContext, boolean picture, boolean permalink);
-
+    
+    /**
+     * Get file preview link.
+     * 
+     * @param nuxeoController Nuxeo controller
+     * @param document
+     * @return link
+     */
+    Link getPreviewFileLink(NuxeoController nuxeoController, DocumentDTO document);
 
     /**
      * Get user profile link.
      *
      * @param nuxeoController Nuxeo controller
-     * @param name user name
+     * @param name user name document DTO
      * @param displayName user display name
      * @return link
      */
