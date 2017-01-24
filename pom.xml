@@ -4,7 +4,7 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>4.0.22-RC12</version>
+    <version>4.0.22-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
@@ -349,7 +349,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/4.0.22-RC12</developerConnection>
+        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/4.0-backport-workspaces</developerConnection>
     </scm>
 
 
