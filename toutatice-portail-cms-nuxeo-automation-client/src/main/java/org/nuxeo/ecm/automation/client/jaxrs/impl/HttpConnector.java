@@ -16,6 +16,8 @@ import java.util.Map;
 
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -68,20 +70,44 @@ public class HttpConnector implements Connector {
         	this.webServiceTimeOut = Integer.parseInt(wsTimeOut) * 1000;
     }
 
-    
-    public  HttpResponse getTimeoutRequest(HttpUriRequest httpReq)  throws Exception {
 
-			// Set the timeout in milliseconds until a connection is
-			// established.
-    	
-    		if( webServiceTimeOut != -1)	{
-    			http.getParams().setParameter("http.socket.timeout", webServiceTimeOut);
-    			http.getParams().setParameter("http.connection-manager.timeout", webServiceTimeOut);
-    			http.getParams().setParameter("http.connection.timeout", webServiceTimeOut);
-    		}
-	
-			return http.execute(httpReq, ctx);
-	}
+    /**
+     * Get timeout request.
+     * 
+     * @param httpReq HTTP request
+     * @return HTTP response
+     * @throws Exception
+     */
+    public HttpResponse getTimeoutRequest(HttpUriRequest httpReq) throws Exception {
+        // Set the timeout in milliseconds until a connection is established.
+        if (webServiceTimeOut != -1) {
+            // Multipart request indicator
+            boolean multipart = false;
+            Header[] headers = httpReq.getHeaders("Content-Type");
+            if (!ArrayUtils.isEmpty(headers)) {
+                for (Header header : headers) {
+                    if (StringUtils.contains(header.getValue(), "multipart")) {
+                        multipart = true;
+                        break;
+                    }
+                }
+            }
+
+            Integer timeout;
+            if (multipart) {
+                timeout = Integer.MAX_VALUE;
+            } else {
+                timeout = this.webServiceTimeOut;
+            }
+
+
+            http.getParams().setParameter("http.socket.timeout", timeout);
+            http.getParams().setParameter("http.connection-manager.timeout", timeout);
+            http.getParams().setParameter("http.connection.timeout", timeout);
+        }
+
+        return http.execute(httpReq, ctx);
+    }
     
  
     public Object execute(Request request) {
