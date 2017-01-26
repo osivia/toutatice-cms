@@ -66,7 +66,7 @@ public class DocumentService {
 
     public static final String RemoveProperty = "Document.RemoveProperty";
 
-    public static final String UpdateDocument = "Document.Update";
+    public static final String UpdateDocument = "Document.TTCUpdate";
 
     public static final String PublishDocument = "Document.Publish";
 
