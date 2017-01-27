@@ -129,7 +129,7 @@ public class FileContentCommand implements INuxeoCommand {
         
         // download the file from its remote location
         if(pdfConversion) {
-             blob = (FileBlob) session.newRequest("Blob.ToPDF").setInput(this.document).execute();
+             blob = (FileBlob) session.newRequest("Blob.AnyToPDF").setInput(this.document).execute();
         } else {
              blob = (FileBlob) session.getFile(pathFile);
         }
