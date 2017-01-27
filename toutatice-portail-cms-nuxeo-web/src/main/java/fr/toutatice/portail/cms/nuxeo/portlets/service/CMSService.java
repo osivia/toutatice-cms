@@ -137,8 +137,8 @@ public class CMSService implements ICMSService {
     public CMSService(PortletContext portletCtx) {
         super();
         this.portletCtx = portletCtx;
-        
-        this.formsService = NuxeoServiceFactory.getFormsService();        
+
+        this.formsService = NuxeoServiceFactory.getFormsService();
     }
 
     public DefaultCMSCustomizer getCustomizer() {
@@ -719,15 +719,15 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                  if (navItem == null) {
+                if (navItem == null) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
                     if (!idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
                     }
                 }
 
-                  CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-                  pathToCheck = parentPath.toString();
+                CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+                pathToCheck = parentPath.toString();
 
             }
 
@@ -970,13 +970,13 @@ public class CMSService implements ICMSService {
             String savedScope = ctx.getScope();
 
             try {/*
-                  * getPublicationInfos est toujours utilisé avec les droits de
-                  * l'utilisateur (il remplit en ce sens un testeur de droits car
-                  * les informations retournées sont faites selon ces derniers).
-                  * Cependant, il est possible de forcer son exécution avec
-                  * un autre mode par l'intermédiaire d'une vairiable du CMS Service
-                  * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
-                  */
+             * getPublicationInfos est toujours utilisé avec les droits de
+             * l'utilisateur (il remplit en ce sens un testeur de droits car
+             * les informations retournées sont faites selon ces derniers).
+             * Cependant, il est possible de forcer son exécution avec
+             * un autre mode par l'intermédiaire d'une vairiable du CMS Service
+             * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
+             */
                 if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
@@ -1220,15 +1220,15 @@ public class CMSService implements ICMSService {
         Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>> ();
         int windowsCount = 0;
         if(isSpaceSite) {
-	        inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
-	                editionMode);
-	        for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
-	            if (CollectionUtils.isNotEmpty(inheritedWindows)) {
-	                // Add inherited region windows
-	                windows.addAll(inheritedWindows);
-	            }
-	        }
-	        windowsCount = windows.size();
+            inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
+                    editionMode);
+            for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+                if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+                    // Add inherited region windows
+                    windows.addAll(inheritedWindows);
+                }
+            }
+            windowsCount = windows.size();
         }
 
 
@@ -1803,7 +1803,7 @@ public class CMSService implements ICMSService {
         } else if (command == EcmCommand.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         } else if (command == EcmCommand.shareDocument) {
-        	url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
+            url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
         } else if (command == EcmCommand.gotoMediaLibrary) {
 
             Document mediaLibrary;
@@ -2190,8 +2190,13 @@ public class CMSService implements ICMSService {
      */
     @Override
     public int getTasksCount(CMSServiceCtx cmsContext, String user) throws CMSException {
+
+        String actor = IFormsService.ACTOR_USER_PREFIX + user;
+        Set<String> actors = new HashSet<String>(1);
+        actors.add(actor);
+
         // Nuxeo command
-        INuxeoCommand command = new GetTasksCommand(user, true);
+        INuxeoCommand command = new GetTasksCommand(actors, true);
 
         // Documents
         Documents documents;
@@ -2205,8 +2210,8 @@ public class CMSService implements ICMSService {
 
         return documents.size();
     }
-    
-    
+
+
     /**
      * {@inheritDoc}
      */
@@ -2241,5 +2246,5 @@ public class CMSService implements ICMSService {
             throw new CMSException("Unknown user error.");
         }
     }
-    
+
 }
