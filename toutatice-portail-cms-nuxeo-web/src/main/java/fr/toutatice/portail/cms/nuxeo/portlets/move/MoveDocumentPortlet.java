@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentState;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.notifications.NotificationsType;
@@ -118,15 +119,51 @@ public class MoveDocumentPortlet extends CMSPortlet {
             // Computed path
             cmsBasePath = nuxeoController.getComputedPath(cmsBasePath);
 
-            // Space config
-            CMSItem spaceConfig;
-            try {
-                spaceConfig = cmsService.getSpaceConfig(cmsContext, cmsBasePath);
-            } catch (CMSException e) {
-                throw new PortletException(e);
+            // Current space Nuxeo document
+            Document currentSpace = null;
+            // Root space Nuxeo document
+            Document rootSpace = null;
+
+            // Path
+            String path = cmsBasePath;
+
+            while ((rootSpace == null) && StringUtils.isNotEmpty(path)) {
+                // Space config
+                CMSItem spaceConfig;
+                try {
+                    spaceConfig = cmsService.getSpaceConfig(cmsContext, path);
+                } catch (CMSException e) {
+                    throw new PortletException(e);
+                }
+
+                if (currentSpace == null) {
+                    currentSpace = (Document) spaceConfig.getNativeItem();
+                }
+
+
+                // Document type
+                DocumentType type = spaceConfig.getType();
+
+                if ((type != null) && type.isRootType()) {
+                    rootSpace = (Document) spaceConfig.getNativeItem();
+                    cmsBasePath = rootSpace.getPath();
+                } else {
+                    // Loop on parent path
+                    CMSObjectPath objectPath = CMSObjectPath.parse(path);
+                    CMSObjectPath parentObjectPath = objectPath.getParent();
+                    path = parentObjectPath.toString();
+                }
             }
+
+
             // Nuxeo document
-            Document space = (Document) spaceConfig.getNativeItem();
+            Document space;
+            if (rootSpace == null) {
+                space = currentSpace;
+            } else {
+                space = rootSpace;
+            }
+
             // Document DTO
             DocumentDTO spaceDto = this.documentDAO.toDTO(space);
             request.setAttribute("spaceDocument", spaceDto);
