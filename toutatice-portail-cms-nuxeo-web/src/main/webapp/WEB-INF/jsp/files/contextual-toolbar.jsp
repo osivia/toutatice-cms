@@ -4,14 +4,14 @@
 
 
 <!-- Delete document URLS -->
-<portlet:actionURL name="delete" var="deleteURL" />
+<portlet:actionURL name="delete" var="deleteUrl" />
 
 <!-- Copy document URL -->
-<portlet:actionURL name="copy" var="copyURL">
+<portlet:actionURL name="copy" var="copyUrl">
     <portlet:param name="sourcePath" value="_PATH_" />
 </portlet:actionURL>
 
-<!-- Load document publication infos URL -->
+<!-- Load document publication informations URL -->
 <portlet:resourceURL id="infos" var="infosUrl" />
 
 
@@ -21,7 +21,7 @@
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
 
 
-<div class="contextual-toolbar" data-infosurl="${infosUrl}">
+<div class="contextual-toolbar" data-infos-url="${infosUrl}">
     <nav class="navbar navbar-default" role="toolbar">
         <h3 class="sr-only"><op:translate key="FILE_BROWSER_TOOLBAR_TITLE"/></h3>
     
@@ -34,46 +34,44 @@
             </p>
             
             <div class="btn-group btn-group-sm single-selection" role="group">
-                <!-- Gallery -->
-                <c:set var="title"><op:translate key="VIEW_PICTURE_GALLERY" /></c:set>
-                <button type="button" onclick="gallery(this)" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn gallery">
-                    <i class="halflings halflings-blackboard"></i>
-                    <span class="sr-only">${title}</span>
-                </button>
-            
-                <!-- Download -->
-                <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
-                <a href="#" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn no-ajax-link download">
-                    <i class="halflings halflings-download-alt"></i>
-                    <span class="sr-only">${title}</span>
-                </a>
-            
                 <!-- Edit -->
-                <c:set var="title"><op:translate key="EDIT" /></c:set>
-                <a href="#" data-url="${editURL}" onclick="setCallbackFromEcmParams('${callbackURL}', '${ecmBaseURL}')" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
+                <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
                     <i class="halflings halflings-pencil"></i>
-                    <span class="sr-only">${title}</span>
+                    <span><op:translate key="EDIT" /></span>
+                </a>
+                
+                <!-- Drive edit -->
+                <a href="#" class="btn btn-default navbar-btn drive-edit">
+                    <i class=""></i>
+                    <span><op:translate key="OPEN" /></span>
                 </a>
                 
                 <!-- Copy -->
                 <c:set var="title"><op:translate key="COPY" /></c:set>
-                <a href="#" data-url="${copyURL}" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn copy">
+                <a href="#" data-url="${copyUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn copy">
                     <i class="halflings halflings-duplicate"></i>
                     <span class="sr-only">${title}</span>
                 </a>
+                
+                <!-- Gallery -->
+                <c:set var="title"><op:translate key="VIEW_PICTURE_GALLERY" /></c:set>
+                <button type="button" onclick="gallery(this)" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn gallery">
+                    <i class="halflings halflings-fullscreen"></i>
+                    <span class="sr-only">${title}</span>
+                </button>
             </div>
             
             <div class="btn-group btn-group-sm multiple-selection" role="group">
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
-                <a href="#" data-url="${moveURL}" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
+                <a href="#" data-url="${moveURL}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
                     <i class="halflings halflings-move"></i>
                     <span class="sr-only">${title}</span>
                 </a>
             
                 <!-- Delete -->
                 <c:set var="title"><op:translate key="DELETE" /></c:set>
-                <a href="#${namespace}-delete" title="${title}" data-toggle="tooltip" data-placement="bottom" class="btn btn-default navbar-btn fancybox_inline no-ajax-link delete">
+                <a href="#${namespace}-delete" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancybox_inline no-ajax-link delete">
                     <i class="halflings halflings-trash"></i>
                     <span class="sr-only">${title}</span>
                 </a>

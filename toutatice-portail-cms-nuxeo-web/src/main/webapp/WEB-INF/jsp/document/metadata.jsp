@@ -24,28 +24,38 @@
         <div class="panel-body">
             <dl>
                 <!-- Creation -->
-                <dt><op:translate key="DOCUMENT_METADATA_CREATION" /></dt>
-                <dd>
-                    <p>
-                        <span><op:translate key="DOCUMENT_METADATA_CREATED_ON" /></span>
-                        <span><op:formatRelativeDate value="${created}" /></span>
-                        <br>
-                        <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
-                        <span><ttc:user name="${author}"/></span>
-                    </p>
-                </dd>
+                <c:if test="${not empty created}">
+                    <dt><op:translate key="DOCUMENT_METADATA_CREATION" /></dt>
+                    <dd>
+                        <p>
+                            <span><op:translate key="DOCUMENT_METADATA_CREATED_ON" /></span>
+                            <span><op:formatRelativeDate value="${created}" /></span>
+                            
+                            <c:if test="${not empty author}">
+                                <br>
+                                <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                                <span><ttc:user name="${author}"/></span>
+                            </c:if>
+                        </p>
+                    </dd>
+                </c:if>
                 
                 <!-- Modification -->
-                <dt><op:translate key="DOCUMENT_METADATA_MODIFICATION" /></dt>
-                <dd>
-                    <p>
-                        <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
-                        <span><op:formatRelativeDate value="${modified}" /></span>
-                        <br>
-                        <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
-                        <span><ttc:user name="${lastContributor}"/></span>
-                    </p>
-                </dd>
+                <c:if test="${not empty modified}">
+                    <dt><op:translate key="DOCUMENT_METADATA_MODIFICATION" /></dt>
+                    <dd>
+                        <p>
+                            <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
+                            <span><op:formatRelativeDate value="${modified}" /></span>
+                            
+                            <c:if test="${not empty lastContributor}">
+                                <br>
+                                <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                                <span><ttc:user name="${lastContributor}"/></span>
+                            </c:if>
+                        </p>
+                    </dd>
+                </c:if>
             
                 <!-- Remote publication spaces -->
                 <jsp:include page="metadata-remote-sections.jsp" />

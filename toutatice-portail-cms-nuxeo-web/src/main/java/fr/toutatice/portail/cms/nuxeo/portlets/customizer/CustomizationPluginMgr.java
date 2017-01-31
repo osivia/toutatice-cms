@@ -135,27 +135,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
-     * Clone the type definition to allow some modifications at plugin level
-     *
-     * @param defaultType
-     * @return
-     */
-    protected static DocumentType cloneDefaultType(DocumentType defaultType) {
-
-        List<String> clonedSubTypes = new ArrayList<String>();
-
-        for (String subType : defaultType.getPortalFormSubTypes()) {
-            clonedSubTypes.add(subType);
-        }
-
-        DocumentType clonedType = new DocumentType(defaultType.getName(), defaultType.isFolderish(), defaultType.isNavigable(), defaultType.isBrowsable(),
-                defaultType.isOrdered(), defaultType.isForcePortalContextualization(), defaultType.isSupportsPortalForms(), clonedSubTypes,
-                defaultType.getDefaultTemplate(), defaultType.getGlyph(), defaultType.isRootType(), defaultType.isMovable(), defaultType.isLiveEditable());
-        return clonedType;
-    }
-
-
-    /**
      * Gets the customization attributes.
      *
      * @param locale the locale
@@ -172,12 +151,12 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
 
             for (DocumentType defaultType : defaultTypes) {
-                types.put(defaultType.getName(), cloneDefaultType(defaultType));
+                types.put(defaultType.getName(), defaultType.clone());
             }
 
             List<DocumentType> customizedTypes = this.customizer.getCustomizedCMSItemTypes();
             for (DocumentType customizedType : customizedTypes) {
-                types.put(customizedType.getName(), cloneDefaultType(customizedType));
+                types.put(customizedType.getName(), customizedType.clone());
             }
 
 

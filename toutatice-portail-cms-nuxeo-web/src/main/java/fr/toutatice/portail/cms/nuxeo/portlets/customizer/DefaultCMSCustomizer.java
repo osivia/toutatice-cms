@@ -40,7 +40,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -51,7 +50,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
@@ -87,12 +85,12 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
+import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
@@ -1250,8 +1248,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
                 "glyphicons glyphicons-folder-closed"));
         // File
-        defaultTypes.add(new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file", false,
-                true, true));
+        DocumentType file = new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file", false,
+                true, true);
+        file.setFile(true);
+        defaultTypes.add(file);
         // Note
         defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note"));
         // Contextual link

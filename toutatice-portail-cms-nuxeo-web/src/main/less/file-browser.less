@@ -9,11 +9,6 @@
 
 .file-browser {
     
-    .flaticon {
-        font-size: 20px;
-    }
-    
-    
     // Selectable
     .selectable {
         .user-select(@select: none);
@@ -29,26 +24,24 @@
             color: #fff;
         }
         
-        .document-icon {
-            ~ :not(.sortable-handle) {
-                position: relative;
+        .document-title {
+            position: relative;
+            
+            &::before {
+                content: "\00a0";
+            
+                visibility: hidden;
+            }
+            
+            > * {
+                position: absolute;
+                left: 0;
+                z-index: 2;
                 
-                &::before {
-                    content: "\00a0";
+                max-width: 100%;
                 
-                    visibility: hidden;
-                }
-                
-                > * {
-                    position: absolute;
-                    left: 0;
-                    z-index: 2;
-                    
-                    max-width: 100%;
-                    
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
         
@@ -209,6 +202,26 @@
                     background-color: #333;
                 }
             }
+            
+            .flaticon {
+                font-size: 20px;
+            }
+        }
+        
+        
+        .document-lock {
+            float: right;
+            width: @line-height;
+            margin-left: 8px;
+            
+            text-align: center;
+        }
+    
+    
+        .document-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     
     
@@ -339,14 +352,30 @@
             float: left;
             height: 20px;
             
-            margin-right: 9px;
+            margin-right: 8px;
             
             .flaticon {
                 top: 0;
             }
         }
+        
+        
+        .document-lock {
+            float: right;
+            margin-left: 8px;
+            margin-right: 3px;
+        }
+    
+    
+        .document-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
     
+    
+    // File upload
     .file-upload {
         right: 15px;
         bottom: 0px;

@@ -13,6 +13,9 @@
         
         <header-content>
             <link rel="stylesheet" href="/css/document.min.css" />
+            
+            <!-- Flaticon -->
+            <link rel="stylesheet" href="/css/flaticon.min.css" />
         </header-content>
         
         <portlet-info>

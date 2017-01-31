@@ -543,6 +543,7 @@ function displayControls($browser) {
 		$single = $toolbar.find(".single-selection"),
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
+		$driveEdit = $toolbar.find(".drive-edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -565,6 +566,7 @@ function displayControls($browser) {
 		$waiter.hide();
 		
 		$edit.addClass("disabled");
+		$driveEdit.addClass("disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -577,6 +579,17 @@ function displayControls($browser) {
 			
 			// Sortable
 			$selected.find(".sortable-handle").removeClass("hidden");
+			
+			
+			// Drive edition replacement for file types
+			if ($selected.data("file")) {
+				$edit.addClass("hidden");
+				$driveEdit.removeClass("hidden");
+				$driveEdit.find("i").attr("class", $selected.data("icon"));
+			} else {
+				$edit.removeClass("hidden");
+				$driveEdit.addClass("hidden");
+			}
 			
 			
 			// Update links with single-selected properties
@@ -596,7 +609,6 @@ function displayControls($browser) {
 				url = url.replace("_PATH_", path);
 				
 				$element.attr("href", url);
-				
 			});
 
 			
@@ -607,17 +619,6 @@ function displayControls($browser) {
 				$gallery.removeClass("hidden");
 			} else {
 				$gallery.addClass("hidden");
-			}
-			
-			
-			// Download
-			$download = $toolbar.find(".download");
-			downloadURL = $selected.data("downloadurl");
-			if (downloadURL) {
-				$download.attr("href", downloadURL);
-				$download.removeClass("hidden");
-			} else {
-				$download.addClass("hidden");
 			}
 		} else {
 			// Multiple elements selected
@@ -640,9 +641,10 @@ function displayControls($browser) {
 				var $element = $JQry(element);
 				
 				jQuery.ajax({
-					url : $toolbar.data("infosurl"),
-					data : {
-						path : $element.data("path")
+					url: $toolbar.data("infos-url"),
+					data: {
+						path: $element.data("path"),
+						file: $element.data("file")
 					},
 					success : function(data, status, xhr) {
 						$element.data("loaded", true);
@@ -650,6 +652,7 @@ function displayControls($browser) {
 						if ("success" == status) {
 							$element.data("writable", (data["writable"] == true));
 							$element.data("copiable", (data["copiable"] == true));
+							$element.data("drive-edit-url", data["driveEditUrl"]);
 						}
 						
 						ajaxPendingCounter--;
@@ -703,6 +706,7 @@ function displayControls($browser) {
 function updateControlRights($browser) {
 	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
+		$driveEdit = $toolbar.find(".drive-edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -740,6 +744,14 @@ function updateControlRights($browser) {
 		if ($selected.data("editable") && writable) {
 			$edit.removeClass("disabled");
 		}
+		
+		// Drive edit
+		driveEditUrl = $selected.data("drive-edit-url");
+		if (driveEditUrl) {
+			$driveEdit.attr("href", driveEditUrl);
+			$driveEdit.removeClass("disabled");
+		}
+		
 		// Copy
 		if (copiable) {
 			$copy.removeClass("disabled");

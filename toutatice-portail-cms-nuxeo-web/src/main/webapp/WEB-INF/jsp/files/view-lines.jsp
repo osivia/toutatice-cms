@@ -7,7 +7,7 @@
 
 
 <!-- Sort by index render URL -->
-<portlet:renderURL var="sortIndexURL">
+<portlet:renderURL var="sortIndexUrl">
     <portlet:param name="sort" value="index" />
     <portlet:param name="view" value="lines" />
     
@@ -16,7 +16,7 @@
     </c:if>
 </portlet:renderURL>
 <!-- Sort by name render URL -->
-<portlet:renderURL var="sortNameURL">
+<portlet:renderURL var="sortNameUrl">
     <portlet:param name="sort" value="name" />
     <portlet:param name="view" value="lines" />
     
@@ -25,7 +25,7 @@
     </c:if>
 </portlet:renderURL>
 <!-- Sort by date render URL -->
-<portlet:renderURL var="sortDateURL">
+<portlet:renderURL var="sortDateUrl">
     <portlet:param name="sort" value="date" />
     <portlet:param name="view" value="lines" />
     
@@ -34,7 +34,7 @@
     </c:if>
 </portlet:renderURL>
 <!-- Sort by size render URL -->
-<portlet:renderURL var="sortSizeURL">
+<portlet:renderURL var="sortSizeUrl">
     <portlet:param name="sort" value="size" />
     <portlet:param name="view" value="lines" />
     
@@ -64,7 +64,7 @@
                 <div class="col-sm-5 col-md-6 col-lg-7">
                     <c:if test="${ordered}">
                         <div class="document-index text-overflow">
-                            <a href="${sortIndexURL}">
+                            <a href="${sortIndexUrl}">
                                 <span>#</span>
                             </a>
                             
@@ -80,7 +80,7 @@
                     </c:if>
                 
                     <div class="text-overflow">
-                        <a href="${sortNameURL}">
+                        <a href="${sortNameUrl}">
                             <span><op:translate key="FILE_BROWSER_NAME" /></span>
                         </a>
                         
@@ -97,9 +97,9 @@
                 
                 <div class="col-sm-7 col-md-6 col-lg-5">
                     <div class="row">                    
-                        <div class="col-xs-offset-1 col-xs-8">
+                        <div class="col-xs-9">
                             <div class="text-overflow">
-                                <a href="${sortDateURL}">
+                                <a href="${sortDateUrl}">
                                     <span><op:translate key="FILE_BROWSER_LAST_CONTRIBUTION" /></span>
                                 </a>
                                 
@@ -116,7 +116,7 @@
                         
                         <div class="col-xs-3">
                             <div class="text-overflow">
-                                <a href="${sortSizeURL}">
+                                <a href="${sortSizeUrl}">
                                     <span><op:translate key="FILE_BROWSER_SIZE" /></span>
                                 </a>
                                 
@@ -142,10 +142,7 @@
                         <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y" data-alternative="${criteria.alternative}">
                             <c:forEach var="document" items="${documents}">
                                 <!-- Document properties -->
-                
-                                <!-- Download link -->
-                                <ttc:documentLink document="${document}" displayContext="download" var="downloadLink" />
-                
+ 
                                 <!-- Glyph -->
                                 <c:choose>
                                     <c:when test="${'File' eq document.type.name}">
@@ -164,21 +161,7 @@
                                         <c:set var="glyph" value="glyphicons glyphicons-file" />
                                     </c:otherwise>
                                 </c:choose>
-                                <!-- Lock glyph -->
-                                <c:set var="lockGlyph" value="glyphicons glyphicons-lock" />
-                                
-                                <!-- Lock -->
-                                <c:set var="locked" value="${document.document.locked}" />
-                                <c:if test="${locked}">
-                                    <c:set var="lockOwner" value="${document.document.lockOwner}" />
-                                    <c:set var="lockCreated" value="${document.document.lockCreated}" />
-                                    
-                                    <c:set var="user" value="${pageContext.request.remoteUser}" />
-                                    <c:if test="${user eq lockOwner}">
-                                        <c:set var="lockGlyph" value="glyphicons glyphicons-user-lock" />
-                                    </c:if>
-                                </c:if>
-                            
+                                                            
                                 <!-- Date -->
                                 <c:set var="date" value="${document.properties['dc:modified']}" />
                                 <c:if test="${empty date}">
@@ -190,8 +173,8 @@
                             
                             
                                 <li>
-                                    <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-editable="${document.type.supportsPortalForms}"
-                                        <c:if test="${('File' eq document.type.name) or ('Audio' eq document.type.name) or ('Video' eq document.type.name)}">data-downloadurl="${downloadLink.url}"</c:if>
+                                    <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}"
+                                        <c:if test="${document.type.file}">data-icon="${glyph}"</c:if>
                                     >
                                         <div
                                             <c:if test="${document.type.folderish}">class="droppable" data-accepted-types="${fn:join(document.acceptedTypes, ',')}"</c:if>
@@ -214,9 +197,24 @@
                                                                 <i class="${glyph}"></i>
                                                             </div>
                                                         </div>
+                                                        
+                                                        <!-- Lock -->
+                                                        <c:if test="${document.document.locked}">
+                                                            <div class="document-lock">
+                                                                <c:choose>
+                                                                    <c:when test="${document.document.lockOwner eq pageContext.request.remoteUser}">
+                                                                        <i class="glyphicons glyphicons-user-lock"></i>
+                                                                    </c:when>
+                                                                    
+                                                                    <c:otherwise>
+                                                                        <i class="glyphicons glyphicons-lock"></i>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </div>
+                                                        </c:if>
                                                     
                                                         <!-- Title -->
-                                                        <div class="text-overflow">
+                                                        <div class="document-title">
                                                             <span class="draggable">
                                                                 <ttc:title document="${document}" displayContext="fileExplorer" />
                                                             </span>
@@ -239,25 +237,10 @@
                                                     
                                                     <div class="col-sm-7 col-md-6 col-lg-5">
                                                         <div class="row">
-                                                            <div class="col-xs-1">
-                                                                <!-- Lock -->
-                                                                <div class="text-overflow">
-                                                                    <c:choose>
-                                                                        <c:when test="${locked}">
-                                                                            <i class="${lockGlyph}"></i>
-                                                                        </c:when>
-                                                                        
-                                                                        <c:otherwise>
-                                                                            <span>&nbsp;</span>
-                                                                        </c:otherwise>
-                                                                    </c:choose>
-                                                                </div>
-                                                            </div>
-                                                        
-                                                            <div class="col-xs-8">
+                                                            <div class="col-xs-9">
                                                                 <!-- Last contribution -->
                                                                 <div class="text-overflow">
-                                                                    <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
+                                                                    <span><op:formatRelativeDate value="${date}" capitalize="true" /></span>
                                                                     <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
                                                                 </div>
                                                             </div>

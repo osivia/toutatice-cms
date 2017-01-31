@@ -16,7 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,18 +38,18 @@ public class CustomizationPluginMgrTest  {
         
         // Test non default values
         DocumentType nonDefault = new DocumentType("NonDefautType", false, false, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-picture", true, false, true);
-        DocumentType clone = CustomizationPluginMgr.cloneDefaultType(nonDefault);
+        DocumentType clone = nonDefault.clone();
         Assert.assertTrue("Incorrect cloning for non default values", EqualsBuilder.reflectionEquals(nonDefault, clone));
  
         
         // Test true values
         DocumentType trueValues = new DocumentType("TrueType", true, true, true, true, true, true, new ArrayList<String>(0), null, "true true-picture", true, true, true);
-        DocumentType trueClone = CustomizationPluginMgr.cloneDefaultType(trueValues);
+        DocumentType trueClone = trueValues.clone();
         Assert.assertTrue( "Incorrect cloning for true values", EqualsBuilder.reflectionEquals(trueValues, trueClone));
 
         // Test false values
         DocumentType falseValues = new DocumentType("FalseType", false, false, false, false, false, false, new ArrayList<String>(0), null, "false", false, false, false);
-        DocumentType falseClone = CustomizationPluginMgr.cloneDefaultType(falseValues);
+        DocumentType falseClone = falseValues.clone();
         Assert.assertTrue( "Incorrect cloning for false values", EqualsBuilder.reflectionEquals(falseValues, falseClone));       
         
     }

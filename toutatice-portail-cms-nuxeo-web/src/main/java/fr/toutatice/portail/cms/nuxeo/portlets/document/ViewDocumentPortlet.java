@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
@@ -40,6 +42,8 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
 import org.osivia.portal.api.locator.Locator;
@@ -114,19 +118,26 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /** Nuxeo service. */
     private INuxeoService nuxeoService;
+
+
     /** Document DAO. */
-    private DocumentDAO documentDAO;
+    private final DocumentDAO documentDao;
     /** Document comment DAO. */
-    private CommentDAO commentDAO;
+    private final CommentDAO commentDao;
     /** Document published documents DAO. */
-    private RemotePublishedDocumentDAO publishedDocumentsDAO;
+    private final RemotePublishedDocumentDAO publishedDocumentsDao;
 
 
     /**
-     * Default constructor.
+     * Constructor.
      */
     public ViewDocumentPortlet() {
         super();
+
+        // DAO
+        this.documentDao = DocumentDAO.getInstance();
+        this.commentDao = CommentDAO.getInstance();
+        this.publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
     }
 
 
@@ -165,12 +176,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
             FormsServiceImpl formsService = new FormsServiceImpl(customizer);
             this.registerService(this.nuxeoService.getFormsService(), formsService);
 
-            // DAO
-            this.documentDAO = DocumentDAO.getInstance();
-            this.commentDAO = CommentDAO.getInstance();
-            this.publishedDocumentsDAO = RemotePublishedDocumentDAO.getInstance();
-
-
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
 
@@ -194,7 +199,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /**
      * Register service.
-     * 
+     *
      * @param proxy proxy
      * @param instance instance
      */
@@ -355,8 +360,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 request.setAttribute("dispatchExtraJsp", dispatchExtraJsp);
 
                 // DTO
-                DocumentDTO documentDTO = this.documentDAO.toDTO(document);
-                request.setAttribute("document", documentDTO);
+                DocumentDTO documentDto = this.documentDao.toDTO(document);
+                request.setAttribute("document", documentDto);
 
                 // Title
                 String title = document.getTitle();
@@ -366,16 +371,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, true);
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDto, true);
                 } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
 
                     // Attachments
-                    this.generateAttachments(nuxeoController, document, documentDTO);
+                    this.generateAttachments(nuxeoController, document, documentDto);
 
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO, false);
+                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDto, false);
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Publication informations
@@ -384,16 +389,19 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         CMSExtendedDocumentInfos extendedDocumentInfos = cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
 
                         // Validation state
-                        this.addValidationState(document, documentDTO, extendedDocumentInfos);
+                        this.addValidationState(document, documentDto, extendedDocumentInfos);
 
                         // Comments
                         boolean commentsEnabled = this.areCommentsEnabled(cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
-                            documentDTO.setCommentable(true);
+                            documentDto.setCommentable(true);
 
                             // Comments
-                            this.generateComments(nuxeoController, document, documentDTO);
+                            this.generateComments(nuxeoController, document, documentDto);
                         }
+
+                        // Nuxeo Drive
+                        this.handleDriveEdition(nuxeoController.getPortalCtx(), document, documentDto, publicationInfos);
                     }
                 }
             }
@@ -412,7 +420,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /**
      * Get dispatch JSP name.
-     * 
+     *
      * @param nuxeoController Nuxeo controller
      * @param document Nuxeo document
      * @param extra dispatch extra JSP indicator
@@ -454,7 +462,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         return dispatchJspName;
     }
-    
+
 
     /**
      * Generate document attachments.
@@ -488,7 +496,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /**
      * Add document validation state.
-     * 
+     *
      * @param document Nuxeo document
      * @param documentDTO document DTO
      * @param extendedDocumentInfos extended document informations
@@ -542,7 +550,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         for (int i = 0; i < jsonComments.size(); i++) {
             JSONObject jsonComment = jsonComments.getJSONObject(i);
-            CommentDTO commentDTO = this.commentDAO.toDTO(jsonComment);
+            CommentDTO commentDTO = this.commentDao.toDTO(jsonComment);
             documentDTO.getComments().add(commentDTO);
         }
     }
@@ -574,8 +582,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
             }
         }
+
         return enable;
     }
+
 
     /**
      * Get remote published documents.
@@ -599,19 +609,115 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
 
                 for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
-
                     JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
-                    RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDAO.toDTO(publishedDocumentInfos);
+                    RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDao.toDTO(publishedDocumentInfos);
                     documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
-
                 }
             } finally {
                 nuxeoController.setCacheType(cacheType);
                 nuxeoController.setAuthType(authType);
             }
-
         }
+    }
 
+
+    /**
+     * Handle current document Nuxeo Drive edition.
+     *
+     * @param portalControllerContext portal controller context
+     * @param document Nuxeo document
+     * @param documentDto document DTO
+     * @param publicationInfos publication informations
+     */
+    private void handleDriveEdition(PortalControllerContext portalControllerContext, Document document, DocumentDTO documentDto,
+            CMSPublicationInfos publicationInfos) {
+        // Portlet request
+        PortletRequest request = portalControllerContext.getRequest();
+
+        if (publicationInfos.isEditableByUser()) {
+            DocumentType documentType = documentDto.getType();
+            if ((documentType != null) && documentType.isLiveEditable()) {
+                if (documentType.isFile()) {
+                    // Drive edit URL
+                    String driveEditUrl = (String) publicationInfos.get("driveEditURL");
+
+                    if (driveEditUrl != null) {
+                        request.setAttribute("driveEditUrl", driveEditUrl);
+                        
+                        
+                        // MIME type icon
+                        String mimeTypeIcon = "file";
+
+                        // File content
+                        PropertyMap fileContent = document.getProperties().getMap("file:content");
+
+                        if (fileContent != null) {
+                            try {
+                                MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
+                                String primaryType = mimeType.getPrimaryType();
+                                String subType = mimeType.getSubType();
+
+                                if ("application".equals(primaryType)) {
+                                    // Application
+
+                                    if ("pdf".equals(subType)) {
+                                        // PDF
+                                        mimeTypeIcon = "pdf";
+                                    } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
+                                        // MS Word
+                                        mimeTypeIcon = "word";
+                                    } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
+                                        // MS Excel
+                                        mimeTypeIcon = "excel";
+                                    } else if ("vnd.ms-powerpoint".equals(subType)
+                                            || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
+                                        // MS Powerpoint
+                                        mimeTypeIcon = "powerpoint";
+                                    } else if ("vnd.oasis.opendocument.text".equals(subType)) {
+                                        // OpenDocument - Text
+                                        mimeTypeIcon = "odt";
+                                    } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
+                                        // OpenDocument - Spread sheet
+                                        mimeTypeIcon = "ods";
+                                    } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
+                                        // OpenDocument - Presentation
+                                        mimeTypeIcon = "odp";
+                                    } else if ("zip".equals(subType) || "gzip".equals(subType)) {
+                                        // Archive
+                                        mimeTypeIcon = "archive";
+                                    }
+                                } else if ("text".equals(primaryType)) {
+                                    // Text
+
+                                    if ("html".equals(subType) || "xml".equals(subType)) {
+                                        // HTML or XML
+                                        mimeTypeIcon = "xml";
+                                    } else {
+                                        // Plain text
+                                        mimeTypeIcon = "text";
+                                    }
+                                } else if ("image".equals(primaryType)) {
+                                    // Image
+                                    mimeTypeIcon = "image";
+                                } else if ("video".equals(primaryType)) {
+                                    // Video
+                                    mimeTypeIcon = "video";
+                                } else if ("audio".equals(primaryType)) {
+                                    // Audio
+                                    mimeTypeIcon = "audio";
+                                }
+                            } catch (MimeTypeParseException e) {
+                                // Do nothing
+                            }
+                        }
+                        
+                        // Glyph
+                        String glyph = "flaticon flaticon-" + mimeTypeIcon;
+                        request.setAttribute("glyph", glyph);
+                    }
+                }
+            }
+        }
     }
 
 }

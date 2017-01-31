@@ -29,7 +29,6 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
@@ -126,7 +125,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Taskbar service. */
     private ITaskbarService taskbarService;
     /** Document DAO. */
-    private DocumentDAO documentDAO;
+    private DocumentDAO documentDao;
 
 
     /**
@@ -165,7 +164,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
 
         // Document DAO
-        this.documentDAO = DocumentDAO.getInstance();
+        this.documentDao = DocumentDAO.getInstance();
     }
 
 
@@ -371,15 +370,23 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             // Document path
             String path = request.getParameter("path");
+            // File document indicator
+            String isFile = request.getParameter("file");
+
             if (path != null) {
                 NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+                ICMSService cmsService = this.getCMSService();
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
                 try {
-                    CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
+                    CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
                     data.put("writable", publicationInfos.isEditableByUser());
                     data.put("copiable", publicationInfos.get("canCopy"));
+
+                    if (BooleanUtils.toBoolean(isFile)) {
+                        data.put("driveEditUrl", publicationInfos.get("driveEditURL"));
+                    }
                 } catch (CMSException e) {
                     // Do nothing
                 }
@@ -456,7 +463,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDoc();
                 nuxeoController.setCurrentDoc(currentDocument);
-                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDAO.toDTO(currentDocument));
+                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDao.toDTO(currentDocument));
                 request.setAttribute("document", fileBrowser);
 
                 // Fetch Nuxeo children documents
@@ -468,9 +475,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 int index = 1;
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
                 for (Document document : documents) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
-                    documentDTO = setDraftInfos(document, documentDTO);
-                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
+                    DocumentDTO documentDto = this.documentDao.toDTO(document);
+                    documentDto = setDraftInfos(document, documentDto);
+                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
                     if ("File".equals(document.getType())) {
@@ -808,17 +815,17 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
         // Callback URL
-        String callbackURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
+        String callbackUrl = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
                 null, null);
-        request.setAttribute("callbackURL", callbackURL);
+        request.setAttribute("callbackUrl", callbackUrl);
 
         // ECM base URL
-        String ecmBaseURL = this.getCMSService().getEcmDomain(cmsContext);
-        request.setAttribute("ecmBaseURL", ecmBaseURL);
+        String ecmBaseUrl = this.getCMSService().getEcmDomain(cmsContext);
+        request.setAttribute("ecmBaseUrl", ecmBaseUrl);
 
         // Edit URL
-        String editURL = this.getCMSService().getEcmUrl(cmsContext, EcmViews.editDocument, "_PATH_", new HashMap<String, String>(0));
-        request.setAttribute("editURL", editURL);
+        String editUrl = this.getCMSService().getEcmUrl(cmsContext, EcmViews.editDocument, "_PATH_", new HashMap<String, String>(0));
+        request.setAttribute("editUrl", editUrl);
 
         // Move URL
         Map<String, String> moveProperties = new HashMap<String, String>();
@@ -827,9 +834,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         moveProperties.put(MoveDocumentPortlet.IGNORED_PATHS_WINDOW_PROPERTY, "_PATHS_");
         moveProperties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
         moveProperties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, "_TYPES_");
-        String moveURL = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+        String moveUrl = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
                 moveProperties, PortalUrlType.POPUP);
-        request.setAttribute("moveURL", moveURL);
+        request.setAttribute("moveUrl", moveUrl);
     }
 
 }

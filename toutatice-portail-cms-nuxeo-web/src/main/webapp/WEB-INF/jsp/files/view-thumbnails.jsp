@@ -8,7 +8,6 @@
 
 
 <div class="file-browser-thumbnails">
-
     <!-- Description -->
     <c:if test="${not empty description}">
         <p class="text-muted">${description}</p>
@@ -140,12 +139,31 @@
                                 </span>
                             </a>
                             
-                            <div class="text-overflow">
+                            <div class="clearfix">
+                                <!-- Icon -->
                                 <div class="document-icon">
                                     <i class="${glyph}"></i>
                                 </div>
                                 
-                                <ttc:title document="${document}" displayContext="fileExplorer" />
+                                <!-- Lock -->
+                                <c:if test="${document.document.locked}">
+                                    <div class="document-lock">
+                                        <c:choose>
+                                            <c:when test="${document.document.lockOwner eq pageContext.request.remoteUser}">
+                                                <i class="glyphicons glyphicons-user-lock"></i>
+                                            </c:when>
+                                            
+                                            <c:otherwise>
+                                                <i class="glyphicons glyphicons-lock"></i>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </c:if>
+                                
+                                <!-- Title -->
+                                <div class="document-title">
+                                    <span><ttc:title document="${document}" displayContext="fileExplorer" /></span>
+                                </div>
                             </div>
                         </div>
                     </div>

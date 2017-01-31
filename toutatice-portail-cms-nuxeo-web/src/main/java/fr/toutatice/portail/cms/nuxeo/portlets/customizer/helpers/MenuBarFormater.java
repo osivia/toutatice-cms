@@ -256,8 +256,6 @@ public class MenuBarFormater {
                     if (!isTaskbarItem) {
                         // Change edition mode
                         this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                        // Nuxeo drive edit
-                        this.getDriveEditUrl(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                         // Move
                         this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                     }
@@ -932,39 +930,6 @@ public class MenuBarFormater {
 
 
     /**
-     * Get Nuxeo Drive edit URL.
-     *
-     * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
-     */
-    protected void getDriveEditUrl(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-        if (cmsContext.getRequest().getRemoteUser() == null) {
-            return;
-        }
-
-        if (!ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-            return;
-        }
-
-        final Document document = (Document) cmsContext.getDoc();
-
-        final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
-
-        if ((extendedInfos.getDriveEditURL() != null) && (cmsItemType != null) && cmsItemType.isLiveEditable()) {
-            final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
-            final MenubarItem driveEditItem = new MenubarItem("DRIVE_EDIT", bundle.getString("DRIVE_EDIT"), "glyphicons glyphicons-play", parent, 2,
-                    extendedInfos.getDriveEditURL(), null, null, null);
-            driveEditItem.setAjaxDisabled(true);
-
-            menubar.add(driveEditItem);
-        }
-    }
-
-
-    /**
      * Get synchronize link.
      *
      * @param portalControllerContext portal controller context
@@ -1403,7 +1368,7 @@ public class MenuBarFormater {
                     }
                     String url = cmsService.getEcmUrl(cmsContext, EcmViews.editDocument, docPathToEdit, requestParameters);
 
-                    // On click action
+                    // Onclick action
                     StringBuilder onClick = new StringBuilder();
                     onClick.append("javascript:setCallbackFromEcmParams('");
                     onClick.append(callbackURL);
@@ -1414,10 +1379,17 @@ public class MenuBarFormater {
                     String editLabel = null;
                     if (StringUtils.isNotBlank(pubInfos.getPublishSpacePath())) {
                         if (!pubInfos.isLiveSpace() && !DocumentHelper.isInLiveMode(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
+                            // Live version edition
                             editLabel = bundle.getString("EDIT_LIVE_VERSION");
                         } else if (pubInfos.isLiveSpace() && (pubInfos.isDraft() || pubInfos.hasDraft())) {
+                            // Draft edition
                             editLabel = bundle.getString("EDIT_DRAFT");
+                        } else if (type.isFile()) {
+                            // Metadata edition
+                            editLabel = bundle.getString("EDIT_METADATA");
+                            icon = "glyphicons glyphicons-tags";
                         } else {
+                            // Default edition
                             editLabel = bundle.getString("EDIT");
                         }
                     } else {
@@ -1425,6 +1397,7 @@ public class MenuBarFormater {
                         // cas greta où les stages sont contextualisés mais non rattachés au portalsite
                         editLabel = bundle.getString("EDIT");
                     }
+
 
                     // Menubar item
                     item = new MenubarItem(id, editLabel, icon, parent, 1, url, null, onClick.toString(), "fancyframe_refresh");
