@@ -64,7 +64,7 @@
             <div class="btn-group btn-group-sm multiple-selection" role="group">
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
-                <a href="#" data-url="${moveURL}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
+                <a href="#" data-url="${moveUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
                     <i class="halflings halflings-move"></i>
                     <span class="sr-only">${title}</span>
                 </a>
@@ -97,7 +97,7 @@
 <div class="hidden">
     <!-- Delete confirmation -->
     <div id="${namespace}-delete">
-        <form action="${deleteURL}" method="post" role="form">
+        <form action="${deleteUrl}" method="post" role="form">
             <input type="hidden" name="identifiers" value="">
             
             <div class="form-group text-center"><op:translate key="CMS_DELETE_CONFIRM_MESSAGE" /></div>
