@@ -88,17 +88,18 @@ $JQry(function() {
 	
 			helper: function(event) {
 				var $target = $JQry(event.target),
+					$draggable = $target.closest(".draggable"),
 					$li = $target.closest("li"),
 					$data = $li.find(".data"),
 					$selectable = $data.closest(".selectable"),
-					offset = $target.offset(),
+					offset = $draggable.offset(),
 					click = {
 						top: event.pageY - offset.top,
 						left: event.pageX - offset.left
 					},
 					identifiers = "", types = "", text = "",
 					$selected, $helper, $content, $icon, $title;
-				
+
 				// Selected items
 				if ($data.hasClass("ui-selected")) {
 					$selected = $selectable.find(".ui-selected");
