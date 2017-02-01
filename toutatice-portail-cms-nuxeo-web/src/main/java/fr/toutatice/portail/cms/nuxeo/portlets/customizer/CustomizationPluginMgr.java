@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -64,6 +65,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /** JSP directory. */
     private static final String WEB_INF_JSP = "/WEB-INF/jsp";
 
+    /** customizeJSPLockTable */
+    private static final Hashtable<String, ReentrantLock> customizeJSPLockTable = new Hashtable<String, ReentrantLock>();
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer customizer;
@@ -198,47 +201,60 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         // Customized JavaServer page
         CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
 
-        if (customizedPage == null) {
-            // Locale
-            Locale locale = request.getLocale();
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+        if ((customizedPage == null) && (name != null)) {
 
-            // Default initialization
-            customizedPage = new CustomizedJsp(name, null);
-
-            // Customized JavaServer pages
-            Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
-            if ((name != null) && (customizedPages != null)) {
-                String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
-                CustomizedJsp page = customizedPages.get(relativePath);
-
-                if ((page != null) && (name.contains("."))) {
-                    // Destination
-                    StringBuilder destination = new StringBuilder();
-                    destination.append(StringUtils.substringBeforeLast(name, "."));
-                    destination.append(CUSTOM_JSP_EXTENTION);
-                    destination.append(this.customizationDeployementTS);
-                    destination.append(".");
-                    destination.append(StringUtils.substringAfterLast(name, "."));
-
-                    // Copy original JSP
-                    String directoryPath = portletContext.getRealPath("/");
-                    File directory = new File(directoryPath);
-                    File destinationFile = new File(directory, destination.toString());
-                    destinationFile.delete();
-                    File sourceFile = new File(page.getName());
-                    FileUtils.copyFile(sourceFile, destinationFile);
-
-
-                    customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
-                }
+            ReentrantLock customizeJSPLock = customizeJSPLockTable.get(name);
+            if (customizeJSPLock == null) {
+                customizeJSPLock = new ReentrantLock();
+                customizeJSPLockTable.put(name, customizeJSPLock);
             }
+            customizeJSPLock.lock();
+            try {
+                customizedPage = this.customizedJavaServerPagesCache.get(name);
+                if (customizedPage == null) {
+                    // Locale
+                    Locale locale = request.getLocale();
+                    Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
 
-            this.customizedJavaServerPagesCache.put(name, customizedPage);
+                    // Default initialization
+                    customizedPage = new CustomizedJsp(name, null);
+
+                    // Customized JavaServer pages
+                    Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
+                    if ((name != null) && (customizedPages != null)) {
+                        String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
+                        CustomizedJsp page = customizedPages.get(relativePath);
+
+                        if ((page != null) && (name.contains("."))) {
+                            // Destination
+                            StringBuilder destination = new StringBuilder();
+                            destination.append(StringUtils.substringBeforeLast(name, "."));
+                            destination.append(CUSTOM_JSP_EXTENTION);
+                            destination.append(this.customizationDeployementTS);
+                            destination.append(".");
+                            destination.append(StringUtils.substringAfterLast(name, "."));
+
+                            // Copy original JSP
+                            String directoryPath = portletContext.getRealPath("/");
+                            File directory = new File(directoryPath);
+                            File destinationFile = new File(directory, destination.toString());
+                            destinationFile.delete();
+                            File sourceFile = new File(page.getName());
+                            FileUtils.copyFile(sourceFile, destinationFile);
+
+
+                            customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
+                        }
+                    }
+                    this.customizedJavaServerPagesCache.put(name, customizedPage);
+                }
+            } finally {
+                customizeJSPLock.unlock();
+            }
         }
-
         return customizedPage;
     }
+
 
 
     /**
@@ -471,10 +487,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         return this.navigationAdaptersCache;
     }
 
-    
+
     /**
      * Customize domain contextualization.
-     * 
+     *
      * @return domain contextualization
      */
     public List<DomainContextualization> customizeDomainContextualization() {
@@ -494,7 +510,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
         return this.domainContextualizationCache;
     }
-    
+
 
     /**
      * Customize tab groups.
