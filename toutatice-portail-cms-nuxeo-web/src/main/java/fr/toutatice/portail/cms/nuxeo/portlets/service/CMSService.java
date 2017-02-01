@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,6 +46,9 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.urls.EcmCommand;
 import org.osivia.portal.api.urls.EcmFilesCommand;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -129,6 +134,9 @@ public class CMSService implements ICMSService {
     /** Forms service. */
     private final IFormsService formsService;
 
+    /** Person service. */
+    private final PersonService personService;
+
     /**
      * Constructor.
      *
@@ -139,6 +147,8 @@ public class CMSService implements ICMSService {
         this.portletCtx = portletCtx;
 
         this.formsService = NuxeoServiceFactory.getFormsService();
+
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
     public DefaultCMSCustomizer getCustomizer() {
@@ -2191,9 +2201,7 @@ public class CMSService implements ICMSService {
     @Override
     public int getTasksCount(CMSServiceCtx cmsContext, String user) throws CMSException {
 
-        String actor = IFormsService.ACTOR_USER_PREFIX + user;
-        Set<String> actors = new HashSet<String>(1);
-        actors.add(actor);
+        Set<String> actors = getTaskActors(user);
 
         // Nuxeo command
         INuxeoCommand command = new GetTasksCommand(actors, true);
@@ -2211,6 +2219,52 @@ public class CMSService implements ICMSService {
         return documents.size();
     }
 
+    /**
+     * Get task actors.
+     *
+     * @param user user
+     * @return actors
+     */
+    private Set<String> getTaskActors(String user) {
+
+
+        Person userP = personService.getPerson(user);
+
+        List<Name> groups = userP.getProfiles();
+
+        // Actors
+        Set<String> actors = new HashSet<String>((groups.size() + 1) * 2);
+
+        actors.add(user);
+        actors.add(IFormsService.ACTOR_USER_PREFIX + user);
+
+        for (Name group : groups) {
+            // Group CN
+            String cn = getCn(group);
+            if (cn != null) {
+                actors.add(cn);
+                actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
+            }
+        }
+
+        return actors;
+    }
+
+    /**
+     * get cn from group
+     *
+     * @param group
+     */
+    private String getCn(Name group) {
+        for (Enumeration<String> str = group.getAll(); group.getAll().hasMoreElements();) {
+            String string = str.nextElement();
+            if (StringUtils.startsWith(string, "cn=")) {
+                return StringUtils.split(string, '=')[1];
+            }
+        }
+        return null;
+    }
+
 
     /**
      * {@inheritDoc}
@@ -2223,8 +2277,12 @@ public class CMSService implements ICMSService {
         String user = cmsContext.getServletRequest().getRemoteUser();
 
         if (StringUtils.isNotEmpty(user)) {
+
+            // Task actors
+            Set<String> actors = this.getTaskActors(user);
+
             // Nuxeo command
-            INuxeoCommand command = new GetTasksCommand(user, path);
+            INuxeoCommand command = new GetTasksCommand(actors, path);
 
             try {
                 // Documents
