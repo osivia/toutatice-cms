@@ -1057,6 +1057,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
         if (portalName != null) {
             PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
+            
+            // Timeout window ?
+            // TODO : non réellement expliqué mias arrive à Rennes
+            if( portalObjectContainer != null){
             PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
             if (requestFilteringPolicy != null) {
@@ -1098,6 +1102,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
             if (extraFilter != null) {
                 requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+            }
             }
         }
 

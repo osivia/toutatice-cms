@@ -40,18 +40,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.log.LoggerMessage;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.error.IPortalLogger;
 import org.osivia.portal.core.page.PageProperties;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 
 
 /**
@@ -168,21 +171,41 @@ public class BinaryServlet extends HttpServlet {
 
             // Binary content
             CMSBinaryContent content = null;
+            
+            String loggerPath = "";
             if (Type.ATTACHED_PICTURE.equals(binaryType)) {
                 content = nuxeoController.fetchAttachedPicture(path, index);
             } else if (Type.PICTURE.equals(binaryType)) {
                 content = nuxeoController.fetchPicture(path, pictureContent);
             } else if (Type.ATTACHED_FILE.equals(binaryType)) {
-                content = ResourceUtil.getCMSBinaryContent(nuxeoController, path, index);
+                nuxeoController.setStreamingSupport(true);
+                content = nuxeoController.fetchFileContent(path, "files:files/"+index+"/file");
+                loggerPath = path+ "/"+"files:files/"+index+"/file";
+                
             } else if (Type.BLOB.equals(binaryType)) {
                 content = ResourceUtil.getBlobHolderContent(nuxeoController, path, index);
             } else if (Type.FILE.equals(binaryType)) {
                 nuxeoController.setStreamingSupport(true);
                 content = nuxeoController.fetchFileContent(path, fieldName);
+                loggerPath = path+"/"+fieldName;
             }
 
             if (content.getStream() != null) {
+                
+                IPortalLogger.logger.info( new LoggerMessage("streaming download start " + loggerPath));
+                
+                long begin = System.currentTimeMillis();
+                
                 this.stream(request, response, content, output);
+                
+                long end = System.currentTimeMillis();
+                
+                List<Object> params = new ArrayList<Object>();
+                params.add(content.getFileSize());
+                params.add(end - begin);
+                
+                IPortalLogger.logger.info( new LoggerMessage("streaming download end " + loggerPath + " " + content.getFileSize() + " " + (end - begin)));
+                
             } else {
                 response.setContentType(content.getMimeType());
                 response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content));
