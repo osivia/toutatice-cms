@@ -395,7 +395,7 @@ public class MenuBarFormater {
                 TaskbarItems items = this.taskbarService.getItems(portalControllerContext);
                 TaskbarItem item = items.get(taskId);
 
-                taskbarItem = (item != null);
+                taskbarItem = ((item != null) && (!item.isHidden()));
             } else {
                 taskbarItem = false;
             }
