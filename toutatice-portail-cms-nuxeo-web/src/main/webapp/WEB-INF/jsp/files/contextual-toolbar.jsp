@@ -21,7 +21,7 @@
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
 
 
-<div class="contextual-toolbar" data-infos-url="${infosUrl}">
+<div class="contextual-toolbar" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}">
     <nav class="navbar navbar-default" role="toolbar">
         <h3 class="sr-only"><op:translate key="FILE_BROWSER_TOOLBAR_TITLE"/></h3>
     
@@ -43,7 +43,7 @@
                 <!-- Drive edit -->
                 <a href="#" class="btn btn-default navbar-btn drive-edit">
                     <i class=""></i>
-                    <span><op:translate key="OPEN" /></span>
+                    <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
                 <!-- Copy -->

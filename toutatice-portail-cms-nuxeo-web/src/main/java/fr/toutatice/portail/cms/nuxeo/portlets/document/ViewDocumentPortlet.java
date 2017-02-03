@@ -640,9 +640,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 if (documentType.isFile()) {
                     // Drive edit URL
                     String driveEditUrl = (String) publicationInfos.get("driveEditURL");
+                    // Drive enabled indicator
+                    boolean driveEnabled = BooleanUtils.isTrue((Boolean) publicationInfos.get("driveEnabled"));
 
-                    if (driveEditUrl != null) {
+                    if ((driveEditUrl != null) || driveEnabled) {
                         request.setAttribute("driveEditUrl", driveEditUrl);
+                        request.setAttribute("driveEnabled", driveEnabled);
                         
                         
                         // MIME type icon

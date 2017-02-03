@@ -567,7 +567,7 @@ function displayControls($browser) {
 		$waiter.hide();
 		
 		$edit.addClass("disabled");
-		$driveEdit.addClass("disabled");
+		$driveEdit.addClass("hidden disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -585,11 +585,13 @@ function displayControls($browser) {
 			// Drive edition replacement for file types
 			if ($selected.data("file")) {
 				$edit.addClass("hidden");
-				$driveEdit.removeClass("hidden");
-				$driveEdit.find("i").attr("class", $selected.data("icon"));
+				
+				if ($toolbar.data("drive-enabled")) {
+					$driveEdit.removeClass("hidden");
+					$driveEdit.find("i").attr("class", $selected.data("icon"));
+				}
 			} else {
 				$edit.removeClass("hidden");
-				$driveEdit.addClass("hidden");
 			}
 			
 			
@@ -748,6 +750,7 @@ function updateControlRights($browser) {
 		
 		// Drive edit
 		driveEditUrl = $selected.data("drive-edit-url");
+		driveEnabled = $selected.data("drive-enabled");
 		if (driveEditUrl) {
 			$driveEdit.attr("href", driveEditUrl);
 			$driveEdit.removeClass("disabled");

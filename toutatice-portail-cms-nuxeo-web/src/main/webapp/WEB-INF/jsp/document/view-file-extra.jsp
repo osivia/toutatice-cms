@@ -30,19 +30,31 @@
             <span><ttc:fileSize size="${size}" /></span>
         </p>
 
-        <p>
+        <div>
             <!-- Drive edit -->
-            <c:if test="${not empty driveEditUrl}">
-                <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
-                    <span><op:translate key="OPEN" /></span>
-                </a>
-            </c:if>
+            <c:choose>
+                <c:when test="${not empty driveEditUrl}">
+                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
+                        <span><op:translate key="DRIVE_EDIT" /></span>
+                    </a>
+                </c:when>
+                
+                <c:when test="${driveEnabled}">
+                    <div class="alert alert-warning">
+                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
+                    </div>
+                
+                    <a href="#" class="btn btn-primary btn-block disabled">
+                        <span><op:translate key="DRIVE_EDIT" /></span>
+                    </a>
+                </c:when>
+            </c:choose>
 
             <!-- Download -->
             <a href="${url}" target="_blank" class="btn btn-default btn-block no-ajax-link">
                 <span><op:translate key="DOWNLOAD" /></span>
             </a>
-        </p>
+        </div>
     </div>
 </div>
 

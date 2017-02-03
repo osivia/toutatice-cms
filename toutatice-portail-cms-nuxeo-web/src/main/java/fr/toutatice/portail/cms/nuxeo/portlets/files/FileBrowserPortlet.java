@@ -458,6 +458,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
                 request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
+                request.setAttribute("driveEnabled", publicationInfos.get("driveEnabled"));
 
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
