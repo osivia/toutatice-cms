@@ -585,10 +585,10 @@ function displayControls($browser) {
 			// Drive edition replacement for file types
 			if ($selected.data("file")) {
 				$edit.addClass("hidden");
+				$driveEdit.find("i").attr("class", $selected.data("icon"));
 				
 				if ($toolbar.data("drive-enabled")) {
 					$driveEdit.removeClass("hidden");
-					$driveEdit.find("i").attr("class", $selected.data("icon"));
 				}
 			} else {
 				$edit.removeClass("hidden");
@@ -753,7 +753,7 @@ function updateControlRights($browser) {
 		driveEnabled = $selected.data("drive-enabled");
 		if (driveEditUrl) {
 			$driveEdit.attr("href", driveEditUrl);
-			$driveEdit.removeClass("disabled");
+			$driveEdit.removeClass("hidden disabled");
 		}
 		
 		// Copy
