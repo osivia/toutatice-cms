@@ -1435,6 +1435,7 @@ public class NuxeoController {
      */
     public String createAttachedFileLink(String path, String fileIndex) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_FILE, path);
+        binary.setDocument(this.getCurrentDoc());
         binary.setIndex(fileIndex);
         return this.getBinaryURL(binary);
 
