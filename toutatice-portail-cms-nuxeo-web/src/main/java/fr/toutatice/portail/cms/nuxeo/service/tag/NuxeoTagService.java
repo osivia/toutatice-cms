@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Window;
@@ -156,7 +157,7 @@ public class NuxeoTagService implements INuxeoTagService {
 
         if (extDocInfos != null) {
             // Is convertible to pdf
-            boolean isConvertibleToPdf = (Boolean) extDocInfos.get("isPdfConvertible");
+            boolean isConvertibleToPdf = BooleanUtils.isTrue((Boolean) extDocInfos.get("isPdfConvertible"));
 
             if (isConvertibleToPdf) {
 
