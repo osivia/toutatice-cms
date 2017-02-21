@@ -1542,6 +1542,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     }
                 }
             }
+            
+            // Preview case
+            if("pdf:content".equals(binary.getFieldName())){
+                // Force refreshing (command) cache if page has to be refreshed 
+                if(PageProperties.getProperties().isRefreshingPage()){
+                    sb.append("&refreshTs=");
+                    sb.append(System.currentTimeMillis());
+                }
+            }
    
             // Timestamp
             Long timestamp = null;
