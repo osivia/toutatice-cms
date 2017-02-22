@@ -1187,9 +1187,7 @@ public class CMSService implements ICMSService {
         try {
             if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
                 if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
-                    if (ctx.getRequest().getRemoteUser() != null) {
-                        docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
-                    }
+                    docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
                 }
             }
         } catch (NuxeoException e) {
