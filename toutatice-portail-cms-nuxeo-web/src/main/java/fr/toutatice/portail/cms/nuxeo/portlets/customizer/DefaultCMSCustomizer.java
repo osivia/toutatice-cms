@@ -1520,24 +1520,24 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 sb.append("&fscope=").append(cmsCtx.getForcePublicationInfosScope());
             }
 
-            // Picture uploading
+            // Picture uploading 
 
             if (Type.PICTURE.equals(binary.getType()) && (cmsCtx.getRequest() != null)) {
-                
                 if (path != null) {
-
-
                     int lastIndex = StringUtils.lastIndexOf(path, '/');
-                    String parentPath = path.substring(0, lastIndex);
+                    
+                    if( lastIndex != -1)    {
+                        String parentPath = path.substring(0, lastIndex);
 
-                    Long uploadTs = pictureTs.get(parentPath);
-                    if (uploadTs != null) {
-                        // During a delay of 10s, pictures will be refreshed (due to asynchronous treatments)
-                        sb.append("&refreshTs=");
-                        sb.append(System.currentTimeMillis());
+                        Long uploadTs = pictureTs.get(parentPath);
+                        if (uploadTs != null) {
+                            // During a delay of 10s, pictures will be refreshed (due to asynchronous treatments)
+                            sb.append("&refreshTs=");
+                            sb.append(System.currentTimeMillis());
 
-                        if (System.currentTimeMillis() - uploadTs > 10000) {
-                            pictureTs.remove(parentPath);
+                            if (System.currentTimeMillis() - uploadTs > 10000) {
+                                pictureTs.remove(parentPath);
+                            }
                         }
                     }
                 }
@@ -1611,7 +1611,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
 
     private Map<String, BinaryDelegation> getUserDelegation(CMSServiceCtx cmsCtx) {
-        String id = cmsCtx.getServletRequest().getSession().getId();
+        String id = cmsCtx.getServletRequest().getSession(true).getId();
         Map<String, BinaryDelegation> delegationMap = this.delegations.get(id);
         if (delegationMap == null) {
             delegationMap = new ConcurrentHashMap<String, BinaryDelegation>();
