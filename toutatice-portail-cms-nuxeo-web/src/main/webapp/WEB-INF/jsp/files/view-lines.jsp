@@ -135,130 +135,129 @@
             </div>
         </div>
         
-        <div class="portlet-filler">    
-            <div class="table-body">
-                <c:choose>
-                    <c:when test="${not empty documents}">
-                        <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y" data-alternative="${criteria.alternative}">
-                            <c:forEach var="document" items="${documents}">
-                                <!-- Document properties -->
- 
-                                <!-- Glyph -->
-                                <c:choose>
-                                    <c:when test="${'File' eq document.type.name}">
-                                        <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
-                                    </c:when>
-                                    
-                                    <c:when test="${not empty document.type.glyph}">
-                                        <c:set var="glyph" value="${document.type.glyph}" />
-                                    </c:when>
-                                    
-                                    <c:when test="${document.type.navigable}">
-                                        <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
-                                    </c:when>
-                                    
-                                    <c:otherwise>
-                                        <c:set var="glyph" value="glyphicons glyphicons-file" />
-                                    </c:otherwise>
-                                </c:choose>
-                                                            
-                                <!-- Date -->
-                                <c:set var="date" value="${document.properties['dc:modified']}" />
-                                <c:if test="${empty date}">
-                                    <c:set var="date" value="${document.properties['dc:created']}" />
-                                </c:if>
+        
+        <div class="table-body portlet-filler">
+            <c:choose>
+                <c:when test="${not empty documents}">
+                    <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y" data-alternative="${criteria.alternative}">
+                        <c:forEach var="document" items="${documents}">
+                            <!-- Document properties -->
+
+                            <!-- Glyph -->
+                            <c:choose>
+                                <c:when test="${'File' eq document.type.name}">
+                                    <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
+                                </c:when>
                                 
-                                <!-- Size -->
-                                <c:set var="size" value="${document.properties['common:size']}" />
+                                <c:when test="${not empty document.type.glyph}">
+                                    <c:set var="glyph" value="${document.type.glyph}" />
+                                </c:when>
+                                
+                                <c:when test="${document.type.navigable}">
+                                    <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
+                                </c:when>
+                                
+                                <c:otherwise>
+                                    <c:set var="glyph" value="glyphicons glyphicons-file" />
+                                </c:otherwise>
+                            </c:choose>
+                                                        
+                            <!-- Date -->
+                            <c:set var="date" value="${document.properties['dc:modified']}" />
+                            <c:if test="${empty date}">
+                                <c:set var="date" value="${document.properties['dc:created']}" />
+                            </c:if>
                             
-                            
-                                <li>
-                                    <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}"
-                                        <c:if test="${document.type.file}">data-icon="${glyph}"</c:if>
+                            <!-- Size -->
+                            <c:set var="size" value="${document.properties['common:size']}" />
+                        
+                        
+                            <li>
+                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}"
+                                    <c:if test="${document.type.file}">data-icon="${glyph}"</c:if>
+                                >
+                                    <div
+                                        <c:if test="${document.type.folderish}">class="droppable" data-accepted-types="${fn:join(document.acceptedTypes, ',')}"</c:if>
                                     >
-                                        <div
-                                            <c:if test="${document.type.folderish}">class="droppable" data-accepted-types="${fn:join(document.acceptedTypes, ',')}"</c:if>
-                                        >
-                                            <div class="table-row">
-                                                <div class="row">
-                                                    <div class="col-sm-5 col-md-6 col-lg-7">
-                                                        <!-- Order -->
-                                                        <c:if test="${ordered}">
-                                                            <div class="document-index">
-                                                                <span class="text-muted">${document.index}</span>
-                                                            </div>
-                                                        </c:if>
+                                        <div class="table-row">
+                                            <div class="row">
+                                                <div class="col-sm-5 col-md-6 col-lg-7">
+                                                    <!-- Order -->
+                                                    <c:if test="${ordered}">
+                                                        <div class="document-index">
+                                                            <span class="text-muted">${document.index}</span>
+                                                        </div>
+                                                    </c:if>
+                                                
+                                                    <!-- Icon -->
+                                                    <div class="document-icon draggable">
+                                                        <div
+                                                            <c:if test="${document.type.folderish}">class="folderish"</c:if>
+                                                        >
+                                                            <i class="${glyph}"></i>
+                                                        </div>
+                                                    </div>
                                                     
-                                                        <!-- Icon -->
-                                                        <div class="document-icon draggable">
-                                                            <div
-                                                                <c:if test="${document.type.folderish}">class="folderish"</c:if>
-                                                            >
-                                                                <i class="${glyph}"></i>
+                                                    <!-- Lock -->
+                                                    <c:if test="${document.document.locked}">
+                                                        <div class="document-lock">
+                                                            <c:choose>
+                                                                <c:when test="${document.document.lockOwner eq pageContext.request.remoteUser}">
+                                                                    <i class="glyphicons glyphicons-user-lock"></i>
+                                                                </c:when>
+                                                                
+                                                                <c:otherwise>
+                                                                    <i class="glyphicons glyphicons-lock"></i>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </div>
+                                                    </c:if>
+                                                
+                                                    <!-- Title -->
+                                                    <div class="document-title">
+                                                        <span class="draggable">
+                                                            <ttc:title document="${document}" displayContext="fileExplorer" />
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <!-- Fancybox gallery link -->
+                                                    <c:if test="${'Picture' eq document.type.name}">
+                                                        <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
+                                                        
+                                                        <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
+                                                    </c:if>
+                                                    
+                                                    <!-- Sortable handle -->
+                                                    <c:if test="${ordered and (criteria.sort eq 'index')}">
+                                                        <div class="sortable-handle text-muted text-center hidden">
+                                                            <i class="glyphicons glyphicons-sorting"></i>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+                                                
+                                                <div class="col-sm-7 col-md-6 col-lg-5">
+                                                    <div class="row">
+                                                        <div class="col-xs-9">
+                                                            <!-- Last contribution -->
+                                                            <div class="text-overflow">
+                                                                <span><op:formatRelativeDate value="${date}" capitalize="true" /></span>
+                                                                <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
                                                             </div>
                                                         </div>
                                                         
-                                                        <!-- Lock -->
-                                                        <c:if test="${document.document.locked}">
-                                                            <div class="document-lock">
+                                                        
+                                                        <div class="col-xs-3">
+                                                            <!-- Size -->
+                                                            <div class="text-overflow">
                                                                 <c:choose>
-                                                                    <c:when test="${document.document.lockOwner eq pageContext.request.remoteUser}">
-                                                                        <i class="glyphicons glyphicons-user-lock"></i>
+                                                                    <c:when test="${size gt 0}">
+                                                                        <span><ttc:fileSize size="${size}" /></span>
                                                                     </c:when>
                                                                     
                                                                     <c:otherwise>
-                                                                        <i class="glyphicons glyphicons-lock"></i>
+                                                                        <span>&ndash;</span>
                                                                     </c:otherwise>
                                                                 </c:choose>
-                                                            </div>
-                                                        </c:if>
-                                                    
-                                                        <!-- Title -->
-                                                        <div class="document-title">
-                                                            <span class="draggable">
-                                                                <ttc:title document="${document}" displayContext="fileExplorer" />
-                                                            </span>
-                                                        </div>
-                                                        
-                                                        <!-- Fancybox gallery link -->
-                                                        <c:if test="${'Picture' eq document.type.name}">
-                                                            <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
-                                                            
-                                                            <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
-                                                        </c:if>
-                                                        
-                                                        <!-- Sortable handle -->
-                                                        <c:if test="${ordered and (criteria.sort eq 'index')}">
-                                                            <div class="sortable-handle text-muted text-center hidden">
-                                                                <i class="glyphicons glyphicons-sorting"></i>
-                                                            </div>
-                                                        </c:if>
-                                                    </div>
-                                                    
-                                                    <div class="col-sm-7 col-md-6 col-lg-5">
-                                                        <div class="row">
-                                                            <div class="col-xs-9">
-                                                                <!-- Last contribution -->
-                                                                <div class="text-overflow">
-                                                                    <span><op:formatRelativeDate value="${date}" capitalize="true" /></span>
-                                                                    <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            
-                                                            <div class="col-xs-3">
-                                                                <!-- Size -->
-                                                                <div class="text-overflow">
-                                                                    <c:choose>
-                                                                        <c:when test="${size gt 0}">
-                                                                            <span><ttc:fileSize size="${size}" /></span>
-                                                                        </c:when>
-                                                                        
-                                                                        <c:otherwise>
-                                                                            <span>&ndash;</span>
-                                                                        </c:otherwise>
-                                                                    </c:choose>
-                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -266,21 +265,21 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Draggable -->
-                                    <div class="draggable draggable-shadowbox border-primary"></div>
-                                </li>
-                            </c:forEach>
-                        </ul>
-                    </c:when>
-                    
-                    <c:otherwise>
-                        <div class="table-row">
-                            <div class="text-center text-muted"><op:translate key="NO_ITEMS" /></div>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+                                </div>
+                                
+                                <!-- Draggable -->
+                                <div class="draggable draggable-shadowbox border-primary"></div>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                </c:when>
+                
+                <c:otherwise>
+                    <div class="table-row">
+                        <div class="text-center text-muted"><op:translate key="NO_ITEMS" /></div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 </div>
