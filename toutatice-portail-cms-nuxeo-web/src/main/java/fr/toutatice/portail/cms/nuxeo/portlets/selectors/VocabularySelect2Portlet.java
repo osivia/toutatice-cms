@@ -170,7 +170,9 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
                 // Selectors
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-
+                if (request.getParameter("selectors") != null) {
+                    response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
+                }
                 // Current selector
                 List<String> selector = selectors.get(configuration.getId());
                 if (selector == null) {
