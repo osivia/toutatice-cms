@@ -1010,52 +1010,54 @@ public class MenuBarFormater {
      */
     protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             CMSExtendedDocumentInfos extendedInfos) throws CMSException {
-        // Current document
-        final Document document = (Document) cmsContext.getDoc();
-        final String path = document.getPath();
+        if (cmsContext.getRequest().getRemoteUser() != null) {
+            // Current document
+            final Document document = (Document) cmsContext.getDoc();
+            final String path = document.getPath();
 
-        if (!"Staple".equals(document.getType()) && !DocumentHelper.hasDraft(document)) {
-            final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
+            if (!"Staple".equals(document.getType()) && !DocumentHelper.hasDraft(document)) {
+                final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
-            if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
-                String url = "";
+                if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
+                    String url = "";
 
-                try {
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
-                    final MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 11, url, null, null, null);
-                    subscribeItem.setAjaxDisabled(true);
-                    subscribeItem.setDivider(true);
+                    try {
+                        final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
+                        final MenubarItem subscribeItem = new MenubarItem("SUBSCRIBE_URL", null, null, parent, 11, url, null, null, null);
+                        subscribeItem.setAjaxDisabled(true);
+                        subscribeItem.setDivider(true);
 
-                    if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
-                        url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
+                        if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
+                            url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
 
-                        subscribeItem.setUrl(url);
-                        subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
-                        subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
-                    } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
-                        url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
+                            subscribeItem.setUrl(url);
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                            subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
+                        } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
+                            url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
 
-                        subscribeItem.setUrl(url);
-                        subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
-                        subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
+                            subscribeItem.setUrl(url);
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
+                            subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 
-                        // Subscribed indicator menubar item
-                        final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "label label-success");
-                        subscribedIndicator.setGlyphicon("halflings halflings-flag");
-                        subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
-                        subscribedIndicator.setState(true);
-                        menubar.add(subscribedIndicator);
-                    } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
-                        subscribeItem.setUrl("#");
-                        subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
-                        subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
-                        subscribeItem.setDisabled(true);
+                            // Subscribed indicator menubar item
+                            final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "label label-success");
+                            subscribedIndicator.setGlyphicon("halflings halflings-flag");
+                            subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
+                            subscribedIndicator.setState(true);
+                            menubar.add(subscribedIndicator);
+                        } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+                            subscribeItem.setUrl("#");
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                            subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
+                            subscribeItem.setDisabled(true);
+                        }
+
+                        menubar.add(subscribeItem);
+
+                    } catch (final PortalException ex) {
+                        this.log.warn(ex.getMessage());
                     }
-
-                    menubar.add(subscribeItem);
-
-                } catch (final PortalException ex) {
-                    this.log.warn(ex.getMessage());
                 }
             }
         }
