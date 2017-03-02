@@ -15,6 +15,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.Iterator;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,8 +29,6 @@ import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Extended document informations Nuxeo command.
@@ -57,7 +58,7 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
     @Override
     public CMSExtendedDocumentInfos execute(Session nuxeoSession) throws Exception {
         // Document extended informations
-        CMSExtendedDocumentInfos docInfos = new InternalCMSExtendedDocumentInfos();
+        CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
 
         // Operation request
         OperationRequest request = nuxeoSession.newRequest("Document.FetchExtendedDocInfos");
@@ -77,9 +78,7 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
             Iterator<?> iterator = infosContent.iterator();
             while (iterator.hasNext()) {
                 JSONObject infos = (JSONObject) iterator.next();
-                // Set flux
-                ((InternalCMSExtendedDocumentInfos) docInfos).setFlux(infos);
-
+                
                 // DCH: FIXME: abstract task infos (like name)
                 if (infos.containsKey("taskName")) {
                     String taskName = infos.getString("taskName");
@@ -118,13 +117,18 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
                 if (infos.containsKey("synchronizationRootPath")) {
                     docInfos.setSynchronizationRootPath(infos.get("synchronizationRootPath").toString());
                 }
-                if (infos.containsKey("driveEditURL")) {
-                    docInfos.setDriveEditURL(infos.get("driveEditURL").toString());
-                }
 
                 // Draft count for Folderish
                 if (infos.containsKey("draftCount")) {
                     docInfos.setDraftCount(infos.getInt("draftCount"));
+                }
+                
+                // File PDF conversion
+                if(infos.containsKey("isPdfConvertible")){
+                    docInfos.setPdfConvertible(infos.getBoolean("isPdfConvertible"));
+                }
+                if(infos.containsKey("errorOnPdfConversion")){
+                    docInfos.setErrorOnPdfConversion(infos.getBoolean("errorOnPdfConversion"));
                 }
             }
         }

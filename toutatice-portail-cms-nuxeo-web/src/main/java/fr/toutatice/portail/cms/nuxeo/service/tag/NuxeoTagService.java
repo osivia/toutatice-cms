@@ -157,10 +157,8 @@ public class NuxeoTagService implements INuxeoTagService {
 
         if (extDocInfos != null) {
             // Is convertible to pdf
-            boolean isConvertibleToPdf = BooleanUtils.isTrue((Boolean) extDocInfos.get("isPdfConvertible"));
-
-            if (isConvertibleToPdf) {
-
+            if (BooleanUtils.isTrue((Boolean) extDocInfos.isPdfConvertible())) {
+                // File link
                 String createFileLink = nuxeoController.createFileLink(document.getDocument(), "pdf:content");
 
                 PropertyMap fileContent = document.getDocument().getProperties().getMap("file:content");
