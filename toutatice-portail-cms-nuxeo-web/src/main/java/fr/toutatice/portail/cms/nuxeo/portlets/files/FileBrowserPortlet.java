@@ -30,6 +30,8 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -82,7 +84,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -382,10 +383,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
                     data.put("writable", publicationInfos.isEditableByUser());
-                    data.put("copiable", publicationInfos.get("canCopy"));
+                    data.put("copiable", publicationInfos.isCopiable());
 
                     if (BooleanUtils.toBoolean(isFile)) {
-                        data.put("driveEditUrl", publicationInfos.get("driveEditURL"));
+                        data.put("driveEditUrl", publicationInfos.getDriveEditURL());
                     }
                 } catch (CMSException e) {
                     // Do nothing
@@ -458,7 +459,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
                 request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
-                request.setAttribute("driveEnabled", publicationInfos.get("driveEnabled"));
+                request.setAttribute("driveEnabled", publicationInfos.isDriveEnabled());
 
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);

@@ -74,7 +74,7 @@ public class PublishInfosCommand implements INuxeoCommand {
         Blob binariesInfos = (Blob) request.execute();
 
         if (binariesInfos != null) {
-            publiInfos = new InternalCMSPublicationInfos();
+            publiInfos = new CMSPublicationInfos();
 
             String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8");
 
@@ -82,8 +82,6 @@ public class PublishInfosCommand implements INuxeoCommand {
             Iterator<?> it = infosContent.iterator();
             while (it.hasNext()) {
                 JSONObject infos = (JSONObject) it.next();
-                // Set flux
-                ((InternalCMSPublicationInfos) publiInfos).setFlux(infos);
 
                 publiInfos.setErrorCodes(adaptList((JSONArray) infos.get("errorCodes")));
                 
@@ -101,10 +99,12 @@ public class PublishInfosCommand implements INuxeoCommand {
 
                 publiInfos.setPublished(adaptBoolean(infos.get("published")));
                 publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
+                publiInfos.setCopiable(adaptBoolean(infos.get("canCopy")));
 
                 publiInfos.setSubTypes(decodeSubTypes(adaptType(JSONObject.class, infos.get("subTypes"))));
                 publiInfos.setPublishSpaceType(adaptType(String.class, infos.get("publishSpaceType")));
                 
+                // Draft infos
                 if (infos.containsKey("draftPath")) {
                     publiInfos.setHasDraft(true);
                     publiInfos.setDraftPath((decode(adaptType(String.class, infos.get("draftPath")))));
@@ -114,7 +114,16 @@ public class PublishInfosCommand implements INuxeoCommand {
                     publiInfos.setNotOrphanDraft(adaptBoolean(infos.get("hasCheckinedDoc")));
                     publiInfos.setDraftContextualizationPath((decode(adaptType(String.class, infos.get("draftContextualizationPath")))));
                 }
-
+                
+                // Drive Edit infos
+                if(infos.containsKey("driveEnabled")){
+                    publiInfos.setDriveEnabled(infos.getBoolean("driveEnabled"));
+                }
+                if(infos.containsKey("driveEditURL")){
+                    publiInfos.setDriveEditURL(infos.getString("driveEditURL"));
+                }
+                
+                // Space container infos
                 if (infos.containsKey("spaceID")) {
                     publiInfos.setSpaceID(this.adaptType(String.class, infos.getString("spaceID")));
                 }
