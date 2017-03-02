@@ -1,6 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -212,8 +213,14 @@ public class FormsServiceImpl implements IFormsService {
         // Step fields
         PropertyList fields = step.getList("globalVariablesReferences");
 
-        for (int i = 0; i < fields.size(); i++) {
-            PropertyMap field = fields.getMap(i);
+
+        List<PropertyMap> fieldsList = new ArrayList<PropertyMap>();
+        for (Object field : fields.list()) {
+            fieldsList.add((PropertyMap) field);
+        }
+        Collections.sort(fieldsList, new FieldComparator());
+
+        for (PropertyMap field : fieldsList) {
 
             // Required field indicator
             boolean required = BooleanUtils.isTrue(field.getBoolean("required"));
