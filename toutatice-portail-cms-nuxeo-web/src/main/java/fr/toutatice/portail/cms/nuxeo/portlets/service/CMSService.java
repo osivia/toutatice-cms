@@ -32,6 +32,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -85,7 +86,6 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSConfigurationItem;
 import org.osivia.portal.core.cms.CMSEditableWindow;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPage;
@@ -110,6 +110,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
@@ -156,6 +157,10 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCo
  * @see ICMSService
  */
 public class CMSService implements ICMSService {
+
+    /** Extended document informations request attribute prefix. */
+    private static final String EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX = "osivia.cms.extendedDocumentInfos.";
+
 
     /** Logger. */
     private static final Log LOG = LogFactory.getLog(CMSService.class);
@@ -1178,33 +1183,53 @@ public class CMSService implements ICMSService {
 
 
     /**
-     * {@inheritDoc}
+     * Get extended document informations.
+     * 
+     * @param cmsContext CMS context
+     * @param path document path
+     * @return extended document informations
+     * @throws CMSException
      */
-    @Override
-    public CMSExtendedDocumentInfos getExtendedDocumentInfos(CMSServiceCtx ctx, String path) throws CMSException {
-        CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
+    public ExtendedDocumentInfos getExtendedDocumentInfos(CMSServiceCtx cmsContext, String path) throws CMSException {
+        // HTTP servlet request
+        HttpServletRequest request = cmsContext.getServletRequest();
+        
+        // Request attribute name
+        String attributeName = EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX + StringEscapeUtils.escapeHtml(path);
 
-        try {
-            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-                if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
-                    docInfos = (CMSExtendedDocumentInfos) this.executeNuxeoCommand(ctx, new ExtendedDocInfosCommand(path));
+        // Get extended document informations in request
+        ExtendedDocumentInfos infos = (ExtendedDocumentInfos) request.getAttribute(attributeName);
+        
+        if (infos == null) {
+            infos = new ExtendedDocumentInfos();
+
+            try {
+                if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+                    if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                        // Nuxeo command
+                        INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
+
+                        infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
+                    }
                 }
-            }
-        } catch (NuxeoException e) {
-            e.rethrowCMSException();
-        } catch (Exception e) {
-
-            if (!(e instanceof CMSException)) {
+            } catch (NuxeoException e) {
+                e.rethrowCMSException();
+            } catch (CMSException e) {
+                throw e;
+            } catch (Exception e) {
                 throw new CMSException(e);
-            } else {
-                throw (CMSException) e;
             }
+
+            request.setAttribute(attributeName, infos);
         }
 
-
-        return docInfos;
+        return infos;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
         CMSItem configItem = null;

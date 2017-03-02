@@ -53,7 +53,6 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -68,6 +67,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
@@ -117,6 +117,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
 
 
+    /** CMS service. */
+    private CMSService cmsService;
     /** Nuxeo service. */
     private INuxeoService nuxeoService;
 
@@ -160,13 +162,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
             }
 
             // CMS service
-            CMSService cmsService = new CMSService(portletContext);
+            this.cmsService = new CMSService(portletContext);
             ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
-            cmsLocator.register(cmsService);
+            cmsLocator.register(this.cmsService);
 
             // CMS customizer
-            CMSCustomizer customizer = new CMSCustomizer(portletContext, cmsService);
-            cmsService.setCustomizer(customizer);
+            CMSCustomizer customizer = new CMSCustomizer(portletContext, this.cmsService);
+            this.cmsService.setCustomizer(customizer);
             this.nuxeoService.registerCMSCustomizer(customizer);
 
             // Nuxeo tag service
@@ -296,8 +298,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            // CMS service
-            ICMSService cmsService = NuxeoController.getCMSService();
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -385,15 +385,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Publication informations
-                        CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+                        CMSPublicationInfos publicationInfos = this.cmsService.getPublicationInfos(cmsContext, path);
                         // Extended document informations
-                        CMSExtendedDocumentInfos extendedDocumentInfos = cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+                        ExtendedDocumentInfos extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
 
                         // Validation state
                         this.addValidationState(document, documentDto, extendedDocumentInfos);
 
                         // Comments
-                        boolean commentsEnabled = this.areCommentsEnabled(cmsService, publicationInfos, cmsContext);
+                        boolean commentsEnabled = this.areCommentsEnabled(this.cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
                             documentDto.setCommentable(true);
 
@@ -502,7 +502,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
      * @param documentDTO document DTO
      * @param extendedDocumentInfos extended document informations
      */
-    private void addValidationState(Document document, DocumentDTO documentDTO, CMSExtendedDocumentInfos extendedDocumentInfos) {
+    private void addValidationState(Document document, DocumentDTO documentDTO, ExtendedDocumentInfos extendedDocumentInfos) {
         // Validation state internationalization key
         String key;
         // Validation state icon
@@ -647,8 +647,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     if ((driveEditUrl != null) || driveEnabled) {
                         request.setAttribute("driveEditUrl", driveEditUrl);
                         request.setAttribute("driveEnabled", driveEnabled);
-                        
-                        
+
+
                         // MIME type icon
                         String mimeTypeIcon = "file";
 
@@ -714,7 +714,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                                 // Do nothing
                             }
                         }
-                        
+
                         // Glyph
                         String glyph = "flaticon flaticon-" + mimeTypeIcon;
                         request.setAttribute("glyph", glyph);

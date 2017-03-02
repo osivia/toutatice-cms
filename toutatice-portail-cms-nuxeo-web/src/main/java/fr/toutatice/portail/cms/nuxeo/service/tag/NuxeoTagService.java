@@ -17,14 +17,15 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
@@ -146,18 +147,22 @@ public class NuxeoTagService implements INuxeoTagService {
         // Preview link
         Link previewLink = null;
 
-        // Extended infos.
-        CMSExtendedDocumentInfos extDocInfos = null;
+        // Extended document informations.
+        ExtendedDocumentInfos infos = null;
 
         try {
-            extDocInfos = NuxeoController.getCMSService().getExtendedDocumentInfos(nuxeoController.getCMSCtx(), document.getPath());
+            ICMSService cmsService = NuxeoController.getCMSService();
+            if (cmsService.getClass().isAssignableFrom(CMSService.class)) {
+                CMSService cmsServiceImpl = (CMSService) cmsService;
+                infos = cmsServiceImpl.getExtendedDocumentInfos(nuxeoController.getCMSCtx(), document.getPath());
+            }
         } catch (CMSException e) {
             // Nothing to do
         }
 
-        if (extDocInfos != null) {
+        if (infos != null) {
             // Is convertible to pdf
-            if (BooleanUtils.isTrue((Boolean) extDocInfos.isPdfConvertible())) {
+            if (BooleanUtils.isTrue((Boolean) infos.isPdfConvertible())) {
                 // File link
                 String createFileLink = nuxeoController.createFileLink(document.getDocument(), "pdf:content");
 

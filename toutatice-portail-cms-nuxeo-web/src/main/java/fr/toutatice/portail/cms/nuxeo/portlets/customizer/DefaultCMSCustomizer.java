@@ -87,7 +87,6 @@ import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -101,6 +100,7 @@ import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
@@ -843,7 +843,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public void formatContentMenuBar(CMSServiceCtx ctx) throws Exception {
         CMSPublicationInfos publicationInfos = null;
-        CMSExtendedDocumentInfos extendedDocumentInfos = null;
+        ExtendedDocumentInfos extendedDocumentInfos = null;
         if (ctx.getDoc() != null) {
             Document doc = (Document) ctx.getDoc();
             publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());

@@ -15,9 +15,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.Iterator;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,10 +22,12 @@ import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Extended document informations Nuxeo command.
@@ -36,9 +35,9 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
  * @author David Chevrier
  * @see INuxeoCommand
  */
-public class ExtendedDocInfosCommand implements INuxeoCommand {
+public class ExtendedDocumentInfosCommand implements INuxeoCommand {
 
-    /** Document's path. */
+    /** Document path. */
     private String path;
 
 
@@ -47,7 +46,7 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
      * 
      * @param path document path
      */
-    public ExtendedDocInfosCommand(String path) {
+    public ExtendedDocumentInfosCommand(String path) {
         this.path = path;
     }
 
@@ -56,9 +55,9 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
      * {@inheritDoc}
      */
     @Override
-    public CMSExtendedDocumentInfos execute(Session nuxeoSession) throws Exception {
+    public Object execute(Session nuxeoSession) throws Exception {
         // Document extended informations
-        CMSExtendedDocumentInfos docInfos = new CMSExtendedDocumentInfos();
+        ExtendedDocumentInfos docInfos = new ExtendedDocumentInfos();
 
         // Operation request
         OperationRequest request = nuxeoSession.newRequest("Document.FetchExtendedDocInfos");
@@ -96,11 +95,11 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
                 }
 
                 if (infos.containsKey("subscription_status")) {
-                    docInfos.setSubscriptionStatus(CMSExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
+                    docInfos.setSubscriptionStatus(ExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
                 }
 
                 if (infos.containsKey("lockStatus")) {
-                    docInfos.setLockStatus(CMSExtendedDocumentInfos.LockStatus.valueOf(infos.get("lockStatus").toString()));
+                    docInfos.setLockStatus(ExtendedDocumentInfos.LockStatus.valueOf(infos.get("lockStatus").toString()));
 
                     if (infos.containsKey("lockOwner")) {
                         docInfos.setLockOwner(infos.get("lockOwner").toString());
@@ -147,7 +146,12 @@ public class ExtendedDocInfosCommand implements INuxeoCommand {
      */
     @Override
     public String getId() {
-        return "ExtendedDocInfosCommand /" + this.path;
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getName());
+        builder.append("/");
+        builder.append(this.path);
+
+        return builder.toString();
     }
 
 }

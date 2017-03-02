@@ -68,9 +68,6 @@ import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.LockStatus;
-import org.osivia.portal.core.cms.CMSExtendedDocumentInfos.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSItemTypeComparator;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
@@ -85,6 +82,9 @@ import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
@@ -163,7 +163,7 @@ public class MenuBarFormater {
      * @throws PortalException
      */
     @SuppressWarnings("unchecked")
-    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, CMSExtendedDocumentInfos extendedInfos)
+    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos)
             throws CMSException, PortalException {
         // Document
         Document document = (Document) cmsContext.getDoc();
@@ -450,7 +450,7 @@ public class MenuBarFormater {
      * @param publicationInfos
      * @throws Exception
      */
-    public void formatContentMenuBar(CMSServiceCtx cmsCtx, CMSPublicationInfos publicationInfos, CMSExtendedDocumentInfos extendedDocumentInfos)
+    public void formatContentMenuBar(CMSServiceCtx cmsCtx, CMSPublicationInfos publicationInfos, ExtendedDocumentInfos extendedDocumentInfos)
             throws Exception {
         this.formatDefaultContentMenuBar(cmsCtx, publicationInfos, extendedDocumentInfos);
     }
@@ -552,7 +552,7 @@ public class MenuBarFormater {
 
 
     protected void addDraftLinks(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            CMSExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) {
+            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) {
         // Document
         Document document = (Document) cmsContext.getDoc();
 
@@ -634,7 +634,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     protected void getChangeModeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos) throws CMSException, PortalException {
+            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException, PortalException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -938,7 +938,7 @@ public class MenuBarFormater {
      * @throws PortalException
      */
     protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+            ExtendedDocumentInfos extendedInfos) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1009,7 +1009,7 @@ public class MenuBarFormater {
      * @throws PortalException
      */
     protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+            ExtendedDocumentInfos extendedInfos) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() != null) {
             // Current document
             final Document document = (Document) cmsContext.getDoc();
@@ -1071,7 +1071,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     private void getLockLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            CMSExtendedDocumentInfos extendedInfos) {
+            ExtendedDocumentInfos extendedInfos) {
 
         // Current document
         final Document document = (Document) cmsContext.getDoc();
@@ -1131,7 +1131,7 @@ public class MenuBarFormater {
      * @param lockedIndicator
      *
      */
-    protected MenubarItem makeLockedIndicator(CMSServiceCtx cmsContext, Bundle bundle, CMSExtendedDocumentInfos extendedInfos) {
+    protected MenubarItem makeLockedIndicator(CMSServiceCtx cmsContext, Bundle bundle, ExtendedDocumentInfos extendedInfos) {
         // Locked indicator menubar item
         final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
         lockedIndicator.setGlyphicon("halflings halflings-lock");
@@ -1160,7 +1160,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      * @return current user display name
      */
-    protected String getUserDisplayName(CMSExtendedDocumentInfos extendedInfos) {
+    protected String getUserDisplayName(ExtendedDocumentInfos extendedInfos) {
         PersonService personService = DirServiceFactory.getService(PersonService.class);
         Person person = personService.getPerson(extendedInfos.getLockOwner());
         String displayName;
@@ -1183,7 +1183,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1264,7 +1264,7 @@ public class MenuBarFormater {
      * @throws CMSException
      */
     protected void getRemotePublishingLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, CMSExtendedDocumentInfos extendedInfos) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
