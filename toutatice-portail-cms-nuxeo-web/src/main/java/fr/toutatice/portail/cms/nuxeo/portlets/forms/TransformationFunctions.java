@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
@@ -17,7 +18,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 /**
  * Transformation functions.
- * 
+ *
  * @author Cédric Krommenhoek
  */
 public class TransformationFunctions {
@@ -36,7 +37,7 @@ public class TransformationFunctions {
 
     /**
      * Get portal URL factory.
-     * 
+     *
      * @return portal URL factory
      */
     private static IPortalUrlFactory getPortalUrlFactory() {
@@ -49,7 +50,7 @@ public class TransformationFunctions {
 
     /**
      * Get user display name.
-     * 
+     *
      * @param user user identifier
      * @return display name
      */
@@ -74,7 +75,7 @@ public class TransformationFunctions {
 
     /**
      * Get user:name method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -85,7 +86,7 @@ public class TransformationFunctions {
 
     /**
      * Get user email.
-     * 
+     *
      * @param user user identifier
      * @return email
      */
@@ -111,7 +112,7 @@ public class TransformationFunctions {
 
     /**
      * Get user:email method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -123,7 +124,7 @@ public class TransformationFunctions {
 
     /**
      * Get document title.
-     * 
+     *
      * @param path document path
      * @return title
      */
@@ -142,7 +143,7 @@ public class TransformationFunctions {
 
     /**
      * Get document:title method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -160,7 +161,7 @@ public class TransformationFunctions {
     public static String getDocumentLink(String path) {
         // Portal URL factory
         IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
-        
+
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
         // Nuxeo controller
@@ -168,12 +169,16 @@ public class TransformationFunctions {
 
         // Nuxeo document context
         Document document = nuxeoController.fetchDocument(path);
-        
-        
+
+
         // URL
-        String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-        
-        
+        String url = null;
+        try {
+            url = portalUrlFactory.getPermaLink(portalControllerContext, null, null, path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        } catch (PortalException e) {
+        }
+
+
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", document.getTitle());
 
@@ -183,7 +188,7 @@ public class TransformationFunctions {
 
     /**
      * Get document:link method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
@@ -192,7 +197,7 @@ public class TransformationFunctions {
         return TransformationFunctions.class.getMethod("getDocumentLink", String.class);
     }
 
-    
+
     /**
      * Get document link.
      * @param path document path
@@ -201,13 +206,17 @@ public class TransformationFunctions {
     public static String getDocumentLinkWithText(String path, String text) {
         // Portal URL factory
         IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
-        
+
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
 
-        // URL
-        String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-        
+        String url = null;
+        try {
+            url = portalUrlFactory.getPermaLink(portalControllerContext, null, null, path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+        } catch (PortalException e) {
+        }
+
+
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", text);
 
@@ -216,7 +225,7 @@ public class TransformationFunctions {
 
     /**
      * Get document:link method.
-     * 
+     *
      * @return method
      * @throws NoSuchMethodException
      * @throws SecurityException
