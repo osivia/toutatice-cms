@@ -22,6 +22,10 @@ public class DocumentAttachmentDTO {
 
     /** Attachment name. */
     private String name;
+    /** Attachment icon. */
+    private String icon;
+    /** Attachment size. */
+    private Long size;
     /** Attachment URL. */
     private String url;
 
@@ -59,6 +63,42 @@ public class DocumentAttachmentDTO {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Getter for icon.
+     * 
+     * @return the icon
+     */
+    public String getIcon() {
+        return icon;
+    }
+
+    /**
+     * Setter for icon.
+     * 
+     * @param icon the icon to set
+     */
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    /**
+     * Getter for size.
+     * 
+     * @return the size
+     */
+    public Long getSize() {
+        return size;
+    }
+
+    /**
+     * Setter for size.
+     * 
+     * @param size the size to set
+     */
+    public void setSize(Long size) {
+        this.size = size;
     }
 
     /**

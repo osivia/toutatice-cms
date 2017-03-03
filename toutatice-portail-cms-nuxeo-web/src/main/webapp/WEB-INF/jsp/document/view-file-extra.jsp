@@ -11,17 +11,12 @@
 <c:set var="name" value="${document.properties['file:content']['name']}" />
 <c:set var="size" value="${document.properties['file:content']['length']}" />
 
-<!-- Glyph -->
-<c:if test="${empty glyph}">
-    <c:set var="glyph" value="${document.type.glyph}"></c:set>
-</c:if>
-
 
 <div class="panel panel-default">
     <div class="panel-body">
         <!-- Title -->
         <h3 class="h4 text-overflow">
-            <i class="${glyph}"></i>
+            <i class="${document.icon}"></i>
             <span>${name}</span>
         </h3>
 

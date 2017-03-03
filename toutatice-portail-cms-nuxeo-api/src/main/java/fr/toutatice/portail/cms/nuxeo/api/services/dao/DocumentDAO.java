@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.MimeType;
+
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -97,7 +99,18 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // Path
         dto.setPath(document.getPath());
         // Type
-        dto.setType(this.getType(document.getType()));
+        DocumentType type = this.getType(document.getType());
+        dto.setType(type);
+        // Icon
+        if ((type != null) && type.isFile()) {
+            String icon = this.getIcon(document);
+
+            if (icon == null) {
+                icon = type.getGlyph();
+            }
+
+            dto.setIcon(icon);
+        }
         // Properties
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
@@ -198,6 +211,132 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // CMS item types
         Map<String, DocumentType> types = cmsCustomizer.getCMSItemTypes();
         return types.get(type);
+    }
+
+
+    /**
+     * Get document icon.
+     * 
+     * @param document document
+     * @return icon, may be null
+     */
+    private String getIcon(Document document) {
+        // Document properties
+        PropertyMap properties = document.getProperties();
+        // File content
+        PropertyMap fileContent = properties.getMap("file:content");
+
+        // Icon
+        String icon;
+        if (fileContent == null) {
+            icon = null;
+        } else {
+            // Mime type
+            String mimeType = fileContent.getString("mime-type");
+
+            icon = this.getIcon(mimeType);
+        }
+
+        return icon;
+    }
+
+
+    /**
+     * Get icon from document or attachment mime type.
+     * 
+     * @param mimeType mime type
+     * @return icon, may be null
+     */
+    public String getIcon(String mimeType) {
+        // Mime type
+        MimeType mimeTypeObject;
+        try {
+            mimeTypeObject = new MimeType(mimeType);
+        } catch (Exception e) {
+            mimeTypeObject = null;
+        }
+
+        // Icon
+        String icon;
+        boolean flaticon = false;
+        if (mimeTypeObject == null) {
+            icon = null;
+        } else {
+            String primaryType = mimeTypeObject.getPrimaryType();
+            String subType = mimeTypeObject.getSubType();
+
+            if ("application".equals(primaryType)) {
+                // Application
+
+                if ("pdf".equals(subType)) {
+                    // PDF
+                    icon = "pdf";
+                    flaticon = true;
+                } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
+                    // MS Word
+                    icon = "word";
+                    flaticon = true;
+                } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
+                    // MS Excel
+                    icon = "excel";
+                    flaticon = true;
+                } else if ("vnd.ms-powerpoint".equals(subType) || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
+                    // MS Powerpoint
+                    icon = "powerpoint";
+                    flaticon = true;
+                } else if ("vnd.oasis.opendocument.text".equals(subType)) {
+                    // OpenDocument - Text
+                    icon = "odt";
+                    flaticon = true;
+                } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
+                    // OpenDocument - Spread sheet
+                    icon = "ods";
+                } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
+                    // OpenDocument - Presentation
+                    icon = "odp";
+                    flaticon = true;
+                } else if ("zip".equals(subType) || "gzip".equals(subType)) {
+                    // Archive
+                    icon = "archive";
+                    flaticon = true;
+                } else {
+                    icon = null;
+                }
+            } else if ("text".equals(primaryType)) {
+                // Text
+
+                if ("html".equals(subType) || "xml".equals(subType)) {
+                    // HTML or XML
+                    icon = "xml";
+                    flaticon = true;
+                } else {
+                    // Plain text
+                    icon = "text";
+                    flaticon = true;
+                }
+            } else if ("image".equals(primaryType)) {
+                // Image
+                icon = "picture";
+            } else if ("video".equals(primaryType)) {
+                // Video
+                icon = "film";
+            } else if ("audio".equals(primaryType)) {
+                // Audio
+                icon = "music";
+            } else {
+                icon = null;
+            }
+        }
+
+        if (icon != null) {
+            if (flaticon) {
+                icon = "flaticon flaticon-" + icon;
+            } else {
+                icon = "glyphicons glyphicons-" + icon;
+            }
+        }
+
+        return icon;
     }
 
 }

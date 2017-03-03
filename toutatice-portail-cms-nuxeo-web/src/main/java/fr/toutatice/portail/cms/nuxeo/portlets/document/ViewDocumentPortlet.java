@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
@@ -33,9 +31,6 @@ import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -91,6 +86,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -470,23 +467,47 @@ public class ViewDocumentPortlet extends CMSPortlet {
      *
      * @param nuxeoController Nuxeo controller
      * @param document Nuxeo document
-     * @param documentDTO document DTO
+     * @param documentDto document DTO
      */
-    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO) {
-        List<DocumentAttachmentDTO> attachments = documentDTO.getAttachments();
-        PropertyList files = document.getProperties().getList("files:files");
-        if (files != null) {
-            for (int i = 0; i < files.size(); i++) {
-                PropertyMap map = files.getMap(i);
+    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDto) {
+        // Document path
+        String path = document.getPath();
 
+        // Attachments
+        List<DocumentAttachmentDTO> attachments = documentDto.getAttachments();
+
+        // Attachments property list
+        PropertyList list = document.getProperties().getList("files:files");
+
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                // Attachment property map
+                PropertyMap map = list.getMap(i);
+
+                // Attachment
                 DocumentAttachmentDTO attachment = new DocumentAttachmentDTO();
 
+                // Attachment file property map
+                PropertyMap file = map.getMap("file");
+
                 // Attachment name
-                String name = map.getString("filename");
+                String name = file.getString("name");
+                if (StringUtils.isEmpty(name)) {
+                    name = map.getString("filename");
+                }
                 attachment.setName(name);
 
+                // Attachment icon
+                String mimeType = file.getString("mime-type");
+                String icon = this.documentDao.getIcon(mimeType);
+                attachment.setIcon(icon);
+
+                // Attachment size
+                Long size = file.getLong("length");
+                attachment.setSize(size);
+
                 // Attachement URL
-                String url = nuxeoController.createAttachedFileLink(document.getPath(), String.valueOf(i));
+                String url = nuxeoController.createAttachedFileLink(path, String.valueOf(i));
                 attachment.setUrl(url);
 
                 attachments.add(attachment);
@@ -647,77 +668,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     if ((driveEditUrl != null) || driveEnabled) {
                         request.setAttribute("driveEditUrl", driveEditUrl);
                         request.setAttribute("driveEnabled", driveEnabled);
-
-
-                        // MIME type icon
-                        String mimeTypeIcon = "file";
-
-                        // File content
-                        PropertyMap fileContent = document.getProperties().getMap("file:content");
-
-                        if (fileContent != null) {
-                            try {
-                                MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
-                                String primaryType = mimeType.getPrimaryType();
-                                String subType = mimeType.getSubType();
-
-                                if ("application".equals(primaryType)) {
-                                    // Application
-
-                                    if ("pdf".equals(subType)) {
-                                        // PDF
-                                        mimeTypeIcon = "pdf";
-                                    } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
-                                        // MS Word
-                                        mimeTypeIcon = "word";
-                                    } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
-                                        // MS Excel
-                                        mimeTypeIcon = "excel";
-                                    } else if ("vnd.ms-powerpoint".equals(subType)
-                                            || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
-                                        // MS Powerpoint
-                                        mimeTypeIcon = "powerpoint";
-                                    } else if ("vnd.oasis.opendocument.text".equals(subType)) {
-                                        // OpenDocument - Text
-                                        mimeTypeIcon = "odt";
-                                    } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
-                                        // OpenDocument - Spread sheet
-                                        mimeTypeIcon = "ods";
-                                    } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
-                                        // OpenDocument - Presentation
-                                        mimeTypeIcon = "odp";
-                                    } else if ("zip".equals(subType) || "gzip".equals(subType)) {
-                                        // Archive
-                                        mimeTypeIcon = "archive";
-                                    }
-                                } else if ("text".equals(primaryType)) {
-                                    // Text
-
-                                    if ("html".equals(subType) || "xml".equals(subType)) {
-                                        // HTML or XML
-                                        mimeTypeIcon = "xml";
-                                    } else {
-                                        // Plain text
-                                        mimeTypeIcon = "text";
-                                    }
-                                } else if ("image".equals(primaryType)) {
-                                    // Image
-                                    mimeTypeIcon = "image";
-                                } else if ("video".equals(primaryType)) {
-                                    // Video
-                                    mimeTypeIcon = "video";
-                                } else if ("audio".equals(primaryType)) {
-                                    // Audio
-                                    mimeTypeIcon = "audio";
-                                }
-                            } catch (MimeTypeParseException e) {
-                                // Do nothing
-                            }
-                        }
-
-                        // Glyph
-                        String glyph = "flaticon flaticon-" + mimeTypeIcon;
-                        request.setAttribute("glyph", glyph);
                     }
                 }
             }

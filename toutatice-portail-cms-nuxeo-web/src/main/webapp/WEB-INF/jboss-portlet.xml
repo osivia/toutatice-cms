@@ -35,6 +35,11 @@
             <trans-attribute>Required</trans-attribute>
         </transaction>
         
+        <header-content>
+            <!-- Flaticon -->
+            <link rel="stylesheet" href="/css/flaticon.min.css" />
+        </header-content>
+        
         <portlet-info>
             <icon>
                 <small-icon>/img/portlet_icon.png</small-icon>
@@ -175,6 +180,11 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
+        
+        <header-content>
+            <!-- Flaticon -->
+            <link rel="stylesheet" href="/css/flaticon.min.css" />
+        </header-content>
         
         <portlet-info>
             <icon>

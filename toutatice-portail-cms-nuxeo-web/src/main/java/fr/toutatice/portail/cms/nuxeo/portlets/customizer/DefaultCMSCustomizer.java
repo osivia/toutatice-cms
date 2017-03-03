@@ -125,6 +125,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
@@ -402,6 +403,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Site picture fragment
         fragmentTypes.add(new FragmentType(SitePictureFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_SITE_PICTURE"),
                 new SitePictureFragmentModule(this.portletContext)));
+        // Attachments fragment
+        fragmentTypes.add(new FragmentType(AttachmentsFragmentModule.ID, bundle.getString("FRAGMENT_TYPE_ATTACHMENTS"),
+                new AttachmentsFragmentModule(this.portletContext)));
 
         return fragmentTypes;
     }

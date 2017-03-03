@@ -204,6 +204,8 @@
             }
             
             .flaticon {
+                top: 2px;
+
                 font-size: 20px;
             }
         }
@@ -331,7 +333,7 @@
 
                 i { 
                     &.flaticon {
-                        font-size: @thumbnail-height;                        
+                        font-size: @thumbnail-height;
                     }
                     
                     &:not(.flaticon) {
@@ -345,6 +347,10 @@
             .caption {
                 display: block;
             }
+            
+            ~ * {
+                padding: 0 3px;
+            }
         }
         
         
@@ -352,11 +358,7 @@
             float: left;
             height: 20px;
             
-            margin-right: 8px;
-            
-            .flaticon {
-                top: 0;
-            }
+            margin-right: 5px;
         }
         
         

@@ -37,6 +37,8 @@ public class DocumentDTO implements Cloneable {
     private String path;
     /** Document type. */
     private DocumentType type;
+    /** Document icon, may be null. */
+    private String icon;
     /** Document properties. */
     private final Map<String, Object> properties;
     /** Document attachments. */
@@ -75,6 +77,7 @@ public class DocumentDTO implements Cloneable {
         this.title = documentDTO.title;
         this.path = documentDTO.path;
         this.type = documentDTO.type;
+        this.icon = documentDTO.icon;
         this.properties.putAll(documentDTO.properties);
         this.attachments.addAll(documentDTO.attachments);
         this.commentable = documentDTO.commentable;
@@ -171,6 +174,24 @@ public class DocumentDTO implements Cloneable {
      */
     public void setType(DocumentType type) {
         this.type = type;
+    }
+
+    /**
+     * Getter for icon.
+     * 
+     * @return the icon
+     */
+    public String getIcon() {
+        return icon;
+    }
+
+    /**
+     * Setter for icon.
+     * 
+     * @param icon the icon to set
+     */
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     /**

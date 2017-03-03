@@ -13,6 +13,10 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.PortletModule;
  */
 public abstract class FragmentModule extends PortletModule implements IFragmentModule {
 
+    /** Message key request attribute. */
+    protected static final String MESSAGE_KEY_ATTRIBUTE = "messageKey";
+
+
     /**
      * Constructor.
      *

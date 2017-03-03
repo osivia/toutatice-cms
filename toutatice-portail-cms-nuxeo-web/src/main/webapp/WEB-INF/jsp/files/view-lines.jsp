@@ -146,7 +146,7 @@
                             <!-- Glyph -->
                             <c:choose>
                                 <c:when test="${'File' eq document.type.name}">
-                                    <c:set var="glyph" value="flaticon flaticon-${document.properties['mimeTypeIcon']}" />
+                                    <c:set var="glyph" value="${document.icon}" />
                                 </c:when>
                                 
                                 <c:when test="${not empty document.type.glyph}">
