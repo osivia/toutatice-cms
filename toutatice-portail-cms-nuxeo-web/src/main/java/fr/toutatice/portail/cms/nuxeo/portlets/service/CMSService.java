@@ -2324,7 +2324,7 @@ public class CMSService implements ICMSService {
      */
     @Override
     public void refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
-        this.customizer.refreshBinaryResource(path);
+        this.customizer.refreshBinaryTimestamp(path);
     }
 
 

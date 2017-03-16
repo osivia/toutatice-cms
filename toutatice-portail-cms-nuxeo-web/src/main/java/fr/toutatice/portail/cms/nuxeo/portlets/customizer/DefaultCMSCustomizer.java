@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,7 +86,6 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
-import org.osivia.portal.core.cms.BinaryDescription.Type;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
@@ -181,9 +181,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Avatar map. */
     private final Map<String, String> avatarMap;
     /** Binary timestamps. */
-    private final Map<String, Long> binaryTimestamps;
-    /** Picture timestamps. */
-    private final Map<String, Long> pictureTs;
+    private final Map<String, BinaryTimestamp> binaryTimestamps;
 
     /** Plugin manager. */
     private final CustomizationPluginMgr pluginManager;
@@ -247,9 +245,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Avatar map
         this.avatarMap = new ConcurrentHashMap<String, String>();
         // Binary timestamps
-        this.binaryTimestamps = new ConcurrentHashMap<String, Long>();
-        // Picture timestamps        
-        this.pictureTs = new ConcurrentHashMap<String, Long>();
+        this.binaryTimestamps = new ConcurrentHashMap<String, BinaryTimestamp>();
 
         // Plugin manager
         this.pluginManager = new CustomizationPluginMgr(this);
@@ -1406,15 +1402,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return null;
     }
 
-
-    
-
-
-    @Override
-    public void updatePictureTS(String parentPath) {
-       this.pictureTs.put(parentPath, System.currentTimeMillis());
-    }
-    
     
     /**
      * Gets the binary resource URL.
@@ -1424,6 +1411,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the binary resource URL
      */
     public Link getBinaryResourceURL(CMSServiceCtx cmsCtx, BinaryDescription binary) throws CMSException {
+        // Nuxeo document
+        Document document;
+        if (binary.getDocument() == null) {
+            document = null;
+        } else {
+            document = (Document) binary.getDocument();
+        }
+
         String src = StringUtils.EMPTY;
         String path = StringUtils.EMPTY;
         boolean liveState = false;
@@ -1441,11 +1436,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
 
 
-            if (binary.getDocument() != null) {
-                Document doc = (Document) binary.getDocument();
-
-                path = doc.getPath();
-                liveState = this.isPathInLiveState(cmsCtx, doc);
+            if (document != null) {
+                path = document.getPath();
+                liveState = this.isPathInLiveState(cmsCtx, document);
                 delegation.setGrantedAccess(true);
             } else {
                 path = binary.getPath();
@@ -1469,16 +1462,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // File name
             String fileName = binary.getFileName();
             if (fileName == null) {
-                if (binary.getDocument() != null) {
-                    Document document = (Document) binary.getDocument();
+                if (document != null) {
                     PropertyMap fileMap = document.getProperties().getMap("file:content");
                     if (fileMap != null) {
                         fileName = fileMap.getString("name");
                     }
                 } else if ((binary.getIndex() != null) && (cmsCtx.getDoc() != null)) {
                     int index = NumberUtils.toInt(binary.getIndex());
-                    Document document = (Document) cmsCtx.getDoc();
-                    PropertyList files = document.getProperties().getList("files:files");
+                    Document contextDocument = (Document) cmsCtx.getDoc();
+                    PropertyList files = contextDocument.getProperties().getList("files:files");
                     if ((files != null) && (files.size() > index)) {
                         PropertyMap fileMap = files.getMap(index);
                         if (fileMap != null) {
@@ -1524,60 +1516,74 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 sb.append("&fscope=").append(cmsCtx.getForcePublicationInfosScope());
             }
 
-            // Picture uploading 
 
-            if (Type.PICTURE.equals(binary.getType()) && (cmsCtx.getRequest() != null)) {
-                if (path != null) {
-                    int lastIndex = StringUtils.lastIndexOf(path, '/');
-                    
-                    if( lastIndex != -1)    {
-                        String parentPath = path.substring(0, lastIndex);
-
-                        Long uploadTs = pictureTs.get(parentPath);
-                        if (uploadTs != null) {
-                            // During a delay of 10s, pictures will be refreshed (due to asynchronous treatments)
-                            sb.append("&refreshTs=");
-                            sb.append(System.currentTimeMillis());
-
-                            if (System.currentTimeMillis() - uploadTs > 10000) {
-                                pictureTs.remove(parentPath);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Preview case
-            if("pdf:content".equals(binary.getFieldName())){
-                // Force refreshing (command) cache if page has to be refreshed 
-                if(PageProperties.getProperties().isRefreshingPage()){
-                    sb.append("&refreshTs=");
-                    sb.append(System.currentTimeMillis());
-                }
-            }
-   
-            // Timestamp
-            Long timestamp = null;
-
-            if (binary.getDocument() != null) {
-                Document document = (Document) binary.getDocument();
-                Date modified = document.getDate("dc:modified");
-                if (modified == null) {
-                    timestamp = null;
-                } else {
-                    timestamp = modified.getTime();
-                }
+            // Portal timestamp
+            long timestamp = System.currentTimeMillis();
+            // Document modified timestamp
+            Long modified;
+            if (document == null) {
+                modified = null;
             } else {
-                timestamp = this.binaryTimestamps.get(path);
+                Date date = document.getDate("dc:modified");
+                if (date == null) {
+                    modified = null;
+                } else {
+                    modified = date.getTime();
+                }
             }
-            if (timestamp == null) {
-                timestamp = this.refreshBinaryResource(path);
+            // Reloading required indicator
+            boolean reload;
+            // Binary timestamp
+            BinaryTimestamp binaryTimestamp = this.binaryTimestamps.get(path);
+            if (binaryTimestamp == null) {
+                binaryTimestamp = new BinaryTimestamp();
+                binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
+                binaryTimestamp.setReloadingRequired(true);
+                this.binaryTimestamps.put(path, binaryTimestamp);
             }
 
-            // Timestamp is concated in the url to control the client cache
-            sb.append("&t=");
-            sb.append(timestamp);
             
+            if ("pdf:content".equals(binary.getFieldName()) && PageProperties.getProperties().isRefreshingPage()) {
+                // Force reloading for PDF preview
+                reload = true;
+            } else if (binaryTimestamp.isReloadingRequired()) {
+                // Reload required
+                reload = true;
+                
+                if (timestamp - binaryTimestamp.getTimestamp() > TimeUnit.SECONDS.toMillis(10)) {
+                    // Don't reload the next time
+                    binaryTimestamp.setReloadingRequired(false);
+                }
+            } else if (modified == null) {
+                // Considered up-to-date
+                reload = false;
+            } else if (binaryTimestamp.getModified() == null) {
+                // Unknown "dc:modified"
+                binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
+                binaryTimestamp.setReloadingRequired(true);
+                reload = true;
+            } else if (Math.abs(binaryTimestamp.getModified() - modified) > TimeUnit.SECONDS.toMillis(1)) {
+                // Updated "dc:modified"
+                binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
+                binaryTimestamp.setReloadingRequired(true);
+                reload = true;
+            } else {
+                // Up-to-date
+                reload = false;
+            }
+
+
+            if (binaryTimestamp.getModified() != null) {
+                sb.append("&t=");
+                sb.append(TimeUnit.MILLISECONDS.toSeconds(binaryTimestamp.getModified()));
+            }
+
+            if (reload) {
+                sb.append("&reload=true");
+            }
 
 
             src = sb.toString();
@@ -1591,19 +1597,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Refresh binary resource.
+     * Refresh binary resource timestamp.
      *
      * @param path binary resource path
      * @return updated binary resource timestamp
      */
-    public long refreshBinaryResource(String path) {
-        // Current timestamp
-        long timestamp = System.currentTimeMillis();
+    public BinaryTimestamp refreshBinaryTimestamp(String path) {
+        // Binary timestamp
+        BinaryTimestamp binaryTimestamp = new BinaryTimestamp();
+        binaryTimestamp.setTimestamp(System.currentTimeMillis());
+        binaryTimestamp.setReloadingRequired(true);
 
         // Update binary timestamp
-        this.binaryTimestamps.put(path, timestamp);
+        this.binaryTimestamps.put(path, binaryTimestamp);
 
-        return timestamp;
+        return binaryTimestamp;
     }
 
 
@@ -1810,15 +1818,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     public Map<String, String> getAvatarMap() {
         return avatarMap;
-    }
-
-    /**
-     * Getter for binaryTimestamps.
-     * 
-     * @return the binaryTimestamps
-     */
-    public Map<String, Long> getBinaryTimestamps() {
-        return binaryTimestamps;
     }
 
     /**

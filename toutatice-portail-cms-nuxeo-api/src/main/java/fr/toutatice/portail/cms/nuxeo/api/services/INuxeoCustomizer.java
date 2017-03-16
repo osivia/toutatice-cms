@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -311,15 +312,5 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the CMS file browser
      */
 	Player getCMSFileBrowser(DocumentContext<Document> docCtx);
-	
-	
-    /**
-     * Gets the CMS file browser.
-     *
-     * @param docCtx the cms context
-     * @return the CMS file browser
-     */
-    void updatePictureTS(String parentPath);
-
 
 }

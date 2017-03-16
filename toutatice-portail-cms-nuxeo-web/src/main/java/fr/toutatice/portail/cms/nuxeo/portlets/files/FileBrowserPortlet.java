@@ -320,10 +320,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
                     
-                    // Upload refreshing
-                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), parentId);
-                    Document document = documentContext.getDoc();
-                    nuxeoController.updatePictureUploadTimestamp(document.getPath());
+                    // // Upload refreshing
+                    // NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), parentId);
+                    // Document document = documentContext.getDoc();
+                    // nuxeoController.updatePictureUploadTimestamp(document.getPath());
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);

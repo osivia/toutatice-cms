@@ -163,8 +163,9 @@ public class BinaryServlet extends HttpServlet {
             Type binaryType = BinaryDescription.Type.valueOf(type);
 
             // Force portal cache refresh
-            if( request.getParameter("refreshTs") != null)
+            if (BooleanUtils.toBoolean(request.getParameter("reload"))) {
                 PageProperties.getProperties().setRefreshingPage(true);
+            }
 
             // Binary content
             CMSBinaryContent content = null;

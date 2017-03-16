@@ -1186,23 +1186,6 @@ public class NuxeoController {
         }
     }
     
-    
-    /**
-     * Update picture upload Timestamp
-     *
-     * @param link Nuxeo link URL
-     * @return transformed Nuxeo link URL
-     */
-    public void updatePictureUploadTimestamp(String parentPath) {
-        try {
-            INuxeoService nuxeoService = this.getNuxeoCMSService();
-            nuxeoService.getCMSCustomizer().updatePictureTS(parentPath);
-        } catch (Exception e) {
-            throw this.wrapNuxeoException(e);
-        }
-    }
-
-
 
     /**
      * Format scope list (for user interface)
@@ -1380,6 +1363,7 @@ public class NuxeoController {
     public String createFileLink(String path, String fieldName, String fileName) {
         try {
             BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, path);
+            binary.setDocument(this.getCurrentDoc());
             binary.setFieldName(fieldName);
             binary.setFileName(fileName);
             return this.getBinaryURL(binary);
@@ -1452,6 +1436,7 @@ public class NuxeoController {
      */
     public String createAttachedBlobLink(String path, String blobIndex, String fileName) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
+        binary.setDocument(this.getCurrentDoc());
         binary.setIndex(blobIndex);
         binary.setFileName(fileName);
         return this.getBinaryURL(binary);
@@ -1465,8 +1450,6 @@ public class NuxeoController {
      * @param fileIndex the file index
      * @return the string
      */
-
-
     public String createAttachedPictureLink(String path, String fileIndex) {
         try {
             BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_PICTURE, path);
@@ -1487,6 +1470,7 @@ public class NuxeoController {
      */
     public String createPictureLink(String path, String content) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
+        binary.setDocument(this.getCurrentDoc());
         binary.setContent(content);
         return this.getBinaryURL(binary);
     }
