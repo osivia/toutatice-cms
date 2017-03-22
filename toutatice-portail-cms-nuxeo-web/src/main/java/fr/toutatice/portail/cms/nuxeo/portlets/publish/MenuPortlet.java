@@ -66,6 +66,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
@@ -183,6 +184,10 @@ public class MenuPortlet extends CMSPortlet {
                     } else {
                         message = bundle.getString("DOCUMENTS_MOVE_SUCCESS_MESSAGE", sourceIds.size());
                     }
+                    
+                    
+                    FileBrowserPortlet.waitForESIndexation();
+                    
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                 } catch (NuxeoException e) {
                     // Notification

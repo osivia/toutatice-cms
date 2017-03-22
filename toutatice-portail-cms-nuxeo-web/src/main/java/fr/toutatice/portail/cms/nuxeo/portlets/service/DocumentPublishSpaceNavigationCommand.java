@@ -61,7 +61,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
     /** Possibility to use ElasticSearch (available from Nuxeo 6.0) */
     private boolean useES = false;
 
-    public final static String basicNavigationSchemas = "dublincore,common, toutatice, regions";
+    public final static String basicNavigationSchemas = "dublincore,common, toutatice";
 
     public DocumentPublishSpaceNavigationCommand(CMSItem publishSpaceConfig, boolean forceLiveVersion) {
 		super();
