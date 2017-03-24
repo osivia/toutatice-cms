@@ -37,7 +37,7 @@ public class UpdateProcedureCommand implements INuxeoCommand {
     /**
      * Constructor.
      *
-     * @param path procedure instance path
+     * @param instance procedure instance path
      * @param title task title
      * @param actors actors
      * @param properties properties

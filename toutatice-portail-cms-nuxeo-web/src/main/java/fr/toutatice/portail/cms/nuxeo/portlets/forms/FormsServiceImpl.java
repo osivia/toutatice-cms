@@ -348,6 +348,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
+
                 procedureInitiator, previousTaskInitiator, nextStep);
 
         // Properties
@@ -696,6 +697,65 @@ public class FormsServiceImpl implements IFormsService {
             this.uuid = uuid;
         }
 
+    }
+
+
+    @Override
+    public Map<String, String> init(PortalControllerContext portalControllerContext, Document document, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+
+        if (document != null) {
+
+            if (variables == null) {
+                variables = new HashMap<String, String>();
+            }
+
+            String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+            PropertyMap initActionProperties = null;
+            PropertyMap currentStepProperties = null;
+            if (StringUtils.equals(document.getType(), "ProcedureModel")) {
+
+                String startingStep = document.getString("pcd:startingStep");
+
+                PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
+
+                currentStepProperties = startingStepProperties;
+
+            } else {
+                PropertyMap instanceProperties = null;
+                if (StringUtils.equals(document.getType(), "ProcedureInstance")) {
+
+                    instanceProperties = document.getProperties();
+
+                } else if (StringUtils.equals(document.getType(), "TaskDoc")) {
+
+                    PropertyMap taskProperties = document.getProperties();
+
+                    instanceProperties = taskProperties.getMap("nt:pi");
+
+                }
+
+                String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
+
+                Document model = this.getModel(portalControllerContext, modelWebId);
+
+                String currentStep = instanceProperties.getString("pi:currentStep");
+
+                currentStepProperties = this.getStepProperties(model, currentStep);
+            }
+
+            if (currentStepProperties != null) {
+
+                initActionProperties = currentStepProperties.getMap("initAction");
+
+                if (initActionProperties != null) {
+                    variables = callFilters(null, variables, initActionProperties, null, null, portalControllerContext, procedureInitiator, null, null)
+                            .getVariables();
+                }
+            }
+        }
+
+        return variables;
     }
 
 }

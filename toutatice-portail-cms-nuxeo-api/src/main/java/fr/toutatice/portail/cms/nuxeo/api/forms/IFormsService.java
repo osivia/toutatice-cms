@@ -125,4 +125,18 @@ public interface IFormsService {
      */
     String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException;
 
+
+    /**
+     * Execute initialisation of a form
+     *
+     * @param portalControllerContext
+     * @param document
+     * @param variables
+     * @return variables updated by init filters
+     * @throws PortalException
+     * @throws FormFilterException
+     */
+    Map<String, String> init(PortalControllerContext portalControllerContext, Document document, Map<String, String> variables) throws PortalException,
+    FormFilterException;
+
 }
