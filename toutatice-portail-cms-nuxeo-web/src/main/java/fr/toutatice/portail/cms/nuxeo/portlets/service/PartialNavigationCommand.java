@@ -70,7 +70,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 				
 		OperationRequest request;
 
-		request = session.newRequest("Document.Query");
+		request = session.newRequest("Document.QueryES");
 
 		
 		String itemRequest = "";

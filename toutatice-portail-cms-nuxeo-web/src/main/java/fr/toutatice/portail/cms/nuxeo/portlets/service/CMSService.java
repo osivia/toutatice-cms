@@ -924,10 +924,9 @@ public class CMSService implements ICMSService {
                 forceLiveVersion = true;
             }
 
-            boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
-            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
 
-            if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+
+            if ( "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
@@ -997,10 +996,7 @@ public class CMSService implements ICMSService {
                 forceLiveVersion = true;
             }
 
-            boolean canUseES = NuxeoCompatibility.canUseES() && BooleanUtils.toBoolean(publishSpaceConfig.getProperties().get("useES"));
-            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
-
-            if ((!canUseES || (canUseES && refreshing)) && "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
             } else {
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
