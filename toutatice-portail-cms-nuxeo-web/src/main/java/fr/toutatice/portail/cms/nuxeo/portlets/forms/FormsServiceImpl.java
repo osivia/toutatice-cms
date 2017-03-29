@@ -1,7 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +61,7 @@ public class FormsServiceImpl implements IFormsService {
     /** Thread local. */
     private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer cmsCustomizer;
@@ -151,9 +154,11 @@ public class FormsServiceImpl implements IFormsService {
         // Required fields validation
         this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
 
+        String startDate = DATE_FORMAT.format(new Date());
+
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, null, portalControllerContext, procedureInitiator,
-                null, nextStep);
+                startDate, startDate, procedureInitiator, nextStep);
 
         if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
             // Properties
@@ -307,6 +312,13 @@ public class FormsServiceImpl implements IFormsService {
         // Procedure initiator
         String procedureInitiator = instanceProperties.getString("pi:procedureInitiator");
 
+        // procedure startDate
+        Date date = instanceProperties.getDate("dc:created");
+        String startDate = DATE_FORMAT.format(date);
+
+        // procedure lastModified
+        date = instanceProperties.getDate("dc:modified");
+        String lastModified = DATE_FORMAT.format(date);
 
         // Previous step
         String previousStep = instanceProperties.getString("pi:currentStep");
@@ -348,8 +360,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(actionId, variables, actionProperties, actors, globalVariableValues, portalControllerContext,
-
-                procedureInitiator, previousTaskInitiator, nextStep);
+                procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -401,8 +412,8 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     private FormFilterContext callFilters(String actionId, Map<String, String> variables, PropertyMap actionProperties, List<String> actors,
-            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String procedureInitiator, String taskInitiator,
-            String nextStep) throws FormFilterException {
+            Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext, String procedureInitiator, String startDate,
+            String lastModified, String taskInitiator, String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginMgr();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -443,7 +454,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, nextStep);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, startDate, lastModified, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setActors(actors);
         filterContext.setActionId(actionId);
@@ -703,58 +714,54 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> init(PortalControllerContext portalControllerContext, Document document, Map<String, String> variables) throws PortalException,
     FormFilterException {
-
         if (document != null) {
-
             if (variables == null) {
                 variables = new HashMap<String, String>();
             }
-
             String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
             PropertyMap initActionProperties = null;
             PropertyMap currentStepProperties = null;
+            String startDate = null;
+            String lastModified = null;
+            String previousTaskInitiator = null;
+            // retrieve correct properties according to type of provided document
             if (StringUtils.equals(document.getType(), "ProcedureModel")) {
-
                 String startingStep = document.getString("pcd:startingStep");
-
                 PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
-
                 currentStepProperties = startingStepProperties;
-
             } else {
                 PropertyMap instanceProperties = null;
                 if (StringUtils.equals(document.getType(), "ProcedureInstance")) {
-
                     instanceProperties = document.getProperties();
-
                 } else if (StringUtils.equals(document.getType(), "TaskDoc")) {
-
                     PropertyMap taskProperties = document.getProperties();
-
                     instanceProperties = taskProperties.getMap("nt:pi");
 
+                    // Task initiator
+                    previousTaskInitiator = taskProperties.getString("nt:initiator");
                 }
-
                 String modelWebId = instanceProperties.getString("pi:procedureModelWebId");
-
                 Document model = this.getModel(portalControllerContext, modelWebId);
-
                 String currentStep = instanceProperties.getString("pi:currentStep");
-
                 currentStepProperties = this.getStepProperties(model, currentStep);
+
+                // procedure startDate
+                Date date = instanceProperties.getDate("dc:created");
+                startDate = DATE_FORMAT.format(date);
+
+                // procedure lastModified
+                date = instanceProperties.getDate("dc:modified");
+                lastModified = DATE_FORMAT.format(date);
+
             }
-
             if (currentStepProperties != null) {
-
                 initActionProperties = currentStepProperties.getMap("initAction");
-
                 if (initActionProperties != null) {
-                    variables = callFilters(null, variables, initActionProperties, null, null, portalControllerContext, procedureInitiator, null, null)
-                            .getVariables();
+                    variables = callFilters(null, variables, initActionProperties, null, null, portalControllerContext, procedureInitiator, startDate,
+                            lastModified, previousTaskInitiator, null).getVariables();
                 }
             }
         }
-
         return variables;
     }
 
