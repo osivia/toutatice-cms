@@ -104,7 +104,10 @@ public class HttpAutomationClient extends AbstractAutomationClient {
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        http.getConnectionManager().shutdown();
+        if( http != null)   {
+            if( http.getConnectionManager() != null)
+                http.getConnectionManager().shutdown();
+        }
         http = null;
     }
 
