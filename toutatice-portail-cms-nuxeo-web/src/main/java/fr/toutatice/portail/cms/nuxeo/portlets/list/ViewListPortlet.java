@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -73,6 +75,8 @@ import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.IPrivilegedModule;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ITemplateModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -472,6 +476,29 @@ public class ViewListPortlet extends CMSPortlet {
             boolean feed = BooleanUtils.toBoolean(window.getProperty("osivia.cms.feed"));
             Map<String, Integer> feedDocumentsOrder = null;
 
+            // Templates
+            request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            String templateName = configuration.getTemplate();
+            if (templateName == null) {
+                templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
+            }
+            ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
+            request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
+            String schemas = template.getSchemas();
+
+            // Module
+            ITemplateModule module = template.getModule();
+
+            // Request filter
+            String filter = null;
+
+            if (module instanceof IPrivilegedModule) {
+                IPrivilegedModule privilegedModule = (IPrivilegedModule) module;
+                nuxeoController.setAuthType(privilegedModule.getAuthType());
+                nuxeoController.setCacheType(privilegedModule.getCacheType());
+                filter = privilegedModule.getFilter(portalControllerContext);
+            }
+
             // Nuxeo request
             String nuxeoRequest;
             if (feed) {
@@ -527,6 +554,9 @@ public class ViewListPortlet extends CMSPortlet {
 
             }
 
+            // Apply request filter
+            nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
+
             if ("EMPTY_REQUEST".equals(nuxeoRequest)) {
                 request.setAttribute("osivia.emptyResponse", "1");
                 request.setAttribute("error", bundle.getString("LIST_MESSAGE_EMPTY_REQUEST"));
@@ -581,17 +611,6 @@ public class ViewListPortlet extends CMSPortlet {
                     }
                 }
                 request.setAttribute("currentPage", currentPage);
-
-
-                // Templates
-                request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
-                String templateName = configuration.getTemplate();
-                if (templateName == null) {
-                    templateName = DefaultCMSCustomizer.LIST_TEMPLATE_NORMAL;
-                }
-                ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
-                request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
-                String schemas = template.getSchemas();
 
 
                 // Request page size
@@ -728,8 +747,8 @@ public class ViewListPortlet extends CMSPortlet {
 
 
                 // v2.0.8 : customization
-                if (template.getModule() != null) {
-                    template.getModule().doView(portalControllerContext, window, request, response);
+                if (module != null) {
+                    module.doView(portalControllerContext, window, request, response);
                 }
             } else {
                 String bshTitle = (String) request.getAttribute("bsh.title");
@@ -764,6 +783,38 @@ public class ViewListPortlet extends CMSPortlet {
 
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
         dispatcher.include(request, response);
+    }
+
+
+    /**
+     * Apply request filter.
+     *
+     * @param request original request
+     * @param filter request filter
+     * @return filtered request
+     */
+    private String applyFilter(String request, String filter) {
+        String result;
+
+        if (StringUtils.isEmpty(filter)) {
+            result = request;
+        } else {
+            Pattern pattern = Pattern.compile("^(.*) ORDER *BY (.*)$", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(request);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("(").append(filter).append(") AND (");
+
+            if (matcher.matches()) {
+                builder.append(matcher.group(1)).append(") ORDER BY ").append(matcher.group(2));
+            } else {
+                builder.append(request).append(")");
+            }
+
+            result = builder.toString();
+        }
+
+        return result;
     }
 
 
