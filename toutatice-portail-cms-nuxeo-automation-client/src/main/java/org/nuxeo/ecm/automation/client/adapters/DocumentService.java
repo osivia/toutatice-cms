@@ -11,6 +11,9 @@
  */
 package org.nuxeo.ecm.automation.client.adapters;
 
+import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -135,6 +138,30 @@ public class DocumentService {
         OperationRequest req = this.session.newRequest(CreateDocument).setInput(
                 parent).set("type", type).set("name", name);
         if ((properties != null) && !properties.isEmpty()) {
+            for (Entry<String, Object> entry : properties.getMap().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value instanceof String) {
+                    String string = (String) value;
+
+                    String[] lines = StringUtils.split(string, "\n");
+                    for (int i = 0; i < lines.length; i++) {
+                        String line = StringUtils.trim(lines[i]);
+
+                        if (i < lines.length - 1) {
+                            line += "\\";
+                        }
+
+                        lines[i] = line;
+                    }
+
+                    string = StringUtils.join(lines, "\n");
+
+                    properties.set(key, string);
+                }
+            }
+
             req.set("properties", properties);
         }
         return (Document) req.execute();
