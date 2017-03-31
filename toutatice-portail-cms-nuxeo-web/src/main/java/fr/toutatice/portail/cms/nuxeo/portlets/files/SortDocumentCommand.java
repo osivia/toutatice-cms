@@ -37,7 +37,7 @@ public class SortDocumentCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
-        OperationRequest request = nuxeoSession.newRequest("Document.OrderDocument");
+        OperationRequest request = nuxeoSession.newRequest("Document.OrderDocument").setHeader(FileBrowserPortlet.ES_SYNC_FLAG, "true");
         request.set("sourceId", this.sourceId);
         if (this.targetId != null) {
             request.set("targetId", this.targetId);

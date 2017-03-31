@@ -56,7 +56,7 @@ public class UploadFilesCommand implements INuxeoCommand {
         Blobs blobs = this.getBlobsList(this.fileItems);
 
         // Operation request
-        OperationRequest operationRequest = nuxeoSession.newRequest("FileManager.Import").setInput(blobs);
+        OperationRequest operationRequest = nuxeoSession.newRequest("FileManager.Import").setInput(blobs).setHeader(FileBrowserPortlet.ES_SYNC_FLAG, "true");
         operationRequest.setContextProperty("currentDocument", this.parentId);
         operationRequest.set("overwite", overwite);
 

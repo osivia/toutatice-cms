@@ -11,9 +11,6 @@
  */
 package org.nuxeo.ecm.automation.client.adapters;
 
-import java.util.Map.Entry;
-
-import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -30,6 +27,9 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public class DocumentService {
+
+    /** Synchronized ES indexation flag. */
+    public static final String ES_SYNC_FLAG = "nx_es_sync";
 
     public static final String FetchDocument = "Document.Fetch";
 
@@ -86,9 +86,11 @@ public class DocumentService {
     public static final String GetBlobs = "Blob.GetList";
 
     public static final String CreateVersion = "Document.CreateVersion";
+    
+    public static final String GetVersions = "Document.GetVersions";
 
     public static final String FireEvent = "Notification.SendEvent";
-
+    
     // The following are not yet implemented
 
     public static final String CheckOut = "Document.CheckOut";
@@ -183,10 +185,8 @@ public class DocumentService {
         return this.copy(src, targetParent, null);
     }
 
-    public Document copy(DocRef src, DocRef targetParent, String name)
-            throws Exception {
-        OperationRequest req = this.session.newRequest(CopyDocument).setInput(src).set(
-                "target", targetParent);
+    public Document copy(DocRef src, DocRef targetParent, String name) throws Exception {
+        OperationRequest req = this.session.newRequest(CopyDocument).setInput(src).set("target", targetParent).setHeader(ES_SYNC_FLAG, "true");
         if (name != null) {
             req.set("name", name);
         }
@@ -197,10 +197,8 @@ public class DocumentService {
         return this.move(src, targetParent, null);
     }
 
-    public Document move(DocRef src, DocRef targetParent, String name)
-            throws Exception {
-        OperationRequest req = this.session.newRequest(MoveDocument).setInput(src).set(
-                "target", targetParent);
+    public Document move(DocRef src, DocRef targetParent, String name) throws Exception {
+        OperationRequest req = this.session.newRequest(MoveDocument).setInput(src).set("target", targetParent).setHeader(ES_SYNC_FLAG, "true");
         if (name != null) {
             req.set("name", name);
         }
@@ -405,6 +403,33 @@ public class DocumentService {
 
     public Document createVersion(DocRef doc) throws Exception {
         return this.createVersion(doc, null);
+    }
+    
+    /**
+     * Gets versions with common fetch schemas (dc, common, ...).
+     * 
+     * @param doc
+     * @return versions with common fetch schemas (dc, common, ...)
+     * @throws Exception
+     */
+    public Documents getVersions(DocRef doc) throws Exception {
+        return getVersions(doc, null);
+    }
+    
+    /**
+     * Gets versions with specified data in addition to default schemas (dc, common, ...).
+     * 
+     * @param doc
+     * @return versions with specified schemas
+     * @throws Exception
+     */
+    public Documents getVersions(DocRef doc, String schemas) throws Exception {
+        OperationRequest req = this.session.newRequest(GetVersions).setInput(doc);
+        // Data to fetch
+        if(schemas != null){
+            req.setHeader(Constants.HEADER_NX_SCHEMAS, schemas);
+        }
+        return (Documents) req.execute();
     }
 
     /**

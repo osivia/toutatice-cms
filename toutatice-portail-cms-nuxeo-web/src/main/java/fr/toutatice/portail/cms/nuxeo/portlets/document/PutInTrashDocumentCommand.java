@@ -24,7 +24,7 @@ public class PutInTrashDocumentCommand implements INuxeoCommand {
      */
     public Object execute(Session nuxeoSession) throws Exception {
         
-        return nuxeoSession.newRequest("Document.PutDocumentInTrash").set("document", docId).execute();
+        return nuxeoSession.newRequest("Document.PutDocumentInTrash").set("document", docId).setHeader("nx_es_sync", "true").execute();
 
     }
 

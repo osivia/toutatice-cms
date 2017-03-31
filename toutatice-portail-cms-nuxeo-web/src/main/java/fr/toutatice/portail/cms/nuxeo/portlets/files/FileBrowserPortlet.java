@@ -28,6 +28,8 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -79,7 +81,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -87,6 +88,9 @@ import net.sf.json.JSONObject;
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** Synchronized ES indexation flag. */
+    public static final String ES_SYNC_FLAG = "nx_es_sync";
 
     /** File upload notifications duration. */
     private static final int FILE_UPLOAD_NOTIFICATIONS_DURATION = 1000;
@@ -348,8 +352,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
                     
-                    
-                    waitForESIndexation();
 
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
