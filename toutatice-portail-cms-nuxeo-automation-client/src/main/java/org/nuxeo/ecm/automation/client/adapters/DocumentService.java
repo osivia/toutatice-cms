@@ -11,6 +11,9 @@
  */
 package org.nuxeo.ecm.automation.client.adapters;
 
+import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;

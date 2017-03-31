@@ -186,8 +186,6 @@ public class MenuPortlet extends CMSPortlet {
                     }
                     
                     
-                    FileBrowserPortlet.waitForESIndexation();
-                    
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                 } catch (NuxeoException e) {
                     // Notification

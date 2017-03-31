@@ -136,19 +136,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         super();
     }
 
-    /**
-     * Wait for es indexation.
-     */
-    
-    public static void waitForESIndexation()    {
-        // For ES indexation
-        //TODO : to remove when indexation in ES is synchrone
-        try {
-            Thread.sleep(1000L);
-        } catch (InterruptedException e) {
-        }
-    }
-    
+
     
     /**
      * {@inheritDoc}
@@ -246,8 +234,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
                 nuxeoController.executeNuxeoCommand(command);
                 
-                waitForESIndexation();
-        
+       
                 // Refresh navigation
                 request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
             
@@ -261,7 +248,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                             cmsService.putDocumentInTrash(cmsContext, id);
                         }
 
-                        waitForESIndexation();
                         
                         // Notification
                         String message = bundle.getString("SUCCESS_MESSAGE_DELETE");
@@ -293,7 +279,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
                     
                     
-                    waitForESIndexation();
 
                     // Notification
                     String message;
