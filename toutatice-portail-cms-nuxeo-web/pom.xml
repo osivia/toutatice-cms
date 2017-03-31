@@ -70,11 +70,11 @@
         
         
          <dependency>
-                <groupId>org.jboss.portal</groupId>
-                <artifactId>portal-web-lib</artifactId>
-                <version>${jboss.portal.version}</version>
-                <scope>provided</scope>
-            </dependency>
+            <groupId>org.jboss.portal</groupId>
+            <artifactId>portal-web-lib</artifactId>
+            <version>${jboss.portal.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
 	</dependencies>
 
@@ -96,9 +96,45 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <attachClasses>true</attachClasses>
+                    <useCache>true</useCache>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-war</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <basedir>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/jsp</basedir>
+                    <includes>
+                        <include>**/*.jsp</include>
+                    </includes>
+                    
+                    <token>&gt;\s*&lt;</token>
+                    <value>&gt; &lt;</value>
+                    <regexFlags>
+                        <regexFlag>MULTILINE</regexFlag>
+                    </regexFlags>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
