@@ -127,7 +127,7 @@
                         <include>**/*.jsp</include>
                     </includes>
                     
-                    <token>&gt;\s*&lt;</token>
+                    <token>&gt;\s+&lt;</token>
                     <value>&gt; &lt;</value>
                     <regexFlags>
                         <regexFlag>MULTILINE</regexFlag>
