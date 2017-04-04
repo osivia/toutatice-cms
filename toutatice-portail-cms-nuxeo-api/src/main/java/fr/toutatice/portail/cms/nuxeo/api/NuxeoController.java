@@ -1392,6 +1392,23 @@ public class NuxeoController {
         }
     }
 
+    /**
+     * Creates the file link of a version.
+     * 
+     * @param version
+     * @param fieldName
+     * @return file link of version
+     */
+    public String createFileLinkOfVersion(Document version, String fieldName) {
+        try {
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE_OF_VERSION, version.getPath());
+            binary.setFieldName(fieldName);
+            binary.setDocument(version);
+            return this.getBinaryURL(binary);
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
+    }
 
     /**
      * Creates the external link.

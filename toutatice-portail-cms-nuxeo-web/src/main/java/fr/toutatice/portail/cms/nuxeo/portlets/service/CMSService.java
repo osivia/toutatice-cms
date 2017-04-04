@@ -135,6 +135,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.FetchDocumentByUUIDCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
@@ -688,8 +689,21 @@ public class CMSService implements ICMSService {
         try {
             // Document
             CMSItem document;
+            // Version
+            Document nuxeoDocument = null;
             try {
-                document = this.fetchContent(cmsContext, path);
+                if (!"downloadVersion".equals(cmsContext.getDisplayContext())) {
+                    document = this.fetchContent(cmsContext, path);
+                    if (document != null) {
+                        // Nuxeo document
+                        nuxeoDocument = (Document) document.getNativeItem();
+                    }
+                } else {
+                    // Version
+                    FetchDocumentByUUIDCommand fetchVersion = new FetchDocumentByUUIDCommand(path);
+                    cmsContext.setScope("superuser_context");
+                    nuxeoDocument = (Document) this.executeNuxeoCommand(cmsContext, fetchVersion);
+                }
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 throw e;
@@ -697,10 +711,7 @@ public class CMSService implements ICMSService {
 
 
             // File content
-            if (document != null) {
-                // Nuxeo document
-                Document nuxeoDocument = (Document) document.getNativeItem();
-
+            if (nuxeoDocument != null) {
                 // Command
                 FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
 
@@ -727,6 +738,7 @@ public class CMSService implements ICMSService {
 
         return content;
     }
+
 
 
     @Override

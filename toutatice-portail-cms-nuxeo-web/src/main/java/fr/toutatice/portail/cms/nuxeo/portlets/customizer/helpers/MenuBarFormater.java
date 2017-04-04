@@ -268,6 +268,9 @@ public class MenuBarFormater {
 
                 // Nuxeo synchronize
                 this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                
+                // Versions
+                this.getVersionsLink(portalControllerContext, cmsContext, menubar, bundle);
 
                 // Nuxeo administration
                 if (isGlobalAdministrator) {
@@ -925,6 +928,51 @@ public class MenuBarFormater {
             browserItem.setBreadcrumb(true);
 
             menubar.add(browserItem);
+        }
+    }
+    
+    /**
+     * Build Portlet link managing versions of a document.
+     * 
+     * @param portalControllerContext
+     * @param cmsContext
+     * @param pubInfos
+     * @param menubar
+     * @param bundle
+     */
+    protected void getVersionsLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle) {
+        // Display if logined and in contextualization context
+        if (cmsContext.getRequest().getRemoteUser() != null && ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+            // Filter on File
+            final Document document = (Document) cmsContext.getDoc();
+            if (StringUtils.equals("File", document.getType())) {
+                try {
+                    // Portlet of versions URL
+                    Map<String, String> properties = new HashMap<>(1);
+                    properties.put(BasicPublicationInfos.CONTENT_PATH, document.getId());
+
+                    final String versionsURL = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "osivia-services-versions-instance",
+                            properties, PortalUrlType.POPUP);
+
+                    // MenuBar item
+                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
+                    
+                    // FIXME: set fancyframe_refresh when portlet's actions will be set
+                    final MenubarItem versionsItem = new MenubarItem("VERSIONS", bundle.getString("VERSIONS"), "glyphicons glyphicons-history", parent, 10,
+                            versionsURL, null, null, "fancyframe");
+
+                    versionsItem.setAjaxDisabled(true);
+                    versionsItem.setDivider(true);
+                    versionsItem.setBreadcrumb(false);
+
+                    menubar.add(versionsItem);
+
+                } catch (final PortalException e) {
+                    this.log.warn(e.getMessage());
+                }
+            }
+
+
         }
     }
 

@@ -801,17 +801,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (!"detailedView".equals(displayContext)) {
             // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-            if (("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType()))
-                    && ("download".equals(displayContext))) {
-                PropertyMap attachedFileProperties = document.getProperties().getMap("file:content");
-                if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
-
-                    // Nuxeo controller
-                    NuxeoController nuxeoCtl = new NuxeoController(cmsContext.getRequest(), cmsContext.getResponse(), cmsContext.getPortletCtx());
-                    nuxeoCtl.setCurrentDoc(document);
-
-                    url = nuxeoCtl.createFileLink(document, "file:content");
-                    downloadable = true;
+            if (("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType()))) {
+                // Check context
+                if ("download".equals(displayContext) || "downloadVersion".equals(displayContext)) {
+                    url = createFileDownloadLink(cmsContext, document, displayContext);
+                    downloadable = url != null;
                 }
             }
 
@@ -834,6 +828,36 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             return link;
         }
         return null;
+    }
+
+    /**
+     * Creates download URL of principal blob of document.
+     * 
+     * @param cmsContext
+     * @param document
+     * @param displayContext
+     * @return download URL
+     */
+    public String createFileDownloadLink(CMSServiceCtx cmsContext, Document document, String displayContext) {
+        String downloadUrl = null;
+
+        PropertyMap attachedFileProperties = document.getProperties().getMap("file:content");
+        if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
+
+            // Nuxeo controller
+            NuxeoController nuxeoCtl = new NuxeoController(cmsContext.getRequest(), cmsContext.getResponse(), cmsContext.getPortletCtx());
+            nuxeoCtl.setCurrentDoc(document);
+
+            // Download URL according to context
+            if ("download".equals(displayContext)) {
+                downloadUrl = nuxeoCtl.createFileLink(document, "file:content");
+            } else if ("downloadVersion".equals(displayContext)) {
+                downloadUrl = nuxeoCtl.createFileLinkOfVersion(document, "file:content");
+            }
+
+        }
+
+        return downloadUrl;
     }
 
 
@@ -1438,6 +1462,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             if (document != null) {
                 path = document.getPath();
+
+                // Case of version: path is not enough, must set uuid
+                if (BinaryDescription.Type.FILE_OF_VERSION.equals(binary.getType())) {
+                    path = document.getId();
+                }
+
                 liveState = this.isPathInLiveState(cmsCtx, document);
                 delegation.setGrantedAccess(true);
             } else {

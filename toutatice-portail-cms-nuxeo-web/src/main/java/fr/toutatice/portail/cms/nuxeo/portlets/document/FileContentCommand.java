@@ -38,6 +38,11 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
  */
 public class FileContentCommand implements INuxeoCommand {
 
+    /** PDF content flag (used in preview). */
+    public static final String PDF_CONTENT = "pdf:content";
+    /** Error on PDF conversion (used in preview). */
+    public static final String PDF_CONVERSION_ERROR = "errorOnPdfConversion";
+
     Document document;
     String docPath;
     String fieldName;
@@ -78,7 +83,7 @@ public class FileContentCommand implements INuxeoCommand {
         
         boolean pdfConversion = false;
         
-        if("pdf:content".equals(tokens[0])){
+        if(PDF_CONTENT.equals(tokens[0])){
             tokens[0] = "file:content";
             pdfConversion = true;
         }

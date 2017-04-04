@@ -26,9 +26,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class RemotePublishedDocumentDTO {
     
-    //DCH: FIXME: no notion of Nuxeo at this level?
-    
-    /** NUxeo path context. */
+    /** Nuxeo path context. */
     public static final String NX_PATH_CTX = "/nuxeo/nxpath/default/";
     
     /** Nuxeo Published document url. */

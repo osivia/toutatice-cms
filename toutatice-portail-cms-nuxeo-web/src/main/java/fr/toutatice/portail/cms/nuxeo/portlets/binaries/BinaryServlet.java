@@ -180,6 +180,11 @@ public class BinaryServlet extends HttpServlet {
             } else if (Type.FILE.equals(binaryType)) {
                 nuxeoController.setStreamingSupport(true);
                 content = nuxeoController.fetchFileContent(path, fieldName);
+            } else if (Type.FILE_OF_VERSION.equals(binaryType)) {
+                nuxeoController.setStreamingSupport(true);
+                nuxeoController.setDisplayContext("downloadVersion");
+                // Path is an uuid here
+                content = nuxeoController.fetchFileContent(path, fieldName);
             }
 
             if (content.getStream() != null) {
