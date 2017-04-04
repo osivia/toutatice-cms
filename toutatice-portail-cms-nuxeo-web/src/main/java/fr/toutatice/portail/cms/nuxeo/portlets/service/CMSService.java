@@ -27,6 +27,7 @@ import java.util.UUID;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -40,6 +41,7 @@ import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.aspects.server.UserInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Portal;
+import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
@@ -1175,6 +1177,100 @@ public class CMSService implements ICMSService {
             workspaces = browserAdapter.getWorkspaces(cmsContext, administrator);
         }
         return workspaces;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, NavigationItem> getFullLoadedPortalNavigationItems(CMSServiceCtx cmsContext, String basePath) throws CMSException {
+        // Live version indicator
+        boolean liveVersion = "1".equals(cmsContext.getDisplayLiveVersion());
+
+        // Navigation items
+        Map<String, NavigationItem> navigationItems;
+
+        // Portlet request
+        PortletRequest request = cmsContext.getRequest();
+        if (request == null) {
+            navigationItems = null;
+        } else {
+            // Request attribute name
+            String name = FullLoadedNavigationItems.getRequestAttributeName(basePath);
+            // Get full loaded navigation items in request
+            FullLoadedNavigationItems fullLoadedNavigationItems = (FullLoadedNavigationItems) request.getAttribute(name);
+
+            if (fullLoadedNavigationItems == null) {
+                // Nuxeo command
+                INuxeoCommand command = new FullLoadedNavigationCommand(basePath, liveVersion);
+
+                try {
+                    // Documents
+                    Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+
+                    navigationItems = new HashMap<>(documents.size());
+
+                    for (Document document : documents.list()) {
+                        String path = StringUtils.removeEnd(document.getPath(), ".proxy");
+
+                        // Navigation item
+                        NavigationItem navigationItem = this.getNavigationItem(navigationItems, path);
+                        navigationItem.setMainDoc(document);
+
+                        // CMS item
+                        CMSItem cmsItem = this.createNavigationItem(cmsContext, path, document.getTitle(), document, basePath);
+                        navigationItem.setAdaptedCMSItem(cmsItem);
+
+                        // Parent path
+                        PortalObjectPath objectPath = PortalObjectPath.parse(path, PortalObjectPath.CANONICAL_FORMAT);
+                        PortalObjectPath parentObjectPath = objectPath.getParent();
+                        String parentPath = parentObjectPath.toString(PortalObjectPath.CANONICAL_FORMAT);
+
+                        if (StringUtils.startsWith(parentPath, basePath)) {
+                            // Parent navigation item
+                            NavigationItem parentNavigationItem = this.getNavigationItem(navigationItems, parentPath);
+                            parentNavigationItem.getChildren().add(navigationItem);
+                        }
+                    }
+
+                    // Save full loaded navigations items in request
+                    fullLoadedNavigationItems = new FullLoadedNavigationItems(basePath, navigationItems);
+                    request.setAttribute(name, fullLoadedNavigationItems);
+                } catch (NuxeoException e) {
+                    navigationItems = null;
+                    e.rethrowCMSException();
+                } catch (CMSException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new CMSException(e);
+                }
+            } else {
+                navigationItems = fullLoadedNavigationItems.getNavigationItems();
+            }
+        }
+
+        return navigationItems;
+    }
+
+
+    /**
+     * Get navigation item.
+     * 
+     * @param items navigation items
+     * @param path navigation item path
+     * @return navigation item
+     */
+    private NavigationItem getNavigationItem(Map<String, NavigationItem> items, String path) {
+        // Navigation item
+        NavigationItem item = items.get(path);
+
+        if (item == null) {
+            item = new NavigationItem();
+            items.put(path, item);
+        }
+
+        return item;
     }
 
 
