@@ -23,9 +23,9 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.aspects.controller.PageCustomizerInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
@@ -40,7 +40,6 @@ import org.osivia.portal.core.cms.IContentStreamingSupport;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 	
@@ -346,7 +345,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     if (maxAverageDelay != null) {
                         long maxDelay = Long.parseLong(maxAverageDelay);
 
-                        if (!error && this.command.getId().startsWith("PublishInfosCommand")) {
+                        if (!error && StringUtils.startsWith(this.command.getId(), "PublishInfosCommand")) {
                             synchronized (AVERAGE_LIST) {
 
                                 while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
