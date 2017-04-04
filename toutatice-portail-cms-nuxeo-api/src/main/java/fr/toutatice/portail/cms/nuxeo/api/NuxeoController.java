@@ -1470,7 +1470,6 @@ public class NuxeoController {
      */
     public String createPictureLink(String path, String content) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
-        binary.setDocument(this.getCurrentDoc());
         binary.setContent(content);
         return this.getBinaryURL(binary);
     }
