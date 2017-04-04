@@ -25,6 +25,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.aspects.controller.PageCustomizerInterceptor;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.Session;
@@ -339,8 +340,6 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                     // Moyenne flottante sur les publishInfosCommands
 
-                    String statusErrorMsg = null;
-
 
                     String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
 
@@ -370,19 +369,25 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                                     long moyenne = total / AVERAGE_LIST.size();
 
                                     if (moyenne > maxDelay) {
-                                        statusErrorMsg = "Moyenne flottante : " + moyenne + "ms";
-
+                                        String statusMsg = "Floating average time : " + moyenne + "ms";
+                                        
+                                        
+                                        if( this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD"))    {
+                                            this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD", new UnavailableServer("[DOWN]" + statusMsg));   
+                                        }
+ 
                                         AVERAGE_LIST.clear();
+                                        
+                                    }   else    {
+                                        if( !this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD"))    {
+                                            String statusMsg = "Floating average time : " + moyenne + "ms";                                            
+                                            this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD",
+                                                    new UnavailableServer("[UP] " + statusMsg));                
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-
-                    if (statusErrorMsg != null) {
-                        // On force le DOWN pour laisser Nuxeo souffler
-                        this.getServiceStatut(this.ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
-                                new UnavailableServer("[DOWN]" + statusErrorMsg));
                     }
 
 
