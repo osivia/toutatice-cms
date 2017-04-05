@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -87,6 +88,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /** Menu templates cache. */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
 
+    /** JSP reentrant locks. */
+    private final Map<String, ReentrantLock> jspLocks;
+
+
     /** Dynamic modules that defines players . */
     private List<INuxeoPlayerModule> dynamicModules;
     /** Types cache. */
@@ -129,6 +134,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
         this.templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
         this.menuTemplatesCache = new ConcurrentHashMap<Locale, SortedMap<String, String>>();
+
+        // JSP locks
+        this.jspLocks = new ConcurrentHashMap<>();
 
         this.customizationDeployementTS = System.currentTimeMillis();
     }
@@ -186,43 +194,60 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         // Customized JavaServer page
         CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
 
-        if (customizedPage == null) {
-            // Locale
-            Locale locale = request.getLocale();
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
-
-            // Default initialization
-            customizedPage = new CustomizedJsp(name, null);
-
-            // Customized JavaServer pages
-            Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
-            if ((name != null) && (customizedPages != null)) {
-                String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
-                CustomizedJsp page = customizedPages.get(relativePath);
-
-                if ((page != null) && (name.contains("."))) {
-                    // Destination
-                    StringBuilder destination = new StringBuilder();
-                    destination.append(StringUtils.substringBeforeLast(name, "."));
-                    destination.append(CUSTOM_JSP_EXTENTION);
-                    destination.append(this.customizationDeployementTS);
-                    destination.append(".");
-                    destination.append(StringUtils.substringAfterLast(name, "."));
-
-                    // Copy original JSP
-                    String directoryPath = portletContext.getRealPath("/");
-                    File directory = new File(directoryPath);
-                    File destinationFile = new File(directory, destination.toString());
-                    destinationFile.delete();
-                    File sourceFile = new File(page.getName());
-                    FileUtils.copyFile(sourceFile, destinationFile);
-
-
-                    customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
-                }
+        if ((customizedPage == null) && (name != null)) {
+            // JSP reentrant lock
+            ReentrantLock jspLock = this.jspLocks.get(name);
+            if (jspLock == null) {
+                jspLock = new ReentrantLock();
+                this.jspLocks.put(name, jspLock);
             }
+            jspLock.lock();
 
-            this.customizedJavaServerPagesCache.put(name, customizedPage);
+
+            try {
+                customizedPage = this.customizedJavaServerPagesCache.get(name);
+                
+                if (customizedPage == null) {
+                    // Locale
+                    Locale locale = request.getLocale();
+                    Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+
+                    // Default initialization
+                    customizedPage = new CustomizedJsp(name, null);
+
+                    // Customized JavaServer pages
+                    Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
+                    if ((name != null) && (customizedPages != null)) {
+                        String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
+                        CustomizedJsp page = customizedPages.get(relativePath);
+
+                        if ((page != null) && (name.contains("."))) {
+                            // Destination
+                            StringBuilder destination = new StringBuilder();
+                            destination.append(StringUtils.substringBeforeLast(name, "."));
+                            destination.append(CUSTOM_JSP_EXTENTION);
+                            destination.append(this.customizationDeployementTS);
+                            destination.append(".");
+                            destination.append(StringUtils.substringAfterLast(name, "."));
+
+                            // Copy original JSP
+                            String directoryPath = portletContext.getRealPath("/");
+                            File directory = new File(directoryPath);
+                            File destinationFile = new File(directory, destination.toString());
+                            destinationFile.delete();
+                            File sourceFile = new File(page.getName());
+                            FileUtils.copyFile(sourceFile, destinationFile);
+
+
+                            customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
+                        }
+                    }
+
+                    this.customizedJavaServerPagesCache.put(name, customizedPage);
+                }
+            } finally {
+                jspLock.unlock();
+            }
         }
 
         return customizedPage;
