@@ -1568,10 +1568,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (binaryTimestamp == null) {
                 binaryTimestamp = new BinaryTimestamp();
                 binaryTimestamp.setTimestamp(timestamp);
-                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 this.binaryTimestamps.put(path, binaryTimestamp);
             }
+            binaryTimestamp.setModified(modified);
 
             
             if ("pdf:content".equals(binary.getFieldName()) && PageProperties.getProperties().isRefreshingPage()) {
@@ -1591,13 +1591,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             } else if (binaryTimestamp.getModified() == null) {
                 // Unknown "dc:modified"
                 binaryTimestamp.setTimestamp(timestamp);
-                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 reload = true;
             } else if (Math.abs(binaryTimestamp.getModified() - modified) > TimeUnit.SECONDS.toMillis(1)) {
                 // Updated "dc:modified"
                 binaryTimestamp.setTimestamp(timestamp);
-                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 reload = true;
             } else {
