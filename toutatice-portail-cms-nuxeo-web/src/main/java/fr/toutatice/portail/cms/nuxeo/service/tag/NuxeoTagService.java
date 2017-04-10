@@ -10,7 +10,6 @@ import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Window;
 import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
@@ -139,7 +138,7 @@ public class NuxeoTagService implements INuxeoTagService {
 
         return link;
     }
-    
+
     /**
      * {@Override}
      */
@@ -166,14 +165,9 @@ public class NuxeoTagService implements INuxeoTagService {
                 // File link
                 String createFileLink = nuxeoController.createFileLink(document.getDocument(), "pdf:content");
 
-                PropertyMap fileContent = document.getDocument().getProperties().getMap("file:content");
-                String fileName = (String) fileContent.get("name");
-
-                String contextPath = nuxeoController.getRequest().getContextPath();
-
-                StringBuffer previewLinkStr = new StringBuffer(contextPath).append("/components/ViewerJS/?title=").append(fileName).append("#../..")
-                        .append(StringUtils.substringAfter(createFileLink, contextPath));
-
+                StringBuffer previewLinkStr;
+                previewLinkStr = new StringBuffer();
+                previewLinkStr.append(createFileLink);
                 previewLink = new Link(previewLinkStr.toString(), false);
             }
         }
