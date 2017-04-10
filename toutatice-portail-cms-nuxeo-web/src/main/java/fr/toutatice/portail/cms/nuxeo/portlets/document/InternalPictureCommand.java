@@ -19,8 +19,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -59,17 +60,18 @@ public class InternalPictureCommand implements INuxeoCommand {
 		InputStream in = blob.getStream();
 
 		File tempFile = File.createTempFile("tempFile4", ".tmp");
-		OutputStream out = new FileOutputStream(tempFile);
+        CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
 		try {
 			byte[] b = new byte[4096];
 			int i = -1;
 			while ((i = in.read(b)) != -1) {
-				out.write(b, 0, i);
+                cout.write(b, 0, i);
 			}
-			out.flush();
+            cout.flush();
 		} finally {
-			in.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(cout);
 		}
 
 		CMSBinaryContent content = new CMSBinaryContent();
@@ -77,6 +79,9 @@ public class InternalPictureCommand implements INuxeoCommand {
 		content.setName(blob.getFileName());
 		content.setFile(tempFile);
 		content.setMimeType(blob.getMimeType());
+        content.setFileSize(cout.getByteCount());
+        content.setFileSize(cout.getByteCount());
+
 
 		return content;
 		

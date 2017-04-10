@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
@@ -65,7 +67,8 @@ public class ResourceUtil {
             }
             out.flush();
         } finally {
-            in.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
         }
     }
 
@@ -130,17 +133,18 @@ public class ResourceUtil {
             InputStream in = blob.getStream();
 
             File tempFile = File.createTempFile("tempFile3", ".tmp");
-            OutputStream out = new FileOutputStream(tempFile);
+            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
             try {
                 byte[] b = new byte[4096];
                 int i = -1;
                 while ((i = in.read(b)) != -1) {
-                    out.write(b, 0, i);
+                    cout.write(b, 0, i);
                 }
-                out.flush();
+                cout.flush();
             } finally {
-                in.close();
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(cout);
             }
 
             CMSBinaryContent content = new CMSBinaryContent();
@@ -148,6 +152,7 @@ public class ResourceUtil {
             content.setName(blob.getFileName());
             content.setFile(tempFile);
             content.setMimeType(blob.getMimeType());
+            content.setFileSize(cout.getByteCount());
 
             return content;
 
@@ -236,17 +241,18 @@ public class ResourceUtil {
                             InputStream in = new FileInputStream(blob.getFile());
 
                             File tempFile = File.createTempFile("tempFile2", ".tmp");
-                            OutputStream out = new FileOutputStream(tempFile);
+                            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
                             try {
                                 byte[] b = new byte[4096];
                                 int i = -1;
                                 while ((i = in.read(b)) != -1) {
-                                    out.write(b, 0, i);
+                                    cout.write(b, 0, i);
                                 }
-                                out.flush();
+                                cout.flush();
                             } finally {
-                                in.close();
+                                IOUtils.closeQuietly(in);
+                                IOUtils.closeQuietly(cout);
                             }
 
                             blob.getFile().delete();
@@ -256,6 +262,7 @@ public class ResourceUtil {
                             content.setName(blob.getFileName());
                             content.setFile(tempFile);
                             content.setMimeType(blob.getMimeType());
+                            content.setFileSize(cout.getByteCount());
 
                             return content;
 
@@ -347,17 +354,18 @@ public class ResourceUtil {
             InputStream in = blob.getStream();
 
             File tempFile = File.createTempFile("tempFile4", ".tmp");
-            OutputStream out = new FileOutputStream(tempFile);
+            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
             try {
                 byte[] b = new byte[4096];
                 int i = -1;
                 while ((i = in.read(b)) != -1) {
-                    out.write(b, 0, i);
+                    cout.write(b, 0, i);
                 }
-                out.flush();
+                cout.flush();
             } finally {
-                in.close();
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(cout);
             }
 
             CMSBinaryContent content = new CMSBinaryContent();
@@ -365,6 +373,7 @@ public class ResourceUtil {
             content.setName(blob.getFileName());
             content.setFile(tempFile);
             content.setMimeType(blob.getMimeType());
+            content.setFileSize(cout.getByteCount());
 
             return content;
 

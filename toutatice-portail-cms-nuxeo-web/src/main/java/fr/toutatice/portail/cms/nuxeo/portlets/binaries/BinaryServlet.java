@@ -198,6 +198,13 @@ public class BinaryServlet extends HttpServlet {
                 response.setContentType(content.getMimeType());
                 response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content));
                 response.setHeader("Cache-Control", "max-age=" + BINARY_TIMEOUT);
+                response.setHeader("Content-Length", String.valueOf(content.getFileSize()));
+
+                String fileName = request.getParameter("fileName");
+                if (fileName == null) {
+                    fileName = content.getName();
+                }
+
                 response.setDateHeader("Last-Modified", lastModified);
                 response.setDateHeader("Expires", expires);
 
@@ -212,6 +219,9 @@ public class BinaryServlet extends HttpServlet {
                 request.setAttribute("osivia.no_redirection", "1");
             } else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("osivia.no_redirection", "1");
+            } else if (e.getErrorCode() == NuxeoException.ERROR_UNAVAILAIBLE) {
+                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 request.setAttribute("osivia.no_redirection", "1");
             }
         } catch (Exception e) {
@@ -261,11 +271,6 @@ public class BinaryServlet extends HttpServlet {
 
 
     private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output) throws IOException {
-        // File name
-        String fileName = request.getParameter("fileName");
-        if (fileName == null) {
-            fileName = content.getName();
-        }
         // Length
         long length = content.getFileSize();
         // Last modified
