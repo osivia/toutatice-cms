@@ -67,7 +67,7 @@ public class GetFolderFilesCommand implements INuxeoCommand {
 
         // Operation request
         OperationRequest operationRequest = session.newRequest("Document.QueryES");
-        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined");
+        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined, ottc");
         operationRequest.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
 
         return operationRequest.execute();

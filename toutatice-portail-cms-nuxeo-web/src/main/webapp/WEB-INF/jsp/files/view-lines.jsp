@@ -199,10 +199,11 @@
                                                     </div>
                                                     
                                                     <!-- Lock -->
-                                                    <c:if test="${document.document.locked}">
+                                                    <c:set var="lockOwner" value="${document.properties['ottc:lockOwner']}" /> 
+                                                    <c:if test="${not empty lockOwner}">
                                                         <div class="document-lock">
                                                             <c:choose>
-                                                                <c:when test="${document.document.lockOwner eq pageContext.request.remoteUser}">
+                                                                <c:when test="${lockOwner eq pageContext.request.remoteUser}">
                                                                     <i class="glyphicons glyphicons-user-lock"></i>
                                                                 </c:when>
                                                                 
