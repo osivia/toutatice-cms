@@ -8,7 +8,6 @@
 <script type="text/javascript" src="/toutatice-portail-cms-nuxeo/components/PDFViewer/preview.js"></script>
 
 <c:set var="previewUrl"><ttc:filePreview document="${document}"/></c:set>
-<c:set var="fileName">${document.title}</c:set>
 
 <div class="file">
     <c:choose>
@@ -33,7 +32,7 @@
         
         
             <!-- Preview in iframe -->
-            <iframe src="/toutatice-portail-cms-nuxeo/components/PDFViewer/web/viewer.html" width="100%" height="800" webkitallowfullscreen="" allowfullscreen="" class="pdf-preview-iframe hidden" data-preview-url="${previewUrl}" data-filename="${fileName}" onload="downloadPreview();"></iframe>
+            <iframe src="/toutatice-portail-cms-nuxeo/components/PDFViewer/web/viewer.html" width="100%" height="800" webkitallowfullscreen="" allowfullscreen="" class="pdf-preview-iframe hidden" data-preview-url="${previewUrl}" onload="downloadPreview();"></iframe>
             
             <div class="file-preview-unavailable hidden">
                 <div class="alert alert-warning" role="alert"><span><op:translate key="DOCUMENT_FILE_PREVIEW_UNAVAILABLE" /></span></div>

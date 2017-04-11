@@ -10,17 +10,19 @@ function downloadPreview(){
 	
 	if(iframeContext){
 		var previewUrl = $JQry($iframeWindow[0]).data("preview-url");
-		var fileName = $JQry($iframeWindow[0]).data("filename");
 		if(previewUrl){
 			
 			iframeContext.webViewerLoad();
 			
 			var xhr = new XMLHttpRequest();
-			xhr.onload = function() {
+			xhr.onreadystatechange = function() {
 				if (this.readyState == 4) {
 					if(this.status == 200){
 						$progress.remove();
-						iframeContext.PDFViewerApplication.open(new Uint8Array(xhr.response), {filename:fileName});
+						iframeContext.PDFViewerApplication.open(new Uint8Array(xhr.response));
+						var header = this.getResponseHeader('Content-Disposition');
+						var fileName = header.match(/filename="(.+)"/)[1];
+						iframeContext.PDFViewerApplication.setTitleUsingUrl(fileName);
 						$iframeWindow.removeClass("hidden");
 					}else{
 						$progress.remove();

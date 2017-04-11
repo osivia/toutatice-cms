@@ -8064,9 +8064,6 @@ var PDFViewerApplication = {
       if (args.length) {
         this.pdfDocumentProperties.setFileSize(args.length);
       }
-      if (args.filename) {
-    	  this.setTitle(args.filename);
-      }
     }
 
     var self = this;
