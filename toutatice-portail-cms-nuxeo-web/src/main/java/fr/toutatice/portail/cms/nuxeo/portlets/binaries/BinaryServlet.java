@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -188,6 +189,13 @@ public class BinaryServlet extends HttpServlet {
                 response.setContentType(content.getMimeType());
                 response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content));
                 response.setHeader("Cache-Control", "max-age=" + BINARY_TIMEOUT);
+                response.setHeader("Content-Length", String.valueOf(content.getFileSize()));
+
+                String fileName = request.getParameter("fileName");
+                if (fileName == null) {
+                    fileName = content.getName();
+                }
+
                 response.setDateHeader("Last-Modified", lastModified);
                 response.setDateHeader("Expires", expires);
 
@@ -203,11 +211,14 @@ public class BinaryServlet extends HttpServlet {
             } else if (e.getErrorCode() == NuxeoException.ERROR_FORBIDDEN) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 request.setAttribute("osivia.no_redirection", "1");
+            } else if (e.getErrorCode() == NuxeoException.ERROR_UNAVAILAIBLE) {
+                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                request.setAttribute("osivia.no_redirection", "1");
             }
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
-            output.close();
+            IOUtils.closeQuietly(output);
         }
     }
 
@@ -251,11 +262,6 @@ public class BinaryServlet extends HttpServlet {
 
 
     private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output) throws IOException {
-        // File name
-        String fileName = request.getParameter("fileName");
-        if (fileName == null) {
-            fileName = content.getName();
-        }
         // Length
         long length = content.getFileSize();
         // Last modified
@@ -274,7 +280,7 @@ public class BinaryServlet extends HttpServlet {
         // Validate request headers for resume : If-Unmodified-Since header should be greater than LastModified.
         // If not, then return 412.
         long ifUnmodifiedSince = request.getDateHeader("If-Unmodified-Since");
-        if (ifUnmodifiedSince != -1 && ifUnmodifiedSince + 1000 <= lastModified) {
+        if ((ifUnmodifiedSince != -1) && ((ifUnmodifiedSince + 1000) <= lastModified)) {
             response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
             return;
         }
@@ -308,7 +314,7 @@ public class BinaryServlet extends HttpServlet {
                     if (start == -1) {
                         start = length - end;
                         end = length - 1;
-                    } else if (end == -1 || end > length - 1) {
+                    } else if ((end == -1) || (end > (length - 1))) {
                         end = length - 1;
                     }
 
@@ -415,7 +421,7 @@ public class BinaryServlet extends HttpServlet {
                 output.write(buffer, 0, read);
             }
         } finally {
-            input.close();
+            IOUtils.closeQuietly(input);
         }
     }
 

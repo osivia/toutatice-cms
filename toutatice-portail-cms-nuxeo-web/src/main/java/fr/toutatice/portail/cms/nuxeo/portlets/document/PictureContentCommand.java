@@ -10,9 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
@@ -20,8 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
@@ -34,78 +32,79 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 
 public class PictureContentCommand implements INuxeoCommand {
 
-	Document image;
-	String content;
-	
-	public PictureContentCommand(Document image, String content) {
-		super();
-		this.image = image;
-		this.content = content;
-	}
-	
-	public Object execute( Session session)	throws Exception {
-		
-		 PropertyList views = image.getProperties().getList("picture:views");
-		 
-		 if( views != null)	{
-			 for( Object viewObject: views.list())	{
-				 if( viewObject instanceof PropertyMap){
-					 PropertyMap view = (PropertyMap) viewObject;
-					 String title = view.getString("title");
-					 if( content.equals(title))	{
-						 
-						 PropertyMap fileContent = view.getMap("content");
-						 
-					     String pathFile = fileContent.getString("data");
+    Document image;
+    String content;
 
-					     // download the file from its remote location
-					     FileBlob   blob = (FileBlob) session.getFile(pathFile);
-					     
-					 	/* Construction résultat */
+    public PictureContentCommand(Document image, String content) {
+        super();
+        this.image = image;
+        this.content = content;
+    }
 
-							InputStream in = new FileInputStream(blob.getFile());
+    @Override
+    public Object execute(Session session) throws Exception {
 
-							File tempFile = File.createTempFile("tempFile2", ".tmp");
-							OutputStream out = new FileOutputStream(tempFile);
+        PropertyList views = image.getProperties().getList("picture:views");
 
-							try {
-								byte[] b = new byte[4096];
-								int i = -1;
-								while ((i = in.read(b)) != -1) {
-									out.write(b, 0, i);
-								}
-								out.flush();
-							} finally {
-								in.close();
-								out.close();
-							}
+        if (views != null) {
+            for (Object viewObject : views.list()) {
+                if (viewObject instanceof PropertyMap) {
+                    PropertyMap view = (PropertyMap) viewObject;
+                    String title = view.getString("title");
+                    if (content.equals(title)) {
 
-							blob.getFile().delete();
-							
-							CMSBinaryContent content = new CMSBinaryContent();
+                        PropertyMap fileContent = view.getMap("content");
 
-							content.setName(blob.getFileName());
-							content.setFile(tempFile);
-							content.setMimeType(blob.getMimeType());
-							
-							return content;
-						 
-						 
-					 }
-				 }
-				 
-			 }
-		 }
+                        String pathFile = fileContent.getString("data");
+
+                        // download the file from its remote location
+                        FileBlob blob = (FileBlob) session.getFile(pathFile);
+
+                        /* Construction résultat */
+
+                        InputStream in = new FileInputStream(blob.getFile());
+
+                        File tempFile = File.createTempFile("tempFile2", ".tmp");
+                        CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
+
+                        try {
+                            byte[] b = new byte[4096];
+                            int i = -1;
+                            while ((i = in.read(b)) != -1) {
+                                cout.write(b, 0, i);
+                            }
+                            cout.flush();
+                        } finally {
+                            IOUtils.closeQuietly(in);
+                            IOUtils.closeQuietly(cout);
+                        }
+
+                        blob.getFile().delete();
+
+                        CMSBinaryContent content = new CMSBinaryContent();
+
+                        content.setName(blob.getFileName());
+                        content.setFile(tempFile);
+                        content.setMimeType(blob.getMimeType());
+                        content.setFileSize(cout.getByteCount());
+
+                        return content;
+
+                    }
+                }
+
+            }
+        }
 
 
+        throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
 
-		throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-	
-	};		
-	
-	public String getId() {
-		return "CMSBinaryContentCommand"+image+"/"+content;
-	};		
+    };
+
+    @Override
+    public String getId() {
+        return "CMSBinaryContentCommand" + image + "/" + content;
+    };
 
 
 }

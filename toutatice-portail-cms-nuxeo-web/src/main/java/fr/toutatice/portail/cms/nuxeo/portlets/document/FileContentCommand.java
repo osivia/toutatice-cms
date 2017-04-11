@@ -17,8 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
@@ -75,14 +76,14 @@ public class FileContentCommand implements INuxeoCommand {
         }
 
         String tokens[] = this.fieldName.split("/");
-        
+
         PropertyMap map = this.document.getProperties().getMap(tokens[0]);
-        
+
         for(int i=1; i<tokens.length; i++){
             map = map.getMap(tokens[i]);
         }
-       
-        
+
+
 
         String pathFile = map.getString("data");
 
@@ -131,19 +132,18 @@ public class FileContentCommand implements INuxeoCommand {
         File tempFile = File.createTempFile("tempFile", ".tmp");
         tempFile.deleteOnExit();
 
-        OutputStream out = new FileOutputStream(tempFile);
-
+        CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
         try {
             byte[] b = new byte[1000000];
             int i = -1;
             while ((i = in.read(b)) != -1) {
-                out.write(b, 0, i);
+                cout.write(b, 0, i);
             }
-            out.flush();
+            cout.flush();
         } finally {
-            in.close();
-            out.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(cout);
         }
 
         blob.getFile().delete();
@@ -162,6 +162,7 @@ public class FileContentCommand implements INuxeoCommand {
         content.setName(fileName);
         content.setFile(tempFile);
         content.setMimeType(blob.getMimeType());
+        content.setFileSize(cout.getByteCount());
 
         return content;
 

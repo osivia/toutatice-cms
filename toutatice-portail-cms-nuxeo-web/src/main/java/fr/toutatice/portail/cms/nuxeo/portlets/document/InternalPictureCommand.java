@@ -12,15 +12,16 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -34,17 +35,18 @@ public class InternalPictureCommand implements INuxeoCommand {
 
 	Document containerDoc;
 	String pictureIndex;
-	
+
 	public InternalPictureCommand(Document containerDoc, String pictureIndex) {
 		super();
 		this.containerDoc = containerDoc;
 		this.pictureIndex = pictureIndex;
 	}
-	
-	public Object execute( Session session)	throws Exception {
-		
+
+	@Override
+    public Object execute( Session session)	throws Exception {
+
 		Blob blob = null;
-		
+
 		try	{
 			blob = (Blob) session.newRequest("Blob.Get").setInput(containerDoc).set("xpath",
 				"ttc:images/item[" + pictureIndex + "]/file").execute();
@@ -53,23 +55,24 @@ public class InternalPictureCommand implements INuxeoCommand {
 			// On le positionne par défaut pour l'utilisateur
 			throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
 		}
-		
+
 
 
 		InputStream in = blob.getStream();
 
 		File tempFile = File.createTempFile("tempFile4", ".tmp");
-		OutputStream out = new FileOutputStream(tempFile);
+        CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
 		try {
 			byte[] b = new byte[4096];
 			int i = -1;
 			while ((i = in.read(b)) != -1) {
-				out.write(b, 0, i);
+                cout.write(b, 0, i);
 			}
-			out.flush();
+            cout.flush();
 		} finally {
-			in.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(cout);
 		}
 
 		CMSBinaryContent content = new CMSBinaryContent();
@@ -77,16 +80,20 @@ public class InternalPictureCommand implements INuxeoCommand {
 		content.setName(blob.getFileName());
 		content.setFile(tempFile);
 		content.setMimeType(blob.getMimeType());
+        content.setFileSize(cout.getByteCount());
+        content.setFileSize(cout.getByteCount());
+
 
 		return content;
-		
 
-	
-	};		
-	
-	public String getId() {
+
+
+	};
+
+	@Override
+    public String getId() {
 		return "InternalPictureCommand"+containerDoc+"/"+pictureIndex;
-	};		
+	};
 
-	
+
 }
