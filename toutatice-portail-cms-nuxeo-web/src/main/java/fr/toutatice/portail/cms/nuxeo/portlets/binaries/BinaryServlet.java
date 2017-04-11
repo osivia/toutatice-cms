@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -227,7 +228,7 @@ public class BinaryServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
-            output.close();
+            IOUtils.closeQuietly(output);
         }
     }
 
@@ -430,7 +431,7 @@ public class BinaryServlet extends HttpServlet {
                 output.write(buffer, 0, read);
             }
         } finally {
-            input.close();
+            IOUtils.closeQuietly(input);
         }
     }
 
