@@ -229,7 +229,7 @@
                                                     </c:if>
                                                     
                                                     <!-- Sortable handle -->
-                                                    <c:if test="${ordered and (criteria.sort eq 'index')}">
+                                                    <c:if test="${ordered and (criteria.sort eq 'index') and canUpload}">
                                                         <div class="sortable-handle text-muted text-center hidden">
                                                             <i class="glyphicons glyphicons-sorting"></i>
                                                         </div>

@@ -18,10 +18,12 @@
     <c:if test="${empty documents}">
         <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
     </c:if>
-
+    
+    <!-- Sortable -->
+    <c:set var="sortable" value="${canUpload ? 'sortable' : ' '}" />
 
     <!-- Folders -->
-    <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+    <ul class="list-unstyled row ${sortable}" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
         <c:forEach var="document" items="${documents}">
             <c:if test="${document.type.folderish}">
                 <!-- Document properties -->
@@ -68,7 +70,7 @@
     
     
     <!-- Files -->
-    <ul class="list-unstyled row sortable" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+    <ul class="list-unstyled row ${sortable}" data-ordered="${ordered}" data-placeholderclasses="col-xs-6 col-sm-4 col-md-3 col-lg-2">
         <c:forEach var="document" items="${documents}">
             <c:if test="${not document.type.folderish}">
                 <!-- Document properties -->
