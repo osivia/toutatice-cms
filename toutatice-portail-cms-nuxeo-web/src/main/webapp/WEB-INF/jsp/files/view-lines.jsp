@@ -43,17 +43,8 @@
     </c:if>
 </portlet:renderURL>
 
-<!-- Description -->
-<c:set var="description" value="${document.properties['dc:description']}" />
-
 
 <div class="file-browser-lines">
-    <!-- Description -->
-    <c:if test="${not empty description}">
-        <p class="text-muted">${description}</p>
-    </c:if>
-    
-
     <div class="table">
         <!-- Header -->
         <div class="table-header table-row">

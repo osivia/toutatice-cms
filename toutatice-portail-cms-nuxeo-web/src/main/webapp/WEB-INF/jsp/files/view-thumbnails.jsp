@@ -3,17 +3,7 @@
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 
-<!-- Description -->
-<c:set var="description" value="${document.properties['dc:description']}" />
-
-
 <div class="file-browser-thumbnails">
-    <!-- Description -->
-    <c:if test="${not empty description}">
-        <p class="text-muted">${description}</p>
-    </c:if>
-
-
     <!-- Empty indicator -->
     <c:if test="${empty documents}">
         <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>

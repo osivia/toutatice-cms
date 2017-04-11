@@ -659,9 +659,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (workspace) {
                 // File browser
                 cmsContext.setDisplayLiveVersion("1");
-                Player props = this.getCMSFileBrowser(docCtx);
-                props.getWindowProperties().put("osivia.title", document.getTitle());
-                return props;
+
+                // Player
+                Player player = this.getCMSFileBrowser(docCtx);
+                // Window properties
+                Map<String, String> properties = player.getWindowProperties();
+                properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
+                properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
+
+                // Vignette
+                PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
+                if ((vignetteProperties != null) && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
+                    BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
+                    binary.setFieldName("ttc:vignette");
+                    binary.setDocument(document);
+                    Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
+                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
+                }
+
+                return player;
             } else if ("Folder".equals(document.getType())) {
                 return this.getCMSFolderPlayer(docCtx);
             } else {
