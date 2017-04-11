@@ -133,13 +133,16 @@ public class DocumentService {
         return this.getDocument(new PathRef("/"));
     }
 
-    public Document createDocument(DocRef parent, String type, String name)
-            throws Exception {
+    public Document createDocument(DocRef parent, String type, String name) throws Exception {
         return this.createDocument(parent, type, name, null);
     }
 
+    public Document createDocument(DocRef parent, String type, String name, PropertyMap properties) throws Exception {
+        return this.createDocument(parent, type, name, null, false);
+    }
+
     public Document createDocument(DocRef parent, String type, String name,
-            PropertyMap properties) throws Exception {
+            PropertyMap properties, boolean synchronizedIndexing) throws Exception {
         OperationRequest req = this.session.newRequest(CreateDocument).setInput(
                 parent).set("type", type).set("name", name);
         if ((properties != null) && !properties.isEmpty()) {
@@ -169,6 +172,11 @@ public class DocumentService {
 
             req.set("properties", properties);
         }
+
+        if (synchronizedIndexing) {
+            req.setHeader(ES_SYNC_FLAG, String.valueOf(true));
+        }
+
         return (Document) req.execute();
     }
     
