@@ -138,7 +138,7 @@ public class DocumentService {
     }
 
     public Document createDocument(DocRef parent, String type, String name, PropertyMap properties) throws Exception {
-        return this.createDocument(parent, type, name, null, false);
+        return this.createDocument(parent, type, name, properties, false);
     }
 
     public Document createDocument(DocRef parent, String type, String name,
