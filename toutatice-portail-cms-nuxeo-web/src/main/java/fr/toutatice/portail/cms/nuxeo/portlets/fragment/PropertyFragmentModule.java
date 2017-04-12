@@ -148,6 +148,9 @@ public class PropertyFragmentModule extends FragmentModule {
                     if (this.html) {
                         // Transform HTML content
                         propertyValue = nuxeoController.transformHTMLContent(propertyValue);
+                    } else if ("dc:description".equals(propertyName)) {
+                        // Add CSS classes
+                        propertyValue = "<div class=\"text-left text-pre-wrap\">" + propertyValue + "</div>";
                     }
 
                     request.setAttribute("content", propertyValue);

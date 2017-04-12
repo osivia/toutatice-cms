@@ -69,13 +69,11 @@
                     <li class="media">
                         <c:if test="${not empty vignetteURL}">
                             <div class="media-left">
-                                <p>
-                                    <img src="${vignetteURL}" alt="">
-                                </p>
+                                <img src="${vignetteURL}" alt="">
                             </div>
                         </c:if>
                         
-                        <div class="media-body">
+                        <div class="media-body media-middle">
                             <!-- Title -->
                             <div>
                                 <a href="${link.url}"
@@ -97,7 +95,7 @@
                             </div>
                             
                             <!-- Description -->
-                            <p>${description}</p>
+                            <div class="text-pre-wrap">${description}</div>
                         </div>
                     </li>
                 </c:forEach>
