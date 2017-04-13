@@ -291,6 +291,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
                     // OpenDocument - Spread sheet
                     icon = "ods";
+                    flaticon = true;
                 } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
                     // OpenDocument - Presentation
                     icon = "odp";
