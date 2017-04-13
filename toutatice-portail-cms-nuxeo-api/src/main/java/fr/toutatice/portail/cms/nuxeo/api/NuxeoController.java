@@ -1453,7 +1453,9 @@ public class NuxeoController {
      */
     public String createAttachedBlobLink(String path, String blobIndex, String fileName) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.BLOB, path);
-        binary.setDocument(this.getCurrentDoc());
+        if ((this.currentDoc != null) && (StringUtils.equals(path, this.currentDoc.getPath()))) {
+            binary.setDocument(this.currentDoc);
+        }
         binary.setIndex(blobIndex);
         binary.setFileName(fileName);
         return this.getBinaryURL(binary);
@@ -1488,6 +1490,9 @@ public class NuxeoController {
     public String createPictureLink(String path, String content) {
         BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.PICTURE, path);
         binary.setContent(content);
+        if ((this.currentDoc != null) && (StringUtils.equals(path, this.currentDoc.getPath()))) {
+            binary.setDocument(this.currentDoc);
+        }
         return this.getBinaryURL(binary);
     }
 

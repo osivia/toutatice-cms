@@ -2212,11 +2212,8 @@ public class CMSService implements ICMSService {
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, pagePath);
             cmsCtx.setForceReload(false);
-
-            // force reload ressources
-            this.refreshBinaryResource(cmsCtx, pagePath);
-
-
+        } catch (CMSException e) {
+            throw e;
         } catch (Exception e) {
             throw new CMSException(e);
         }
@@ -2420,15 +2417,6 @@ public class CMSService implements ICMSService {
     public BinaryDelegation validateBinaryDelegation(CMSServiceCtx cmsCtx, String path) {
         return this.customizer.validateBinaryDelegation(cmsCtx, path);
 
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void refreshBinaryResource(CMSServiceCtx cmsCtx, String path) {
-        this.customizer.refreshBinaryTimestamp(path);
     }
 
 

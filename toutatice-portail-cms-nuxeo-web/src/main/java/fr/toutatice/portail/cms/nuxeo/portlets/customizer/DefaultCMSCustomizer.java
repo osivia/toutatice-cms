@@ -1577,6 +1577,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     modified = date.getTime();
                 }
             }
+            // Refreshing page indicator
+            boolean refreshingPage = PageProperties.getProperties().isRefreshingPage();
             // Reloading required indicator
             boolean reload;
             // Binary timestamp
@@ -1584,13 +1586,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             if (binaryTimestamp == null) {
                 binaryTimestamp = new BinaryTimestamp();
                 binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 this.binaryTimestamps.put(path, binaryTimestamp);
             }
-            binaryTimestamp.setModified(modified);
-
             
-            if ("pdf:content".equals(binary.getFieldName()) && PageProperties.getProperties().isRefreshingPage()) {
+
+            if ("pdf:content".equals(binary.getFieldName()) && refreshingPage) {
                 // Force reloading for PDF preview
                 reload = true;
             } else if (binaryTimestamp.isReloadingRequired()) {
@@ -1604,14 +1606,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             } else if (modified == null) {
                 // Considered up-to-date
                 reload = false;
+
+                if (refreshingPage && BinaryDescription.Type.PICTURE.equals(binary.getType())) {
+                    // In case of refresh, invalidate navigator cache
+                    binaryTimestamp.setTimestamp(timestamp);
+                }
             } else if (binaryTimestamp.getModified() == null) {
                 // Unknown "dc:modified"
                 binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 reload = true;
             } else if (Math.abs(binaryTimestamp.getModified() - modified) > TimeUnit.SECONDS.toMillis(1)) {
                 // Updated "dc:modified"
                 binaryTimestamp.setTimestamp(timestamp);
+                binaryTimestamp.setModified(modified);
                 binaryTimestamp.setReloadingRequired(true);
                 reload = true;
             } else {
@@ -1620,15 +1629,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             }
 
 
-            if (binaryTimestamp.getModified() != null) {
-                sb.append("&t=");
-                sb.append(TimeUnit.MILLISECONDS.toSeconds(binaryTimestamp.getModified()));
-            }
-
             if (reload) {
+                sb.append("&t=");
+                sb.append(timestamp);
                 sb.append("&reload=true");
+            } else {
+                sb.append("&t=");
+                sb.append(TimeUnit.MILLISECONDS.toSeconds(binaryTimestamp.getTimestamp()));
             }
-
 
             src = sb.toString();
         } catch (Exception e) {
@@ -1637,25 +1645,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
         return new Link(src, false);
-    }
-
-
-    /**
-     * Refresh binary resource timestamp.
-     *
-     * @param path binary resource path
-     * @return updated binary resource timestamp
-     */
-    public BinaryTimestamp refreshBinaryTimestamp(String path) {
-        // Binary timestamp
-        BinaryTimestamp binaryTimestamp = new BinaryTimestamp();
-        binaryTimestamp.setTimestamp(System.currentTimeMillis());
-        binaryTimestamp.setReloadingRequired(true);
-
-        // Update binary timestamp
-        this.binaryTimestamps.put(path, binaryTimestamp);
-
-        return binaryTimestamp;
     }
 
 
