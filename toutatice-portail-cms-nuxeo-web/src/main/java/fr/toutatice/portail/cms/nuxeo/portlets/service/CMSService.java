@@ -691,7 +691,7 @@ public class CMSService implements ICMSService {
             CMSItem document;
             // Version
             Document nuxeoDocument = null;
-            try {
+            //try {
                 if (!"downloadVersion".equals(cmsContext.getDisplayContext())) {
                     document = this.fetchContent(cmsContext, path);
                     if (document != null) {
@@ -704,10 +704,10 @@ public class CMSService implements ICMSService {
                     cmsContext.setScope("superuser_context");
                     nuxeoDocument = (Document) this.executeNuxeoCommand(cmsContext, fetchVersion);
                 }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-                throw e;
-            }
+            //} catch (Exception e) {
+            //    LOG.error(e.getMessage(), e);
+            //    throw e;
+            //}
 
 
             // File content
@@ -718,7 +718,9 @@ public class CMSService implements ICMSService {
                 cmsContext.setScope("superuser_context");
 
                 if (cmsContext.isStreamingSupport()) {
-                    PropertyMap map = nuxeoDocument.getProperties().getMap("file:content");
+                    
+                    PropertyMap map = FileContentCommand.getFileMap(nuxeoDocument, fieldName);
+                    
                     if (map != null) {
                         Long length = map.getLong("length");
                         if ((length != null) && (length > (100 * 1024l))) {

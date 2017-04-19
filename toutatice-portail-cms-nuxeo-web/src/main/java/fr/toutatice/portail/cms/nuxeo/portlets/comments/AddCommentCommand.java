@@ -90,12 +90,23 @@ public class AddCommentCommand implements INuxeoCommand {
         request.set("creationDate", this.comment.getCreationDate());
         // Thread post title
         request.set("title", title);
+        
+        File tmpFile = null;        
         // Thread post attachment
         if (attachment != null) {
             request.set("fileName", filename);
             request.setInput(new FileBlob(attachment));
+        } else {
+            /* Nuxeo operation need no null input */
+            tmpFile = File.createTempFile("tmp_com", ".tmp");
+            request.setInput(new FileBlob(tmpFile));
         }
+        
 
+        /* To avoid temporary file persistence */
+        if (tmpFile != null) {
+            tmpFile.delete();
+        }
         return request.execute();
     }
 
