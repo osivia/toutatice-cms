@@ -135,6 +135,9 @@ public class ViewListPortlet extends CMSPortlet {
     /** View JSP path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
+    /** ORDERBY_PATTERN */
+    private static final Pattern ORDERBY_PATTERN = Pattern.compile("^(.*) ORDER *BY (.*)$", Pattern.CASE_INSENSITIVE);
+
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -799,8 +802,8 @@ public class ViewListPortlet extends CMSPortlet {
         if (StringUtils.isEmpty(filter)) {
             result = request;
         } else {
-            Pattern pattern = Pattern.compile("^(.*) ORDER *BY (.*)$", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(request);
+
+            Matcher matcher = ORDERBY_PATTERN.matcher(request);
 
             StringBuilder builder = new StringBuilder();
             builder.append("(").append(filter).append(") AND (");
