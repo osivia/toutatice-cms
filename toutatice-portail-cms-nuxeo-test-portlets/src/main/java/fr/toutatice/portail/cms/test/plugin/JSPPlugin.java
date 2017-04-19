@@ -2,7 +2,6 @@ package fr.toutatice.portail.cms.test.plugin;
 
 import org.osivia.portal.api.customization.CustomizationContext;
 
-
 import fr.toutatice.portail.cms.nuxeo.api.domain.AbstractPluginPortlet;
 
 
@@ -24,7 +23,7 @@ public class JSPPlugin  extends AbstractPluginPortlet{
     }
 
     @Override
-    protected void customizeCMSProperties(String customizationID, CustomizationContext context) {
+    protected void customizeCMSProperties(CustomizationContext context) {
         
     }
     @Override

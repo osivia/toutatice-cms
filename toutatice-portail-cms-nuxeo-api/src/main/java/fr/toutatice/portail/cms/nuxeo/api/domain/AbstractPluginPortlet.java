@@ -159,13 +159,13 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      */
     @SuppressWarnings("unchecked")
     @Override
-    public void customize(String customizationID, CustomizationContext context) {
+    public void customize(CustomizationContext context) {
         // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
 
         CLASS_LOADER_CONTEXT.set(this.classLoader);
 
-        this.customizeCMSProperties(customizationID, context);
+        this.customizeCMSProperties(context);
 
         // Customized JavaServer pages
         Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) attributes.get(Customizable.JSP.toString());
@@ -186,10 +186,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     /**
      * Generate customization module metadatas.
      *
-     * @param customizationId customization identifier
      * @param context customization context
      */
-    protected abstract void customizeCMSProperties(String customizationId, CustomizationContext context);
+    protected abstract void customizeCMSProperties(CustomizationContext context);
 
 
     /**
