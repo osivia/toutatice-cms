@@ -541,8 +541,14 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             // Customized taskbar items
             TaskbarItems customizedTaskbarItems = (TaskbarItems) attributes.get(Customizable.TASKBAR_ITEMS.toString());
 
-            this.taskbarItemsCache = customizedTaskbarItems;
-            this.taskbarItemsCache.add(defaultTaskbarItems.getAll());
+            if (defaultTaskbarItems != null) {
+                this.taskbarItemsCache = defaultTaskbarItems;
+                if (customizedTaskbarItems != null) {
+                    this.taskbarItemsCache.add(customizedTaskbarItems.getAll());
+                }
+            } else if (customizedTaskbarItems != null) {
+                this.taskbarItemsCache = customizedTaskbarItems;
+            }
         }
         return this.taskbarItemsCache;
     }
