@@ -545,11 +545,14 @@ function displayControls($browser) {
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
+		$gallery = $toolbar.find(".gallery"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
 		$selected = $browser.find(".ui-selected"),
 		identifiers = "", paths = "", types = "",
+		downloadUrl,
 		ajaxPendingCounter;
 	
 	// Sortable
@@ -595,6 +598,24 @@ function displayControls($browser) {
 			}
 			
 			
+			// Download
+			downloadUrl = $selected.data("download-url");
+			if (downloadUrl) {
+				$download.attr("href", downloadUrl);
+				$download.removeClass("hidden");
+			} else {
+				$download.addClass("hidden");
+			}
+			
+			
+			// Gallery
+			if ($selected.find(".fancybox.thumbnail").length) {
+				$gallery.removeClass("hidden");
+			} else {
+				$gallery.addClass("hidden");
+			}
+			
+			
 			// Update links with single-selected properties
 			$links.each(function(index, element) {
 				var $element = $JQry(element),
@@ -615,14 +636,7 @@ function displayControls($browser) {
 			});
 
 			
-			// Gallery
-			$gallery = $toolbar.find(".gallery");
-			$fancybox = $selected.find(".fancybox.thumbnail");
-			if ($fancybox.length) {
-				$gallery.removeClass("hidden");
-			} else {
-				$gallery.addClass("hidden");
-			}
+			
 		} else {
 			// Multiple elements selected
 			$single.hide();

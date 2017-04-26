@@ -161,15 +161,26 @@
                             
                             <!-- Size -->
                             <c:set var="size" value="${document.properties['common:size']}" />
+                            
+                            <!-- Download URL -->
+                            <c:choose>
+                                <c:when test="${'Picture' eq document.type.name}">
+                                    <c:set var="downloadUrl"><ttc:documentLink document="${document}" picture="true" /></c:set>
+                                </c:when>
+                            
+                                <c:when test="${document.type.file}">
+                                    <c:set var="downloadUrl"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
+                                </c:when>
+                                
+                                <c:otherwise>
+                                    <c:remove var="downloadUrl" />
+                                </c:otherwise>
+                            </c:choose>
                         
                         
                             <li>
-                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}"
-                                    <c:if test="${document.type.file}">data-icon="${glyph}"</c:if>
-                                >
-                                    <div
-                                        <c:if test="${document.type.folderish}">class="droppable" data-accepted-types="${fn:join(document.acceptedTypes, ',')}"</c:if>
-                                    >
+                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}" data-icon="${glyph}" data-download-url="${downloadUrl}">
+                                    <div class="${document.type.folderish ? 'droppable' : ''}" data-accepted-types="${document.type.folderish ? fn:join(document.acceptedTypes, ',') : ''}">
                                         <div class="table-row">
                                             <div class="row">
                                                 <div class="col-sm-5 col-md-6 col-lg-7">
