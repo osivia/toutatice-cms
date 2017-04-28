@@ -217,19 +217,19 @@ public class MenuBarFormater {
 
 
         try {
+            // Document type
+            DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
+
             // Dropdown menus
-            this.addShareDropdown(portalControllerContext, bundle);
-            this.addOtherOptionsDropdown(portalControllerContext, bundle);
+            this.addShareDropdown(portalControllerContext, documentType, bundle);
+            this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
 
             // Creation
             if (!isWorkspace) {
                 this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
             }
 
-            if ((cmsContext.getDoc() != null) && !webPageFragment) {
-                // Document type
-                DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
-
+            if (!webPageFragment) {
                 // Edition dropdown menu
                 this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
@@ -482,6 +482,7 @@ public class MenuBarFormater {
      * Get menubar CMS edition dropdown menu.
      *
      * @param portalControllerContext portal controller context
+     * @param type document type
      * @param bundle internationalization bundle
      */
     protected void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
@@ -496,11 +497,13 @@ public class MenuBarFormater {
      * Add menubar share dropdown menu.
      *
      * @param portalControllerContext portal controller context
+     * @param type document type
      * @param bundle internationalization bundle
      */
-    protected void addShareDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
+    protected void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-share-alt",
                 MenubarGroup.GENERIC, 8);
+        dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
 
@@ -509,11 +512,13 @@ public class MenuBarFormater {
      * Add menubar other options dropdown menu.
      *
      * @param portalControllerContext portal controller context
+     * @param type document type
      * @param bundle internationalization bundle
      */
-    protected void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, Bundle bundle) {
+    protected void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
                 "glyphicons glyphicons-option-vertical", MenubarGroup.GENERIC, 40, false, false);
+        dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
 
@@ -2039,7 +2044,7 @@ public class MenuBarFormater {
         MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", parent, 1, "#", null, null, null);
         item.getData().put("toggle", "modal");
         item.getData().put("target", "#" + id);
-        item.getData().put("backdrop", String.valueOf(false));
+        // item.getData().put("backdrop", String.valueOf(false));
         item.setAjaxDisabled(true);
         item.setAssociatedHTML(htmlContent);
 
