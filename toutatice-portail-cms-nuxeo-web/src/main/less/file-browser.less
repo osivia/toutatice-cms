@@ -164,14 +164,25 @@
         
         .table {
             .table-body {
+                li {
+                    position: relative;
+                }
+                
                 .row {
                     [class*="col-"] {
                         line-height: @line-height;
                     }
                 }
                 
-                li {
-                    position: relative;
+                .selectable:not(.remove-hover) {
+                    .data:not(.ui-selected) {
+                        .table-row {
+                            &:hover {
+                                cursor: pointer;
+                                background-color: #f8f8f8;
+                            }
+                        }
+                    }
                 }
             }
         }

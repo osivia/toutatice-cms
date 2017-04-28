@@ -19,9 +19,11 @@ $JQry(function() {
 			
 			selecting: function(event, ui) {
 				var $selecting = $JQry(ui.selecting),
-					$seletable = $selecting.closest(".selectable"),
-					$selectee = $seletable.find(".data"),
+					$selectable = $selecting.closest(".selectable"),
+					$selectee = $selectable.find(".data"),
 					currentIndex = $selectee.index(ui.selecting);
+				
+				$selectable.addClass("remove-hover");
 				
 				if (event.shiftKey && previousIndex > -1) {
 					$selectee.slice(Math.min(previousIndex, currentIndex), Math.max(previousIndex, currentIndex) + 1).addClass("ui-selected bg-primary");
@@ -33,7 +35,10 @@ $JQry(function() {
 			
 			stop: function(event, ui) {
 				var $target = $JQry(event.target),
-					$browser = $target.closest(".file-browser");
+					$selectable = $target.closest(".selectable"),
+					$browser = $selectable.closest(".file-browser");
+				
+				$selectable.removeClass("remove-hover");
 				
 				displayControls($browser);
 			},
@@ -184,6 +189,8 @@ $JQry(function() {
 					$selectable = $li.closest(".selectable"),
 					$selected = $selectable.find(".ui-selected");
 	
+				$selectable.addClass("remove-hover");
+				
 				if ($data.hasClass("ui-selected")) {
 					$selected.addClass("dragged");
 				} else {
@@ -197,6 +204,8 @@ $JQry(function() {
 					$selectable = $target.closest(".selectable"),
 					$dragged = $selectable.find(".dragged");
 			
+				$selectable.removeClass("remove-hover");
+				
 				$dragged.removeClass("dragged");
 			}
 		});
