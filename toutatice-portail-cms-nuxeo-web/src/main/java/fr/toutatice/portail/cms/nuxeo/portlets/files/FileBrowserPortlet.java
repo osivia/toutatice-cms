@@ -114,6 +114,8 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Error JSP path. */
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
+	private static final String HOST_JOKER = "__HOST__";
+
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -399,7 +401,16 @@ public class FileBrowserPortlet extends CMSPortlet {
                     data.put("copiable", publicationInfos.isCopiable());
 
                     if (BooleanUtils.toBoolean(isFile)) {
-                        data.put("driveEditUrl", publicationInfos.getDriveEditURL());
+                    	
+                    	// no host in nxdrive url (get the current portal request host), refs #1421
+                    	String driveEditURL = publicationInfos.getDriveEditURL();
+                    	
+                    	if(driveEditURL.contains(HOST_JOKER)) {
+                    		driveEditURL = driveEditURL.replace(HOST_JOKER, request.getServerName());
+                    	}
+                    	
+                        
+						data.put("driveEditUrl", driveEditURL);
                     }
                 } catch (CMSException e) {
                     // Do nothing

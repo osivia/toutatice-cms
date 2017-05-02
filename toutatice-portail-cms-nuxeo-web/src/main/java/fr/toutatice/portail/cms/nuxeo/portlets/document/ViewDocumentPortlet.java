@@ -32,6 +32,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -86,8 +89,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -96,7 +97,11 @@ import net.sf.json.JSONObject;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    /** Path window property name. */
+    /**
+	 * 
+	 */
+	private static final String HOST_JOKER = "__HOST__";
+	/** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
@@ -661,11 +666,17 @@ public class ViewDocumentPortlet extends CMSPortlet {
             if ((documentType != null) && documentType.isLiveEditable()) {
                 if (documentType.isFile()) {
                     // Drive edit URL
-                    String driveEditUrl = (String) publicationInfos.getDriveEditURL();
+                	// no host in nxdrive url (get the current portal request host), refs #1421
+                    String driveEditUrl = publicationInfos.getDriveEditURL();
                     // Drive enabled indicator
-                    boolean driveEnabled = BooleanUtils.isTrue((Boolean) publicationInfos.isDriveEnabled());
+                    boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
 
                     if ((driveEditUrl != null) || driveEnabled) {
+                    	
+                    	if(driveEditUrl.contains(HOST_JOKER)) {
+                    		driveEditUrl = driveEditUrl.replace(HOST_JOKER, request.getServerName());
+                    	}
+                    	
                         request.setAttribute("driveEditUrl", driveEditUrl);
                         request.setAttribute("driveEnabled", driveEnabled);
                     }
