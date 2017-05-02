@@ -2044,7 +2044,16 @@ public class CMSService implements ICMSService {
 
     @Override
     public String getEcmDomain(CMSServiceCtx cmsCtx) {
-        return NuxeoConnectionProperties.getPublicDomainUri().toString();
+        
+    	// #1421 - If not specified, use current request url insteaod of nuxeo.url
+    	String fqdn = NuxeoConnectionProperties.getPublicDomainUri().toString();
+        
+        if(StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getRequest() !=null) {
+        	return cmsCtx.getRequest().getScheme() + "://" + cmsCtx.getRequest().getServerName();
+        }
+        else {
+        	return fqdn;
+        }
     }
 
 
