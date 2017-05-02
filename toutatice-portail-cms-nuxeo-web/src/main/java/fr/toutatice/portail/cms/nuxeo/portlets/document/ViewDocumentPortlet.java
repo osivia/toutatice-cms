@@ -668,15 +668,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     // Drive edit URL
                 	// no host in nxdrive url (get the current portal request host), refs #1421
                     String driveEditUrl = publicationInfos.getDriveEditURL();
+                	if(driveEditUrl != null && driveEditUrl.contains(HOST_JOKER)) {
+                		driveEditUrl = driveEditUrl.replace(HOST_JOKER, request.getScheme() + "/" + request.getServerName() + "/nuxeo");
+                		
+                	}
+                    
                     // Drive enabled indicator
                     boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
 
                     if ((driveEditUrl != null) || driveEnabled) {
-                    	
-                    	if(driveEditUrl.contains(HOST_JOKER)) {
-                    		driveEditUrl = driveEditUrl.replace(HOST_JOKER, request.getServerName());
-                    	}
-                    	
+                    	                    	
                         request.setAttribute("driveEditUrl", driveEditUrl);
                         request.setAttribute("driveEnabled", driveEnabled);
                     }
