@@ -52,6 +52,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
@@ -60,6 +61,7 @@ import org.jboss.portal.core.model.portal.PortalObjectId;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.jboss.portal.server.ServerInvocation;
+import org.jboss.portal.server.ServerInvocationContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -91,6 +93,7 @@ import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
@@ -1155,6 +1158,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
 
+        // Current page path
+        String currentPagePath = null;
+        if (cmsContext.getRequest() != null) {
+            Window window = (Window) cmsContext.getRequest().getAttribute("osivia.window");
+            if (window != null) {
+                Page page = window.getPage();
+                if (page != null) {
+                    currentPagePath = page.getId().toString(PortalObjectPath.CANONICAL_FORMAT);
+                }
+            }
+        }
+
         if (StringUtils.startsWith(url, "/nuxeo/")) {
             // Nuxeo URL
             String nuxeoURL = StringUtils.substringBefore(url, "#");
@@ -1164,28 +1179,41 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // CMS path
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
 
-            Map<String, String> parameters = new HashMap<String, String>(0);
-
-            String currentPagePath = null;
-            if (cmsContext.getRequest() != null) {
-                Window window = (Window) cmsContext.getRequest().getAttribute("osivia.window");
-                if (window != null) {
-                    Page page = window.getPage();
-                    if (page != null) {
-                        currentPagePath = page.getId().toString(PortalObjectPath.CANONICAL_FORMAT);
-                    }
-                }
-            }
-
-
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, parameters, null, null, null, null, null,
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null,
                     null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
 
             link = new Link(portalURL, false);
+        } else if (StringUtils.startsWith(url, "/")) {
+            // Relative URL
+            String relativeUrl = StringUtils.substringBefore(url, "#");
+            // Anchor
+            String anchor = StringUtils.substringAfter(url, "#");
+
+            // Controller context
+            ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
+            // Server context
+            ServerInvocationContext serverContext = controllerContext.getServerInvocation().getServerContext();
+            // Context path
+            String contextPath = serverContext.getPortalContextPath();
+
+            if (StringUtils.startsWith(relativeUrl, StringUtils.removeEnd(contextPath, "/auth") + "/")) {
+                // Portal relative URL
+
+                // Portal URL
+                String portalUrl = this.portalUrlFactory.adaptPortalUrlToNavigation(portalControllerContext, relativeUrl);
+                if (StringUtils.isNotBlank(anchor)) {
+                    portalUrl += "#" + anchor;
+                }
+
+                link = new Link(portalUrl, false);
+            } else {
+                // Other relative URL
+                link = new Link(url, true);
+            }
         } else if (StringUtils.isBlank(url)) {
             // Empty URL
             link = new Link("#", false);
