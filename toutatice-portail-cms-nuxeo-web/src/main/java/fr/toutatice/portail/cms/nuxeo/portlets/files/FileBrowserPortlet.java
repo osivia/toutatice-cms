@@ -28,8 +28,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -81,6 +79,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -401,16 +400,19 @@ public class FileBrowserPortlet extends CMSPortlet {
                     data.put("copiable", publicationInfos.isCopiable());
 
                     if (BooleanUtils.toBoolean(isFile)) {
+                    	String driveEditUrl = publicationInfos.getDriveEditURL();
                     	
-                    	// no host in nxdrive url (get the current portal request host), refs #1421
-                    	String driveEditURL = publicationInfos.getDriveEditURL();
-                    	
-                    	if(driveEditURL.contains(HOST_JOKER)) {
-                    		driveEditURL = driveEditURL.replace(HOST_JOKER, request.getScheme() + "/" + request.getServerName() + "/nuxeo");
-                    	}
-                    	
-                        
-						data.put("driveEditUrl", driveEditURL);
+                        // No host in nxdrive URL (get the current portal request host), refs #1421
+                        if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                            StringBuilder builder = new StringBuilder();
+                            builder.append(request.getScheme());
+                            builder.append("://");
+                            builder.append(request.getServerName());
+                            builder.append("/nuxeo");
+                            driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
+                        }
+
+						data.put("driveEditUrl", driveEditUrl);
                     }
                 } catch (CMSException e) {
                     // Do nothing

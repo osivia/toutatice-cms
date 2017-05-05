@@ -32,9 +32,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -89,6 +86,8 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -666,18 +665,22 @@ public class ViewDocumentPortlet extends CMSPortlet {
             if ((documentType != null) && documentType.isLiveEditable()) {
                 if (documentType.isFile()) {
                     // Drive edit URL
-                	// no host in nxdrive url (get the current portal request host), refs #1421
                     String driveEditUrl = publicationInfos.getDriveEditURL();
-                	if(driveEditUrl != null && driveEditUrl.contains(HOST_JOKER)) {
-                		driveEditUrl = driveEditUrl.replace(HOST_JOKER, request.getScheme() + "/" + request.getServerName() + "/nuxeo");
-                		
+
+                    // No host in nxdrive URL (get the current portal request host), refs #1421
+                    if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(request.getScheme());
+                        builder.append("://");
+                        builder.append(request.getServerName());
+                        builder.append("/nuxeo");
+                        driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
                 	}
                     
                     // Drive enabled indicator
                     boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
 
                     if ((driveEditUrl != null) || driveEnabled) {
-                    	                    	
                         request.setAttribute("driveEditUrl", driveEditUrl);
                         request.setAttribute("driveEnabled", driveEnabled);
                     }
