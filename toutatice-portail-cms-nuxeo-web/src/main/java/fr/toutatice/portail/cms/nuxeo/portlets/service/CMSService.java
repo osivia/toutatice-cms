@@ -2773,7 +2773,8 @@ public class CMSService implements ICMSService {
                 seo.put("author", author);
             }
             // Keywords
-            PropertyList keywords = document.getProperties().getList("ttc:keywords");
+            String keywordsProperty = System.getProperty("nuxeo.keywords.property", "ttc:keywords");
+            PropertyList keywords = document.getProperties().getList(keywordsProperty);
             if ((keywords != null) && !keywords.isEmpty()) {
                 seo.put("keywords", StringUtils.join(keywords.list(), ", "));
             }
