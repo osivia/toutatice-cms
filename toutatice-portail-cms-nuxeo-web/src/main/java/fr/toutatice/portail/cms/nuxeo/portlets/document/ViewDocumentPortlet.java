@@ -96,7 +96,11 @@ import net.sf.json.JSONObject;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    /** Path window property name. */
+    /**
+	 * 
+	 */
+	private static final String HOST_JOKER = "__HOST__";
+	/** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
@@ -661,9 +665,20 @@ public class ViewDocumentPortlet extends CMSPortlet {
             if ((documentType != null) && documentType.isLiveEditable()) {
                 if (documentType.isFile()) {
                     // Drive edit URL
-                    String driveEditUrl = (String) publicationInfos.getDriveEditURL();
+                    String driveEditUrl = publicationInfos.getDriveEditURL();
+
+                    // No host in nxdrive URL (get the current portal request host), refs #1421
+                    if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(request.getScheme());
+                        builder.append("://");
+                        builder.append(request.getServerName());
+                        builder.append("/nuxeo");
+                        driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
+                	}
+                    
                     // Drive enabled indicator
-                    boolean driveEnabled = BooleanUtils.isTrue((Boolean) publicationInfos.isDriveEnabled());
+                    boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
 
                     if ((driveEditUrl != null) || driveEnabled) {
                         request.setAttribute("driveEditUrl", driveEditUrl);

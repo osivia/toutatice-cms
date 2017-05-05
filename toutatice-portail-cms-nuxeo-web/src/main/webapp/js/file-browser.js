@@ -19,9 +19,11 @@ $JQry(function() {
 			
 			selecting: function(event, ui) {
 				var $selecting = $JQry(ui.selecting),
-					$seletable = $selecting.closest(".selectable"),
-					$selectee = $seletable.find(".data"),
+					$selectable = $selecting.closest(".selectable"),
+					$selectee = $selectable.find(".data"),
 					currentIndex = $selectee.index(ui.selecting);
+				
+				$selectable.addClass("remove-hover");
 				
 				if (event.shiftKey && previousIndex > -1) {
 					$selectee.slice(Math.min(previousIndex, currentIndex), Math.max(previousIndex, currentIndex) + 1).addClass("ui-selected bg-primary");
@@ -33,7 +35,10 @@ $JQry(function() {
 			
 			stop: function(event, ui) {
 				var $target = $JQry(event.target),
-					$browser = $target.closest(".file-browser");
+					$selectable = $target.closest(".selectable"),
+					$browser = $selectable.closest(".file-browser");
+				
+				$selectable.removeClass("remove-hover");
 				
 				displayControls($browser);
 			},
@@ -184,6 +189,8 @@ $JQry(function() {
 					$selectable = $li.closest(".selectable"),
 					$selected = $selectable.find(".ui-selected");
 	
+				$selectable.addClass("remove-hover");
+				
 				if ($data.hasClass("ui-selected")) {
 					$selected.addClass("dragged");
 				} else {
@@ -197,6 +204,8 @@ $JQry(function() {
 					$selectable = $target.closest(".selectable"),
 					$dragged = $selectable.find(".dragged");
 			
+				$selectable.removeClass("remove-hover");
+				
 				$dragged.removeClass("dragged");
 			}
 		});
@@ -545,11 +554,14 @@ function displayControls($browser) {
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
+		$gallery = $toolbar.find(".gallery"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
 		$selected = $browser.find(".ui-selected"),
 		identifiers = "", paths = "", types = "",
+		downloadUrl,
 		ajaxPendingCounter;
 	
 	// Sortable
@@ -595,6 +607,24 @@ function displayControls($browser) {
 			}
 			
 			
+			// Download
+			downloadUrl = $selected.data("download-url");
+			if (downloadUrl) {
+				$download.attr("href", downloadUrl);
+				$download.removeClass("hidden");
+			} else {
+				$download.addClass("hidden");
+			}
+			
+			
+			// Gallery
+			if ($selected.find(".fancybox.thumbnail").length) {
+				$gallery.removeClass("hidden");
+			} else {
+				$gallery.addClass("hidden");
+			}
+			
+			
 			// Update links with single-selected properties
 			$links.each(function(index, element) {
 				var $element = $JQry(element),
@@ -615,14 +645,7 @@ function displayControls($browser) {
 			});
 
 			
-			// Gallery
-			$gallery = $toolbar.find(".gallery");
-			$fancybox = $selected.find(".fancybox.thumbnail");
-			if ($fancybox.length) {
-				$gallery.removeClass("hidden");
-			} else {
-				$gallery.addClass("hidden");
-			}
+			
 		} else {
 			// Multiple elements selected
 			$single.hide();

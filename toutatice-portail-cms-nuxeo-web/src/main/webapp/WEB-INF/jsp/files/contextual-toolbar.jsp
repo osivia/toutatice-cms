@@ -46,10 +46,10 @@
                     <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
-                <!-- Copy -->
-                <c:set var="title"><op:translate key="COPY" /></c:set>
-                <a href="#" data-url="${copyUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn copy">
-                    <i class="halflings halflings-duplicate"></i>
+                <!-- Download -->
+                <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
+                <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">
+                    <i class="halflings halflings-download-alt"></i>
                     <span class="sr-only">${title}</span>
                 </a>
                 
@@ -59,6 +59,13 @@
                     <i class="halflings halflings-fullscreen"></i>
                     <span class="sr-only">${title}</span>
                 </button>
+                
+                <!-- Copy -->
+                <c:set var="title"><op:translate key="COPY" /></c:set>
+                <a href="#" data-url="${copyUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn copy">
+                    <i class="halflings halflings-duplicate"></i>
+                    <span class="sr-only">${title}</span>
+                </a>
             </div>
             
             <div class="btn-group btn-group-sm multiple-selection" role="group">

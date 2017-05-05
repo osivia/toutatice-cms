@@ -322,8 +322,9 @@ public class XSLFunctions {
 
             for (URI baseURI : this.nuxeoBaseURIs) {
                 URI url = baseURI.resolve(trim);
-                if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
-                    if (url.getHost().equals(baseURI.getHost())) {
+                // #1421 - nuxeo.url can be relative
+                if (url.getScheme() == null || (url.getScheme().equals("http") || url.getScheme().equals("https"))) {
+                    if (url.getHost() == null || url.getHost().equals(baseURI.getHost())) {
                         String query = url.getRawPath();
 
                         Matcher mRes = PATTERN_RESOURCE.matcher(query);
