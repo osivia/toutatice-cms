@@ -104,6 +104,7 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
+import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
@@ -2049,7 +2050,24 @@ public class CMSService implements ICMSService {
     	String fqdn = NuxeoConnectionProperties.getPublicDomainUri().toString();
         
         if(StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getRequest() !=null) {
-        	return cmsCtx.getRequest().getScheme() + "://" + cmsCtx.getRequest().getServerName();
+        	
+        	String vhost = null; 
+        	
+        	// should check vhost in https instead of current url modified by the reverse proxy
+        	if(cmsCtx.getServletRequest() != null) {
+        		vhost = cmsCtx.getServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
+        	}
+        	
+        	
+    		if(StringUtils.isNotBlank(vhost)) {
+    			return vhost;
+    		}
+
+        	else {
+        		return cmsCtx.getRequest().getScheme() + "://" + cmsCtx.getRequest().getServerName();
+        	}
+        	
+        	
         }
         else {
         	return fqdn;
