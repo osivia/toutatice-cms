@@ -407,7 +407,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                         if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
                             StringBuilder builder = new StringBuilder();
                             builder.append(request.getScheme());
-                            builder.append("://");
+                            builder.append("/");
                             builder.append(request.getServerName());
                             builder.append("/nuxeo");
                             driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
