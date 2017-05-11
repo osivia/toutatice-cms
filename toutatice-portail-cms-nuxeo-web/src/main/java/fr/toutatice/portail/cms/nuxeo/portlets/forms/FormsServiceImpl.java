@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +25,11 @@ import javax.mail.internet.MimeMultipart;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -72,8 +77,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetTasksCommand;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -86,6 +89,7 @@ public class FormsServiceImpl implements IFormsService {
     /** Thread local. */
     private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer cmsCustomizer;
@@ -171,20 +175,12 @@ public class FormsServiceImpl implements IFormsService {
 
         // Task title
         String title = StringUtils.EMPTY;
+        // Next step properties
+        PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+        title = nextStepProperties.getString("name");
+
         // Actors
-        List<String> actors = new ArrayList<>();
-        if (!StringUtils.equals(ENDSTEP, nextStep)) {
-            // Next step properties
-            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-            title = nextStepProperties.getString("name");
-            // add authorizedGroups to actors
-            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-            if (groupsObjectsList != null) {
-                for (final Object groupsObject : groupsObjectsList.list()) {
-                    actors.add((String) groupsObject);
-                }
-            }
-        }
+        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
 
 
         if (variables == null) {
@@ -198,9 +194,11 @@ public class FormsServiceImpl implements IFormsService {
         // Required fields validation
         this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
 
+		String startDate = DATE_FORMAT.format(new Date());
+
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
-                procedureInitiator, null, nextStep);
+                procedureInitiator, startDate, startDate, procedureInitiator, nextStep);
 
         if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
             // Properties
@@ -234,6 +232,27 @@ public class FormsServiceImpl implements IFormsService {
 
 
         return filterContext.getVariables();
+    }
+    
+    /**
+     * @param model
+     * @param nextStep
+     * @param title
+     * @param actors
+     * @return
+     */
+    private List<String> getActors(Document model, String nextStep, String title, PropertyMap nextStepProperties) {
+        List<String> actors = new ArrayList<String>();
+        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+            // add authorizedGroups to actors
+            final PropertyList groupsObjectsList = nextStepProperties.getList("actors");
+            if (groupsObjectsList != null) {
+                for (final Object groupsObject : groupsObjectsList.list()) {
+                    actors.add((String) groupsObject);
+                }
+            }
+        }
+        return actors;
     }
 
 
@@ -300,6 +319,13 @@ public class FormsServiceImpl implements IFormsService {
         // Procedure initiator
         String procedureInitiator = instanceProperties.getString("pi:procedureInitiator");
 
+        // procedure startDate
+        Date date = instanceProperties.getDate("dc:created");
+        String startDate = DATE_FORMAT.format(date);
+
+        // procedure lastModified
+        date = instanceProperties.getDate("dc:modified");
+        String lastModified = DATE_FORMAT.format(date);
 
         // Previous step
         String previousStep = instanceProperties.getString("pi:currentStep");
@@ -315,18 +341,13 @@ public class FormsServiceImpl implements IFormsService {
         // Task title
         String title = StringUtils.EMPTY;
         // Actors
-        List<String> actors = new ArrayList<>();
+        List<String> actors = ListUtils.EMPTY_LIST;
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
             PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
             title = nextStepProperties.getString("name");
-            // Add authorizedGroups to actors
-            final PropertyList groupsObjectsList = nextStepProperties.getList("authorizedGroups");
-            if (groupsObjectsList != null) {
-                for (final Object groupsObject : groupsObjectsList.list()) {
-                    actors.add((String) groupsObject);
-                }
-            }
+            // Actors
+            actors = getActors(model, nextStep, title, nextStepProperties);
         }
 
         // Global Variables Values
@@ -348,7 +369,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
-                globalVariableValues, portalControllerContext, procedureInitiator, previousTaskInitiator, nextStep);
+                globalVariableValues, portalControllerContext, procedureInitiator,startDate, lastModified, previousTaskInitiator, nextStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -462,7 +483,7 @@ public class FormsServiceImpl implements IFormsService {
      */
     private FormFilterContext callFilters(String modelWebId, String procedureInstanceUuid, String actionId, Map<String, String> variables,
             PropertyMap actionProperties, List<String> actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
-            String procedureInitiator, String taskInitiator, String nextStep) throws FormFilterException {
+            String procedureInitiator,String startDate,String lastModified, String taskInitiator, String nextStep) throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginManager();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -503,7 +524,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, nextStep);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator,startDate, lastModified, nextStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setModelWebId(modelWebId);
         filterContext.setProcedureInstanceUuid(procedureInstanceUuid);
@@ -838,6 +859,8 @@ public class FormsServiceImpl implements IFormsService {
         }
         variables.put("procedureInitiator", instanceProperties.getString("pi:procedureInitiator"));
         variables.put("taskInitiator", task.getString("nt:initiator"));
+        variables.put("taskUuid", task.getId());
+        variables.put("taskPath", task.getPath());
 
         return this.transform(portalControllerContext, expression, variables, disabledLinks);
     }
@@ -897,6 +920,7 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("group", "emails", TransformationFunctions.getGroupEmailsMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
+            context.setFunction("document", "linkWithText", TransformationFunctions.getDocumentLinkWithTextMethod());
             if (disabledLinks) {
                 context.setFunction("user", "link", TransformationFunctions.getUserDisplayNameMethod());
                 context.setFunction("document", "link", TransformationFunctions.getDocumentTitleMethod());
@@ -924,6 +948,72 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         return transformedExpression;
+    }
+    
+    @Override
+    public Map<String, String> init(PortalControllerContext portalControllerContext, Document document, Map<String, String> variables) throws PortalException,
+    FormFilterException {
+        if (document != null) {
+            if (variables == null) {
+                variables = new HashMap<String, String>();
+            }
+            String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+            PropertyMap initActionProperties = null;
+            PropertyMap currentStepProperties = null;
+            String startDate = null;
+            String lastModified = null;
+            String previousTaskInitiator = null;
+            String modelWebId = null;
+            String procedureInstanceUuid = null;
+            // retrieve correct properties according to type of provided document
+            if (StringUtils.equals(document.getType(), "ProcedureModel")) {
+                String startingStep = document.getString("pcd:startingStep");
+                modelWebId = document.getString("ttc:webid");
+                PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
+                currentStepProperties = startingStepProperties;
+            } else {
+                PropertyMap instanceProperties = null;
+                if (StringUtils.equals(document.getType(), "ProcedureInstance")) {
+                    instanceProperties = document.getProperties();
+                } else if (StringUtils.equals(document.getType(), "TaskDoc")) {
+                    PropertyMap taskProperties = document.getProperties();
+                    instanceProperties = taskProperties.getMap("nt:pi");
+
+                    // Task initiator
+                    previousTaskInitiator = taskProperties.getString("nt:initiator");
+                }
+                modelWebId = instanceProperties.getString("pi:procedureModelWebId");
+                Document model = this.getModel(portalControllerContext, modelWebId);
+                String currentStep = instanceProperties.getString("pi:currentStep");
+                currentStepProperties = this.getStepProperties(model, currentStep);
+
+                // Global Variables Values
+                Map<String, Object> globalVariableValuesMap = instanceProperties.getMap("pi:globalVariablesValues").map();
+                Map<String, String> globalVariableValues = new HashMap<String, String>(globalVariableValuesMap.size());
+                for (Entry<String, Object> gvvEntry : globalVariableValuesMap.entrySet()) {
+                    globalVariableValues.put(gvvEntry.getKey(), String.valueOf(gvvEntry.getValue()));
+                }
+                // Procedure instance UUID
+                procedureInstanceUuid = globalVariableValues.get("uuid");
+
+                // procedure startDate
+                Date date = instanceProperties.getDate("dc:created");
+                startDate = DATE_FORMAT.format(date);
+
+                // procedure lastModified
+                date = instanceProperties.getDate("dc:modified");
+                lastModified = DATE_FORMAT.format(date);
+
+            }
+            if (currentStepProperties != null) {
+                initActionProperties = currentStepProperties.getMap("initAction");
+                if (initActionProperties != null) {
+                    variables = callFilters(modelWebId, procedureInstanceUuid, null, variables, initActionProperties, null, null, portalControllerContext,
+                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null).getVariables();
+                }
+            }
+        }
+        return variables;
     }
 
 

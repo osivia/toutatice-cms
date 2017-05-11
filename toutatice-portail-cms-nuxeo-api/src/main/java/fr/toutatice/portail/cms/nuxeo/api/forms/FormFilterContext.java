@@ -35,6 +35,10 @@ public class FormFilterContext {
     private String procedureInitiator;
     /** taskInitiator */
     private String taskInitiator;
+    /** startDate */
+    private String startDate;
+    /** lastModified */
+    private String lastModified;
     /** nextStep */
     private String nextStep;
 
@@ -52,10 +56,13 @@ public class FormFilterContext {
     /**
      * Instantiates a new form filter context.
      */
-    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String procedureInitiator, String taskInitiator, String nextStep) {
+    public FormFilterContext(Map<String, Map<String, String>> filtersParams, String procedureInitiator, String taskInitiator, String startDate,
+            String lastModified, String nextStep) {
         super();
         this.filtersParams = filtersParams;
         this.procedureInitiator = procedureInitiator;
+        this.startDate = startDate;
+        this.lastModified = lastModified;
         this.nextStep = nextStep;
         this.taskInitiator = taskInitiator;
         this.actors = new HashSet<>();
@@ -153,6 +160,8 @@ public class FormFilterContext {
                 Map<String, String> variables = new HashMap<String, String>(getVariables());
                 variables.put("procedureInitiator", procedureInitiator);
                 variables.put("taskInitiator", taskInitiator);
+                variables.put("procedureStartDate", startDate);
+                variables.put("procedureLastModified", lastModified);
                 return formsService.transform(portalControllerContext, filterParameters, variables);
             } catch (PortalException e) {
                 throw new NuxeoException(e);
