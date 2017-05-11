@@ -20,6 +20,7 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
@@ -106,66 +107,55 @@ public class FileContentCommand implements INuxeoCommand {
             this.document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", this.docPath).execute();
         }
 
-        String tokens[] = this.fieldName.split("/");
-        
-        boolean pdfConversion = false;
-        
-        if(PDF_CONTENT.equals(tokens[0])){
-            tokens[0] = "file:content";
-            pdfConversion = true;
-        }
-        
-        PropertyMap map = getFileMap(document, fieldName);
+        FileBlob fileBlob;
 
-        String pathFile = map.getString("data");
-
-        if (!pdfConversion && this.streamingSupport) {
-            String url = null;
-
-            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-                url = pathFile;
-            } else {
-                url = session.getClient().getBaseUrl() + pathFile;
-            }
-
-
-            StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
-
-            CMSBinaryContent content = new CMSBinaryContent();
-
-            String fileName = blob.getFileName();
-            if ((fileName == null) || "null".equals(fileName)) {
-
-                // Pb. sur l'upload, on prend le nom du document
-                fileName = this.document.getTitle();
-            }
-
-
-            // File size
-            //Long fileSize = this.document.getProperties().getLong("common:size");
-            Long length = map.getLong("length");
-
-            content.setName(fileName);
-            content.setFileSize(length);
-            content.setMimeType(blob.getMimeType());
-            content.setStream(blob.getStream());
-            content.setLongLiveSession(session);
-
-            return content;
-        }
-
-        FileBlob blob;
-        
-        // download the file from its remote location
-        if(pdfConversion) {
-             blob = (FileBlob) session.newRequest("Blob.AnyToPDF").setInput(this.document).execute();
+        if(PDF_CONTENT.equals(StringUtils.split(fieldName, '/')[0])){
+            // download the file from its remote location
+            fileBlob = (FileBlob) session.newRequest("Blob.AnyToPDF").setInput(this.document).execute();
         } else {
-             blob = (FileBlob) session.getFile(pathFile);
-        }
+            PropertyMap map = getFileMap(document, fieldName);
 
+            String pathFile = map.getString("data");
+
+            if (this.streamingSupport) {
+                String url = null;
+
+                if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+                    url = pathFile;
+                } else {
+                    url = session.getClient().getBaseUrl() + pathFile;
+                }
+
+                StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
+
+                CMSBinaryContent content = new CMSBinaryContent();
+
+                String fileName = blob.getFileName();
+                if ((fileName == null) || "null".equals(fileName)) {
+
+                    // Pb. sur l'upload, on prend le nom du document
+                    fileName = this.document.getTitle();
+                }
+
+                // File size
+                // Long fileSize = this.document.getProperties().getLong("common:size");
+                Long length = map.getLong("length");
+
+                content.setName(fileName);
+                content.setFileSize(length);
+                content.setMimeType(blob.getMimeType());
+                content.setStream(blob.getStream());
+                content.setLongLiveSession(session);
+
+                return content;
+            }
+            // download the file from its remote location
+            fileBlob = (FileBlob) session.getFile(pathFile);
+        }
+        
         /* Construction résultat */
 
-        InputStream in = new FileInputStream(blob.getFile());
+        InputStream in = new FileInputStream(fileBlob.getFile());
 
         File tempFile = File.createTempFile("tempFile", ".tmp");
         tempFile.deleteOnExit();
@@ -185,13 +175,13 @@ public class FileContentCommand implements INuxeoCommand {
             IOUtils.closeQuietly(cout);
         }
 
-        blob.getFile().delete();
+        fileBlob.getFile().delete();
 
         CMSBinaryContent content = new CMSBinaryContent();
 
         // JSS v 1.0.10 : traitement nom fichier à null
 
-        String fileName = blob.getFileName();
+        String fileName = fileBlob.getFileName();
         if ((fileName == null) || "null".equals(fileName)) {
 
             // Pb. sur l'upload, on prend le nom du document
@@ -200,7 +190,7 @@ public class FileContentCommand implements INuxeoCommand {
 
         content.setName(fileName);
         content.setFile(tempFile);
-        content.setMimeType(blob.getMimeType());
+        content.setMimeType(fileBlob.getMimeType());
         content.setFileSize(cout.getByteCount());
 
         return content;
