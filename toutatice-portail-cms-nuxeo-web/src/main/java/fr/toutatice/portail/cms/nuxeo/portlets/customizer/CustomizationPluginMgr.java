@@ -69,6 +69,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /** JSP directory. */
     private static final String WEB_INF_JSP = "/WEB-INF/jsp";
 
+    /** customizeJSPLockTable */
+    private static final Hashtable<String, ReentrantLock> customizeJSPLockTable = new Hashtable<String, ReentrantLock>();
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer customizer;
@@ -195,18 +197,15 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
 
         if ((customizedPage == null) && (name != null)) {
-            // JSP reentrant lock
-            ReentrantLock jspLock = this.jspLocks.get(name);
-            if (jspLock == null) {
-                jspLock = new ReentrantLock();
-                this.jspLocks.put(name, jspLock);
+
+            ReentrantLock customizeJSPLock = customizeJSPLockTable.get(name);
+            if (customizeJSPLock == null) {
+                customizeJSPLock = new ReentrantLock();
+                customizeJSPLockTable.put(name, customizeJSPLock);
             }
-            jspLock.lock();
-
-
+            customizeJSPLock.lock();
             try {
                 customizedPage = this.customizedJavaServerPagesCache.get(name);
-                
                 if (customizedPage == null) {
                     // Locale
                     Locale locale = request.getLocale();
@@ -242,16 +241,15 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                             customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
                         }
                     }
-
                     this.customizedJavaServerPagesCache.put(name, customizedPage);
                 }
             } finally {
-                jspLock.unlock();
+                customizeJSPLock.unlock();
             }
         }
-
         return customizedPage;
     }
+
 
 
     /**

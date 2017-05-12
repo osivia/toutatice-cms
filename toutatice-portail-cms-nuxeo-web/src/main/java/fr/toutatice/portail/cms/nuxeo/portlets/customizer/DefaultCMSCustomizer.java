@@ -128,6 +128,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
@@ -1360,17 +1361,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * {@inheritDoc}
+     * Used in lists.
      */
     @Override
     public String getContentWebIdPath(CMSServiceCtx cmsCtx) {
+    	return getContentWebIdPath(cmsCtx, null);
+    }
+
+
+    /**
+     * Used for maximized document.
+     */
+    public String getContentWebIdPath(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
         Document doc = (Document) cmsCtx.getDoc();
 
         String webId = doc.getString("ttc:webid");
-
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
-        if (StringUtils.isNotEmpty(webId) && !ContextDocumentsHelper.isRemoteProxy(doc)) {
+        boolean isRemoteProxy = false;
+        if(pubInfos == null){
+        	// List case
+        	isRemoteProxy = ContextDocumentsHelper.isRemoteProxy(doc);
+        } else {
+        	isRemoteProxy = DocumentHelper.isRemoteProxy(cmsCtx, pubInfos);
+        }
+        
+        if (StringUtils.isNotEmpty(webId) && !isRemoteProxy) {
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
 
@@ -1383,7 +1399,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 properties.put(IWebIdService.EXTENSION_URL, extension);
             }
 
-            permLinkPath = this.webIdService.webIdToCmsPath(webId);
+            permLinkPath = getWebIdService().webIdToCmsPath(webId);
         }
 
         return permLinkPath;

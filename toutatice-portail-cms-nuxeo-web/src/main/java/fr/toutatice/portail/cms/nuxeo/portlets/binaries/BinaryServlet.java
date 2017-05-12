@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -312,7 +312,7 @@ public class BinaryServlet extends HttpServlet {
         // Validate request headers for resume : If-Unmodified-Since header should be greater than LastModified.
         // If not, then return 412.
         long ifUnmodifiedSince = request.getDateHeader("If-Unmodified-Since");
-        if (ifUnmodifiedSince != -1 && ifUnmodifiedSince + 1000 <= lastModified) {
+        if ((ifUnmodifiedSince != -1) && ((ifUnmodifiedSince + 1000) <= lastModified)) {
             response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
             return;
         }
@@ -346,7 +346,7 @@ public class BinaryServlet extends HttpServlet {
                     if (start == -1) {
                         start = length - end;
                         end = length - 1;
-                    } else if (end == -1 || end > length - 1) {
+                    } else if ((end == -1) || (end > (length - 1))) {
                         end = length - 1;
                     }
 

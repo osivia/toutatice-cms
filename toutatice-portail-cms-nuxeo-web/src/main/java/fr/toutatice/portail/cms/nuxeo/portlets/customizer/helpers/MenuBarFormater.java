@@ -2258,6 +2258,78 @@ public class MenuBarFormater {
     }
 
 
+
+    /**
+     * Generate permalink fancybox HTML content.
+     *
+     * @param bundle internationalization bundle
+     * @param id fancybox identifier
+     * @param url permalink URL
+     * @return HTML content
+     */
+    private String generatePermalinkFancybox(Bundle bundle, String id, String url) {
+    	// Copiable id
+    	final String copiableId = id + "_COPIABLE";
+    	// Copy action binded id
+    	final String bindedId = copiableId + "_BINDED";
+    	// Message action binded id
+    	final String msgBindedId = id + "_MSG";
+    	
+        // Fancybox container
+        final Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+
+        // Container
+        final Element container = DOM4JUtils.generateDivElement(null);
+        DOM4JUtils.addAttribute(container, HTMLConstants.ID, id);
+        fancyboxContainer.add(container);
+        
+        // Label
+        final Element label = DOM4JUtils.generateElement(HTMLConstants.LABEL, "control-label", bundle.getString("SHARE_PERMALINK"));
+        container.add(label);
+        
+        // Link div
+        final Element divLink = DOM4JUtils.generateDivElement("form-control", null);
+        DOM4JUtils.addAttribute(divLink, HTMLConstants.ID, copiableId);
+        DOM4JUtils.addText(divLink, url);
+        container.add(divLink);
+
+        // Bottom group
+        final Element group2 = DOM4JUtils.generateDivElement("media");
+        container.add(group2);
+        
+        // Message
+        final Element msgDiv = DOM4JUtils.generateDivElement("media-body visibilty-hidden");
+        DOM4JUtils.addAttribute(msgDiv, HTMLConstants.ID, msgBindedId);
+        group2.add(msgDiv);
+        final Element msgHead = DOM4JUtils.generateDivElement("media-heading");
+        msgDiv.add(msgHead);
+        final Element msgContent = DOM4JUtils.generateDivElement("alert-info form-control");
+        DOM4JUtils.addText(msgContent, bundle.getString("COPIED_PERMALINK_INFO"));
+        msgHead.add(msgContent);
+        
+        // Buttons
+        final Element btnGroup = DOM4JUtils.generateDivElement("media-right");
+        group2.add(btnGroup);
+        
+        // Copy button 
+        final Element copyButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("COPY_PERMALINK"), 
+        		"halflings halflings-copy", null);
+        DOM4JUtils.addAttribute(copyButton, HTMLConstants.ID, bindedId);
+        DOM4JUtils.addDataAttribute(copyButton, "clipboard-target", "#" + copiableId);
+        DOM4JUtils.addDataAttribute(copyButton, "clipboard-message", "#" + msgBindedId);
+        btnGroup.add(copyButton);
+
+        // Close button
+        final Element button = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CLOSE"));
+        DOM4JUtils.addAttribute(button, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
+        DOM4JUtils.addAttribute(button, HTMLConstants.ONCLICK, "closeFancybox()");
+        btnGroup.add(button);
+
+        return DOM4JUtils.write(fancyboxContainer);
+    }
+
+
+
     /**
      * Getter for menubarService.
      *

@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -75,6 +76,8 @@ public class XSLFunctions {
     private static final String PORTAL_REFERENCE = "/portalRef?";
     /** Portal reference length. */
     private static final int PORTAL_REFERENCE_LENGTH = PORTAL_REFERENCE.length();
+
+    private static String BASE_PATH;
 
     /** CMS context. */
     private final CMSServiceCtx cmsContext;
@@ -130,6 +133,8 @@ public class XSLFunctions {
 
         // Portal reference matcher
         this.portalReferenceMatcher = this.getPortalReferenceMatcher(this.portalURLFactory, this.portalControllerContext);
+
+
     }
 
 
@@ -240,6 +245,19 @@ public class XSLFunctions {
         } else {
             return this.rewrite(link, true);
         }
+    }
+
+    public String getBasePath() {
+        // TODO rajouter une fonction dans portalURLFactory pour récupérer le BASE_PATH (avec /portal)
+        if (BASE_PATH == null) {
+            String link = null;
+            try {
+                link = portalURLFactory.getPermaLink(nuxeoController.getPortalCtx(), null, null, "", IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+            } catch (PortalException e) {
+            }
+            BASE_PATH = StringUtils.removeEnd(link, "cms/_ID_/");
+        }
+        return BASE_PATH;
     }
 
 

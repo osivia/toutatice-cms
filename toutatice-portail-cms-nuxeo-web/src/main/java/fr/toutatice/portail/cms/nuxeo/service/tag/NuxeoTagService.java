@@ -12,6 +12,9 @@ import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.v2.DirServiceFactory;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
@@ -45,7 +48,8 @@ public class NuxeoTagService implements INuxeoTagService {
     private final IPortalUrlFactory portalUrlFactory;
     /** WebId service. */
     private final IWebIdService webIdService;
-
+    /** Person service */
+    private final PersonService personService;
 
     /**
      * Constructor.
@@ -57,6 +61,8 @@ public class NuxeoTagService implements INuxeoTagService {
         this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
         // WebId service
         this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
+        // Person service
+        this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -181,30 +187,17 @@ public class NuxeoTagService implements INuxeoTagService {
      */
     @Override
     public Link getUserProfileLink(NuxeoController nuxeoController, String name, String displayName) {
-        // Portal controller context
-        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
-
-        // Page properties
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(InternalConstants.PROP_WINDOW_TITLE, displayName);
-        properties.put("osivia.hideTitle", "1");
-        properties.put("osivia.ajaxLink", "1");
-        properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
-        properties.put("uidFichePersonne", name);
-
-        // Page parameters
-        Map<String, String> parameters = new HashMap<String, String>(0);
-
-        // Link
-        Link link;
-        try {
-            String url = this.portalUrlFactory.getStartPortletInNewPage(portalControllerContext, "myprofile", displayName, "directory-person-card-instance",
-                    properties, parameters);
-            link = new Link(url, false);
-        } catch (PortalException e) {
-            link = null;
-        }
-
+    	
+    	Person person = personService.getPerson(name);
+    	Link link = null;
+    	if(person != null) {
+    		try {
+				link = personService.getCardUrl(nuxeoController.getPortalCtx(), person);
+			} catch (PortalException e) {
+				// Do nohing
+			}
+    	}
+    	
         return link;
     }
 

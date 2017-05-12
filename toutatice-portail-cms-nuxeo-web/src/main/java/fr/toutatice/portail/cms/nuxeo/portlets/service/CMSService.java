@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -68,6 +69,7 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.notifications.INotificationsService;
+import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
@@ -167,6 +169,7 @@ public class CMSService implements ICMSService {
 
     /** Logger. */
     private static final Log LOG = LogFactory.getLog(CMSService.class);
+
     /** Slash separator. */
     private static final String SLASH = "/";
 
@@ -247,8 +250,16 @@ public class CMSService implements ICMSService {
 
         // For selectors saved in the doc
         if(doc.getString("ttc:selectors") != null) {
-        	properties.put("selectors", doc.getString("ttc:selectors"));
+            try {
+                PageParametersEncoder.decodeProperties(doc.getString("ttc:selectors"));
+                properties.put("selectors", doc.getString("ttc:selectors"));
+            } catch (Throwable t) {
+                final Locale locale = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getLocale();
+                final String warnMsgselectors = getCustomizer().getBundleFactory().getBundle(locale).getString("WARN_MSG_TTC_SELECTORS");
+                LOG.warn(warnMsgselectors, t);
+            }
         }
+
 
         // CMS item
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
@@ -2079,6 +2090,8 @@ public class CMSService implements ICMSService {
         	url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
         } else if (command == EcmViews.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
+        } else if (command == EcmViews.editAttachments) {
+            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_attachments?";
         } else if (command == EcmViews.createFgtInRegion) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
         } else if (command == EcmViews.createFgtBelowWindow) {

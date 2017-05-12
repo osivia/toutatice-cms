@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
@@ -35,17 +35,18 @@ public class InternalPictureCommand implements INuxeoCommand {
 
 	Document containerDoc;
 	String pictureIndex;
-	
+
 	public InternalPictureCommand(Document containerDoc, String pictureIndex) {
 		super();
 		this.containerDoc = containerDoc;
 		this.pictureIndex = pictureIndex;
 	}
-	
-	public Object execute( Session session)	throws Exception {
-		
+
+	@Override
+    public Object execute( Session session)	throws Exception {
+
 		Blob blob = null;
-		
+
 		try	{
 			blob = (Blob) session.newRequest("Blob.Get").setInput(containerDoc).set("xpath",
 				"ttc:images/item[" + pictureIndex + "]/file").execute();
@@ -54,7 +55,7 @@ public class InternalPictureCommand implements INuxeoCommand {
 			// On le positionne par défaut pour l'utilisateur
 			throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
 		}
-		
+
 
 
 		InputStream in = blob.getStream();
@@ -84,14 +85,15 @@ public class InternalPictureCommand implements INuxeoCommand {
 
 
 		return content;
-		
 
-	
-	};		
-	
-	public String getId() {
+
+
+	};
+
+	@Override
+    public String getId() {
 		return "InternalPictureCommand"+containerDoc+"/"+pictureIndex;
-	};		
+	};
 
-	
+
 }

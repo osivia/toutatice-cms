@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -36,7 +36,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 
 /**
  * The Class ResourceUtil.
- * 
+ *
  * Manipulates blobs
  */
 public class ResourceUtil {
@@ -50,7 +50,7 @@ public class ResourceUtil {
 
     /**
      * Copy.
-     * 
+     *
      * @param inputStream the input stream
      * @param outputStream the output stream
      * @param bufSize the buf size
@@ -74,7 +74,7 @@ public class ResourceUtil {
 
     /**
      * Gets the string.
-     * 
+     *
      * @param in the in
      * @param charSet the char set
      * @return the string
@@ -100,7 +100,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new CMS binary content command.
-         * 
+         *
          * @param path the path
          * @param fileIndex the file index
          */
@@ -112,9 +112,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -161,9 +162,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "CMSBinaryContentCommand" + path + "/" + fileIndex;
         };
@@ -174,7 +176,7 @@ public class ResourceUtil {
 
     /**
      * Gets the CMS binary content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param fileIndex the file index
@@ -201,7 +203,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new picture content command.
-         * 
+         *
          * @param path the path
          * @param content the content
          */
@@ -213,9 +215,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -280,9 +283,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "CMSBinaryContentCommand" + path + "/" + content;
         };
@@ -293,7 +297,7 @@ public class ResourceUtil {
 
     /**
      * Gets the picture content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param content the content
@@ -321,7 +325,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new blob holder command.
-         * 
+         *
          * @param path the path
          * @param blobIndex the blob index
          */
@@ -333,9 +337,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -382,9 +387,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "BlobHolderCommand" + path + "/" + blobIndex;
         };
@@ -394,7 +400,7 @@ public class ResourceUtil {
 
     /**
      * Gets the blob holder content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param fileIndex the file index
