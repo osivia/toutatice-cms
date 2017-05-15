@@ -28,7 +28,6 @@ import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
@@ -37,6 +36,7 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -283,20 +283,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
 
-
-
-    
-//    /**
-//     * Creates the folder request.
-//     *
-//     * @param ctx the ctx
-//     * @param ordered the ordered
-//     * @return the string
-//     * @throws CMSException the CMS exception
-//     */
-//    String createFolderRequest(DocumentContext<Document> docCtx, boolean ordered);
-    
-    
     
     /**
      * Define ECM commands.
@@ -305,12 +291,13 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     Map<String, EcmCommand> getEcmCommands();
 
+
     /**
      * Gets the CMS file browser.
      *
-     * @param docCtx the cms context
+     * @param documentContext document context
      * @return the CMS file browser
      */
-	Player getCMSFileBrowser(DocumentContext<Document> docCtx);
+    Player getCMSFileBrowser(NuxeoDocumentContext documentContext);
 
 }

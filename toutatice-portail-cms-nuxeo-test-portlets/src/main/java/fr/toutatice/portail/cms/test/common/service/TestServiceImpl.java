@@ -104,9 +104,9 @@ public class TestServiceImpl implements ITestService {
             // Computed path
             String path = nuxeoController.getComputedPath(configuration.getPath());
             // Document context
-            NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, portletContext, path);
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
             // Nuxeo document
-            Document nuxeoDocument = documentContext.getDoc();
+            Document nuxeoDocument = documentContext.getDocument();
             // Document DTO
             DocumentDTO document = this.documentDao.toDTO(nuxeoDocument);
             request.setAttribute("document", document);

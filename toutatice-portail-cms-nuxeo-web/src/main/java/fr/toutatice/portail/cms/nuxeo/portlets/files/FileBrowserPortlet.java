@@ -189,8 +189,6 @@ public class FileBrowserPortlet extends CMSPortlet {
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
 
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
@@ -201,12 +199,12 @@ public class FileBrowserPortlet extends CMSPortlet {
                 FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
 
                 // Path
-                String path = this.getPath(window);
+                String path = this.getPath(nuxeoController);
                 // Document context
-                NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
 
                 // Document
-                Document document = documentContext.getDoc();
+                Document document = documentContext.getDocument();
                 // Type
                 String type = document.getType();
 
@@ -230,7 +228,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Copy action
                 
                 String sourcePath = request.getParameter("sourcePath");
-                String targetPath = getPath(window);
+                String targetPath = getPath(nuxeoController);
         
                 INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
                 nuxeoController.executeNuxeoCommand(command);
@@ -336,11 +334,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Nuxeo command
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
-                    
-                    // // Upload refreshing
-                    // NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), parentId);
-                    // Document document = documentContext.getDoc();
-                    // nuxeoController.updatePictureUploadTimestamp(document.getPath());
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
@@ -363,6 +356,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             if ("save".equals(action)) {
                 // Save
+
+                // Current window
+                PortalWindow window = WindowFactory.getWindow(request);
 
                 // Nuxeo path
                 String path = request.getParameter("path");
@@ -459,11 +455,11 @@ public class FileBrowserPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
 
         // Path
-        String path = this.getPath(window);
+        String path = this.getPath(nuxeoController);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
@@ -471,15 +467,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Portal controller context
                 PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
 
-                // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
-                // Computed path
-                path = nuxeoController.getComputedPath(path);
-                
                 // Publication informations
                 CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
@@ -489,7 +479,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Fetch current Nuxeo document
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-                Document currentDocument = documentContext.getDoc();
+                Document currentDocument = documentContext.getDocument();
                 nuxeoController.setCurrentDoc(currentDocument);
                 FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDao.toDTO(currentDocument));
                 request.setAttribute("document", fileBrowser);
@@ -519,7 +509,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Current view
-                FileBrowserView currentView = this.getCurrentView(portalControllerContext, window, currentDocument.getType());
+                FileBrowserView currentView = this.getCurrentView(portalControllerContext, currentDocument.getType());
                 request.setAttribute("view", currentView.getName());
 
 
@@ -565,20 +555,30 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
-
     /**
      * Get path.
      *
-     * @param window current window
+     * @param nuxeoController Nuxeo controller
      * @return path
      */
-    private String getPath(PortalWindow window) {
+    private String getPath(NuxeoController nuxeoController) {
+        // Portlet request
+        PortletRequest request = nuxeoController.getRequest();
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+
         String path = window.getProperty(Constants.WINDOW_PROP_URI);
         if (path == null) {
             path = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
         }
+
+        if (path != null) {
+            path = nuxeoController.getComputedPath(path);
+        }
+
         return path;
     }
+
     
     /**
      * Set draft informations if document has draft.
@@ -604,9 +604,11 @@ public class FileBrowserPortlet extends CMSPortlet {
      * @return view
      * @throws PortletException
      */
-    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext,  PortalWindow window, String type) throws PortletException {
+    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, String type) throws PortletException {
         // Portlet request
         PortletRequest request = portalControllerContext.getRequest();
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
         // Portlet status
         FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
 

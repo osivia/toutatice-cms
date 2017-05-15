@@ -99,7 +99,7 @@ public class FormsServiceImplTest {
 
         // Document context
         NuxeoDocumentContext documentContext = EasyMock.createMock(NuxeoDocumentContext.class);
-        EasyMock.expect(documentContext.getDoc()).andStubReturn(document);
+        EasyMock.expect(documentContext.getDocument()).andStubReturn(document);
 
         // Nuxeo controller
         NuxeoController nuxeoController = EasyMock.createMock(NuxeoController.class);

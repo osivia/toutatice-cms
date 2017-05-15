@@ -108,7 +108,7 @@ public class PropertyFragmentModule extends FragmentModule {
 
             // Nuxeo document
             NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(nuxeoPath);
-            Document document = documentContext.getDoc();
+            Document document = documentContext.getDocument();
             nuxeoController.setCurrentDoc(document);
 
             // Title

@@ -14,7 +14,6 @@ import javax.portlet.RenderResponse;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -28,6 +27,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.SortDocumentCommand;
@@ -95,13 +95,13 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
         String path = window.getProperty(PATH_WINDOW_PROPERTY);
 
         // Parent document
-        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
-        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
-        Document parent = documentContext.getDoc();
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
+        Document parent = documentContext.getDocument();
 
         // Publish status
         cmsContext.setDisplayLiveVersion(RequestPublishStatus.live.getStatus());
-        if (!publicationInfos.isLiveSpace() && StringUtils.isNotBlank(publicationInfos.getBasePath())) {
+        if (!publicationInfos.isLiveSpace() && StringUtils.isNotBlank(publicationInfos.getSpacePath())) {
             // To get local lives and remote proxies
             cmsContext.setDisplayLiveVersion(RequestPublishStatus.liveNRemotePublished.getStatus());
         }

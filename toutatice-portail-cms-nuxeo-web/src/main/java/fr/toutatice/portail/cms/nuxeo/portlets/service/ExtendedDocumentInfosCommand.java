@@ -25,7 +25,9 @@ import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -95,11 +97,13 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
                 }
 
                 if (infos.containsKey("subscription_status")) {
-                    docInfos.setSubscriptionStatus(ExtendedDocumentInfos.SubscriptionStatus.valueOf(infos.get("subscription_status").toString()));
+                    String status = StringUtils.upperCase(infos.get("subscription_status").toString());
+                    docInfos.setSubscriptionStatus(SubscriptionStatus.valueOf(status));
                 }
 
                 if (infos.containsKey("lockStatus")) {
-                    docInfos.setLockStatus(ExtendedDocumentInfos.LockStatus.valueOf(infos.get("lockStatus").toString()));
+                    String status = StringUtils.upperCase(infos.get("lockStatus").toString());
+                    docInfos.setLockStatus(LockStatus.valueOf(status));
 
                     if (infos.containsKey("lockOwner")) {
                         docInfos.setLockOwner(infos.get("lockOwner").toString());

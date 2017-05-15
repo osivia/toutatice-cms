@@ -62,7 +62,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
@@ -77,6 +76,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDA
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
@@ -316,7 +316,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             if (StringUtils.isNotBlank(path)) {
                 // Document context
-                NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), path);
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
 
                 // Maximized indicator
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
@@ -344,7 +344,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 request.setAttribute("attachments", attachments);
 
                 // Document
-                Document document = documentContext.getDoc();
+                Document document = documentContext.getDocument();
                 nuxeoController.setCurrentDoc(document);
 
                 // View dispatched JSP

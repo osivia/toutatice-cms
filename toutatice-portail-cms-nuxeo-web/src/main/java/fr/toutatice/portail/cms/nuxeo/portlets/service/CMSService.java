@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import javax.naming.Name;
 import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -111,10 +110,9 @@ import org.osivia.portal.core.web.IWebIdService;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
@@ -128,6 +126,8 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.TaskDirective;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
@@ -1168,19 +1168,13 @@ public class CMSService implements ICMSService {
                 }
             } finally {
                 ctx.setScope(savedScope);
-
             }
-
         } catch (NuxeoException e) {
-
             e.rethrowCMSException();
+        } catch (CMSException e) {
+            throw e;
         } catch (Exception e) {
-
-            if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
-            } else {
-                throw (CMSException) e;
-            }
+            throw new CMSException(e);
         }
 
         return pubInfos;
@@ -2892,14 +2886,27 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public DocumentContext<? extends EcmDocument> getDocumentContext(CMSServiceCtx cmsContext, String path) throws CMSException {
-        DocumentContext<? extends EcmDocument> documentContext;
-        try {
-            documentContext = NuxeoController.getDocumentContext(cmsContext, path);
-        } catch (PortletException e) {
-            throw new CMSException(e);
+    public NuxeoDocumentContext getDocumentContext(CMSServiceCtx cmsContext, String path) throws CMSException {
+        return NuxeoDocumentContextImpl.getDocumentContext(cmsContext, path);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <D extends DocumentContext> D getDocumentContext(CMSServiceCtx cmsContext, String path, Class<D> expectedType) throws CMSException {
+        NuxeoDocumentContext nuxeoDocumentContext = this.getDocumentContext(cmsContext, path);
+
+        // Expected document context
+        D expectedDocumentContext;
+        if (expectedType.isInstance(nuxeoDocumentContext)) {
+            expectedDocumentContext = expectedType.cast(nuxeoDocumentContext);
+        } else {
+            expectedDocumentContext = null;
         }
-        return documentContext;
+
+        return expectedDocumentContext;
     }
 
 

@@ -17,35 +17,52 @@
 package fr.toutatice.portail.cms.nuxeo.api.cms;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.api.cms.impl.AbstractDocumentContext;
+import org.osivia.portal.api.cms.DocumentContext;
 
 
 /**
- * Specialize the document context for Nuxeo.
+ * Nuxeo document context.
+ * 
  * @author Loïc Billon
- *
+ * @author Cédric Krommenhoek
+ * @see DocumentContext
  */
-public class NuxeoDocumentContext extends AbstractDocumentContext<Document> {
+public interface NuxeoDocumentContext extends DocumentContext {
 
-	
-	/* (non-Javadoc)
-	 * @see org.osivia.portal.api.cms.DocumentContext#getDocument()
-	 */
-	@Override
-	public Document getDoc() {
-		return document;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.osivia.portal.api.cms.DocumentContext#setDocument(org.osivia.portal.api.cms.EcmDocument)
-	 */
-	@Override
-	public void setDoc(Document document) {
-		this.document = document;
-		
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    NuxeoPermissions getPermissions();
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    NuxeoPublicationInfos getPublicationInfos();
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Document getDocument();
+
+
+    /**
+     * Get display context.
+     * 
+     * @return display context
+     */
+    String getDisplayContext();
+
+
+    /**
+     * Check if the document is contextualized.
+     * 
+     * @return true if the document is contextualized
+     */
+    boolean isContextualized();
 
 }

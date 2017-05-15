@@ -87,7 +87,7 @@ public class AttachmentsFragmentModule extends FragmentModule {
             // Nuxeo document context
             NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
             // Nuxeo document
-            Document document = documentContext.getDoc();
+            Document document = documentContext.getDocument();
             nuxeoController.setCurrentDoc(document);
 
             // Nuxeo document properties

@@ -19,36 +19,38 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.cms.DocumentContext;
-import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.player.Player;
 
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 
 /**
  * Default player (use view document portlet).
  *
- * @see IPlayer
+ * @see INuxeoPlayerModule
  */
 public class DefaultPlayer implements INuxeoPlayerModule {
 
+    /**
+     * Constructor.
+     */
+    public DefaultPlayer() {
+        super();
+    }
 
 
-	/* (non-Javadoc)
-	 * @see org.osivia.portal.api.cms.IPlayerModule#getCMSPlayer(org.osivia.portal.api.cms.DocumentContext)
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
-	public Player getCMSPlayer(DocumentContext<Document> docCtx) {
-		
+    public Player getCMSPlayer(NuxeoDocumentContext documentContext) {
+        NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
+
 		Map<String, String> windowProperties = new HashMap<String, String>();
-		BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
-		
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
-        // TODO restaurer metadata ?
-        //windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
-        windowProperties.put(Constants.WINDOW_PROP_URI, navigationInfos.getContentPath());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
+        windowProperties.put(Constants.WINDOW_PROP_URI, publicationInfos.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
 

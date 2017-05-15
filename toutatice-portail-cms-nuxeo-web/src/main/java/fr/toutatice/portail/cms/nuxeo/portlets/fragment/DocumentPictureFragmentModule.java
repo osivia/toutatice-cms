@@ -172,7 +172,7 @@ public class DocumentPictureFragmentModule extends FragmentModule {
     protected Document setAsCurrentDocNGet(NuxeoController nuxeoController, String path){
         // Nuxeo document
         NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-        Document document = documentContext.getDoc();
+        Document document = documentContext.getDocument();
         nuxeoController.setCurrentDoc(document);
         return document;
     }

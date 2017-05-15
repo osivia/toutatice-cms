@@ -243,16 +243,16 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * @throws PortletException
      */
     protected void addCommentAction(ActionRequest request, ActionResponse response, String content, String parentId) throws PortletException {
-        // Document context
-        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext());
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Document context
+        NuxeoDocumentContext documentContext = nuxeoController.getCurrentDocumentContext();
         // Comments service
         INuxeoCommentsService commentsService = nuxeoController.getNuxeoCommentsService();
         // CMS context
         CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
         // Document
-        Document document = documentContext.getDoc();
+        Document document = documentContext.getDocument();
 
         // Comment DTO
         CommentDTO comment = new CommentDTO();
@@ -275,16 +275,16 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * @throws PortletException
      */
     protected void deleteCommentAction(ActionRequest request, ActionResponse response, String id) throws PortletException {
-        // Document context
-        NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext());
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // Document context
+        NuxeoDocumentContext documentContext = nuxeoController.getCurrentDocumentContext();
         // Comments service
         INuxeoCommentsService commentsService = nuxeoController.getNuxeoCommentsService();
         // CMS context
         CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
         // Document
-        Document document = documentContext.getDoc();
+        Document document = documentContext.getDocument();
 
         try {
             commentsService.deleteDocumentComment(cmsContext, document, id);

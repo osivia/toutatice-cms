@@ -39,6 +39,7 @@ import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
+import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
@@ -54,7 +55,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
-import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
 
 
 /**
@@ -95,7 +95,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /** Dynamic modules that defines players . */
-    private List<INuxeoPlayerModule> dynamicModules;
+    private List<IPlayerModule> dynamicModules;
     /** Types cache. */
     private Map<String, DocumentType> typesCache;
     /** Navigation adapters cache. */
@@ -399,12 +399,12 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return the list
      */
     @SuppressWarnings("unchecked")
-    public List<INuxeoPlayerModule> customizeModules() {
+    public List<IPlayerModule> customizeModules() {
         if (this.dynamicModules == null) {
             Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
-            List<INuxeoPlayerModule> players = (List<INuxeoPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
+            List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
 
-            this.dynamicModules = new ArrayList<INuxeoPlayerModule>();
+            this.dynamicModules = new ArrayList<IPlayerModule>();
             if (players != null) {
                 this.dynamicModules.addAll(players);
             }

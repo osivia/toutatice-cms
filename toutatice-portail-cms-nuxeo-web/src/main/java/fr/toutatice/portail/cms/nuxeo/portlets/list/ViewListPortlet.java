@@ -774,8 +774,8 @@ public class ViewListPortlet extends ViewList {
                 }
                 if (dynamicPath != null) {
                     dynamicPath = NuxeoController.getLivePath(nuxeoController.getComputedPath(dynamicPath));
-                    NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), dynamicPath);
-                    Document folder = documentContext.getDoc();
+                    NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(dynamicPath);
+                    Document folder = documentContext.getDocument();
                     nuxeoController.setCurrentDoc(folder);
                     response.setTitle(folder.getTitle());
                 }

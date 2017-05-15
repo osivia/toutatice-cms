@@ -16,14 +16,17 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.player;
 
-import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.player.IPlayerModule;
 
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+
 /**
- * Spécialize the player for Nuxeo
+ * Spécialize the player for Nuxeo.
+ * 
  * @author Loïc Billon
- *
+ * @see IPlayerModule
+ * @see NuxeoDocumentContext
  */
-public interface INuxeoPlayerModule extends IPlayerModule<Document> {
+public interface INuxeoPlayerModule extends IPlayerModule<NuxeoDocumentContext> {
 
 }

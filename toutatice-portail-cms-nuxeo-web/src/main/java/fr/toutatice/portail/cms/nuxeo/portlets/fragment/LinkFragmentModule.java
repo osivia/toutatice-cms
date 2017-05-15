@@ -87,7 +87,7 @@ public class LinkFragmentModule extends FragmentModule {
 
             // Nuxeo document
             NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(targetPath);
-            Document document = documentContext.getDoc();
+            Document document = documentContext.getDocument();
 
             // Update link name with property value
             String property = document.getProperties().getString(name);

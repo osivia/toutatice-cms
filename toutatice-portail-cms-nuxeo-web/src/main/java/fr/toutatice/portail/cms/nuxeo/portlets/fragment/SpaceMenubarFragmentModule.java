@@ -55,7 +55,7 @@ public class SpaceMenubarFragmentModule extends FragmentModule {
         if (navigationPath != null) {
             // Nuxeo document
             NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(navigationPath);
-            Document document = documentContext.getDoc();
+            Document document = documentContext.getDocument();
             nuxeoController.setCurrentDoc(document);
 
             request.setAttribute("osivia.cms.menuBar.forceContextualization", true);

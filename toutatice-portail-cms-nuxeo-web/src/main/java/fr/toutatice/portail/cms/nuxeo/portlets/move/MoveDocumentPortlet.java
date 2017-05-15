@@ -265,14 +265,14 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 // Live document
                 cmsCtx.setDisplayLiveVersion(DocumentState.LIVE.toString());
                 path = NuxeoController.getLivePath(path);
-                NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(cmsCtx, path);
-                Document document = documentContext.getDoc();
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                Document document = documentContext.getDocument();
 
                 // Possible published document
                 try {
                     cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
-                    NuxeoDocumentContext remotedocumentContext = NuxeoController.getDocumentContext(cmsCtx, path);
-                    Document publishedDocument = remotedocumentContext.getDoc();
+                    NuxeoDocumentContext remotedocumentContext = nuxeoController.getDocumentContext(path);
+                    Document publishedDocument = remotedocumentContext.getDocument();
 
                     cmsCtx.setDoc(publishedDocument);
                     if (DocumentHelper.isRemoteProxy(cmsCtx, publicationInfos)) {

@@ -44,13 +44,13 @@ public class NuxeoException extends RuntimeException {
 	}
 
 	/** The error forbidden. */
-	public static int ERROR_FORBIDDEN = 1;
+    public static final int ERROR_FORBIDDEN = 1;
 	
 	/** The error unavailaible. */
-	public static int ERROR_UNAVAILAIBLE = 2;
+    public static final int ERROR_UNAVAILAIBLE = 2;
 	
 	/** The error notfound. */
-	public static int ERROR_NOTFOUND = 3;
+    public static final int ERROR_NOTFOUND = 3;
 	
 
 	/**

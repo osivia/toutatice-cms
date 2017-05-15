@@ -183,7 +183,7 @@ public class NavigationPictureFragmentModule extends FragmentModule {
 
             // Nuxeo document
             NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(nuxeoController.getContentPath());
-            Document document = documentContext.getDoc();
+            Document document = documentContext.getDocument();
 
             if (this.docHasPicture(document, propertyName)) {
                 return document;

@@ -11,11 +11,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package fr.toutatice.portail.cms.nuxeo.api.cms;
+package fr.toutatice.portail.cms.nuxeo.portlets.cms;
 
 import java.util.Calendar;
 
 import org.apache.commons.lang.StringUtils;
+
+import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 
 
 /**
@@ -66,40 +69,6 @@ public class ExtendedDocumentInfos {
         this.taskName = StringUtils.EMPTY;
     }
 
-
-    /**
-     * Subscription status enumeration.
-     * A document has a state depending of the user who is browsing it.
-     */
-    public enum SubscriptionStatus {
-
-        /** Default state : can subscribe */
-        can_subscribe,
-        /** Can unsubscribe if a subscription is already set */
-        can_unsubscribe,
-        /** If a subscription is defined by other document upper in the hierarchy, or if a group has subscribed before to them */
-        has_inherited_subscriptions,
-        /** Special cases : Domains, WorkspacesRoot, ... are not allowing subscription */
-        no_subscriptions;
-
-    }
-
-
-    /**
-     * Lock status enumeration.
-     */
-    public enum LockStatus {
-
-        /** Default state : can lock */
-        can_lock,
-        /** Can uunlock */
-        can_unlock,
-        /** a lock is set and is not removable by this user */
-        locked,
-        /** No lock avaliable (proxies, versions, ...) */
-        no_lock;
-
-    }
 
     /**
      * Getter for taskName.

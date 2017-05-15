@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
@@ -39,8 +38,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.impl.BasicPermissions;
-import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
@@ -82,11 +79,13 @@ import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos.LockStatus;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos.SubscriptionStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
@@ -165,18 +164,16 @@ public class MenuBarFormater {
     @SuppressWarnings("unchecked")
     public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos)
             throws CMSException, PortalException {
+        // CMS service
+        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+
         // Document
         Document document = (Document) cmsContext.getDoc();
         if ((document == null) && (cmsContext.getCreationPath() == null)) {
             return;
         }
         // Document context
-        NuxeoDocumentContext documentContext;
-        try {
-            documentContext = NuxeoController.getDocumentContext(cmsContext, document.getPath());
-        } catch (PortletException e) {
-            throw new CMSException(e);
-        }
+        NuxeoDocumentContext documentContext = cmsService.getDocumentContext(cmsContext, document.getPath(), NuxeoDocumentContext.class);
 
         // Request
         final PortletRequest request = cmsContext.getRequest();
@@ -366,11 +363,11 @@ public class MenuBarFormater {
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
         // Document
-        Document document = documentContext.getDoc();
+        Document document = documentContext.getDocument();
         // Publication infos
-        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+        NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
         // Base path
-        String basePath = publicationInfos.getBasePath();
+        String basePath = publicationInfos.getSpacePath();
         // Parent path
         String parentPath = StringUtils.substringBeforeLast(document.getPath(), "/");
 
@@ -419,29 +416,28 @@ public class MenuBarFormater {
      * @throws CMSException
      */
     protected boolean isWorkspaceAdmin(CMSServiceCtx cmsContext, NuxeoDocumentContext documentContext) throws CMSException {
+        // CMS service
+        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+
         // Publication infos
-        BasicPublicationInfos publicationInfos = documentContext.getPublicationInfos(BasicPublicationInfos.class);
+        NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
 
         // Base path
-        String basePath = publicationInfos.getBasePath();
+        String basePath = publicationInfos.getSpacePath();
 
         // Workspace document context
         NuxeoDocumentContext workspaceDocumentContext;
 
-        if (StringUtils.equals(basePath, publicationInfos.getContentPath())) {
+        if (StringUtils.equals(basePath, publicationInfos.getPath())) {
             workspaceDocumentContext = documentContext;
         } else {
-            try {
-                workspaceDocumentContext = NuxeoController.getDocumentContext(cmsContext, basePath);
-            } catch (PortletException e) {
-                throw new CMSException(e);
-            }
+            workspaceDocumentContext = cmsService.getDocumentContext(cmsContext, basePath, NuxeoDocumentContext.class);
         }
 
         // Check permissions
-        BasicPermissions permissions = workspaceDocumentContext.getPermissions(BasicPermissions.class);
+        NuxeoPermissions permissions = workspaceDocumentContext.getPermissions();
 
-        return permissions.isManageableByUser();
+        return permissions.isManageable();
     }
 
 
@@ -954,7 +950,7 @@ public class MenuBarFormater {
                 try {
                     // Portlet of versions URL
                     Map<String, String> properties = new HashMap<>(1);
-                    properties.put(BasicPublicationInfos.CONTENT_PATH, document.getId());
+                    properties.put("osivia.cms.contentPath", document.getId());
 
                     final String versionsURL = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "osivia-services-versions-instance",
                             properties, PortalUrlType.POPUP);
@@ -1071,7 +1067,7 @@ public class MenuBarFormater {
             if (!"Staple".equals(document.getType()) && !DocumentHelper.hasDraft(document)) {
                 final SubscriptionStatus subscriptionStatus = extendedInfos.getSubscriptionStatus();
 
-                if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.no_subscriptions)) {
+                if ((subscriptionStatus != null) && (subscriptionStatus != SubscriptionStatus.NO_SUBSCRIPTIONS)) {
                     String url = "";
 
                     try {
@@ -1080,13 +1076,13 @@ public class MenuBarFormater {
                         subscribeItem.setAjaxDisabled(true);
                         subscribeItem.setDivider(true);
 
-                        if (subscriptionStatus == SubscriptionStatus.can_subscribe) {
+                        if (subscriptionStatus == SubscriptionStatus.CAN_SUBSCRIBE) {
                             url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
 
                             subscribeItem.setUrl(url);
                             subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
                             subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
-                        } else if (subscriptionStatus == SubscriptionStatus.can_unsubscribe) {
+                        } else if (subscriptionStatus == SubscriptionStatus.CAN_UNSUBSCRIBE) {
                             url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
 
                             subscribeItem.setUrl(url);
@@ -1099,7 +1095,7 @@ public class MenuBarFormater {
                             subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
                             subscribedIndicator.setState(true);
                             menubar.add(subscribedIndicator);
-                        } else if (subscriptionStatus == SubscriptionStatus.has_inherited_subscriptions) {
+                        } else if (subscriptionStatus == SubscriptionStatus.HAS_INHERITED_SUBSCRIPTIONS) {
                             subscribeItem.setUrl("#");
                             subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
                             subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
@@ -1133,7 +1129,7 @@ public class MenuBarFormater {
 
         final LockStatus lockStatus = extendedInfos.getLockStatus();
 
-        if ((lockStatus != null) && (lockStatus != LockStatus.no_lock)) {
+        if ((lockStatus != null) && (lockStatus != LockStatus.NO_LOCK)) {
             String url = "";
 
             try {
@@ -1141,13 +1137,13 @@ public class MenuBarFormater {
                 final MenubarItem lockItem = new MenubarItem("LOCK_URL", null, null, parent, 14, url, null, null, null);
                 lockItem.setAjaxDisabled(true);
 
-                if (lockStatus == LockStatus.can_lock) {
+                if (lockStatus == LockStatus.CAN_LOCK) {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.lock);
 
                     lockItem.setUrl(url);
                     lockItem.setGlyphicon("glyphicons glyphicons-lock");
                     lockItem.setTitle(bundle.getString("LOCK_ACTION"));
-                } else if (lockStatus == LockStatus.can_unlock) {
+                } else if (lockStatus == LockStatus.CAN_UNLOCK) {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unlock);
 
                     lockItem.setUrl(url);
@@ -1156,7 +1152,7 @@ public class MenuBarFormater {
 
                     menubar.add(this.makeLockedIndicator(cmsContext, bundle, extendedInfos));
 
-                } else if (lockStatus == LockStatus.locked) {
+                } else if (lockStatus == LockStatus.LOCKED) {
                     lockItem.setUrl("#");
                     lockItem.setGlyphicon("glyphicons glyphicons-lock");
                     lockItem.setTitle(bundle.getString("INHERITED_LOCK"));

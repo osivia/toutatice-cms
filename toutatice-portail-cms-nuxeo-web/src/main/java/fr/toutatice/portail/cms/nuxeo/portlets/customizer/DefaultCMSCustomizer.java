@@ -67,9 +67,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmCommonCommands;
@@ -79,6 +77,7 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
+import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
@@ -103,7 +102,7 @@ import org.xml.sax.XMLReader;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
@@ -115,6 +114,7 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
@@ -460,17 +460,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get CMS default player.
      *
-     * @param ctx CMS context
+     * @param cmsContext CMS context
      * @return CMS default player
      * @throws PortletException
      * @throws Exception
      */
-    public Player getCMSDefaultPlayer(CMSServiceCtx ctx) throws PortletException {
-        Document doc = (Document) ctx.getDoc();
+    public Player getCMSDefaultPlayer(CMSServiceCtx cmsContext) throws PortletException {
+        Document document = (Document) cmsContext.getDoc();
 
-        DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(ctx, doc.getPath());
+        // Document context
+        NuxeoDocumentContext documentContext;
+        try {
+            documentContext = cmsService.getDocumentContext(cmsContext, document.getPath());
+        } catch (CMSException e) {
+            throw new PortletException(e);
+        }
 
-        return this.getCMSDefaultPlayer(docCtx);
+        return this.getCMSDefaultPlayer(documentContext);
     }
 
 
@@ -481,31 +487,31 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return CMS default player
      * @throws Exception
      */
-    public Player getCMSDefaultPlayer(DocumentContext<Document> docCtx) {
-        return this.players.get("defaultPlayer").getCMSPlayer(docCtx);
+    public Player getCMSDefaultPlayer(NuxeoDocumentContext docCtx) {
+        INuxeoPlayerModule module = this.players.get("defaultPlayer");
+        return module.getCMSPlayer(docCtx);
     }
 
 
     /**
      * Get CMS ordered folder player.
      *
-     * @param ctx CMS context
+     * @param documentContext document context
      * @return CMS ordered folder player
      * @throws CMSException
      */
-    public Player getCMSOrderedFolderPlayer(DocumentContext<Document> docCtx) throws CMSException {
-        BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
-        Document doc = docCtx.getDoc();
+    public Player getCMSOrderedFolderPlayer(NuxeoDocumentContext documentContext) throws CMSException {
+        Document document = documentContext.getDocument();
 
         Map<String, String> windowProperties = new HashMap<String, String>();
-        windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(docCtx, true));
+        windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(documentContext, true));
         windowProperties.put("osivia.cms.style", ViewList.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put(Constants.WINDOW_PROP_SCOPE, navigationInfos.getScope());
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, documentContext.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
         windowProperties.put("osivia.document.metadata", String.valueOf(false));
-        windowProperties.put("osivia.title", "Dossier " + doc.getTitle());
+        windowProperties.put("osivia.title", "Dossier " + document.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
         Player linkProps = new Player();
@@ -519,18 +525,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get file browser player properties.
      *
-     * @param docCtx CMS context
+     * @param documentContext document context
      * @return player properties
      */
     @Override
-    public Player getCMSFileBrowser(DocumentContext<Document> docCtx) {
-        Document document = docCtx.getDoc();
-        BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
+    public Player getCMSFileBrowser(NuxeoDocumentContext documentContext) {
+        Document document = documentContext.getDocument();
 
         Map<String, String> windowProperties = new HashMap<String, String>();
-        // windowProperties.put(Constants.WINDOW_PROP_SCOPE, docCtx.getScope());
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
-        // windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, docCtx.getHideMetaDatas());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
         windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
@@ -547,24 +550,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Get CMS folder player.
      *
-     * @param ctx CMS context
+     * @param documentContext document context
      * @return CMS folder player
      * @throws CMSException
      */
-    public Player getCMSFolderPlayer(DocumentContext<Document> docCtx) throws CMSException {
-        Document doc = docCtx.getDoc();
-        BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
+    public Player getCMSFolderPlayer(NuxeoDocumentContext documentContext) throws CMSException {
+        Document document = documentContext.getDocument();
 
         Map<String, String> windowProperties = new HashMap<String, String>();
-        windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(docCtx, false));
+        windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(documentContext, false));
         windowProperties.put("osivia.cms.style", ViewList.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
         windowProperties.put("theme.dyna.partial_refresh_enabled", "false");
-        windowProperties.put(Constants.WINDOW_PROP_SCOPE, navigationInfos.getScope());
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
-        // TODO
-        // windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
-        windowProperties.put("osivia.title", doc.getTitle());
+        windowProperties.put(Constants.WINDOW_PROP_SCOPE, documentContext.getScope());
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
+        windowProperties.put("osivia.title", document.getTitle());
         windowProperties.put("osivia.cms.pageSizeMax", "10");
 
         Player linkProps = new Player();
@@ -641,10 +641,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace indicator
         boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
 
-        List<INuxeoPlayerModule> modules = this.pluginManager.customizeModules();
-        DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(cmsContext, document.getPath());
+        List<IPlayerModule> modules = this.pluginManager.customizeModules();
+        NuxeoDocumentContext docCtx = this.cmsService.getDocumentContext(cmsContext, document.getPath());
 
-        for (INuxeoPlayerModule module : modules) {
+        for (IPlayerModule module : modules) {
             Player player = module.getCMSPlayer(docCtx);
             if (player != null) {
                 return player;
@@ -1361,7 +1361,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
-     * Used in lists.
+     * {@inheritDoc}
      */
     @Override
     public String getContentWebIdPath(CMSServiceCtx cmsCtx) {
