@@ -1314,10 +1314,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder", "Note", "Room"),
+        defaultTypes.add(new DocumentType("Workspace", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"),
                 "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
         // Portal site
-        defaultTypes.add(new DocumentType("PortalSite", true, false, false, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink", "Note"),
+        defaultTypes.add(new DocumentType("PortalSite", true, false, true, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink", "Note"),
                 null, "glyphicons glyphicons-global", true));
         // Portal page
         defaultTypes.add(new DocumentType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null,
@@ -1339,7 +1339,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes
                 .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
         // Room
-        defaultTypes.add(new DocumentType("Room", true, false, true, true, false, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
+        defaultTypes.add(new DocumentType("Room", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
                 "glyphicons glyphicons-cube-black"));
         // Staple
         defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
@@ -1564,7 +1564,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // File name
             String fileName = binary.getFileName();
             if (fileName == null) {
-                if (document != null) {
+                if ((document != null) && (binary.getIndex() == null)) {
                     PropertyMap fileMap = document.getProperties().getMap("file:content");
                     if (fileMap != null) {
                         fileName = fileMap.getString("name");
