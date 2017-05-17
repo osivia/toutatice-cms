@@ -270,9 +270,8 @@ public class MenuBarFormater {
                 this.getVersionsLink(portalControllerContext, cmsContext, menubar, bundle);
 
                 // Nuxeo administration
-                if (isGlobalAdministrator) {
-                    this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                }
+                this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isGlobalAdministrator);
+                
 
 
                 if (!insideUserWorkspace) {
@@ -526,9 +525,10 @@ public class MenuBarFormater {
      * @param cmsContext CMS service context
      * @param menubar menubar items
      * @param bundle internationalization bundle
+     * @param isGlobalAdministrator 
      */
     protected void getAdministrationLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, boolean isGlobalAdministrator) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -549,6 +549,8 @@ public class MenuBarFormater {
             final MenubarItem item = new MenubarItem("MANAGE", bundle.getString("MANAGE_IN_NUXEO"), null, parent, 21, url, "nuxeo", null, null);
             item.setAjaxDisabled(true);
             item.setDivider(true);
+            // Item visible uniquement pour les administrateurs
+            item.setVisible(isGlobalAdministrator);
 
             menubar.add(item);
         }
