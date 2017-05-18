@@ -618,7 +618,7 @@ function displayControls($browser) {
 			
 			
 			// Gallery
-			if ($selected.find(".fancybox.thumbnail").length) {
+			if ($selected.find("[data-fancybox]").length) {
 				$gallery.removeClass("hidden");
 			} else {
 				$gallery.addClass("hidden");
@@ -810,5 +810,5 @@ function gallery(source) {
 	var $browser = $JQry(source).closest(".file-browser"),
 		$selected = $browser.find(".ui-selected");
 	
-	$selected.find(".fancybox.thumbnail").first().trigger("click");
+	$selected.find("[data-fancybox]").first().trigger("click");
 }

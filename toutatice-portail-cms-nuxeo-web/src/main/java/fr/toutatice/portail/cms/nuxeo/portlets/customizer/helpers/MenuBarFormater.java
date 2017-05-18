@@ -738,8 +738,10 @@ public class MenuBarFormater {
                                     // Erase modifications
                                     String cmsEraseModificationURL = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path,
                                             EcmCommonCommands.eraseModifications);
-                                    final MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
-                                            "#erase_cms_page", null, null, "fancybox_inline");
+                                    MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
+                                            "javascript:;", null, null, null);
+                                    eraseItem.getData().put("fancybox", StringUtils.EMPTY);
+                                    eraseItem.getData().put("src", "#erase_cms_page");
                                     eraseItem.setAssociatedHTML(this.generateEraseFancyBox(bundle, cmsEraseModificationURL));
                                     menubar.add(eraseItem);
                                 }
@@ -1826,9 +1828,10 @@ public class MenuBarFormater {
 
                         // URL
                         final String url = "#" + fancyboxId;
-                        item.setUrl(url);
 
-                        item.setHtmlClasses("fancybox_inline");
+                        item.setUrl("javascript:;");
+                        item.getData().put("fancybox", StringUtils.EMPTY);
+                        item.getData().put("src", url);
                     }
 
                     menubar.add(item);

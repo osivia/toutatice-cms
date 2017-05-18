@@ -350,16 +350,17 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // View dispatched JSP
                 String dispatchJsp = window.getProperty("osivia.document.dispatch.jsp");
                 if (StringUtils.isEmpty(dispatchJsp)) {
-                    dispatchJsp = this.getDispatchJspName(nuxeoController, document, false);
+                    dispatchJsp = this.getDispatchJspName(nuxeoController, document, null);
                 }
                 request.setAttribute("dispatchJsp", dispatchJsp);
 
                 // View dispatched extra JSP
-                String dispatchExtraJsp = window.getProperty("osivia.document.dispatch.extra.jsp");
-                if (StringUtils.isEmpty(dispatchExtraJsp)) {
-                    dispatchExtraJsp = this.getDispatchJspName(nuxeoController, document, true);
-                }
+                String dispatchExtraJsp = this.getDispatchJspName(nuxeoController, document, "extra");
                 request.setAttribute("dispatchExtraJsp", dispatchExtraJsp);
+
+                // View dispatched layout JSP
+                String dispatchLayoutJsp = this.getDispatchJspName(nuxeoController, document, "layout");
+                request.setAttribute("dispatchLayoutJsp", dispatchLayoutJsp);
 
                 // DTO
                 DocumentDTO documentDto = this.documentDao.toDTO(document);
@@ -387,11 +388,14 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Publication informations
                         CMSPublicationInfos publicationInfos = this.cmsService.getPublicationInfos(cmsContext, path);
-                        // Extended document informations
-                        ExtendedDocumentInfos extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
 
-                        // Validation state
-                        this.addValidationState(document, documentDto, extendedDocumentInfos);
+                        if (publicationInfos.isLiveSpace()) {
+                            // Extended document informations
+                            ExtendedDocumentInfos extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+
+                            // Validation state
+                            this.addValidationState(document, documentDto, extendedDocumentInfos);
+                        }
 
                         // Comments
                         boolean commentsEnabled = this.areCommentsEnabled(this.cmsService, publicationInfos, cmsContext);
@@ -429,7 +433,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
      * @return JSP name
      * @throws CMSException
      */
-    private String getDispatchJspName(NuxeoController nuxeoController, Document document, boolean extra) throws CMSException {
+    private String getDispatchJspName(NuxeoController nuxeoController, Document document, String suffix) throws CMSException {
         // CMS customizer
         INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
         // Portlet request
@@ -442,8 +446,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
         StringBuilder path = new StringBuilder();
         path.append("/WEB-INF/jsp/document/view-");
         path.append(type);
-        if (extra) {
-            path.append("-extra");
+        if (StringUtils.isNotEmpty(suffix)) {
+            path.append("-");
+            path.append(suffix);
         }
         path.append(".jsp");
         // JSP name

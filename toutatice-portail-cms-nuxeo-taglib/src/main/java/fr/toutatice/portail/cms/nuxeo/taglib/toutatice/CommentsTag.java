@@ -456,8 +456,10 @@ public class CommentsTag extends ToutaticeSimpleTag {
             deleteUrlBuilder.append("#");
             deleteUrlBuilder.append(namespace);
             deleteUrlBuilder.append("-delete-comment");
-            Element delete = DOM4JUtils.generateLinkElement(deleteUrlBuilder.toString(), null, null, "btn btn-default fancybox_inline no-ajax-link",
+            Element delete = DOM4JUtils.generateLinkElement("javascript:;", null, null, "btn btn-default",
                     bundle.getString("DELETE"), "halflings halflings-trash");
+            DOM4JUtils.addDataAttribute(delete, "fancybox", StringUtils.EMPTY);
+            DOM4JUtils.addDataAttribute(delete, "src", deleteUrlBuilder.toString());
             DOM4JUtils.addDataAttribute(delete, "input-name", "id");
             DOM4JUtils.addDataAttribute(delete, "input-value", comment.getId());
             group.add(delete);

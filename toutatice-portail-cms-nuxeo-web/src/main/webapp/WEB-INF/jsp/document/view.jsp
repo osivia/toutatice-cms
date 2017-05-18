@@ -8,53 +8,25 @@
 
 <portlet:defineObjects />
 
+
 <div class="document clearfix">
     <c:choose>
         <c:when test="${not empty document}">
             <c:choose>
                 <c:when test="${onlyRemoteSections}">
-                    <jsp:include page="only-remote-sections.jsp" />
+                    <ttc:include page="only-remote-sections.jsp" />
                 </c:when>
-                
+
+                <c:when test="${onlyDescription}">
+                    <ttc:include page="only-description.jsp" />
+                </c:when>
+
                 <c:otherwise>
-        
-		            <c:choose>
-		                <c:when test="${onlyDescription}">
-		                    <jsp:include page="only-description.jsp" />
-		                </c:when>
-		                
-		                <c:otherwise>
-                            <div class="row">
-                                <div class="col-md-8 col-lg-9">
-                                    <!-- Document view -->
-                                    <ttc:include page="view-${dispatchJsp}.jsp" />
-                                </div>
-                                
-                                <div class="col-md-4 col-lg-3">
-                                    <!-- Document extra view -->
-                                    <ttc:include page="view-${dispatchExtraJsp}-extra.jsp" />
-                                
-                                    <!-- Document attachments view -->
-                                    <c:if test="${attachments}">
-                                        <jsp:include page="attachments.jsp" />
-                                    </c:if>
-                                    
-                                    <!-- Metadata -->
-                                    <c:if test="${metadata}">
-                                        <jsp:include page="metadata.jsp" />
-                                    </c:if>
-                                </div>
-                            </div>
-		                    
-		                    <!-- Document comments view -->
-                            <ttc:comments document="${document}" />
-		                </c:otherwise>
-		            </c:choose>
-		            
-		         </c:otherwise>   
-	         </c:choose>
+                    <ttc:include page="view-${dispatchLayoutJsp}-layout.jsp" />
+                </c:otherwise>
+            </c:choose>
         </c:when>
-        
+
         <c:otherwise>
             <p class="text-danger">
                 <i class="halflings halflings-exclamation-sign"></i>

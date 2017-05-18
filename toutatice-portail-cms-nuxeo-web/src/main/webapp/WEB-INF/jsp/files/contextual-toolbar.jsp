@@ -21,7 +21,7 @@
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
 
 
-<div class="contextual-toolbar" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}">
+<div class="contextual-toolbar hidden-print" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}">
     <nav class="navbar navbar-default" role="toolbar">
         <h3 class="sr-only"><op:translate key="FILE_BROWSER_TOOLBAR_TITLE"/></h3>
     
@@ -78,7 +78,7 @@
             
                 <!-- Delete -->
                 <c:set var="title"><op:translate key="DELETE" /></c:set>
-                <a href="#${namespace}-delete" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancybox_inline no-ajax-link delete">
+                <a href="javascript:;" title="${title}" data-fancybox data-src="#${namespace}-delete" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn delete">
                     <i class="halflings halflings-trash"></i>
                     <span class="sr-only">${title}</span>
                 </a>

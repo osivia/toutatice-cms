@@ -88,6 +88,9 @@ public class FileContentCommand implements INuxeoCommand {
                 PropertyMap descFileMap = files.getMap(index);
                 if (descFileMap != null) {
                     map = descFileMap.getMap(tokens[2]);
+
+                    // Add filename in case it is missing in schema "file"
+                    map.set("filename", descFileMap.getString("filename"));
                 }
             }
 
@@ -131,8 +134,10 @@ public class FileContentCommand implements INuxeoCommand {
                 CMSBinaryContent content = new CMSBinaryContent();
 
                 String fileName = blob.getFileName();
+                if ("file".equals(fileName)) {
+                    fileName = map.getString("filename");
+                }
                 if ((fileName == null) || "null".equals(fileName)) {
-
                     // Pb. sur l'upload, on prend le nom du document
                     fileName = this.document.getTitle();
                 }

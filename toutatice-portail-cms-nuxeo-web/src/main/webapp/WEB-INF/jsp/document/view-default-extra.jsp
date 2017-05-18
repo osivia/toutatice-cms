@@ -10,7 +10,7 @@
 <c:set var="validationState" value="${document.properties['validationState']}" />
 
 
-<c:if test="${not empty vignetteUrl or not empty description or not empty validationState}">
+<c:if test="${metadata and (not empty vignetteUrl or not empty description or not empty validationState)}">
     <div class="panel panel-default">
         <div class="panel-body">
             <!-- Vignette -->

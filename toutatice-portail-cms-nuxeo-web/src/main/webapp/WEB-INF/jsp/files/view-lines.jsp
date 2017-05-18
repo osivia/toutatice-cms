@@ -44,6 +44,9 @@
 </portlet:renderURL>
 
 
+<c:set var="namespace"><portlet:namespace /></c:set>
+
+
 <div class="file-browser-lines">
     <div class="table">
         <!-- Header -->
@@ -227,7 +230,7 @@
                                                     <c:if test="${'Picture' eq document.type.name}">
                                                         <ttc:documentLink document="${document}" picture="true" var="pictureLink" />
                                                         
-                                                        <a href="${pictureLink.url}" data-title="${document.title}" rel="gallery" class="fancybox thumbnail no-ajax-link"></a>
+                                                        <a href="${pictureLink.url}" data-fancybox="${namespace}-gallery" data-caption="${document.title}" class="hidden-print"></a>
                                                     </c:if>
                                                     
                                                     <!-- Sortable handle -->
