@@ -483,7 +483,7 @@ public class MenuBarFormater {
     protected void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
                 "glyphicons glyphicons-pencil", MenubarGroup.CMS, 6, false, false);
-        dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
+        dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
 
@@ -498,7 +498,7 @@ public class MenuBarFormater {
     protected void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-share-alt",
                 MenubarGroup.GENERIC, 8);
-        dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
+        dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
 
@@ -513,7 +513,7 @@ public class MenuBarFormater {
     protected void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
                 "glyphicons glyphicons-option-vertical", MenubarGroup.GENERIC, 40, false, false);
-        dropdown.setBreadcrumb((type != null) && (type.isFolderish()) && BooleanUtils.isNotTrue(type.getEditorialContent()));
+        dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
 
@@ -930,7 +930,6 @@ public class MenuBarFormater {
                     parent, 50, browserURL, null, null, "fancyframe_refresh");
             browserItem.setAjaxDisabled(true);
             browserItem.setDivider(true);
-            browserItem.setBreadcrumb(true);
 
             menubar.add(browserItem);
         }
@@ -968,7 +967,6 @@ public class MenuBarFormater {
 
                     versionsItem.setAjaxDisabled(true);
                     versionsItem.setDivider(true);
-                    versionsItem.setBreadcrumb(false);
 
                     menubar.add(versionsItem);
 
@@ -1590,7 +1588,6 @@ public class MenuBarFormater {
                     final MenubarItem item = new MenubarItem("REORDER", bundle.getString("REORDER"), "glyphicons glyphicons-sorting", parent, 3,
                             reorderDocumentsURL, null, null, "fancyframe_refresh");
                     item.setAjaxDisabled(true);
-                    item.setBreadcrumb(true);
 
                     menubar.add(item);
                 }
@@ -1698,14 +1695,14 @@ public class MenuBarFormater {
                 final String url = entry.getValue();
 
                 // Menubar item
-                final MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.CMS, 2, url, null, onclick,
+                final MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.ADD, 0, url, null, onclick,
                         "fancyframe_refresh");
                 item.setAjaxDisabled(true);
 
                 menubar.add(item);
             } else if (size > 0) {
                 // Dropdown menu
-                final MenubarDropdown dropdown = new MenubarDropdown("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.CMS, 2);
+                final MenubarDropdown dropdown = new MenubarDropdown("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.ADD, 0);
                 this.menubarService.addDropdown(portalControllerContext, dropdown);
 
                 int order = 1;

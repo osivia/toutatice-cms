@@ -161,6 +161,7 @@
     .file-browser-lines {
         @border-color: #ddd;
         @line-height: 32px;
+        @table-cell-padding: 8px;
         
         .table {
             .table-body {
@@ -197,7 +198,7 @@
         .document-icon {
             float: left;
             width: @line-height;
-            margin-right: 8px;
+            margin-right: @table-cell-padding;
     
             text-align: center;
             
@@ -225,7 +226,7 @@
         .document-lock {
             float: right;
             width: @line-height;
-            margin-left: 8px;
+            margin-left: @table-cell-padding;
             
             text-align: center;
         }
@@ -239,7 +240,9 @@
     
     
         .avatar {
-            display: none;
+            height: @line-height - (2 * @table-cell-padding);
+            vertical-align: text-bottom;
+            margin-left: @table-cell-padding;
         }
         
         

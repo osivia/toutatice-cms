@@ -562,7 +562,9 @@ function displayControls($browser) {
 		$selected = $browser.find(".ui-selected"),
 		identifiers = "", paths = "", types = "",
 		downloadUrl,
-		ajaxPendingCounter;
+		ajaxPendingCounter,
+		$menubar = $JQry("#menubar"),
+		$menubarBreadcrumbItems = $menubar.find(".menubar-breadcrumb-item");
 	
 	// Sortable
 	$browser.find(".sortable-handle").addClass("hidden");
@@ -583,6 +585,8 @@ function displayControls($browser) {
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
+		
+		$menubarBreadcrumbItems.addClass("disabled");
 		
 		if ($selected.length == 1) {
 			// Single element selected
@@ -725,6 +729,8 @@ function displayControls($browser) {
 	} else {
 		// No selection
 		$toolbar.removeClass("in");
+		
+		$menubarBreadcrumbItems.not("[data-disabled]").removeClass("disabled");
 	}
 }
 

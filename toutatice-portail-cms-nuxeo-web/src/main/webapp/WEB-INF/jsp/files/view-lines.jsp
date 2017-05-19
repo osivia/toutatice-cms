@@ -246,11 +246,10 @@
                                                         <div class="col-xs-9">
                                                             <!-- Last contribution -->
                                                             <div class="text-overflow">
-                                                                <span><op:formatRelativeDate value="${date}" capitalize="true" /></span>
+                                                                <span><fmt:formatDate value="${date}" type="date" dateStyle="full" /></span>
                                                                 <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
                                                             </div>
                                                         </div>
-                                                        
                                                         
                                                         <div class="col-xs-3">
                                                             <!-- Size -->
