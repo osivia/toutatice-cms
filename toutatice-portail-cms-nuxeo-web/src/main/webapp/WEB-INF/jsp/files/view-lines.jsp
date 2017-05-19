@@ -245,9 +245,18 @@
                                                     <div class="row">
                                                         <div class="col-xs-9">
                                                             <!-- Last contribution -->
-                                                            <div class="text-overflow">
-                                                                <span><fmt:formatDate value="${date}" type="date" dateStyle="full" /></span>
-                                                                <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>
+                                                            <div class="row">
+                                                                <div class="col-sm-6">
+                                                                    <div class="text-overflow">
+                                                                        <span><fmt:formatDate value="${date}" type="date" dateStyle="medium" /></span>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="col-sm-6 hidden-xs">
+                                                                    <div class="text-overflow">
+                                                                        <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>    
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         

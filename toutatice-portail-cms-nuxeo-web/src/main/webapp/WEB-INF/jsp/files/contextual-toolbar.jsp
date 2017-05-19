@@ -28,7 +28,7 @@
         <div class="container-fluid">
             <!-- Information text -->
             <p class="navbar-text hidden-xs hidden-sm">
-                <span class="message-selection small" data-message-single-selection="${messageSingleSelection}" data-message-multiple-selection="${messageMultipleSelection}">
+                <span class="message-selection label label-primary" data-message-single-selection="${messageSingleSelection}" data-message-multiple-selection="${messageMultipleSelection}">
                     <span></span>
                 </span>
             </p>
