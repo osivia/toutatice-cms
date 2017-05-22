@@ -627,6 +627,12 @@ public class ViewDocumentPortlet extends CMSPortlet {
      * @param documentDTO
      */
     protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO, Boolean readFilter) {
+        
+        
+        //TODO performances to improve
+        if(true)
+            return;
+        
         if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61)) {
 
             int cacheType = nuxeoController.getCacheType();
