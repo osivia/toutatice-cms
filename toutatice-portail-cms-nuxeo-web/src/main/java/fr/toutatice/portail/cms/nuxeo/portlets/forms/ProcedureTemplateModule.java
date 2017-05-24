@@ -74,43 +74,8 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         Document procedureModel = getDocument(nuxeoController, procedureModelWebid);
         PropertyMap dashboardM = getDashboard(procedureModel, dashboardName);
         
-        // if (StringUtils.equals(procedureModel.getType(), "RecordFolder")) {
-        // PropertyList steps = getSteps(nuxeoController, procedureModel);
-        // }
-
         request.setAttribute("dashboardName", dashboardM.getString("name"));
         request.setAttribute("dashboardColumns", dashboardM.getList("columns").list());
-
-
-        // boolean creator = false, created = false, lastContributor = false, modified = false;
-        // for (Object columnO : dashboardM.getList("columns").list()) {
-        // PropertyMap columnM = (PropertyMap) columnO;
-        // String variableName = columnM.getString("variableName");
-        // if (!creator && StringUtils.equals(variableName, "dc:creator")) {
-        // creator = true;
-        // } else if (!created && StringUtils.equals(variableName, "dc:created")) {
-        // created = true;
-        // } else if (!lastContributor && StringUtils.equals(variableName, "dc:lastContributor")) {
-        // lastContributor = true;
-        // } else if (!modified && StringUtils.equals(variableName, "dc:modified")) {
-        // modified = true;
-        // }
-        // }
-        //
-        // if (creator || created || lastContributor || modified) {
-        // List<DocumentDTO> documents = (List<DocumentDTO>) request.getAttribute("documents");
-        //
-        // for (DocumentDTO documentDTO : documents) {
-        // PropertyMap globalVariablesValuesM = (PropertyMap) documentDTO.getProperties().get("pi:globalVariablesValues");
-        //
-        // if(creator){
-        // globalVariablesValuesM.map().put("dc:creator", documentDTO.getDocument().g);
-        // }
-        //
-        //
-        // }
-        // }
-
 
     }
 
@@ -219,17 +184,5 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
         return null;
     }
-
-
-    // private PropertyList getSteps(NuxeoController nuxeoController, Document procedureModel) {
-    // PropertyMap properties = procedureModel.getProperties();
-    //
-    // String webIdParent = properties.getString("pcd:webIdParent");
-    //
-    // Document procedureModelParent = getDocument(nuxeoController, webIdParent);
-    //
-    //
-    // return null;
-    // }
 
 }
