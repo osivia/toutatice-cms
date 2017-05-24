@@ -73,6 +73,6 @@ public class ViewProcedureConfiguration extends ListConfiguration {
      * @param dashboardId the dashboardId to set
      */
     public void setDashboardId(String dashboardId) {
-        dashboardId = dashboardId;
+        this.dashboardId = dashboardId;
     }
 }
