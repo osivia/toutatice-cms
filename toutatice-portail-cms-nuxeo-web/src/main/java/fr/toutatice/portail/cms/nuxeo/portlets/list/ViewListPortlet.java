@@ -70,7 +70,6 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -101,6 +100,7 @@ public class ViewListPortlet extends ViewList {
 
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/list/admin.jsp";
+
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
@@ -110,7 +110,7 @@ public class ViewListPortlet extends ViewList {
     /** Document DAO. */
     private DocumentDAO documentDAO;
     /** CMS customizer. */
-    private INuxeoCustomizer customizer;
+    protected INuxeoCustomizer customizer;
     /** Portlet sequencing service. */
     private IPortletSequencingService portletSequencingService;
 
@@ -459,7 +459,7 @@ public class ViewListPortlet extends ViewList {
 
             response.setContentType("text/html");
 
-            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_ADMIN);
+            PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(getPathAdmin());
             dispatcher.include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
@@ -949,7 +949,7 @@ public class ViewListPortlet extends ViewList {
      * @param window portal window
      * @return list configuration
      */
-    private ListConfiguration getConfiguration(PortalWindow window) {
+    protected ListConfiguration getConfiguration(PortalWindow window) {
         ListConfiguration configuration = new ListConfiguration();
 
         // Nuxeo request
@@ -1005,6 +1005,15 @@ public class ViewListPortlet extends ViewList {
 
 
         return configuration;
+    }
+
+    /**
+     * Getter for PATH_ADMIN.
+     * 
+     * @return the pathAdmin
+     */
+    public String getPathAdmin() {
+        return PATH_ADMIN;
     }
 
 }

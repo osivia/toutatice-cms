@@ -75,6 +75,13 @@
             <version>${jboss.portal.version}</version>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+           <groupId>org.jboss.portal</groupId>
+           <artifactId>portal-security-lib</artifactId>
+           <version>${jboss.portal.version}</version>
+           <scope>provided</scope>
+       </dependency>
 
 	</dependencies>
 

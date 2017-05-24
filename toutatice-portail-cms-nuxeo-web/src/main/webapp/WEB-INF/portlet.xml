@@ -115,6 +115,30 @@
         </portlet-info>
     </portlet>
 
+    <portlet>
+        <description>Portlet procedures instances list</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewProcedurePortlet</portlet-name>
+        <display-name>Portlet Liste instances de procédures Nuxeo</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
+
+        <supported-locale>en</supported-locale>
+        <supported-locale>fr</supported-locale>
+
+        <portlet-info>
+            <title>Nuxeo Cms</title>
+            <short-title>Portlet procedures instances list</short-title>
+            <keywords>procedures, instance, forms</keywords>
+        </portlet-info>
+    </portlet>
 
     <portlet>
         <description>Portlet Nuxeo Navigation PIA</description>

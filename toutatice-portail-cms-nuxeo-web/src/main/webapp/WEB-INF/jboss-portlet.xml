@@ -65,6 +65,21 @@
         </portlet-info>
     </portlet>
     
+    <!-- Procedures List -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewProcedurePortlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+        
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
 
     <!-- Portal site navigation -->
     <portlet>

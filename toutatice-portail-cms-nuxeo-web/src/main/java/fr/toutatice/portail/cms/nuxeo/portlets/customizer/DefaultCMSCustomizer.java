@@ -129,6 +129,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
@@ -160,6 +161,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Default schemas. */
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
+    /** PROCEDURE_SCHEMAS */
+    public static final String PROCEDURE_SCHEMAS = "dublincore, common, toutatice, procedureInstance, record";
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
@@ -347,6 +350,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual links
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
 
+        // Procedure
+        ListTemplate procedureTemplate = new ListTemplate(ViewList.LIST_TEMPLATE_PROCEDURE, bundle.getString("LIST_TEMPLATE_PROCEDURE"), PROCEDURE_SCHEMAS);
+        procedureTemplate.setModule(new ProcedureTemplateModule(portletContext));
+        templates.add(procedureTemplate);
 
         return templates;
     }

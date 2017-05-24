@@ -154,16 +154,23 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
 
+        if (variables == null) {
+            variables = new HashMap<String, String>();
+        }
 
         // Model
         String modelWebId = FORMS_WEB_ID_PREFIX + modelId;
         Document model = this.getModel(portalControllerContext, modelWebId);
+        if (StringUtils.equals(model.getType(), "RecordFolder")) {
+            String parentModelWebId = model.getString("pcd:webIdParent");
+            model = this.getModel(portalControllerContext, parentModelWebId);
+        }
 
         // Procedure initiator
         String procedureInitiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
 
         // Starting step
-        String startingStep = model.getString("pcd:startingStep");
+        String startingStep = StringUtils.defaultIfBlank(variables.get("pcd:startingStep"), model.getString("pcd:startingStep"));
         // Starting step properties
         PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
 
@@ -177,14 +184,11 @@ public class FormsServiceImpl implements IFormsService {
         String title = StringUtils.EMPTY;
         // Next step properties
         PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-        title = nextStepProperties.getString("name");
-
         // Actors
-        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
-
-
-        if (variables == null) {
-            variables = new HashMap<String, String>();
+        List<String> actors = null;
+        if (nextStepProperties != null) {
+            title = nextStepProperties.getString("name");
+            actors = getActors(model, nextStep, title, nextStepProperties);
         }
 
         // UUID
@@ -198,7 +202,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
-                procedureInitiator, startDate, startDate, procedureInitiator, nextStep);
+                procedureInitiator, startDate, startDate, procedureInitiator, nextStep, startingStep);
 
         if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
             // Properties
@@ -228,6 +232,10 @@ public class FormsServiceImpl implements IFormsService {
             } catch (CMSException e) {
                 throw new PortalException(e);
             }
+        }
+
+        if (StringUtils.equals(model.getType(), "RecordFolder")) {
+            // creation record
         }
 
 
@@ -328,9 +336,9 @@ public class FormsServiceImpl implements IFormsService {
         String lastModified = DATE_FORMAT.format(date);
 
         // Previous step
-        String previousStep = instanceProperties.getString("pi:currentStep");
+        String currentStep = instanceProperties.getString("pi:currentStep");
         // Previous step properties
-        PropertyMap previousStepProperties = this.getStepProperties(model, previousStep);
+        PropertyMap previousStepProperties = this.getStepProperties(model, currentStep);
 
         // Action properties
         PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
@@ -369,7 +377,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
-                globalVariableValues, portalControllerContext, procedureInitiator,startDate, lastModified, previousTaskInitiator, nextStep);
+                globalVariableValues, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep, currentStep);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -483,7 +491,8 @@ public class FormsServiceImpl implements IFormsService {
      */
     private FormFilterContext callFilters(String modelWebId, String procedureInstanceUuid, String actionId, Map<String, String> variables,
             PropertyMap actionProperties, List<String> actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
-            String procedureInitiator,String startDate,String lastModified, String taskInitiator, String nextStep) throws FormFilterException {
+            String procedureInitiator, String startDate, String lastModified, String taskInitiator, String nextStep, String currentStep)
+            throws FormFilterException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginManager();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -524,7 +533,8 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // init du contexte des filtres
-        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator,startDate, lastModified, nextStep);
+        FormFilterContext filterContext = new FormFilterContext(filtersParams, procedureInitiator, taskInitiator, startDate, lastModified, nextStep,
+                currentStep);
         filterContext.setPortalControllerContext(portalControllerContext);
         filterContext.setModelWebId(modelWebId);
         filterContext.setProcedureInstanceUuid(procedureInstanceUuid);
@@ -592,14 +602,15 @@ public class FormsServiceImpl implements IFormsService {
 
         // Properties
         PropertyMap properties = null;
-        for (int i = 0; i < steps.size(); i++) {
-            PropertyMap map = steps.getMap(i);
-            if (StringUtils.equals(step, map.getString("reference"))) {
-                properties = map;
-                break;
+        if (!StringUtils.equals(step, ENDSTEP)) {
+            for (int i = 0; i < steps.size(); i++) {
+                PropertyMap map = steps.getMap(i);
+                if (StringUtils.equals(step, map.getString("reference"))) {
+                    properties = map;
+                    break;
+                }
             }
         }
-
         return properties;
     }
 
@@ -971,6 +982,11 @@ public class FormsServiceImpl implements IFormsService {
                 modelWebId = document.getString("ttc:webid");
                 PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
                 currentStepProperties = startingStepProperties;
+            } else if (StringUtils.equals(document.getType(), "RecordFolder")) {
+                String startingStep = variables.get("pcd:startingStep");
+                modelWebId = document.getString("pcd:webIdParent");
+                PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
+                currentStepProperties = startingStepProperties;
             } else {
                 PropertyMap instanceProperties = null;
                 if (StringUtils.equals(document.getType(), "ProcedureInstance")) {
@@ -984,6 +1000,10 @@ public class FormsServiceImpl implements IFormsService {
                 }
                 modelWebId = instanceProperties.getString("pi:procedureModelWebId");
                 Document model = this.getModel(portalControllerContext, modelWebId);
+                if (StringUtils.equals(model.getType(), "RecordFolder")) {
+                    modelWebId = model.getString("pcd:webIdParent");
+                    model = this.getModel(portalControllerContext, modelWebId);
+                }
                 String currentStep = instanceProperties.getString("pi:currentStep");
                 currentStepProperties = this.getStepProperties(model, currentStep);
 
@@ -1009,7 +1029,7 @@ public class FormsServiceImpl implements IFormsService {
                 initActionProperties = currentStepProperties.getMap("initAction");
                 if (initActionProperties != null) {
                     variables = callFilters(modelWebId, procedureInstanceUuid, null, variables, initActionProperties, null, null, portalControllerContext,
-                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null).getVariables();
+                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null, null).getVariables();
                 }
             }
         }

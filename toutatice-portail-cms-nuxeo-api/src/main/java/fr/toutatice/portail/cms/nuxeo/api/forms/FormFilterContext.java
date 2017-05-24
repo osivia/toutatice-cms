@@ -41,6 +41,8 @@ public class FormFilterContext {
     private String lastModified;
     /** nextStep */
     private String nextStep;
+    /** currentStep */
+    private String currentStep;
 
 
     /** Actors. */
@@ -57,13 +59,14 @@ public class FormFilterContext {
      * Instantiates a new form filter context.
      */
     public FormFilterContext(Map<String, Map<String, String>> filtersParams, String procedureInitiator, String taskInitiator, String startDate,
-            String lastModified, String nextStep) {
+            String lastModified, String nextStep, String currentStep) {
         super();
         this.filtersParams = filtersParams;
         this.procedureInitiator = procedureInitiator;
         this.startDate = startDate;
         this.lastModified = lastModified;
         this.nextStep = nextStep;
+        this.currentStep = currentStep;
         this.taskInitiator = taskInitiator;
         this.actors = new HashSet<>();
         this.additionalAuthorizations = new HashSet<>();
@@ -242,6 +245,26 @@ public class FormFilterContext {
      */
     public Set<String> getAdditionalAuthorizations() {
         return additionalAuthorizations;
+    }
+
+
+    /**
+     * Getter for currentStep.
+     * 
+     * @return the currentStep
+     */
+    public String getCurrentStep() {
+        return currentStep;
+    }
+
+
+    /**
+     * Setter for currentStep.
+     * 
+     * @param currentStep the currentStep to set
+     */
+    public void setCurrentStep(String currentStep) {
+        this.currentStep = currentStep;
     }
 
 }

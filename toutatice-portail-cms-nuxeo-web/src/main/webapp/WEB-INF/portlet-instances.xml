@@ -86,6 +86,26 @@
             </preferences>
         </instance>
     </deployment>
+    
+    <deployment>
+        <if-exists>overwrite</if-exists>
+        <instance>
+            <display-name xml:lang="en">Nuxeo - Procedure instances List display</display-name>
+            <display-name xml:lang="fr">Nuxeo - Affichage liste des procédures instances</display-name>
+            <instance-id>toutatice-portail-cms-nuxeo-viewProcedurePortletInstance</instance-id>
+            <portlet-ref>toutatice-portail-cms-nuxeo-viewProcedurePortlet</portlet-ref>
+            <security-constraint>
+                <policy-permission>
+                    <action-name>admin</action-name>
+                    <role-name>Administrators</role-name>
+                </policy-permission>
+                <policy-permission>
+                    <action-name>view</action-name>
+                    <unchecked />
+                </policy-permission>
+            </security-constraint>
+        </instance>
+    </deployment>
 
     <deployment>
         <if-exists>overwrite</if-exists>

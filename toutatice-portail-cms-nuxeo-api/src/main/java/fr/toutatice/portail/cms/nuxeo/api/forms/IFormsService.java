@@ -137,8 +137,9 @@ public interface IFormsService {
      */
     String transform(PortalControllerContext portalControllerContext, String expression, Map<String, String> variables) throws PortalException;
 
-	/**
+    /**
      * Execute initialisation of a form
+     * retrieves properties from the parent model when necessary
      *
      * @param portalControllerContext
      * @param document
