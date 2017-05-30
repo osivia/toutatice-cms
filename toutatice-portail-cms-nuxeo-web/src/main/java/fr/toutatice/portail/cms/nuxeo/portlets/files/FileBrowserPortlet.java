@@ -113,7 +113,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Error JSP path. */
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
-	private static final String HOST_JOKER = "__HOST__";
+    private static final String HOST_JOKER = "__HOST__";
 
 
     /** Bundle factory. */
@@ -138,7 +138,6 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
-    
     /**
      * {@inheritDoc}
      */
@@ -226,17 +225,17 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             } else if ("copy".equals(action)) {
                 // Copy action
-                
+
                 String sourcePath = request.getParameter("sourcePath");
                 String targetPath = getPath(nuxeoController);
-        
+
                 INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
                 nuxeoController.executeNuxeoCommand(command);
-                
-       
+
+
                 // Refresh navigation
                 request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-            
+
             } else if ("delete".equals(action)) {
                 // Delete action
 
@@ -247,23 +246,20 @@ public class FileBrowserPortlet extends CMSPortlet {
                             cmsService.putDocumentInTrash(cmsContext, id);
                         }
 
-                        
+
                         // Notification
                         String message = bundle.getString("SUCCESS_MESSAGE_DELETE");
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
-                        
+
                         // Refresh navigation
                         request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-                        
+
                     } catch (CMSException e) {
                         // Notification
                         String message = bundle.getString("ERROR_MESSAGE_ERROR_HAS_OCCURED");
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
                     }
                 }
-                
-                
-                
 
             } else if ("drop".equals(action)) {
                 // Drop action
@@ -283,8 +279,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     // Update public render parameter for associated portlets refresh
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
-                    
-                    
+
 
                     // Notification
                     String message;
@@ -337,7 +332,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-                    
+
 
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
@@ -349,7 +344,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 }
 
                 this.notificationsService.addNotifications(portalControllerContext, notifications);
-             }
+            }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {
             // Admin
@@ -396,8 +391,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                     data.put("copiable", publicationInfos.isCopiable());
 
                     if (BooleanUtils.toBoolean(isFile)) {
-                    	String driveEditUrl = publicationInfos.getDriveEditURL();
-                    	
+                        String driveEditUrl = publicationInfos.getDriveEditURL();
+
                         // No host in nxdrive URL (get the current portal request host), refs #1421
                         if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
                             StringBuilder builder = new StringBuilder();
@@ -408,7 +403,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                             driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
                         }
 
-						data.put("driveEditUrl", driveEditUrl);
+                        data.put("driveEditUrl", driveEditUrl);
                     }
                 } catch (CMSException e) {
                     // Do nothing
@@ -579,7 +574,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         return path;
     }
 
-    
+
     /**
      * Set draft informations if document has draft.
      * 
@@ -588,7 +583,7 @@ public class FileBrowserPortlet extends CMSPortlet {
      * @return document with modified properies
      */
     private DocumentDTO setDraftInfos(Document document, DocumentDTO documentDTO) {
-        if(DocumentHelper.hasDraft(document)){
+        if (DocumentHelper.hasDraft(document)) {
             String draftPath = DocumentHelper.getDraftPath(document);
             documentDTO.getProperties().put("draftPath", draftPath);
         }
@@ -715,37 +710,39 @@ public class FileBrowserPortlet extends CMSPortlet {
     private void addMenubarItems(PortalControllerContext portalControllerContext, FileBrowserView currentView) {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
-        // Response
-        PortletResponse response = portalControllerContext.getResponse();
-        // Bundle
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
-        // Menubar
-        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
+        if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+            // Response
+            PortletResponse response = portalControllerContext.getResponse();
+            // Bundle
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+            // Menubar
+            List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-        // Change view menubar items
-        if (response instanceof MimeResponse) {
-            MimeResponse mimeResponse = (MimeResponse) response;
+            // Change view menubar items
+            if (response instanceof MimeResponse) {
+                MimeResponse mimeResponse = (MimeResponse) response;
 
-            int order = 0;
-            for (FileBrowserView view : FileBrowserView.values()) {
-                if (view != currentView) {
-                    // Identifier
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("FILE_BROWSER_SHOW_");
-                    builder.append(StringUtils.upperCase(view.getName()));
-                    String id = builder.toString();
+                int order = 0;
+                for (FileBrowserView view : FileBrowserView.values()) {
+                    if (view != currentView) {
+                        // Identifier
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("FILE_BROWSER_SHOW_");
+                        builder.append(StringUtils.upperCase(view.getName()));
+                        String id = builder.toString();
 
-                    // URL
-                    PortletURL actionURL = mimeResponse.createActionURL();
-                    actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
-                    actionURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
+                        // URL
+                        PortletURL actionURL = mimeResponse.createActionURL();
+                        actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
 
-                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, actionURL.toString(),
-                            null, null, null);
-                    menubar.add(menubarItem);
+                        MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, actionURL.toString(),
+                                null, null, null);
+                        menubar.add(menubarItem);
 
-                    order++;
+                        order++;
+                    }
                 }
             }
         }

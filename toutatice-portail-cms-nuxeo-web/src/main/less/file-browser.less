@@ -185,6 +185,20 @@
                         }
                     }
                 }
+                
+                // Fancybox gallery
+                [data-fancybox] {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    
+                    visibility: hidden;
+                    
+                    margin: 0;
+                    padding: 0;
+                }
             }
         }
     
@@ -195,6 +209,7 @@
         }
     
     
+        // Icon
         .document-icon {
             float: left;
             width: @line-height;
@@ -223,6 +238,7 @@
         }
         
         
+        // Lock indicator
         .document-lock {
             float: right;
             width: @line-height;
@@ -232,6 +248,7 @@
         }
     
     
+        // Title
         .document-title {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -239,25 +256,10 @@
         }
     
     
+        // Avatar 
         .avatar {
             height: @line-height - (2 * @table-cell-padding);
             vertical-align: text-bottom;
-//            margin-left: @table-cell-padding;
-        }
-        
-        
-        // Fancybox gallery
-        [data-fancybox] {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            
-            visibility: hidden;
-            
-            margin: 0;
-            padding: 0;
         }
 
         
@@ -304,6 +306,13 @@
         .ui-selected {
             .sortable-handle {
                 visibility: visible;
+            }
+        }
+        
+        
+        .contextual-toolbar {
+            .label.message-selection {
+                font-size: 100%; 
             }
         }
     }

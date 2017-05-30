@@ -51,7 +51,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 
 
 /**
@@ -284,7 +283,7 @@ public class BinaryServlet extends HttpServlet {
             builder.append("inline; ");
         } else {
             // Force download
-            builder.append("attachment; ");
+            builder.append("attachment; "); // FIXME
         }
         builder.append("filename=\"");
         builder.append(fileName);

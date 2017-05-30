@@ -100,6 +100,7 @@ import org.osivia.portal.core.web.IWebUrlService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -898,7 +899,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if (ctx.getDoc() != null) {
             Document doc = (Document) ctx.getDoc();
             publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
-            extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
+            if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
+                extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
+            }
         }
 
         this.menubarFormater.formatContentMenuBar(ctx, publicationInfos, extendedDocumentInfos);
@@ -982,51 +985,51 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
         if (portalName != null) {
             PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
-            
+
             // Pour prévenir des window en Timeout.
-            if( portalObjectContainer != null){
-            PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+            if (portalObjectContainer != null) {
+                PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
-            if (requestFilteringPolicy != null) {
-                policyFilter = requestFilteringPolicy;
-            } else {
-                // Get portal policy filter
-                String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
-                if (sitePolicy != null) {
-                    if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
-                        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
-                    }
+                if (requestFilteringPolicy != null) {
+                    policyFilter = requestFilteringPolicy;
                 } else {
-                    String portalType = po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
-                    if (InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
-                        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
-                    }
-                }
-            }
-
-            if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
-                // Parcours des pages pour appliquer le filtre sur les paths
-                String pathFilter = "";
-
-                for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
-                    String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
-                    if ((cmsPath != null) && (cmsPath.length() > 0)) {
-                        if (pathFilter.length() > 0) {
-                            pathFilter += " OR ";
+                    // Get portal policy filter
+                    String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
+                    if (sitePolicy != null) {
+                        if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
+                            policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
                         }
-                        pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+                    } else {
+                        String portalType = po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
+                        if (InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
+                            policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
+                        }
                     }
                 }
 
-                if (pathFilter.length() > 0) {
-                    requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
-                }
-            }
+                if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
+                    // Parcours des pages pour appliquer le filtre sur les paths
+                    String pathFilter = "";
 
-            String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
-            if (extraFilter != null) {
-                requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
-            }
+                    for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
+                        String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
+                        if ((cmsPath != null) && (cmsPath.length() > 0)) {
+                            if (pathFilter.length() > 0) {
+                                pathFilter += " OR ";
+                            }
+                            pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+                        }
+                    }
+
+                    if (pathFilter.length() > 0) {
+                        requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
+                    }
+                }
+
+                String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
+                if (extraFilter != null) {
+                    requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+                }
             }
         }
 
@@ -1155,11 +1158,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String nxPublicDomainUri = NuxeoConnectionProperties.getPublicDomainUri().toString();
 
         // #1421 - If not specified, use current request url insteaod of nuxeo.url
-        if(StringUtils.isBlank(nxPublicDomainUri) && ctx != null && ctx.getRequest() !=null) {
-        	nxPublicDomainUri = ctx.getRequest().getScheme() + "://" + ctx.getRequest().getServerName();
+        if (StringUtils.isBlank(nxPublicDomainUri) && ctx != null && ctx.getRequest() != null) {
+            nxPublicDomainUri = ctx.getRequest().getScheme() + "://" + ctx.getRequest().getServerName();
         }
-        
-		return xslFunctions.link(nxPublicDomainUri + link);
+
+        return xslFunctions.link(nxPublicDomainUri + link);
     }
 
 
@@ -1196,8 +1199,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
 
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null,
-                    null);
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null, null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }
@@ -1321,35 +1323,57 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        defaultTypes.add(new DocumentType("Workspace", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"),
-                "/default/templates/workspace", "glyphicons glyphicons-wallet", true));
+        DocumentType workspace = new DocumentType("Workspace", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"),
+                "/default/templates/workspace", "glyphicons glyphicons-wallet", true);
+        workspace.setPreventedCreation(true);
+        defaultTypes.add(workspace);
+
         // Portal site
-        defaultTypes.add(new DocumentType("PortalSite", true, false, true, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink", "Note"),
-                null, "glyphicons glyphicons-global", true));
+        DocumentType portalSite = new DocumentType("PortalSite", true, false, true, true, true, true,
+                Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null, "glyphicons glyphicons-global", true, true);
+        defaultTypes.add(portalSite);
+
         // Portal page
-        defaultTypes.add(new DocumentType("PortalPage", true, true, true, true, true, true, Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null,
-                "glyphicons glyphicons-more-items"));
+        DocumentType portalPage = new DocumentType("PortalPage", true, true, true, true, true, true,
+                Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null, "glyphicons glyphicons-more-items", false, true);
+        defaultTypes.add(portalPage);
+
         // Folder
-        defaultTypes.add(new DocumentType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null,
-                "glyphicons glyphicons-folder-closed"));
+        DocumentType folder = new DocumentType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null,
+                "glyphicons glyphicons-folder-closed", false, true);
+        defaultTypes.add(folder);
+
         // Ordered folder
-        defaultTypes.add(new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
-                "glyphicons glyphicons-folder-closed"));
+        DocumentType orderedFolder = new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
+                "glyphicons glyphicons-folder-closed", false, true);
+        defaultTypes.add(orderedFolder);
+
         // File
-        DocumentType file = new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file", false,
-                true, true);
+        DocumentType file = new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file",
+                false, true, true);
         file.setFile(true);
         defaultTypes.add(file);
+
         // Note
-        defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note"));
+        DocumentType note = new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note",
+                false, true);
+        defaultTypes.add(note);
+
         // Contextual link
-        defaultTypes
-                .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
+        DocumentType contextualLink = new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
+                "glyphicons glyphicons-link", false, true);
+        defaultTypes.add(contextualLink);
+
         // Room
-        defaultTypes.add(new DocumentType("Room", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
-                "glyphicons glyphicons-cube-black"));
+        DocumentType room = new DocumentType("Room", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
+                "glyphicons glyphicons-cube-black");
+        room.setPreventedCreation(true);
+        defaultTypes.add(room);
+
         // Staple
-        defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
+        DocumentType staple = new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null,
+                "glyphicons glyphicons-nails");
+        defaultTypes.add(staple);
 
         return defaultTypes;
     }
@@ -1372,7 +1396,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public String getContentWebIdPath(CMSServiceCtx cmsCtx) {
-    	return getContentWebIdPath(cmsCtx, null);
+        return getContentWebIdPath(cmsCtx, null);
     }
 
 
@@ -1386,13 +1410,13 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
         boolean isRemoteProxy = false;
-        if(pubInfos == null){
-        	// List case
-        	isRemoteProxy = ContextDocumentsHelper.isRemoteProxy(doc);
+        if (pubInfos == null) {
+            // List case
+            isRemoteProxy = ContextDocumentsHelper.isRemoteProxy(doc);
         } else {
-        	isRemoteProxy = DocumentHelper.isRemoteProxy(cmsCtx, pubInfos);
+            isRemoteProxy = DocumentHelper.isRemoteProxy(cmsCtx, pubInfos);
         }
-        
+
         if (StringUtils.isNotEmpty(webId) && !isRemoteProxy) {
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
@@ -1505,7 +1529,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return null;
     }
 
-    
+
     /**
      * Gets the binary resource URL.
      *
@@ -1653,7 +1677,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 binaryTimestamp.setReloadingRequired(true);
                 this.binaryTimestamps.put(path, binaryTimestamp);
             }
-            
+
 
             if ("pdf:content".equals(binary.getFieldName()) && refreshingPage) {
                 // Force reloading for PDF preview
@@ -1661,7 +1685,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             } else if (binaryTimestamp.isReloadingRequired()) {
                 // Reload required
                 reload = true;
-                
+
                 if (timestamp - binaryTimestamp.getTimestamp() > TimeUnit.SECONDS.toMillis(10)) {
                     // Don't reload the next time
                     binaryTimestamp.setReloadingRequired(false);
@@ -2068,9 +2092,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public INotificationsService getNotificationsService() {
         return notificationsService;
     }
-
-
-
 
 
 }

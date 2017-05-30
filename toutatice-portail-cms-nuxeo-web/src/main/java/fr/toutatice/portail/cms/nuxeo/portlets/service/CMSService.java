@@ -108,7 +108,6 @@ import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -1317,12 +1316,10 @@ public class CMSService implements ICMSService {
 
             try {
                 if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-                    if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                        // Nuxeo command
-                        INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
+                    // Nuxeo command
+                    INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
 
-                        infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
-                    }
+                    infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
                 }
             } catch (NuxeoException e) {
                 e.rethrowCMSException();

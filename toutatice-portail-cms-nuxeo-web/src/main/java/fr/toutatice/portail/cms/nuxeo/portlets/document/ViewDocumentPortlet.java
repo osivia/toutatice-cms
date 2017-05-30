@@ -391,7 +391,13 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                         if (publicationInfos.isLiveSpace()) {
                             // Extended document informations
-                            ExtendedDocumentInfos extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+                            ExtendedDocumentInfos extendedDocumentInfos;
+                            if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                                extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+                            } else {
+                                extendedDocumentInfos = null;
+                            }
+
 
                             // Validation state
                             this.addValidationState(document, documentDto, extendedDocumentInfos);
@@ -530,7 +536,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
      *
      * @param document Nuxeo document
      * @param documentDTO document DTO
-     * @param extendedDocumentInfos extended document informations
+     * @param extendedDocumentInfos extended document informations, may be null
      */
     private void addValidationState(Document document, DocumentDTO documentDTO, ExtendedDocumentInfos extendedDocumentInfos) {
         // Validation state internationalization key
@@ -540,7 +546,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         // Validation state color
         String color;
 
-        if (extendedDocumentInfos.isValidationWorkflowRunning()) {
+        if ((extendedDocumentInfos != null) && extendedDocumentInfos.isValidationWorkflowRunning()) {
             // Validation in progress
             key = "DOCUMENT_STATE_VALIDATION_IN_PROGRESS";
             icon = "glyphicons glyphicons-hourglass";
