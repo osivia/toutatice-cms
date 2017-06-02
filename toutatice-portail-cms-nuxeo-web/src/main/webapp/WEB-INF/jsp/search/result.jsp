@@ -79,7 +79,7 @@
                                 <a href="${link.url}"
                                     <c:if test="${link.external}">target="_blank"</c:if>
                                 >
-                                    <i class="${document.type.glyph}"></i>
+                                    <i class="${document.type.icon}"></i>
                                     <span>${document.title}</span>
                                 </a>
                                 

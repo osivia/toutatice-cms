@@ -679,28 +679,26 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         if (publicationInfos.isEditableByUser()) {
             DocumentType documentType = documentDto.getType();
-            if ((documentType != null) && documentType.isLiveEditable()) {
-                if (documentType.isFile()) {
-                    // Drive edit URL
-                    String driveEditUrl = publicationInfos.getDriveEditURL();
+            if ((documentType != null) && documentType.isFile()) {
+                // Drive edit URL
+                String driveEditUrl = publicationInfos.getDriveEditURL();
 
-                    // No host in nxdrive URL (get the current portal request host), refs #1421
-                    if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(request.getScheme());
-                        builder.append("/");
-                        builder.append(request.getServerName());
-                        builder.append("/nuxeo");
-                        driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
-                	}
-                    
-                    // Drive enabled indicator
-                    boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
+                // No host in nxdrive URL (get the current portal request host), refs #1421
+                if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(request.getScheme());
+                    builder.append("/");
+                    builder.append(request.getServerName());
+                    builder.append("/nuxeo");
+                    driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
+                }
 
-                    if ((driveEditUrl != null) || driveEnabled) {
-                        request.setAttribute("driveEditUrl", driveEditUrl);
-                        request.setAttribute("driveEnabled", driveEnabled);
-                    }
+                // Drive enabled indicator
+                boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
+
+                if ((driveEditUrl != null) || driveEnabled) {
+                    request.setAttribute("driveEditUrl", driveEditUrl);
+                    request.setAttribute("driveEnabled", driveEnabled);
                 }
             }
         }

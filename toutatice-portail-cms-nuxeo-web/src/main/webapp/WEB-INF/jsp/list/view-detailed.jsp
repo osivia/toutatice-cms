@@ -35,7 +35,7 @@
             </c:if>
             
             <!-- Last edition informations -->
-            <c:if test="${not document.type.rootType}">
+            <c:if test="${not document.type.root}">
                 <p class="text-muted">
                     <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
                     <span><op:formatRelativeDate value="${date}" /></span>

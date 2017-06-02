@@ -64,7 +64,7 @@ public class NavigationItemAdapter {
 
 	protected boolean isNavigable(Document doc)	{
 		DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
-		return ((cmsItemType != null) && (cmsItemType.isNavigable()));
+        return ((cmsItemType != null) && (cmsItemType.isNavigable()));
 	}
 
 
@@ -123,8 +123,8 @@ public class NavigationItemAdapter {
 		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
 
 		if (StringUtils.isBlank(pageTemplate)) {
-			if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getDefaultTemplate())) {
-				pageTemplate = cmsItemType.getDefaultTemplate();
+            if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getTemplate())) {
+                pageTemplate = cmsItemType.getTemplate();
 				properties.put("defaultTemplate", "1");
 			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);

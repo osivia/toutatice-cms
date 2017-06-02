@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1323,56 +1322,81 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
 
         // Workspace
-        DocumentType workspace = new DocumentType("Workspace", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"),
-                "/default/templates/workspace", "glyphicons glyphicons-wallet", true);
+        DocumentType workspace = DocumentType.createRoot("Workspace");
+        workspace.addSubtypes("Folder", "Note", "Room");
+        workspace.setIcon("glyphicons glyphicons-wallet");
         workspace.setPreventedCreation(true);
+        workspace.setTemplate("/default/templates/workspace");
         defaultTypes.add(workspace);
 
         // Portal site
-        DocumentType portalSite = new DocumentType("PortalSite", true, false, true, true, true, true,
-                Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null, "glyphicons glyphicons-global", true, true);
+        DocumentType portalSite = DocumentType.createRoot("PortalSite");
+        portalSite.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
+        portalSite.setIcon("glyphicons glyphicons-global");
+        portalSite.setEditable(true);
         defaultTypes.add(portalSite);
 
         // Portal page
-        DocumentType portalPage = new DocumentType("PortalPage", true, true, true, true, true, true,
-                Arrays.asList("File", "PortalPage", "ContextualLink", "Note"), null, "glyphicons glyphicons-more-items", false, true);
+        DocumentType portalPage = DocumentType.createNode("PortalPage");
+        portalPage.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
+        portalPage.setIcon("glyphicons glyphicons-more-items");
+        portalPage.setEditable(true);
+        portalPage.setMovable(true);
+        portalPage.setOrdered(true);
+        portalPage.setForceContextualization(true);
         defaultTypes.add(portalPage);
 
         // Folder
-        DocumentType folder = new DocumentType("Folder", true, true, true, false, false, true, Arrays.asList("File", "Folder", "Note"), null,
-                "glyphicons glyphicons-folder-closed", false, true);
+        DocumentType folder = DocumentType.createNode("Folder");
+        folder.addSubtypes("File", "Folder", "Note");
+        folder.setIcon("glyphicons glyphicons-folder-closed");
+        folder.setEditable(true);
+        folder.setMovable(true);
         defaultTypes.add(folder);
 
         // Ordered folder
-        DocumentType orderedFolder = new DocumentType("OrderedFolder", true, true, true, true, false, true, Arrays.asList("File", "Folder", "Note"), null,
-                "glyphicons glyphicons-folder-closed", false, true);
+        DocumentType orderedFolder = DocumentType.createNode("OrderedFolder");
+        orderedFolder.addSubtypes("File", "Folder", "Note");
+        orderedFolder.setIcon("glyphicons glyphicons-folder-closed");
+        orderedFolder.setEditable(true);
+        orderedFolder.setMovable(true);
+        orderedFolder.setOrdered(true);
         defaultTypes.add(orderedFolder);
 
         // File
-        DocumentType file = new DocumentType("File", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-file",
-                false, true, true);
-        file.setFile(true);
+        DocumentType file = DocumentType.createFile("File");
+        file.setIcon("glyphicons glyphicons-file");
+        file.setEditable(true);
+        file.setMovable(true);
         defaultTypes.add(file);
 
         // Note
-        DocumentType note = new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note",
-                false, true);
+        DocumentType note = DocumentType.createLeaf("Note");
+        note.setIcon("glyphicons glyphicons-note");
+        note.setEditable(true);
+        note.setMovable(true);
         defaultTypes.add(note);
 
         // Contextual link
-        DocumentType contextualLink = new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null,
-                "glyphicons glyphicons-link", false, true);
+        DocumentType contextualLink = DocumentType.createLeaf("ContextualLink") ;
+        contextualLink.setIcon("glyphicons glyphicons-link");
+        contextualLink.setEditable(true);
+        contextualLink.setMovable(true);
         defaultTypes.add(contextualLink);
 
         // Room
-        DocumentType room = new DocumentType("Room", true, false, true, true, true, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
-                "glyphicons glyphicons-cube-black");
+        DocumentType room = DocumentType.createNode("Room");
+        room.addSubtypes("Folder", "Note", "Room");
+        room.setIcon("glyphicons glyphicons-cube-black");
+        room.setOrdered(true);
         room.setPreventedCreation(true);
+        room.setTemplate("/default/templates/room");
         defaultTypes.add(room);
 
         // Staple
-        DocumentType staple = new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null,
-                "glyphicons glyphicons-nails");
+        DocumentType staple = DocumentType.createLeaf("Staple");
+        staple.setIcon("glyphicons glyphicons-nails");
+        staple.setNavigable(true);
         defaultTypes.add(staple);
 
         return defaultTypes;

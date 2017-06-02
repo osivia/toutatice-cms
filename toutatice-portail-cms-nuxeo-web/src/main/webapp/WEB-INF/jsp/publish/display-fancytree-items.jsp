@@ -14,7 +14,7 @@
             
             <c:if test="${child.selected}">data-expanded="true"</c:if>
             <c:if test="${child.navItem.type.folderish}">data-folder="true"</c:if>
-            <c:if test="${not empty child.navItem.type.glyph and not fn:contains(child.navItem.type.glyph, 'folder')}">data-iconclass="${child.navItem.type.glyph}"</c:if>
+            <c:if test="${not empty child.navItem.type.icon and not fn:contains(child.navItem.type.icon, 'folder')}">data-iconclass="${child.navItem.type.icon}"</c:if>
             
             <c:if test="${lazy}">data-lazy="${child.navItem.type.browsable && not child.selected && not child.fetchedChildren}" data-id="${child.id}" data-path="${child.navItem.path}" data-current="${child.current}"</c:if>
         >

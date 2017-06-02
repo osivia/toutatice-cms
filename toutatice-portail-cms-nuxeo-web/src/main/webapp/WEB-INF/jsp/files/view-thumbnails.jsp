@@ -31,8 +31,8 @@
                         <c:set var="glyph" value="${document.icon}" />
                     </c:when>
                     
-                    <c:when test="${not empty document.type.glyph}">
-                        <c:set var="glyph" value="${document.type.glyph}" />
+                    <c:when test="${not empty document.type.icon}">
+                        <c:set var="glyph" value="${document.type.icon}" />
                     </c:when>
                     
                     <c:when test="${document.type.navigable}">
@@ -93,8 +93,8 @@
                         <c:set var="glyph" value="${document.icon}" />
                     </c:when>
                     
-                    <c:when test="${not empty document.type.glyph}">
-                        <c:set var="glyph" value="${document.type.glyph}" />
+                    <c:when test="${not empty document.type.icon}">
+                        <c:set var="glyph" value="${document.type.icon}" />
                     </c:when>
                     
                     <c:when test="${document.type.navigable}">

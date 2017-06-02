@@ -35,7 +35,7 @@ public class FileBrowserItem extends DocumentDTO {
         // Portal form sub-types
         List<String> portalFormSubTypes = null;
         if (this.getType() != null) {
-            portalFormSubTypes = this.getType().getPortalFormSubTypes();
+            portalFormSubTypes = this.getType().getSubtypes();
         }
 
         // Accepted types

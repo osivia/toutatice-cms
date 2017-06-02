@@ -168,136 +168,147 @@ public class MenuBarFormater {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
-        // Document
-        Document document = (Document) cmsContext.getDoc();
-        if ((document == null) && (cmsContext.getCreationPath() == null)) {
-            return;
-        }
-        // Document context
-        NuxeoDocumentContext documentContext = cmsService.getDocumentContext(cmsContext, document.getPath(), NuxeoDocumentContext.class);
-
         // Request
-        final PortletRequest request = cmsContext.getRequest();
+        PortletRequest request = cmsContext.getRequest();
         // Portal controller context
-        final PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getPortletCtx(), request, cmsContext.getResponse());
+        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getPortletCtx(), request, cmsContext.getResponse());
         // Bundle
-        final Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+        Bundle bundle = this.bundleFactory.getBundle(cmsContext.getRequest().getLocale());
+        // Current portal
+        Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
 
         // Menubar
-        final List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+        List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-        // Current portal
-        final Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+        // Refresh
+        this.addRefreshItem(portalControllerContext, menubar, bundle);
 
-        // Check if web page mode layout contains CMS regions and content supports fragments
-        // Edition mode is supported by the webpage menu
-        boolean webPageFragment = false;
-        if (PortalObjectUtils.isSpaceSite(portal) && (cmsContext.getDoc() != null)) {
-            final String webPagePath = (String) request.getAttribute("osivia.cms.webPagePath");
 
-            final String docLivePath = ContextualizationHelper.getLivePath(((Document) (cmsContext.getDoc())).getPath());
-            if (StringUtils.equals(docLivePath, webPagePath)) {
-                webPageFragment = true;
-            }
+        // Document path
+        String path;
+        if (cmsContext.getDoc() != null) {
+            Document document = (Document) cmsContext.getDoc();
+            path = document.getPath();
+        } else {
+            path = cmsContext.getCreationPath();
         }
 
+        // Document context
+        NuxeoDocumentContext documentContext;
+        if (path == null) {
+            documentContext = null;
+        } else {
+            documentContext = cmsService.getDocumentContext(cmsContext, path, NuxeoDocumentContext.class);
+            // Document
+            Document document = documentContext.getDocument();
 
-        // Check if current user is a global administrator
-        boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
-        // Check if current is a workspace
-        boolean isWorkspace = this.isWorkspace(document);
-        // Check if current item is located inside a user workspace
-        boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
-        // Check if current item is a taskbar item
-        boolean isTaskbarItem = !isWorkspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
-        // Check if current document is inside a workspace and current user is an administrator of this workspace
-        boolean isWorkspaceAdmin = (isWorkspace || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
+            // Check if web page mode layout contains CMS regions and content supports fragments
+            // Edition mode is supported by the webpage menu
+            boolean webPageFragment = false;
+            if (PortalObjectUtils.isSpaceSite(portal) && (cmsContext.getDoc() != null)) {
+                final String webPagePath = (String) request.getAttribute("osivia.cms.webPagePath");
 
-
-        try {
-            // Document type
-            DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
-
-            // Dropdown menus
-            this.addShareDropdown(portalControllerContext, documentType, bundle);
-            this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
-
-            // Creation
-            this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-
-            if (!webPageFragment) {
-                // Edition dropdown menu
-                this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
-
-
-                // Permalink
-                this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-
-                // Contextualization
-                this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-
-
-                if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                    // Draft options
-                    this.addDraftLinks(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
-
-                    if (!isWorkspace) {
-                        if (!isTaskbarItem || isWorkspaceAdmin) {
-                            // Reorder
-                            this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                            // Edition
-                            this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
-                            // Delete
-                            this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                        }
-
-                        if (!isTaskbarItem) {
-                            // Change edition mode
-                            this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                            // Move
-                            this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                        }
-                    }
-
-                    // === other tools
-                    // Live version browser
-                    this.getLiveContentBrowserLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-
-
-                    // Nuxeo synchronize
-                    this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
-                    // Versions
-                    this.getVersionsLink(portalControllerContext, cmsContext, menubar, bundle);
-
-                    // Nuxeo administration
-                    this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isGlobalAdministrator);
-
-
-                    if (!insideUserWorkspace) {
-                        // Follow
-                        this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
-                        if (!isWorkspace && !isTaskbarItem) {
-                            // Lock
-                            this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-
-                            // Validation workflow(s)
-                            this.getValidationWfLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                            // Remote publishing
-                            this.getRemotePublishingLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                        }
-                    }
+                final String docLivePath = ContextualizationHelper.getLivePath(((Document) (cmsContext.getDoc())).getPath());
+                if (StringUtils.equals(docLivePath, webPagePath)) {
+                    webPageFragment = true;
                 }
             }
 
-            // Refresh
-            this.addRefreshItem(portalControllerContext, menubar, bundle);
-        } catch (final CMSException e) {
-            if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
-                // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
-            } else {
-                throw e;
+
+            // Check if current user is a global administrator
+            boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
+            // Check if current is a workspace
+            boolean isWorkspace = this.isWorkspace(document);
+            // Check if current item is located inside a user workspace
+            boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
+            // Check if current item is a taskbar item
+            boolean isTaskbarItem = !isWorkspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+            // Check if current document is inside a workspace and current user is an administrator of this workspace
+            boolean isWorkspaceAdmin = (isWorkspace || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
+
+
+            try {
+                // Document type
+                DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
+
+                // Dropdown menus
+                this.addShareDropdown(portalControllerContext, documentType, bundle);
+                this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
+
+                // Creation
+                this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+
+                if (!webPageFragment) {
+                    // Edition dropdown menu
+                    this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
+
+
+                    // Permalink
+                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+
+                    // Contextualization
+                    this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+
+
+                    if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                        // Draft options
+                        this.addDraftLinks(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+
+                        if (!isWorkspace) {
+                            if (!isTaskbarItem || isWorkspaceAdmin) {
+                                // Reorder
+                                this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                                // Edition
+                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
+                                // Delete
+                                this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                            }
+
+                            if (!isTaskbarItem) {
+                                // Change edition mode
+                                this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                                // Move
+                                this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                            }
+                        }
+
+                        // === other tools
+                        // Live version browser
+                        this.getLiveContentBrowserLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+
+
+                        // Nuxeo synchronize
+                        this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+
+                        // Versions
+                        this.getVersionsLink(portalControllerContext, cmsContext, menubar, bundle);
+
+                        // Nuxeo administration
+                        this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isGlobalAdministrator);
+
+
+                        if (!insideUserWorkspace) {
+                            // Follow
+                            this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+
+                            if (!isWorkspace && !isTaskbarItem) {
+                                // Lock
+                                this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+
+                                // Validation workflow(s)
+                                this.getValidationWfLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                                // Remote publishing
+                                this.getRemotePublishingLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                            }
+                        }
+                    }
+                }
+            } catch (final CMSException e) {
+                if ((e.getErrorCode() == CMSException.ERROR_FORBIDDEN) || (e.getErrorCode() == CMSException.ERROR_NOTFOUND)) {
+                    // On ne fait rien : le document n'existe pas ou je n'ai pas les droits
+                } else {
+                    throw e;
+                }
             }
         }
 
@@ -659,7 +670,7 @@ public class MenuBarFormater {
         final Map<String, DocumentType> managedTypes = this.customizer.getCMSItemTypes();
         final DocumentType documentType = managedTypes.get(document.getType());
 
-        if ((documentType != null) && documentType.isSupportsPortalForms()) {
+        if ((documentType != null) && documentType.isEditable()) {
             if (pubInfos.isEditableByUser()) {
                 // Publish Spaces
                 if (!pubInfos.isLiveSpace()) {
@@ -789,7 +800,7 @@ public class MenuBarFormater {
                             unpublishItem.setAjaxDisabled(true);
                             unpublishItem.setDivider(true);
 
-                            if ((documentType == null) || !documentType.isRootType()) {
+                            if ((documentType == null) || !documentType.isRoot()) {
                                 // Unpublish menubar item
                                 final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
                                         pubInfos.getDocumentPath());
@@ -1400,7 +1411,7 @@ public class MenuBarFormater {
                 item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
                 item.setDisabled(true);
                 menubar.add(item);
-            } else if ((type != null) && type.isSupportsPortalForms()) {
+            } else if ((type != null) && type.isEditable()) {
                 // Callback URL
                 String callbackURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
                 // ECM base URL
@@ -1494,7 +1505,7 @@ public class MenuBarFormater {
             // CMS item type
             final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
-            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms() && cmsItemType.isMovable()) {
+            if ((cmsItemType != null) && cmsItemType.isEditable() && cmsItemType.isMovable()) {
                 // Move document popup URL
                 String moveDocumentURL;
                 try {
@@ -1647,9 +1658,9 @@ public class MenuBarFormater {
 
                 for (String docType : subTypes.keySet()) {
                     // Is this type managed at portal level ?
-                    if (documentType.getPortalFormSubTypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
+                    if (documentType.getSubtypes().contains(docType) && ((creationType == null) || creationType.equals(docType))) {
                         DocumentType docTypeDef = documentTypes.get(docType);
-                        if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
+                        if ((docTypeDef != null) && docTypeDef.isEditable()) {
                             // CMS item type
                             DocumentType cmsItemType = documentTypes.get(docType);
                             if ((cmsItemType != null) && !(spaceSite && "PortalPage".equals(cmsItemType.getName()))) {
@@ -1703,7 +1714,7 @@ public class MenuBarFormater {
                         String displayName = bundle.getString(typeName, cmsItemType.getCustomizedClassLoader());
 
                         // Menubar item
-                        MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
+                        MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getIcon(), dropdown, order, url, null, onclick,
                                 "fancyframe_refresh");
                         item.setAjaxDisabled(true);
 
@@ -1722,7 +1733,7 @@ public class MenuBarFormater {
                         String displayName = bundle.getString(typeName, cmsItemType.getCustomizedClassLoader());
 
                         // Menubar item
-                        MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getGlyph(), dropdown, order, url, null, onclick,
+                        MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getIcon(), dropdown, order, url, null, onclick,
                                 "fancyframe_refresh");
                         item.setAjaxDisabled(true);
                         item.setDivider(divider);
@@ -1762,7 +1773,7 @@ public class MenuBarFormater {
         // Do not delete published elements
         if (pubInfos.isDeletableByUser() && (pubInfos.isLiveSpace() || DocumentHelper.isInLiveMode(cmsContext, pubInfos))) {
             final DocumentType docTypeDef = this.customizer.getCMSItemTypes().get(document.getType());
-            if ((docTypeDef != null) && docTypeDef.isSupportsPortalForms()) {
+            if ((docTypeDef != null) && docTypeDef.isEditable()) {
                 final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
                 // Menubar item
@@ -1774,7 +1785,7 @@ public class MenuBarFormater {
                 item.setAjaxDisabled(true);
                 item.setDivider(true);
 
-                if (docTypeDef.isRootType()) {
+                if (docTypeDef.isRoot()) {
                     item.setUrl("#");
                     item.setDisabled(true);
                     item.setTooltip(bundle.getString("CANNOT_DELETE_ROOT"));
@@ -2234,14 +2245,14 @@ public class MenuBarFormater {
         Element media = DOM4JUtils.generateDivElement("media");
         body.add(media);
 
+        // Link
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
+
         // Media body
         Element mediaBody = DOM4JUtils.generateDivElement("media-body media-middle");
         DOM4JUtils.addAttribute(mediaBody, "id", linkId);
+        DOM4JUtils.addText(mediaBody, DOM4JUtils.writeCompact(link));
         media.add(mediaBody);
-
-        // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
-        mediaBody.add(link);
 
         // Media right
         Element mediaRight = DOM4JUtils.generateDivElement("media-right media-middle");

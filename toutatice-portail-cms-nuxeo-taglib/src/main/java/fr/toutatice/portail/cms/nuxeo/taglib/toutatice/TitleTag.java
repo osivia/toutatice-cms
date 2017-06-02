@@ -51,7 +51,7 @@ public class TitleTag extends ToutaticeSimpleTag {
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {
-            icon = document.getType().getGlyph();
+            icon = document.getType().getIcon();
         } else {
             icon = null;
         }

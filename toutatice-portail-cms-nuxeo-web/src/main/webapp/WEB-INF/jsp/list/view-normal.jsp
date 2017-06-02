@@ -30,7 +30,7 @@
                 <span><ttc:title document="${document}" icon="true" /></span>
                 
                 <!-- Last edition informations -->
-                <c:if test="${not document.type.rootType}">
+                <c:if test="${not document.type.root}">
                     <br>
                     
                     <small class="text-muted">

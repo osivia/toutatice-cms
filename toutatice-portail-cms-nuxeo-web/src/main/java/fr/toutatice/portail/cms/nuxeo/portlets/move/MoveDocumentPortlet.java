@@ -144,7 +144,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 // Document type
                 DocumentType type = spaceConfig.getType();
 
-                if ((type != null) && type.isRootType()) {
+                if ((type != null) && type.isRoot()) {
                     rootSpace = (Document) spaceConfig.getNativeItem();
                     cmsBasePath = rootSpace.getPath();
                 } else {

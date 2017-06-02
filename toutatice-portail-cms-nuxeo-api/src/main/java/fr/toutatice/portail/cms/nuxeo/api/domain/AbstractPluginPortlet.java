@@ -255,18 +255,18 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
-     * Add document sub-type.
+     * Add document subtype.
      *
      * @param context customization context
      * @param parentDocTypeName parent document type name
      * @param childDocTypeName child document type name
      */
-    protected void addSubType(CustomizationContext context, String parentDocTypeName, String childDocTypeName) {
+    protected void addSubtype(CustomizationContext context, String parentDocTypeName, String childDocTypeName) {
         Map<String, DocumentType> docTypes = this.getDocTypes(context);
 
         DocumentType parentDocType = docTypes.get(parentDocTypeName);
         if (parentDocType != null) {
-            parentDocType.getPortalFormSubTypes().add(childDocTypeName);
+            parentDocType.getSubtypes().add(childDocTypeName);
         }
     }
 

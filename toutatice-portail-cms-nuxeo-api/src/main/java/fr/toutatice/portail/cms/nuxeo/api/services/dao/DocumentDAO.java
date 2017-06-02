@@ -106,7 +106,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
             String icon = this.getIcon(document);
 
             if (icon == null) {
-                icon = type.getGlyph();
+                icon = type.getIcon();
             }
 
             dto.setIcon(icon);

@@ -528,7 +528,7 @@ public class CMSService implements ICMSService {
 
             // Force portal contextualization indicator
             DocumentType type = content.getType();
-            if ((type != null) && type.isForcePortalContextualization()) {
+            if ((type != null) && type.isForceContextualization()) {
                 content.getProperties().put("supportsOnlyPortalContextualization", "1");
             }
         } catch (NuxeoException e) {
@@ -2563,7 +2563,7 @@ public class CMSService implements ICMSService {
             // Task
             TaskbarTask task;
             if ((taskbarItem == null) && (type != null)) {
-                task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getGlyph(), document.getPath(), type.getName(), disabled);
+                task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getIcon(), document.getPath(), type.getName(), disabled);
             } else if (taskbarItem != null) {
                 // Restriction
                 TaskbarItemRestriction restriction = taskbarItem.getRestriction();
@@ -2668,7 +2668,7 @@ public class CMSService implements ICMSService {
         // Type
         DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
-        if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+        if ((cmsItemType != null) && cmsItemType.isEditable()) {
             // Properties
             Map<String, String> properties = new HashMap<String, String>();
             properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, publicationInfos.getDocumentPath());

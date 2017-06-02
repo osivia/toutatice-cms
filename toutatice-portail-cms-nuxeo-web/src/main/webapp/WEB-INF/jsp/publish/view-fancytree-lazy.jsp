@@ -34,7 +34,7 @@
                             <c:otherwise>class="text-muted"</c:otherwise>
                         </c:choose>
                         <c:if test="${displayItem.navItem.type.folderish}">data-folder="true"</c:if>
-                        <c:if test="${not empty displayItem.navItem.type.glyph and not fn:contains(displayItem.navItem.type.glyph, 'folder')}">data-iconclass="${displayItem.navItem.type.glyph}"</c:if>
+                        <c:if test="${not empty displayItem.navItem.type.icon and not fn:contains(displayItem.navItem.type.icon, 'folder')}">data-iconclass="${displayItem.navItem.type.icon}"</c:if>
                     >
                         <!-- Node -->
                         <a href="${displayItem.url}">${displayItem.title}</a>

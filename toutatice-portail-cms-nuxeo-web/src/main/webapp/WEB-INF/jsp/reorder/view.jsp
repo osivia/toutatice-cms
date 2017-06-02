@@ -42,7 +42,7 @@
                     <ul class="list-sortable reorder-sortable">
                         <c:forEach items="${documents}" var="document">
                             <li data-id="${document.id}">
-                                <i class="${document.type.glyph}"></i>
+                                <i class="${document.type.icon}"></i>
                                 <span>${document.title}</span>
                             </li>
                         </c:forEach>

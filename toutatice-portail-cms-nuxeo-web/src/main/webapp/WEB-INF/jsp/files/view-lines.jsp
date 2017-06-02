@@ -143,8 +143,8 @@
                                     <c:set var="glyph" value="${document.icon}" />
                                 </c:when>
                                 
-                                <c:when test="${not empty document.type.glyph}">
-                                    <c:set var="glyph" value="${document.type.glyph}" />
+                                <c:when test="${not empty document.type.icon}">
+                                    <c:set var="glyph" value="${document.type.icon}" />
                                 </c:when>
                                 
                                 <c:when test="${document.type.navigable}">
@@ -182,7 +182,7 @@
                         
                         
                             <li>
-                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.supportsPortalForms}" data-icon="${glyph}" data-download-url="${downloadUrl}">
+                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-editable="${document.type.editable}" data-icon="${glyph}" data-download-url="${downloadUrl}">
                                     <div class="${document.type.folderish ? 'droppable' : ''}" data-accepted-types="${document.type.folderish ? fn:join(document.acceptedTypes, ',') : ''}">
                                         <div class="table-row">
                                             <div class="row">

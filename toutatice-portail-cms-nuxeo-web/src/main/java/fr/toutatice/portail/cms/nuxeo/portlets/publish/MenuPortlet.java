@@ -66,7 +66,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
@@ -373,12 +372,12 @@ public class MenuPortlet extends CMSPortlet {
     private void writeNavigationDisplayItem(PrintWriter printWriter, NavigationDisplayItem item) {
         boolean browsable = false;
         String acceptedTypes = null;
-        String glyph = null;
+        String icon = null;
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
             DocumentType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
-            acceptedTypes = StringUtils.join(cmsItemType.getPortalFormSubTypes(), ",");
-            glyph = cmsItemType.getGlyph();
+            acceptedTypes = StringUtils.join(cmsItemType.getSubtypes(), ",");
+            icon = cmsItemType.getIcon();
         }
 
 
@@ -419,9 +418,9 @@ public class MenuPortlet extends CMSPortlet {
         }
 
         // Glyph
-        if ((glyph != null) && (!glyph.contains("folder"))) {
+        if ((icon != null) && (!icon.contains("folder"))) {
             printWriter.write("\"iconclass\" : \"");
-            printWriter.write(glyph);
+            printWriter.write(icon);
             printWriter.write("\", ");
         }
 
