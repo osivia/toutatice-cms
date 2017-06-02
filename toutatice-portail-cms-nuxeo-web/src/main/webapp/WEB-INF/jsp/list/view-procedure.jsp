@@ -24,7 +24,7 @@
 				<c:if test="${procedureType eq 'Record'}">
 				    <c:set var="globalVariablesValues" value="${document.properties['rcd:globalVariablesValues']}" />
 				</c:if>
-				<c:if test="${procedureType eq 'ProcedureInstance'}">
+				<c:if test="${procedureType eq 'ProcedureInstance' or empty document.type}">
                     <c:set var="globalVariablesValues" value="${document.properties['pi:globalVariablesValues']}" />
                 </c:if>
                 
