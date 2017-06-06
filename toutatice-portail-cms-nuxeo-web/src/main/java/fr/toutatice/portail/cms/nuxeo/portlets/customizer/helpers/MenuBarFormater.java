@@ -24,7 +24,6 @@ import java.util.TreeMap;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -179,10 +178,6 @@ public class MenuBarFormater {
 
         // Menubar
         List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-        // Refresh
-        this.addRefreshItem(portalControllerContext, menubar, bundle);
-
 
         // Document path
         String path;
@@ -2265,32 +2260,6 @@ public class MenuBarFormater {
         mediaRight.add(button);
         
         return DOM4JUtils.write(container);
-    }
-
-
-    /**
-     * Add refresh menubar item.
-     * 
-     * @param portalControllerContext portal controller context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
-     */
-    protected void addRefreshItem(PortalControllerContext portalControllerContext, List<MenubarItem> menubar, Bundle bundle) {
-        // HTTP servlet request
-        HttpServletRequest servletRequest = portalControllerContext.getHttpServletRequest();
-        // Portal URL factory
-        IPortalUrlFactory portalUrlFactory = this.getPortalUrlFactory();
-
-        if (servletRequest.getUserPrincipal() != null) {
-            // Refresh URL
-            String url = portalUrlFactory.getRefreshPageUrl(portalControllerContext);
-            if (StringUtils.isNotEmpty(url)) {
-                MenubarItem item = new MenubarItem("REFRESH", bundle.getString("REFRESH"), "glyphicons glyphicons-repeat", MenubarGroup.GENERIC, 100, url, null,
-                        null, null);
-
-                menubar.add(item);
-            }
-        }
     }
 
 
