@@ -57,8 +57,11 @@
                     </dd>
                 </c:if>
             
+                <!-- Custom metadata -->
+                <ttc:include page="metadata-custom.jsp" />
+                            
                 <!-- Remote publication spaces -->
-                <jsp:include page="metadata-remote-sections.jsp" />
+                <ttc:include page="metadata-remote-sections.jsp" />
             </dl>
         </div>
     </div>
