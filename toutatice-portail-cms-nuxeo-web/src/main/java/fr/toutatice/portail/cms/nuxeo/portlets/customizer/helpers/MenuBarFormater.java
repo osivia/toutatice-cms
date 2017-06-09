@@ -239,7 +239,7 @@ public class MenuBarFormater {
 
 
                     // Permalink
-                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
 
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
@@ -2091,7 +2091,7 @@ public class MenuBarFormater {
      * @return permalink URL
      */
     protected String computePermaLinkUrl(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // Request
         final PortletRequest request = cmsContext.getRequest();
 
@@ -2105,17 +2105,23 @@ public class MenuBarFormater {
             parameters.put("selectors", PageSelectors.encodeProperties(decodedSelectors));
         }
 
-        final String path = this.customizer.getContentWebIdPath(cmsContext);
+        String currentCtx = cmsContext.getDisplayContext();
+        String path = null;
+        try {
+            // Permlink context
+            cmsContext.setDisplayContext("permLinkCtx");
+            path = this.customizer.getContentWebIdPath(cmsContext, pubInfos, extendedInfos);
+        } finally {
+            cmsContext.setDisplayContext(currentCtx);
+        }
 
         // URL
         String url;
         String permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_CMS;
 
-        // url of type share for Workspaces and proxies
-        if (this.hasWebId(cmsContext) && !DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-            if (pubInfos.isLiveSpace() || (!pubInfos.isLiveSpace() && StringUtils.isNotBlank(pubInfos.getPublishSpacePath()))) {
-                permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
-            }
+        // share URL
+        if (this.hasWebId(cmsContext)) {
+            permaLinkType = IPortalUrlFactory.PERM_LINK_TYPE_SHARE;
         }
 
         try {
@@ -2169,12 +2175,12 @@ public class MenuBarFormater {
      * @param bundle internationalization bundle
      */
     protected void getPermaLinkLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         if (!this.mustDisplayPermalink(portalControllerContext, cmsContext, menubar, bundle)) {
             return;
         }
 
-        final String url = this.computePermaLinkUrl(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+        final String url = this.computePermaLinkUrl(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
         if (url != null) {
             this.addPermaLinkItem(portalControllerContext, cmsContext, menubar, bundle, url);
 

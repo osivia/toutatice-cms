@@ -16,8 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.document.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 
@@ -33,7 +31,9 @@ public class ContextDocumentsHelper {
     /**
      * Utility class.
      */
-    private ContextDocumentsHelper(){};
+    private ContextDocumentsHelper() {
+        super();
+    }
     
     /**
      * @param document document (possibly in context).

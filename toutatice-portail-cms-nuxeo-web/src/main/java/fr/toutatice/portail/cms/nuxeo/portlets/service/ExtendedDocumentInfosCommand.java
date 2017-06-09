@@ -15,6 +15,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.Iterator;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -28,8 +31,6 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Extended document informations Nuxeo command.
@@ -132,6 +133,11 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
                 }
                 if(infos.containsKey("errorOnPdfConversion")){
                     docInfos.setErrorOnPdfConversion(infos.getBoolean("errorOnPdfConversion"));
+                }
+
+                // Parent webId
+                if (infos.containsKey("parentWebId")) {
+                    docInfos.setParentWebId(infos.getString("parentWebId"));
                 }
             }
         }

@@ -18,8 +18,12 @@ import javax.portlet.PortletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 
 
 /**
@@ -105,6 +109,19 @@ public class DocumentHelper {
         return false;
     }
 
+    public static String getParentWebId(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) throws CMSException {
+        String parent = null;
+
+        // Get Navigation item: it is parent
+        CMSItem navItem = NuxeoController.getCMSService().getPortalNavigationItem(cmsCtx, pubInfos.getPublishSpacePath(), pubInfos.getDocumentPath());
+        if (navItem != null) {
+            // Get webId of parent
+            parent = navItem.getWebId();
+        }
+
+        return parent;
+    }
+
     /**
      * Controls if live mode is associated with the current document.
      *
@@ -145,8 +162,7 @@ public class DocumentHelper {
      * @return WebId of given document.
      */
     public static String getWebId(Document document){
-        String webId = (String) ContextDocumentsHelper.getPropertyValue(document, DocumentConstants.WEBID);
-        return StringUtils.isNotBlank(webId) ? webId : StringUtils.EMPTY;
+        return (String) ContextDocumentsHelper.getPropertyValue(document, DocumentConstants.WEBID);
     }
     
     /**

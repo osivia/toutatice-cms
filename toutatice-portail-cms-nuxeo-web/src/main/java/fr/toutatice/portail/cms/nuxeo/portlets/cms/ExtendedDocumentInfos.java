@@ -60,6 +60,9 @@ public class ExtendedDocumentInfos {
     /** Error on PDF conversion. */
     private boolean errorOnPdfConversion;
 
+    /** Documents's parent document. */
+    private String parentWebId;
+
 
     /**
      * Constructor.
@@ -335,5 +338,21 @@ public class ExtendedDocumentInfos {
     public void setErrorOnPdfConversion(boolean errorOnPdfConversion) {
         this.errorOnPdfConversion = errorOnPdfConversion;
     }
+
+
+    /**
+     * @return the parentWebId
+     */
+    public String getParentWebId() {
+        return parentWebId;
+    }
+
+    /**
+     * @param parentWebId the parentWebId to set
+     */
+    public void setParentWebId(String parentWebId) {
+        this.parentWebId = parentWebId;
+    }
+
 
 }

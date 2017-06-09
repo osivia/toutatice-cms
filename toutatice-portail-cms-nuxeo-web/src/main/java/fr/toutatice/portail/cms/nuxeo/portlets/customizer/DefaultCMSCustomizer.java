@@ -38,6 +38,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.ResourceURL;
+import javax.portlet.WindowState;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpSessionEvent;
@@ -127,7 +128,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
@@ -898,7 +898,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         if (ctx.getDoc() != null) {
             Document doc = (Document) ctx.getDoc();
             publicationInfos = this.cmsService.getPublicationInfos(ctx, doc.getPath());
-            if (ContextualizationHelper.isCurrentDocContextualized(ctx)) {
+            if (ContextualizationHelper.isCurrentDocContextualized(ctx) || WindowState.MAXIMIZED.equals(ctx.getRequest().getWindowState())) {
                 extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(ctx, doc.getPath());
             }
         }
@@ -1420,41 +1420,46 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public String getContentWebIdPath(CMSServiceCtx cmsCtx) {
-        return getContentWebIdPath(cmsCtx, null);
+        return getContentWebIdPath(cmsCtx, null, null);
     }
 
-
     /**
-     * Used for maximized document.
+     * Gets webId according to context.
+     * 
+     * @param cmsCtx
+     * @param pubInfos
+     * @param isPermLink
+     * @return webId
      */
-    public String getContentWebIdPath(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos) {
+    public String getContentWebIdPath(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos) {
         Document doc = (Document) cmsCtx.getDoc();
 
-        String webId = doc.getString("ttc:webid");
+        // CMS path
         String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
 
-        boolean isRemoteProxy = false;
-        if (pubInfos == null) {
-            // List case
-            isRemoteProxy = ContextDocumentsHelper.isRemoteProxy(doc);
-        } else {
-            isRemoteProxy = DocumentHelper.isRemoteProxy(cmsCtx, pubInfos);
-        }
+        String webId = DocumentHelper.getWebId(doc);
 
-        if (StringUtils.isNotEmpty(webId) && !isRemoteProxy) {
-            String explicitUrl = doc.getString("ttc:explicitUrl");
-            String extension = doc.getString("ttc:extensionUrl");
+        // Switch on CMS path indicator
+        boolean switchPath = false;
+        if (StringUtils.isNotBlank(webId)) {
 
+            // Not List case where we always use CMS path
+            if (pubInfos != null) {
+                // Case of permlink of remote proxy
+                if (DocumentHelper.isRemoteProxy(cmsCtx, pubInfos) && StringUtils.equals("permLinkCtx", cmsCtx.getDisplayContext())) {
+                    // Document must be contextualized
+                    if (extendedInfos != null) {
+                        webId = webId.concat(IWebIdService.RPXY_WID_MARKER).concat(extendedInfos.getParentWebId());
+                    } else {
+                        // Switch on CMS path
+                        switchPath = true;
+                    }
+                }
 
-            Map<String, String> properties = new HashMap<String, String>();
-            if (explicitUrl != null) {
-                properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
+                if (!switchPath) {
+                    permLinkPath = getWebIdService().webIdToCmsPath(webId);
+                }
             }
-            if (extension != null) {
-                properties.put(IWebIdService.EXTENSION_URL, extension);
-            }
-
-            permLinkPath = getWebIdService().webIdToCmsPath(webId);
         }
 
         return permLinkPath;
