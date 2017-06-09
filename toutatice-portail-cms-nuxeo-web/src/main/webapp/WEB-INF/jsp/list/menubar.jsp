@@ -33,11 +33,11 @@
                 </div>
                 
                 <div class="modal-body">
-                    <div class="media">
-                        <div id="${namespace}-permalink-link" class="media-body media-middle"><a href="${permaLinkURL}">${permaLinkURL}</a></div>
+                    <div class="row">
+                        <div id="${namespace}-permalink-link" class="col-sm-10"><a href="${permaLinkURL}">${permaLinkURL}</a></div>
                         
-                        <div class="media-right media-middle">
-                            <button type="button" class="btn btn-default" data-clipboard-target="#${namespace}-permalink-link">
+                        <div class="col-sm-2">
+                            <button type="button" class="btn btn-default pull-right" data-clipboard-target="#${namespace}-permalink-link">
                                 <i class="halflings halflings-copy"></i>
                                 <span><op:translate key="COPY_PERMALINK" /></span>
                             </button>
