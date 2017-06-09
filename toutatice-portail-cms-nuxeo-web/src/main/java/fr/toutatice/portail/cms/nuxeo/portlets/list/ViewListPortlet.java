@@ -239,7 +239,7 @@ public class ViewListPortlet extends ViewList {
                     Interpreter interpreter = new Interpreter();
                     interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
                     interpreter.set("request", request);
-                    interpreter.set("NXQLFormater", new NXQLFormater());
+                    interpreter.set("NXQLFormater", new NXQLFormater(nuxeoController));
 
                     interpreter.set("basePath", nuxeoController.getBasePath());
                     interpreter.set("spacePath", nuxeoController.getSpacePath());
@@ -871,7 +871,7 @@ public class ViewListPortlet extends ViewList {
 
         interpreter.set("contentPath", nuxeoController.getContentPath());
         interpreter.set("request", request);
-        interpreter.set("NXQLFormater", new NXQLFormater());
+        interpreter.set("NXQLFormater", new NXQLFormater(nuxeoController));
         interpreter.set("navItem", nuxeoController.getNavigationItem());
 
         // Storage attributes

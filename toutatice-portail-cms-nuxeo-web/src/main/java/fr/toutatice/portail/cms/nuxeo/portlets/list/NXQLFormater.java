@@ -22,7 +22,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.jsp.JspException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -43,17 +47,24 @@ public class NXQLFormater {
     private static final String FRONTEND_DATE_PATTERN = "dd/MM/yyyy";
     /** Backend date pattern. */
     private static final String BACKEND_DATE_PATTERN = "yyyy-MM-dd";
-
+    /** NuxeoController */
+    private NuxeoController nuxeoController;
 
     /**
      * Default constructor.
      */
     public NXQLFormater() {
-        super();
+
     }
 
 
-    /**
+    public NXQLFormater(NuxeoController nuxeoController) {
+    	super();
+    	this.nuxeoController = nuxeoController; 
+	}
+
+
+	/**
      * Format text search.
      *
      * @param fieldName field name
@@ -157,8 +168,7 @@ public class NXQLFormater {
                 }
 
 
-                NuxeoController nuxeoController = (NuxeoController) portletRequest.getAttribute("nuxeoController");
-                VocabularyEntry vocabEntry = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabNames);
+               VocabularyEntry vocabEntry = VocabularyHelper.getVocabularyEntry(nuxeoController, vocabNames);
 
 
                 // Récupération du dernier vocabulaire sélectionné avant l'entrée "Autres"
@@ -232,8 +242,8 @@ public class NXQLFormater {
         return resultClause;
     }
 
-
-    /**
+    
+	/**
      * Format date search.
      *
      * @param fieldName field name
