@@ -1464,14 +1464,16 @@ public class NuxeoController {
      * Creates the attached picture link.
      *
      * @param path the path
-     * @param fileIndex the file index
+     * @param index the file index
+     * @param fileName file name
      * @return the string
      */
-    public String createAttachedPictureLink(String path, String fileIndex) {
+    public String createAttachedPictureLink(String path, String index, String fileName) {
         try {
             BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.ATTACHED_PICTURE, path);
             binary.setDocument(this.getCurrentDoc());
-            binary.setIndex(fileIndex);
+            binary.setIndex(index);
+            binary.setFileName(fileName);
             return this.getBinaryURL(binary);
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);

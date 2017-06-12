@@ -366,16 +366,19 @@ public class XSLFunctions {
                         Matcher mResInternalPicture = PATTERN_INTERNAL_PICTURE.matcher(query);
                         if (mResInternalPicture.matches()) {
                             if (mResInternalPicture.groupCount() > 0) {
-                                String uid = mResInternalPicture.group(2);
-
-                                if (this.cmsContext.getDoc() != null) {
+                                // Nuxeo document UID
+                                String uid;
+                                if (this.cmsContext.getDoc() == null) {
+                                    uid = mResInternalPicture.group(2);
+                                } else {
                                     uid = ((Document) this.cmsContext.getDoc()).getId();
                                 }
-
+                                // Picture index
                                 String pictureIndex = mResInternalPicture.group(3);
+                                // File name
+                                String fileName = StringUtils.substringAfterLast(mResInternalPicture.group(4), "/");
 
-                                String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
-                                return portalLink;
+                                return this.nuxeoController.createAttachedPictureLink(uid, pictureIndex, fileName);
                             }
                         }
                         
@@ -385,11 +388,14 @@ public class XSLFunctions {
                             if (mResSAInternalPicture.groupCount() > 0) {
                                 // Get current document
                                 if (this.cmsContext.getDoc() != null) {
+                                    // Nuxeo document UID
                                     String uid = ((Document) this.cmsContext.getDoc()).getId();
+                                    // Picture index
                                     String pictureIndex = mResSAInternalPicture.group(1);
+                                    // File name
+                                    String fileName = StringUtils.substringAfterLast(mResInternalPicture.group(2), "/");
 
-                                    String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
-                                    return portalLink;
+                                    return this.nuxeoController.createAttachedPictureLink(uid, pictureIndex, fileName);
                                 }
                             }
                         }

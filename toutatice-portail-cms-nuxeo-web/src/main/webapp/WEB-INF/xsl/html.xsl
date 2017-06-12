@@ -61,8 +61,8 @@
             <xsl:otherwise>
                 <xsl:element name="a">
                     <xsl:attribute name="href"><xsl:value-of select="bridge:thumbnailSource($bridge,  @src)" /></xsl:attribute>
-                    <xsl:attribute name="rel">gallery</xsl:attribute>
-                    <xsl:attribute name="class">thumbnail fancybox <xsl:value-of select="bridge:thumbnailClasses($bridge,  @style)" /></xsl:attribute>
+                    <xsl:attribute name="class">thumbnail no-ajax-link <xsl:value-of select="bridge:thumbnailClasses($bridge,  @style)" /></xsl:attribute>
+                    <xsl:attribute name="data-fancybox">gallery</xsl:attribute>
                     
                     <xsl:copy>
                         <xsl:apply-templates select="@*|node()" />
