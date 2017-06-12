@@ -76,19 +76,24 @@ $JQry(function() {
 					// Target
 					targetId = targetNode.data.id;
 
+					// AJAX shadowbox
+					$ajaxShadowbox = $JQry(".file-browser .file-browser-ajax-shadowbox");
+				
 					// AJAX parameters
 					container = null,
 					options = {
-						requestHeaders : [ "ajax", "true", "bilto" ],
+//						requestHeaders : [ "ajax", "true", "bilto" ],
 						method : "post",
-						postBody : "sourceIds=" + sourceIds + "&targetId=" + targetId,
-						onSuccess : function(t) {
-							onAjaxSuccess(t, null);
-						}
+						postBody : "sourceIds=" + sourceIds + "&targetId=" + targetId
+//						onSuccess : function(t) {
+//							onAjaxSuccess(t, null);
+//						}
 					},
 					url = $menu.data("dropurl"),
 					eventToStop = null,
 					callerId = null;
+
+				$ajaxShadowbox.addClass("in");
 					
 				directAjaxCall(container, options, url, eventToStop, callerId);
 			},

@@ -287,31 +287,34 @@ $JQry(function() {
 			tolerance: "pointer",
 			
 			drop: function(event, ui) {
-				var $browser = $JQry(this).closest(".file-browser"),
+				var // Target
+					$target = $JQry(event.target),
+					targetId = $target.closest(".data").data("id"),
 					
 					// Source
 					$source = $JQry(ui.helper.context),
 					sourceIdentifiers = $source.data("identifiers"),
 					
-					// Target
-					$target = $JQry(event.target),
-					targetId = $target.closest(".data").data("id"),
+					$browser = $target.closest(".file-browser"),
+					$ajaxShadowbox = $browser.find(".file-browser-ajax-shadowbox"),
 					
 					// AJAX parameters
 					container = null,
 					options = {
-						requestHeaders : [ "ajax", "true", "bilto" ],
+//						requestHeaders : [ "ajax", "true", "bilto" ],
 						method : "post",
-						postBody : "sourceIds=" + sourceIdentifiers + "&targetId=" + targetId,
-						onSuccess : function(t) {
-							onAjaxSuccess(t, null);
-						}
+						postBody : "sourceIds=" + sourceIdentifiers + "&targetId=" + targetId
+//						onSuccess : function(t) {
+//							onAjaxSuccess(t, null);
+//						}
 					},
 					url = $browser.data("dropurl"),
-					eventToStop = null,
 					callerId = null;
 				
-				directAjaxCall(container, options, url, eventToStop, callerId);
+				// Ajax shadowbox
+				$ajaxShadowbox.addClass("in");
+				
+				directAjaxCall(container, options, url, event, callerId);
 			}
 		});
 	} // if (isChromeAndroid)
