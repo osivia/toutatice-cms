@@ -765,7 +765,7 @@ function updateControlRights($browser) {
 	$selected.each(function(index, element) {
 		var $element = $JQry(element);
 		
-		if ($element.data("writable") != true) {
+		if (!$selected.data("editable") || !$element.data("writable")) {
 			writable = false;
 
 			// Break
@@ -789,7 +789,7 @@ function updateControlRights($browser) {
 		}
 		
 		// Copy
-		if (copiable) {
+		if ($selected.data("editable") && copiable) {
 			$copy.removeClass("disabled");
 		}
 	}
