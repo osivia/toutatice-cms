@@ -283,7 +283,7 @@ public class BinaryServlet extends HttpServlet {
             builder.append("inline; ");
         } else {
             // Force download
-            builder.append("attachment; "); // FIXME
+            builder.append("attachment; ");
         }
         builder.append("filename=\"");
         builder.append(fileName);
