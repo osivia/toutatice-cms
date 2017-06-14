@@ -10,6 +10,7 @@
 <c:set var="lastContributor" value="${document.properties['dc:lastContributor']}" />
 <c:set var="created" value="${document.properties['dc:created']}" />
 <c:set var="modified" value="${document.properties['dc:modified']}" />
+<c:set var="publicationDate" value="${document.properties['ttc:publicationDate']}" />
 
 
 <div class="metadata">
@@ -56,6 +57,20 @@
                         </p>
                     </dd>
                 </c:if>
+
+                <!-- Publication -->
+                <c:if test="${not empty publicationDate}">
+                    <dt><op:translate key="DOCUMENT_METADATA_PUBLICATION" /></dt>
+                    <dd>
+                        <p>
+                            <span><op:translate key="DOCUMENT_METADATA_PUBLISHED_ON" /></span>
+                            <span>
+                            	<fmt:formatDate value="${publicationDate}" type="date" dateStyle="long" />
+                            </span>
+                        </p>
+                    </dd>
+                </c:if>
+            
             
                 <!-- Custom metadata -->
                 <ttc:include page="metadata-custom.jsp" />
