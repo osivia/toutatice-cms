@@ -551,6 +551,7 @@ function displayControls($browser) {
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
 		$single = $toolbar.find(".single-selection"),
+		$bulkDownload = $toolbar.find(".bulk-download"),
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
@@ -587,6 +588,7 @@ function displayControls($browser) {
 		if ($selected.length == 1) {
 			// Single element selected
 			$single.show();
+			$bulkDownload.hide();
 			$messageSelection.children().text("1 " + $messageSelection.data("message-single-selection"));
 			
 			
@@ -648,7 +650,35 @@ function displayControls($browser) {
 			
 		} else {
 			// Multiple elements selected
+			
+			// for bulkDownload, all documents must be files
+			var allFiles = true;
+			// size shouldn't exceed 100000000 bytes
+			var sizeSum = 0;
+			$selected.each(function(){
+				var $element = $JQry(this);
+				if(!$element.data("file")){
+					allFiles = false;
+				}
+				sizeSum += $element.data("size");
+			});
+			var $bulkDownloadLink = $bulkDownload.children();
+			var title;
+			if(!allFiles){
+				$bulkDownloadLink.addClass("disabled");
+				title = $bulkDownloadLink.data("message-not-file");
+			}else if(sizeSum>100000000){
+				$bulkDownloadLink.addClass("disabled");
+				title = $bulkDownloadLink.data("message-too-large");
+			}else{
+				$bulkDownloadLink.removeClass("disabled");
+				title = $bulkDownloadLink.data("message-ok");
+			}
+			$bulkDownloadLink.attr("title", title).tooltip('fixTitle')
+			$bulkDownloadLink.children("span").text(title);
+			
 			$single.hide();
+			$bulkDownload.show();
 			$messageSelection.children().text($selected.length + " " + $messageSelection.data("message-multiple-selection"));
 		}
 		

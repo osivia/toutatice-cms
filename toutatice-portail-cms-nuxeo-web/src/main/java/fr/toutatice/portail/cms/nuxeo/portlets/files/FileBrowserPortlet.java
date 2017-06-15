@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
@@ -61,6 +64,7 @@ import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -74,12 +78,12 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -263,9 +267,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
                     }
                 }
-                
-                
-                
 
             } else if ("drop".equals(action)) {
                 // Drop action
@@ -356,7 +357,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 }
 
                 this.notificationsService.addNotifications(portalControllerContext, notifications);
-             }
+            }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {
             // Admin
@@ -426,6 +427,19 @@ public class FileBrowserPortlet extends CMSPortlet {
             PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
             printWriter.write(data.toString());
             printWriter.close();
+        } else if("zipDownload".equals(request.getResourceID())) {
+            // bulk download
+            
+            // selected download paths
+            String[] paths = StringUtils.split(request.getParameter("paths"), ",");
+            
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+            CMSBinaryContent content = (CMSBinaryContent) nuxeoController.executeNuxeoCommand(new BulkFilesCommand(nuxeoController, paths));
+            
+            response.setContentType(content.getMimeType());
+            response.setProperty("Content-disposition", "inline; filename=\"" + content.getName() + "\"");
+
+            ResourceUtil.copy(new FileInputStream(content.getFile()), response.getPortletOutputStream(), 4096);
         } else {
             super.serveResource(request, response);
         }

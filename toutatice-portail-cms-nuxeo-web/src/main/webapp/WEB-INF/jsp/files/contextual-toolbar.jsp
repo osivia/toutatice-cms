@@ -14,11 +14,19 @@
 <!-- Load document publication informations URL -->
 <portlet:resourceURL id="infos" var="infosUrl" />
 
+<!-- DOwnload zip of selected documents -->
+<portlet:resourceURL id="zipDownload" var="zipDownloadUrl" >
+	<portlet:param name="paths" value="_PATHS_"/>
+</portlet:resourceURL>
+
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 <c:set var="messageSingleSelection"><op:translate key="FILE_BROWSER_ONE_ELEMENT_SELECTED" /></c:set>
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
+
+<c:set var="messageNotFile"><op:translate key="FILE_BROWSER_NOT_FILE" /></c:set>
+<c:set var="messageTooLarge"><op:translate key="FILE_BROWSER_TOO_LARGE" /></c:set>
 
 
 <div class="contextual-toolbar" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}">
@@ -68,6 +76,16 @@
                 </a>
             </div>
             
+            <div class="btn-group btn-group-sm bulk-download" role="group">
+	        	<!-- Zip Download -->
+	            <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
+	            <a href="#" data-url="${zipDownloadUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link force-tooltip download"
+	            	data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}">
+	                <i class="halflings halflings-download-alt"></i>
+	                <span class="sr-only">${title}</span>
+	            </a>
+            </div>
+            
             <div class="btn-group btn-group-sm multiple-selection" role="group">
                 <!-- Move -->
                 <c:set var="title"><op:translate key="MOVE" /></c:set>
@@ -106,6 +124,7 @@
     <div id="${namespace}-delete">
         <form action="${deleteUrl}" method="post" role="form">
             <input type="hidden" name="identifiers" value="">
+            <input type="hidden" name="paths" value="">
             
             <div class="form-group text-center"><op:translate key="CMS_DELETE_CONFIRM_MESSAGE" /></div>
             
