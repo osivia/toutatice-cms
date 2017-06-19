@@ -26,6 +26,7 @@ import org.osivia.portal.api.cms.impl.BasicPublicationInfos;
 import org.osivia.portal.api.player.Player;
 
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 /**
  * Default player (use view document portlet).
@@ -46,8 +47,12 @@ public class DefaultPlayer implements INuxeoPlayerModule {
 		BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 		
         windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
-        // TODO restaurer metadata ?
-        //windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
+
+        String hideMetadatas = docCtx.getDoc().getString("ttc:hideMetadatas");
+        if(Boolean.valueOf(hideMetadatas)) {
+			windowProperties.put(ViewDocumentPortlet.HIDE_METADATA_WINDOW_PROPERTY, "1");
+        }
+        
         windowProperties.put(Constants.WINDOW_PROP_URI, navigationInfos.getContentPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
