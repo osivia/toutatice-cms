@@ -8,8 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -46,6 +48,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
@@ -488,6 +491,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Nuxeo controller
                 NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
 
+                // CMS service
+                ICMSService cmsService = this.getCMSService();
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -495,7 +500,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 path = nuxeoController.getComputedPath(path);
                 
                 // Publication informations
-                CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
+                CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
                 request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
@@ -513,6 +518,21 @@ public class FileBrowserPortlet extends CMSPortlet {
                 Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
 
 
+                // Subscriptions
+                List<EcmDocument> subscriptionDocuments = cmsService.getUserSubscriptions(cmsContext);
+                Set<String> subscriptions = new HashSet<>(subscriptionDocuments.size());
+                for (EcmDocument subscriptionDocument : subscriptionDocuments) {
+                    if (subscriptionDocument instanceof Document) {
+                        // Nuxeo document
+                        Document subscriptionNuxeoDocument = (Document) subscriptionDocument;
+                        // Nuxeo document identifier
+                        String id = subscriptionNuxeoDocument.getId();
+
+                        subscriptions.add(id);
+                    }
+                }
+
+
                 // Documents DTO
                 int index = 1;
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
@@ -522,6 +542,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
+                    // Subscription indicator
+                    boolean subscription = subscriptions.contains(document.getId());
+                    fileBrowserItem.setSubscription(subscription);
+                    
                     fileBrowserItems.add(fileBrowserItem);
                 }
 

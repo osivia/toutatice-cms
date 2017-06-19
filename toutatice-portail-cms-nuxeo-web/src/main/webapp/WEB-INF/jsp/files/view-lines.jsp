@@ -215,6 +215,13 @@
                                                             </c:choose>
                                                         </div>
                                                     </c:if>
+                                                    
+                                                    <!-- Subscription -->
+                                                    <c:if test="${document.subscription}">
+                                                        <div class="document-subscription">
+                                                            <i class="glyphicons glyphicons-flag"></i>
+                                                        </div>
+                                                    </c:if>
                                                 
                                                     <!-- Title -->
                                                     <div class="document-title">
@@ -271,7 +278,9 @@
                                 </div>
                                 
                                 <!-- Draggable -->
-                                <div class="draggable draggable-shadowbox border-primary"></div>
+                                <c:if test="${document.type.supportsPortalForms}">
+                                    <div class="draggable draggable-shadowbox border-primary"></div>
+                                </c:if>
                             </li>
                         </c:forEach>
                     </ul>

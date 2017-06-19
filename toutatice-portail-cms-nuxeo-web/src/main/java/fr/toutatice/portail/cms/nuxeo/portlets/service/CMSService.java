@@ -3082,4 +3082,38 @@ public class CMSService implements ICMSService {
         session.setAttribute(Constants.SESSION_RELOAD_ATTRIBUTE, true);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<EcmDocument> getUserSubscriptions(CMSServiceCtx cmsContext) throws CMSException {
+        // Saved scope
+        String savedScope = cmsContext.getScope();
+
+        // Documents
+        Documents documents;
+
+        try {
+            cmsContext.setScope("user_session");
+
+            // Nuxeo command
+            INuxeoCommand command = new GetUserSubscriptionsCommand();
+            documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        } finally {
+            cmsContext.setScope(savedScope);
+        }
+
+
+        // Subscriptions
+        List<EcmDocument> subscriptions = new ArrayList<>(documents.size());
+        subscriptions.addAll(documents.list());
+
+        return subscriptions;
+    }
+
 }
