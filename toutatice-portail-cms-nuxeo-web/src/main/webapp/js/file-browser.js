@@ -301,12 +301,8 @@ $JQry(function() {
 					// AJAX parameters
 					container = null,
 					options = {
-//						requestHeaders : [ "ajax", "true", "bilto" ],
 						method : "post",
 						postBody : "sourceIds=" + sourceIdentifiers + "&targetId=" + targetId
-//						onSuccess : function(t) {
-//							onAjaxSuccess(t, null);
-//						}
 					},
 					url = $browser.data("dropurl"),
 					callerId = null;
@@ -348,33 +344,28 @@ $JQry(function() {
 					var $browser = $JQry(this).closest(".file-browser"),
 						$sortable = $browser.find(".sortable");
 					
-					// Source
-					$source = $JQry(ui.item);
-					sourceId = $source.find(".data").data("id");
-					
-					// Target
-					if ($sortable.data("alternative")) {
-						$target = $source.prev();
-					} else {
-						$target = $source.next();
-					}
-					targetId = $target.find(".data").data("id");
+						// Source
+						$source = $JQry(ui.item);
+						sourceId = $source.find(".data").data("id");
 						
-					// AJAX parameters
-					container = null,
-					options = {
-						requestHeaders : [ "ajax", "true", "bilto" ],
-						method : "post",
-						postBody : "sourceId=" + sourceId + (targetId !== undefined ? "&targetId=" + targetId : ""),
-						onSuccess : function(t) {
-							onAjaxSuccess(t, null);
+						// Target
+						if ($sortable.data("alternative")) {
+							$target = $source.prev();
+						} else {
+							$target = $source.next();
 						}
-					},
-					url = $browser.data("sorturl"),
-					eventToStop = null,
-					callerId = null;
+						targetId = $target.find(".data").data("id");
+							
+						// AJAX parameters
+						container = null,
+						options = {
+							method : "post",
+							postBody : "sourceId=" + sourceId + (targetId !== undefined ? "&targetId=" + targetId : "")
+						},
+						url = $browser.data("sorturl"),
+						callerId = null;
 					
-					directAjaxCall(container, options, url, eventToStop, callerId);
+					directAjaxCall(container, options, url, event, callerId);
 				}
 			});
 		}

@@ -82,12 +82,8 @@ $JQry(function() {
 					// AJAX parameters
 					container = null,
 					options = {
-//						requestHeaders : [ "ajax", "true", "bilto" ],
 						method : "post",
 						postBody : "sourceIds=" + sourceIds + "&targetId=" + targetId
-//						onSuccess : function(t) {
-//							onAjaxSuccess(t, null);
-//						}
 					},
 					url = $menu.data("dropurl"),
 					eventToStop = null,
