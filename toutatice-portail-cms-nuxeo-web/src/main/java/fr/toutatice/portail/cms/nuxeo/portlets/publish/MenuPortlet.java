@@ -510,6 +510,10 @@ public class MenuPortlet extends CMSPortlet {
                         response.setTitle(displayItem.getTitle());
                     }
                     request.setAttribute("displayItem", displayItem);
+
+                    if (CollectionUtils.isEmpty(displayItem.getChildren())) {
+                        request.setAttribute("osivia.emptyResponse", "1");
+                    }
                 }
             }
 
