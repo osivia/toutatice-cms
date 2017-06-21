@@ -673,9 +673,8 @@ public class MenuBarFormater {
 
                     if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         // Current modification indicator
-                        final MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", null, MenubarGroup.CMS, -12, "label label-default");
-                        modificationIndicator.setGlyphicon("halflings halflings-asterisk");
-                        modificationIndicator.setTooltip(bundle.getString("MODIFICATION_MESSAGE"));
+                        MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"),
+                                MenubarGroup.CMS, -12, "label label-default");
                         modificationIndicator.setState(true);
                         menubar.add(modificationIndicator);
                     }
@@ -2199,17 +2198,19 @@ public class MenuBarFormater {
         Element media = DOM4JUtils.generateDivElement("media");
         body.add(media);
 
-        // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
-
         // Media body
-        Element mediaBody = DOM4JUtils.generateDivElement("media-body media-middle");
-        DOM4JUtils.addAttribute(mediaBody, "id", linkId);
-        DOM4JUtils.addText(mediaBody, DOM4JUtils.writeCompact(link));
+        Element mediaBody = DOM4JUtils.generateDivElement("media-body relative");
         media.add(mediaBody);
 
+        // Link
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, "text-overflow text-middle", url);
+        Element linkContainer = DOM4JUtils.generateDivElement("absolute absolute-full");
+        DOM4JUtils.addAttribute(linkContainer, "id", linkId);
+        DOM4JUtils.addText(linkContainer, DOM4JUtils.writeCompact(link));
+        mediaBody.add(linkContainer);
+
         // Media right
-        Element mediaRight = DOM4JUtils.generateDivElement("media-right media-middle");
+        Element mediaRight = DOM4JUtils.generateDivElement("media-right");
         media.add(mediaRight);
 
         // Button
