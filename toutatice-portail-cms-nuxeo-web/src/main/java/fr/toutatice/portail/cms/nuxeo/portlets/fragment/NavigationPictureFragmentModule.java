@@ -20,6 +20,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -220,10 +221,10 @@ public class NavigationPictureFragmentModule extends FragmentModule {
      * @return true if document has picture
      */
     private boolean docHasPicture(Document currentDoc, String propertyName) {
-        boolean hasPicture;
+        // Picture property map
         PropertyMap picture = (PropertyMap) currentDoc.getProperties().get(propertyName);
-        hasPicture = (picture != null) && (picture.get("data") != null);
-        return hasPicture;
+
+        return (picture != null) && (NumberUtils.toLong(picture.getString("length")) > 0);
     }
 
 }
