@@ -2035,6 +2035,7 @@ public class CMSService implements ICMSService {
                 this.executeNuxeoCommand(cmsCtx, (new DocumentRemovePropertyCommand(doc, propertiesToRemove)));
 
                 // On force le rechargement du cache
+                PageProperties.getProperties().setRefreshingPage(true);
                 cmsCtx.setForceReload(true);
                 this.getContent(cmsCtx, pagePath);
                 cmsCtx.setForceReload(false);
@@ -2203,6 +2204,7 @@ public class CMSService implements ICMSService {
                 this.executeNuxeoCommand(cmsCtx, (new DocumentUpdatePropertiesCommand(doc, propertiesToUpdate)));
 
                 // Reload content
+                PageProperties.getProperties().setRefreshingPage(true);
                 this.getContent(cmsCtx, pagePath);
             }
         } catch (Exception e) {
