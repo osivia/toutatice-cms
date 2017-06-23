@@ -157,7 +157,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         addCollapsed.add(addHr);
 
         // Add comment form
-        Element addForm = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
+        Element addForm = DOM4JUtils.generateElement(HTMLConstants.FORM, null, null, null, AccessibilityRoles.FORM);
         DOM4JUtils.addAttribute(addForm, HTMLConstants.ACTION, addUrl);
         DOM4JUtils.addAttribute(addForm, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
         addCollapsed.add(addForm);
@@ -225,7 +225,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         container.add(fancyboxContainer);
 
         // Form
-        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
+        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, null, null, null, AccessibilityRoles.FORM);
         DOM4JUtils.addAttribute(form, HTMLConstants.ACTION, url);
         DOM4JUtils.addAttribute(form, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
         fancyboxContainer.add(form);
@@ -241,7 +241,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         form.add(formGroup);
 
         // Message
-        Element message = DOM4JUtils.generateElement(HTMLConstants.P, null, bundle.getString("COMMENT_SUPPRESSION_CONFIRM_MESSAGE"));
+        Element message = DOM4JUtils.generateElement(HTMLConstants.P, "text-center", bundle.getString("COMMENT_SUPPRESSION_CONFIRM_MESSAGE"));
         formGroup.add(message);
 
         // Buttons container
@@ -537,7 +537,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         PortletURL actionUrl = response.createActionURL();
         actionUrl.setParameter(ActionRequest.ACTION_NAME, "replyComment");
         actionUrl.setParameter("id", comment.getId());
-        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, "no-ajax-link", null, null, AccessibilityRoles.FORM);
+        Element form = DOM4JUtils.generateElement(HTMLConstants.FORM, null, null, null, AccessibilityRoles.FORM);
         DOM4JUtils.addAttribute(form, HTMLConstants.ACTION, actionUrl.toString());
         DOM4JUtils.addAttribute(form, HTMLConstants.METHOD, HTMLConstants.FORM_METHOD_POST);
         container.add(form);

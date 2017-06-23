@@ -19,6 +19,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.player.Player;
 
@@ -49,6 +50,8 @@ public class DefaultPlayer implements INuxeoPlayerModule {
         NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
+        windowProperties.put("osivia.ajaxLink", "1");
         windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
         windowProperties.put(Constants.WINDOW_PROP_URI, publicationInfos.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");

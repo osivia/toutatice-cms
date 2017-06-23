@@ -26,6 +26,8 @@
 
     <xsl:template match="/HTML/BODY">
         <xsl:element name="div">
+            <xsl:attribute name="class">clearfix no-ajax-link</xsl:attribute>
+        
             <xsl:apply-templates select="node()" />
         </xsl:element>
     </xsl:template>
