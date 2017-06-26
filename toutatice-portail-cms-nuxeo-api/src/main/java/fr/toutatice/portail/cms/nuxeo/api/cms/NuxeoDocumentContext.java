@@ -65,4 +65,12 @@ public interface NuxeoDocumentContext extends DocumentContext {
      */
     boolean isContextualized();
 
+
+    /**
+     * Check if the document is a remote proxy.
+     * 
+     * @return true if the document is a remote proxy
+     */
+    boolean isRemoteProxy();
+
 }

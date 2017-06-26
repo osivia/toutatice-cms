@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.cms.DocumentState;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.locator.Locator;
@@ -22,6 +23,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
@@ -282,6 +284,29 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
     @Override
     public boolean isContextualized() {
         return StringUtils.isNotEmpty(this.cmsContext.getContextualizationBasePath());
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isRemoteProxy() {
+        // Nuxeo document
+        Document document = this.getDocument();
+
+        // Facets
+        PropertyList facets = document.getFacets();
+
+        // Remote proxy indicator
+        boolean remoteProxy;
+        if (facets == null) {
+            remoteProxy = false;
+        } else {
+            remoteProxy = facets.list().contains(DocumentConstants.REMOTE_PROXY_FACET);
+        }
+
+        return remoteProxy;
     }
 
 
