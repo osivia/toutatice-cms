@@ -26,7 +26,6 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 
@@ -35,9 +34,9 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
@@ -230,6 +229,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
     public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        nuxeoController.setDisplayLiveVersion(DocumentState.LIVE.toString());
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
 
@@ -253,34 +253,10 @@ public class MoveDocumentPortlet extends CMSPortlet {
                 // Document path
                 String path = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
 
-                // Fetch document
-                CMSServiceCtx cmsCtx = nuxeoController.getCMSCtx();
-                CMSPublicationInfos publicationInfos;
-                try {
-                    publicationInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, path);
-                } catch (CMSException e) {
-                    throw new PortletException(e);
-                }
-
-                // Live document
-                cmsCtx.setDisplayLiveVersion(DocumentState.LIVE.toString());
-                path = NuxeoController.getLivePath(path);
+                // Nuxeo document context
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                // Nuxeo document
                 Document document = documentContext.getDocument();
-
-                // Possible published document
-                try {
-                    cmsCtx.setDisplayLiveVersion(DocumentState.PUBLISHED.toString());
-                    NuxeoDocumentContext remotedocumentContext = nuxeoController.getDocumentContext(path);
-                    Document publishedDocument = remotedocumentContext.getDocument();
-
-                    cmsCtx.setDoc(publishedDocument);
-                    if (DocumentHelper.isRemoteProxy(cmsCtx, publicationInfos)) {
-                        document = publishedDocument;
-                    }
-                } catch (Exception e) {
-                    // Nothing
-                }
 
                 // Documents identifiers
                 String[] identifiersProperty = StringUtils.split(window.getProperty(DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY), ",");
@@ -294,14 +270,13 @@ public class MoveDocumentPortlet extends CMSPortlet {
                     sourceIds = Arrays.asList(identifiersProperty);
                 }
 
-                // Target document
-                CMSPublicationInfos targetPubInfos;
-                try {
-                    targetPubInfos = NuxeoController.getCMSService().getPublicationInfos(cmsCtx, targetPath);
-                } catch (CMSException e) {
-                    throw new PortletException(e);
-                }
-                String targetId = targetPubInfos.getLiveId();
+
+                // Target Nuxeo document context
+                NuxeoDocumentContext targetDocumentContext = nuxeoController.getDocumentContext(targetPath);
+                // Target publication infos
+                NuxeoPublicationInfos targetPublicationInfos = targetDocumentContext.getPublicationInfos();
+                // Target Nuxeo document identifier
+                String targetId = targetPublicationInfos.getLiveId();
 
 
                 // Redirection path
@@ -345,7 +320,6 @@ public class MoveDocumentPortlet extends CMSPortlet {
                     }
                 }
             }
-
 
         } else if ("changeSpace".equals(action)) {
             // Space path
