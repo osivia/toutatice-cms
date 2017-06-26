@@ -16,7 +16,6 @@
     <portlet:param name="cmsNavigationPath" value="${cmsNavigationPath}" />
     <portlet:param name="live" value="true" />
     <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
-    <portlet:param name="excludedTypes" value="Workspace,Room" />
     <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
 </portlet:resourceURL>
 
