@@ -315,6 +315,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Refresh navigation
                 request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
 
+                // Update public render parameter for associated portlets refresh
+                response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+
             } else if ("fileUpload".equals(action)) {
                 // File upload
 

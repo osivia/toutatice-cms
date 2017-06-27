@@ -55,6 +55,13 @@
                         <span><op:translate key="DRIVE_EDIT" /></span>
                     </a>
                     
+                    <!-- Edit when drive edition is enabled  -->
+                    <c:set var="title"><op:translate key="EDIT" /></c:set>
+                    <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit-drive-enabled">
+                        <i class="halflings halflings-pencil"></i>
+                        <span class="sr-only">${title}</span>
+                    </a>
+                    
                     <!-- Download -->
                     <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                     <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">

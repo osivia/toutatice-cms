@@ -94,7 +94,7 @@ $JQry(function() {
 			helper: function(event) {
 				var $target = $JQry(event.target),
 					$draggable = $target.closest(".draggable"),
-					$li = $target.closest("li"),
+					$li = $draggable.closest("li"),
 					$data = $li.find(".data"),
 					$selectable = $data.closest(".selectable"),
 					offset = $draggable.offset(),
@@ -187,15 +187,34 @@ $JQry(function() {
 					$li = $target.closest("li"),
 					$data = $li.find(".data"),
 					$selectable = $li.closest(".selectable"),
-					$selected = $selectable.find(".ui-selected");
+					$selected = $selectable.find(".ui-selected"),
+					movable = true;
 	
-				$selectable.addClass("remove-hover");
+				$selected.each(function(index, element) {
+					var $element = $JQry(element),
+						$draggable = $element.find(".draggable"),
+						$li = $draggable.closest("li"),
+						$data = $li.find(".data");
+					
+					if (!$data.data("movable")) {
+						movable = false;
+						
+						// Break
+						return false;
+					}
+				});
 				
-				if ($data.hasClass("ui-selected")) {
-					$selected.addClass("dragged");
+				if (movable) {
+					$selectable.addClass("remove-hover");
+					
+					if ($data.hasClass("ui-selected")) {
+						$selected.addClass("dragged");
+					} else {
+						deselect($selectable);
+						$data.addClass("dragged");
+					}
 				} else {
-					deselect($selectable);
-					$data.addClass("dragged");
+					return false;
 				}
 			},
 			
@@ -326,6 +345,7 @@ $JQry(function() {
 		if (ordered) {
 			$element.sortable({
 				axis: (axis !== undefined ? axis : false),
+				containment: "parent",
 				cursor: "move",
 				distance: 10,
 				forcePlaceholderSize: true,
@@ -548,6 +568,7 @@ function displayControls($browser) {
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$editDriveEnabled = $toolbar.find(".edit-drive-enabled"),
 		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
 		$gallery = $toolbar.find(".gallery"),
@@ -576,6 +597,7 @@ function displayControls($browser) {
 		
 		$edit.addClass("disabled");
 		$driveEdit.addClass("hidden disabled");
+		$editDriveEnabled.addClass("hidden disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -593,15 +615,12 @@ function displayControls($browser) {
 			
 			
 			// Drive edition replacement for file types
-			if ($selected.data("file")) {
+			if ($selected.data("file") && $toolbar.data("drive-enabled")) {
 				$edit.addClass("hidden");
-				$driveEdit.find("i").attr("class", $selected.data("icon"));
+				$driveEdit.removeClass("hidden");
+				$editDriveEnabled.removeClass("hidden");
 				
-				if ($toolbar.data("drive-enabled")) {
-					$driveEdit.removeClass("hidden");
-				}
-			} else {
-				$edit.removeClass("hidden");
+				$driveEdit.find("i").attr("class", $selected.data("icon"));
 			}
 			
 			
@@ -641,8 +660,6 @@ function displayControls($browser) {
 				
 				$element.attr("href", url);
 			});
-
-			
 			
 		} else {
 			// Multiple elements selected
@@ -733,6 +750,7 @@ function updateControlRights($browser) {
 	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$editDriveEnabled = $toolbar.find(".edit-drive-enabled"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -744,7 +762,7 @@ function updateControlRights($browser) {
 	$selected.each(function(index, element) {
 		var $element = $JQry(element);
 		
-		if ($element.data("copiable") != true) {
+		if (!$element.data("copiable")) {
 			copiable = false;
 
 			// Break
@@ -769,6 +787,7 @@ function updateControlRights($browser) {
 		// Edit
 		if ($selected.data("editable") && writable) {
 			$edit.removeClass("disabled");
+			$editDriveEnabled.removeClass("disabled");
 		}
 		
 		// Drive edit
@@ -776,7 +795,7 @@ function updateControlRights($browser) {
 		driveEnabled = $selected.data("drive-enabled");
 		if (driveEditUrl) {
 			$driveEdit.attr("href", driveEditUrl);
-			$driveEdit.removeClass("hidden disabled");
+			$driveEdit.removeClass("disabled");
 		}
 		
 		// Copy
@@ -788,7 +807,10 @@ function updateControlRights($browser) {
 	
 	// Move & delete
 	if (writable) {
-		$move.removeClass("disabled");
+		if ($selected.data("movable")) {
+			$move.removeClass("disabled");
+		}
+		
 		$delete.removeClass("disabled");
 	}
 }
