@@ -1387,10 +1387,6 @@ public class MenuBarFormater {
                     } else if (pubInfos.isLiveSpace() && (pubInfos.isDraft() || pubInfos.hasDraft())) {
                         // Draft edition
                         editLabel = bundle.getString("EDIT_DRAFT");
-                    } else if (type.isFile()) {
-                        // Metadata edition
-                        editLabel = bundle.getString("EDIT_METADATA");
-                        icon = "glyphicons glyphicons-tags";
                     } else {
                         // Default edition
                         editLabel = bundle.getString("EDIT");
