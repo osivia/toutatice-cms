@@ -16,6 +16,19 @@
 </p>
 
 
+<div class="alert alert-info">
+    <div class="media">
+        <div class="media-left media-middle">
+            <strong><i class="glyphicons glyphicons-info-sign"></i></strong>
+        </div>
+        
+        <div class="media-body">
+            <span><op:translate key="REORDER_DOCUMENTS_MESSAGE_INFO" /></span>
+        </div>
+    </div>
+</div>
+
+
 <form action="${reorderURL}" method="post" class="form-horizontal no-ajax-link" role="form">
     <input type="hidden" name="order">
     
