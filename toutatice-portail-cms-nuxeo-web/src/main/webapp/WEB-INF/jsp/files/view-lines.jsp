@@ -60,7 +60,7 @@
     
         <!-- Header -->
         <div class="table-header table-row">
-            <!-- Header contextual toolbar -->
+            <!-- Contextual toolbar -->
             <jsp:include page="contextual-toolbar.jsp" />
         
             <div class="row">
@@ -289,10 +289,10 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Draggable -->
+                                        <div class="draggable draggable-shadowbox border-primary"></div>
                                     </div>
-                                    
-                                    <!-- Draggable -->
-                                    <div class="draggable draggable-shadowbox border-primary"></div>
                                 </li>
                             </c:forEach>
                         </ul>

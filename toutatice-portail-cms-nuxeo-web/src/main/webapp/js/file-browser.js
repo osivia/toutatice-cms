@@ -55,34 +55,6 @@ $JQry(function() {
 		});
 		
 		
-		// Affix
-		$JQry(".file-browser .file-browser-affix").each(function(index, element) {
-			var $element = $JQry(element),
-				$affixContainer = $element.closest(".file-browser-affix-container");
-				$browser = $affixContainer.closest(".file-browser"),
-				$body = $JQry("body");
-		
-			$element.affix({
-				offset: {
-					top: function() {
-						return Math.round($affixContainer.offset().top) - 55;
-					},
-					bottom: function() {
-						var top = Math.round($affixContainer.offset().top) - 55,
-							scrollTop = $JQry(window).scrollTop(),
-							bottom = 0;
-						
-						if (scrollTop > (top + 34)) {
-							bottom = Math.round($body.height() - $browser.offset().top - $browser.outerHeight(true)) - 34;
-						}
-						
-						return bottom;
-					}
-				}
-			});
-		});
-		
-		
 		// Draggable
 		$JQry(".file-browser .draggable").draggable({
 			addClasses: false,
@@ -94,8 +66,7 @@ $JQry(function() {
 			helper: function(event) {
 				var $target = $JQry(event.target),
 					$draggable = $target.closest(".draggable"),
-					$li = $draggable.closest("li"),
-					$data = $li.find(".data"),
+					$data = $draggable.closest(".data"),
 					$selectable = $data.closest(".selectable"),
 					offset = $draggable.offset(),
 					click = {
@@ -152,7 +123,7 @@ $JQry(function() {
 				$content.animate({
 					top: click.top + 1,
 					left: click.left + 1,
-					width: 300
+					width: Math.max(100, Math.min(300, $data.width()))
 				}, 300);
 				
 				// Icon
@@ -184,17 +155,15 @@ $JQry(function() {
 			
 			start: function(event, ui) {
 				var $target = $JQry(event.target),
-					$li = $target.closest("li"),
-					$data = $li.find(".data"),
-					$selectable = $li.closest(".selectable"),
+					$data = $target.closest(".data"),
+					$selectable = $data.closest(".selectable"),
 					$selected = $selectable.find(".ui-selected"),
 					movable = true;
 	
 				$selected.each(function(index, element) {
 					var $element = $JQry(element),
 						$draggable = $element.find(".draggable"),
-						$li = $draggable.closest("li"),
-						$data = $li.find(".data");
+						$data = $draggable.closest(".data");
 					
 					if (!$data.data("movable")) {
 						movable = false;
@@ -231,10 +200,10 @@ $JQry(function() {
 		
 		
 		// Double click
-		$JQry(".file-browser .file-browser-lines li").dblclick(function(event) {
+		$JQry(".file-browser .file-browser-lines .data").dblclick(function(event) {
 			var $target = $JQry(event.target),
-				$li = $target.closest("li"),
-			    $link = $li.find("a"),
+				$data = $target.closest(".data"),
+			    $link = $data.find("a"),
 			    url = $link.attr("href");
 			
 			if (url === undefined) {
@@ -247,17 +216,17 @@ $JQry(function() {
 		
 		// Click on draggable
 		$JQry(".file-browser .draggable").click(function(event) {
-			var $row = $JQry(event.target).closest("li"),
-				$selected = $row.find(".ui-selected"),
-				$browser = $row.closest(".file-browser");
+			var $target = $JQry(event.target),
+				$data = $target.closest(".data"),
+				$browser = $target.closest(".file-browser");
 			
 			if (event.ctrlKey) {
-				$selected.removeClass("ui-selected bg-primary");
+				$data.removeClass("ui-selected bg-primary");
 			} else {
 				$browser.find(".ui-selected").each(function(index, element) {
 					var $element = $JQry(element);
 					
-					if (!$element.is($selected)) {
+					if (!$element.is($data)) {
 						$element.removeClass("ui-selected bg-primary");
 					}
 				});
@@ -561,7 +530,7 @@ $JQry(function() {
 
 
 function displayControls($browser) {
-	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
+	var $toolbar = $browser.find(".contextual-toolbar"),
 		$messageSelection = $toolbar.find(".message-selection"),
 		$links = $toolbar.find("a[data-url]"),
 		$single = $toolbar.find(".single-selection"),
@@ -747,7 +716,7 @@ function displayControls($browser) {
 
 
 function updateControlRights($browser) {
-	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
+	var $toolbar = $browser.find(".contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
 		$editDriveEnabled = $toolbar.find(".edit-drive-enabled"),

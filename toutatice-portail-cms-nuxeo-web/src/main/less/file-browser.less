@@ -45,12 +45,12 @@
             }
         }
         
-        ~ .draggable-shadowbox {
+        .draggable-shadowbox {
             visibility: visible;
         }
         
         &.dragged {
-            &, & ~ .draggable-shadowbox {
+            &, .draggable-shadowbox {
                 opacity: 0.3;
             }
         }
@@ -67,55 +67,6 @@
         z-index: 1;
         
         visibility: hidden;
-    }
-        
-    
-    // Droppable
-    .droppable-hover {
-        margin-top: -1px;
-        
-        border-style: solid;
-        border-width: 2px;
-        
-        > * {
-            margin: -1px -2px -2px;
-        }
-    }
-
-
-    // Affix
-    .file-browser-affix-container {
-        @media screen and (min-width: @screen-sm-min) {
-            height: 30px;
-        }
-
-        .file-browser-affix {
-            z-index: 3;
-            
-            &::after {
-                content: "\00a0";
-            }
-            
-            &.affix-top, &.affix-bottom {
-                position: absolute;
-            }
-            
-            &.affix {
-                top: 55px;
-            }
-            
-            @media screen and (max-width: @screen-xs-max) {
-                height: 60px;
-                
-                &, &.affix-top, &.affix, &.affix-bottom {
-                    position: fixed;
-                    top: auto;
-                    bottom: 5px;
-                    left: auto;
-                    right: 15px;
-                }
-            }
-        }
     }
     
     
@@ -272,6 +223,15 @@
         
         // Droppable
         .droppable-hover {
+            margin-top: -1px;
+        
+            border-style: solid;
+            border-width: 2px;
+            
+            > * {
+                margin: -1px -2px -2px;
+            }
+            
             .table-row {
                 border-color: transparent;
             }
@@ -321,20 +281,15 @@
     // View thumbnails
     .file-browser-thumbnails {
         @thumbnail-height: 100px;
-
-        ul {
-            li {
-                margin-bottom: 20px;
-                
-                > div {
-                    position: relative;
-                }
-            }
+        
+        li {
+            margin-bottom: 20px;
         }
         
-        
         .thumbnail {
-            margin-bottom: 5px;
+            position: relative;
+            
+            margin-bottom: 0;
             text-decoration: none;
             
             .img-container {
@@ -376,6 +331,23 @@
             }
         }
         
+        .folders, .files {
+            margin-bottom: 0;
+        }
+        
+        .folders {
+            + hr {
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .files {
+            .thumbnail {
+                margin-bottom: 5px;
+            }
+        }
+        
         
         .document-icon {
             float: left;
@@ -397,6 +369,108 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+
+
+        &.reorganization {
+            .contextual-toolbar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: -1;
+                
+                opacity: 0;
+                
+                &, ~ * {
+                    .transition-property(@transition-property: opacity);
+                    .transition-duration(@transition-duration: 200ms);
+                }
+                
+                &.in {
+                    z-index: 995;
+                    
+                    opacity: 1;
+                }
+                
+                @media screen and (max-width: @screen-xs-max) {
+                    position: fixed;
+                    
+                    .navbar {
+                        border-style: solid none none;
+                    }
+                }
+                
+                @media screen and (min-width: @screen-sm-min) {
+                    position: absolute;
+                    
+                    &.in {
+                        ~ * {
+                            opacity: 0;
+                        }
+                    }
+                }
+            }
+            
+            .thumbnail {
+                .transition-property(@transition-property: none);
+            }
+            
+            // Sortable
+            .sortable-handle {
+                @height: 28px;
+                @background-color: #fff;
+            
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                height: @height;
+                width: @height;
+                z-index: 2;
+            
+                visibility: hidden;
+            
+                background-color: @background-color;
+                border-radius: 50%;
+                line-height: @height;
+                cursor: move;
+                
+                .box-shadow(@shadow: 0 1px 1px fade(#000, 5%));
+                
+                &:hover {
+                    color: #333;
+                    background-color: darken(@background-color, 10%);
+                }
+            }
+            
+            .folders {
+                .sortable-handle {
+                    top: 0;
+                    bottom: 0;
+                    
+                    margin-top: auto;
+                    margin-bottom: auto;
+                }
+            }
+            
+            .ui-selecting, .ui-selected, .droppable-hover {
+                .thumbnail {
+                    background-color: transparent;
+                    border-color: transparent;
+                }
+            }
+            
+            .ui-selected {
+                .sortable-handle {
+                    visibility: visible;
+                }
+                
+                .thumbnail {
+                    .caption {
+                        color: #fff;
+                    }
+                }
+            }
+        }
     }
     
     
@@ -410,7 +484,7 @@
         max-height: 500px;
         
         .panel {
-            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+            .box-shadow(@shadow: 0 0 10px fade(#000, 30%));
         }
         
         .file-upload-list{

@@ -49,6 +49,9 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.IMenubarService;
+import org.osivia.portal.api.menubar.MenubarContainer;
+import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
@@ -95,7 +98,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     private static final int FILE_UPLOAD_NOTIFICATIONS_DURATION = 1000;
 
     /** Nuxeo path window property name. */
-    public static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
+    private static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
 
     /** View request parameter name. */
     private static final String VIEW_REQUEST_PARAMETER = "view";
@@ -113,6 +116,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Error JSP path. */
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
+    /** Host joker. */
     private static final String HOST_JOKER = "__HOST__";
 
 
@@ -126,6 +130,8 @@ public class FileBrowserPortlet extends CMSPortlet {
     private IPanelsService panelsService;
     /** Taskbar service. */
     private ITaskbarService taskbarService;
+    /** Menubar service. */
+    private IMenubarService menubarService;
     /** Document DAO. */
     private DocumentDAO documentDao;
 
@@ -152,19 +158,16 @@ public class FileBrowserPortlet extends CMSPortlet {
         IInternationalizationService internationalizationService = (IInternationalizationService) portletContext
                 .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
-
         // Notification service
         this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
-
         // Portlet status service
         this.portletStatusService = Locator.findMBean(IPortletStatusService.class, IPortletStatusService.MBEAN_NAME);
-
         // Panels service
         this.panelsService = Locator.findMBean(IPanelsService.class, IPanelsService.MBEAN_NAME);
-
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-
+        // Menubar service
+        this.menubarService = Locator.findMBean(IMenubarService.class, IMenubarService.MBEAN_NAME);
         // Document DAO
         this.documentDao = DocumentDAO.getInstance();
     }
@@ -525,12 +528,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("documents", fileBrowserItems);
 
 
-                // Add menubar items
-                this.addMenubarItems(portalControllerContext, currentView);
-
                 // Toolbar attributes
                 this.addToolbarAttributes(portalControllerContext, nuxeoController, currentDocument);
-
 
                 // Title
                 response.setTitle(currentDocument.getTitle());
@@ -538,6 +537,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Insert standard menu bar for content item
                 if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
                     nuxeoController.insertContentMenuBarItems();
+
+                    // Add menubar items
+                    this.addMenubarItems(portalControllerContext, currentView);
                 }
             } catch (NuxeoException e) {
                 PortletErrorHandler.handleGenericErrors(response, e);
@@ -725,13 +727,14 @@ public class FileBrowserPortlet extends CMSPortlet {
             // Menubar
             List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
 
-            // Change view menubar items
+
             if (response instanceof MimeResponse) {
                 MimeResponse mimeResponse = (MimeResponse) response;
 
+                // Change view
                 int order = 0;
                 for (FileBrowserView view : FileBrowserView.values()) {
-                    if (view != currentView) {
+                    if ((view != currentView) && view.isMenubarItem() && !currentView.getLinkedViewNames().contains(view.getName())) {
                         // Identifier
                         StringBuilder builder = new StringBuilder();
                         builder.append("FILE_BROWSER_SHOW_");
@@ -749,6 +752,31 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                         order++;
                     }
+                }
+                
+                // Toggle reorganization
+                if (FileBrowserView.THUMBNAILS.equals(currentView) || FileBrowserView.THUMBNAILS_REORGANIZATION.equals(currentView)) {
+                    // Identifier
+                    String id = "FILE_BROWSER_TOGGLE_REORGANIZATION";
+                    // Icon
+                    String icon;
+                    // Menubar item parent
+                    MenubarContainer parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    // URL
+                    PortletURL actionURL = mimeResponse.createActionURL();
+                    actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
+                    
+                    if (FileBrowserView.THUMBNAILS.equals(currentView)) {
+                        icon = "halflings halflings-unchecked";
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, FileBrowserView.THUMBNAILS_REORGANIZATION.getName());
+                    } else {
+                        icon = "halflings halflings-check";
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, FileBrowserView.THUMBNAILS.getName());
+                    }
+                    
+                    // Menubar item
+                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), icon, parent, 0, actionURL.toString(), null, null, null);
+                    menubar.add(menubarItem);
                 }
             }
         }

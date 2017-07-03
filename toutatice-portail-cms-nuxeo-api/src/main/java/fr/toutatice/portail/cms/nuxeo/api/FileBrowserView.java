@@ -1,5 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * File browser views enumeration.
  *
@@ -8,9 +12,11 @@ package fr.toutatice.portail.cms.nuxeo.api;
 public enum FileBrowserView {
 
     /** Lines view. */
-    LINES("lines", "glyphicons glyphicons-show-thumbnails-with-lines", true, false),
+    LINES("lines", "glyphicons glyphicons-show-thumbnails-with-lines", true, false, true),
     /** Thumbnails view. */
-    THUMBNAILS("thumbnails", "glyphicons glyphicons-show-thumbnails", false, true);
+    THUMBNAILS("thumbnails", "glyphicons glyphicons-show-thumbnails", false, true, true, "thumbnails-reorganization"),
+    /** Thumbnails reorganization view. */
+    THUMBNAILS_REORGANIZATION("thumbnails-reorganization", null, true, false, false, "thumbnails");
 
 
     /** Default view. */
@@ -25,6 +31,10 @@ public enum FileBrowserView {
     private final boolean orderable;
     /** Closed navigation panel indicator. */
     private final boolean closedNavigation;
+    /** Menubar item indicator. */
+    private final boolean menubarItem;
+    /** Linked view names. */
+    private final List<String> linkedViewNames;
 
 
     /**
@@ -34,12 +44,15 @@ public enum FileBrowserView {
      * @param icon view icon
      * @param orderable orderable view indicator
      * @param closedNavigation closed navigation panel indicator
+     * @param menubarItem menubar item indicator
      */
-    private FileBrowserView(String name, String icon, boolean orderable, boolean closedNavigation) {
+    private FileBrowserView(String name, String icon, boolean orderable, boolean closedNavigation, boolean menubarItem, String... linkedViewNames) {
         this.name = name;
         this.icon = icon;
         this.orderable = orderable;
         this.closedNavigation = closedNavigation;
+        this.menubarItem = menubarItem;
+        this.linkedViewNames = new ArrayList<>(Arrays.asList(linkedViewNames));
     }
 
 
@@ -97,6 +110,24 @@ public enum FileBrowserView {
      */
     public boolean isClosedNavigation() {
         return this.closedNavigation;
+    }
+
+    /**
+     * Getter for menubarItem.
+     * 
+     * @return the menubarItem
+     */
+    public boolean isMenubarItem() {
+        return menubarItem;
+    }
+
+    /**
+     * Getter for linkedViewNames.
+     * 
+     * @return the linkedViewNames
+     */
+    public List<String> getLinkedViewNames() {
+        return linkedViewNames;
     }
 
 }
