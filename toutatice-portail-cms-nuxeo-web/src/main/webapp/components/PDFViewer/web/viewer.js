@@ -16,8 +16,9 @@
 
 'use strict';
 
+/* custom OSIVIA START */
 var DEFAULT_URL = '';
-
+/* custom OSIVIA END */
 
   var pdfjsWebLibs = {
     pdfjsWebPDFJS: window.pdfjsDistBuildPdf
@@ -8120,7 +8121,7 @@ var PDFViewerApplication = {
     function downloadByUrl() {
       downloadManager.downloadUrl(url, filename);
     }
-    
+
     var url = this.url.split('#')[0];
     var filename = getPDFFileNameFromURL(url);
     var downloadManager = this.downloadManager;
@@ -8729,7 +8730,6 @@ function webViewerInitialized() {
   var queryString = document.location.search.substring(1);
   var params = parseQueryString(queryString);
   var file = 'file' in params ? params.file : DEFAULT_URL;
-  
   validateFileURL(file);
 
   var waitForBeforeOpening = [];
@@ -8885,6 +8885,7 @@ function webViewerInitialized() {
 
   });
 
+	// OSIVIA
   appConfig.toolbar.print.addEventListener('click', function (e) {
     PDFViewerApplication.eventBus.dispatch('print');
   });
@@ -8907,12 +8908,10 @@ function webViewerOpenFileViaURL(file) {
     // cannot load file:-URLs in a Web Worker. file:-URLs are usually loaded
     // very quickly, so there is no need to set up progress event listeners.
     PDFViewerApplication.setTitleUsingUrl(file);
-    
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
       PDFViewerApplication.open(new Uint8Array(xhr.response));
     };
-    
     try {
       xhr.open('GET', file);
       xhr.responseType = 'arraybuffer';
