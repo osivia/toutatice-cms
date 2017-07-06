@@ -18,7 +18,7 @@ public class EraseModificationsCommand extends EcmCommand {
     private IInternationalizationService itlzService;
 
     public EraseModificationsCommand(INotificationsService notifService, IInternationalizationService itlzService, boolean skipCreateVersion, boolean skipCheckout) {
-        super(EcmCommonCommands.eraseModifications.toString(), ReloadAfterCommandStrategy.refreshNavigation, "Document.EraseModifications",
+        super(EcmCommonCommands.eraseModifications.toString(), ReloadAfterCommandStrategy.REFRESH_NAVIGATION, "Document.EraseModifications",
                 new HashMap<String, Object>());
         getRealCommandParameters().put("skipCreateVersion", skipCreateVersion);
         getRealCommandParameters().put("skipCheckout", skipCheckout);
@@ -28,7 +28,7 @@ public class EraseModificationsCommand extends EcmCommand {
     }
 
     public EraseModificationsCommand(INotificationsService notifService, IInternationalizationService itlzService) {
-        super(EcmCommonCommands.eraseModifications.toString(), ReloadAfterCommandStrategy.refreshNavigation, "Document.EraseModifications",
+        super(EcmCommonCommands.eraseModifications.toString(), ReloadAfterCommandStrategy.REFRESH_NAVIGATION, "Document.EraseModifications",
                 new HashMap<String, Object>());
         getRealCommandParameters().put("skipCreateVersion", true);// par defaut, on ne créera pas de nouvelle version
         getRealCommandParameters().put("skipCheckout", true);// par defaut, on se contentera d'initialiser la version de travail

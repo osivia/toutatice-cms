@@ -32,7 +32,7 @@ public class DeleteDocumentCommand extends EcmCommand {
      * @param realCommandParameters
      */
     public DeleteDocumentCommand(INotificationsService notifService, IInternationalizationService itlzService) {
-        super(EcmCommonCommands.deleteDocument.toString(), ReloadAfterCommandStrategy.moveToParent, "Document.Delete",
+        super(EcmCommonCommands.deleteDocument.toString(), ReloadAfterCommandStrategy.MOVE_TO_PARENT, "Document.Delete",
                 new HashMap<String, Object>());
         this.itlzService = itlzService;
         this.notifService = notifService;

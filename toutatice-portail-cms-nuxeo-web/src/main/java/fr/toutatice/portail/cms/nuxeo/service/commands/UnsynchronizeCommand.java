@@ -44,7 +44,8 @@ public class UnsynchronizeCommand extends EcmCommand {
 			IInternationalizationService itlzService) {
 
 		
-		super(EcmCommonCommands.unsynchronizeFolder.toString(), ReloadAfterCommandStrategy.refreshNavigation, "NuxeoDrive.SetSynchronization", new HashMap<String, Object>());
+        super(EcmCommonCommands.unsynchronizeFolder.toString(), ReloadAfterCommandStrategy.REFRESH_NAVIGATION, "NuxeoDrive.SetSynchronization",
+                new HashMap<String, Object>());
 		getRealCommandParameters().put("enable", Boolean.FALSE);
 		
 		this.itlzService = itlzService;

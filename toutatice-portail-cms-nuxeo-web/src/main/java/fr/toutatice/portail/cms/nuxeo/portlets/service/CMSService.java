@@ -2460,6 +2460,8 @@ public class CMSService implements ICMSService {
      */
     @Override
     public void executeEcmCommand(CMSServiceCtx cmsCtx, EcmCommand command, String cmsPath) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsCtx.getControllerContext();
 
         cmsCtx.setDisplayLiveVersion("1");
 
@@ -2471,7 +2473,7 @@ public class CMSService implements ICMSService {
         	this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
         	
         	// On force le rechargement du cache de la page
-        	String refreshCmsPath = command.getStrategy().getRedirectionPathPath();
+            String refreshCmsPath = (String) controllerContext.getAttribute(Scope.SESSION_SCOPE, EcmCommand.REDIRECTION_PATH_ATTRIBUTE);
             cmsCtx.setDisplayLiveVersion("0");
             cmsCtx.setForceReload(true);
             this.getContent(cmsCtx, refreshCmsPath);

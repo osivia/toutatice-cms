@@ -41,7 +41,7 @@ public class UnlockCommand extends EcmCommand {
 	public UnlockCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-		super(EcmCommonCommands.unlock.toString(), ReloadAfterCommandStrategy.refreshPage, "Document.Unlock", null);
+        super(EcmCommonCommands.unlock.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.Unlock", null);
 		
 		this.itlzService = itlzService;
 		this.notifService = notifService;
