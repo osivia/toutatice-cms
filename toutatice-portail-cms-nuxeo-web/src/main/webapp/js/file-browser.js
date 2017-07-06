@@ -157,9 +157,15 @@ $JQry(function() {
 				var $target = $JQry(event.target),
 					$data = $target.closest(".data"),
 					$selectable = $data.closest(".selectable"),
-					$selected = $selectable.find(".ui-selected"),
+					$selected,
 					movable = true;
 	
+				if ($data.hasClass("ui-selected")) {
+					$selected = $selectable.find(".ui-selected");
+				} else {
+					$selected = $data;
+				}
+				
 				$selected.each(function(index, element) {
 					var $element = $JQry(element),
 						$draggable = $element.find(".draggable"),
@@ -240,15 +246,23 @@ $JQry(function() {
 		$JQry(".file-browser .droppable").droppable({
 			accept: function($draggable) {
 				var $droppable = $JQry(this),
-					$selectable = $droppable.closest(".selectable"),
-					$selected = $selectable.find(".ui-selected"),
+					$droppableData = $droppable.closest(".data"),
+					$draggableData = $draggable.closest(".data"),
+					$selectable = $droppableData.closest(".selectable"),
+					$selected,
 					targetAcceptedTypes = $droppable.data("accepted-types").split(","),
 					accepted = true;
 					
-				if ($draggable.hasClass("ui-sortable-helper") || $droppable.closest(".data").hasClass("dragged")) {
+				if ($draggable.hasClass("ui-sortable-helper") || $droppableData.hasClass("dragged")) {
 					// Prevent drop on sortable or selected element
 					accepted = false;
 				} else {
+					if ($draggableData.hasClass("ui-selected")) {
+						$selected = $selectable.find(".ui-selected");
+					} else {
+						$selected = $draggableData;
+					}
+					
 					$selected.each(function(index, element) {
 						var sourceType = $JQry(element).data("type"),
 							match = false;
