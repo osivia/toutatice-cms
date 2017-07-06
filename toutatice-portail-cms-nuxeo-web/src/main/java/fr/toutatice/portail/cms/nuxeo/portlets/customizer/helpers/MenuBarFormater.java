@@ -2198,12 +2198,16 @@ public class MenuBarFormater {
         Element mediaBody = DOM4JUtils.generateDivElement("media-body relative");
         media.add(mediaBody);
 
+        // Absolute
+        Element absolute = DOM4JUtils.generateDivElement("absolute absolute-full");
+        mediaBody.add(absolute);
+
         // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, "text-overflow text-middle", url);
-        Element linkContainer = DOM4JUtils.generateDivElement("absolute absolute-full");
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
+        Element linkContainer = DOM4JUtils.generateDivElement("text-overflow text-middle");
         DOM4JUtils.addAttribute(linkContainer, "id", linkId);
         DOM4JUtils.addText(linkContainer, DOM4JUtils.writeCompact(link));
-        mediaBody.add(linkContainer);
+        absolute.add(linkContainer);
 
         // Media right
         Element mediaRight = DOM4JUtils.generateDivElement("media-right");
