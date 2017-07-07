@@ -487,7 +487,7 @@ public class MenuBarFormater {
      * @param type document type
      * @param bundle internationalization bundle
      */
-    protected void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
+    public void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
                 "glyphicons glyphicons-pencil", MenubarGroup.CMS, 6, false, false);
         dropdown.setBreadcrumb(true);
@@ -502,7 +502,7 @@ public class MenuBarFormater {
      * @param type document type
      * @param bundle internationalization bundle
      */
-    protected void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
+    public void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-share-alt",
                 MenubarGroup.GENERIC, 8);
         dropdown.setBreadcrumb(true);
@@ -517,7 +517,7 @@ public class MenuBarFormater {
      * @param type document type
      * @param bundle internationalization bundle
      */
-    protected void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
+    public void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
                 "glyphicons glyphicons-option-vertical", MenubarGroup.GENERIC, 40, false, false);
         dropdown.setBreadcrumb(true);

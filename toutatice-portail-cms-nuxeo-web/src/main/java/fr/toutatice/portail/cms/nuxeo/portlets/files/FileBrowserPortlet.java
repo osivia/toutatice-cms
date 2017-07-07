@@ -50,7 +50,6 @@ import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.IMenubarService;
-import org.osivia.portal.api.menubar.MenubarContainer;
 import org.osivia.portal.api.menubar.MenubarDropdown;
 import org.osivia.portal.api.menubar.MenubarGroup;
 import org.osivia.portal.api.menubar.MenubarItem;
@@ -536,10 +535,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Insert standard menu bar for content item
                 if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
-                    nuxeoController.insertContentMenuBarItems();
-
                     // Add menubar items
                     this.addMenubarItems(portalControllerContext, currentView);
+
+                    nuxeoController.insertContentMenuBarItems();
                 }
             } catch (NuxeoException e) {
                 PortletErrorHandler.handleGenericErrors(response, e);
@@ -761,7 +760,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Icon
                     String icon;
                     // Menubar item parent
-                    MenubarContainer parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    if (parent == null) {
+                        parent = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    }
                     // URL
                     PortletURL actionURL = mimeResponse.createActionURL();
                     actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
