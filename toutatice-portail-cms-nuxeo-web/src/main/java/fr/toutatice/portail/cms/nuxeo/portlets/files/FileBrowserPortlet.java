@@ -762,7 +762,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Menubar item parent
                     MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
                     if (parent == null) {
-                        parent = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                        parent = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, MenubarGroup.CMS);
                     }
                     // URL
                     PortletURL actionURL = mimeResponse.createActionURL();
