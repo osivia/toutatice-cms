@@ -2182,7 +2182,7 @@ public class MenuBarFormater {
         close.add(closeLabel);
 
         // Modal title
-        Element title = DOM4JUtils.generateElement("h4", "modal-title", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", null);
+        Element title = DOM4JUtils.generateElement("h4", "modal-title", " " + bundle.getString("PERMALINK"), "glyphicons glyphicons-link", null);
         DOM4JUtils.addAttribute(title, "id", labelId);
         header.add(title);
 
@@ -2202,24 +2202,26 @@ public class MenuBarFormater {
         Element absolute = DOM4JUtils.generateDivElement("absolute absolute-full");
         mediaBody.add(absolute);
 
+        // Link container
+        Element linkContainer = DOM4JUtils.generateDivElement("text-overflow text-middle");
+        absolute.add(linkContainer);
+
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
-        Element linkContainer = DOM4JUtils.generateDivElement("text-overflow text-middle");
-        DOM4JUtils.addAttribute(linkContainer, "id", linkId);
-        DOM4JUtils.addText(linkContainer, DOM4JUtils.writeCompact(link));
-        absolute.add(linkContainer);
+        DOM4JUtils.addAttribute(link, "id", linkId);
+        linkContainer.add(link);
 
         // Media right
         Element mediaRight = DOM4JUtils.generateDivElement("media-right");
         media.add(mediaRight);
 
         // Button
-        Element button = DOM4JUtils.generateElement("button", "btn btn-default", bundle.getString("COPY_PERMALINK"), "halflings halflings-copy", null);
+        Element button = DOM4JUtils.generateElement("button", "btn btn-default", " " + bundle.getString("COPY_PERMALINK"), "halflings halflings-copy", null);
         DOM4JUtils.addAttribute(button, "type", "button");
         DOM4JUtils.addDataAttribute(button, "clipboard-target", "#" + linkId);
         mediaRight.add(button);
         
-        return DOM4JUtils.write(container);
+        return DOM4JUtils.writeCompact(container);
     }
 
 
