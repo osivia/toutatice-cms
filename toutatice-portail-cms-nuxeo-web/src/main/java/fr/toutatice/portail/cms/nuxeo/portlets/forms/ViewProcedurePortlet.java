@@ -30,6 +30,9 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     /** PATH_VIEW */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/forms/view-procedure.jsp";
 
+    private static final Integer MAXIMIZED_PAGINATION = 20;
+
+    private static final Integer NORMAL_PAGINATION = 10;
 
     /**
      * Constructor.
@@ -65,6 +68,9 @@ public class ViewProcedurePortlet extends ViewListPortlet {
 
         configuration.setProcedureModelId(window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY));
         configuration.setDashboardId(window.getProperty(DASHBOARD_ID_WINDOW_PROPERTY));
+
+        configuration.setMaximizedPagination(MAXIMIZED_PAGINATION);
+        configuration.setNormalPagination(NORMAL_PAGINATION);
 
         return configuration;
     }
