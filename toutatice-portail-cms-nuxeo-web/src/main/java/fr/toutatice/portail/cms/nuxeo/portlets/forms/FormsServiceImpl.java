@@ -24,6 +24,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -153,7 +154,8 @@ public class FormsServiceImpl implements IFormsService {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
-
+        
+        
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
@@ -167,7 +169,16 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Procedure initiator
-        String procedureInitiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+        String procedureInitiator = "";
+        HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
+        if(httpServletRequest != null) {
+        	procedureInitiator = httpServletRequest.getRemoteUser();
+        }
+        else {
+        	// #1569 - Specific parameters for procedures in batch mode
+        	procedureInitiator = "admin";
+        	cmsContext.setScope("superuser_no_cache");
+        }
 
         // Starting step
         String startingStep = StringUtils.defaultIfBlank(variables.get("pcd:startingStep"), model.getString("pcd:startingStep"));
@@ -196,7 +207,9 @@ public class FormsServiceImpl implements IFormsService {
         variables.put("uuid", uuid);
 
         // Required fields validation
-        this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
+        if(httpServletRequest != null) {
+        	this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
+        }
 
 		String startDate = DATE_FORMAT.format(new Date());
 
@@ -682,7 +695,12 @@ public class FormsServiceImpl implements IFormsService {
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Internationalization bundle
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Locale locale = null;
+        if(portalControllerContext.getHttpServletRequest() != null) {
+
+        	locale = portalControllerContext.getHttpServletRequest().getLocale();
+        }
+        
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         if (StringUtils.isNotEmpty(procedureInstanceId)) {
