@@ -30,7 +30,7 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     /** PATH_VIEW */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/forms/view-procedure.jsp";
 
-    private static final Integer MAXIMIZED_PAGINATION = 20;
+    private static final Integer MAXIMIZED_PAGINATION = 10;
 
     private static final Integer NORMAL_PAGINATION = 10;
 
