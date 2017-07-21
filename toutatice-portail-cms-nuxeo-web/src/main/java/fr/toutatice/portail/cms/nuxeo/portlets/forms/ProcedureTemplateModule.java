@@ -148,6 +148,16 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
                 }
             } else {
                 // no group check for recordFolder
+
+                // Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+                // List<String> sortValue = selectors.get("sortValue");
+                // List<String> sortOrder = selectors.get("sortOrder");
+
+                // sortValue
+
+                // sortOrder
+
+
                 return StringUtils.EMPTY;
             }
         }

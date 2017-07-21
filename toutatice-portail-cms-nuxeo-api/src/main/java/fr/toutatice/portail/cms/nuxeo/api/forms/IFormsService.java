@@ -20,7 +20,12 @@ public interface IFormsService {
     String ENDSTEP = "endStep";
     /** Delete on workflow ending parameter. */
     String DELETE_ON_ENDING_PARAMETER = "deleteOnEnding";
-
+    /** parameter holding cms path to redirect to */
+    String REDIRECT_CMS_PATH_PARAMETER = "_redirectCmsPath";
+    /** parameter holding displayContext to redirect with */
+    String REDIRECT_DISPLAYCONTEXT_PARAMETER = "_displayContext";
+    /** parameter holding notification message after redirection */
+    String REDIRECT_MESSAGE_PARAMETER = "_notificationMessage";
     /** Nuxeo task actor user prefix. */
     String ACTOR_USER_PREFIX = "user:";
     /** Nuxeo task actor group prefix. */
