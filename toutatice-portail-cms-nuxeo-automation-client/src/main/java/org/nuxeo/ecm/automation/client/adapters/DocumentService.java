@@ -82,6 +82,8 @@ public class DocumentService {
 
     public static final String SetBlob = "Blob.Attach";
 
+    public static final String SetBlobs = "Blob.AttachList";
+
     public static final String RemoveBlob = "Blob.Remove";
 
     public static final String GetBlob = "Blob.Get";
@@ -368,6 +370,21 @@ public class DocumentService {
             throws Exception {
         return (Documents) this.session.newRequest(GetRelations).setInput(doc).set(
                 "predicate", predicate).set("outgoing", outgoing).set("graphName", graphName).execute();
+    }
+
+    public void setBlobs(DocRef doc, Blobs blobs) throws Exception {
+        this.setBlobs(doc, blobs, null);
+    }
+
+    public void setBlobs(DocRef doc, Blobs blobs, String xpath) throws Exception {
+        OperationRequest req = this.session.newRequest(SetBlobs).setInput(blobs).set("document", doc);
+
+        if (StringUtils.isNotBlank(xpath)) {
+            req.set("xpath", xpath);
+        }
+
+        req.setHeader(Constants.HEADER_NX_VOIDOP, "true");
+        req.execute();
     }
 
     public void setBlob(DocRef doc, Blob blob) throws Exception {
