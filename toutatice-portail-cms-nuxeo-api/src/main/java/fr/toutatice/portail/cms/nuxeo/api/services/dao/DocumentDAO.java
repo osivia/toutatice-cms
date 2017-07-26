@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.activation.MimeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
@@ -102,13 +103,13 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         DocumentType type = this.getType(document.getType());
         dto.setType(type);
         // Icon
-        if ((type != null) && type.isFile()) {
-            String icon = this.getIcon(document);
-
-            if (icon == null) {
+        if (type != null) {
+            String icon;
+            if (type.isFile()) {
+                icon = StringUtils.defaultIfEmpty(this.getIcon(document), type.getIcon());
+            } else {
                 icon = type.getIcon();
             }
-
             dto.setIcon(icon);
         }
         // Properties

@@ -16,9 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -31,15 +29,21 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.path.IBrowserService;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
+import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
@@ -67,6 +71,10 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     private final ICMSServiceLocator cmsServiceLocator;
     /** Documents browser service. */
     private final IBrowserService browserService;
+    /** Portal URL factory. */
+    private final IPortalUrlFactory portalUrlFactory;
+    /** Internationalization bundle factory. */
+    private final IBundleFactory bundleFactory;
 
 
     /**
@@ -84,6 +92,11 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
         // Browser service
         this.browserService = Locator.findMBean(IBrowserService.class, IBrowserService.MBEAN_NAME);
+        // Portal URL factory
+        this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
+        // Internationalization bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -366,24 +379,24 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      *
      * For web page mode, live mode MUST BE computed by the portlet when generating resource URL (displayLiveVersion=1)
      *
-     * @param resourceRequest resource request
-     * @param resourceResponse resource response
+     * @param request resource request
+     * @param response resource response
      * @throws PortletException the portlet exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
     @Override
-    public void serveResource(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
+    public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         try {
-            if (this.serveResourceByCache(resourceRequest, resourceResponse)) {
+            if (this.serveResourceByCache(request, response)) {
                 return;
             }
 
             // Redirection
-            if ("link".equals(resourceRequest.getParameter("type"))) {
-                NuxeoController nuxeoController = new NuxeoController(resourceRequest, null, this.getPortletContext());
+            if ("link".equals(request.getParameter("type"))) {
+                NuxeoController nuxeoController = new NuxeoController(request, null, this.getPortletContext());
 
                 // Document identifier
-                String id = resourceRequest.getResourceID();
+                String id = request.getResourceID();
 
                 // Fetch document
                 Document document = nuxeoController.fetchDocument(id);
@@ -395,18 +408,22 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 }
 
                 // Response
-                resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
-                resourceResponse.setProperty("Location", url);
-                resourceResponse.getPortletOutputStream().close();
-            } else if ("fancytreeLazyLoading".equals(resourceRequest.getResourceID())) {
+                response.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
+                response.setProperty("Location", url);
+                response.getPortletOutputStream().close();
+            } else if ("fancytreeLazyLoading".equals(request.getResourceID())) {
                 // Fancytree lazy-loading
-                this.serveResourceFancytreeLazyLoading(resourceRequest, resourceResponse);
+                this.serveResourceFancytreeLazyLoading(request, response);
+            } else if ("editor".equals(request.getResourceID())) {
+                // Get editor properties
+                String editorId = request.getParameter("editorId");
+                this.serveResourceEditor(request, response, editorId);
             } else {
                 // Tous les autres cas sont dépréciés
-                resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
+                response.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
             }
         } catch (NuxeoException e) {
-            this.serveResourceException(resourceRequest, resourceResponse, e);
+            this.serveResourceException(request, response, e);
         } catch (PortletException e) {
             throw e;
         } catch (Exception e) {
@@ -415,6 +432,13 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     }
 
 
+    /**
+     * Serve resource for fancytree lazy loading.
+     * @param request resource request
+     * @param response resource response
+     * @throws PortletException
+     * @throws IOException
+     */
     protected void serveResourceFancytreeLazyLoading(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
@@ -432,6 +456,73 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         } catch (PortalException e) {
             throw new PortletException(e);
         }
+    }
+
+
+    /**
+     * Serve resource for editor properties.
+     * @param request resource request
+     * @param response resource response
+     * @param editorId editor identifier
+     * @throws PortletException
+     * @throws IOException
+     */
+    protected void serveResourceEditor(ResourceRequest request, ResourceResponse response, String editorId) throws PortletException, IOException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+        // Editor title
+        String title;
+        if ("link".equals(editorId)) {
+            title = bundle.getString("EDITOR_LINK_TITLE");
+        } else {
+            title = null;
+        }
+
+        // Editor instance
+        String instance;
+        if ("link".equals(editorId)) {
+            instance = "osivia-services-editor-link-instance";
+        } else {
+            instance = null;
+        }
+
+        // Editor properties
+        Map<String, String> properties = new HashMap<>();
+        if ("link".equals(editorId)) {
+            properties.put("osivia.editor.url", request.getParameter("url"));
+            properties.put("osivia.editor.text", request.getParameter("text"));
+            properties.put("osivia.editor.title", request.getParameter("title"));
+            properties.put("osivia.editor.onlyText", request.getParameter("onlyText"));
+            properties.put("osivia.editor.basePath", nuxeoController.getBasePath());
+        }
+
+        // URL
+        String url;
+        try {
+            url = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, instance, properties, PortalUrlType.MODAL);
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
+
+
+        // JSON
+        JSONObject object = new JSONObject();
+        object.put("title", title);
+        object.put("url", url);
+
+
+        // Content type
+        response.setContentType("application/json");
+
+        // Content
+        PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
+        printWriter.write(object.toString());
+        printWriter.close();
     }
 
 
