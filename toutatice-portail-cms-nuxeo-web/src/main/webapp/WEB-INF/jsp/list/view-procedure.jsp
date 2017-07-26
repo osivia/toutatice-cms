@@ -4,16 +4,46 @@
 
 <%@ page isELIgnored="false"%>
 
-
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
             <c:forEach var="column" items="${dashboardColumns}">
-                <th>${column.map['label']}
-                    <c:if test="${column.map['sortable']}">
-		                <i class="halflings halflings-sort-by-attributes"></i>
-                    </c:if>
-                </th>
+            
+                <c:if test="${column.map['sortable']}">
+                
+                    <c:set var="sortLinkValue" value="${column.map['variableName']}"/>
+                    
+                    <c:choose>
+                        <c:when test="${column.map['variableName'] eq sortValue}">
+                            <c:if test="${sortOrder eq 'ASC'}">
+	                            <c:set var="sortLinkOrder" value="DESC"/>
+	                            <c:set var="glyphClass" value="halflings halflings-sort-by-attributes"/>
+	                        </c:if>
+	                        <c:if test="${sortOrder eq 'DESC'}">
+	                            <c:set var="sortLinkOrder" value="ASC"/>
+	                            <c:set var="glyphClass" value="halflings halflings-sort-by-attributes-alt"/>
+	                        </c:if>
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="sortLinkOrder" value="ASC"/>
+                        </c:otherwise>
+                    </c:choose>
+                    
+                    <portlet:actionURL var="sortLinkUrl">
+                        <portlet:param name="sortValue" value="${sortLinkValue}" />
+                        <portlet:param name="sortOrder" value="${sortLinkOrder}" />
+                    </portlet:actionURL>
+                
+                    <th>
+	                    <a href="${sortLinkUrl}">
+	                       ${column.map['label']} <c:if test="${column.map['variableName'] eq sortValue}"><i class="${glyphClass}"></i></c:if>
+	                    </a>
+                    </th>
+                </c:if>
+                <c:if test="${not column.map['sortable']}">
+                    <th>${column.map['label']}</th>
+                </c:if>
+            
             </c:forEach>
         </thead>
         <tbody>
@@ -43,7 +73,7 @@
 		                          </c:otherwise>
 		                      </c:choose>
 		                      <c:if test="${status.first}">
-			                      <a href="${documentLink.url}">${columnValue}</a>
+			                      <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
 		                      </c:if>
 		                      <c:if test="${not status.first}">
 			                      ${columnValue}

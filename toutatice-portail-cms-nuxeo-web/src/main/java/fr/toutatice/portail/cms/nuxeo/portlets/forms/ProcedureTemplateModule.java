@@ -2,12 +2,16 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
+import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -15,6 +19,7 @@ import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.security.impl.jacc.JACCPortalPrincipal;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -26,6 +31,7 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.PrivilegedPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
@@ -77,6 +83,21 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         request.setAttribute("dashboardName", dashboardM.getString("name"));
         request.setAttribute("dashboardColumns", dashboardM.getList("columns").list());
 
+        Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+        List<String> sortValueL = selectors.get("sortValue");
+        List<String> sortOrderL = selectors.get("sortOrder");
+
+        String sortValue = null;
+        if (CollectionUtils.isNotEmpty(sortValueL)) {
+            sortValue = sortValueL.get(0);
+        }
+        String sortOrder = null;
+        if (CollectionUtils.isNotEmpty(sortOrderL)) {
+            sortOrder = sortOrderL.get(0);
+        }
+        request.setAttribute("sortValue", StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE_NAME));
+        request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
+
     }
 
     @Override
@@ -88,11 +109,33 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
-        if ("admin".equals(request.getPortletMode().toString())) {
+        if (StringUtils.equals("admin", request.getPortletMode().toString())) {
             if ("save".equals(action)) {
                 window.setProperty(ViewProcedurePortlet.PROCEDURE_MODEL_ID_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("procedureModelId")));
                 window.setProperty(ViewProcedurePortlet.DASHBOARD_ID_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("dashboardId")));
             }
+        } else if (StringUtils.equals(PortletMode.VIEW.toString(), request.getPortletMode().toString())) {
+
+            Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
+            List<String> sortValue = selectors.get("sortValue");
+            List<String> sortOrder = selectors.get("sortOrder");
+            if (sortValue == null) {
+                sortValue = new ArrayList<String>();
+            } else {
+                sortValue.clear();
+            }
+            if (sortOrder == null) {
+                sortOrder = new ArrayList<String>();
+            } else {
+                sortOrder.clear();
+            }
+
+            sortValue.add(StringUtils.defaultIfBlank(request.getParameter("sortValue"), ViewProcedurePortlet.DEFAULT_FIELD_TITLE_NAME));
+            sortOrder.add(StringUtils.defaultIfBlank(request.getParameter("sortOrder"), ViewProcedurePortlet.DEFAULT_SORT_ORDER));
+
+            selectors.put("sortValue", sortValue);
+            selectors.put("sortOrder", sortOrder);
+            response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
         }
     }
 
@@ -148,16 +191,6 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
                 }
             } else {
                 // no group check for recordFolder
-
-                // Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-                // List<String> sortValue = selectors.get("sortValue");
-                // List<String> sortOrder = selectors.get("sortOrder");
-
-                // sortValue
-
-                // sortOrder
-
-
                 return StringUtils.EMPTY;
             }
         }

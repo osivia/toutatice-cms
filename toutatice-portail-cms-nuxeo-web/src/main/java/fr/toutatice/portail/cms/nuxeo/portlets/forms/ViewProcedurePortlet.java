@@ -18,11 +18,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet;
  */
 public class ViewProcedurePortlet extends ViewListPortlet {
 
-    /** PROCEDURE_MODEL_ID_WINDOW_PROPERTY */
-    public static final String PROCEDURE_MODEL_ID_WINDOW_PROPERTY = "osivia.forms.list.model.id";
+    private static final Integer MAXIMIZED_PAGINATION = 10;
 
-    /** DASHBOARD_ID_WINDOW_PROPERTY */
-    public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.list.dashboard.id";
+    private static final Integer NORMAL_PAGINATION = 10;
+
+    private static final String DEFAULT_FIELD_PREFIX = "rcd:globalVariablesValues.";
 
     /** PATH_ADMIN */
     protected static final String PATH_ADMIN = "/WEB-INF/jsp/forms/admin.jsp";
@@ -30,9 +30,15 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     /** PATH_VIEW */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/forms/view-procedure.jsp";
 
-    private static final Integer MAXIMIZED_PAGINATION = 10;
+    /** PROCEDURE_MODEL_ID_WINDOW_PROPERTY */
+    public static final String PROCEDURE_MODEL_ID_WINDOW_PROPERTY = "osivia.forms.list.model.id";
+    
+    /** DASHBOARD_ID_WINDOW_PROPERTY */
+    public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.list.dashboard.id";
 
-    private static final Integer NORMAL_PAGINATION = 10;
+    public static final String DEFAULT_SORT_ORDER = "ASC";
+
+    public static final String DEFAULT_FIELD_TITLE_NAME = "_title";
 
     /**
      * Constructor.
@@ -40,7 +46,6 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     public ViewProcedurePortlet() {
         super();
     }
-
 
     /*
      * (non-Javadoc)
@@ -51,20 +56,43 @@ public class ViewProcedurePortlet extends ViewListPortlet {
         ViewProcedureConfiguration configuration = new ViewProcedureConfiguration(super.getConfiguration(window));
 
         StringBuilder requestSb = new StringBuilder();
-        requestSb.append("(ecm:primaryType = 'ProcedureInstance' ");
-        requestSb.append("AND pi:procedureModelWebId = '");
-        requestSb.append(window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY));
-        requestSb.append("') ");
-        requestSb.append("OR (ecm:primaryType = 'Record' ");
-        requestSb.append("AND rcd:procedureModelWebId = '");
-        requestSb.append(window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY));
-        requestSb.append("') ");
+
+        requestSb.append("StringBuilder nuxeoRequest = new StringBuilder();\n");
+        requestSb.append("nuxeoRequest.append(\"(ecm:primaryType = 'ProcedureInstance' \");\n");
+        requestSb.append("nuxeoRequest.append(\"AND pi:procedureModelWebId = '\");\n");
+        requestSb.append("nuxeoRequest.append(\"" + window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY) + "\");\n");
+        requestSb.append("nuxeoRequest.append(\"') \");\n");
+        requestSb.append("nuxeoRequest.append(\"OR (ecm:primaryType = 'Record' \");\n");
+        requestSb.append("nuxeoRequest.append(\"AND rcd:procedureModelWebId = '\");\n");
+        requestSb.append("nuxeoRequest.append(\"" + window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY) + "\");\n");
+        requestSb.append("nuxeoRequest.append(\"') \");\n");
+        requestSb.append("nuxeoRequest.append(\"ORDER BY \");\n");
+
+        requestSb.append("if(params!=null && params.get(\"sortValue\") != null && params.get(\"sortValue\").size() >0 &&"
+                + " params.get(\"sortOrder\") != null && params.get(\"sortOrder\").size() >0){\n");
+
+        requestSb.append("nuxeoRequest.append(\"" + DEFAULT_FIELD_PREFIX + "\");\n");
+        requestSb.append("nuxeoRequest.append(params.get(\"sortValue\").get(0));\n");
+        requestSb.append("nuxeoRequest.append(\" \");\n");
+        requestSb.append("nuxeoRequest.append(params.get(\"sortOrder\").get(0));\n");
+
+        requestSb.append("} else {\n");
+        requestSb.append("nuxeoRequest.append(\"" + DEFAULT_FIELD_PREFIX + DEFAULT_FIELD_TITLE_NAME + "\");\n");
+        requestSb.append("nuxeoRequest.append(\" " + DEFAULT_SORT_ORDER + "\");\n");
+        
+        requestSb.append("}\n");
+
+
+        requestSb.append("return nuxeoRequest.toString();");
+
+
         configuration.setNuxeoRequest(requestSb.toString());
         
         configuration.setUseES(true);
         configuration.setVersion("1");
         window.setProperty(VERSION_WINDOW_PROPERTY, "1");
         configuration.setContentFilter(String.valueOf(NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED));
+        configuration.setBeanShell(true);
 
         configuration.setProcedureModelId(window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY));
         configuration.setDashboardId(window.getProperty(DASHBOARD_ID_WINDOW_PROPERTY));
