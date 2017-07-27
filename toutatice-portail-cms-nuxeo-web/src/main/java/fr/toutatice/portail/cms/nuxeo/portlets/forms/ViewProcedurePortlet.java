@@ -22,13 +22,8 @@ public class ViewProcedurePortlet extends ViewListPortlet {
 
     private static final Integer NORMAL_PAGINATION = 10;
 
-    private static final String DEFAULT_FIELD_PREFIX = "rcd:globalVariablesValues.";
-
     /** PATH_ADMIN */
     protected static final String PATH_ADMIN = "/WEB-INF/jsp/forms/admin.jsp";
-
-    /** PATH_VIEW */
-    protected static final String PATH_VIEW = "/WEB-INF/jsp/forms/view-procedure.jsp";
 
     /** PROCEDURE_MODEL_ID_WINDOW_PROPERTY */
     public static final String PROCEDURE_MODEL_ID_WINDOW_PROPERTY = "osivia.forms.list.model.id";
@@ -36,9 +31,11 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     /** DASHBOARD_ID_WINDOW_PROPERTY */
     public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.list.dashboard.id";
 
+    public static final String DEFAULT_FIELD_PREFIX = "rcd:globalVariablesValues.";
+
     public static final String DEFAULT_SORT_ORDER = "ASC";
 
-    public static final String DEFAULT_FIELD_TITLE_NAME = "_title";
+    public static final String DEFAULT_FIELD_TITLE = DEFAULT_FIELD_PREFIX + "_title";
 
     /**
      * Constructor.
@@ -71,13 +68,12 @@ public class ViewProcedurePortlet extends ViewListPortlet {
         requestSb.append("if(params!=null && params.get(\"sortValue\") != null && params.get(\"sortValue\").size() >0 &&"
                 + " params.get(\"sortOrder\") != null && params.get(\"sortOrder\").size() >0){\n");
 
-        requestSb.append("nuxeoRequest.append(\"" + DEFAULT_FIELD_PREFIX + "\");\n");
         requestSb.append("nuxeoRequest.append(params.get(\"sortValue\").get(0));\n");
         requestSb.append("nuxeoRequest.append(\" \");\n");
         requestSb.append("nuxeoRequest.append(params.get(\"sortOrder\").get(0));\n");
 
         requestSb.append("} else {\n");
-        requestSb.append("nuxeoRequest.append(\"" + DEFAULT_FIELD_PREFIX + DEFAULT_FIELD_TITLE_NAME + "\");\n");
+        requestSb.append("nuxeoRequest.append(\"" + DEFAULT_FIELD_TITLE + "\");\n");
         requestSb.append("nuxeoRequest.append(\" " + DEFAULT_SORT_ORDER + "\");\n");
         
         requestSb.append("}\n");

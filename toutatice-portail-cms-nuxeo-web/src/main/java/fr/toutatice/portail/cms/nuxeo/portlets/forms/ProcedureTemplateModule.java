@@ -95,7 +95,9 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         if (CollectionUtils.isNotEmpty(sortOrderL)) {
             sortOrder = sortOrderL.get(0);
         }
-        request.setAttribute("sortValue", StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE_NAME));
+
+        request.setAttribute("sortValue", StringUtils.removeStart(StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE),
+                ViewProcedurePortlet.DEFAULT_FIELD_PREFIX));
         request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
     }
@@ -117,24 +119,29 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         } else if (StringUtils.equals(PortletMode.VIEW.toString(), request.getPortletMode().toString())) {
 
             Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-            List<String> sortValue = selectors.get("sortValue");
-            List<String> sortOrder = selectors.get("sortOrder");
-            if (sortValue == null) {
-                sortValue = new ArrayList<String>();
+            List<String> sortValueL = selectors.get("sortValue");
+            List<String> sortOrderL = selectors.get("sortOrder");
+            if (sortValueL == null) {
+                sortValueL = new ArrayList<String>();
             } else {
-                sortValue.clear();
+                sortValueL.clear();
             }
-            if (sortOrder == null) {
-                sortOrder = new ArrayList<String>();
+            if (sortOrderL == null) {
+                sortOrderL = new ArrayList<String>();
             } else {
-                sortOrder.clear();
+                sortOrderL.clear();
             }
 
-            sortValue.add(StringUtils.defaultIfBlank(request.getParameter("sortValue"), ViewProcedurePortlet.DEFAULT_FIELD_TITLE_NAME));
-            sortOrder.add(StringUtils.defaultIfBlank(request.getParameter("sortOrder"), ViewProcedurePortlet.DEFAULT_SORT_ORDER));
+            String sortValue = request.getParameter("sortValue");
+            if (!StringUtils.startsWith(sortValue, "dc:")) {
+                sortValue = ViewProcedurePortlet.DEFAULT_FIELD_PREFIX.concat(sortValue);
+            }
+            
+            sortValueL.add(StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE));
+            sortOrderL.add(StringUtils.defaultIfBlank(request.getParameter("sortOrder"), ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
-            selectors.put("sortValue", sortValue);
-            selectors.put("sortOrder", sortOrder);
+            selectors.put("sortValue", sortValueL);
+            selectors.put("sortOrder", sortOrderL);
             response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
         }
     }

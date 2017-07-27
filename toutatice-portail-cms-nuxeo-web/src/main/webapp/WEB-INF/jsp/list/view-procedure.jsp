@@ -35,9 +35,10 @@
                     </portlet:actionURL>
                 
                     <th>
-	                    <a href="${sortLinkUrl}">
-	                       ${column.map['label']} <c:if test="${column.map['variableName'] eq sortValue}"><i class="${glyphClass}"></i></c:if>
+	                    <a href="${sortLinkUrl}" class="ajax-link">
+	                       ${column.map['label']}
 	                    </a>
+	                     <c:if test="${column.map['variableName'] eq sortValue}"> <i class="${glyphClass}"></i></c:if>
                     </th>
                 </c:if>
                 <c:if test="${not column.map['sortable']}">
