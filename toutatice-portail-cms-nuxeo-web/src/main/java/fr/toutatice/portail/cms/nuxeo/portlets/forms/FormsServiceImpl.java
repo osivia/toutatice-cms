@@ -155,7 +155,6 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
         
-        
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
@@ -163,30 +162,41 @@ public class FormsServiceImpl implements IFormsService {
         // Model
         String modelWebId = FORMS_WEB_ID_PREFIX + modelId;
         Document model = this.getModel(portalControllerContext, modelWebId);
+
+        // Starting step
+        String startingStep = StringUtils.defaultIfBlank(variables.get("pcd:startingStep"), model.getString("pcd:startingStep"));
+
+        // Starting step properties
+        PropertyMap formStepProperties;
+        PropertyMap actionStepProperties;
+
+        // recordFolders have parentModel for the action properties but regular model holds the form
         if (StringUtils.equals(model.getType(), "RecordFolder")) {
+            formStepProperties = this.getStepProperties(model, IFormsService.FORM_STEP_REFERENCE);
             String parentModelWebId = model.getString("pcd:webIdParent");
             model = this.getModel(portalControllerContext, parentModelWebId);
+            actionStepProperties = this.getStepProperties(model, startingStep);
+        } else {
+            formStepProperties = this.getStepProperties(model, startingStep);
+            actionStepProperties = formStepProperties;
         }
+
+        // Action properties
+        PropertyMap actionProperties = this.getActionProperties(actionStepProperties, actionId);
 
         // Procedure initiator
         String procedureInitiator = "";
         HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
         if(httpServletRequest != null) {
         	procedureInitiator = httpServletRequest.getRemoteUser();
+            // Required fields validation
+            this.requiredFieldsValidation(portalControllerContext, formStepProperties, variables);
         }
         else {
         	// #1569 - Specific parameters for procedures in batch mode
         	procedureInitiator = "admin";
         	cmsContext.setScope("superuser_no_cache");
         }
-
-        // Starting step
-        String startingStep = StringUtils.defaultIfBlank(variables.get("pcd:startingStep"), model.getString("pcd:startingStep"));
-        // Starting step properties
-        PropertyMap startingStepProperties = this.getStepProperties(model, startingStep);
-
-        // Action properties
-        PropertyMap actionProperties = this.getActionProperties(startingStepProperties, actionId);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -205,11 +215,6 @@ public class FormsServiceImpl implements IFormsService {
         // UUID
         String uuid = UUID.randomUUID().toString();
         variables.put("uuid", uuid);
-
-        // Required fields validation
-        if(httpServletRequest != null) {
-        	this.requiredFieldsValidation(portalControllerContext, startingStepProperties, variables);
-        }
 
 		String startDate = DATE_FORMAT.format(new Date());
 
