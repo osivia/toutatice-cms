@@ -96,8 +96,10 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
             sortOrder = sortOrderL.get(0);
         }
 
-        request.setAttribute("sortValue", StringUtils.removeStart(StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE),
-                ViewProcedurePortlet.DEFAULT_FIELD_PREFIX));
+        sortValue = StringUtils.removeStart(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_RECORD);
+        sortValue = StringUtils.removeStart(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_PROCEDURE);
+        sortValue = StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE);
+        request.setAttribute("sortValue", sortValue);
         request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
     }
@@ -134,7 +136,13 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
             String sortValue = request.getParameter("sortValue");
             if (!StringUtils.startsWith(sortValue, "dc:")) {
-                sortValue = ViewProcedurePortlet.DEFAULT_FIELD_PREFIX.concat(sortValue);
+
+                if (StringUtils.equals(window.getProperty("osivia.doctype"), "RecordFolder")) {
+                    sortValue = ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_RECORD.concat(sortValue);
+                } else {
+                    sortValue = ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_PROCEDURE.concat(sortValue);
+                }
+
             }
             
             sortValueL.add(StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE));

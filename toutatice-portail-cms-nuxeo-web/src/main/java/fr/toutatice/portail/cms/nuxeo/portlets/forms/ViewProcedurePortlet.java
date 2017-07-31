@@ -31,11 +31,13 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     /** DASHBOARD_ID_WINDOW_PROPERTY */
     public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.dashboard.id";
 
-    public static final String DEFAULT_FIELD_PREFIX = "rcd:globalVariablesValues.";
+    public static final String DEFAULT_FIELD_PREFIX_RECORD = "rcd:globalVariablesValues.";
+
+    public static final String DEFAULT_FIELD_PREFIX_PROCEDURE = "pi:globalVariablesValues.";
 
     public static final String DEFAULT_SORT_ORDER = "ASC";
 
-    public static final String DEFAULT_FIELD_TITLE = DEFAULT_FIELD_PREFIX + "_title";
+    public static final String DEFAULT_FIELD_TITLE = DEFAULT_FIELD_PREFIX_RECORD + "_title";
 
     /**
      * Constructor.
