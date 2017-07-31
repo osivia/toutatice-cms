@@ -921,7 +921,7 @@ public class ViewListPortlet extends ViewList {
     private String applyFilter(String request, String filter) {
         String result;
 
-        if (StringUtils.isEmpty(filter)) {
+        if (StringUtils.isBlank(filter)) {
             result = request;
         } else {
             Pattern pattern = Pattern.compile("^(.*) ORDER *BY (.*)$", Pattern.CASE_INSENSITIVE);

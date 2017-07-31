@@ -190,7 +190,9 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
                             for (Object groupO : groups.list()) {
                                 String group = (String) groupO;
                                 if (StringUtils.equals(groupName, group)) {
-                                    return StringUtils.EMPTY;
+                                    // apply dashboard request
+                                    String requestFilter = dashboardM.getString("requestFilter");
+                                    return requestFilter;
                                 }
                             }
                         }

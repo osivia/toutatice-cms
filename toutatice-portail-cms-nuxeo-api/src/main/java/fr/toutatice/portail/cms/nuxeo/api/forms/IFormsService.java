@@ -30,6 +30,8 @@ public interface IFormsService {
     String ACTOR_USER_PREFIX = "user:";
     /** Nuxeo task actor group prefix. */
     String ACTOR_GROUP_PREFIX = "group:";
+    /** step reference holding default form */
+    String FORM_STEP_REFERENCE = "formulaire";
 
 
     /**

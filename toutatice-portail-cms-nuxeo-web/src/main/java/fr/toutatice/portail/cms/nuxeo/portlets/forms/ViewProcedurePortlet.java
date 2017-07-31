@@ -29,7 +29,7 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     public static final String PROCEDURE_MODEL_ID_WINDOW_PROPERTY = "osivia.forms.list.model.id";
     
     /** DASHBOARD_ID_WINDOW_PROPERTY */
-    public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.list.dashboard.id";
+    public static final String DASHBOARD_ID_WINDOW_PROPERTY = "osivia.forms.dashboard.id";
 
     public static final String DEFAULT_FIELD_PREFIX = "rcd:globalVariablesValues.";
 
@@ -63,8 +63,8 @@ public class ViewProcedurePortlet extends ViewListPortlet {
         requestSb.append("nuxeoRequest.append(\"AND rcd:procedureModelWebId = '\");\n");
         requestSb.append("nuxeoRequest.append(\"" + window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY) + "\");\n");
         requestSb.append("nuxeoRequest.append(\"') \");\n");
+        
         requestSb.append("nuxeoRequest.append(\"ORDER BY \");\n");
-
         requestSb.append("if(params!=null && params.get(\"sortValue\") != null && params.get(\"sortValue\").size() >0 &&"
                 + " params.get(\"sortOrder\") != null && params.get(\"sortOrder\").size() >0){\n");
 
