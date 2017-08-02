@@ -31,6 +31,9 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.comments.AddCommentCommand;
+import fr.toutatice.portail.cms.nuxeo.api.comments.DeleteCommentCommand;
+import fr.toutatice.portail.cms.nuxeo.api.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ThreadPostDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;

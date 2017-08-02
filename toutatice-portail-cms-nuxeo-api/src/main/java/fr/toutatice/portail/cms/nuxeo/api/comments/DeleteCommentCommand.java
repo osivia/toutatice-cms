@@ -14,7 +14,7 @@
  *
  *    
  */
-package fr.toutatice.portail.cms.nuxeo.portlets.comments;
+package fr.toutatice.portail.cms.nuxeo.api.comments;
 
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
