@@ -418,6 +418,56 @@
         </attribute>
     </tag>
 
+
+    <!-- Format vocabulary 3 level -->
+    <tag>
+        <description>Format vocabulary 3 level.</description>
+        <display-name>Format vocabulary 3 level</display-name>
+        <name>formatVocabulary3Level</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.FormatVocabulary3LevelTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+        
+        <attribute>
+            <description>Vocabulary parent.</description>
+            <name>vocabulary</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Vocabulary child #1.</description>
+            <name>child1</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Vocabulary child #2.</description>
+            <name>child2</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Vocabulary XPath.</description>
+            <name>xpath</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
+    
     
     <!-- Include JSP -->
     <tag>
@@ -453,5 +503,7 @@
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
         </attribute>
     </tag>
+    
+    
 
 </taglib>

@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -7,8 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -28,6 +31,8 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -43,6 +48,7 @@ import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
@@ -63,6 +69,7 @@ import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSBinaryContent;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -76,12 +83,12 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -425,6 +432,19 @@ public class FileBrowserPortlet extends CMSPortlet {
             PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
             printWriter.write(data.toString());
             printWriter.close();
+        } else if("zipDownload".equals(request.getResourceID())) {
+            // bulk download
+            
+            // selected download paths
+            String[] paths = StringUtils.split(request.getParameter("paths"), ",");
+            
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+            CMSBinaryContent content = (CMSBinaryContent) nuxeoController.executeNuxeoCommand(new BulkFilesCommand(nuxeoController, paths));
+            
+            response.setContentType(content.getMimeType());
+            response.setProperty("Content-disposition", "inline; filename=\"" + content.getName() + "\"");
+
+            ResourceUtil.copy(new FileInputStream(content.getFile()), response.getPortletOutputStream(), 4096);
         } else {
             super.serveResource(request, response);
         }
@@ -470,11 +490,13 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // Portal controller context
                 PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
 
+                // CMS service
+                ICMSService cmsService = this.getCMSService();
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
                 // Publication informations
-                CMSPublicationInfos publicationInfos = this.getCMSService().getPublicationInfos(cmsContext, path);
+                CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
                 request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
@@ -492,6 +514,21 @@ public class FileBrowserPortlet extends CMSPortlet {
                 Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
 
 
+                // Subscriptions
+                List<EcmDocument> subscriptionDocuments = cmsService.getUserSubscriptions(cmsContext);
+                Set<String> subscriptions = new HashSet<>(subscriptionDocuments.size());
+                for (EcmDocument subscriptionDocument : subscriptionDocuments) {
+                    if (subscriptionDocument instanceof Document) {
+                        // Nuxeo document
+                        Document subscriptionNuxeoDocument = (Document) subscriptionDocument;
+                        // Nuxeo document identifier
+                        String id = subscriptionNuxeoDocument.getId();
+
+                        subscriptions.add(id);
+                    }
+                }
+
+
                 // Documents DTO
                 int index = 1;
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
@@ -501,6 +538,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
+                    // Subscription indicator
+                    boolean subscription = subscriptions.contains(document.getId());
+                    fileBrowserItem.setSubscription(subscription);
+                    
                     fileBrowserItems.add(fileBrowserItem);
                 }
 

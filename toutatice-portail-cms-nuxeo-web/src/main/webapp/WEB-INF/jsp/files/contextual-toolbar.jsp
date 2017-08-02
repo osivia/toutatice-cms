@@ -14,12 +14,19 @@
 <!-- Load document publication informations URL -->
 <portlet:resourceURL id="infos" var="infosUrl" />
 
+<!-- DOwnload zip of selected documents -->
+<portlet:resourceURL id="zipDownload" var="zipDownloadUrl" >
+	<portlet:param name="paths" value="_PATHS_"/>
+</portlet:resourceURL>
+
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 <c:set var="messageSingleSelection"><op:translate key="FILE_BROWSER_ONE_ELEMENT_SELECTED" /></c:set>
 <c:set var="messageMultipleSelection"><op:translate key="FILE_BROWSER_N_ELEMENTS_SELECTED" /></c:set>
 
+<c:set var="messageNotFile"><op:translate key="FILE_BROWSER_NOT_FILE" /></c:set>
+<c:set var="messageTooLarge"><op:translate key="FILE_BROWSER_TOO_LARGE" /></c:set>
 
 <div class="contextual-toolbar hidden-print" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}" data-ajax-shadowbox="#shadowbox-${namespace}-toolbar">
     <nav class="navbar navbar-default" role="toolbar">
@@ -123,6 +130,7 @@
     <div id="${namespace}-delete">
         <form action="${deleteUrl}" method="post" role="form">
             <input type="hidden" name="identifiers" value="">
+            <input type="hidden" name="paths" value="">
             
             <div class="form-group text-center"><op:translate key="CMS_DELETE_CONFIRM_MESSAGE" /></div>
             

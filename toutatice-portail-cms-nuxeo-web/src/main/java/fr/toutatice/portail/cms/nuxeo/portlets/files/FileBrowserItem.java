@@ -14,6 +14,8 @@ public class FileBrowserItem extends DocumentDTO {
 
     /** Virtual index. */
     private int index;
+    /** Subscription indicator. */
+    private boolean subscription;
 
 
     /**
@@ -65,6 +67,24 @@ public class FileBrowserItem extends DocumentDTO {
      */
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    /**
+     * Getter for subscription.
+     * 
+     * @return the subscription
+     */
+    public boolean isSubscription() {
+        return subscription;
+    }
+
+    /**
+     * Setter for subscription.
+     * 
+     * @param subscription the subscription to set
+     */
+    public void setSubscription(boolean subscription) {
+        this.subscription = subscription;
     }
 
 }

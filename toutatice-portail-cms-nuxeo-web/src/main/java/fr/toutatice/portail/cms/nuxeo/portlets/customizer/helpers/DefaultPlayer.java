@@ -26,6 +26,7 @@ import org.osivia.portal.api.player.Player;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 /**
  * Default player (use view document portlet).
@@ -56,6 +57,11 @@ public class DefaultPlayer implements INuxeoPlayerModule {
         windowProperties.put(Constants.WINDOW_PROP_URI, publicationInfos.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
+
+        String hideMetadatas = documentContext.getDocument().getString("ttc:hideMetadatas");
+        if(Boolean.valueOf(hideMetadatas)) {
+			windowProperties.put(ViewDocumentPortlet.HIDE_METADATA_WINDOW_PROPERTY, "1");
+        }
 
         Player linkProps = new Player();
         linkProps.setWindowProperties(windowProperties);

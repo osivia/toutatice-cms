@@ -279,7 +279,9 @@ html {
 body {
   height: 100%;
   width: 100%;
-  background-color: #eee;
+  /* custom OSIVIA START */
+  background-color: #404040;
+  /* custom OSIVIA END */
   background-image: url(images/texture.png);
 }
 
@@ -543,7 +545,9 @@ html[dir='rtl'] #toolbarSidebar {
 #toolbarContainer, .findbar, .secondaryToolbar {
   position: relative;
   height: 32px;
-  background-color: #eee; /* fallback */
+  /* custom OSIVIA START */
+  background-color: #474747; /* fallback */
+  /* custom OSIVIA END */
   background-image: url(images/texture.png),
                     linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
 }
@@ -1631,7 +1635,9 @@ html[dir='rtl'] .outlineItemToggler::before {
   color: hsl(0,0%,85%);
   font-size: 12px;
   line-height: 14px;
-  background-color: #eee; /* fallback */
+  /* custom OSIVIA START */
+  background-color: #474747; /* fallback */
+  /* custom OSIVIA END */
   background-image: url(images/texture.png),
                     linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
   box-shadow: inset 1px 0 0 hsla(0,0%,100%,.08),
