@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,10 +79,14 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
         
         Document procedureModel = getDocument(nuxeoController, procedureModelWebid);
-        PropertyMap dashboardM = getDashboard(procedureModel, dashboardName);
+        
+        PropertyMap properties = procedureModel.getProperties();
+        
+        PropertyMap dashboardM = getDashboard(properties, dashboardName);
         
         request.setAttribute("dashboardName", dashboardM.getString("name"));
         request.setAttribute("dashboardColumns", dashboardM.getList("columns").list());
+        request.setAttribute("variablesDefinitions", getVariablesDefinitions(properties));
 
         Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
         List<String> sortValueL = selectors.get("sortValue");
@@ -103,6 +108,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
     }
+
 
     @Override
     protected void processAction(ActionRequest request, ActionResponse response, PortletContext portletContext) throws PortletException, IOException {
@@ -175,7 +181,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         if (StringUtils.isNotBlank(procedureModelWebid)) {
             Document procedureModel = getDocument(nuxeoController, procedureModelWebid);
             if (!StringUtils.equals(procedureModel.getType(), "RecordFolder")) {
-                PropertyMap dashboardM = getDashboard(procedureModel, dashboardName);
+                PropertyMap dashboardM = getDashboard(procedureModel.getProperties(), dashboardName);
                 if (dashboardM != null) {
 
                     PropertyList groups = dashboardM.getList("groups");
@@ -227,8 +233,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
      * @param procedureModel
      * @param dashboardName
      */
-    private PropertyMap getDashboard(Document procedureModel, String dashboardName) {
-        PropertyMap properties = procedureModel.getProperties();
+    private PropertyMap getDashboard(PropertyMap properties, String dashboardName) {
         PropertyList dashboardsList = properties.getList("pcd:dashboards");
 
         if (StringUtils.isNotBlank(dashboardName)) {
@@ -243,6 +248,45 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         }
 
         return null;
+    }
+
+    /**
+     * returns a map of all the variables defined in a model
+     * 
+     * @param properties
+     * @return variablesDefinitions
+     */
+    private Map<String, Map<String, String>> getVariablesDefinitions(PropertyMap properties) {
+        
+        PropertyList varDef = properties.getList("pcd:globalVariablesDefinitions");
+
+        Map<String, Map<String, String>> variablesDefinitions = new HashMap<String, Map<String, String>>(varDef.size()+2);
+        for (Object varDefO : varDef.list()) {
+            PropertyMap varDefM = (PropertyMap) varDefO;
+
+            String name = varDefM.getString("name");
+            String label = varDefM.getString("label");
+            String type = varDefM.getString("type");
+            String varOptions = varDefM.getString("varOptions");
+
+            variablesDefinitions.put(name, buildVariableDefinition(name, label, type, varOptions));
+        }
+        
+        variablesDefinitions.put("dc:created", buildVariableDefinition("dc:created", "Créé le", "DATETIME", null));
+        variablesDefinitions.put("dc:modified", buildVariableDefinition("dc:modified", "Modifié le", "DATETIME", null));
+        
+        return variablesDefinitions;
+    }
+
+    private Map<String, String> buildVariableDefinition(String name, String label, String type, String varOptions) {
+        Map<String, String> variableDefinition = new HashMap<String, String>(4);
+
+        variableDefinition.put("name", name);
+        variableDefinition.put("label", label);
+        variableDefinition.put("type", type);
+        variableDefinition.put("varOptions", varOptions);
+
+        return variableDefinition;
     }
 
 }

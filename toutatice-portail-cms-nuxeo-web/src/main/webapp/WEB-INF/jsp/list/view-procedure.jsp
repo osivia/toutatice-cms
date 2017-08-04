@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <%@ page isELIgnored="false"%>
 
@@ -73,6 +74,15 @@
 		                              <c:set var="columnValue" value="${globalVariablesValues[variableName]}"></c:set>
 		                          </c:otherwise>
 		                      </c:choose>
+		                      
+		                      <c:if test="${variablesDefinitions[variableName]['type'] eq 'DATE'}">
+		                          <fmt:parseDate value = "${columnValue}" var="columnValue" pattern = "dd/MM/yyyy" />
+                                  <fmt:formatDate value="${columnValue}" var="columnValue" type="DATE"/>
+                              </c:if>
+	                          <c:if test="${variablesDefinitions[variableName]['type'] eq 'DATETIME'}">
+	                              <fmt:formatDate value="${columnValue}" var="columnValue" type="BOTH"/>
+	                          </c:if>
+	                          
 		                      <c:if test="${status.first}">
 			                      <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
 		                      </c:if>

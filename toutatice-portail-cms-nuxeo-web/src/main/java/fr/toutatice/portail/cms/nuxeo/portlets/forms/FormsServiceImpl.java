@@ -139,9 +139,9 @@ public class FormsServiceImpl implements IFormsService {
      * @return
      */
     @Override
-    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables)
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, Map<String, String> variables)
             throws PortalException, FormFilterException {
-        return this.start(portalControllerContext, modelId, null, variables);
+        return this.start(portalControllerContext, modelWebId, null, variables);
     }
 
 
@@ -149,7 +149,7 @@ public class FormsServiceImpl implements IFormsService {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
@@ -160,7 +160,6 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Model
-        String modelWebId = FORMS_WEB_ID_PREFIX + modelId;
         Document model = this.getModel(portalControllerContext, modelWebId);
 
         // Starting step

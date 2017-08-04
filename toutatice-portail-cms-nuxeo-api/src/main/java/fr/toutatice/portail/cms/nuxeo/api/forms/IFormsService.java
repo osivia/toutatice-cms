@@ -38,13 +38,13 @@ public interface IFormsService {
      * Start with default action.
      *
      * @param portalControllerContext portal controller context
-     * @param modelId model identifier
+     * @param modelWebId model identifier
      * @param variables variables
      * @return updated variables
      * @throws PortalException
      * @throws FormFilterException
      */
-    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, Map<String, String> variables)
+    Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, Map<String, String> variables)
             throws PortalException, FormFilterException;
 
 
@@ -52,14 +52,14 @@ public interface IFormsService {
      * Start.
      *
      * @param portalControllerContext portal controller context
-     * @param modelId model identifier
+     * @param modelWebId model identifier
      * @param actionId action identifier
      * @param variables variables
      * @return updated variables
      * @throws PortalException
      * @throws FormFilterException
      */
-    Map<String, String> start(PortalControllerContext portalControllerContext, String modelId, String actionId, Map<String, String> variables)
+    Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException;
 
 
