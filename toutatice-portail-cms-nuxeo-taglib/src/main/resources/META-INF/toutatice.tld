@@ -204,6 +204,22 @@
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.Boolean</type>
         </attribute>
+
+        <attribute>
+            <description>Hide avatar indicator. Default = false.</description>
+            <name>hideAvatar</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
+
+        <attribute>
+            <description>Hide display name indicator. Default = false.</description>
+            <name>hideDisplayName</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
     
     
@@ -226,6 +242,23 @@
         <attribute>
             <description>Nuxeo document HTML content property name.</description>
             <name>property</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
+
+
+    <tag>
+        <description>Transform HTML content.</description>
+        <display-name>Transform HTML content</display-name>
+        <name>transformContent</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.TransformContentTag</tag-class>
+        <body-content>empty</body-content>
+
+        <attribute>
+            <description>HTML content.</description>
+            <name>content</name>
             <required>true</required>
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>

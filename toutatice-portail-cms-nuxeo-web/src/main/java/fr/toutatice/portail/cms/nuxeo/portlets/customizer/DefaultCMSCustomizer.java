@@ -681,11 +681,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Vignette
                 PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
                 if ((vignetteProperties != null) && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
-                    BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
-                    binary.setFieldName("ttc:vignette");
-                    binary.setDocument(document);
-                    Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
-                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
+                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_DISPLAY, String.valueOf(true));
                 }
 
                 return player;
@@ -1428,7 +1424,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * 
      * @param cmsCtx
      * @param pubInfos
-     * @param isPermLink
      * @return webId
      */
     public String getContentWebIdPath(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos) {
@@ -1529,7 +1524,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Checks if current doc is in edition state.
      *
-     * @param path the path
      * @return true, if is in page edition state
      * @throws CMSException the CMS exception
      */

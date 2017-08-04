@@ -140,7 +140,7 @@
        		<xsl:variable name="url" select="bridge:link($bridge,  @href)" />
       		<xsl:attribute name="href"><xsl:value-of select="$url" /></xsl:attribute>
      		
-			<xsl:if test="not(@target) and not(contains($url,bridge:getBasePath($bridge))) ">     		
+			<xsl:if test="not(@target) and not(contains($url,bridge:getBasePath($bridge))) and not(starts-with($url, '#'))">
 	     		<xsl:attribute name="target">_blank</xsl:attribute>
 	     	 </xsl:if>
 	     	 
