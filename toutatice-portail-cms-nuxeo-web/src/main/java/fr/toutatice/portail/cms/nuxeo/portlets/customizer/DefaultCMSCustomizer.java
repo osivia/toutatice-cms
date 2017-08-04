@@ -676,13 +676,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Window properties
                 Map<String, String> properties = player.getWindowProperties();
                 properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
-                properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
-
-                // Vignette
-                PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
-                if ((vignetteProperties != null) && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
-                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_DISPLAY, String.valueOf(true));
-                }
+                properties.put(InternalConstants.PROP_WINDOW_TITLE_METADATA, String.valueOf(true));
 
                 return player;
             } else if ("Folder".equals(document.getType())) {
@@ -1750,7 +1744,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             src = sb.toString();
         } catch (Exception e) {
-            new CMSException(e);
+            throw new CMSException(e);
         }
 
 

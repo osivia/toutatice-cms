@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -3138,6 +3139,34 @@ public class CMSService implements ICMSService {
         subscriptions.addAll(documents.list());
 
         return subscriptions;
+    }
+
+    @Override
+    public Map<String, String> getTitleMetadataProperties(CMSServiceCtx cmsContext, String path) throws CMSException {
+        // Window properties
+        Map<String, String> windowProperties = new HashMap<>();
+
+        // CMS item
+        CMSItem cmsItem = this.getContent(cmsContext, path);
+        // Nuxeo document
+        Document document = (Document) cmsItem.getNativeItem();
+
+        // Description
+        String description = document.getString("dc:description");
+        windowProperties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, description);
+
+        // Vignette
+        PropertyMap vignetteMap = document.getProperties().getMap("ttc:vignette");
+        if ((vignetteMap != null) && !vignetteMap.isEmpty()) {
+            BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
+            binary.setFieldName("ttc:vignette");
+            binary.setDocument(document);
+            Link vignetteLink = this.getBinaryResourceURL(cmsContext, binary);
+            String vignetteUrl = vignetteLink.getUrl();
+            windowProperties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteUrl);
+        }
+
+        return windowProperties;
     }
 
 }
