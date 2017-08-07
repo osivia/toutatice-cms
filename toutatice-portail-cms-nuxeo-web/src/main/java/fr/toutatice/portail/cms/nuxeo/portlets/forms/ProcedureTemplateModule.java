@@ -101,9 +101,9 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
             sortOrder = sortOrderL.get(0);
         }
 
+        sortValue = StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE);
         sortValue = StringUtils.removeStart(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_RECORD);
         sortValue = StringUtils.removeStart(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_PREFIX_PROCEDURE);
-        sortValue = StringUtils.defaultIfBlank(sortValue, ViewProcedurePortlet.DEFAULT_FIELD_TITLE);
         request.setAttribute("sortValue", sortValue);
         request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
