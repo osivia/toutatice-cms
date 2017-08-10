@@ -15,6 +15,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,6 +45,8 @@ import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.identity.User;
 import org.jboss.portal.server.ServerInvocation;
+import org.jboss.portal.theme.ThemeConstants;
+import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
@@ -144,6 +146,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
@@ -3167,6 +3170,94 @@ public class CMSService implements ICMSService {
         }
 
         return windowProperties;
+    }
+
+
+    @Override
+    public List<CMSEditableWindow> getProcedureDashboards(CMSServiceCtx cmsContext, String path) throws CMSException {
+
+        List<CMSEditableWindow> procedureDashboards = new ArrayList<CMSEditableWindow>();
+        try {
+            
+            String user = cmsContext.getControllerContext().getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+
+            List<Name> userProfiles = personService.getPerson(user).getProfiles();
+            
+            // Fetch document
+            CMSItem pageItem = this.fetchContent(cmsContext, path);
+            
+            Document document = (Document) pageItem.getNativeItem();
+
+            PropertyList dashboards = document.getProperties().getList("pcd:dashboards");
+
+            String webid = document.getProperties().getString("ttc:webid");
+
+            if (dashboards != null) {
+                CMSEditableWindow ew;
+                for (Object dashboardO : dashboards.list()) {
+                    PropertyMap dashboardM = (PropertyMap) dashboardO;
+
+                    String name = dashboardM.getString("name");
+                    List<Object> groupsList = dashboardM.getList("groups").list();
+                    
+                    // contrôle des droits
+                    if(isAuthorised(userProfiles, groupsList)){
+                        Map<String, String> applicationProperties = new HashMap<String, String>(11);
+
+                        applicationProperties.put(ViewProcedurePortlet.PROCEDURE_MODEL_ID_WINDOW_PROPERTY, webid);
+                        applicationProperties.put(ViewProcedurePortlet.DASHBOARD_ID_WINDOW_PROPERTY, name);
+                        applicationProperties.put("osivia.services.procedure.webid", webid);
+                        applicationProperties.put("osivia.services.procedure.uuid", document.getId());
+                        applicationProperties.put("osivia.doctype", document.getType());
+                        applicationProperties.put("osivia.hideDecorators", "1");
+                        applicationProperties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, Constants.PORTLET_VALUE_ACTIVATE);
+                        applicationProperties.put("osivia.ajaxLink", "1");
+                        applicationProperties.put(Constants.WINDOW_PROP_VERSION, "1");
+
+                        applicationProperties.put("osivia.title", name);
+                        applicationProperties.put(ThemeConstants.PORTAL_PROP_ORDER, String.valueOf(procedureDashboards.size()));
+
+
+                        ew = new CMSEditableWindow(name, "toutatice-portail-cms-nuxeo-viewProcedurePortletInstance", applicationProperties);
+                        procedureDashboards.add(ew);
+                    }
+                }
+            }
+            
+        } catch (CMSException e) {
+            if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+                // Do nothing
+            } else {
+                throw e;
+            }
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        return procedureDashboards;
+    }
+    
+    /**
+     * Checks if one of the userProfile is part of a group List
+     * 
+     * @param userProfiles
+     * @param groupsList
+     * @return true if authorised
+     */
+    private boolean isAuthorised(List<Name> userProfiles, List<Object> groupsList) {
+        for (Object group : groupsList) {
+            for (Name userProfile : userProfiles) {
+                Enumeration<String> groupName = userProfile.getAll();
+                while (groupName.hasMoreElements()) {
+                    String nextElement = groupName.nextElement();
+                    String userGroup = StringUtils.split(nextElement, '=')[1];
+                    if (StringUtils.equals(userGroup, (String) group)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }
