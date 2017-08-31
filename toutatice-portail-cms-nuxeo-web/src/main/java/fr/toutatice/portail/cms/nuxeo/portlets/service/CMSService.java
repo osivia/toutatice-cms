@@ -3245,6 +3245,9 @@ public class CMSService implements ICMSService {
      * @return true if authorised
      */
     private boolean isAuthorised(List<Name> userProfiles, List<Object> groupsList) {
+        if (CollectionUtils.isEmpty(groupsList)) {
+            return true;
+        }
         for (Object group : groupsList) {
             for (Name userProfile : userProfiles) {
                 Enumeration<String> groupName = userProfile.getAll();

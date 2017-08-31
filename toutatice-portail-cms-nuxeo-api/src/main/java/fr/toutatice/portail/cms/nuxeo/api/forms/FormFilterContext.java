@@ -165,6 +165,7 @@ public class FormFilterContext {
                 variables.put("taskInitiator", taskInitiator);
                 variables.put("procedureStartDate", startDate);
                 variables.put("procedureLastModified", lastModified);
+                variables.put("currentStep", currentStep);
                 return formsService.transform(portalControllerContext, filterParameters, variables);
             } catch (PortalException e) {
                 throw new NuxeoException(e);

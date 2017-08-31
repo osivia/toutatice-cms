@@ -90,7 +90,7 @@ public class FormsServiceImpl implements IFormsService {
     /** Thread local. */
     private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
     /** CMS customizer. */
     private final DefaultCMSCustomizer cmsCustomizer;
