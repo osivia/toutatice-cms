@@ -1154,12 +1154,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return xslFunctions.link(nxPublicDomainUri + link);
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
     public Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url) {
+        return getLinkFromNuxeoURL(cmsContext, url, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url, String displayContext) {
         // Link
         Link link;
 
@@ -1188,7 +1195,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
 
             // Portal URL
-            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, null, null, null, null, null);
+            String portalURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, currentPagePath, cmsPath, null, null, displayContext, null, null, null,
+                    null);
             if (StringUtils.isNotBlank(anchor)) {
                 portalURL += "#" + anchor;
             }

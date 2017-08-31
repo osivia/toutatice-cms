@@ -17,7 +17,6 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -151,6 +150,16 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return link
      */
     Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url);
+
+    /**
+     * Get portal link from Nuxeo or absolute URL.
+     * 
+     * @param cmsContext
+     * @param url
+     * @param displayContext
+     * @return link
+     */
+    Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url, String displayContext);
 
 
     /**

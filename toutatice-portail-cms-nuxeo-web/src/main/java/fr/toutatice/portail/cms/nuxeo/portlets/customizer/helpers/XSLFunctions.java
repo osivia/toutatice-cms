@@ -461,20 +461,22 @@ public class XSLFunctions {
                                 }
 
                                 String params = url.getQuery();
+                                String displayContext = null;
                                 if (params != null) {
-                                    query = query.concat("?").concat(params);
                                     String[] split = params.split("&");
                                     for (String element : split) {
                                         // In case of resources url, serve the resource
-                                        if (element.startsWith("content")) {
-                                            String[] param = element.split("=");
+                                        String[] param = element.split("=");
+                                        if (StringUtils.equals(param[0], "content")) {
                                             String fetchPath = this.webIdService.webIdToFetchPath(webId);
                                             return this.nuxeoController.createPictureLink(fetchPath, param[1]);
+                                        } else if (StringUtils.equals(param[0], "display")) {
+                                            displayContext = param[1];
                                         }
                                     }
                                 }
                                 // In case of pages
-                                return this.nuxeoController.getLinkFromNuxeoURL(query).getUrl();
+                                return this.nuxeoController.getLinkFromNuxeoURL(query, displayContext).getUrl();
                             }
                         }
 

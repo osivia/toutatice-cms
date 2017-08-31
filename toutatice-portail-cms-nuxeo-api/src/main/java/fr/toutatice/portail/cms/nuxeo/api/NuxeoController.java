@@ -1648,13 +1648,17 @@ public class NuxeoController {
      * @return portal link
      */
     public Link getLinkFromNuxeoURL(String url) {
+        return getLinkFromNuxeoURL(url, null);
+    }
+
+    public Link getLinkFromNuxeoURL(String url, String displayContext) {
         // Nuxeo service
         INuxeoService nuxeoService = this.getNuxeoCMSService();
         // Nuxeo customizer
         INuxeoCustomizer nuxeoCustomizer = nuxeoService.getCMSCustomizer();
 
         // Customizer call
-        return nuxeoCustomizer.getLinkFromNuxeoURL(this.getCMSCtx(), url);
+        return nuxeoCustomizer.getLinkFromNuxeoURL(this.getCMSCtx(), url, displayContext);
     }
 
 
