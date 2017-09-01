@@ -5,6 +5,15 @@
 
 <%@ page isELIgnored="false"%>
 
+
+<c:if test="${not empty exportVarList}">
+	<portlet:resourceURL var="exportCSVUrl" id="exportCSV">
+	   <portlet:param name="injectdocs" value="true"/>
+	</portlet:resourceURL>
+	
+	<ttc:addMenubarItem id="EXPORT_IN_CSV" labelKey="EXPORT_IN_CSV" url="${exportCSVUrl}" glyphicon="glyphicons glyphicons-table" ajax="false" />
+</c:if>
+
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
@@ -52,28 +61,13 @@
 		    <c:forEach var="document" items="${documents}">
 				
 				<c:set var="webid" value="${document.properties['ttc:webid']}" />
-				<c:set var="procedureType" value="${document.type.name}" />
-				<c:if test="${procedureType eq 'Record'}">
-				    <c:set var="globalVariablesValues" value="${document.properties['rcd:globalVariablesValues']}" />
-				</c:if>
-				<c:if test="${procedureType eq 'ProcedureInstance' or empty document.type}">
-                    <c:set var="globalVariablesValues" value="${document.properties['pi:globalVariablesValues']}" />
-                </c:if>
                 
 				<ttc:documentLink document="${document}" var="documentLink"/>
 				<tr>
 		            <c:forEach var="column" items="${dashboardColumns}" varStatus="status">
-	                <c:set var="variableName" value="${column.map['variableName']}" />
+                        <c:set var="variableName" value="${column.map['variableName']}" />
 		                  <td>
-		                      <c:choose>
-		                          <c:when test="${variableName eq 'dc:creator' or variableName eq 'dc:created' or variableName eq 'dc:lastContributor' 
-		                                      or variableName eq 'dc:modified'}">
-		                              <c:set var="columnValue" value="${document.properties[variableName]}"></c:set>
-		                          </c:when>
-		                          <c:otherwise>
-		                              <c:set var="columnValue" value="${globalVariablesValues[variableName]}"></c:set>
-		                          </c:otherwise>
-		                      </c:choose>
+                              <c:set var="columnValue" value="${document.properties[variableName]}"></c:set>
 		                      
 		                      <c:if test="${variablesDefinitions[variableName]['type'] eq 'DATE'}">
 		                          <fmt:parseDate value = "${columnValue}" var="columnValue" pattern = "dd/MM/yyyy" />
@@ -83,12 +77,14 @@
 	                              <fmt:formatDate value="${columnValue}" var="columnValue" type="BOTH"/>
 	                          </c:if>
 	                          
-		                      <c:if test="${status.first}">
-			                      <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
-		                      </c:if>
-		                      <c:if test="${not status.first}">
-			                      ${columnValue}
-		                      </c:if>
+	                          <c:choose>
+	                               <c:when test="${column.map['enableLink']}">
+				                      <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
+	                               </c:when>
+	                               <c:otherwise>
+				                      ${columnValue}
+	                               </c:otherwise>
+	                          </c:choose>
 		                  </td>
 		            </c:forEach>
 				</tr>

@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,12 +18,19 @@ import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.security.impl.jacc.JACCPortalPrincipal;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -34,6 +43,7 @@ import org.osivia.portal.core.web.IWebIdService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.PrivilegedPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
@@ -45,6 +55,11 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
  */
 public class ProcedureTemplateModule extends PrivilegedPortletModule {
     
+    /** Logger. */
+    private static final Log LOGGER = LogFactory.getLog(ProcedureTemplateModule.class);
+
+    private static final String VAR__RQST_USR = "${user}";
+
     /**
      * @param portletContext
      */
@@ -85,8 +100,20 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         PropertyMap dashboardM = getDashboard(properties, dashboardName);
         
         request.setAttribute("dashboardName", dashboardM.getString("name"));
-        request.setAttribute("dashboardColumns", dashboardM.getList("columns").list());
-        request.setAttribute("variablesDefinitions", getVariablesDefinitions(properties));
+        List<Object> dashBoardColumns = dashboardM.getList("columns").list();
+        request.setAttribute("dashboardColumns", dashBoardColumns);
+        request.setAttribute("exportVarList", dashboardM.getList("exportVarList").list());
+        Map<String, Map<String, String>> variablesDefinitions = getVariablesDefinitions(properties);
+        request.setAttribute("variablesDefinitions", variablesDefinitions);
+        Map<String, Map<String, String>> varsOptionsMap = buildVarOptionsMap(variablesDefinitions);
+        request.setAttribute("varOptionsMap", varsOptionsMap);
+
+        // get real values for each doc
+        List<DocumentDTO> documents = (List<DocumentDTO>) request.getAttribute("documents");
+        for (DocumentDTO documentDTO : documents) {
+            updateDocValues(dashBoardColumns, varsOptionsMap, documentDTO);
+        }
+
 
         Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
         List<String> sortValueL = selectors.get("sortValue");
@@ -107,6 +134,69 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         request.setAttribute("sortValue", sortValue);
         request.setAttribute("sortOrder", StringUtils.defaultIfBlank(sortOrder, ViewProcedurePortlet.DEFAULT_SORT_ORDER));
 
+    }
+
+    /**
+     * Update the doc with values to handle RADIOLIST, CHECKBOXLIST, SELECTLIST custom labels
+     * 
+     * @param dashBoardColumns
+     * @param varsOptionsMap
+     * @param documentDTO
+     */
+    private void updateDocValues(List<Object> dashBoardColumns, Map<String, Map<String, String>> varsOptionsMap, DocumentDTO documentDTO) {
+        Map<String, Object> docProperties = documentDTO.getProperties();
+
+        Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO, docProperties);
+
+        if (globalVariablesValues != null) {
+            for (Object columnO : dashBoardColumns) {
+                PropertyMap column = (PropertyMap) columnO;
+
+                String variableName = column.getString("variableName");
+                String varValue = globalVariablesValues.get(variableName);
+
+                updateValue(varsOptionsMap, docProperties, variableName, varValue);
+            }
+        }
+    }
+
+    /**
+     * retrieves the globalVariablesValues properties based on document type
+     * 
+     * @param documentDTO
+     * @param docProperties
+     * @return
+     */
+    private Map<String, String> getGlobalVariableValues(DocumentDTO documentDTO, Map<String, Object> docProperties) {
+        Map<String, String> globalVariablesValues = null;
+        if (StringUtils.equals(documentDTO.getDocument().getType(), "Record")) {
+            globalVariablesValues = (Map<String, String>) docProperties.get("rcd:globalVariablesValues");
+        } else if (StringUtils.equals(documentDTO.getDocument().getType(), "ProcedureInstance")) {
+            globalVariablesValues = (Map<String, String>) docProperties.get("pi:globalVariablesValues");
+        }
+        return globalVariablesValues;
+    }
+
+    /**
+     * update the doc with custom labels
+     * 
+     * @param varsOptionsMap
+     * @param docProperties
+     * @param variableName
+     * @param varValue
+     */
+    private void updateValue(Map<String, Map<String, String>> varsOptionsMap, Map<String, Object> docProperties, String variableName, String varValue) {
+        if (StringUtils.isNotBlank(varValue)) {
+            Map<String, String> varOptionsMap = varsOptionsMap.get(variableName);
+            if (varOptionsMap != null) {
+                String[] values = StringUtils.split(varValue, ',');
+                for (int j = 0; j < values.length; j++) {
+                    values[j] = varOptionsMap.get(values[j]) != null ? varOptionsMap.get(values[j]) : values[j];
+                }
+                varValue = StringUtils.join(values, ',');
+            }
+            docProperties.put(variableName, varValue);
+        }
     }
 
 
@@ -160,6 +250,144 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         }
     }
 
+    @Override
+    protected void serveResource(ResourceRequest request, ResourceResponse response, PortletContext portletContext) throws PortletException, IOException {
+        final String resourceID = request.getResourceID();
+        if (StringUtils.equals(resourceID, "exportCSV")) {
+
+            PortalWindow window = WindowFactory.getWindow(request);
+
+            String procedureModelWebid = window.getProperty(ViewProcedurePortlet.PROCEDURE_MODEL_ID_WINDOW_PROPERTY);
+            String dashboardNameProperty = window.getProperty(ViewProcedurePortlet.DASHBOARD_ID_WINDOW_PROPERTY);
+
+            NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
+
+            Document procedureModel = getDocument(nuxeoController, procedureModelWebid);
+
+            PropertyMap properties = procedureModel.getProperties();
+
+            PropertyMap dashboardM = getDashboard(properties, dashboardNameProperty);
+
+            Map<String, Map<String, String>> variablesDefinitions = getVariablesDefinitions(properties);
+
+            PropertyList exportVarList = (PropertyList) dashboardM.getList("exportVarList");
+            String dashboardName = dashboardM.getString("name");
+
+            List<DocumentDTO> documents = (List<DocumentDTO>) request.getAttribute("documents");
+
+            // build the CSV and write to output
+            response.setContentType("text/csv");
+            response.setProperty("Content-disposition", "attachment; filename=\"" + dashboardName + ".csv" + "\"");
+            try {
+                printCSV(documents, exportVarList, variablesDefinitions, response.getPortletOutputStream(), nuxeoController);
+            } catch (IOException e) {
+                throw new PortletException(e);
+            }
+        }
+    }
+
+
+    /**
+     * prints csv file to the outputstream
+     * 
+     * @param documents
+     * @param portletOutputStream
+     * @param nuxeoController
+     */
+    private void printCSV(List<DocumentDTO> documents, PropertyList exportVarList, Map<String, Map<String, String>> variablesDefinitions,
+            OutputStream portletOutputStream, NuxeoController nuxeoController) throws IOException {
+        OutputStreamWriter writer = new OutputStreamWriter(portletOutputStream);
+        CSVPrinter printer;
+        try {
+            String header[] = null;
+            if(exportVarList!=null && !exportVarList.isEmpty()){
+                header = new String[exportVarList.size()];
+                for (int i = 0; i < exportVarList.size(); i++) {
+                    String exportVar = exportVarList.getString(i);
+                    Map<String, String> exportVarDef = variablesDefinitions.get(exportVar);
+                    header[i] = exportVarDef != null ? StringUtils.defaultIfBlank(exportVarDef.get("label"), exportVar) : exportVar;
+                }
+                printer = CSVFormat.EXCEL.withHeader(header).print(writer);
+                Object[] record = null;
+                for (DocumentDTO documentDTO : documents) {
+                    final Map<String, Object> docProperties = documentDTO.getProperties();
+                    
+                    Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO, docProperties);
+                    
+                    record = new Object[exportVarList.size()];
+                    for (int i = 0; i < exportVarList.size(); i++) {
+                        
+                        Map<String, Map<String, String>> varsOptionsMap = buildVarOptionsMap(variablesDefinitions);
+
+                        String variableName = exportVarList.getString(i);
+                        String varValue = globalVariablesValues.get(variableName);
+
+                        updateValue(varsOptionsMap, docProperties, variableName, varValue);
+                        
+                        record[i] = docProperties.get(variableName);
+                    }
+                    printer.printRecord(record);
+                }
+                printer.close();
+            }
+        } finally {
+            IOUtils.closeQuietly(writer);
+        }
+    }
+
+    /**
+     * handle RADIOLIST, CHECKBOXLIST, SELECTLIST custom labels
+     * 
+     * @param variablesDefinitions
+     * @return
+     */
+    private Map<String, Map<String, String>> buildVarOptionsMap(Map<String, Map<String, String>> variablesDefinitions) {
+
+        Map<String, Map<String, String>> varsOptionsMap = new HashMap<String, Map<String, String>>(variablesDefinitions.size());
+
+
+        for (Map<String, String> variablesDefinition : variablesDefinitions.values()) {
+
+            String varName = variablesDefinition.get("name");
+            String varOptions = variablesDefinition.get("varOptions");
+
+            Map<String, String> varOptionsMap = null;
+            if (StringUtils.isNotBlank(varOptions)) {
+                varOptions = StringUtils.substringBetween(varOptions, "[", "]");
+                String[] varOptionT = StringUtils.splitByWholeSeparator(varOptions, "},{");
+
+                varOptionsMap = new HashMap<String, String>(varOptionT.length);
+
+                for (int j = 0; j < varOptionT.length; j++) {
+                    String varOption = varOptionT[j];
+                    // String varOptionS = StringUtils.substringBetween(varOption, "{", "}");
+                    String[] varOptionLV = StringUtils.split(varOption, ',');
+                    if (varOptionLV != null) {
+                        String varOptionValue = null;
+                        String varOptionLabel = null;
+                        for (int k = 0; k < varOptionLV.length; k++) {
+                            String varOptionLVS = varOptionLV[k];
+                            varOptionLVS = StringUtils.replaceChars(varOptionLVS, "\"{}", StringUtils.EMPTY);
+
+                            if (StringUtils.startsWith(varOptionLVS, "label")) {
+                                varOptionLabel = StringUtils.substringAfterLast(varOptionLVS, ":");
+                            } else if (StringUtils.startsWith(varOptionLVS, "value")) {
+                                varOptionValue = StringUtils.substringAfterLast(varOptionLVS, ":");
+                            }
+                        }
+                        if (StringUtils.isNotBlank(varOptionValue) && StringUtils.isNotBlank(varOptionLabel)) {
+                            varOptionsMap.put(varOptionValue, varOptionLabel);
+                        }
+                    }
+
+                }
+
+            }
+            varsOptionsMap.put(varName, varOptionsMap);
+        }
+        return varsOptionsMap;
+    }
+
 
     /*
      * (non-Javadoc)
@@ -186,31 +414,12 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
                     PropertyList groups = dashboardM.getList("groups");
 
-                    // Get the current authenticated subject through the JACC
-                    // contract
-                    Subject subject = null;
-                    try {
-                        subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-                    } catch (PolicyContextException e) {
+                    if (isAuthorized(groups)) {
+                        // apply dashboard request
+                        String requestFilter = dashboardM.getString("requestFilter");
+                        return parseRequest(requestFilter, request.getUserPrincipal().getName());
                     }
 
-                    if (subject != null) {
-                        JACCPortalPrincipal pp = new JACCPortalPrincipal(subject);
-                        Iterator iter = pp.getRoles().iterator();
-                        while (iter.hasNext()) {
-                            Principal principal = (Principal) iter.next();
-                            String groupName = principal.getName();
-
-                            for (Object groupO : groups.list()) {
-                                String group = (String) groupO;
-                                if (StringUtils.equals(groupName, group)) {
-                                    // apply dashboard request
-                                    String requestFilter = dashboardM.getString("requestFilter");
-                                    return requestFilter;
-                                }
-                            }
-                        }
-                    }
                 }
             } else {
                 // no group check for recordFolder
@@ -219,6 +428,52 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         }
 
         return FILTER_NO_RESULTS;
+    }
+
+    /**
+     * Check current user group is part of the validated groups for the dashboard
+     * 
+     * @param groups
+     * @param iter
+     */
+    private boolean isAuthorized(PropertyList groups) {
+        if (groups == null || groups.isEmpty()) {
+            return true;
+        }
+
+        // Get the current authenticated subject through the JACC contract
+        Subject subject = null;
+        try {
+            subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+        } catch (PolicyContextException e) {
+        }
+
+        if (subject != null) {
+            JACCPortalPrincipal pp = new JACCPortalPrincipal(subject);
+            Iterator iter = pp.getRoles().iterator();
+
+            while (iter.hasNext()) {
+                Principal principal = (Principal) iter.next();
+                String groupName = principal.getName();
+
+                for (Object groupO : groups.list()) {
+                    String group = (String) groupO;
+                    if (StringUtils.equals(groupName, group)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+
+        return false;
+    }
+
+    private String parseRequest(String request, String user) {
+
+        request = StringUtils.replace(request, VAR__RQST_USR, user);
+
+        return request;
     }
 
     private Document getDocument(NuxeoController nuxeoController, String procedureModelWebid) {
