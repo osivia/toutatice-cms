@@ -360,7 +360,6 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
                 for (int j = 0; j < varOptionT.length; j++) {
                     String varOption = varOptionT[j];
-                    // String varOptionS = StringUtils.substringBetween(varOption, "{", "}");
                     String[] varOptionLV = StringUtils.split(varOption, ',');
                     if (varOptionLV != null) {
                         String varOptionValue = null;
