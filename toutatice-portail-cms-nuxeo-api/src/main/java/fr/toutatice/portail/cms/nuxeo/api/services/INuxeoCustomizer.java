@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.FileDocumentType;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.urls.Link;
@@ -173,10 +174,27 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Get CMS item types.
-     *
+     * 
      * @return CMS item types
+     * @deprecated use getDocumentTypes instead
      */
     Map<String, DocumentType> getCMSItemTypes();
+
+
+    /**
+     * Get document types.
+     * 
+     * @return document types
+     */
+    Map<String, DocumentType> getDocumentTypes();
+
+
+    /**
+     * Get file document types.
+     * 
+     * @return file document types
+     */
+    List<FileDocumentType> getFileDocumentTypes();
 
 
     /**

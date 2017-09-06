@@ -13,9 +13,6 @@
         
         <header-content>
             <link rel="stylesheet" href="/css/document.min.css" />
-            
-            <!-- Flaticon -->
-            <link rel="stylesheet" href="/css/flaticon.min.css" />
         </header-content>
         
         <portlet-info>
@@ -34,11 +31,6 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
-        
-        <header-content>
-            <!-- Flaticon -->
-            <link rel="stylesheet" href="/css/flaticon.min.css" />
-        </header-content>
         
         <portlet-info>
             <icon>
@@ -141,9 +133,6 @@
         <header-content>
             <link rel="stylesheet" href="/css/file-browser.min.css" />
             
-            <!-- Flaticon -->
-            <link rel="stylesheet" href="/css/flaticon.min.css" />
-            
             <!-- Drag & drop -->
             <script type="text/javascript" src="/js/file-browser.min.js"></script>
 
@@ -195,11 +184,6 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
-        
-        <header-content>
-            <!-- Flaticon -->
-            <link rel="stylesheet" href="/css/flaticon.min.css" />
-        </header-content>
         
         <portlet-info>
             <icon>

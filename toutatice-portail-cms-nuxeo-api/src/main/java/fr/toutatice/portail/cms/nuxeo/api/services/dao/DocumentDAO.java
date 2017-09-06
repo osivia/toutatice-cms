@@ -29,6 +29,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.FileDocumentType;
 import org.osivia.portal.api.locator.Locator;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -210,7 +211,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
 
         // CMS item types
-        Map<String, DocumentType> types = cmsCustomizer.getCMSItemTypes();
+        Map<String, DocumentType> types = cmsCustomizer.getDocumentTypes();
         return types.get(type);
     }
 
@@ -243,9 +244,9 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
 
     /**
-     * Get icon from document or attachment mime type.
+     * Get icon from mime type representation.
      * 
-     * @param mimeType mime type
+     * @param mimeType mime type representation
      * @return icon, may be null
      */
     public String getIcon(String mimeType) {
@@ -257,84 +258,39 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
             mimeTypeObject = null;
         }
 
+        return this.getIcon(mimeTypeObject);
+    }
+
+
+    /**
+     * Get icon from mime type.
+     * 
+     * @param mimeType mime type
+     * @return icon, may be null
+     */
+    public String getIcon(MimeType mimeType) {
+        // CMS customizer
+        INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
+
         // Icon
         String icon;
-        boolean flaticon = false;
-        if (mimeTypeObject == null) {
+
+        if (mimeType == null) {
             icon = null;
         } else {
-            String primaryType = mimeTypeObject.getPrimaryType();
-            String subType = mimeTypeObject.getSubType();
+            // File document types
+            List<FileDocumentType> types = cmsCustomizer.getFileDocumentTypes();
 
-            if ("application".equals(primaryType)) {
-                // Application
-
-                if ("pdf".equals(subType)) {
-                    // PDF
-                    icon = "pdf";
-                    flaticon = true;
-                } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
-                    // MS Word
-                    icon = "word";
-                    flaticon = true;
-                } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
-                    // MS Excel
-                    icon = "excel";
-                    flaticon = true;
-                } else if ("vnd.ms-powerpoint".equals(subType) || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
-                    // MS Powerpoint
-                    icon = "powerpoint";
-                    flaticon = true;
-                } else if ("vnd.oasis.opendocument.text".equals(subType)) {
-                    // OpenDocument - Text
-                    icon = "odt";
-                    flaticon = true;
-                } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
-                    // OpenDocument - Spread sheet
-                    icon = "ods";
-                    flaticon = true;
-                } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
-                    // OpenDocument - Presentation
-                    icon = "odp";
-                    flaticon = true;
-                } else if ("zip".equals(subType) || "gzip".equals(subType)) {
-                    // Archive
-                    icon = "archive";
-                    flaticon = true;
-                } else {
-                    icon = null;
+            icon = null;
+            for (FileDocumentType type : types) {
+                if (StringUtils.equals(mimeType.getPrimaryType(), type.getMimePrimaryType())) {
+                    if (type.getMimeSubTypes().isEmpty()) {
+                        icon = type.getIcon();
+                    } else if (type.getMimeSubTypes().contains(mimeType.getSubType())) {
+                        icon = type.getIcon();
+                        break;
+                    }
                 }
-            } else if ("text".equals(primaryType)) {
-                // Text
-
-                if ("html".equals(subType) || "xml".equals(subType)) {
-                    // HTML or XML
-                    icon = "xml";
-                    flaticon = true;
-                } else {
-                    // Plain text
-                    icon = "text";
-                    flaticon = true;
-                }
-            } else if ("image".equals(primaryType)) {
-                // Image
-                icon = "picture";
-            } else if ("video".equals(primaryType)) {
-                // Video
-                icon = "film";
-            } else if ("audio".equals(primaryType)) {
-                // Audio
-                icon = "music";
-            } else {
-                icon = null;
-            }
-        }
-
-        if (icon != null) {
-            if (flaticon) {
-                icon = "flaticon flaticon-" + icon;
-            } else {
-                icon = "glyphicons glyphicons-" + icon;
             }
         }
 

@@ -68,6 +68,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.FileDocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmCommonCommands;
@@ -1302,6 +1303,15 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Map<String, DocumentType> getCMSItemTypes() {
+        return this.getDocumentTypes();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, DocumentType> getDocumentTypes() {
         return this.pluginManager.customizeCMSItemTypes();
     }
 
@@ -1398,6 +1408,83 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(staple);
 
         return defaultTypes;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<FileDocumentType> getFileDocumentTypes() {
+        List<FileDocumentType> types = new ArrayList<>();
+
+        // Archive
+        FileDocumentType archive = new FileDocumentType("archive", "application", "zip", "gzip");
+        archive.setIcon("flaticon flaticon-archive");
+        types.add(archive);
+
+        // Audio
+        FileDocumentType audio = new FileDocumentType("audio", "audio");
+        audio.setIcon("glyphicons glyphicons-music");
+        types.add(audio);
+
+        // Excel
+        FileDocumentType excel = new FileDocumentType("excel", "application", "vnd.ms-excel", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        excel.setIcon("flaticon flaticon-excel");
+        types.add(excel);
+
+        // Image
+        FileDocumentType image = new FileDocumentType("image", "image");
+        image.setIcon("glyphicons glyphicons-picture");
+        types.add(image);
+
+        // OpenDocument - Presentation
+        FileDocumentType odp = new FileDocumentType("odp", "application", "vnd.oasis.opendocument.presentation");
+        odp.setIcon("flaticon flaticon-odp");
+        types.add(odp);
+
+        // OpenDocument - Spread sheet
+        FileDocumentType ods = new FileDocumentType("ods", "application", "vnd.oasis.opendocument.spreadsheet");
+        ods.setIcon("flaticon flaticon-ods");
+        types.add(ods);
+
+        // OpenDocument - Text
+        FileDocumentType odt = new FileDocumentType("odt", "application", "vnd.oasis.opendocument.text");
+        odt.setIcon("flaticon flaticon-odt");
+        types.add(odt);
+
+        // PDF
+        FileDocumentType pdf = new FileDocumentType("pdf", "application", "pdf");
+        pdf.setIcon("flaticon flaticon-pdf");
+        types.add(pdf);
+
+        // Powerpoint
+        FileDocumentType powerpoint = new FileDocumentType("powerpoint", "application", "vnd.ms-powerpoint",
+                "vnd.openxmlformats-officedocument.presentationml.presentation");
+        powerpoint.setIcon("flaticon flaticon-powerpoint");
+        types.add(powerpoint);
+
+        // Text
+        FileDocumentType text = new FileDocumentType("text", "text");
+        text.setIcon("flaticon flaticon-text");
+        types.add(text);
+
+        // Video
+        FileDocumentType video = new FileDocumentType("video", "video");
+        video.setIcon("glyphicons glyphicons-film");
+        types.add(video);
+
+        // Word
+        FileDocumentType word = new FileDocumentType("word", "application", "msword", "vnd.openxmlformats-officedocument.wordprocessingml.document");
+        word.setIcon("flaticon flaticon-word");
+        types.add(word);
+
+        // XML
+        FileDocumentType xml = new FileDocumentType("xml", "text", "html", "xml");
+        xml.setIcon("flaticon flaticon-xml");
+        types.add(xml);
+
+        return types;
     }
 
 
