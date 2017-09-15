@@ -74,7 +74,7 @@
                 <c:if test="${empty vignetteUrl and 'Picture' eq document.type.name}">
                     <c:set var="vignetteUrl"><ttc:documentLink document="${document}" picture="true" displayContext="Small" /></c:set>
                 </c:if>
-                <c:set var="lockOwner" value="${document.properties['ottc:lockOwner']}" />
+                <c:set var="lockOwner" value="${document.properties['ttc:lockOwner']}" />
                 
                 
                 <li class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
@@ -98,7 +98,6 @@
                                 </div>
                                 
                                 <!-- Lock -->
-                                <c:set var="lockOwner" value="${document.properties['ottc:lockOwner']}" /> 
                                 <c:if test="${not empty lockOwner}">
                                     <div class="document-lock">
                                         <c:choose>

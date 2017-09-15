@@ -146,49 +146,23 @@
                         <ul class="list-unstyled selectable sortable" data-ordered="${ordered}" data-axis="y" data-alternative="${criteria.alternative}">
                             <c:forEach var="document" items="${documents}">
                                 <!-- Document properties -->
-    
-                                <!-- Glyph -->
                                 <c:choose>
-                                    <c:when test="${'File' eq document.type.name}">
-                                        <c:set var="glyph" value="${document.icon}" />
-                                    </c:when>
-                                    
-                                    <c:when test="${not empty document.type.icon}">
-                                        <c:set var="glyph" value="${document.type.icon}" />
-                                    </c:when>
-                                    
-                                    <c:when test="${document.type.navigable}">
-                                        <c:set var="glyph" value="glyphicons glyphicons-folder-closed" />
-                                    </c:when>
-                                    
-                                    <c:otherwise>
-                                        <c:set var="glyph" value="glyphicons glyphicons-file" />
-                                    </c:otherwise>
+                                    <c:when test="${'File' eq document.type.name}"><c:set var="glyph" value="${document.icon}" /></c:when>
+                                    <c:when test="${not empty document.type.icon}"><c:set var="glyph" value="${document.type.icon}" /></c:when>
+                                    <c:when test="${document.type.navigable}"><c:set var="glyph" value="glyphicons glyphicons-folder-closed" /></c:when>
+                                    <c:otherwise><c:set var="glyph" value="glyphicons glyphicons-file" /></c:otherwise>
                                 </c:choose>
-                                                            
-                                <!-- Date -->
                                 <c:set var="date" value="${document.properties['dc:modified']}" />
                                 <c:if test="${empty date}">
                                     <c:set var="date" value="${document.properties['dc:created']}" />
                                 </c:if>
-                                
-                                <!-- Size -->
                                 <c:set var="size" value="${document.properties['common:size']}" />
-                                
-                                <!-- Download URL -->
                                 <c:choose>
-                                    <c:when test="${'Picture' eq document.type.name}">
-                                        <c:set var="downloadUrl"><ttc:documentLink document="${document}" picture="true" /></c:set>
-                                    </c:when>
-                                
-                                    <c:when test="${document.type.file}">
-                                        <c:set var="downloadUrl"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
-                                    </c:when>
-                                    
-                                    <c:otherwise>
-                                        <c:remove var="downloadUrl" />
-                                    </c:otherwise>
+                                    <c:when test="${'Picture' eq document.type.name}"><c:set var="downloadUrl"><ttc:documentLink document="${document}" picture="true" /></c:set></c:when>
+                                    <c:when test="${document.type.file}"><c:set var="downloadUrl"><ttc:documentLink document="${document}" displayContext="download" /></c:set></c:when>
+                                    <c:otherwise><c:remove var="downloadUrl" /></c:otherwise>
                                 </c:choose>
+                                <c:set var="lockOwner" value="${document.properties['ttc:lockOwner']}" />
                             
                             
                                 <li>
@@ -214,7 +188,6 @@
                                                         </div>
                                                         
                                                         <!-- Lock -->
-                                                        <c:set var="lockOwner" value="${document.properties['ottc:lockOwner']}" /> 
                                                         <c:if test="${not empty lockOwner}">
                                                             <div class="document-lock">
                                                                 <c:choose>
@@ -228,14 +201,14 @@
                                                                 </c:choose>
                                                             </div>
                                                         </c:if>
-                                                        
+
                                                         <!-- Subscription -->
                                                         <c:if test="${document.subscription}">
                                                             <div class="document-subscription">
-                                                                 <i class="glyphicons glyphicons-flag"></i>
+                                                                <i class="glyphicons glyphicons-flag"></i>
                                                             </div>
-                                                        </c:if>                                                        
-                                                    
+                                                        </c:if>
+
                                                         <!-- Title -->
                                                         <div class="document-title">
                                                             <span class="draggable">
