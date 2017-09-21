@@ -1731,7 +1731,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             sb.append(BINARY_SERVLET);
 
             if (StringUtils.isNotBlank(fileName)) {
-                sb.append("/").append(fileName);
+                sb.append("/").append(URLEncoder.encode(fileName, "UTF-8"));
             }
 
             sb.append("?type=").append(binary.getType().name()).append("&path=").append(URLEncoder.encode(path, "UTF-8"));
