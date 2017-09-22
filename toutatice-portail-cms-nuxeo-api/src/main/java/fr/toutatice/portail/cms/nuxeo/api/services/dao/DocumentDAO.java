@@ -276,7 +276,8 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                     // MS Word
                     icon = "word";
                     flaticon = true;
-                } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
+                } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)
+                        || "vnd.ms-excel.sheet.macroEnabled.12".equals(subType)) {
                     // MS Excel
                     icon = "excel";
                     flaticon = true;
