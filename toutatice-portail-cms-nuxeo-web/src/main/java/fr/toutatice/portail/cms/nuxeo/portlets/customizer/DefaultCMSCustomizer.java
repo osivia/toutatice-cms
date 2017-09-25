@@ -1429,7 +1429,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         types.add(audio);
 
         // Excel
-        FileDocumentType excel = new FileDocumentType("excel", "application", "vnd.ms-excel", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        FileDocumentType excel = new FileDocumentType("excel", "application", "vnd.ms-excel", "vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "vnd.ms-excel.sheet.macroEnabled.12");
         excel.setIcon("flaticon flaticon-excel");
         types.add(excel);
 
