@@ -84,7 +84,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
 
     /**
-     * Constructor.
+     * Get deployment order.
+     * 
+     * @return order
      */
     public int getOrder() {
         return DEFAULT_DEPLOYMENT_ORDER;

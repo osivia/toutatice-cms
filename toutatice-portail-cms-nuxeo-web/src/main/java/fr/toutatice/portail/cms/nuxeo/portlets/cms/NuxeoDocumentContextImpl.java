@@ -147,6 +147,15 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
      * {@inheritDoc}
      */
     @Override
+    public String getPath() {
+        return this.path;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public DocumentType getDocumentType() {
         if (!this.initializedDocumentType) {
             this.initDocumentType();
@@ -167,7 +176,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             // CMS customizer
             INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
             // CMS item types
-            Map<String, DocumentType> types = cmsCustomizer.getCMSItemTypes();
+            Map<String, DocumentType> types = cmsCustomizer.getDocumentTypes();
 
             if ((document != null) && (types != null)) {
                 this.documentType = types.get(document.getType());

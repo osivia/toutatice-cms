@@ -1952,7 +1952,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Documents
         TaskbarItem documents = factory.createCmsTaskbarItem("DOCUMENTS", "DOCUMENTS_TASK", "glyphicons glyphicons-folder-closed", "Folder");
-        documents.setToDefault(1);
+        factory.preset(documents, true, 1);
         taskbarItems.add(documents);
 
         return taskbarItems;
