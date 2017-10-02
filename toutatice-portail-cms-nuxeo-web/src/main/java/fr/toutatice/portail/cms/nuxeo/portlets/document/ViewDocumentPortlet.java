@@ -32,6 +32,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -54,6 +57,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.utils.URLUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
@@ -86,8 +90,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -669,10 +671,20 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                     // No host in nxdrive URL (get the current portal request host), refs #1421
                     if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                    	
+                    	// Try to get official host (in header)
+                    	String vhost = portalControllerContext.getHttpServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
+                    	
+                    	if(StringUtils.isBlank(vhost)) {
+                    		// if blank, try to get the host by the request
+                    		vhost = request.getScheme() + "/" + request.getServerName();
+                    	}
+                    	else {
+                    		vhost = vhost.replace("://", "/"); // Ndrive protocol
+                    	}
+                    	
                         StringBuilder builder = new StringBuilder();
-                        builder.append(request.getScheme());
-                        builder.append("/");
-                        builder.append(request.getServerName());
+                        builder.append(vhost);
                         builder.append("/nuxeo");
                         driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
                 	}
