@@ -1942,12 +1942,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         taskbarItems.add(home);
 
         // Search
-        PanelPlayer searchPlayer = new PanelPlayer();
-        searchPlayer.setInstance("toutatice-portail-cms-nuxeo-searchPortletInstance");
-        Map<String, String> properties = new HashMap<String, String>(1);
-        properties.put(Constants.WINDOW_PROP_URI, "${basePath}");
-        searchPlayer.setProperties(properties);
-        TaskbarItem search = factory.createTransversalTaskbarItem("SEARCH", "SEARCH_TASK", "glyphicons glyphicons-search", searchPlayer);
+        TaskbarItem search = factory.createStapledTaskbarItem(ITaskbarService.SEARCH_TASK_ID, "SEARCH_TASK", "glyphicons glyphicons-search",
+                "/default/templates/workspace/search");
+        factory.hide(search, true);
         taskbarItems.add(search);
 
         // Documents

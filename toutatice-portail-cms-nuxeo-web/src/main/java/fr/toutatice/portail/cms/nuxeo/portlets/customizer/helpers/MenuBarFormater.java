@@ -13,18 +13,18 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.cms.*;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import java.io.UnsupportedEncodingException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.WindowState;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -53,22 +53,44 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.menubar.*;
+import org.osivia.portal.api.menubar.IMenubarService;
+import org.osivia.portal.api.menubar.MenubarContainer;
+import org.osivia.portal.api.menubar.MenubarDropdown;
+import org.osivia.portal.api.menubar.MenubarGroup;
+import org.osivia.portal.api.menubar.MenubarItem;
+import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarItem;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.PortalUrlType;
-import org.osivia.portal.core.cms.*;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSItemTypeComparator;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import javax.portlet.PortletRequest;
-import javax.portlet.WindowState;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.Map.Entry;
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
 
 /**
  * Menubar associée aux contenus.
@@ -1169,44 +1191,37 @@ public class MenuBarFormater {
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
         // Document
-        final Document document = (Document) cmsContext.getDoc();
+        Document document = (Document) cmsContext.getDoc();
 
-        if (!DocumentHelper.isFolder(document)) {
-
+        if (!DocumentHelper.isFolder(document) && !"Staple".equals(document.getType())) {
             if (pubInfos.isLiveSpace() && !pubInfos.hasDraft()) {
+                boolean isValidationWfRunning = extendedInfos.isValidationWorkflowRunning();
 
-                final Boolean isValidationWfRunning = extendedInfos.isValidationWorkflowRunning();
-                final String url = StringUtils.EMPTY;
+                MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                MenubarItem item = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, null, null, null, "fancyframe_refresh");
 
-                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-                final MenubarItem validationWfItem = new MenubarItem("VALIDATION_WF_URL", null, null, parent, 13, url, null, null, "fancyframe_refresh");
-
-                final String onClick = this.generateCallbackParams(portalControllerContext, cmsContext);
-                validationWfItem.setOnclick(onClick);
+                String onClick = this.generateCallbackParams(portalControllerContext, cmsContext);
+                item.setOnclick(onClick);
 
                 if (BooleanUtils.isTrue(isValidationWfRunning)) {
                     // Access to current validation workflow task
-                    final Map<String, String> requestParameters = new HashMap<String, String>();
-                    final String followWfURL = cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), requestParameters);
+                    Map<String, String> parameters = new HashMap<>();
+                    String url = cmsService.getEcmUrl(cmsContext, EcmViews.followWfValidation, pubInfos.getDocumentPath(), parameters);
 
-                    validationWfItem.setUrl(followWfURL);
-                    validationWfItem.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
-                    menubar.add(validationWfItem);
-
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("FOLLOW_VALIDATION_WF"));
+                    menubar.add(item);
                 } else if (!DocumentConstants.APPROVED_DOC_STATE.equals(document.getState()) && pubInfos.isEditableByUser()) {
                     // We can start a validation workflow
-                    final Map<String, String> requestParameters = new HashMap<String, String>();
-                    final String startWfURL = cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), requestParameters);
+                    Map<String, String> parameters = new HashMap<>();
+                    String url = cmsService.getEcmUrl(cmsContext, EcmViews.startValidationWf, pubInfos.getDocumentPath(), parameters);
 
-                    validationWfItem.setUrl(startWfURL);
-                    validationWfItem.setTitle(bundle.getString("START_VALIDATION_WF"));
-                    menubar.add(validationWfItem);
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("START_VALIDATION_WF"));
+                    menubar.add(item);
                 }
-
             }
-
         }
-
     }
 
 

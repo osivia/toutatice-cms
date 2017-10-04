@@ -148,30 +148,7 @@ public class DocumentService {
         OperationRequest req = this.session.newRequest(CreateDocument).setInput(
                 parent).set("type", type).set("name", name);
         if ((properties != null) && !properties.isEmpty()) {
-            for (Entry<String, Object> entry : properties.getMap().entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-
-                if (value instanceof String) {
-                    String string = (String) value;
-
-                    String[] lines = StringUtils.split(string, "\n");
-                    for (int i = 0; i < lines.length; i++) {
-                        String line = StringUtils.trim(lines[i]);
-
-                        if (i < lines.length - 1) {
-                            line += "\\";
-                        }
-
-                        lines[i] = line;
-                    }
-
-                    string = StringUtils.join(lines, "\n");
-
-                    properties.set(key, string);
-                }
-            }
-
+            properties = this.protectProperties(properties);
             req.set("properties", properties);
         }
 
@@ -329,7 +306,7 @@ public class DocumentService {
     public Document update(DocRef doc, PropertyMap properties, boolean synchronizedIndexing) throws Exception {
         OperationRequest request = this.session.newRequest(UpdateDocument);
         request.setInput(doc);
-        request.set("properties", properties);
+        request.set("properties", this.protectProperties(properties));
         if (synchronizedIndexing) {
             request.setHeader(ES_SYNC_FLAG, String.valueOf(true));
         }
@@ -493,4 +470,42 @@ public class DocumentService {
         req.setHeader(Constants.HEADER_NX_VOIDOP, "true");
         req.execute();
     }
+
+
+    /**
+     * Protect line break in properties.
+     * 
+     * @param properties properties
+     * @return updated properties
+     */
+    private PropertyMap protectProperties(PropertyMap properties) {
+        if ((properties != null) && !properties.isEmpty()) {
+            for (Entry<String, Object> entry : properties.getMap().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value instanceof String) {
+                    String string = (String) value;
+
+                    String[] lines = StringUtils.split(string, "\n");
+                    for (int i = 0; i < lines.length; i++) {
+                        String line = StringUtils.trim(lines[i]);
+
+                        if (i < lines.length - 1) {
+                            line += "\\";
+                        }
+
+                        lines[i] = line;
+                    }
+
+                    string = StringUtils.join(lines, "\n");
+
+                    properties.set(key, string);
+                }
+            }
+        }
+
+        return properties;
+    }
+
 }
