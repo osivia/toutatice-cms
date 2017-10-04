@@ -81,7 +81,7 @@
                     <div class="data" data-id="${document.id}">
                         <div class="sortable-handle">
                             <a href="${link.url}" target="${link.external ? '_blank' : ''}" class="thumbnail no-ajax-link" ondragstart="return false;"
-                                <c:if test="${'Picture' eq document.type.name}">data-fancybox="${namespace}-gallery" data-caption="${document.title}"</c:if>
+                                <c:if test="${'Picture' eq document.type.name}">data-fancybox="${namespace}-gallery" data-caption="${document.title}" data-type="image"</c:if>
                             >
                                 <span class="img-container">
                                     <c:choose>
