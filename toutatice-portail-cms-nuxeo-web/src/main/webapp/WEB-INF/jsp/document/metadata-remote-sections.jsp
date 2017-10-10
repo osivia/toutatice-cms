@@ -1,40 +1,35 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
-<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
-<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal"
+	prefix="op"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice"
+	prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
 
-<c:if test="${not doc.type.folderish}">
+<c:if test="${not document.type.folderish}">
 
-	<c:set var="publishedDocuments"
-		value="${doc.publishedDocuments}" />
-		
-		<c:if test="${not empty publishedDocuments}">
-		    <!-- DCH: FIXME: add a DTO or CMSItemType variable? -->
-		    <c:set var="isInLiveSpace" value="true" />
-		    <c:forEach items="${publishedDocuments}" var="publishedDocument">
-		          <c:set var="isInPublishSpace" value="${fn:startsWith(doc.path, publishedDocument.nxUrl)}" />
-		          <c:set var="isInLiveSpace" value="${isInLiveSpace and not isInPublishSpace}" /> 
-		    </c:forEach>
-		
-			<c:if test="${isInLiveSpace}">
-				<dt><op:translate key="DOCUMENT_REMOTE_SECTIONS" /></dt>
-				<dd>
-				    <ul class="list-unstyled">
-				    <c:forEach items="${publishedDocuments}" var="publishedDocument">
-						<li>
-							<c:set var="publishedDocumentURL"><ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" /></c:set>
-							<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
-									
-							<span class="label label-info"><op:translate key="DOCUMENT_REMOTE_VERSION_PREFIX" />${publishedDocument.versionLabel}</span>
-						</li>
-					</c:forEach>
-					</ul>
-				</dd>
-			</c:if>
-			
-        </c:if>
+	<c:set var="publishedDocuments" value="${document.publishedDocuments}" />
+
+	<c:if test="${not empty publishedDocuments}">
+		<p>
+		<dt>
+			<op:translate key="DOCUMENT_REMOTE_SECTIONS" />
+		</dt>
+
+		<c:forEach items="${publishedDocuments}" var="publishedDocument">
+			<dd>
+				<c:set var="publishedDocumentURL">
+					<ttc:transformNuxeoUrl url="${publishedDocument.nxUrl}" />
+				</c:set>
+				<a href="${publishedDocumentURL}"><span>${publishedDocument.sectionTitle}</span></a>
+
+				<span class="label label-info"><op:translate
+						key="DOCUMENT_REMOTE_VERSION_PREFIX" />${publishedDocument.versionLabel}</span>
+			</dd>
+		</c:forEach>
+		</p>
+	</c:if>
 
 </c:if>

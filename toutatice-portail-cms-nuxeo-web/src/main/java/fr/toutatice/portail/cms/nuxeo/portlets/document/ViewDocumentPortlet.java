@@ -32,6 +32,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -86,8 +89,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -374,7 +375,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDto, true);
+                    this.generatePublishedDocumentsInfos(nuxeoController, documentContext, documentDto, true);
                 } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
@@ -383,7 +384,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     this.generateAttachments(nuxeoController, document, documentDto);
 
                     // Remote Published documents
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDto, false);
+                    this.generatePublishedDocumentsInfos(nuxeoController, documentContext, documentDto, false);
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Publication informations
@@ -632,14 +633,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
      * @param document
      * @param documentDTO
      */
-    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO, Boolean readFilter) {
-        
-        
-        //TODO performances to improve
-        if(true)
-            return;
-        
-        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61)) {
+    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, NuxeoDocumentContext docCtx, DocumentDTO documentDTO, Boolean readFilter) {
+        // We show remote sections only in Live Spaces (Wokspaces, ...)
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61) && docCtx.getPublicationInfos().isLiveSpace()) {
 
             int cacheType = nuxeoController.getCacheType();
             int authType = nuxeoController.getAuthType();
@@ -648,7 +644,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-                GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(document, readFilter);
+                GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(docCtx.getDocument(), readFilter);
                 JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
 
                 for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
