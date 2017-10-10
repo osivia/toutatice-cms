@@ -116,7 +116,7 @@ public class DocumentSecurityService {
      * @throws Exception
      */
     public Document removeGroupPermissions(Document document, String acl) throws Exception{
-        OperationRequest request = getSession().newRequest(REMOVE_PERMISSIONS_OP)
+        OperationRequest request = getSession().newRequest(REMOVE_GROUP_PERMISSIONS_OP)
                 .setInput(document)
                 .set("acl", acl);
         return (Document) request.execute();
