@@ -65,7 +65,8 @@ public class TitleTag extends ToutaticeSimpleTag {
             Link link = this.getTagService().getDocumentLink(nuxeoController, document, null, this.displayContext, false, false);
             // Target
             String target;
-            if (link.isExternal() || "download".equals(this.displayContext)) {
+            boolean isFile = document.getType() != null && "File".equals(document.getType().getName());
+            if (link.isExternal() || ("download".equals(this.displayContext) && isFile)) {
                 target = "_blank";
             } else {
                 target = null;
