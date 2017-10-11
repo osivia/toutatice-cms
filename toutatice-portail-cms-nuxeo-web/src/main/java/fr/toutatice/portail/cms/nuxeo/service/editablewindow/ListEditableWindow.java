@@ -21,7 +21,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.core.constants.InternalConstants;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
@@ -81,9 +80,6 @@ public class ListEditableWindow extends EditableWindow {
         properties.put(ViewList.PERMALINK_REFERENCE_WINDOW_PROPERTY, null);
         properties.put(ViewList.RSS_REFERENCE_WINDOW_PROPERTY, null);
         properties.put(ViewList.RSS_TITLE_WINDOW_PROPERTY, null);
-
-        // si ElasticSearch est activé, on l'utilise par défaut
-        properties.put(ViewList.USE_ES_WINDOW_PROPERTY, String.valueOf(NuxeoCompatibility.canUseES()));
 
 
         // // Cas particulier des feed

@@ -18,7 +18,6 @@ import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
@@ -29,6 +28,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
  * @see INuxeoCommand
  */
 public class ListCommand implements INuxeoCommand {
+
+    /** Header flag to force request in VCS. */
+    public static final String VCS_FORCE_FLAG = "nx_querying_vcs_force";
 
     /** Nuxeo request. */
     private final String nuxeoRequest;
@@ -42,8 +44,8 @@ public class ListCommand implements INuxeoCommand {
     private final String version;
     /** Filter policy. */
     private final String portalPolicyFilter;
-    /** Use Elastic Search indicator. */
-    private final boolean useES;
+    /** Force request on VCS. */
+    private boolean forceVCS;
 
 
     /**
@@ -55,9 +57,9 @@ public class ListCommand implements INuxeoCommand {
      * @param pageSize page size
      * @param schemas schemas
      * @param portalPolicyFilter filter policy
-     * @param useES use Elastic Search indicator
+     * @param forceVCS request on VCS indicator
      */
-    public ListCommand(String nuxeoRequest, String version, int pageNumber, int pageSize, String schemas, String portalPolicyFilter, boolean useES) {
+    public ListCommand(String nuxeoRequest, String version, int pageNumber, int pageSize, String schemas, String portalPolicyFilter) {
         super();
         this.nuxeoRequest = nuxeoRequest;
         this.version = version;
@@ -65,7 +67,6 @@ public class ListCommand implements INuxeoCommand {
         this.pageSize = pageSize;
         this.schemas = schemas;
         this.portalPolicyFilter = portalPolicyFilter;
-        this.useES = NuxeoCompatibility.canUseES() && useES;
     }
 
 
@@ -74,11 +75,12 @@ public class ListCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
+
         OperationRequest request;
-        if (this.useES) {
-            request = this.generateESRequest(nuxeoSession);
-        } else {
+        if (this.isForceVCS()) {
             request = this.generateVCSRequest(nuxeoSession);
+        } else {
+            request = this.generateESRequest(nuxeoSession);
         }
 
         // Insertion du filtre sur les élements
@@ -104,13 +106,28 @@ public class ListCommand implements INuxeoCommand {
 
     protected OperationRequest generateVCSRequest(Session session) throws Exception {
         OperationRequest request = session.newRequest("Document.PageProvider");
+        request.setHeader(VCS_FORCE_FLAG, "true");
         request.set("pageSize", this.pageSize);
         request.set("page", this.pageNumber);
         request.setHeader(Constants.HEADER_NX_SCHEMAS, this.schemas);
-        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-            request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
-        }
+        request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
         return request;
+    }
+
+
+    /**
+     * @return the forceVCS
+     */
+    public boolean isForceVCS() {
+        return forceVCS;
+    }
+
+
+    /**
+     * @param forceVCS the forceVCS to set
+     */
+    public void setForceVCS(boolean forceVCS) {
+        this.forceVCS = forceVCS;
     }
 
 

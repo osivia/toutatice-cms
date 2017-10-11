@@ -87,7 +87,7 @@ public class BrowserAdapter {
             String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
             
             String liveStatus = RequestPublishStatus.live.getStatus();
-            INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter, true);
+            INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter);
             Documents documents = (Documents) nuxeoController.executeNuxeoCommand(nuxeoCommand);
 
             workspaces = new ArrayList<CMSItem>(documents.size());
@@ -144,7 +144,7 @@ public class BrowserAdapter {
 
                 try {
                     String liveStatus = RequestPublishStatus.live.getStatus();
-                    INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter, true);
+                    INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter);
                     Documents documents = (Documents) this.cmsService.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
                     workspaces = new ArrayList<CMSItem>(documents.size());

@@ -3,6 +3,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+
 // TODO: Auto-generated Javadoc
 /**
  * List configuration java-bean.
@@ -15,8 +16,8 @@ public class ListConfiguration {
     private String nuxeoRequest;
     /** BeanShell interpretation indicator. */
     private boolean beanShell;
-    /** Indicates if request is done with ElasticSearch (since NUxeo 6.0) */
-    private boolean useES;
+    /** Indicates if request is done on VCS (used in full ES mode). */
+    private boolean forceVCS;
     /** Version. */
     private String version;
     /** Content filter. */
@@ -95,23 +96,21 @@ public class ListConfiguration {
     public void setBeanShell(boolean beanShell) {
         this.beanShell = beanShell;
     }
-    
-    /**
-     * Getter for useES.
-     * 
-     * @return the useES
-     */
-    public boolean isUseES() {
-        return useES;
-    }
+
 
     /**
-     * Setter for useES.
-     * 
-     * @param useES the useES to set
+     * @return the forceVCS
      */
-    public void setUseES(boolean useES) {
-        this.useES = useES;
+    public boolean isForceVCS() {
+        return forceVCS;
+    }
+
+
+    /**
+     * @param forceVCS the forceVCS to set
+     */
+    public void setForceVCS(boolean forceVCS) {
+        this.forceVCS = forceVCS;
     }
 
 
