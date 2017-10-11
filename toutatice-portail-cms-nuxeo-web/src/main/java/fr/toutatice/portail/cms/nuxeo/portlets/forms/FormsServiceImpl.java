@@ -892,6 +892,7 @@ public class FormsServiceImpl implements IFormsService {
         }
         variables.put("procedureInitiator", instanceProperties.getString("pi:procedureInitiator"));
         variables.put("taskInitiator", task.getString("nt:initiator"));
+        variables.put("taskName", task.getString("nt:name"));
         variables.put("taskUuid", task.getId());
         variables.put("taskPath", task.getPath());
 
