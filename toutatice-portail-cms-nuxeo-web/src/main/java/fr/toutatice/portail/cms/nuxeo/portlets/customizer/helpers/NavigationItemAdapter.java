@@ -132,6 +132,9 @@ public class NavigationItemAdapter {
             } else if ("Staple".equals(doc.getType())) {
                 properties.put("staple", String.valueOf(true));
 			}
+        } else if (StringUtils.startsWith(pageTemplate, "/templates/") && !StringUtils.startsWith(pageTemplate, "/templates/templates/")) {
+            // Compatibilité 4.1 : propriété ttc:pageTemplate relative à l'espace
+            pageTemplate = "/default" + pageTemplate;
 		}
 
 		if (StringUtils.isNotBlank(pageTemplate)) {
