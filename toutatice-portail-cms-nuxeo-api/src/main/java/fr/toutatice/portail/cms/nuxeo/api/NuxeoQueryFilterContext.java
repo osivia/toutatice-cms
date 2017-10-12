@@ -13,6 +13,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import org.osivia.portal.core.constants.InternalConstants;
+
 
 public class NuxeoQueryFilterContext {
 
@@ -85,7 +87,7 @@ public class NuxeoQueryFilterContext {
     public NuxeoQueryFilterContext(int state) {
         super();
         this.state = state;
-
+        this.policy = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
     }
 
     public NuxeoQueryFilterContext(int state, String policy) {
