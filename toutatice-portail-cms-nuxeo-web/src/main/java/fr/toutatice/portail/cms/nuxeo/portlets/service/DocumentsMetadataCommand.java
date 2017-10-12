@@ -12,7 +12,6 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.cms.DocumentsMetadata;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
@@ -122,7 +121,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
 
         // Filtered request
         int state = NuxeoQueryFilter.getState(version);
-        NuxeoQueryFilterContext documentsFilterContext = new NuxeoQueryFilterContext(state, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+        NuxeoQueryFilterContext documentsFilterContext = new NuxeoQueryFilterContext(state);
         String documentsFilteredRequest = NuxeoQueryFilter.addPublicationFilter(documentsFilterContext, documentsRequest.toString());
 
 
@@ -152,8 +151,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
 
 
             // Filtered request
-            NuxeoQueryFilterContext targetsFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE,
-                    InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+            NuxeoQueryFilterContext targetsFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);
             targetsFilteredRequest = NuxeoQueryFilter.addPublicationFilter(targetsFilterContext, targetsRequest.toString());
         }
 

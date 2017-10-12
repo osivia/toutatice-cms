@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -54,7 +56,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObject;
 import org.jboss.portal.core.model.portal.PortalObjectContainer;
 import org.jboss.portal.core.model.portal.PortalObjectId;
@@ -171,6 +172,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
     /** Binary servlet URL. */
     private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
+
+    /** Query filter pattern. */
+    private static final Pattern QUERY_FILTER_PATTERN = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
 
 
     /** Log. */
@@ -998,27 +1002,59 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 }
 
                 if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
-                    // Parcours des pages pour appliquer le filtre sur les paths
-                    String pathFilter = "";
+                    // User domains
+                    List<?> domains = (List<?>) invocation.getAttribute(Scope.SESSION_SCOPE, InternalConstants.USER_DOMAINS_ATTRIBUTE);
 
-                    for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
-                        String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
-                        if ((cmsPath != null) && (cmsPath.length() > 0)) {
-                            if (pathFilter.length() > 0) {
-                                pathFilter += " OR ";
+                    // CMS paths
+                    List<String> paths;
+                    if (CollectionUtils.isEmpty(domains)) {
+                        if (po == null) {
+                            paths = null;
+                        } else {
+                            Collection<PortalObject> children = po.getChildren(PortalObject.PAGE_MASK);
+                            paths = new ArrayList<>(children.size());
+                            for (PortalObject child : children) {
+                                String path = child.getDeclaredProperty("osivia.cms.basePath");
+                                if (StringUtils.isNotBlank(path)) {
+                                    paths.add(path);
+                                }
                             }
-                            pathFilter += "ecm:path STARTSWITH '" + cmsPath + "'";
+                        }
+                    } else {
+                        paths = new ArrayList<>(domains.size());
+                        for (Object domain : domains) {
+                            if (domain instanceof String) {
+                                String path = (String) domain;
+                                paths.add(path);
+                            }
                         }
                     }
 
-                    if (pathFilter.length() > 0) {
-                        requestFilter = requestFilter + " AND " + "(" + pathFilter + ")";
+                    if (CollectionUtils.isNotEmpty(paths)) {
+                        // Path filter builder
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(" AND (");
+                        
+                        boolean first = true;
+                        for (String path : paths) {
+                            if (first) {
+                                first = false;
+                            } else {
+                                builder.append(" OR ");
+                            }
+
+                            builder.append("ecm:path STARTSWITH '").append(path).append("'");
+                        }
+
+                        builder.append(") ");
+
+                        requestFilter += builder.toString();
                     }
                 }
 
                 String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
                 if (extraFilter != null) {
-                    requestFilter = requestFilter + " OR " + "(" + extraFilter + ")";
+                    requestFilter += " OR (" + extraFilter + ")";
                 }
             }
         }
@@ -1029,7 +1065,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String editedNuxeoRequest = nuxeoRequest;
         try {
-            Pattern ressourceExp = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
+            Pattern ressourceExp = QUERY_FILTER_PATTERN;
 
             Matcher m = ressourceExp.matcher(editedNuxeoRequest.toUpperCase());
             m.matches();
@@ -2202,6 +2238,5 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public INotificationsService getNotificationsService() {
         return notificationsService;
     }
-
 
 }

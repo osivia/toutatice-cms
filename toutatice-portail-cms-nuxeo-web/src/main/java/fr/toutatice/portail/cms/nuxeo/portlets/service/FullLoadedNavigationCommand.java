@@ -3,7 +3,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -63,7 +62,7 @@ public class FullLoadedNavigationCommand implements INuxeoCommand {
         } else {
             filterState = NuxeoQueryFilterContext.STATE_DEFAULT;
         }
-        NuxeoQueryFilterContext filterContext = new NuxeoQueryFilterContext(filterState, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+        NuxeoQueryFilterContext filterContext = new NuxeoQueryFilterContext(filterState);
         
         // Query
         String query = "SELECT * FROM Document WHERE " + NuxeoQueryFilter.addPublicationFilter(filterContext, clause.toString());

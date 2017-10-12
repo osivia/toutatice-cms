@@ -16,7 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.files;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -61,8 +60,7 @@ public class GetFolderFilesCommand implements INuxeoCommand {
         nuxeoRequest.append("ORDER BY ecm:pos ASC");
 
         // Query filter
-        NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE,
-                InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+        NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);
         String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilterContext, nuxeoRequest.toString());
 
         // Operation request

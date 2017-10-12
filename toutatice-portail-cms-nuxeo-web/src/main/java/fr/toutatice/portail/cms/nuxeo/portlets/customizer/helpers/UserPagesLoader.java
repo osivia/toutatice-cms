@@ -16,6 +16,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.jboss.portal.common.invocation.Scope;
+import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.locator.Locator;
@@ -23,6 +26,7 @@ import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
@@ -56,19 +60,38 @@ public class UserPagesLoader {
 
 
     public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
+        // Server invocation
+        ServerInvocation invocation = cmsCtx.getServerInvocation();
+
         // CMS service
         CMSService cmsService = (CMSService) this.cmsServiceLocator.getCMSService();
         
         // Conversion en CMSItem
         List<CMSPage> pages = new ArrayList<CMSPage>();
 
-        if (cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal() != null) {
-            String userName = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getUserPrincipal().getName();
+
+        if (invocation.getServerContext().getClientRequest().getUserPrincipal() != null) {
+            String userName = invocation.getServerContext().getClientRequest().getUserPrincipal().getName();
 
             // Vérifier l'init de l'espace perso avant de calculer des pages
             cmsService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(userName));
 
-            Documents children = (Documents) cmsService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand());
+            // User domains
+            List<String> domains;
+            List<?> domainsAttribute = (List<?>) invocation.getAttribute(Scope.SESSION_SCOPE, InternalConstants.USER_DOMAINS_ATTRIBUTE);
+            if (CollectionUtils.isEmpty(domainsAttribute)) {
+                domains = null;
+            } else {
+                domains = new ArrayList<>(domainsAttribute.size());
+                for (Object attribute : domainsAttribute) {
+                    if (attribute instanceof String) {
+                        String domain = (String) attribute;
+                        domains.add(domain);
+                    }
+                }
+            }
+
+            Documents children = (Documents) cmsService.executeNuxeoCommand(cmsCtx, new UserPagesPreloadCommand(domains));
 
             for (Document child : children) {
                 String spacePath = DocumentHelper.computeNavPath(child.getPath());

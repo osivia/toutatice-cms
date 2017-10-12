@@ -21,7 +21,6 @@ import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -55,7 +54,7 @@ public class PortalSiteFetchCommand implements INuxeoCommand {
 		
 		
 		// Insertion du filtre sur les élements publiés
-        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( NuxeoQueryFilterContext.STATE_DEFAULT, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_DEFAULT);
 		
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 
