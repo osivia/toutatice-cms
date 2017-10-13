@@ -87,7 +87,6 @@ public class ViewProcedurePortlet extends ViewListPortlet {
         configuration.setNuxeoRequest(requestSb.toString());
         configuration.setBeanShell(true);
         
-        configuration.setUseES(true);
         configuration.setVersion("1");
         window.setProperty(VERSION_WINDOW_PROPERTY, "1");
         configuration.setContentFilter(String.valueOf(NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED));

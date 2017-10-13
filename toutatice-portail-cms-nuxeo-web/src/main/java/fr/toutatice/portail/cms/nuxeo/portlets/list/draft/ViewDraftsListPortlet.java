@@ -80,7 +80,7 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
             String query = String.format(ViewDraftsListPortlet.DRAFTS_QUERY_WHERE_CLAUSE, request.getRemoteUser(), folderPath);
             int pageSize = Integer.valueOf(CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS).intValue();
 
-            INuxeoCommand command = new ListCommand(query, String.valueOf(NuxeoQueryFilterContext.STATE_LIVE), 0, pageSize, DRAFTS_LIST_SCHEMAS, null, true);
+            INuxeoCommand command = new ListCommand(query, String.valueOf(NuxeoQueryFilterContext.STATE_LIVE), 0, pageSize, DRAFTS_LIST_SCHEMAS, null);
             Documents draftDocs = (Documents) nuxeoController.executeNuxeoCommand(command);
 
             // Result list

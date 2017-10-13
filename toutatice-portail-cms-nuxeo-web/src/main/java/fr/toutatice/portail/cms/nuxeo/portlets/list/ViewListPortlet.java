@@ -70,6 +70,7 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -256,7 +257,8 @@ public class ViewListPortlet extends ViewList {
 
                     // Nuxeo command
                     INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), 0, resultsLimit, schemas,
-                            configuration.getContentFilter(), configuration.isUseES());
+                            configuration.getContentFilter());
+                    ((ListCommand) command).setForceVCS(configuration.isForceVCS());
 
                     // Nuxeo documents
                     documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
@@ -347,8 +349,8 @@ public class ViewListPortlet extends ViewList {
                 // BeanShell
                 window.setProperty(BEAN_SHELL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("beanShell")));
 
-                // Use of ElasticSearch
-                window.setProperty(USE_ES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("useES")));
+                // Force request on VCS
+                window.setProperty(FORCE_VCS_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("forceVCS")));
 
                 // Version
                 window.setProperty(VERSION_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("displayLiveVersion")));
@@ -662,7 +664,8 @@ public class ViewListPortlet extends ViewList {
 
                 // Nuxeo command
                 INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), currentPage, requestPageSize, schemas,
-                        configuration.getContentFilter(), configuration.isUseES());
+                        configuration.getContentFilter());
+                ((ListCommand) command).setForceVCS(configuration.isForceVCS());
 
                 // Nuxeo documents
                 PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
@@ -958,8 +961,8 @@ public class ViewListPortlet extends ViewList {
         // Bean Shell interpretation
         configuration.setBeanShell(BooleanUtils.toBoolean(window.getProperty(BEAN_SHELL_WINDOW_PROPERTY)));
 
-        // Use of ElasticSearch
-        configuration.setUseES(BooleanUtils.toBoolean(window.getProperty(USE_ES_WINDOW_PROPERTY)));
+        // Fore VCS request (database request)
+        configuration.setForceVCS(BooleanUtils.toBoolean(window.getProperty(FORCE_VCS_WINDOW_PROPERTY)));
 
         // Version
         configuration.setVersion(window.getProperty(VERSION_WINDOW_PROPERTY));

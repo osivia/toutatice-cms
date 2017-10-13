@@ -29,8 +29,8 @@ public abstract class ViewList extends CMSPortlet {
     public static final String NUXEO_REQUEST_WINDOW_PROPERTY = "osivia.nuxeoRequest";
     /** Bean Shell interpretation indicator window property name. */
     public static final String BEAN_SHELL_WINDOW_PROPERTY = "osivia.beanShell";
-    /** Use of ElasticSearch indicator window property */
-    public static final String USE_ES_WINDOW_PROPERTY = "osivia.useES";
+    /** Force request on VCS indicator window property */
+    public static final String FORCE_VCS_WINDOW_PROPERTY = "osivia.forceVCS";
     /** Version window property name. */
     public static final String VERSION_WINDOW_PROPERTY = "osivia.cms.displayLiveVersion";
     /** Content filter window property name. */

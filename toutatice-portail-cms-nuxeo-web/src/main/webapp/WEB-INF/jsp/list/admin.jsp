@@ -17,8 +17,8 @@
     <c:set var="beanShellChecked" value="checked" />
 </c:if>
 
-<c:if test="${configuration.useES}">
-    <c:set var="useESChecked" value="checked" />
+<c:if test="${configuration.forceVCS}">
+    <c:set var="forceVCSChecked" value="checked" />
 </c:if>
 
 <c:if test="${configuration.metadataDisplay}">
@@ -116,8 +116,8 @@ return nuxeoRequest.toString();
                 </div>
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" name="useES" ${useESChecked}>
-                        <span><op:translate key="LIST_USE_ES" /></span>
+                        <input type="checkbox" name="forceVCS" ${forceVCSChecked}>
+                        <span><op:translate key="LIST_FORCE_VCS" /></span>
                     </label>
                 </div>
             </div>

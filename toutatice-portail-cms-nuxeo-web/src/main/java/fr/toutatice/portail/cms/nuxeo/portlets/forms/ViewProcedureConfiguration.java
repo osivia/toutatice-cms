@@ -33,7 +33,7 @@ public class ViewProcedureConfiguration extends ListConfiguration {
         setRssTitle(listConfiguration.getRssTitle());
         setScope(listConfiguration.getScope());
         setTemplate(listConfiguration.getTemplate());
-        setUseES(listConfiguration.isUseES());
+        setForceVCS(listConfiguration.isForceVCS());
         setVersion(listConfiguration.getVersion());
     }
 
