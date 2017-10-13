@@ -3073,11 +3073,13 @@ public class CMSService implements ICMSService {
         actors.add(IFormsService.ACTOR_USER_PREFIX + user);
         
         for (Group group : groups) {
-            // Group CN
-            String cn = group.getCn();
-
-            actors.add(cn);
-            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
+        	if(group != null) {
+	            // Group CN
+	            String cn = group.getCn();
+	
+	            actors.add(cn);
+	            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
+        	}
         }
 
         return actors;
