@@ -18,15 +18,13 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
-import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -302,9 +300,47 @@ public class NXQLFormater {
      */
     public String formatAdvancedSearch(List<String> searchValues) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("ecm:fulltext = '");
-        buffer.append(StringUtils.join(searchValues, " "));
-        buffer.append(" -noindex'");
+
+        Iterator<String> itSearchValues = searchValues.iterator();
+        while (itSearchValues.hasNext()) {
+            buffer.append(NXQLFormater.formatAdvancedSearch(itSearchValues.next()));
+            // Multi valued selector
+            if (itSearchValues.hasNext()) {
+                buffer.append(" AND ");
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    /**
+     * Format advanced search.
+     * 
+     * @param keyWords key words
+     * @return formatted advanced search
+     */
+    public static String formatAdvancedSearch(String keyWords) {
+        StringBuffer buffer = new StringBuffer();
+
+        String[] keyWds = StringUtils.split(keyWords, " ");
+        Iterator<String> itKeyWords = Arrays.asList(keyWds).iterator();
+
+        while (itKeyWords.hasNext()) {
+            String keyWord = itKeyWords.next();
+
+            buffer.append("(ecm:fulltext = '");
+            buffer.append(keyWord);
+            buffer.append("'");
+            buffer.append(" OR ");
+            buffer.append("ecm:fulltext = '");
+            buffer.append(keyWord);
+            buffer.append("*')");
+
+            if (itKeyWords.hasNext()) {
+                buffer.append(" AND ");
+            }
+        }
+
         return buffer.toString();
     }
 
