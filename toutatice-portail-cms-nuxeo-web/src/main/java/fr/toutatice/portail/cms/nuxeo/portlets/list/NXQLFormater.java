@@ -303,7 +303,7 @@ public class NXQLFormater {
 
         Iterator<String> itSearchValues = searchValues.iterator();
         while (itSearchValues.hasNext()) {
-            buffer.append(NXQLFormater.formatAdvancedSearch(itSearchValues.next()));
+            buffer.append(formatAdvancedSearch(itSearchValues.next()));
             // Multi valued selector
             if (itSearchValues.hasNext()) {
                 buffer.append(" AND ");
@@ -319,7 +319,7 @@ public class NXQLFormater {
      * @param keyWords key words
      * @return formatted advanced search
      */
-    public static String formatAdvancedSearch(String keyWords) {
+    private String formatAdvancedSearch(String keyWords) {
         StringBuffer buffer = new StringBuffer();
 
         String[] keyWds = StringUtils.split(keyWords, " ");
