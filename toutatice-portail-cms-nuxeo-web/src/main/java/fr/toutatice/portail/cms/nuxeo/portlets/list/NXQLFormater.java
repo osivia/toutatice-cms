@@ -319,7 +319,7 @@ public class NXQLFormater {
      * @param keyWords key words
      * @return formatted advanced search
      */
-    private String formatAdvancedSearch(String keyWords) {
+    public String formatAdvancedSearch(String keyWords) {
         StringBuffer buffer = new StringBuffer();
 
         String[] keyWds = StringUtils.split(keyWords, " ");

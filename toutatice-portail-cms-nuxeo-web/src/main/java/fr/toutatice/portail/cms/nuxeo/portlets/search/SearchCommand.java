@@ -22,17 +22,18 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.list.NXQLFormater;
 
 public class SearchCommand implements INuxeoCommand{
 	
 	String path;
 	String keywords;
 	int pageNumber;
+	NXQLFormater formatter;
 	
 	NuxeoQueryFilterContext queryCtx;
 	
@@ -42,32 +43,26 @@ public class SearchCommand implements INuxeoCommand{
 		this.path = path;
 		this.keywords = keywords;
 		this.pageNumber = pageNumber;
+		this.formatter = new NXQLFormater();
 
 	}
 	
-	private String addClause(String request, String clause)	{
-		String result = request;
-		
-		if( request.length() == 0)
-			result ="WHERE ";
-		else
-			result += " AND ";
-			
-		result += clause;
-		
-		return result;
-	}
+    private String addClause(String request, String clause) {
+        String result = request;
+
+        if (request.length() == 0)
+            result = "WHERE ";
+        else
+            result += " AND ";
+
+        result += clause;
+
+        return result;
+    }
 	
 	public Object execute( Session nuxeoSession)	throws Exception {
 		
-		
-        OperationRequest request;
-
-        if (NuxeoCompatibility.canUseES()) {
-            request = generateESRequest(nuxeoSession);
-        } else {
-            request = generateVCSRequest(nuxeoSession);
-        }
+        OperationRequest request = generateESRequest(nuxeoSession);
 		
 		String searchQuery = "";
 		
@@ -78,9 +73,7 @@ public class SearchCommand implements INuxeoCommand{
 		if( searchKeywords == null)
 			searchKeywords = "";
 		
-		searchKeywords += " -noindex";
-		
-		searchQuery = addClause(searchQuery, "ecm:fulltext = '" + searchKeywords + "'" );
+        searchQuery = addClause(searchQuery, formatter.formatAdvancedSearch(searchKeywords));
 		
 
 
@@ -103,19 +96,6 @@ public class SearchCommand implements INuxeoCommand{
 	        request.set(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());
 	        return request;		   
 	   }
-	   
-	    protected OperationRequest generateVCSRequest(Session session) throws Exception {
-			OperationRequest request =  session.newRequest("Document.PageProvider");	    	
-			request.set("pageSize", CommandConstants.PAGE_PROVIDER_DEFAULT_PAGE_SIZE);
-			request.set("page", pageNumber);	
-			request.setHeader(Constants.HEADER_NX_SCHEMAS, CMSCustomizer.getSearchSchema());		
-			
-			if( NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60))
-			    request.set("maxResults", CommandConstants.PAGE_PROVIDER_UNLIMITED_MAX_RESULTS);
-			
-			 return request;		
-	    	
-	    }
 
 	public String getId() {
 
