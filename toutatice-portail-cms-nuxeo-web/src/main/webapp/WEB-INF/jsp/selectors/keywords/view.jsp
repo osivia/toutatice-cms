@@ -14,33 +14,33 @@
 
 
 <c:choose>
-    <c:when test="${keywordMonoValued eq '1'}">
-        <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
-        <c:set var="name" value="monoAdd" />
-        <c:set var="glyphicon" value="halflings halflings-ok" />
-        <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
-        <c:set var="placeholder"><op:translate key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
-    </c:when>
-    
-    <c:otherwise>
+    <c:when test="${selectorType eq '0'}">
         <c:set var="textValue" value="${keyword}" />
         <c:set var="name" value="add" />
         <c:set var="glyphicon" value="halflings halflings-plus" />
         <c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
         <c:set var="placeholder"><op:translate key="SELECTOR_KEYWORD_PLACEHOLDER" /></c:set>
+    </c:when>
+    
+    <c:otherwise>
+        <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
+        <c:set var="name" value="monoAdd" />
+        <c:set var="glyphicon" value="halflings halflings-ok" />
+        <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
+        <c:set var="placeholder"><op:translate key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
     </c:otherwise>
 </c:choose>
 
 
-<div class="keywords-selector">
+<div class="keywords-selector ${selectorType eq '2' ? 'auto-submit' : ''}">
     <form action="${actionURL}" method="post" role="form">
         <!-- Label -->
-        <c:if test="${not empty libelle}">
-            <label>${libelle}</label>
+        <c:if test="${not empty selectorLabel}">
+            <label>${selectorLabel}</label>
         </c:if>
             
         <!-- Multi-valued items -->
-        <c:if test="${keywordMonoValued ne '1'}">
+        <c:if test="${selectorType eq '0'}">
             <c:forEach var="item" items="${keywords}" varStatus="status">
                 <!-- Delete URL -->
                 <portlet:actionURL var="deleteActionURL">
@@ -62,9 +62,9 @@
             
         <!-- Input -->
         <div class="form-group">
-            <div class="input-group">
+            <div class="${selectorType eq '2' ? '' : 'input-group'}">
                 <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
-                <span class="input-group-btn">
+                <span class="${selectorType eq '2' ? 'hidden' : 'input-group-btn'}">
                     <button type="submit" name="${name}" class="btn btn-default">
                         <i class="${glyphicon}"></i>
                         <span class="sr-only">${title}</span>
