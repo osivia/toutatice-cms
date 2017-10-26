@@ -10,7 +10,7 @@
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 
-<form method="post" onsubmit="return onSubmitSearch(this);" class="form" role="search" data-url="${searchUrl}">
+<form method="post" onsubmit="return onSubmitSearch(this);" class="form no-ajax-link" role="search" data-url="${searchUrl}">
     <div class="form-group">
         <label class="sr-only" for="${namespace}-search-input">Search</label>
         <div class="input-group">
