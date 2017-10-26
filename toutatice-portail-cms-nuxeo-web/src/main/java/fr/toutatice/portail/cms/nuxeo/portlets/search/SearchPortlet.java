@@ -29,6 +29,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.model.portal.Page;
@@ -183,13 +184,13 @@ public class SearchPortlet extends CMSPortlet {
         try {
             String requestDispatcherPath;
 
-            if (keywords != null) {
+            if ((keywords != null) || BooleanUtils.toBoolean(request.getParameter("results"))) {
                 // Result page
 
                 // Current page
                 String currentPageParam = request.getParameter("currentPage");
                 int currentPage = NumberUtils.toInt(currentPageParam);
-
+                
                 // No cache for search
                 nuxeoController.setCacheTimeOut(0);
 
