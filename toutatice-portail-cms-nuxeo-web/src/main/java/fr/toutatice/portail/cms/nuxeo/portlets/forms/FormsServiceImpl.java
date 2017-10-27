@@ -26,9 +26,6 @@ import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
@@ -78,6 +75,8 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetTasksCommand;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -955,6 +954,7 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
             context.setFunction("document", "linkWithText", TransformationFunctions.getDocumentLinkWithTextMethod());
+            context.setFunction("portal", "link", TransformationFunctions.getPortalLinkMethod());
             if (disabledLinks) {
                 context.setFunction("user", "link", TransformationFunctions.getUserDisplayNameMethod());
                 context.setFunction("document", "link", TransformationFunctions.getDocumentTitleMethod());
