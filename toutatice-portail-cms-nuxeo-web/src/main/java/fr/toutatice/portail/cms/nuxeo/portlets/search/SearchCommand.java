@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.search;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -50,9 +51,7 @@ public class SearchCommand implements INuxeoCommand{
     private String addClause(String request, String clause) {
         String result = request;
 
-        if (request.length() == 0)
-            result = "WHERE ";
-        else
+        if (StringUtils.isNotEmpty(request))
             result += " AND ";
 
         result += clause;
@@ -69,12 +68,9 @@ public class SearchCommand implements INuxeoCommand{
 		if( path != null && path.length() > 0)
 			searchQuery = addClause(searchQuery, "ecm:path STARTSWITH '" + path + "'");
 
-		String searchKeywords = keywords;
-		if( searchKeywords == null)
-			searchKeywords = "";
-		
-        searchQuery = addClause(searchQuery, formatter.formatAdvancedSearch(searchKeywords));
-		
+		if (StringUtils.isNotBlank(this.keywords)) {
+            searchQuery = addClause(searchQuery, formatter.formatAdvancedSearch(this.keywords));
+        }
 
 
 		// Insertion du filtre sur les élements publiés
@@ -82,7 +78,7 @@ public class SearchCommand implements INuxeoCommand{
 		
 		// Filter on publish spaces lives.
 		String filteredRequest = NuxeoQueryFilter.addSearchFilter(queryCtx, searchQuery);
-		request.set("query", "SELECT * FROM Document " + filteredRequest);
+		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
 		PaginableDocuments result = (PaginableDocuments) request.execute();
 		
 		return result;

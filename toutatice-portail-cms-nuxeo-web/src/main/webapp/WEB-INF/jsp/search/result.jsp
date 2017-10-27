@@ -120,6 +120,7 @@
                                     <portlet:renderURL var="pageURL">
                                         <portlet:param name="keywords" value="${keywords}" />
                                         <portlet:param name="currentPage" value="${index}" />
+                                        <portlet:param name="results" value="true"/>
                                     </portlet:renderURL>
                                     
                                     <li>

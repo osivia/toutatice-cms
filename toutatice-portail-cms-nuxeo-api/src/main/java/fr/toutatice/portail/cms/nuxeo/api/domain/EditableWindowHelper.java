@@ -176,14 +176,19 @@ public final class EditableWindowHelper {
 
         PropertyList list = doc.getProperties().getList(schema);
 
-        for (Object o : list.list()) {
-            if (o instanceof PropertyMap) {
-                PropertyMap map = (PropertyMap) o;
-                if (refURI.equals(map.get(FGT_URI)) || refURI.equals(map.get("refURI"))) {
-
-                    return map;
-                }
-            }
+        if(list != null) {
+	        for (Object o : list.list()) {
+	            if (o instanceof PropertyMap) {
+	                PropertyMap map = (PropertyMap) o;
+	                if (refURI.equals(map.get(FGT_URI)) || refURI.equals(map.get("refURI"))) {
+	
+	                    return map;
+	                }
+	            }
+	        }
+        }
+        else {
+        	LOGGER.warn("Propriétés non trouvées pour " + refURI + " / " + schema);	
         }
 
         LOGGER.warn("Fragment " + refURI + " non défini dans le schéma " + schema);
