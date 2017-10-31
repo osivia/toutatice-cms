@@ -3,6 +3,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.easymock.EasyMock;
@@ -96,6 +97,7 @@ public class FormsServiceImplTest {
         Document document = EasyMock.createMock(Document.class);
         EasyMock.expect(document.getTitle()).andReturn(DOCUMENT_TITLE).anyTimes();
         EasyMock.expect(document.getPath()).andReturn(DOCUMENT_PATH).anyTimes();
+        EasyMock.expect(document.getId()).andReturn(UUID.randomUUID().toString()).anyTimes();
 
         // Document context
         NuxeoDocumentContext documentContext = EasyMock.createMock(NuxeoDocumentContext.class);

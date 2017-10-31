@@ -313,7 +313,7 @@ public class TransformationFunctions {
         if (document == null) {
             title = null;
         } else {
-            title = document.getTitle();
+            title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
         }
 
         return title;
@@ -355,8 +355,10 @@ public class TransformationFunctions {
         } else {
             // URL
             String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, document.getPath(), null, null, null, null, null, null, null);
+            // Title
+            String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
             // Link
-            Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", document.getTitle());
+            Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", title);
 
             result = DOM4JUtils.writeCompact(link);
         }

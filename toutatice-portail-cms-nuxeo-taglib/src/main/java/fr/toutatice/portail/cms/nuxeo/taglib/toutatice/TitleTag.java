@@ -47,7 +47,7 @@ public class TitleTag extends ToutaticeSimpleTag {
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Title
-        String title = StringUtils.trimToEmpty(document.getTitle());
+        String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {
