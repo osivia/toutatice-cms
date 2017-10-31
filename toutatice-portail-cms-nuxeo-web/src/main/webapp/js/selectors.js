@@ -17,7 +17,7 @@ $JQry(function() {
 							$submit = $formGroup.find("button[type=submit]");
 						
 						$submit.click();
-					}, 1000);
+					}, 200);
 				}
 			});
 			
