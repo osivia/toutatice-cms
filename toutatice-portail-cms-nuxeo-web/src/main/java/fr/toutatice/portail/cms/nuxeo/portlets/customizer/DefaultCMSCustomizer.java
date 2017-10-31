@@ -1592,24 +1592,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Link getUserAvatar(String username) {
-        String src = "";
-
-        // get timestamp defined previously
+        // Get timestamp defined previously
         String avatarTime = this.avatarMap.get(username);
-
         if (avatarTime == null) {
             // if not defined, set ie
             avatarTime = this.refreshUserAvatar(username);
         }
 
-        // timestamp is concated in the url to control the client cache
+        // URL
+        StringBuilder url = new StringBuilder();
+        url.append(AVATAR_SERVLET);
         try {
-            src = AVATAR_SERVLET.concat(URLEncoder.encode(username, "UTF-8")).concat("&t=").concat(avatarTime.toString());
+            url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
         } catch (UnsupportedEncodingException e) {
             this.log.error(e);
         }
+        // timestamp is concated in the url to control the client cache
+        url.append("&t=");
+        url.append(avatarTime);
 
-        return new Link(src, false);
+        return new Link(url.toString(), false);
     }
 
 

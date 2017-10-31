@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -48,10 +47,10 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
 /**
- * Servlet for caching and displaying avatar's from nuxeo
+ * Servlet for caching and displaying avatar's from Nuxeo.
  * 
  * @author lbillon
- * 
+ * @see HttpServlet
  */
 public class AvatarServlet extends HttpServlet {
 
@@ -87,27 +86,30 @@ public class AvatarServlet extends HttpServlet {
         return inputFormater.format(new Date(System.currentTimeMillis()));
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
+        // Nuxeo controller
+        NuxeoController ctx = new NuxeoController(portletCtx);
+        ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
         OutputStream output = theResponse.getOutputStream();
         try {
-
-
+            // Username
             String username = theRequest.getParameter("username");
-            username = URLDecoder.decode(username, "UTF-8");
 
-            NuxeoController ctx = new NuxeoController(portletCtx);
-
-            ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-            ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-
-
-            String userId = null;
-
-            
+            // Person
             Person person = PERSON_SERVICE.getPerson(username);
-            if (person != null) {
+
+            // User identifier
+            String userId;
+            if (person == null) {
+                userId = null;
+            } else {
                 userId = person.getUid();
             }
 
@@ -119,13 +121,10 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-
                 Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(userId));
 
                 if (userProfile != null) {
-
                     Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
-
 
                     if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
                         FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
@@ -145,7 +144,6 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (genericAvatar) {
-
                 // no avatar found, use the guest avatar
                 File file = new File(portletCtx.getRealPath("/img/guest.png"));
 
@@ -160,14 +158,11 @@ public class AvatarServlet extends HttpServlet {
 
                 theResponse.getOutputStream().write(data);
             }
-
-
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
             output.close();
         }
-
     }
 
 }
