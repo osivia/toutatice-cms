@@ -1,10 +1,19 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import javax.portlet.PortletException;
+import javax.portlet.PortletRequestDispatcher;
+import javax.portlet.PortletSecurityException;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.osivia.portal.api.windows.PortalWindow;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListConfiguration;
@@ -44,6 +53,30 @@ public class ViewProcedurePortlet extends ViewListPortlet {
      */
     public ViewProcedurePortlet() {
         super();
+    }
+
+    @Override
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        try {
+            super.doView(request, response);
+        } catch (PortletException e) {
+            String rootCauseMessage = null;
+            if (e.getCause() != null && e.getCause() instanceof PortletException) {
+                Throwable t = e.getCause();
+                if (t.getCause() != null && t.getCause() instanceof NuxeoException) {
+                    rootCauseMessage = ExceptionUtils.getRootCause(t).getMessage();
+                }
+            }
+            if (rootCauseMessage != null) {
+                request.setAttribute("error", "LIST_MESSAGE_INVALID_REQUEST");
+                request.setAttribute("errorMessage", rootCauseMessage);
+                response.setContentType("text/html");
+                PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
+                dispatcher.include(request, response);
+            } else {
+                throw e;
+            }
+        }
     }
 
     /*
