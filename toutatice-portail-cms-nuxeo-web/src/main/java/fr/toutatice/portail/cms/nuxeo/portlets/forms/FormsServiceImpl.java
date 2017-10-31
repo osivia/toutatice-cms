@@ -154,6 +154,14 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
         
+        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        if (StringUtils.isBlank(actionId)) {
+            String errorMessage = bundle.getString("FORMS_NO_ACTION");
+            throw new PortalException(errorMessage);
+        }
+
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
@@ -163,6 +171,11 @@ public class FormsServiceImpl implements IFormsService {
 
         // Starting step
         String startingStep = StringUtils.defaultIfBlank(variables.get("pcd:startingStep"), model.getString("pcd:startingStep"));
+
+        if (StringUtils.isBlank(startingStep)) {
+            String errorMessage = bundle.getString("FORMS_NO_STARTING_STEP");
+            throw new PortalException(errorMessage);
+        }
 
         // Starting step properties
         PropertyMap formStepProperties;
@@ -179,8 +192,18 @@ public class FormsServiceImpl implements IFormsService {
             actionStepProperties = formStepProperties;
         }
 
+        if (actionStepProperties == null) {
+            String errorMessage = bundle.getString("FORMS_BAD_STARTING_STEP", startingStep);
+            throw new PortalException(errorMessage);
+        }
+
         // Action properties
         PropertyMap actionProperties = this.getActionProperties(actionStepProperties, actionId);
+
+        if (actionProperties == null) {
+            String errorMessage = bundle.getString("FORMS_BAD_ACTION", actionId, startingStep);
+            throw new PortalException(errorMessage);
+        }
 
         // Procedure initiator
         String procedureInitiator = "";
@@ -199,16 +222,24 @@ public class FormsServiceImpl implements IFormsService {
         // Next step
         String nextStep = actionProperties.getString("stepReference");
 
+        if (StringUtils.isBlank(nextStep)) {
+            String errorMessage = bundle.getString("FORMS_NO_NEXT_STEP", actionId, nextStep);
+            throw new PortalException(errorMessage);
+        }
+
         // Task title
         String title = StringUtils.EMPTY;
         // Next step properties
         PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-        // Actors
-        List<String> actors = null;
-        if (nextStepProperties != null) {
-            title = nextStepProperties.getString("name");
-            actors = getActors(model, nextStep, title, nextStepProperties);
+
+        if (nextStepProperties == null) {
+            String errorMessage = bundle.getString("FORMS_BAD_NEXT_STEP", nextStep, actionId, startingStep);
+            throw new PortalException(errorMessage);
         }
+
+        // Actors
+        title = nextStepProperties.getString("name");
+        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
 
         // UUID
         String uuid = UUID.randomUUID().toString();
@@ -218,7 +249,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
-                procedureInitiator, startDate, startDate, procedureInitiator, nextStep, startingStep);
+                procedureInitiator, startDate, startDate, procedureInitiator, nextStep, startingStep, bundle);
 
         if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
             // Properties
@@ -328,6 +359,13 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
 
+        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Bundle bundle = this.bundleFactory.getBundle(locale);
+
+        if (StringUtils.isBlank(actionId)) {
+            String errorMessage = bundle.getString("FORMS_NO_ACTION");
+            throw new PortalException(errorMessage);
+        }
 
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
@@ -359,8 +397,18 @@ public class FormsServiceImpl implements IFormsService {
         // Action properties
         PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
 
+        if (actionProperties == null) {
+            String errorMessage = bundle.getString("FORMS_BAD_ACTION", actionId, currentStep);
+            throw new PortalException(errorMessage);
+        }
+
         // Next step
         String nextStep = actionProperties.getString("stepReference");
+
+        if (StringUtils.isBlank(nextStep)) {
+            String errorMessage = bundle.getString("FORMS_NO_NEXT_STEP", actionId, nextStep);
+            throw new PortalException(errorMessage);
+        }
 
         // Task title
         String title = StringUtils.EMPTY;
@@ -369,6 +417,12 @@ public class FormsServiceImpl implements IFormsService {
         if (!StringUtils.equals(ENDSTEP, nextStep)) {
             // Next step properties
             PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+
+            if (nextStepProperties == null) {
+                String errorMessage = bundle.getString("FORMS_BAD_NEXT_STEP", nextStep, actionId, currentStep);
+                throw new PortalException(errorMessage);
+            }
+
             title = nextStepProperties.getString("name");
             // Actors
             actors = getActors(model, nextStep, title, nextStepProperties);
@@ -393,7 +447,8 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
-                globalVariableValues, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep, currentStep);
+                globalVariableValues, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep, currentStep,
+                bundle);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -503,12 +558,14 @@ public class FormsServiceImpl implements IFormsService {
      * @param variables
      * @param actionProperties
      * @param actors
+     * @param bundle
      * @return
+     * @throws FormFilterException
      */
     private FormFilterContext callFilters(String modelWebId, String procedureInstanceUuid, String actionId, Map<String, String> variables,
             PropertyMap actionProperties, List<String> actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
-            String procedureInitiator, String startDate, String lastModified, String taskInitiator, String nextStep, String currentStep)
-            throws FormFilterException {
+            String procedureInitiator, String startDate, String lastModified, String taskInitiator, String nextStep, String currentStep,  Bundle bundle)
+            throws FormFilterException, PortalException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginManager();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -567,9 +624,17 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // on construit l'executor parent
-        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY, StringUtils.EMPTY);
+        FormFilterExecutor parentExecutor = new FormFilterExecutor(filtersByParentPathMap, StringUtils.EMPTY, StringUtils.EMPTY, bundle);
         // on execute les filtres de premier niveau
-        parentExecutor.executeChildren(filterContext);
+        try {
+            parentExecutor.executeChildren(filterContext);
+        } catch (PortalException e) {
+            String message = bundle.getString("FORMS_FILTER_ERROR_FILTER", e.getMessage());
+            throw new PortalException(message, e);
+        } catch (Exception e) {
+            String message = bundle.getString("FORMS_FILTER_ERROR");
+            throw new PortalException(message, e);
+        }
         return filterContext;
     }
 
@@ -992,6 +1057,8 @@ public class FormsServiceImpl implements IFormsService {
                 variables = new HashMap<String, String>();
             }
             String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+            Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+            Bundle bundle = this.bundleFactory.getBundle(locale);
             PropertyMap initActionProperties = null;
             PropertyMap currentStepProperties = null;
             String startDate = null;
@@ -1002,14 +1069,34 @@ public class FormsServiceImpl implements IFormsService {
             // retrieve correct properties according to type of provided document
             if (StringUtils.equals(document.getType(), "ProcedureModel")) {
                 String startingStep = document.getString("pcd:startingStep");
-                modelWebId = document.getString("ttc:webid");
-                PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
-                currentStepProperties = startingStepProperties;
+                if (StringUtils.isNotBlank(startingStep)) {
+                    modelWebId = document.getString("ttc:webid");
+                    PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
+                    if (startingStepProperties != null) {
+                        currentStepProperties = startingStepProperties;
+                    } else {
+                        String errorMessage = bundle.getString("FORMS_BAD_STARTING_STEP", startingStep);
+                        throw new PortalException(errorMessage);
+                    }
+                } else {
+                    String errorMessage = bundle.getString("FORMS_NO_STARTING_STEP");
+                    throw new PortalException(errorMessage);
+                }
             } else if (StringUtils.equals(document.getType(), "RecordFolder")) {
                 String startingStep = variables.get("pcd:startingStep");
-                modelWebId = document.getString("pcd:webIdParent");
-                PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
-                currentStepProperties = startingStepProperties;
+                if (StringUtils.isNotBlank(startingStep)) {
+                    modelWebId = document.getString("pcd:webIdParent");
+                    PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
+                    if (startingStepProperties != null) {
+                        currentStepProperties = startingStepProperties;
+                    } else {
+                        String errorMessage = bundle.getString("FORMS_BAD_STARTING_STEP", startingStep);
+                        throw new PortalException(errorMessage);
+                    }
+                } else {
+                    String errorMessage = bundle.getString("FORMS_NO_STARTING_STEP");
+                    throw new PortalException(errorMessage);
+                }
             } else {
                 PropertyMap instanceProperties = null;
                 if (StringUtils.equals(document.getType(), "ProcedureInstance")) {
@@ -1052,7 +1139,7 @@ public class FormsServiceImpl implements IFormsService {
                 initActionProperties = currentStepProperties.getMap("initAction");
                 if (initActionProperties != null) {
                     variables = callFilters(modelWebId, procedureInstanceUuid, null, variables, initActionProperties, null, null, portalControllerContext,
-                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null, null).getVariables();
+                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null, null, bundle).getVariables();
                 }
             }
         }

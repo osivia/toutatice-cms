@@ -2,6 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.api.forms;
 
 import java.util.Map;
 
+import org.osivia.portal.api.PortalException;
+
 /**
  * Form filter.
  */
@@ -50,6 +52,6 @@ public interface FormFilter {
      * @param context form filter context
      * @param executor form filter executor
      */
-    void execute(FormFilterContext context, FormFilterExecutor executor) throws FormFilterException;
+    void execute(FormFilterContext context, FormFilterExecutor executor) throws FormFilterException, PortalException;
 
 }
