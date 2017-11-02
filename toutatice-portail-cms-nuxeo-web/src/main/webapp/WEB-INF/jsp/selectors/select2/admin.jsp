@@ -46,7 +46,7 @@
                     <input type="checkbox" name="monoValued"
                         <c:if test="${configuration.monoValued}">checked="checked"</c:if>
                     >
-                    <span><op:translate key="SELECTOR_MONO_VALUED" /></span>
+                    <span><op:translate key="SELECTOR_TYPE_MONO_VALUED" /></span>
                 </label>
             </div>
         </div>
