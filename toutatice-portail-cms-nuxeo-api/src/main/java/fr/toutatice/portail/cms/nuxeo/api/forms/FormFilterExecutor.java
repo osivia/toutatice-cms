@@ -50,7 +50,7 @@ public class FormFilterExecutor {
                 try {
                     formFilter.execute(filterContext,
                             new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getId(), bundle));
-                } catch (PortalException e) {
+                } catch (FormFilterException | PortalException e) {
                     throw e;
                 } catch (Exception e) {
                     String msg = bundle.getString(formFilter.getLabelKey(), formFilter.getClass().getClassLoader());

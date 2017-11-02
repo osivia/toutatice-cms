@@ -27,7 +27,6 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -157,11 +156,6 @@ public class FormsServiceImpl implements IFormsService {
         Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
-        if (StringUtils.isBlank(actionId)) {
-            String errorMessage = bundle.getString("FORMS_NO_ACTION");
-            throw new PortalException(errorMessage);
-        }
-
         if (variables == null) {
             variables = new HashMap<String, String>();
         }
@@ -198,12 +192,7 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Action properties
-        PropertyMap actionProperties = this.getActionProperties(actionStepProperties, actionId);
-
-        if (actionProperties == null) {
-            String errorMessage = bundle.getString("FORMS_BAD_ACTION", actionId, startingStep);
-            throw new PortalException(errorMessage);
-        }
+        PropertyMap actionProperties = this.getActionProperties(actionStepProperties, actionId, startingStep, bundle);
 
         // Procedure initiator
         String procedureInitiator = "";
@@ -228,18 +217,24 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Task title
-        String title = StringUtils.EMPTY;
-        // Next step properties
-        PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
-
-        if (nextStepProperties == null) {
-            String errorMessage = bundle.getString("FORMS_BAD_NEXT_STEP", nextStep, actionId, startingStep);
-            throw new PortalException(errorMessage);
-        }
-
+        String title;
         // Actors
-        title = nextStepProperties.getString("name");
-        List<String> actors = getActors(model, nextStep, title, nextStepProperties);
+        List<String> actors;
+        if (StringUtils.equals(ENDSTEP, nextStep)) {
+            title = StringUtils.EMPTY;
+            actors = new ArrayList<>(0);
+        } else {
+            // Next step properties
+            PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
+
+            if (nextStepProperties == null) {
+                String errorMessage = bundle.getString("FORMS_BAD_NEXT_STEP", nextStep, actionId, startingStep);
+                throw new PortalException(errorMessage);
+            }
+
+            title = nextStepProperties.getString("name");
+            actors = getActors(model, nextStep, title, nextStepProperties);
+        }
 
         // UUID
         String uuid = UUID.randomUUID().toString();
@@ -362,11 +357,6 @@ public class FormsServiceImpl implements IFormsService {
         Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
-        if (StringUtils.isBlank(actionId)) {
-            String errorMessage = bundle.getString("FORMS_NO_ACTION");
-            throw new PortalException(errorMessage);
-        }
-
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
         // Procedure instance path
@@ -395,12 +385,7 @@ public class FormsServiceImpl implements IFormsService {
         PropertyMap previousStepProperties = this.getStepProperties(model, currentStep);
 
         // Action properties
-        PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId);
-
-        if (actionProperties == null) {
-            String errorMessage = bundle.getString("FORMS_BAD_ACTION", actionId, currentStep);
-            throw new PortalException(errorMessage);
-        }
+        PropertyMap actionProperties = this.getActionProperties(previousStepProperties, actionId, currentStep, bundle);
 
         // Next step
         String nextStep = actionProperties.getString("stepReference");
@@ -411,10 +396,13 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         // Task title
-        String title = StringUtils.EMPTY;
+        String title;
         // Actors
-        List<String> actors = ListUtils.EMPTY_LIST;
-        if (!StringUtils.equals(ENDSTEP, nextStep)) {
+        List<String> actors;
+        if (StringUtils.equals(ENDSTEP, nextStep)) {
+            title = StringUtils.EMPTY;
+            actors = new ArrayList<>(0);
+        } else {
             // Next step properties
             PropertyMap nextStepProperties = this.getStepProperties(model, nextStep);
 
@@ -424,7 +412,6 @@ public class FormsServiceImpl implements IFormsService {
             }
 
             title = nextStepProperties.getString("name");
-            // Actors
             actors = getActors(model, nextStep, title, nextStepProperties);
         }
 
@@ -701,12 +688,20 @@ public class FormsServiceImpl implements IFormsService {
      *
      * @param stepProperties step properties
      * @param actionId action identifier
+     * @param bundle internationalization bundle
+     * @param step step
      * @return properties
+     * @throws PortalException
      */
-    private PropertyMap getActionProperties(PropertyMap stepProperties, String actionId) {
+    private PropertyMap getActionProperties(PropertyMap stepProperties, String actionId, String step, Bundle bundle) throws PortalException {
         if (actionId == null) {
             // Default action identifier
             actionId = String.valueOf(stepProperties.get("actionIdDefault"));
+        }
+
+        if (StringUtils.isBlank(actionId)) {
+            String errorMessage = bundle.getString("FORMS_NO_ACTION");
+            throw new PortalException(errorMessage);
         }
 
         // Actions
@@ -720,6 +715,11 @@ public class FormsServiceImpl implements IFormsService {
                 properties = map;
                 break;
             }
+        }
+
+        if (properties == null) {
+            String errorMessage = bundle.getString("FORMS_BAD_ACTION", actionId, step);
+            throw new PortalException(errorMessage);
         }
 
         return properties;
