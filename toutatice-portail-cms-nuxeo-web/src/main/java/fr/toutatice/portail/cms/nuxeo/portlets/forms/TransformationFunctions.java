@@ -354,7 +354,12 @@ public class TransformationFunctions {
             result = null;
         } else {
             // URL
-            String url = portalUrlFactory.getCMSUrl(portalControllerContext, null, document.getPath(), null, null, null, null, null, null, null);
+            String url;
+            try {
+                url = portalUrlFactory.getPermaLink(portalControllerContext, null, null, document.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+            } catch (PortalException e) {
+                url = "#";
+            }
             // Title
             String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
             // Link
@@ -490,12 +495,13 @@ public class TransformationFunctions {
         // Portal controller context
         PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
 
-        String url = null;
+        // URL
+        String url;
         try {
             url = portalUrlFactory.getPermaLink(portalControllerContext, null, null, path, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
         } catch (PortalException e) {
+            url = "#";
         }
-
 
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", text);

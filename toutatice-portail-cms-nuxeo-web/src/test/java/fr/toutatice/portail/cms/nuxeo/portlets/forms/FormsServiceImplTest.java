@@ -159,7 +159,7 @@ public class FormsServiceImplTest {
 
         // Portal URL factory
         IPortalUrlFactory portalUrlFactory = EasyMock.createMock(IPortalUrlFactory.class);
-        EasyMock.expect(portalUrlFactory.getCMSUrl(portalControllerContext, null, DOCUMENT_PATH, null, null, null, null, null, null, null))
+        EasyMock.expect(portalUrlFactory.getPermaLink(this.portalControllerContext, null, null, DOCUMENT_PATH, IPortalUrlFactory.PERM_LINK_TYPE_CMS))
                 .andReturn(DOCUMENT_URL).anyTimes();
         EasyMock.expect(portalUrlFactory.getStartPortletInNewPage(EasyMock.anyObject(PortalControllerContext.class), EasyMock.anyObject(String.class),
                 EasyMock.anyObject(String.class), EasyMock.anyObject(String.class), EasyMock.anyObject(Map.class), EasyMock.anyObject(Map.class)))
