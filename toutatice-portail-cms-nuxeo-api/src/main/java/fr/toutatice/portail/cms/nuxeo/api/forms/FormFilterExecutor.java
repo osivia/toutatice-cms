@@ -47,14 +47,18 @@ public class FormFilterExecutor {
             Collections.sort(filters);
             for (FormFilterInstance formFilterI : filters) {
                 FormFilter formFilter = formFilterI.getFormFilter();
-                try {
-                    formFilter.execute(filterContext,
-                            new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getId(), bundle));
-                } catch (FormFilterException | PortalException e) {
-                    throw e;
-                } catch (Exception e) {
-                    String msg = bundle.getString(formFilter.getLabelKey(), formFilter.getClass().getClassLoader());
-                    throw new PortalException(msg, e);
+                if(formFilter!=null){
+                    try {
+                        formFilter.execute(filterContext,
+                                new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getId(), bundle));
+                    } catch (FormFilterException | PortalException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new PortalException(formFilterI.getName(), e);
+                    }
+                }else{
+                    String msg = bundle.getString("FORMS_FILTER_NOT_FOUND", formFilterI.getName());
+                    throw new PortalException(msg);
                 }
             }
         }

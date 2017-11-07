@@ -26,6 +26,9 @@ import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -74,8 +77,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetTasksCommand;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -615,11 +616,23 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         try {
             parentExecutor.executeChildren(filterContext);
+        } catch (FormFilterException e) {
+            throw e;
         } catch (PortalException e) {
-            String message = bundle.getString("FORMS_FILTER_ERROR_FILTER", e.getMessage());
-            throw new PortalException(message, e);
+            if (e.getCause() != null && e.getMessage() != null) {
+                String message = bundle.getString("FORMS_FILTER_ERROR_FILTER", e.getMessage());
+                log.error(message, e);
+                throw new PortalException(message, e);
+            } else if (e.getMessage() != null) {
+                log.error(e.getMessage(), e);
+                throw e;
+            } else {
+                log.error(e);
+                throw e;
+            }
         } catch (Exception e) {
             String message = bundle.getString("FORMS_FILTER_ERROR");
+            log.error(message, e);
             throw new PortalException(message, e);
         }
         return filterContext;
