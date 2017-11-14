@@ -19,6 +19,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -32,14 +34,14 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Site picture fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class SitePictureFragmentModule implements IFragmentModule {
+public class SitePictureFragmentModule extends FragmentModule {
 
     /** Site picture fragment identifier. */
     public static final String ID = "site_picture";
@@ -54,28 +56,14 @@ public class SitePictureFragmentModule implements IFragmentModule {
     /** View JSP name. */
     private static final String VIEW_JSP_NAME = "picture";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private SitePictureFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new SitePictureFragmentModule();
-        }
-        return instance;
+    public SitePictureFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
@@ -155,18 +143,20 @@ public class SitePictureFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        if ("admin".equals(request.getPortletMode().toString()) && "save".equals(request.getParameter(ActionRequest.ACTION_NAME))) {
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-        // Nuxeo path
-        window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
+            // Nuxeo path
+            window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
 
-        // Target path
-        window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
+            // Target path
+            window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
+        }
     }
 
 

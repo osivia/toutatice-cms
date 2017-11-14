@@ -1,5 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -20,7 +22,7 @@
         
             <!-- Documents -->
             <div class="no-ajax-link">
-                <jsp:include page="view-${style}.jsp" />
+                <ttc:include page="view-${style}.jsp" />
             </div>
             
             <!-- Pagination -->
@@ -30,7 +32,7 @@
         <c:otherwise>
             <p class="text-danger">
                 <i class="halflings halflings-exclamation-sign"></i>
-                <span>${error}</span>
+                <span><op:translate key="${error}" /></span>
             </p>
             
             <c:if test="${not empty errorMessage}">

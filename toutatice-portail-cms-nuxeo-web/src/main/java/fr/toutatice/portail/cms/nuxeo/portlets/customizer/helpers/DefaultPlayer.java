@@ -19,72 +19,55 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.nuxeo.ecm.automation.client.model.Document;
+import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.api.player.Player;
 
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 /**
  * Default player (use view document portlet).
  *
- * @see IPlayer
+ * @see INuxeoPlayerModule
  */
-public class DefaultPlayer implements IPlayer {
-
-    /** Default CMS customizer. */
-    private final DefaultCMSCustomizer customizer;
-
+public class DefaultPlayer implements INuxeoPlayerModule {
 
     /**
      * Constructor.
-     *
-     * @param customizer default CMS customizer
      */
-    public DefaultPlayer(DefaultCMSCustomizer customizer) {
+    public DefaultPlayer() {
         super();
-        this.customizer = customizer;
     }
 
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public CMSHandlerProperties play(CMSServiceCtx cmsContext, Document document) throws Exception {
-        Map<String, String> windowProperties = new HashMap<String, String>();
-        return this.play(cmsContext, document, windowProperties);
-    }
+	@Override
+    public Player getCMSPlayer(NuxeoDocumentContext documentContext) {
+        NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
 
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CMSHandlerProperties play(CMSServiceCtx cmsContext, Document document, Map<String, String> windowProperties) throws Exception {
-        windowProperties.put(Constants.WINDOW_PROP_VERSION, cmsContext.getDisplayLiveVersion());
-        windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, cmsContext.getHideMetaDatas());
-        windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
+		Map<String, String> windowProperties = new HashMap<String, String>();
+        windowProperties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
+        windowProperties.put("osivia.ajaxLink", "1");
+        windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
+        windowProperties.put(Constants.WINDOW_PROP_URI, publicationInfos.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
 
-        CMSHandlerProperties linkProps = new CMSHandlerProperties();
+        String hideMetadatas = documentContext.getDocument().getString("ttc:hideMetadatas");
+        if(Boolean.valueOf(hideMetadatas)) {
+			windowProperties.put(ViewDocumentPortlet.HIDE_METADATA_WINDOW_PROPERTY, "1");
+        }
+
+        Player linkProps = new Player();
         linkProps.setWindowProperties(windowProperties);
         linkProps.setPortletInstance("toutatice-portail-cms-nuxeo-viewDocumentPortletInstance");
 
         return linkProps;
-    }
-
-
-    /**
-     * Getter for customizer.
-     * 
-     * @return the customizer
-     */
-    public DefaultCMSCustomizer getCustomizer() {
-        return customizer;
-    }
+	}
 
 }

@@ -22,11 +22,15 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.MimeType;
+
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.FileDocumentType;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.core.cms.CMSItemType;
 
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -97,7 +101,18 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // Path
         dto.setPath(document.getPath());
         // Type
-        dto.setType(this.getType(document.getType()));
+        DocumentType type = this.getType(document.getType());
+        dto.setType(type);
+        // Icon
+        if (type != null) {
+            String icon;
+            if (type.isFile()) {
+                icon = StringUtils.defaultIfEmpty(this.getIcon(document), type.getIcon());
+            } else {
+                icon = type.getIcon();
+            }
+            dto.setIcon(icon);
+        }
         // Properties
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
@@ -191,13 +206,95 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @param type document type name
      * @return CMS item type
      */
-    private CMSItemType getType(String type) {
+    private DocumentType getType(String type) {
         // CMS customizer
         INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
 
         // CMS item types
-        Map<String, CMSItemType> types = cmsCustomizer.getCMSItemTypes();
+        Map<String, DocumentType> types = cmsCustomizer.getDocumentTypes();
         return types.get(type);
+    }
+
+
+    /**
+     * Get document icon.
+     * 
+     * @param document document
+     * @return icon, may be null
+     */
+    private String getIcon(Document document) {
+        // Document properties
+        PropertyMap properties = document.getProperties();
+        // File content
+        PropertyMap fileContent = properties.getMap("file:content");
+
+        // Icon
+        String icon;
+        if (fileContent == null) {
+            icon = null;
+        } else {
+            // Mime type
+            String mimeType = fileContent.getString("mime-type");
+
+            icon = this.getIcon(mimeType);
+        }
+
+        return icon;
+    }
+
+
+    /**
+     * Get icon from mime type representation.
+     * 
+     * @param mimeType mime type representation
+     * @return icon, may be null
+     */
+    public String getIcon(String mimeType) {
+        // Mime type
+        MimeType mimeTypeObject;
+        try {
+            mimeTypeObject = new MimeType(mimeType);
+        } catch (Exception e) {
+            mimeTypeObject = null;
+        }
+
+        return this.getIcon(mimeTypeObject);
+    }
+
+
+    /**
+     * Get icon from mime type.
+     * 
+     * @param mimeType mime type
+     * @return icon, may be null
+     */
+    public String getIcon(MimeType mimeType) {
+        // CMS customizer
+        INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
+
+        // Icon
+        String icon;
+
+        if (mimeType == null) {
+            icon = null;
+        } else {
+            // File document types
+            List<FileDocumentType> types = cmsCustomizer.getFileDocumentTypes();
+
+            icon = null;
+            for (FileDocumentType type : types) {
+                if (StringUtils.equals(mimeType.getPrimaryType(), type.getMimePrimaryType())) {
+                    if (type.getMimeSubTypes().isEmpty()) {
+                        icon = type.getIcon();
+                    } else if (type.getMimeSubTypes().contains(mimeType.getSubType())) {
+                        icon = type.getIcon();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return icon;
     }
 
 }

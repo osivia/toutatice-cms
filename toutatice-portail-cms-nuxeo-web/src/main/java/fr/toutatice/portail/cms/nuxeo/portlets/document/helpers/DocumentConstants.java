@@ -24,6 +24,26 @@ public interface DocumentConstants {
     
     /** Indicates if document is a folder. */
     String FOLDERISH_FACET = "Folderish";
+    /** Indicates if document is a remote proxy. */
+    String REMOTE_PROXY_FACET = "isRemoteProxy";
+    /** Indicates if document is a live in a publish space. */
+    String LOCAL_PUBLISH_LIVE_FACET = "isLocalPublishLive";
+    /** Indicates if document is a draft of collaborative space. */
+    String DRAFT_FACET = "OttcDraft";
+    /** Indicates if document has a draft of collaborative space. */
+    String CHECKINED_FACET = "OttcCheckedIn";
+    
+    /** WebId property key. */
+    String WEBID = "ttc:webid";
+    /** Draft id property key. */
+    String DRAFT_ID = "ottcChk:draftId";
+    /** Draft path property key. */
+    String DRAFT_PATH = "ottcChk:draftPath";
+    /** Checkined document webId property key on Draft. */
+    String CHECKINED_DOC_ID = "ottcDft:checkinedDocId";
+    /** Draft schema. */
+    String DRAFT_SCHEMA = "ottcDraft";
+     
     
     /** Approved document state. */
     String APPROVED_DOC_STATE = "approved";
@@ -32,5 +52,8 @@ public interface DocumentConstants {
     String VALIDATE_ONLINE_TASK_NAME = "validate-online";
     /** Validate remote publication task name of a document (if any). */
     String VALIDATE_REMOTE_ONLINE_TASK_NAME = "org.nuxeo.ecm.platform.publisher.task.CoreProxyWithWorkflowFactory";
+    
+    /** Suffix of local proxies. */
+    String LOCAL_PROXIES_SUFFIX = ".proxy";
 
 }

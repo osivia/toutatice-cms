@@ -16,6 +16,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -31,14 +33,15 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Document attachment picture fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class DocumentPictureFragmentModule implements IFragmentModule {
+public class DocumentPictureFragmentModule extends FragmentModule {
 
     /** Document picture fragment identifier. */
     public static final String ID = "document_picture";
@@ -57,28 +60,14 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
     /** View JSP name. */
     private static final String VIEW_JSP_NAME = "picture";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
+     * Constructor.
+     * 
+     * @param portletContext portlet context
      */
-    private DocumentPictureFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
-     *
-     * @return singleton instance
-     */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new DocumentPictureFragmentModule();
-        }
-        return instance;
+    public DocumentPictureFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
@@ -181,7 +170,9 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
      * @return document with input path
      */
     protected Document setAsCurrentDocNGet(NuxeoController nuxeoController, String path){
-        Document document = nuxeoController.fetchDocument(path);
+        // Nuxeo document
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+        Document document = documentContext.getDocument();
         nuxeoController.setCurrentDoc(document);
         return document;
     }
@@ -225,24 +216,26 @@ public class DocumentPictureFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        if ("admin".equals(request.getPortletMode().toString()) && "save".equals(request.getParameter(ActionRequest.ACTION_NAME))) {
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-        // Nuxeo path
-        window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
+            // Nuxeo path
+            window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
 
-        // Property name
-        window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
+            // Property name
+            window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
 
-        // Scope
-        window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
+            // Scope
+            window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
 
-        // Target path
-        window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
+            // Target path
+            window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
+        }
     }
 
 

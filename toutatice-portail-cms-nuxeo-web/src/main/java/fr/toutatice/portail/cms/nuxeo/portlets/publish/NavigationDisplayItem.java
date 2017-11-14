@@ -84,7 +84,7 @@ public class NavigationDisplayItem {
     private String[] getAcceptedTypes(CMSItem item) {
         String[] acceptedTypes = null;
         if ((item != null) && (item.getType() != null)) {
-            List<String> types = item.getType().getPortalFormSubTypes();
+            List<String> types = item.getType().getSubtypes();
             if (types != null) {
                 acceptedTypes = types.toArray(new String[types.size()]);
             }

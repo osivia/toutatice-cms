@@ -7,17 +7,57 @@
     version="2.0">
 
     <portlet>
-        <portlet-name>toutatice-portail-cms-injection-testPortlet</portlet-name>
-        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.InjectionTestPortlet</portlet-class>
+        <portlet-name>toutatice-cms-test-portlet</portlet-name>
+        <portlet-class>fr.toutatice.portail.cms.test.common.TestPortlet</portlet-class>
+        
         <expiration-cache>180</expiration-cache>
 
         <supports>
             <mime-type>text/html</mime-type>
             <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
         </supports>
+        
         <portlet-info>
-            <title>Injection test portlet</title>
+            <title>Test</title>
         </portlet-info>
     </portlet>
+    
+    <portlet>
+        <portlet-name>toutatice-cms-test-spring-portlet</portlet-name>
+        <portlet-class>org.springframework.web.portlet.DispatcherPortlet</portlet-class>
+
+        <init-param>
+            <name>contextConfigLocation</name>
+            <value>/WEB-INF/toutatice-cms-test-spring-portlet.xml</value>
+        </init-param>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>admin</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>Test (SpringFramework)</title>
+        </portlet-info>
+    </portlet>
+    
+    <portlet>
+		<portlet-name>toutatice-cms-test-JSPPlugin</portlet-name>
+		<portlet-class>fr.toutatice.portail.cms.test.plugin.JSPPlugin</portlet-class>
+		<expiration-cache>180</expiration-cache>
+
+		<supports>
+			<mime-type>text/html</mime-type>
+		</supports>
+
+		<portlet-info>
+			<title>JSPPlugin plugin</title>
+		</portlet-info>
+	</portlet>    
+    
 
 </portlet-app>

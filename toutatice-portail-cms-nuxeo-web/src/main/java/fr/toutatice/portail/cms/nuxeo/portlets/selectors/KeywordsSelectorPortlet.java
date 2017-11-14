@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -85,27 +86,20 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 // Save
 
                 // Selector identifier
-                String identifier = request.getParameter("selectorId");
-                if (StringUtils.isNotBlank(identifier)) {
-                    window.setProperty("osivia.selectorId", identifier);
-                } else {
-                    window.setProperty("osivia.selectorId", null);
-                }
+                String selectorId = StringUtils.trimToNull(request.getParameter("selectorId"));
+                window.setProperty("osivia.selectorId", selectorId);
 
                 // Selector label
-                String label = request.getParameter("libelle");
-                if (StringUtils.isNotBlank(label)) {
-                    window.setProperty("osivia.libelle", label);
-                } else {
-                    window.setProperty("osivia.libelle", null);
-                }
+                String selectorLabel = StringUtils.trimToNull(request.getParameter("selectorLabel"));
+                window.setProperty("osivia.libelle", selectorLabel);
 
-                // Mono-valued indicator
-                if ("1".equals(request.getParameter("keywordMonoValued"))) {
-                    window.setProperty("osivia.keywordMonoValued", "1");
-                } else {
-                    window.setProperty("osivia.keywordMonoValued", null);
-                }
+                // Selector type
+                String selectorType = StringUtils.trimToNull(request.getParameter("selectorType"));
+                window.setProperty("osivia.keywordMonoValued", selectorType);
+
+                // Prevent Ajax refresh indicator
+                boolean preventAjaxRefresh = "2".equals(selectorType);
+                window.setProperty(InternalConstants.ATTR_WINDOW_PREVENT_AJAX_REFRESH, String.valueOf(preventAjaxRefresh));
 
                 // Keywords initialization
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
@@ -145,7 +139,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                         selectors.put(selectorId, keywords);
                     }
 
-                    if ("1".equals(window.getProperty("osivia.keywordMonoValued"))) {
+                    if ("1".equals(window.getProperty("osivia.keywordMonoValued")) || "2".equals(window.getProperty("osivia.keywordMonoValued"))) {
                         // On ne conserve qu'une valeur dans le cas d'un sélecteur mono-valué.
                         keywords.clear();
                     }
@@ -191,38 +185,33 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
     /**
      * Admin view display.
      *
-     * @param req request
-     * @param res response
+     * @param request render request
+     * @param response render response
      * @throws PortletException
      * @throws IOException
      */
     @RenderMode(name = "admin")
-    public void doAdmin(RenderRequest req, RenderResponse res) throws IOException, PortletException {
-        res.setContentType("text/html");
-        PortletRequestDispatcher rd = null;
+    public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        PortalWindow window = WindowFactory.getWindow(req);
+        // Selector identifier
+        String selectorId = StringUtils.trimToEmpty(window.getProperty("osivia.selectorId"));
+        request.setAttribute("selectorId", selectorId);
 
-        String selectorId = window.getProperty("osivia.selectorId");
-        if (selectorId == null) {
-            selectorId = "";
-        }
-        req.setAttribute("selectorId", selectorId);
+        // Selector label
+        String selectorLabel = StringUtils.trimToEmpty(window.getProperty("osivia.libelle"));
+        request.setAttribute("selectorLabel", selectorLabel);
 
-        String libelle = window.getProperty("osivia.libelle");
-        if (libelle == null) {
-            libelle = "";
-        }
-        req.setAttribute("libelle", libelle);
+        // Selector type
+        String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
+        request.setAttribute("selectorType", selectorType);
 
-        String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
-        if (keywordMonoValued == null) {
-            keywordMonoValued = "0";
-        }
-        req.setAttribute("keywordMonoValued", keywordMonoValued);
-
-        rd = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
-        rd.include(req, res);
+        
+        // Request dispatcher
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
+        response.setContentType("text/html");
+        dispatcher.include(request, response);
     }
 
 
@@ -236,23 +225,24 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         try {
             response.setContentType("text/html");
 
+            // Window
             PortalWindow window = WindowFactory.getWindow(request);
 
+            // Selector identifier
             String selectorId = window.getProperty("osivia.selectorId");
 
-            String libelle = window.getProperty("osivia.libelle");
-            request.setAttribute("libelle", libelle);
+            // Selector label
+            String selectorLabel = window.getProperty("osivia.libelle");
+            request.setAttribute("selectorLabel", selectorLabel);
 
-            String keywordMonoValued = window.getProperty("osivia.keywordMonoValued");
-            request.setAttribute("keywordMonoValued", keywordMonoValued);
+            // Selector type
+            String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
+            request.setAttribute("selectorType", selectorType);
 
-            String keyword = request.getParameter("keyword");
 
             if (selectorId != null) {
                 // Get public parameter
-
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
-
                 List<String> selector = selectors.get(selectorId);
                 if (selector != null) {
                     String[] keywords = new String[selector.size()];
@@ -261,16 +251,15 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     request.setAttribute("keywords", ArrayUtils.EMPTY_STRING_ARRAY);
                 }
 
+                // Keyword
+                String keyword = request.getParameter("keyword");
                 request.setAttribute("keyword", keyword);
 
-
                 this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/view.jsp").include(request, response);
-
             } else {
                 response.getWriter().print("<h2>Identifiant non défini</h2>");
                 response.getWriter().close();
             }
-
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (PortletException e) {

@@ -41,7 +41,7 @@ public class LockCommand extends EcmCommand {
 	public LockCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-		super(EcmCommonCommands.lock.toString(), ReloadAfterCommandStrategy.refreshPage, "Document.Lock", null);
+        super(EcmCommonCommands.lock.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.Lock", null);
 		
 		this.itlzService = itlzService;
 		this.notifService = notifService;

@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.publish;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -53,7 +55,6 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.context.ControllerContextAdapter;
@@ -84,6 +85,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.template";
     /** Force navigation window property name. */
     private static final String FORCE_NAVIGATION_WINDOW_PROPERTY = "osivia.cms.forceNavigation";
+    /** Type filter window property name. */
+    private static final String TYPE_FILTER_WINDOW_PROPERTY = "osivia.cms.type";
 
     /** Default max levels. */
     private static final int DEFAULT_MAX_LEVELS = 3;
@@ -93,8 +96,8 @@ public class MenuPortlet extends CMSPortlet {
     private static final int DEFAULT_OPEN_LEVELS = 1;
 
 
-    /** View JSP path prefix. */
-    private static final String PATH_VIEW_PREFIX = "/WEB-INF/jsp/publish/view";
+    /** View JSP path. */
+    private static final String PATH_VIEW = "/WEB-INF/jsp/publish/view.jsp";
     /** Admin JSP path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/publish/admin.jsp";
 
@@ -155,14 +158,15 @@ public class MenuPortlet extends CMSPortlet {
             if ("drop".equals(action)) {
                 // Drop action
 
-                // Source
-                String sourceId = request.getParameter("sourceId");
-                // Target
+                // Source identifiers
+                List<String> sourceIds = Arrays.asList(StringUtils.split(request.getParameter("sourceIds"), ","));
+                // Target identifier
                 String targetId = request.getParameter("targetId");
+
                 String targetPath = this.getAuxiliaryPath(nuxeoController, targetId);
 
                 // Move document command
-                INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
+                INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
                 try {
                     nuxeoController.executeNuxeoCommand(command);
 
@@ -173,12 +177,24 @@ public class MenuPortlet extends CMSPortlet {
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
 
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_SUCCESS");
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_SUCCESS_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_SUCCESS_MESSAGE", sourceIds.size());
+                    }
+                    
+                    
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                 } catch (NuxeoException e) {
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_ERROR");
-                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_WARNING_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_WARNING_MESSAGE", sourceIds.size());
+                    }
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
 
 
@@ -273,6 +289,12 @@ public class MenuPortlet extends CMSPortlet {
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
 
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+
+        // Type filter
+        String typeFilter = window.getProperty(TYPE_FILTER_WINDOW_PROPERTY);
+
         if ("lazyLoading".equals(request.getParameter("action"))) {
             // Lazy loading
 
@@ -295,13 +317,16 @@ public class MenuPortlet extends CMSPortlet {
 
                     for (CMSItem item : items) {
                         if ("1".equals(item.getProperties().get("menuItem"))) {
-                            // Nuxeo document
-                            Document document = (Document) item.getNativeItem();
-                            // Nuxeo document link
-                            Link link = nuxeoController.getLink(document, "menu");
+                            DocumentType type = item.getType();
+                            if ((typeFilter == null) || ((type != null) && (typeFilter.equals(type.getName())))) {
+                                // Nuxeo document
+                                Document document = (Document) item.getNativeItem();
+                                // Nuxeo document link
+                                Link link = nuxeoController.getLink(document, "menu");
 
-                            NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, false, item);
-                            children.add(navigationDisplayItemChild);
+                                NavigationDisplayItem navigationDisplayItemChild = new NavigationDisplayItem(document, link, false, false, false, item);
+                                children.add(navigationDisplayItemChild);
+                            }
                         }
                     }
 
@@ -347,12 +372,12 @@ public class MenuPortlet extends CMSPortlet {
     private void writeNavigationDisplayItem(PrintWriter printWriter, NavigationDisplayItem item) {
         boolean browsable = false;
         String acceptedTypes = null;
-        String glyph = null;
+        String icon = null;
         if ((item.getNavItem() != null) && (item.getNavItem().getType() != null)) {
-            CMSItemType cmsItemType = item.getNavItem().getType();
+            DocumentType cmsItemType = item.getNavItem().getType();
             browsable = cmsItemType.isBrowsable();
-            acceptedTypes = StringUtils.join(cmsItemType.getPortalFormSubTypes(), ",");
-            glyph = cmsItemType.getGlyph();
+            acceptedTypes = StringUtils.join(cmsItemType.getSubtypes(), ",");
+            icon = cmsItemType.getIcon();
         }
 
 
@@ -393,9 +418,9 @@ public class MenuPortlet extends CMSPortlet {
         }
 
         // Glyph
-        if ((glyph != null) && (!glyph.contains("folder"))) {
+        if ((icon != null) && (!icon.contains("folder"))) {
             printWriter.write("\"iconclass\" : \"");
-            printWriter.write(glyph);
+            printWriter.write(icon);
             printWriter.write("\", ");
         }
 
@@ -470,7 +495,7 @@ public class MenuPortlet extends CMSPortlet {
             PortalWindow window = WindowFactory.getWindow(request);
 
             // Template
-            String template = window.getProperty(TEMPLATE_WINDOW_PROPERTY);
+            request.setAttribute("template", window.getProperty(TEMPLATE_WINDOW_PROPERTY));
 
             // Start level
             request.setAttribute("startLevel", options.getStartLevel());
@@ -485,19 +510,17 @@ public class MenuPortlet extends CMSPortlet {
                         response.setTitle(displayItem.getTitle());
                     }
                     request.setAttribute("displayItem", displayItem);
+
+                    if (CollectionUtils.isEmpty(displayItem.getChildren())) {
+                        request.setAttribute("osivia.emptyResponse", "1");
+                    }
                 }
             }
 
             response.setContentType("text/html");
 
             // Dispatcher
-            String requestDispatcherPath;
-            if (StringUtils.isEmpty(template)) {
-                requestDispatcherPath = PATH_VIEW_PREFIX + ".jsp";
-            } else {
-                requestDispatcherPath = PATH_VIEW_PREFIX + "-" + template + ".jsp";
-            }
-            this.getPortletContext().getRequestDispatcher(requestDispatcherPath).include(request, response);
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (PortletException e) {
@@ -672,7 +695,7 @@ public class MenuPortlet extends CMSPortlet {
         }
 
         // v2.0.9 : sort for consistent view with file browser
-        CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(document.getType());
+        DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(document.getType());
         if ((cmsItemType == null) || !cmsItemType.isOrdered()) {
             Comparator<NavigationDisplayItem> comparator = new MenuComparator(nuxeoController);
             Collections.sort(navigationDisplayItemChildren, comparator);
@@ -762,7 +785,7 @@ public class MenuPortlet extends CMSPortlet {
 
     /**
      * Check if item is selected regarding paths.
-     * 
+     *
      * @param currentPath current path, may be null
      * @param itemPath item path
      * @return true if item is selected

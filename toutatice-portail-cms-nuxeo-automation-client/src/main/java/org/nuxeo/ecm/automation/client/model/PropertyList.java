@@ -186,4 +186,13 @@ public class PropertyList implements Serializable {
     public String toString() {
         return list.toString();
     }
+
+	/**
+	 * @return the list
+	 */
+	public List<Object> getList() {
+		return list;
+	}
+    
+    
 }

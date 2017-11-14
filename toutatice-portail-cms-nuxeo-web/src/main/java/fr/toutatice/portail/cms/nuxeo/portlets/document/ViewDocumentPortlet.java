@@ -13,14 +13,20 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
+import javax.portlet.PortletRequest;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -29,22 +35,19 @@ import javax.portlet.WindowState;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.directory.IDirectoryServiceLocator;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
@@ -56,32 +59,36 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.CMSItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.ContextualizationHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.AddCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.CreateChildCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.DeleteCommentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.comments.GetCommentsCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.FormsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
+import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
 
 /**
  * View Nuxeo document portlet.
@@ -90,36 +97,52 @@ import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    /** Path window property name. */
+    /**
+	 * 
+	 */
+	private static final String HOST_JOKER = "__HOST__";
+	/** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
+    /** Display only remote sections indicator window property name. */
+    public static final String ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY = "osivia.document.onlyRemoteSections";
+    /** Indicates if portlet is in remote sections list page. */
+    public static final String REMOTE_SECTIONS_PAGE_WINDOW_PROPERTY = "osivia.document.remoteSectionsPage";
     /** Hide metadata indicator window property name. */
     public static final String HIDE_METADATA_WINDOW_PROPERTY = InternalConstants.METADATA_WINDOW_PROPERTY;
     /** Hide attachment indicator window property name. */
     public static final String HIDE_ATTACHMENTS_WINDOW_PROPERTY = "osivia.document.hideAttachments";
-
     /** Admin path. */
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
     /** View path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
 
 
+    /** CMS service. */
+    private CMSService cmsService;
     /** Nuxeo service. */
     private INuxeoService nuxeoService;
+
+
     /** Document DAO. */
-    private DocumentDAO documentDAO;
+    private final DocumentDAO documentDao;
     /** Document comment DAO. */
-    private CommentDAO commentDAO;
+    private final CommentDAO commentDao;
     /** Document published documents DAO. */
-    private RemotePublishedDocumentDAO publishedDocumentsDAO;
+    private final RemotePublishedDocumentDAO publishedDocumentsDao;
 
 
     /**
-     * Default constructor.
+     * Constructor.
      */
     public ViewDocumentPortlet() {
         super();
+
+        // DAO
+        this.documentDao = DocumentDAO.getInstance();
+        this.commentDao = CommentDAO.getInstance();
+        this.publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
     }
 
 
@@ -130,58 +153,64 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
+        // Portlet context
+        PortletContext portletContext = this.getPortletContext();
+
         try {
             // Nuxeo service
-            this.nuxeoService = (INuxeoService) this.getPortletContext().getAttribute("NuxeoService");
+            this.nuxeoService = (INuxeoService) portletContext.getAttribute("NuxeoService");
             if (this.nuxeoService == null) {
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
             }
 
+            // CMS service
+            this.cmsService = new CMSService(portletContext);
+            ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
+            cmsLocator.register(this.cmsService);
+
             // CMS customizer
-            CMSCustomizer customizer = new CMSCustomizer(this.getPortletContext());
+            CMSCustomizer customizer = new CMSCustomizer(portletContext, this.cmsService);
+            this.cmsService.setCustomizer(customizer);
             this.nuxeoService.registerCMSCustomizer(customizer);
 
-            // DAO
-            this.documentDAO = DocumentDAO.getInstance();
-            this.commentDAO = CommentDAO.getInstance();
-            this.publishedDocumentsDAO = RemotePublishedDocumentDAO.getInstance();
+            // Nuxeo tag service
+            INuxeoTagService tagService = new NuxeoTagService();
+            this.registerService(this.nuxeoService.getTagService(), tagService);
 
-            // CMS service
-            CMSService cmsService = new CMSService(this.getPortletContext());
-            ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
-            cmsLocator.register(cmsService);
-            cmsService.setCustomizer(customizer);
-            customizer.setCmsService(cmsService);
+            // Forms service
+            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
+            this.registerService(this.nuxeoService.getFormsService(), formsService);
 
-
-            
-            // Directory service locator
-            IDirectoryServiceLocator directoryServiceLocator = Locator.findMBean(IDirectoryServiceLocator.class, IDirectoryServiceLocator.MBEAN_NAME);
-            customizer.setDirectoryService(directoryServiceLocator.getDirectoryService());
-
-            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
-            customizer.setInternationalizationService(internationalizationService);
-            INotificationsService notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
-            customizer.setNotificationsService(notificationsService);
-            
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
-            
-            for(EcmCommand command : customizer.getEcmCommands().values()) {
-            	ecmCmdService.registerCommand(command.getCommandName(), command);
+
+            for (EcmCommand command : customizer.getEcmCommands().values()) {
+                ecmCmdService.registerCommand(command.getCommandName(), command);
             }
-            
-            
+
+
             // v1.0.16
-            ThumbnailServlet.setPortletContext(this.getPortletContext());
-            SitePictureServlet.setPortletContext(this.getPortletContext());
-            AvatarServlet.setPortletContext(this.getPortletContext());
-            BinaryServlet.setPortletContext(this.getPortletContext());
+            ThumbnailServlet.setPortletContext(portletContext);
+            SitePictureServlet.setPortletContext(portletContext);
+            AvatarServlet.setPortletContext(portletContext);
+            BinaryServlet.setPortletContext(portletContext);
         } catch (PortletException e) {
             throw e;
         } catch (Exception e) {
             throw new PortletException(e);
         }
+    }
+
+
+    /**
+     * Register service.
+     *
+     * @param proxy proxy
+     * @param instance instance
+     */
+    private void registerService(Object proxy, Object instance) {
+        NuxeoServiceInvocationHandler invocationHandler = (NuxeoServiceInvocationHandler) Proxy.getInvocationHandler(proxy);
+        invocationHandler.setInstance(instance);
     }
 
 
@@ -223,40 +252,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
         } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            // Comment identifier
-            String id = request.getParameter("id");
-            // Comment content
-            String content = request.getParameter("content");
-
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            // Document path
-            String path = window.getProperty(PATH_WINDOW_PROPERTY);
-
-            if (path != null) {
-                // Fetch Nuxeo document
-                Document document = nuxeoController.fetchDocument(path);
-
-                if ("addComment".equals(action)) {
-                    // Add comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new AddCommentCommand(document, content, null, null);
-                    nuxeoController.executeNuxeoCommand(command);
-                } else if ("replyComment".equals(action)) {
-                    // Reply comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new CreateChildCommentCommand(document, id, content, null, null);
-                    nuxeoController.executeNuxeoCommand(command);
-                } else if ("deleteComment".equals(action)) {
-                    // Delete comment
-
-                    // Nuxeo command
-                    INuxeoCommand command = new DeleteCommentCommand(document, id);
-                    nuxeoController.executeNuxeoCommand(command);
-                }
-            }
+            // Comment action
+            this.processCommentAction(request, response);
         }
     }
 
@@ -303,7 +300,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("nuxeoController", nuxeoController);
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -320,7 +316,19 @@ public class ViewDocumentPortlet extends CMSPortlet {
             path = nuxeoController.getComputedPath(path);
 
             if (StringUtils.isNotBlank(path)) {
+                // Document context
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+
+                // Maximized indicator
                 boolean maximized = WindowState.MAXIMIZED.equals(request.getWindowState());
+
+                // Display only remote sections indicator
+                boolean onlyRemoteSections = BooleanUtils.toBoolean(window.getProperty(ONLY_REMOTE_SECTIONS_WINDOW_PROPERTY));
+                request.setAttribute("onlyRemoteSections", onlyRemoteSections);
+
+                // Remote sections page indicator
+                boolean remoteSectionsPage = BooleanUtils.toBoolean(window.getProperty(REMOTE_SECTIONS_PAGE_WINDOW_PROPERTY));
+                request.setAttribute("remoteSectionsPage", remoteSectionsPage);
 
                 // Display only description indicator
                 boolean onlyDescription = BooleanUtils.toBoolean(window.getProperty(ONLY_DESCRIPTION_WINDOW_PROPERTY));
@@ -336,13 +344,28 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 boolean attachments = BooleanUtils.toBoolean(window.getProperty(HIDE_ATTACHMENTS_WINDOW_PROPERTY), null, "1");
                 request.setAttribute("attachments", attachments);
 
-                // Fetch document
-                Document document = nuxeoController.fetchDocument(path);
+                // Document
+                Document document = documentContext.getDocument();
                 nuxeoController.setCurrentDoc(document);
 
+                // View dispatched JSP
+                String dispatchJsp = window.getProperty("osivia.document.dispatch.jsp");
+                if (StringUtils.isEmpty(dispatchJsp)) {
+                    dispatchJsp = this.getDispatchJspName(nuxeoController, document, null);
+                }
+                request.setAttribute("dispatchJsp", dispatchJsp);
+
+                // View dispatched extra JSP
+                String dispatchExtraJsp = this.getDispatchJspName(nuxeoController, document, "extra");
+                request.setAttribute("dispatchExtraJsp", dispatchExtraJsp);
+
+                // View dispatched layout JSP
+                String dispatchLayoutJsp = this.getDispatchJspName(nuxeoController, document, "layout");
+                request.setAttribute("dispatchLayoutJsp", dispatchLayoutJsp);
+
                 // DTO
-                DocumentDTO documentDTO = this.documentDAO.toDTO(document);
-                request.setAttribute("document", documentDTO);
+                DocumentDTO documentDto = this.documentDao.toDTO(document);
+                request.setAttribute("document", documentDto);
 
                 // Title
                 String title = document.getTitle();
@@ -350,31 +373,48 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     response.setTitle(title);
                 }
 
-                if (!onlyDescription || maximized) {
+                if (onlyRemoteSections && maximized) {
+                    // Remote Published documents
+                    this.generatePublishedDocumentsInfos(nuxeoController, documentContext, documentDto, true);
+                } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
 
                     // Attachments
-                    this.generateAttachments(nuxeoController, document, documentDTO);
-                    
-                    // Remote Published documents 
-                    this.generatePublishedDocumentsInfos(nuxeoController, document, documentDTO);
+                    this.generateAttachments(nuxeoController, document, documentDto);
 
-                    // Comments
+                    // Remote Published documents
+                    this.generatePublishedDocumentsInfos(nuxeoController, documentContext, documentDto, false);
+
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                        // CMS service
-                        ICMSService cmsService = NuxeoController.getCMSService();
+                        // Publication informations
+                        CMSPublicationInfos publicationInfos = this.cmsService.getPublicationInfos(cmsContext, path);
 
-                        // Publication infos
-                        CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+                        if (publicationInfos.isLiveSpace()) {
+                            // Extended document informations
+                            ExtendedDocumentInfos extendedDocumentInfos;
+                            if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
+                                extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+                            } else {
+                                extendedDocumentInfos = null;
+                            }
 
-                        boolean commentsEnabled = this.areCommentsEnabled(cmsService, publicationInfos, cmsContext);
+
+                            // Validation state
+                            this.addValidationState(document, documentDto, extendedDocumentInfos);
+                        }
+
+                        // Comments
+                        boolean commentsEnabled = this.areCommentsEnabled(this.cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
-                            documentDTO.setCommentable(true);
+                            documentDto.setCommentable(true);
 
                             // Comments
-                            this.generateComments(nuxeoController, document, documentDTO);
+                            this.generateComments(nuxeoController, document, documentDto);
                         }
+
+                        // Nuxeo Drive
+                        this.handleDriveEdition(nuxeoController.getPortalCtx(), document, documentDto, publicationInfos);
                     }
                 }
             }
@@ -392,31 +432,145 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
     /**
+     * Get dispatch JSP name.
+     *
+     * @param nuxeoController Nuxeo controller
+     * @param document Nuxeo document
+     * @param extra dispatch extra JSP indicator
+     * @return JSP name
+     * @throws CMSException
+     */
+    private String getDispatchJspName(NuxeoController nuxeoController, Document document, String suffix) throws CMSException {
+        // CMS customizer
+        INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
+        // Portlet request
+        PortletRequest request = nuxeoController.getRequest();
+
+        // Document type
+        String type = StringUtils.lowerCase(document.getType());
+
+        // JSP path
+        StringBuilder path = new StringBuilder();
+        path.append("/WEB-INF/jsp/document/view-");
+        path.append(type);
+        if (StringUtils.isNotEmpty(suffix)) {
+            path.append("-");
+            path.append(suffix);
+        }
+        path.append(".jsp");
+        // JSP name
+        String name = customizer.getJSPName(path.toString(), this.getPortletContext(), request);
+        // JSP real path
+        String realPath = this.getPortletContext().getRealPath(name);
+        // JSP file
+        File file = new File(realPath);
+
+        // Dispatch JSP name
+        String dispatchJspName;
+
+        if (file.exists()) {
+            dispatchJspName = type;
+        } else {
+            dispatchJspName = "default";
+        }
+
+        return dispatchJspName;
+    }
+
+
+    /**
      * Generate document attachments.
      *
      * @param nuxeoController Nuxeo controller
      * @param document Nuxeo document
-     * @param documentDTO document DTO
+     * @param documentDto document DTO
      */
-    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO) {
-        List<DocumentAttachmentDTO> attachments = documentDTO.getAttachments();
-        PropertyList files = document.getProperties().getList("files:files");
-        if (files != null) {
-            for (int i = 0; i < files.size(); i++) {
-                PropertyMap map = files.getMap(i);
+    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDto) {
+        // Document path
+        String path = document.getPath();
 
+        // Attachments
+        List<DocumentAttachmentDTO> attachments = documentDto.getAttachments();
+
+        // Attachments property list
+        PropertyList list = document.getProperties().getList("files:files");
+
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                // Attachment property map
+                PropertyMap map = list.getMap(i);
+
+                // Attachment
                 DocumentAttachmentDTO attachment = new DocumentAttachmentDTO();
 
+                // Attachment file property map
+                PropertyMap file = map.getMap("file");
+
                 // Attachment name
-                String name = map.getString("filename");
+                String name = file.getString("name");
+                if (StringUtils.isEmpty(name)) {
+                    name = map.getString("filename");
+                }
                 attachment.setName(name);
 
+                // Attachment icon
+                String mimeType = file.getString("mime-type");
+                String icon = this.documentDao.getIcon(mimeType);
+                attachment.setIcon(icon);
+
+                // Attachment size
+                Long size = file.getLong("length");
+                attachment.setSize(size);
+
                 // Attachement URL
-                String url = nuxeoController.createAttachedFileLink(document.getPath(), String.valueOf(i));
+                String url = nuxeoController.createAttachedFileLink(path, String.valueOf(i));
                 attachment.setUrl(url);
 
                 attachments.add(attachment);
             }
+        }
+    }
+
+
+    /**
+     * Add document validation state.
+     *
+     * @param document Nuxeo document
+     * @param documentDTO document DTO
+     * @param extendedDocumentInfos extended document informations, may be null
+     */
+    private void addValidationState(Document document, DocumentDTO documentDTO, ExtendedDocumentInfos extendedDocumentInfos) {
+        // Validation state internationalization key
+        String key;
+        // Validation state icon
+        String icon;
+        // Validation state color
+        String color;
+
+        if ((extendedDocumentInfos != null) && extendedDocumentInfos.isValidationWorkflowRunning()) {
+            // Validation in progress
+            key = "DOCUMENT_STATE_VALIDATION_IN_PROGRESS";
+            icon = "glyphicons glyphicons-hourglass";
+            color = "info";
+        } else if (DocumentConstants.APPROVED_DOC_STATE.equals(document.getState())) {
+            // Valid
+            key = "DOCUMENT_STATE_VALID";
+            icon = "glyphicons glyphicons-ok";
+            color = "success";
+        } else {
+            key = null;
+            icon = null;
+            color = null;
+        }
+
+        if (key != null) {
+            // Validation state map
+            Map<String, String> validationState = new HashMap<>();
+            validationState.put("key", key);
+            validationState.put("icon", icon);
+            validationState.put("color", color);
+
+            documentDTO.getProperties().put("validationState", validationState);
         }
     }
 
@@ -434,7 +588,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         for (int i = 0; i < jsonComments.size(); i++) {
             JSONObject jsonComment = jsonComments.getJSONObject(i);
-            CommentDTO commentDTO = this.commentDAO.toDTO(jsonComment);
+            CommentDTO commentDTO = this.commentDao.toDTO(jsonComment);
             documentDTO.getComments().add(commentDTO);
         }
     }
@@ -460,47 +614,90 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
 
             Document space = (Document) spaceConfig.getNativeItem();
-            boolean isPublishSpace = CMSItemAdapter.docHasFacet(space, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+            boolean isPublishSpace = (space.getFacets() != null) && (space.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC));
 
             if (isPublishSpace) {
                 enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
             }
         }
+
         return enable;
     }
-    
+
+
     /**
      * Get remote published documents.
-     * 
+     *
+     * @param readFilter filter published documents on user read permission
      * @param nuxeoController
      * @param document
      * @param documentDTO
      */
-    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, Document document, DocumentDTO documentDTO){
+    protected void generatePublishedDocumentsInfos(NuxeoController nuxeoController, NuxeoDocumentContext docCtx, DocumentDTO documentDTO, Boolean readFilter) {
+        // We show remote sections only in Live Spaces (Wokspaces, ...)
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_61) && docCtx.getPublicationInfos().isLiveSpace()) {
 
-        int cacheType = nuxeoController.getCacheType();
-        int authType = nuxeoController.getAuthType();
-        
-        try {
+            int cacheType = nuxeoController.getCacheType();
+            int authType = nuxeoController.getAuthType();
 
-            nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+            try {
 
-            GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(document);
-            JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
+                nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
-            for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
+                GetPublishedDocumentsInfosCommand getPublishedCommand = new GetPublishedDocumentsInfosCommand(docCtx.getDocument(), readFilter);
+                JSONArray jsonPublishedDocumentsInfos = (JSONArray) nuxeoController.executeNuxeoCommand(getPublishedCommand);
 
-                JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
-                RemotePublishedDocumentDTO publishedDocumentDTO = publishedDocumentsDAO.toDTO(publishedDocumentInfos);
-                documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
-
+                for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
+                    JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
+                    RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDao.toDTO(publishedDocumentInfos);
+                    documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
+                }
+            } finally {
+                nuxeoController.setCacheType(cacheType);
+                nuxeoController.setAuthType(authType);
             }
-        } finally {
-            nuxeoController.setCacheType(cacheType);
-            nuxeoController.setAuthType(authType);
         }
-        
+    }
+
+
+    /**
+     * Handle current document Nuxeo Drive edition.
+     *
+     * @param portalControllerContext portal controller context
+     * @param document Nuxeo document
+     * @param documentDto document DTO
+     * @param publicationInfos publication informations
+     */
+    private void handleDriveEdition(PortalControllerContext portalControllerContext, Document document, DocumentDTO documentDto,
+            CMSPublicationInfos publicationInfos) {
+        // Portlet request
+        PortletRequest request = portalControllerContext.getRequest();
+
+        if (publicationInfos.isEditableByUser()) {
+            DocumentType documentType = documentDto.getType();
+            if ((documentType != null) && documentType.isFile()) {
+                // Drive edit URL
+                String driveEditUrl = publicationInfos.getDriveEditURL();
+
+                // No host in nxdrive URL (get the current portal request host), refs #1421
+                if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(request.getScheme());
+                    builder.append("/");
+                    builder.append(request.getServerName());
+                    builder.append("/nuxeo");
+                    driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
+                }
+
+                // Drive enabled indicator
+                boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
+
+                if ((driveEditUrl != null) || driveEnabled) {
+                    request.setAttribute("driveEditUrl", driveEditUrl);
+                    request.setAttribute("driveEnabled", driveEnabled);
+                }
+            }
+        }
     }
 
 }

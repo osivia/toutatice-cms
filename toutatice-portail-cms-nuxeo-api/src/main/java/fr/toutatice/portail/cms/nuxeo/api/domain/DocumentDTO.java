@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.api.cms.DocumentType;
 
 /**
  * Document data transfert object.
  *
  * @author Cédric Krommenhoek
+ * @see Cloneable
  */
 public class DocumentDTO implements Cloneable {
 
@@ -35,7 +36,9 @@ public class DocumentDTO implements Cloneable {
     /** Document path. */
     private String path;
     /** Document type. */
-    private CMSItemType type;
+    private DocumentType type;
+    /** Document icon, may be null. */
+    private String icon;
     /** Document properties. */
     private final Map<String, Object> properties;
     /** Document attachments. */
@@ -65,7 +68,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param documentDTO document DTO
      */
     protected DocumentDTO(DocumentDTO documentDTO) {
@@ -74,6 +77,7 @@ public class DocumentDTO implements Cloneable {
         this.title = documentDTO.title;
         this.path = documentDTO.path;
         this.type = documentDTO.type;
+        this.icon = documentDTO.icon;
         this.properties.putAll(documentDTO.properties);
         this.attachments.addAll(documentDTO.attachments);
         this.commentable = documentDTO.commentable;
@@ -102,7 +106,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Getter for id.
-     * 
+     *
      * @return the id
      */
     public String getId() {
@@ -159,7 +163,7 @@ public class DocumentDTO implements Cloneable {
      *
      * @return the type
      */
-    public CMSItemType getType() {
+    public DocumentType getType() {
         return this.type;
     }
 
@@ -168,26 +172,26 @@ public class DocumentDTO implements Cloneable {
      *
      * @param type the type to set
      */
-    public void setType(CMSItemType type) {
+    public void setType(DocumentType type) {
         this.type = type;
     }
 
     /**
-     * Getter for properties.
-     *
-     * @return the properties
+     * Getter for icon.
+     * 
+     * @return the icon
      */
-    public Map<String, Object> getProperties() {
-        return this.properties;
+    public String getIcon() {
+        return icon;
     }
 
     /**
-     * Getter for attachments.
-     *
-     * @return the attachments
+     * Setter for icon.
+     * 
+     * @param icon the icon to set
      */
-    public List<DocumentAttachmentDTO> getAttachments() {
-        return this.attachments;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     /**
@@ -209,23 +213,6 @@ public class DocumentDTO implements Cloneable {
     }
 
     /**
-     * Getter for comments.
-     *
-     * @return the comments
-     */
-    public List<CommentDTO> getComments() {
-        return this.comments;
-    }
-    
-    /**
-     * @return the publishedDocuments
-     */
-    public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
-        return this.publishedDocuments;
-    }
-
-
-    /**
      * Getter for document.
      *
      * @return the document
@@ -241,6 +228,42 @@ public class DocumentDTO implements Cloneable {
      */
     public void setDocument(Document document) {
         this.document = document;
+    }
+
+    /**
+     * Getter for properties.
+     *
+     * @return the properties
+     */
+    public Map<String, Object> getProperties() {
+        return this.properties;
+    }
+
+    /**
+     * Getter for attachments.
+     *
+     * @return the attachments
+     */
+    public List<DocumentAttachmentDTO> getAttachments() {
+        return this.attachments;
+    }
+
+    /**
+     * Getter for comments.
+     *
+     * @return the comments
+     */
+    public List<CommentDTO> getComments() {
+        return this.comments;
+    }
+
+    /**
+     * Getter for publishedDocuments.
+     *
+     * @return the publishedDocuments
+     */
+    public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
+        return this.publishedDocuments;
     }
 
 }

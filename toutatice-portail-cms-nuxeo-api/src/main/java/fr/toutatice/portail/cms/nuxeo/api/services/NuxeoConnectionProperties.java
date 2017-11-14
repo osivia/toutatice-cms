@@ -58,7 +58,13 @@ public class NuxeoConnectionProperties {
 
         try {
             URI uri;
-            if ("80".equals(NUXEO_PUBLIC_PORT) || "443".equals(NUXEO_PUBLIC_PORT)) {
+            
+            // #1421 If not specified, use current fqdn
+            if(NUXEO_PUBLIC_HOST == null && NUXEO_PUBLIC_PORT == null) {
+            	uri = new URI("");
+            }
+            
+            else if ("80".equals(NUXEO_PUBLIC_PORT) || "443".equals(NUXEO_PUBLIC_PORT)) {
                 uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST);
             } else {
                 uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST + ":" + NUXEO_PUBLIC_PORT);

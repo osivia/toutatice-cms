@@ -61,9 +61,10 @@ public interface INuxeoCommentsService {
      * @param document Nuxeo document
      * @param comment comment to add
      * @param parentId parent comment identifier, may be null
+     * @return comment Nuxeo document
      * @throws CMSException
      */
-    void addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException;
+    Document addDocumentComment(CMSServiceCtx cmsContext, Document document, CommentDTO comment, String parentId) throws CMSException;
 
 
     /**

@@ -43,7 +43,8 @@ public class SynchronizeCommand extends EcmCommand {
 	public SynchronizeCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-		super(EcmCommonCommands.synchronizeFolder.toString(), ReloadAfterCommandStrategy.refreshNavigation, "NuxeoDrive.SetSynchronization", new HashMap<String, Object>());
+        super(EcmCommonCommands.synchronizeFolder.toString(), ReloadAfterCommandStrategy.REFRESH_NAVIGATION, "NuxeoDrive.SetSynchronization",
+                new HashMap<String, Object>());
 		getRealCommandParameters().put("enable", Boolean.TRUE);
 		
 		this.itlzService = itlzService;

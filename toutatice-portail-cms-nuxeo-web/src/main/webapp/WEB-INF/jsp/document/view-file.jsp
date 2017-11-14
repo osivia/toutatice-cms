@@ -1,60 +1,42 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page isELIgnored="false"%>
 
 
-<c:set var="documentURL"><ttc:documentLink document="${document}" displayContext="download" /></c:set>
-<c:set var="iconURL"><ttc:getDocumentIconURL document="${document}" /></c:set>
-<c:set var="typeName"><is:getProperty key="${fn:toUpperCase(document.type.name)}" /></c:set>
-<c:set var="fileName" value="${document.properties['file:filename']}" />
-<c:set var="fileSize" value="${document.properties['file:content']['length']}" />
-<c:set var="description" value="${document.properties['dc:description']}" />
-<c:set var="mimeType" value="${document.properties['file:content']['mime-type']}" />
+<script type="text/javascript" src="/toutatice-portail-cms-nuxeo/components/PDFViewer/preview.js"></script>
 
-
-<ttc:addMenubarItem id="DOWNLOAD" labelKey="DOWNLOAD" order="20" url="${documentURL}" glyphicon="glyphicons glyphicons-download-alt" />
+<c:set var="previewUrl"><ttc:filePreview document="${document}"/></c:set>
 
 <div class="file">
-    <c:if test="${not empty description}">
-        <p>${description}</p>
-    </c:if>
-
-    <div class="media">
-        <div class="media-left">
-            <img src="${iconURL}" alt="${typeName}" class="media-object">
-        </div>
+    <c:choose>
+        <c:when test="${empty previewUrl}">
+            <div>
+                <div class="alert alert-warning" role="alert"><span><op:translate key="DOCUMENT_FILE_NO_PREVIEW" /></span></div>
+            </div>
+        </c:when>
         
-        <div class="media-body">
-            <p>
-                <a href="${documentURL}">${fileName}</a>
-                <span>(<ttc:formatFileSize size="${fileSize}" />)</span>
-            </p>
-        </div>
-    </div>
-    
-    <c:if test="${('Audio' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'audio/'))}">
-        <!-- Audio player -->
-        <hr>
+        <c:otherwise>
+            
+            <div class="progress">
+			  <div class="progress-bar progress-bar-striped active loadBar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
+			    <span class="sr-only"><span><op:translate key="DOCUMENT_FILE_LOADING" /></span></span>
+			  </div>
+			</div>
+			<div class="progress">
+				<div class="progress-bar progress-bar-striped progress-bar-success active downloadBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+	                 <span class="sr-only">0%</span><span class="sr-only"> <op:translate key="DOCUMENT_FILE_DOWNLOADED" /></span>
+                </div>
+            </div>
         
-        <div>
-            <audio src="${documentURL}" controls="controls" preload="metadata" class="img-responsive">
-                <source src="${documentURL}" type="${mimeType}">
-            </audio>
-        </div>
-    </c:if>
-    
-    <c:if test="${('Video' eq document.type.name) or (('File' eq document.type.name) and fn:startsWith(mimeType, 'video/'))}">
-        <!-- Video player -->
-        <hr>
-    
-        <div class="embed-responsive embed-responsive-16by9">
-            <video src="${documentURL}" controls="controls" preload="metadata" class="embed-responsive-item">
-                <source src="${documentURL}" type="${mimeType}">
-            </video>
-        </div>
-    </c:if>
+        
+            <!-- Preview in iframe -->
+            <iframe src="/toutatice-portail-cms-nuxeo/components/PDFViewer/web/viewer.html" width="100%" height="800" webkitallowfullscreen="" allowfullscreen="" class="pdf-preview-iframe hidden" data-preview-url="${previewUrl}" onload="downloadPreview();"></iframe>
+            
+            <div class="file-preview-unavailable hidden">
+                <div class="alert alert-warning" role="alert"><span><op:translate key="DOCUMENT_FILE_PREVIEW_UNAVAILABLE" /></span></div>
+            </div>
+        </c:otherwise>
+    </c:choose>
 </div>

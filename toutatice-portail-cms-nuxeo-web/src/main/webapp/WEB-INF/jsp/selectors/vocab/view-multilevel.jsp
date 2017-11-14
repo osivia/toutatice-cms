@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 <%@ taglib uri="/WEB-INF/tld/vocabulary-selector.tld" prefix="vs" %>
 
 <%@ page isELIgnored="false" %>
@@ -12,14 +12,14 @@
 <portlet:actionURL var="actionURL" />
 
 
-<c:set var="title"><is:getProperty key="SELECTOR_MULTI_ADD" /></c:set>
+<c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
 
 
 <c:choose>
     <c:when test="${selectorMonoValued eq '1'}">
         <c:set var="name" value="monoAdd" />
         <c:set var="glyphicon" value="halflings halflings-ok" />
-        <c:set var="title"><is:getProperty key="SELECTOR_MONO_ADD" /></c:set>
+        <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
@@ -59,7 +59,7 @@
                     <div
                         <c:if test="${not empty vocab1Id and empty vocab2Id and (selectorMonoValued ne '1')}">class="media-body"</c:if>
                     >
-                        <select name="vocab1Id" class="form-control"onchange="refreshOnVocabularyChange(this, '${url}')">
+                        <select name="vocab1Id" class="form-control" onchange="refreshOnVocabularyChange(this, '${url}')">
                             <option value="">Tous</option>
                             
                             <c:forEach var="optGroup" items="${vocab1.children}">

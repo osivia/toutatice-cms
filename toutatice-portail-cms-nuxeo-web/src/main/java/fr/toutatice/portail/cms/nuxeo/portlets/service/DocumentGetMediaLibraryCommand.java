@@ -50,7 +50,7 @@ public class DocumentGetMediaLibraryCommand implements INuxeoCommand {
 		
 
 		// Insertion du filtre sur les élements publiés
-        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext( NuxeoQueryFilterContext.STATE_LIVE, "global" );
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);
 
         
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);

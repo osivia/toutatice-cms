@@ -26,6 +26,8 @@
 
     <xsl:template match="/HTML/BODY">
         <xsl:element name="div">
+            <xsl:attribute name="class">clearfix no-ajax-link</xsl:attribute>
+        
             <xsl:apply-templates select="node()" />
         </xsl:element>
     </xsl:template>
@@ -61,8 +63,8 @@
             <xsl:otherwise>
                 <xsl:element name="a">
                     <xsl:attribute name="href"><xsl:value-of select="bridge:thumbnailSource($bridge,  @src)" /></xsl:attribute>
-                    <xsl:attribute name="rel">gallery</xsl:attribute>
-                    <xsl:attribute name="class">thumbnail fancybox <xsl:value-of select="bridge:thumbnailClasses($bridge,  @style)" /></xsl:attribute>
+                    <xsl:attribute name="class">thumbnail no-ajax-link <xsl:value-of select="bridge:thumbnailClasses($bridge,  @style)" /></xsl:attribute>
+                    <xsl:attribute name="data-fancybox">gallery</xsl:attribute>
                     
                     <xsl:copy>
                         <xsl:apply-templates select="@*|node()" />
@@ -127,17 +129,23 @@
     </xsl:template>
 
 
-
     <xsl:template match="@src">
         <xsl:attribute name="src">
          	<xsl:value-of select="bridge:link($bridge,  .)" />
       </xsl:attribute>
     </xsl:template>
 
-    <xsl:template match="@href">
-        <xsl:attribute name="href">
-         	<xsl:value-of select="bridge:link($bridge,  .)" />
-      </xsl:attribute>
+	<xsl:template match="A[@href]">
+       <xsl:element name="a">
+       		<xsl:variable name="url" select="bridge:link($bridge,  @href)" />
+      		<xsl:attribute name="href"><xsl:value-of select="$url" /></xsl:attribute>
+     		
+			<xsl:if test="not(@target) and not(contains($url,bridge:getBasePath($bridge))) and not(starts-with($url, '#'))">
+	     		<xsl:attribute name="target">_blank</xsl:attribute>
+	     	 </xsl:if>
+	     	 
+ 			<xsl:apply-templates select="@*[name(.)!='href']|node()" />
+        </xsl:element>        
     </xsl:template>
 
     <xsl:template match="OBJECT/@data">

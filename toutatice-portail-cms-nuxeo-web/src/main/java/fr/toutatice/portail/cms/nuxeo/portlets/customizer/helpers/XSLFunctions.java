@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -55,13 +56,15 @@ public class XSLFunctions {
     /** Resource pattern. */
     private static final Pattern PATTERN_RESOURCE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/files:files/([0-9]*)/(.*)");
     /** Blob pattern. */
-    private static final Pattern PATTERN_BLOB = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
+    private static final Pattern PATTERN_BLOB = Pattern.compile("(/nuxeo/|/nxfile)([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/blobholder:([0-9]*)/(.*)");
     /** Picture pattern. */
     private static final Pattern PATTERN_PICTURE = Pattern.compile("/nuxeo/nxpicsfile/default/([a-zA-Z0-9[-]&&[^/]]*)/(.*):content/(.*)");
     /** Web ID pattern. */
-    private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]/]*)(.*)");
+    private static final Pattern PATTERN_WEB_ID = Pattern.compile("/nuxeo/web/([a-zA-Z0-9[-]_/]+).*");
     /** Internal picture pattern. */
     private static final Pattern PATTERN_INTERNAL_PICTURE = Pattern.compile("/nuxeo/([a-z]*)/default/([a-zA-Z0-9[-]&&[^/]]*)/ttc:images/([0-9]*)/(.*)");
+    /** Internal picture pattern which doesn't reference Nx document's id. */
+    private static final Pattern NO_DOC_REF_PATTERN_INTERNAL_PICTURE = Pattern.compile("/nuxeo/nxfile/default/attachedImages/ttc:images/([0-9]*)/(.*)");
     /** Permalink pattern. */
     private static final Pattern PATTERN_PERMALINK = Pattern.compile("/nuxeo/nxdoc/default/([^/]*)/view_documents(.*)");
     /** Document pattern. */
@@ -73,6 +76,8 @@ public class XSLFunctions {
     private static final String PORTAL_REFERENCE = "/portalRef?";
     /** Portal reference length. */
     private static final int PORTAL_REFERENCE_LENGTH = PORTAL_REFERENCE.length();
+
+    private static String BASE_PATH;
 
     /** CMS context. */
     private final CMSServiceCtx cmsContext;
@@ -128,6 +133,8 @@ public class XSLFunctions {
 
         // Portal reference matcher
         this.portalReferenceMatcher = this.getPortalReferenceMatcher(this.portalURLFactory, this.portalControllerContext);
+
+
     }
 
 
@@ -240,6 +247,19 @@ public class XSLFunctions {
         }
     }
 
+    public String getBasePath() {
+        // TODO rajouter une fonction dans portalURLFactory pour récupérer le BASE_PATH (avec /portal)
+        if (BASE_PATH == null) {
+            String link = null;
+            try {
+                link = portalURLFactory.getPermaLink(nuxeoController.getPortalCtx(), null, null, "", IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+            } catch (PortalException e) {
+            }
+            BASE_PATH = StringUtils.removeEnd(link, "cms/_ID_/");
+        }
+        return BASE_PATH;
+    }
+
 
     /**
      * Rewrite link URL.
@@ -320,8 +340,9 @@ public class XSLFunctions {
 
             for (URI baseURI : this.nuxeoBaseURIs) {
                 URI url = baseURI.resolve(trim);
-                if (url.getScheme().equals("http") || url.getScheme().equals("https")) {
-                    if (url.getHost().equals(baseURI.getHost())) {
+                // #1421 - nuxeo.url can be relative
+                if (url.getScheme() == null || (url.getScheme().equals("http") || url.getScheme().equals("https"))) {
+                    if (url.getHost() == null || url.getHost().equals(baseURI.getHost())) {
                         String query = url.getRawPath();
 
                         Matcher mRes = PATTERN_RESOURCE.matcher(query);
@@ -345,16 +366,37 @@ public class XSLFunctions {
                         Matcher mResInternalPicture = PATTERN_INTERNAL_PICTURE.matcher(query);
                         if (mResInternalPicture.matches()) {
                             if (mResInternalPicture.groupCount() > 0) {
-                                String uid = mResInternalPicture.group(2);
-
-                                if (this.cmsContext.getDoc() != null) {
+                                // Nuxeo document UID
+                                String uid;
+                                if (this.cmsContext.getDoc() == null) {
+                                    uid = mResInternalPicture.group(2);
+                                } else {
                                     uid = ((Document) this.cmsContext.getDoc()).getId();
                                 }
-
+                                // Picture index
                                 String pictureIndex = mResInternalPicture.group(3);
+                                // File name
+                                String fileName = StringUtils.substringAfterLast(mResInternalPicture.group(4), "/");
 
-                                String portalLink = this.nuxeoController.createAttachedPictureLink(uid, pictureIndex);
-                                return portalLink;
+                                return this.nuxeoController.createAttachedPictureLink(uid, pictureIndex, fileName);
+                            }
+                        }
+                        
+                        // Internal picture which doesn't reference Nx doc's id
+                        Matcher mResSAInternalPicture = NO_DOC_REF_PATTERN_INTERNAL_PICTURE.matcher(query);
+                        if (mResSAInternalPicture.matches()) {
+                            if (mResSAInternalPicture.groupCount() > 0) {
+                                // Get current document
+                                if (this.cmsContext.getDoc() != null) {
+                                    // Nuxeo document UID
+                                    String uid = ((Document) this.cmsContext.getDoc()).getId();
+                                    // Picture index
+                                    String pictureIndex = mResSAInternalPicture.group(1);
+                                    // File name
+                                    String fileName = StringUtils.substringAfterLast(mResInternalPicture.group(2), "/");
+
+                                    return this.nuxeoController.createAttachedPictureLink(uid, pictureIndex, fileName);
+                                }
                             }
                         }
 
@@ -371,6 +413,11 @@ public class XSLFunctions {
                         if (mDoc.matches()) {
                             if (mDoc.groupCount() > 0) {
                                 String path = mDoc.group(2);
+
+                                String parameters = url.getQuery();
+                                if(StringUtils.isNotBlank(parameters)){
+                                    path = path.concat("?").concat(parameters);
+                                }
 
                                 // v2 : simplification : phase de redirection trop complexe
                                 String portalLink = this.nuxeoController.getCMSLinkByPath(path, null).getUrl();
@@ -395,31 +442,41 @@ public class XSLFunctions {
                         Matcher mBlobExp = PATTERN_BLOB.matcher(query);
                         if (mBlobExp.matches()) {
                             if (mBlobExp.groupCount() > 0) {
-                                String uid = mBlobExp.group(2);
-                                String blobIndex = mBlobExp.group(3);
-                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex);
+                                String uid = mBlobExp.group(3);
+                                String blobIndex = mBlobExp.group(4);
+                                String fileName = mBlobExp.group(5);
+                                return this.nuxeoController.createAttachedBlobLink(uid, blobIndex, fileName);
                             }
                         }
 
                         Matcher mWebId = PATTERN_WEB_ID.matcher(query);
                         if (mWebId.matches()) {
                             if (mWebId.groupCount() > 0) {
-                                String webpath = mWebId.group(1);
+                                String webPath = mWebId.group(1);
+                                String webId;
+                                if (webPath.contains("/")) {
+                                    webId = StringUtils.substringAfterLast(webPath, "/");
+                                } else {
+                                    webId = webPath;
+                                }
 
                                 String params = url.getQuery();
+                                String displayContext = null;
                                 if (params != null) {
                                     String[] split = params.split("&");
                                     for (String element : split) {
                                         // In case of resources url, serve the resource
-                                        if (element.startsWith("content")) {
-                                            String[] param = element.split("=");
-                                            String webId = this.webIdService.webPathToFetchInfoService(webpath);
-                                            return this.nuxeoController.createPictureLink(webId, param[1]);
+                                        String[] param = element.split("=");
+                                        if (StringUtils.equals(param[0], "content")) {
+                                            String fetchPath = this.webIdService.webIdToFetchPath(webId);
+                                            return this.nuxeoController.createPictureLink(fetchPath, param[1]);
+                                        } else if (StringUtils.equals(param[0], "display")) {
+                                            displayContext = param[1];
                                         }
                                     }
                                 }
                                 // In case of pages
-                                return this.nuxeoController.getLinkFromNuxeoURL(query).getUrl();
+                                return this.nuxeoController.getLinkFromNuxeoURL(query, displayContext).getUrl();
                             }
                         }
 

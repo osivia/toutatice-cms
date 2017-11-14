@@ -29,7 +29,8 @@ import org.nuxeo.ecm.automation.client.model.OperationDocumentation.Param;
  */
 public class DefaultOperationRequest implements OperationRequest {
 
-    protected final OperationDocumentation op;
+	
+	protected final OperationDocumentation op;
 
     protected final DefaultSession session;
 
@@ -52,6 +53,10 @@ public class DefaultOperationRequest implements OperationRequest {
         this.op = op;
         params = new HashMap<String, Object>();
         headers = new HashMap<String, String>();
+        
+        // #1495 - Set Osivia portal in header x-application-name
+        headers.put(APP_HEADER, APP_HEADER_VALUE);
+        
         this.ctx = ctx;
     }
 

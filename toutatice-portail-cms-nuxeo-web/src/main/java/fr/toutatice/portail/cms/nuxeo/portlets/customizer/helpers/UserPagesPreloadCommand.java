@@ -13,33 +13,48 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Documents;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 
 
 /**
- * Return all the navigation items
+ * Return all the navigation items.
  * 
  * @author jeanseb
- * 
+ * @see INuxeoCommand
  */
 public class UserPagesPreloadCommand implements INuxeoCommand {
 
     /** Indicates if request is executed with ElasicSearch */
-    private boolean useES;
+    private final boolean useES;
+    /** User domains, may be null. */
+    private final List<String> domains;
 
-    public UserPagesPreloadCommand() {
+
+    /**
+     * Constructor.
+     * 
+     * @param domains user domains, may be null
+     */
+    public UserPagesPreloadCommand(List<String> domains) {
         super();
         this.useES = NuxeoCompatibility.canUseES();
+        this.domains = domains;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object execute(Session session) throws Exception {
-
+        // Operation request
         OperationRequest request;
         if (this.useES) {
             request = getESRequest(session);
@@ -47,18 +62,38 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
             request = getVCSRequest(session);
         }
 
-        // v2.0.9 : suite demande Marc
-        String bufferedRequest = "ttc:isPreloadedOnLogin = 1 AND ecm:mixinType = 'Space' AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView')) AND (ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 )";
+        // Username
+        String username = session.getLogin().getUsername();
+
+        // Query
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("SELECT * FROM Document ");
+        queryBuilder.append("WHERE ecm:mixinType = 'Space' ");
+        queryBuilder.append("AND ttc:isPreloadedOnLogin = 1 ");
+        queryBuilder.append("AND (ecm:isProxy = 1 OR (ecm:isProxy = 0 AND ecm:mixinType <> 'WebView')) ");
+        queryBuilder.append("AND ecm:currentLifeCycleState <> 'deleted' ");
+        queryBuilder.append("AND ecm:isCheckedInVersion = 0 ");
+        queryBuilder.append("AND (NOT ecm:path STARTSWITH '/default-domain/UserWorkspaces' OR dc:creator = '").append(username).append("') ");
+        if (CollectionUtils.isNotEmpty(this.domains)) {
+            queryBuilder.append("AND (");
+            boolean first = true;
+            for (String domain : this.domains) {
+                if (first) {
+                    first = false;
+                } else {
+                    queryBuilder.append(" OR ");
+                }
+                queryBuilder.append("ecm:path STARTSWITH '").append(domain).append("'");
+            }
+            queryBuilder.append(") ");
+        }
+        queryBuilder.append("ORDER BY ttc:tabOrder ASC");
         
-        bufferedRequest = bufferedRequest.concat(" AND ((ecm:path STARTSWITH '/default-domain/UserWorkspaces' AND dc:creator = '"+session.getLogin().getUsername()+"') OR NOT (ecm:path STARTSWITH '/default-domain/UserWorkspaces'))");
-        
-        request.set("query", "SELECT * FROM Document WHERE " + bufferedRequest.toString() + " ORDER BY ttc:tabOrder");
+        request.set("query", queryBuilder.toString());
 
-        Documents children = (Documents) request.execute();
-
-        return children;
-
+        return request.execute();
     }
+
 
     protected OperationRequest getESRequest(Session session) throws Exception {
         OperationRequest request = session.newRequest("Document.QueryES");
@@ -66,14 +101,20 @@ public class UserPagesPreloadCommand implements INuxeoCommand {
         return request;
     }
 
+
     protected OperationRequest getVCSRequest(Session session) throws Exception {
         OperationRequest request = session.newRequest("Document.Query");
         request.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore,common,toutatice");
         return request;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getId() {
         return "UserPagesPreloadCommand";
-    };
+    }
 
 }

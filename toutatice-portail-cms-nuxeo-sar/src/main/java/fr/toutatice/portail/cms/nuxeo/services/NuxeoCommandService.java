@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
@@ -178,9 +178,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	}
 
-	
 
-	
+
+
 
 	private Object invokeViaCache(NuxeoCommandContext ctx, INuxeoServiceCommand command) throws Exception {
 
@@ -291,23 +291,25 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 
 		if(portalRequest != null) {
-            
+
             // prise en compte des éléments de navigation
             boolean navigationItems = false;
-            
+
             if (response instanceof HashMap) {
                     navigationItems = true;
                     for (Object item : ((Map) response).values()) {
-                        if (!(item instanceof NavigationItem))
+                        if (!(item instanceof NavigationItem)) {
                             navigationItems = false;
+                        }
 
                     }
             }
-            
-            //  dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos 
+
+            //  dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos
             // pour éviter les classcast exception  entre 2 webapps
-            if( response instanceof Document || response instanceof CMSPublicationInfos || navigationItems)
+            if( (response instanceof Document) || (response instanceof CMSPublicationInfos) || navigationItems) {
                 portalRequest.setAttribute(requestKey, response);
+            }
         }
         return response;
 
@@ -362,7 +364,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			}
                 // DCH : Bug CAS ??? (nouveau code erreur 403 à gérer)
 
-                if (re.getStatus() == 401 || re.getStatus() == 403) {
+                if ((re.getStatus() == 401) || (re.getStatus() == 403)) {
 				throw new CMSException(CMSException.ERROR_FORBIDDEN);
 			} else if (re.getStatus() == 500) {
 				// On ne notifie pas le statut sur les erreurs 500
@@ -402,31 +404,35 @@ public class NuxeoCommandService implements INuxeoCommandService {
 	@Override
     public Object executeCommand(NuxeoCommandContext ctx, INuxeoServiceCommand command) throws Exception {
 		try {
-			Object resp = null;
+            if (ctx.isAsynchronousCommand()) {
+                this.addAsyncronousCommand(ctx, command);
+            } else {
+                Object resp = null;
 
-			if (!this.checkScope(ctx)) {
-				throw new CMSException(CMSException.ERROR_FORBIDDEN);
-			}
-
-			if (!this.checkStatus(ctx)) {
-				// SI nuxeo est indisponible, on sert ce qu'il y a dans le cache
-				// Meme si le cache est expiré
-
-				Object cachedValue = this.getCachedValue(ctx, command);
-
-				if( cachedValue != null) {
-                    resp = cachedValue;
-                } else {
-                    throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
+                if (!this.checkScope(ctx)) {
+                    throw new CMSException(CMSException.ERROR_FORBIDDEN);
                 }
-			}
 
-			// Appel avec un décorateur cache
-			if( resp == null) {
-                resp = this.invokeViaCache(ctx, command);
+                if (!this.checkStatus(ctx)) {
+                    // SI nuxeo est indisponible, on sert ce qu'il y a dans le cache
+                    // Meme si le cache est expiré
+
+                    Object cachedValue = this.getCachedValue(ctx, command);
+
+                    if (cachedValue != null) {
+                        resp = cachedValue;
+                    } else {
+                        throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
+                    }
+                }
+
+                // Appel avec un décorateur cache
+                if (resp == null) {
+                    resp = this.invokeViaCache(ctx, command);
+                }
+
+                return resp;
             }
-
-			return resp;
 
 		} catch (Exception e) {
 

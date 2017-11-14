@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
 
 
 <%@ page isELIgnored="false" %>
@@ -38,9 +38,8 @@
             <portlet:renderURL var="leftUrl">
                 <portlet:param name="currentPage" value="${currentPage - 1}" />
                 <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                <c:if test="${not empty selectors}">
-                    <portlet:param name="lastSelectors" value="${selectors}" />
-                </c:if>
+                <portlet:param name="lastSelectors" value="${lastSelectors}" />
+
             </portlet:renderURL>
         </c:otherwise>
     </c:choose>
@@ -56,9 +55,7 @@
             <portlet:renderURL var="rightUrl">
                 <portlet:param name="currentPage" value="${currentPage + 1}" />
                 <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                <c:if test="${not empty selectors}">
-                    <portlet:param name="lastSelectors" value="${selectors}" />
-                </c:if>
+                 <portlet:param name="lastSelectors" value="${lastSelectors}" />
             </portlet:renderURL>
         </c:otherwise>
     </c:choose>
@@ -71,9 +68,8 @@
                 <portlet:renderURL var="startUrl">
                     <portlet:param name="currentPage" value="0" />
                     <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                    <c:if test="${not empty selectors}">
-                        <portlet:param name="lastSelectors" value="${selectors}" />
-                    </c:if>
+                     <portlet:param name="lastSelectors" value="${lastSelectors}" />
+
                 </portlet:renderURL>
                 
                 <li>
@@ -102,9 +98,7 @@
                         <portlet:renderURL var="url">
                             <portlet:param name="currentPage" value="${page}" />
                             <portlet:param name="currentState" value="${renderRequest.windowState}" />
-                            <c:if test="${not empty selectors}">
-                                <portlet:param name="lastSelectors" value="${selectors}" />
-                            </c:if>
+                            <portlet:param name="lastSelectors" value="${lastSelectors}" />
                         </portlet:renderURL>
                     </c:otherwise>
                 </c:choose>
@@ -114,7 +108,7 @@
                         <span>${page + 1}</span>
                         
                         <c:if test="${page == currentPage}">
-                            <span class="sr-only"> (<is:getProperty key="CURRENT" />)</span>
+                            <span class="sr-only"> (<op:translate key="CURRENT" />)</span>
                         </c:if>
                     </a>
                 </li>

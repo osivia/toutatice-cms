@@ -9,7 +9,6 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 
 	<dependencySets>
-
 		<dependencySet>
 			<outputDirectory>/jboss-as/server/production/deploy/socle</outputDirectory>
 			<unpack>false</unpack>
@@ -19,7 +18,6 @@
 			</includes>
 		</dependencySet>
 
-
 		<dependencySet>
 			<outputDirectory>/jboss-as/server/production/lib</outputDirectory>
 			<unpack>false</unpack>
@@ -28,6 +26,16 @@
 				<include>${project.groupId}:toutatice-portail-cms-nuxeo-api:jar:${project.version}</include>
 			</includes>
 		</dependencySet>
+        
+        <dependencySet>
+            <outputDirectory>/jboss-as/server/production/deploy/jboss-web.deployer</outputDirectory>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+            <includes>
+                <include>${project.groupId}:toutatice-portail-cms-nuxeo-taglib:jar:${project.version}</include>
+            </includes>
+            <outputFileNameMapping>toutatice-taglib.jar</outputFileNameMapping>
+        </dependencySet>
 	</dependencySets>
 
 	<fileSets>
@@ -51,6 +59,7 @@
 
 				<exclude>custom/params/environnement_portail.properties.*</exclude>
 				<exclude>jboss-as/server/production/run.conf.*</exclude>
+                <exclude>jboss-as/server/production/deploy/jboss-web.deployer/conf/web.xml</exclude>
 				<exclude>jboss-as/server/portal.properties</exclude>
 				
 				<!-- exclude EhCache replaced in the production/lib directory -->

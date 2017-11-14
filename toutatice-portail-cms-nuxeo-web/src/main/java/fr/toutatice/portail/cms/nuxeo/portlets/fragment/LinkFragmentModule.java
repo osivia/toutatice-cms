@@ -3,6 +3,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -16,14 +18,15 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Link fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class LinkFragmentModule implements IFragmentModule {
+public class LinkFragmentModule extends FragmentModule {
 
     /** Link fragment identifier. */
     public static final String ID = "doc_link";
@@ -40,28 +43,14 @@ public class LinkFragmentModule implements IFragmentModule {
     /** JSP name. */
     private static final String JSP_NAME = "link";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private LinkFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new LinkFragmentModule();
-        }
-        return instance;
+    public LinkFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
@@ -96,8 +85,9 @@ public class LinkFragmentModule implements IFragmentModule {
                 nuxeoController.setDisplayLiveVersion("1");
             }
 
-            // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(targetPath);
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(targetPath);
+            Document document = documentContext.getDocument();
 
             // Update link name with property value
             String property = document.getProperties().getString(name);
@@ -155,24 +145,26 @@ public class LinkFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        if ("admin".equals(request.getPortletMode().toString()) && "save".equals(request.getParameter(ActionRequest.ACTION_NAME))) {
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-        // Link name
-        window.setProperty(NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("name")));
+            // Link name
+            window.setProperty(NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("name")));
 
-        // Link target path
-        window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
+            // Link target path
+            window.setProperty(TARGET_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("targetPath")));
 
-        // Nuxeo link indicator
-        window.setProperty(NUXEO_LINK_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoLink")));
+            // Nuxeo link indicator
+            window.setProperty(NUXEO_LINK_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoLink")));
 
-        // CSS classes
-        window.setProperty(CSS_CLASSES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cssClasses")));
+            // CSS classes
+            window.setProperty(CSS_CLASSES_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cssClasses")));
+        }
     }
 
 

@@ -5,7 +5,7 @@
     <parent>
         <groupId>toutatice-portail.cms</groupId>
         <artifactId>cms-parent</artifactId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
@@ -13,16 +13,23 @@
     <name>Toutatice Portal - API</name>
 
     <dependencies>
+    
+        <!-- Nuxeo automation client -->
         <dependency>
-            <groupId>toutatice-portail.cms</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+
     </dependencies>
 
     <profiles>
         <profile>
-            <id>deploy-toutatice-modules</id>
+            <activation>
+                <property>
+                    <name>deploy.socle-libs.dir</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>

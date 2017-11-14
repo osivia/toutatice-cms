@@ -1,3 +1,25 @@
+Version 4.1.0
+================
+17/06/2015
+
+Content
+------------
+[merge] from portal 4.0.1
+[evol] menubar is more ergonomics (menu add, edit, share, and other tools)
+[evol] document state is now indicated in a zone : locked, synchronized, followed
+[evol] global integration of workspaces management, creation, modification and role management
+[evol] sorting by title, order, author or date in file browser
+[evol] Move a document
+[evol] Lock a document
+[evol] integration of creation of workflows and workflow tracking in the front office
+[evol] integration of remote publication, display of sections of publication in meta datas
+[evol] personnal workspaces enhanced
+[evol] better print view
+[evol] user can send a permalink by e-mail
+[evol] toolbar include a default help page and SSO logout URLs if precised in the customizer
+[evol] Selectors can use a multi-level vocabulary
+[evol] API : extended management of ECM commands 
+
 Version 4.0.0
 ================
 16/04/2015

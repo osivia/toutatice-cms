@@ -1,58 +1,94 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.files;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
+import javax.portlet.PortletResponse;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONObject;
+
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.menubar.IMenubarService;
+import org.osivia.portal.api.menubar.MenubarDropdown;
+import org.osivia.portal.api.menubar.MenubarGroup;
+import org.osivia.portal.api.menubar.MenubarItem;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.panels.IPanelsService;
+import org.osivia.portal.api.panels.Panel;
+import org.osivia.portal.api.portlet.IPortletStatusService;
+import org.osivia.portal.api.taskbar.ITaskbarService;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.core.cms.CMSBinaryContent;
+import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.FileBrowserView;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 
 /**
  * File browser portlet.
@@ -61,11 +97,17 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
  */
 public class FileBrowserPortlet extends CMSPortlet {
 
+    /** Synchronized ES indexation flag. */
+    public static final String ES_SYNC_FLAG = "nx_es_sync";
+
     /** File upload notifications duration. */
     private static final int FILE_UPLOAD_NOTIFICATIONS_DURATION = 1000;
 
     /** Nuxeo path window property name. */
     private static final String NUXEO_PATH_WINDOW_PROPERTY = "osivia.nuxeoPath";
+
+    /** View request parameter name. */
+    private static final String VIEW_REQUEST_PARAMETER = "view";
     /** Sort criteria request parameter name. */
     private static final String SORT_CRITERIA_REQUEST_PARAMETER = "sort";
     /** Alternative sort request parameter name. */
@@ -80,13 +122,24 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Error JSP path. */
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
+    /** Host joker. */
+    private static final String HOST_JOKER = "__HOST__";
+
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
     /** Notifications service. */
     private INotificationsService notificationsService;
+    /** Portlet status service. */
+    private IPortletStatusService portletStatusService;
+    /** Panel service. */
+    private IPanelsService panelsService;
+    /** Taskbar service. */
+    private ITaskbarService taskbarService;
+    /** Menubar service. */
+    private IMenubarService menubarService;
     /** Document DAO. */
-    private DocumentDAO documentDAO;
+    private DocumentDAO documentDao;
 
 
     /**
@@ -111,11 +164,18 @@ public class FileBrowserPortlet extends CMSPortlet {
         IInternationalizationService internationalizationService = (IInternationalizationService) portletContext
                 .getAttribute(Constants.INTERNATIONALIZATION_SERVICE_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
-
         // Notification service
         this.notificationsService = (INotificationsService) portletContext.getAttribute(Constants.NOTIFICATIONS_SERVICE_NAME);
+        // Portlet status service
+        this.portletStatusService = Locator.findMBean(IPortletStatusService.class, IPortletStatusService.MBEAN_NAME);
+        // Panels service
+        this.panelsService = Locator.findMBean(IPanelsService.class, IPanelsService.MBEAN_NAME);
+        // Taskbar service
+        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        // Menubar service
+        this.menubarService = Locator.findMBean(IMenubarService.class, IMenubarService.MBEAN_NAME);
         // Document DAO
-        this.documentDAO = DocumentDAO.getInstance();
+        this.documentDao = DocumentDAO.getInstance();
     }
 
 
@@ -129,6 +189,10 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        // CMS service
+        ICMSService cmsService = NuxeoController.getCMSService();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
         // Bundle
@@ -137,16 +201,88 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            if ("drop".equals(action)) {
+            if ("changeView".equals(action)) {
+                // Change view
+
+                FileBrowserView view = FileBrowserView.fromName(request.getParameter(VIEW_REQUEST_PARAMETER));
+
+                // Path
+                String path = this.getPath(nuxeoController);
+                // Document context
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+
+                // Document
+                Document document = documentContext.getDocument();
+                // Type
+                String type = document.getType();
+
+                // Active task identifier
+                String taskId;
+                try {
+                    taskId = this.taskbarService.getActiveId(portalControllerContext);
+                } catch (PortalException e) {
+                    throw new PortletException(e);
+                }
+
+                // Portlet status
+                FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
+                if (status == null) {
+                    status = new FileBrowserStatus(taskId);
+                }
+                status.getViews().put(type, view);
+                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), status);
+
+            } else if ("copy".equals(action)) {
+                // Copy action
+
+                String sourcePath = request.getParameter("sourcePath");
+                String targetPath = getPath(nuxeoController);
+
+                INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
+                nuxeoController.executeNuxeoCommand(command);
+
+
+                // Refresh navigation
+                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
+                // Update public render parameter for associated portlets refresh
+                response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
+
+            } else if ("delete".equals(action)) {
+                // Delete action
+
+                String[] identifiers = StringUtils.split(request.getParameter("identifiers"), ",");
+                if (ArrayUtils.isNotEmpty(identifiers)) {
+                    try {
+                        for (String id : identifiers) {
+                            cmsService.putDocumentInTrash(cmsContext, id);
+                        }
+
+
+                        // Notification
+                        String message = bundle.getString("SUCCESS_MESSAGE_DELETE");
+                        this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+
+                        // Refresh navigation
+                        request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
+                    } catch (CMSException e) {
+                        // Notification
+                        String message = bundle.getString("ERROR_MESSAGE_ERROR_HAS_OCCURED");
+                        this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    }
+                }
+
+            } else if ("drop".equals(action)) {
                 // Drop action
 
-                // Source
-                String sourceId = request.getParameter("sourceId");
-                // Target
+                // Source identifiers
+                List<String> sourceIds = Arrays.asList(StringUtils.split(request.getParameter("sourceIds"), ","));
+                // Target identifier
                 String targetId = request.getParameter("targetId");
 
                 // Move document command
-                INuxeoCommand command = new MoveDocumentCommand(sourceId, targetId);
+                INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
                 try {
                     nuxeoController.executeNuxeoCommand(command);
 
@@ -156,19 +292,46 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Update public render parameter for associated portlets refresh
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
 
+
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_SUCCESS");
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_SUCCESS_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_SUCCESS_MESSAGE", sourceIds.size());
+                    }
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
                 } catch (NuxeoException e) {
                     // Notification
-                    String message = bundle.getString("MESSAGE_MOVE_ERROR");
-                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_WARNING_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_WARNING_MESSAGE", sourceIds.size());
+                    }
+                    this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
+
+            } else if ("sort".equals(action)) {
+                // Sort action
+
+                String sourceId = request.getParameter("sourceId");
+                String targetId = request.getParameter("targetId");
+
+                INuxeoCommand command = new SortDocumentCommand(sourceId, targetId);
+                nuxeoController.executeNuxeoCommand(command);
+
+                // Refresh navigation
+                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
+                // Update public render parameter for associated portlets refresh
+                response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
 
             } else if ("fileUpload".equals(action)) {
                 // File upload
 
                 String parentId = request.getParameter("parentId");
+
 
                 // Notification
                 Notifications notifications;
@@ -179,11 +342,12 @@ public class FileBrowserPortlet extends CMSPortlet {
                     List<FileItem> fileItems = fileUpload.parseRequest(request);
 
                     // Nuxeo command
-                    INuxeoCommand command = new UploadFilesCommand(parentId, fileItems);
+                    INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+
 
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
@@ -218,6 +382,76 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+        if ("infos".equals(request.getResourceID())) {
+            JSONObject data = new JSONObject();
+
+            // Document path
+            String path = request.getParameter("path");
+            // File document indicator
+            String isFile = request.getParameter("file");
+
+            if (path != null) {
+                NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+                ICMSService cmsService = this.getCMSService();
+                CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
+                try {
+                    CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+
+                    data.put("writable", publicationInfos.isEditableByUser());
+                    data.put("copiable", publicationInfos.isCopiable());
+
+                    if (BooleanUtils.toBoolean(isFile)) {
+                        String driveEditUrl = publicationInfos.getDriveEditURL();
+
+                        // No host in nxdrive URL (get the current portal request host), refs #1421
+                        if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                            StringBuilder builder = new StringBuilder();
+                            builder.append(request.getScheme());
+                            builder.append("/");
+                            builder.append(request.getServerName());
+                            builder.append("/nuxeo");
+                            driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
+                        }
+
+                        data.put("driveEditUrl", driveEditUrl);
+                    }
+                } catch (CMSException e) {
+                    // Do nothing
+                }
+            }
+
+            // Content type
+            response.setContentType("application/json");
+
+            // Content
+            PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
+            printWriter.write(data.toString());
+            printWriter.close();
+        } else if("zipDownload".equals(request.getResourceID())) {
+            // bulk download
+            
+            // selected download paths
+            String[] paths = StringUtils.split(request.getParameter("paths"), ",");
+            
+            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+            CMSBinaryContent content = (CMSBinaryContent) nuxeoController.executeNuxeoCommand(new BulkFilesCommand(nuxeoController, paths));
+            
+            response.setContentType(content.getMimeType());
+            response.setProperty("Content-disposition", "inline; filename=\"" + content.getName() + "\"");
+
+            ResourceUtil.copy(new FileInputStream(content.getFile()), response.getPortletOutputStream(), 4096);
+        } else {
+            super.serveResource(request, response);
+        }
+    }
+
+
+    /**
      * Admin view display.
      *
      * @param request request
@@ -244,96 +478,87 @@ public class FileBrowserPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
 
         // Path
-        String path = window.getProperty(Constants.WINDOW_PROP_URI);
-        if (path == null) {
-            path = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
-        }
+        String path = this.getPath(nuxeoController);
 
         PortletRequestDispatcher dispatcher;
         if (StringUtils.isNotEmpty(path)) {
             try {
-                // Controller context
-                ControllerContext controllerContext = (ControllerContext) request.getAttribute("osivia.controller");
-
-                // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-                request.setAttribute("nuxeoController", nuxeoController);
+                // Portal controller context
+                PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
 
                 // CMS service
-                ICMSService cmsService = NuxeoController.getCMSService();
+                ICMSService cmsService = this.getCMSService();
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
-
-                // Computed path
-                path = nuxeoController.getComputedPath(path);
-
-                // Fetch current Nuxeo document
-                Document currentDocument = nuxeoController.fetchDocument(path);
-                nuxeoController.setCurrentDoc(currentDocument);
-                request.setAttribute("document", this.documentDAO.toDTO(currentDocument));
 
                 // Publication informations
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
+                request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
+                request.setAttribute("driveEnabled", publicationInfos.isDriveEnabled());
+
+                // Fetch current Nuxeo document
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                Document currentDocument = documentContext.getDocument();
+                nuxeoController.setCurrentDoc(currentDocument);
+                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDao.toDTO(currentDocument));
+                request.setAttribute("document", fileBrowser);
 
                 // Fetch Nuxeo children documents
                 INuxeoCommand command = new GetFolderFilesCommand(publicationInfos.getLiveId());
                 Documents documents = (Documents) nuxeoController.executeNuxeoCommand(command);
 
 
+                // Subscriptions
+                List<EcmDocument> subscriptionDocuments = cmsService.getUserSubscriptions(cmsContext);
+                Set<String> subscriptions = new HashSet<>(subscriptionDocuments.size());
+                for (EcmDocument subscriptionDocument : subscriptionDocuments) {
+                    if (subscriptionDocument instanceof Document) {
+                        // Nuxeo document
+                        Document subscriptionNuxeoDocument = (Document) subscriptionDocument;
+                        // Nuxeo document identifier
+                        String id = subscriptionNuxeoDocument.getId();
+
+                        subscriptions.add(id);
+                    }
+                }
+
+
                 // Documents DTO
                 int index = 1;
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
                 for (Document document : documents) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
-                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDTO);
+                    DocumentDTO documentDto = this.documentDao.toDTO(document);
+                    documentDto = setDraftInfos(document, documentDto);
+                    FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
-                    if ("File".equals(document.getType())) {
-                        this.addMimeType(document, fileBrowserItem);
-                    }
-
+                    // Subscription indicator
+                    boolean subscription = subscriptions.contains(document.getId());
+                    fileBrowserItem.setSubscription(subscription);
+                    
                     fileBrowserItems.add(fileBrowserItem);
                 }
 
 
                 // Ordered indicator
-                CMSItemType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
+                DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
                 boolean ordered = ((cmsItemType != null) && cmsItemType.isOrdered());
                 request.setAttribute("ordered", ordered);
 
 
+                // Current view
+                FileBrowserView currentView = this.getCurrentView(portalControllerContext, currentDocument.getType());
+                request.setAttribute("view", currentView.getName());
+
+
                 // Sort criteria
-                FileBrowserSortCriteria criteria;
-                String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
-                if (StringUtils.isEmpty(sort)) {
-                    Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-                    if ((attribute != null) && (attribute instanceof FileBrowserSortCriteria)) {
-                        criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-                    } else {
-                        criteria = new FileBrowserSortCriteria();
-                        if (ordered) {
-                            criteria.setSort("index");
-                        } else {
-                            criteria.setSort("name");
-                        }
-
-                        controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
-                    }
-                } else {
-                    boolean alternative = BooleanUtils.toBoolean(request.getParameter(ALTERNATIVE_SORT_REQUEST_PARAMETER));
-
-                    criteria = new FileBrowserSortCriteria();
-                    criteria.setSort(sort);
-                    criteria.setAlternative(alternative);
-
-                    controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
-                }
+                FileBrowserSortCriteria criteria = this.getSortCriteria(portalControllerContext, ordered, currentView);
                 request.setAttribute("criteria", criteria);
 
 
@@ -343,10 +568,17 @@ public class FileBrowserPortlet extends CMSPortlet {
                 request.setAttribute("documents", fileBrowserItems);
 
 
+                // Toolbar attributes
+                this.addToolbarAttributes(portalControllerContext, nuxeoController, currentDocument);
+
+                // Title
                 response.setTitle(currentDocument.getTitle());
 
                 // Insert standard menu bar for content item
                 if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+                    // Add menubar items
+                    this.addMenubarItems(portalControllerContext, currentView);
+
                     nuxeoController.insertContentMenuBarItems();
                 }
             } catch (NuxeoException e) {
@@ -367,75 +599,273 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
     /**
-     * Add mime-type property.
+     * Get path.
      *
-     * @param document Nuxeo document
-     * @param documentDTO document DTO
+     * @param nuxeoController Nuxeo controller
+     * @return path
      */
-    private void addMimeType(Document document, DocumentDTO documentDTO) {
-        String icon = "file";
+    private String getPath(NuxeoController nuxeoController) {
+        // Portlet request
+        PortletRequest request = nuxeoController.getRequest();
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
 
-        PropertyMap fileContent = document.getProperties().getMap("file:content");
-        if (fileContent != null) {
-            try {
-                MimeType mimeType = new MimeType(fileContent.getString("mime-type"));
-                String primaryType = mimeType.getPrimaryType();
-                String subType = mimeType.getSubType();
+        String path = window.getProperty(Constants.WINDOW_PROP_URI);
+        if (path == null) {
+            path = window.getProperty(NUXEO_PATH_WINDOW_PROPERTY);
+        }
 
-                if ("application".equals(primaryType)) {
-                    // Application
+        if (path != null) {
+            path = nuxeoController.getComputedPath(path);
+        }
 
-                    if ("pdf".equals(subType)) {
-                        // PDF
-                        icon = "pdf";
-                    } else if ("msword".equals(subType) || "vnd.openxmlformats-officedocument.wordprocessingml.document".equals(subType)) {
-                        // MS Word
-                        icon = "word";
-                    } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)) {
-                        // MS Excel
-                        icon = "excel";
-                    } else if ("vnd.ms-powerpoint".equals(subType) || "vnd.openxmlformats-officedocument.presentationml.presentation".equals(subType)) {
-                        // MS Powerpoint
-                        icon = "powerpoint";
-                    } else if ("vnd.oasis.opendocument.text".equals(subType)) {
-                        // OpenDocument - Text
-                        icon = "odt";
-                    } else if ("vnd.oasis.opendocument.spreadsheet".equals(subType)) {
-                        // OpenDocument - Spread sheet
-                        icon = "ods";
-                    } else if ("vnd.oasis.opendocument.presentation".equals(subType)) {
-                        // OpenDocument - Presentation
-                        icon = "odp";
-                    } else if ("zip".equals(subType) || "gzip".equals(subType)) {
-                        // Archive
-                        icon = "archive";
-                    }
-                } else if ("text".equals(primaryType)) {
-                    // Text
+        return path;
+    }
 
-                    if ("html".equals(subType) || "xml".equals(subType)) {
-                        // HTML or XML
-                        icon = "xml";
-                    } else {
-                        // Plain text
-                        icon = "text";
-                    }
-                } else if ("image".equals(primaryType)) {
-                    // Image
-                    icon = "image";
-                } else if ("video".equals(primaryType)) {
-                    // Video
-                    icon = "video";
-                } else if ("audio".equals(primaryType)) {
-                    // Audio
-                    icon = "audio";
-                }
-            } catch (MimeTypeParseException e) {
-                // Do nothing
+
+    /**
+     * Set draft informations if document has draft.
+     * 
+     * @param publicationInfos
+     * @param document
+     * @return document with modified properies
+     */
+    private DocumentDTO setDraftInfos(Document document, DocumentDTO documentDTO) {
+        if (DocumentHelper.hasDraft(document)) {
+            String draftPath = DocumentHelper.getDraftPath(document);
+            documentDTO.getProperties().put("draftPath", draftPath);
+        }
+        return documentDTO;
+    }
+
+
+    /**
+     * Get current file browser view.
+     *
+     * @param portalControllerContext portal controller context
+     * @param type type name
+     * @return view
+     * @throws PortletException
+     */
+    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, String type) throws PortletException {
+        // Portlet request
+        PortletRequest request = portalControllerContext.getRequest();
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+        // Portlet status
+        FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
+
+        // Active task identifier
+        String taskId;
+        try {
+            taskId = this.taskbarService.getActiveId(portalControllerContext);
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
+
+        // Current view
+        FileBrowserView currentView = null;
+
+        if (status != null) {
+            if (StringUtils.equals(taskId, status.getTaskId())) {
+                currentView = status.getViews().get(type);
+            } else {
+                // Status reinitialization
+                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), null);
             }
         }
 
-        documentDTO.getProperties().put("mimeTypeIcon", icon);
+        if (currentView == null) {
+            currentView = FileBrowserView.fromName(window.getProperty(InternalConstants.DEFAULT_VIEW_WINDOW_PROPERTY));
+        }
+
+
+        // Toggle panel
+        try {
+            if (currentView.isClosedNavigation()) {
+                this.panelsService.hidePanel(portalControllerContext, Panel.NAVIGATION_PANEL);
+            } else {
+                this.panelsService.showPanel(portalControllerContext, Panel.NAVIGATION_PANEL);
+            }
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
+
+        return currentView;
+    }
+
+
+    /**
+     * Get sort criteria.
+     *
+     * @param portalControllerContext portal controller context
+     * @param ordered ordered indicator
+     * @param currentView current file browser view
+     * @return sort criteria
+     */
+    private FileBrowserSortCriteria getSortCriteria(PortalControllerContext portalControllerContext, boolean ordered, FileBrowserView currentView) {
+        // Controller context
+        ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
+        // Request
+        PortletRequest request = portalControllerContext.getRequest();
+
+
+        FileBrowserSortCriteria criteria = null;
+
+        if (currentView.isOrderable()) {
+            String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
+            if (StringUtils.isEmpty(sort)) {
+                Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+                if ((attribute != null) && (attribute instanceof FileBrowserSortCriteria)) {
+                    criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+
+                    if (!ordered && FileBrowserSortCriteria.SORT_BY_INDEX.equals(criteria.getSort())) {
+                        criteria.setSort(FileBrowserSortCriteria.SORT_BY_NAME);
+                    }
+                }
+            } else {
+                boolean alternative = BooleanUtils.toBoolean(request.getParameter(ALTERNATIVE_SORT_REQUEST_PARAMETER));
+
+                criteria = new FileBrowserSortCriteria();
+                criteria.setSort(sort);
+                criteria.setAlternative(alternative);
+
+                controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
+            }
+        }
+
+        if (criteria == null) {
+            // Default sort criteria
+            criteria = new FileBrowserSortCriteria();
+            if (ordered) {
+                criteria.setSort(FileBrowserSortCriteria.SORT_BY_INDEX);
+            } else {
+                criteria.setSort(FileBrowserSortCriteria.SORT_BY_NAME);
+            }
+        }
+
+        return criteria;
+    }
+
+
+    /**
+     * Add menubar items.
+     *
+     * @param portalControllerContext portal controller context
+     * @param currentView current file browser view
+     */
+    @SuppressWarnings("unchecked")
+    private void addMenubarItems(PortalControllerContext portalControllerContext, FileBrowserView currentView) {
+        // Request
+        PortletRequest request = portalControllerContext.getRequest();
+
+        if (WindowState.MAXIMIZED.equals(request.getWindowState())) {
+            // Response
+            PortletResponse response = portalControllerContext.getResponse();
+            // Bundle
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+            // Menubar
+            List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
+
+
+            if (response instanceof MimeResponse) {
+                MimeResponse mimeResponse = (MimeResponse) response;
+
+                // Change view
+                int order = 0;
+                for (FileBrowserView view : FileBrowserView.values()) {
+                    if ((view != currentView) && view.isMenubarItem() && !currentView.getLinkedViewNames().contains(view.getName())) {
+                        // Identifier
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("FILE_BROWSER_SHOW_");
+                        builder.append(StringUtils.upperCase(view.getName()));
+                        String id = builder.toString();
+
+                        // URL
+                        PortletURL actionURL = mimeResponse.createActionURL();
+                        actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, view.getName());
+
+                        MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), view.getIcon(), MenubarGroup.SPECIFIC, order, actionURL.toString(),
+                                null, null, null);
+                        menubar.add(menubarItem);
+
+                        order++;
+                    }
+                }
+                
+                // Toggle reorganization
+                if (FileBrowserView.THUMBNAILS.equals(currentView) || FileBrowserView.THUMBNAILS_REORGANIZATION.equals(currentView)) {
+                    // Identifier
+                    String id = "FILE_BROWSER_TOGGLE_REORGANIZATION";
+                    // Icon
+                    String icon;
+                    // Menubar item parent
+                    MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    if (parent == null) {
+                        parent = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, MenubarGroup.CMS);
+                    }
+                    // URL
+                    PortletURL actionURL = mimeResponse.createActionURL();
+                    actionURL.setParameter(ActionRequest.ACTION_NAME, "changeView");
+                    
+                    if (FileBrowserView.THUMBNAILS.equals(currentView)) {
+                        icon = "halflings halflings-unchecked";
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, FileBrowserView.THUMBNAILS_REORGANIZATION.getName());
+                    } else {
+                        icon = "halflings halflings-check";
+                        actionURL.setParameter(VIEW_REQUEST_PARAMETER, FileBrowserView.THUMBNAILS.getName());
+                    }
+                    
+                    // Menubar item
+                    MenubarItem menubarItem = new MenubarItem(id, bundle.getString(id), icon, parent, 0, actionURL.toString(), null, null, null);
+                    menubar.add(menubarItem);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Add toolbar request attributes.
+     *
+     * @param portalControllerContext portal controller context
+     * @param nuxeoController Nuxeo controller
+     * @param currentDocument current Nuxeo document
+     * @throws CMSException
+     * @throws PortalException
+     */
+    private void addToolbarAttributes(PortalControllerContext portalControllerContext, NuxeoController nuxeoController, Document currentDocument)
+            throws CMSException, PortalException {
+        // Request
+        PortletRequest request = portalControllerContext.getRequest();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
+
+        // Callback URL
+        String callbackUrl = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
+                null, null);
+        request.setAttribute("callbackUrl", callbackUrl);
+
+        // ECM base URL
+        String ecmBaseUrl = this.getCMSService().getEcmDomain(cmsContext);
+        request.setAttribute("ecmBaseUrl", ecmBaseUrl);
+
+        // Edit URL
+        String editUrl = this.getCMSService().getEcmUrl(cmsContext, EcmViews.editDocument, "_PATH_", new HashMap<String, String>(0));
+        request.setAttribute("editUrl", editUrl);
+
+        // Move URL
+        Map<String, String> moveProperties = new HashMap<String, String>();
+        moveProperties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, currentDocument.getPath());
+        moveProperties.put(MoveDocumentPortlet.DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY, "_IDS_");
+        moveProperties.put(MoveDocumentPortlet.IGNORED_PATHS_WINDOW_PROPERTY, "_PATHS_");
+        moveProperties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
+        moveProperties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, "_TYPES_");
+        String moveUrl = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+                moveProperties, PortalUrlType.POPUP);
+        request.setAttribute("moveUrl", moveUrl);
     }
 
 }

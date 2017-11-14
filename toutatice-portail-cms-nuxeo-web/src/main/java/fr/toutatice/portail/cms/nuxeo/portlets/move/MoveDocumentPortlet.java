@@ -1,6 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.move;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -12,24 +15,33 @@ import javax.portlet.RenderResponse;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.cms.DocumentState;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
+import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.ICMSService;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
  * Move document portlet.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see CMSPortlet
  */
@@ -37,10 +49,14 @@ public class MoveDocumentPortlet extends CMSPortlet {
 
     /** Document path window property name. */
     public static final String DOCUMENT_PATH_WINDOW_PROPERTY = "osivia.move.documentPath";
+    /** Documents identifiers window property name. */
+    public static final String DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY = "osivia.move.documentsIdentifiers";
+    /** Ignored paths window property name. */
+    public static final String IGNORED_PATHS_WINDOW_PROPERTY = "osivia.move.ignoredPaths";
     /** CMS base path window property name. */
     public static final String CMS_BASE_PATH_WINDOW_PROPERTY = "osivia.move.cmsBasePath";
-    /** Accepted type window property name. */
-    public static final String ACCEPTED_TYPE_WINDOW_PROPERTY = "osivia.move.acceptedType";
+    /** Accepted types window property name. */
+    public static final String ACCEPTED_TYPES_WINDOW_PROPERTY = "osivia.move.acceptedTypes";
 
     /** Space path request parameter name. */
     private static final String SPACE_PATH_REQUEST_PARAMETER = "osivia.move.spacePath";
@@ -85,12 +101,13 @@ public class MoveDocumentPortlet extends CMSPortlet {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
 
+        // CMS service
+        ICMSService cmsService = NuxeoController.getCMSService();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
-
-        // Document path
-        String documentPath = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
-        request.setAttribute("documentPath", documentPath);
 
         // CMS base path
         String cmsBasePath = request.getParameter(SPACE_PATH_REQUEST_PARAMETER);
@@ -100,19 +117,98 @@ public class MoveDocumentPortlet extends CMSPortlet {
         if (cmsBasePath != null) {
             // Computed path
             cmsBasePath = nuxeoController.getComputedPath(cmsBasePath);
-            request.setAttribute("cmsBasePath", cmsBasePath);
 
-            // Fetch space root document
-            Document spaceRootDocument = nuxeoController.fetchDocument(cmsBasePath);
-            DocumentDTO spaceRootDocumentDTO = this.documentDAO.toDTO(spaceRootDocument);
-            request.setAttribute("spaceDocument", spaceRootDocumentDTO);
+            // Current space Nuxeo document
+            Document currentSpace = null;
+            // Root space Nuxeo document
+            Document rootSpace = null;
+
+            // Path
+            String path = cmsBasePath;
+
+            while ((rootSpace == null) && StringUtils.isNotEmpty(path)) {
+                // Space config
+                CMSItem spaceConfig;
+                try {
+                    spaceConfig = cmsService.getSpaceConfig(cmsContext, path);
+                } catch (CMSException e) {
+                    throw new PortletException(e);
+                }
+
+                if (currentSpace == null) {
+                    currentSpace = (Document) spaceConfig.getNativeItem();
+                }
+
+
+                // Document type
+                DocumentType type = spaceConfig.getType();
+
+                if ((type != null) && type.isRoot()) {
+                    rootSpace = (Document) spaceConfig.getNativeItem();
+                    cmsBasePath = rootSpace.getPath();
+                } else {
+                    // Loop on parent path
+                    CMSObjectPath objectPath = CMSObjectPath.parse(path);
+                    CMSObjectPath parentObjectPath = objectPath.getParent();
+                    path = parentObjectPath.toString();
+                }
+            }
+
+
+            // Nuxeo document
+            Document space;
+            if (rootSpace == null) {
+                space = currentSpace;
+            } else {
+                space = rootSpace;
+            }
+
+            // Document DTO
+            DocumentDTO spaceDto = this.documentDAO.toDTO(space);
+            request.setAttribute("spaceDocument", spaceDto);
+        }
+        request.setAttribute("cmsBasePath", cmsBasePath);
+
+        // Document path
+        String documentPath = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
+
+        // Navigation path
+        if (documentPath != null) {
+            String navigationPath;
+            try {
+                CMSItem navigationItem = cmsService.getPortalNavigationItem(cmsContext, cmsBasePath, documentPath);
+                if (navigationItem == null) {
+                    CMSObjectPath objectPath = CMSObjectPath.parse(documentPath);
+                    CMSObjectPath parentObjectPath = objectPath.getParent();
+                    navigationItem = cmsService.getPortalNavigationItem(cmsContext, cmsBasePath, parentObjectPath.toString());
+                }
+                if (navigationItem == null) {
+                    navigationPath = null;
+                } else {
+                    navigationPath = navigationItem.getPath();
+                }
+            } catch (CMSException e) {
+                throw new PortletException(e);
+            }
+            request.setAttribute("cmsNavigationPath", navigationPath);
         }
 
-        // Accepted type
-        String acceptedType = window.getProperty(ACCEPTED_TYPE_WINDOW_PROPERTY);
-        request.setAttribute("acceptedType", acceptedType);
-        
-        
+        // Ignored paths
+        String ignoredPaths = window.getProperty(IGNORED_PATHS_WINDOW_PROPERTY);
+        if (ignoredPaths == null) {
+            ignoredPaths = documentPath;
+        }
+        request.setAttribute("ignoredPaths", ignoredPaths);
+
+        // Accepted types
+        String acceptedTypes = window.getProperty(ACCEPTED_TYPES_WINDOW_PROPERTY);
+        request.setAttribute("acceptedTypes", acceptedTypes);
+
+        // Error
+        String error = request.getParameter("error");
+        request.setAttribute("error", error);
+
+
         // Dispatcher path
         String dispatcherPath;
         if ("space".equals(request.getParameter(MODE_REQUEST_PARAMETER))) {
@@ -124,7 +220,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher(dispatcherPath).include(request, response);
     }
-    
+
 
     /**
      * {@inheritDoc}
@@ -133,6 +229,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
     public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        nuxeoController.setDisplayLiveVersion(DocumentState.LIVE.toString());
         // Portal controller context
         PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
 
@@ -146,48 +243,84 @@ public class MoveDocumentPortlet extends CMSPortlet {
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
         if ("move".equals(action)) {
-            // Document path
-            String path = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
             // Target document path
             String targetPath = request.getParameter("targetPath");
 
-            if (path != null) {
-                if (StringUtils.isNotBlank(targetPath)) {
-                    // Fetch document
-                    Document document = nuxeoController.fetchDocument(path);
+            if (StringUtils.isBlank(targetPath)) {
+                // Empty target path
+                response.setRenderParameter("error", "emptyTargetPath");
+            } else {
+                // Document path
+                String path = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
 
-                    // Fetch target document
-                    Document targetDocument = nuxeoController.fetchDocument(targetPath);
+                // Nuxeo document context
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                // Nuxeo document
+                Document document = documentContext.getDocument();
 
-                    // Parent path
+                // Documents identifiers
+                String[] identifiersProperty = StringUtils.split(window.getProperty(DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY), ",");
+
+                // Source identifiers
+                List<String> sourceIds;
+                if (identifiersProperty == null) {
+                    sourceIds = new ArrayList<String>(1);
+                    sourceIds.add(document.getId());
+                } else {
+                    sourceIds = Arrays.asList(identifiersProperty);
+                }
+
+
+                // Target Nuxeo document context
+                NuxeoDocumentContext targetDocumentContext = nuxeoController.getDocumentContext(targetPath);
+                // Target publication infos
+                NuxeoPublicationInfos targetPublicationInfos = targetDocumentContext.getPublicationInfos();
+                // Target Nuxeo document identifier
+                String targetId = targetPublicationInfos.getLiveId();
+
+
+                // Redirection path
+                String redirectionPath;
+                if (identifiersProperty == null) {
                     CMSObjectPath parentPath = CMSObjectPath.parse(document.getPath()).getParent();
+                    redirectionPath = parentPath.toString();
+                } else {
+                    redirectionPath = document.getPath();
+                }
 
-                    // Nuxeo command
-                    INuxeoCommand command = new MoveDocumentCommand(document.getId(), targetDocument.getId());
+
+                // Nuxeo command
+                INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
+
+                try {
                     nuxeoController.executeNuxeoCommand(command);
 
                     // Redirection URL
-                    String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, parentPath.toString(), null, null, null, null,
-                            null, null, null);
+                    String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, redirectionPath, null, null,
+                            IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
                     redirectionURL = this.getPortalUrlFactory().adaptPortalUrlToPopup(portalControllerContext, redirectionURL,
                             IPortalUrlFactory.POPUP_URL_ADAPTER_CLOSE);
                     request.setAttribute(Constants.PORTLET_ATTR_REDIRECTION_URL, redirectionURL);
 
                     // Notification
-                    this.getNotificationsService().addSimpleNotification(portalControllerContext, bundle.getString("DOCUMENT_MOVE_SUCCESS_MESSAGE"),
-                            NotificationsType.SUCCESS);
-                } else {
-                    // Redirection URL
-                    String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
-                    redirectionURL = this.getPortalUrlFactory().adaptPortalUrlToPopup(portalControllerContext, redirectionURL,
-                            IPortalUrlFactory.POPUP_URL_ADAPTER_CLOSE);
-                    request.setAttribute(Constants.PORTLET_ATTR_REDIRECTION_URL, redirectionURL);
-
-                    // Notification
-                    this.getNotificationsService().addSimpleNotification(portalControllerContext, bundle.getString("DOCUMENT_MOVE_WARNING_MESSAGE"),
-                            NotificationsType.WARNING);
+                    String message;
+                    if (sourceIds.size() == 1) {
+                        message = bundle.getString("DOCUMENT_MOVE_SUCCESS_MESSAGE");
+                    } else {
+                        message = bundle.getString("DOCUMENTS_MOVE_SUCCESS_MESSAGE", sourceIds.size());
+                    }
+                    this.getNotificationsService().addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
+                } catch (NuxeoException e) {
+                    if (NuxeoException.ERROR_FORBIDDEN == e.getErrorCode()) {
+                        response.setRenderParameter("error", "403");
+                    } else {
+                        // Notification
+                        String message = bundle.getString("DOCUMENT_MOVE_ERROR_MESSAGE");
+                        this.getNotificationsService().addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+                    }
                 }
             }
+
         } else if ("changeSpace".equals(action)) {
             // Space path
             String spacePath = request.getParameter("spacePath");

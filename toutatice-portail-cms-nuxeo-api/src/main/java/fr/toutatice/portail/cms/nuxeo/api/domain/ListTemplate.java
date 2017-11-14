@@ -1,5 +1,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
+
 /**
  * List template java-bean.
  *
@@ -14,7 +16,7 @@ public class ListTemplate {
     /** Template schemas. */
     private final String schemas;
     /** Template module. */
-    private ITemplateModule module;
+    private IPortletModule module;
 
 
     /**
@@ -48,7 +50,7 @@ public class ListTemplate {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.key == null) ? 0 : this.key.hashCode());
+        result = (prime * result) + ((this.key == null) ? 0 : this.key.hashCode());
         return result;
     }
 
@@ -57,18 +59,23 @@ public class ListTemplate {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (this.getClass() != obj.getClass())
+        }
+        if (this.getClass() != obj.getClass()) {
             return false;
+        }
         ListTemplate other = (ListTemplate) obj;
         if (this.key == null) {
-            if (other.key != null)
+            if (other.key != null) {
                 return false;
-        } else if (!this.key.equals(other.key))
+            }
+        } else if (!this.key.equals(other.key)) {
             return false;
+        }
         return true;
     }
 
@@ -102,19 +109,19 @@ public class ListTemplate {
 
     /**
      * Getter for module.
-     * 
+     *
      * @return the module
      */
-    public ITemplateModule getModule() {
+    public IPortletModule getModule() {
         return this.module;
     }
 
     /**
      * Setter for module.
-     * 
+     *
      * @param module the module to set
      */
-    public void setModule(ITemplateModule module) {
+    public void setModule(IPortletModule module) {
         this.module = module;
     }
 

@@ -17,6 +17,7 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.nuxeo.ecm.automation.client.LoginInfo;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.adapters.DocumentSecurityServiceFactory;
 import org.nuxeo.ecm.automation.client.adapters.DocumentServiceFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.AbstractAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.Connector;
@@ -55,6 +56,7 @@ public class HttpAutomationClient extends AbstractAutomationClient {
         // http.setCookieSpecs(null);
         // http.setCookieStore(null);
         registerAdapter(new DocumentServiceFactory());
+        registerAdapter(new DocumentSecurityServiceFactory());
     }
 
     public void setProxy(String host, int port) {
@@ -102,7 +104,10 @@ public class HttpAutomationClient extends AbstractAutomationClient {
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        http.getConnectionManager().shutdown();
+        if( http != null)   {
+            if( http.getConnectionManager() != null)
+                http.getConnectionManager().shutdown();
+        }
         http = null;
     }
 

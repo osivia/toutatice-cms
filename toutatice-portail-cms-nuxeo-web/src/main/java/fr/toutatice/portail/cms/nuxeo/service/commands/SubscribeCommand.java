@@ -41,7 +41,7 @@ public class SubscribeCommand extends EcmCommand {
 	public SubscribeCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-		super(EcmCommonCommands.subscribe.toString(), ReloadAfterCommandStrategy.refreshNavigation, "Notification.AllNotificationsSubscribe", null);
+        super(EcmCommonCommands.subscribe.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Notification.AllNotificationsSubscribe", null);
 		
 		this.itlzService = itlzService;
 		this.notifService = notifService;

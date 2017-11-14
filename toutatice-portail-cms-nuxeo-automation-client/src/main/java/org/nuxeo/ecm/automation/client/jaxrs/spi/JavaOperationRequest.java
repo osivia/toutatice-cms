@@ -52,6 +52,10 @@ public class JavaOperationRequest implements OperationRequest {
         this.op = op;
         params = new HashMap<String, Object>();
         headers = new HashMap<String, String>();
+        
+        // #1495 - Set Osivia portal in header x-application-name
+        headers.put(APP_HEADER, APP_HEADER_VALUE);
+        
         this.ctx = ctx;
     }
 

@@ -1,8 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false" %>
 
@@ -15,7 +13,7 @@
         <c:set var="description" value="${document.properties['dc:description']}" />
 
         <!-- Author -->
-        <c:set var="author" value="${document.properties['dc:creator']}" />
+        <c:set var="author" value="${document.properties['dc:lastContributor']}" />
         
         <!-- Date -->
         <c:set var="date" value="${document.properties['dc:issued']}" />
@@ -33,16 +31,18 @@
             
             <!-- Description -->
             <c:if test="${not empty description}">
-                <p>${description}</p>
+                <p class="text-pre-wrap">${description}</p>
             </c:if>
             
-            <!-- Informations -->
-            <p class="text-muted">
-                <span><is:getProperty key="EDITED_BY" /></span>
-                <ttc:user name="${author}" linkable="true" />
-                <span><is:getProperty key="DATE_ARTICLE_PREFIX" /></span>
-                <span><fmt:formatDate value="${date}" type="date" dateStyle="long" /></span>
-            </p>
+            <!-- Last edition informations -->
+            <c:if test="${not document.type.root}">
+                <p class="text-muted">
+                    <span><op:translate key="DOCUMENT_METADATA_MODIFIED_ON" /></span>
+                    <span><op:formatRelativeDate value="${date}" /></span>
+                    <span><op:translate key="DOCUMENT_METADATA_BY" /></span>
+                    <span><ttc:user name="${author}" /></span>
+                </p>
+            </c:if>
             
             
             <!-- Separator -->
@@ -51,4 +51,13 @@
             </c:if>
         </li>
     </c:forEach>
+    
+    
+    <c:if test="${empty documents}">
+        <li>
+            <p class="text-center">
+                <span class="text-muted"><op:translate key="LIST_NO_ITEMS" /></span>
+            </p>
+        </li>
+    </c:if>
 </ul>

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osivia.portal.api.directory.entity.DirectoryPerson;
+import org.osivia.portal.api.directory.v2.model.Person;
 
 
 /**
@@ -35,7 +35,7 @@ public class CommentDTO {
     private String author;
 
     /** Author's LDAP object. */
-    private DirectoryPerson person;
+    private Person person;
 
     /** Creation date. */
     private Date creationDate;
@@ -157,22 +157,23 @@ public class CommentDTO {
         this.author = author;
     }
 
-
     /**
+     * Getter for person.
+     * 
      * @return the person
      */
-    public DirectoryPerson getPerson() {
-        return this.person;
+    public Person getPerson() {
+        return person;
     }
-
 
     /**
+     * Setter for person.
+     * 
      * @param person the person to set
      */
-    public void setPerson(DirectoryPerson person) {
+    public void setPerson(Person person) {
         this.person = person;
     }
-
 
     /**
      * Getter for creationDate.

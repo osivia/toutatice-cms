@@ -65,7 +65,13 @@ public class NuxeoCommandDelegate implements INuxeoCommand {
 				}
 			}
 			
-			doc = (Document) operationRequest.execute();
+			Object result = operationRequest.execute();
+			if(result instanceof Document){
+			    doc = (Document) result;
+			} else {
+			    return result;
+			}
+			//doc = (Document) operationRequest.execute();
 			
 
 

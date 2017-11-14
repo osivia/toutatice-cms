@@ -15,6 +15,7 @@ import org.osivia.portal.core.constants.InternalConstants;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
@@ -84,8 +85,9 @@ public class BrowserAdapter {
             String schemas = this.getWorkspacesSchemas();
             // Portal policy filter
             String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
-
-            INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
+            
+            String liveStatus = RequestPublishStatus.live.getStatus();
+            INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter);
             Documents documents = (Documents) nuxeoController.executeNuxeoCommand(nuxeoCommand);
 
             workspaces = new ArrayList<CMSItem>(documents.size());
@@ -141,7 +143,8 @@ public class BrowserAdapter {
                 String filter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
 
                 try {
-                    INuxeoCommand nuxeoCommand = new ListCommand(query, true, 0, -1, schemas, filter, true);
+                    String liveStatus = RequestPublishStatus.live.getStatus();
+                    INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter);
                     Documents documents = (Documents) this.cmsService.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
                     workspaces = new ArrayList<CMSItem>(documents.size());

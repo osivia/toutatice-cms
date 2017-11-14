@@ -29,6 +29,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.model.portal.Page;
@@ -183,18 +184,18 @@ public class SearchPortlet extends CMSPortlet {
         try {
             String requestDispatcherPath;
 
-            if (keywords != null) {
+            if ((keywords != null) || BooleanUtils.toBoolean(request.getParameter("results"))) {
                 // Result page
 
                 // Current page
                 String currentPageParam = request.getParameter("currentPage");
                 int currentPage = NumberUtils.toInt(currentPageParam);
-
+                
                 // No cache for search
                 nuxeoController.setCacheTimeOut(0);
 
                 NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext();
-                if( path != null && path.length() > 0)  {
+                if( (path != null) && (path.length() > 0))  {
                     queryFilter = nuxeoController.getQueryFilterContextForPath(path);
                 }
                 
@@ -212,7 +213,6 @@ public class SearchPortlet extends CMSPortlet {
                 int minPage = Math.max(0, currentPage - docs.getPageSize());
                 int maxPage = Math.min(currentPage + docs.getPageSize(), docs.getPageCount()) - 1;
 
-                request.setAttribute("nuxeoController", nuxeoController);
                 request.setAttribute("keywords", keywords);
                 request.setAttribute("documents", documentsDTO);
                 request.setAttribute("totalSize", docs.getTotalSize());

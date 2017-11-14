@@ -354,7 +354,6 @@ public class VocabSelectorPortlet extends CMSPortlet {
 
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
-            request.setAttribute("nuxeoController", nuxeoController);
 
             // Selector label
             request.setAttribute("libelle", window.getProperty(SELECTOR_LABEL_WINDOW_PROPERTY));
@@ -416,7 +415,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
             if (curSelect != null) {
                 request.setAttribute("vocabsId", curSelect);
                 if ("1".equals(selectorMonoValued)) {
-                    if (curSelect.size() > 0 && !("1".equals(selectorMultiLevel))) {
+                    if ((curSelect.size() > 0) && !("1".equals(selectorMultiLevel))) {
                         String[] tokens = curSelect.get(0).split("/");
                         if (tokens.length > 0) {
                             vocab1Id = tokens[0];

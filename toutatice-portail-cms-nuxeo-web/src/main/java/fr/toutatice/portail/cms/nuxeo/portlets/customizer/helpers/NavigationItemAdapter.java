@@ -18,28 +18,23 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
 import java.util.Map;
 
-import javax.portlet.PortletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemType;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.CommandConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
+@Deprecated
 public class NavigationItemAdapter {
 
-	CMSService CMSService;
-	DefaultCMSCustomizer customizer;
-	PortletContext portletCtx;
+    private DefaultCMSCustomizer customizer;
 
-	public NavigationItemAdapter(PortletContext portletCtx, DefaultCMSCustomizer customizer, CMSService cmsService) {
+
+    public NavigationItemAdapter(DefaultCMSCustomizer customizer) {
 		super();
-		this.CMSService = cmsService;
-		this.portletCtx = portletCtx;
 		this.customizer = customizer;
 
 	};
@@ -68,25 +63,21 @@ public class NavigationItemAdapter {
 	 */
 
 	protected boolean isNavigable(Document doc)	{
-		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
-		return ((cmsItemType != null) && (cmsItemType.isNavigable()));
+		DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+        return ((cmsItemType != null) && (cmsItemType.isNavigable()));
 	}
 
 
 
 	/**
-	 * Cet element doit-il être affiché dans une page (ou par défaut via un player spécifique)
-	 *
-	 * @param doc
-	 * @return
-	 */
-	protected boolean isDisplayedAsAPage(Document doc)	{
-
-		if (doc.getType().equals("PortalPage") ||(doc.getType().equals("SimplePage"))) {
-            return true;
-        }
-
-		return false;
+     * Cet element doit-il être affiché dans une page (ou par défaut via un player spécifique).
+     *
+     * @param document Nuxeo document
+     * @return
+     */
+	protected boolean isDisplayedAsAPage(Document document)	{
+        String type = document.getType();
+        return ("PortalPage".equals(type) || "SimplePage".equals(type) || "Staple".equals(type));
 	}
 
 
@@ -117,7 +108,7 @@ public class NavigationItemAdapter {
 	public void adaptPublishSpaceNavigationItem(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem) {
 
 		Document doc = (Document) publishSpaceNavigationItem.getNativeItem();
-		CMSItemType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
+		DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(doc.getType());
 
 		Map<String, String> properties = publishSpaceNavigationItem.getProperties();
 
@@ -132,13 +123,18 @@ public class NavigationItemAdapter {
 		String pageTemplate =  (String) doc.getProperties().get("ttc:pageTemplate");
 
 		if (StringUtils.isBlank(pageTemplate)) {
-			if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getDefaultTemplate())) {
-				pageTemplate = cmsItemType.getDefaultTemplate();
+            if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getTemplate())) {
+                pageTemplate = cmsItemType.getTemplate();
 				properties.put("defaultTemplate", "1");
 			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);
 				properties.put("defaultTemplate", "1");
+            } else if ("Staple".equals(doc.getType())) {
+                properties.put("staple", String.valueOf(true));
 			}
+        } else if (StringUtils.startsWith(pageTemplate, "/templates/") && !StringUtils.startsWith(pageTemplate, "/templates/templates/")) {
+            // Compatibilité 4.1 : propriété ttc:pageTemplate relative à l'espace
+            pageTemplate = "/default" + pageTemplate;
 		}
 
 		if (StringUtils.isNotBlank(pageTemplate)) {
@@ -241,15 +237,15 @@ public class NavigationItemAdapter {
 	            properties.put("contextualizeExternalContents", "1");
 	        }
 		}
-		
+
 		/*
-		 * Use of ElasticSearch on PublishSpaces 
+		 * Use of ElasticSearch on PublishSpaces
 		 * and possibility to comment inside
 		 */
-		if (isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
+		if (this.isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
 		    Boolean useES = doc.getProperties().getBoolean("ttc:useES");
 		    properties.put("useES", String.valueOf(useES));
-		    
+
 		    Boolean spaceCommentable = doc.getProperties().getBoolean("ttcs:spaceCommentable");
 		    properties.put("spaceCommentable", String.valueOf(spaceCommentable));
 		}
@@ -257,10 +253,10 @@ public class NavigationItemAdapter {
 
 		/* Workspace et UserWorkspaces*/
 
-		if("Workspace".equals(doc.getType()))	{
+        if ("Workspace".equals(doc.getType()) || "Room".equals(doc.getType())) {
 			properties.put("displayLiveVersion", "1");
             properties.put("partialLoading", "1");
-			//properties.put("useES", String.valueOf(Boolean.TRUE));
+			properties.put("useES", String.valueOf(Boolean.TRUE));
 		}
 
         /* explicitUrl */
@@ -280,7 +276,7 @@ public class NavigationItemAdapter {
 		}
 		*/
 	}
-	
+
 	/**
 	 * @param publishSpaceNavigationItem
 	 * @param publishSpaceItem
@@ -289,9 +285,7 @@ public class NavigationItemAdapter {
 	 */
 	public boolean isCurrentDocPublishSpace(CMSItem publishSpaceNavigationItem, CMSItem publishSpaceItem, Document doc){
 	    boolean isPublishSpace = publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath());
-	    if(isPublishSpace){
-	        isPublishSpace = CMSItemAdapter.docHasFacet(doc, CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
-	    }
+        isPublishSpace &= (doc.getFacets() != null) && (doc.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC));
 	    return isPublishSpace;
 	}
 

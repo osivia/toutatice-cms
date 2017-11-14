@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ *
  */
 package fr.toutatice.portail.cms.nuxeo.services;
 
@@ -23,45 +23,49 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 
 public class AsyncCommandBean {
-	
+
 	private NuxeoCommandContext ctx;
 	private INuxeoServiceCommand command;
-	
+
 	protected AsyncCommandBean( NuxeoCommandContext origCtx, INuxeoServiceCommand cmd){
-		
-		ctx = new NuxeoCommandContext(origCtx.getPortletContext());
-		
-		ctx.setAuthType(origCtx.getAuthType());
-		ctx.setAuthProfil(origCtx.getAuthProfil());
-		command = cmd;
+
+		this.ctx = new NuxeoCommandContext(origCtx.getPortletContext());
+
+		this.ctx.setAuthType(origCtx.getAuthType());
+		this.ctx.setAuthProfil(origCtx.getAuthProfil());
+        this.ctx.setAsynchronousCommand(origCtx.isAsynchronousCommand());
+
+		this.command = cmd;
 	}
-	
-	
+
+
 	 public NuxeoCommandContext getCtx() {
-		return ctx;
+		return this.ctx;
 	}
 
 
 	public INuxeoServiceCommand getCommand() {
-		return command;
+		return this.command;
 	}
 
 
-	
+
 	@Override
 	 public int hashCode()	{
-		 int hc =  command.getId().hashCode();
+		 int hc =  this.command.getId().hashCode();
 		 return hc;
 	 }
-	
-	public boolean equals(Object obj) {
+
+	@Override
+    public boolean equals(Object obj) {
 		 if(this == obj) {
 		     return true;
 		 }
-		 
-		 if( ! (obj instanceof AsyncCommandBean))
-			 return false;
-		 
-		 return getCommand().getId().equals(((AsyncCommandBean) obj).getCommand().getId());
+
+		 if( ! (obj instanceof AsyncCommandBean)) {
+            return false;
+        }
+
+		 return this.getCommand().getId().equals(((AsyncCommandBean) obj).getCommand().getId());
 	}
 }

@@ -12,36 +12,36 @@
  * Lesser General Public License for more details.
  *
  *
- *    
+ * 
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import javax.portlet.PortletContext;
 
-import org.osivia.portal.core.cms.CMSHandlerProperties;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-
-
+import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 
 /**
- * Ce customizer permet de définir : 
+ * Ce customizer permet de définir :
  * 
- *    de nouveaux templates de listes
- *    le schéma du moteur de recherche
- *    les templates de contenu
+ * de nouveaux templates de listes
+ * le schéma du moteur de recherche
+ * les templates de contenu
  * 
  * Le template d'affichage par défaut est WEB-INF/jsp/liste/view-[nom-du-template].jsp
  * 
  * @author jeanseb
- *
+ * @see DefaultCMSCustomizer
  */
 public class CMSCustomizer extends DefaultCMSCustomizer {
-	
-	public CMSCustomizer(PortletContext ctx) {
-		super( ctx);
-	
-	}
 
-
+    /**
+     * Constructor.
+     * 
+     * @param portletContext portlet context
+     * @param cmsService CMS service
+     */
+    public CMSCustomizer(PortletContext portletContext, CMSService cmsService) {
+        super(portletContext, cmsService);
+    }
 
 }

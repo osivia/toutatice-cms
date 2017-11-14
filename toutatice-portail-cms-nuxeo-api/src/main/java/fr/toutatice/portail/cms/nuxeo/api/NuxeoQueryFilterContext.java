@@ -13,6 +13,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import org.osivia.portal.core.constants.InternalConstants;
+
 
 public class NuxeoQueryFilterContext {
 
@@ -24,9 +26,15 @@ public class NuxeoQueryFilterContext {
 
     /** The Constant STATE_LIVE. */
     public static final int STATE_LIVE = 1;
+    
+    /** The constant STATE_LIVE_N_PUBLISHED. */
+    public static final int STATE_LIVE_N_PUBLISHED = 2;
 
     /** Live context instance. */
     public static final NuxeoQueryFilterContext CONTEXT_LIVE = new NuxeoQueryFilterContext(STATE_LIVE);
+    
+    /** Live and published context instance. */
+    public static final NuxeoQueryFilterContext CONTEXT_LIVE_N_PUBLISHED = new NuxeoQueryFilterContext(STATE_LIVE_N_PUBLISHED);
 
 
     public NuxeoQueryFilterContext() {
@@ -79,7 +87,7 @@ public class NuxeoQueryFilterContext {
     public NuxeoQueryFilterContext(int state) {
         super();
         this.state = state;
-
+        this.policy = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
     }
 
     public NuxeoQueryFilterContext(int state, String policy) {

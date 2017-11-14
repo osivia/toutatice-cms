@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
@@ -34,7 +36,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 
 /**
  * The Class ResourceUtil.
- * 
+ *
  * Manipulates blobs
  */
 public class ResourceUtil {
@@ -48,7 +50,7 @@ public class ResourceUtil {
 
     /**
      * Copy.
-     * 
+     *
      * @param inputStream the input stream
      * @param outputStream the output stream
      * @param bufSize the buf size
@@ -65,13 +67,14 @@ public class ResourceUtil {
             }
             out.flush();
         } finally {
-            in.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
         }
     }
 
     /**
      * Gets the string.
-     * 
+     *
      * @param in the in
      * @param charSet the char set
      * @return the string
@@ -97,7 +100,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new CMS binary content command.
-         * 
+         *
          * @param path the path
          * @param fileIndex the file index
          */
@@ -109,9 +112,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -130,17 +134,18 @@ public class ResourceUtil {
             InputStream in = blob.getStream();
 
             File tempFile = File.createTempFile("tempFile3", ".tmp");
-            OutputStream out = new FileOutputStream(tempFile);
+            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
             try {
                 byte[] b = new byte[4096];
                 int i = -1;
                 while ((i = in.read(b)) != -1) {
-                    out.write(b, 0, i);
+                    cout.write(b, 0, i);
                 }
-                out.flush();
+                cout.flush();
             } finally {
-                in.close();
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(cout);
             }
 
             CMSBinaryContent content = new CMSBinaryContent();
@@ -148,6 +153,7 @@ public class ResourceUtil {
             content.setName(blob.getFileName());
             content.setFile(tempFile);
             content.setMimeType(blob.getMimeType());
+            content.setFileSize(cout.getByteCount());
 
             return content;
 
@@ -156,9 +162,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "CMSBinaryContentCommand" + path + "/" + fileIndex;
         };
@@ -169,7 +176,7 @@ public class ResourceUtil {
 
     /**
      * Gets the CMS binary content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param fileIndex the file index
@@ -196,7 +203,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new picture content command.
-         * 
+         *
          * @param path the path
          * @param content the content
          */
@@ -208,9 +215,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -236,17 +244,18 @@ public class ResourceUtil {
                             InputStream in = new FileInputStream(blob.getFile());
 
                             File tempFile = File.createTempFile("tempFile2", ".tmp");
-                            OutputStream out = new FileOutputStream(tempFile);
+                            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
                             try {
                                 byte[] b = new byte[4096];
                                 int i = -1;
                                 while ((i = in.read(b)) != -1) {
-                                    out.write(b, 0, i);
+                                    cout.write(b, 0, i);
                                 }
-                                out.flush();
+                                cout.flush();
                             } finally {
-                                in.close();
+                                IOUtils.closeQuietly(in);
+                                IOUtils.closeQuietly(cout);
                             }
 
                             blob.getFile().delete();
@@ -256,6 +265,7 @@ public class ResourceUtil {
                             content.setName(blob.getFileName());
                             content.setFile(tempFile);
                             content.setMimeType(blob.getMimeType());
+                            content.setFileSize(cout.getByteCount());
 
                             return content;
 
@@ -273,9 +283,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "CMSBinaryContentCommand" + path + "/" + content;
         };
@@ -286,7 +297,7 @@ public class ResourceUtil {
 
     /**
      * Gets the picture content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param content the content
@@ -314,7 +325,7 @@ public class ResourceUtil {
 
         /**
          * Instantiates a new blob holder command.
-         * 
+         *
          * @param path the path
          * @param blobIndex the blob index
          */
@@ -326,9 +337,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#execute(org.nuxeo.ecm.automation.client.Session)
          */
+        @Override
         public Object execute(Session session) throws Exception {
 
             Document doc = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", path).execute();
@@ -347,17 +359,18 @@ public class ResourceUtil {
             InputStream in = blob.getStream();
 
             File tempFile = File.createTempFile("tempFile4", ".tmp");
-            OutputStream out = new FileOutputStream(tempFile);
+            CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
             try {
                 byte[] b = new byte[4096];
                 int i = -1;
                 while ((i = in.read(b)) != -1) {
-                    out.write(b, 0, i);
+                    cout.write(b, 0, i);
                 }
-                out.flush();
+                cout.flush();
             } finally {
-                in.close();
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(cout);
             }
 
             CMSBinaryContent content = new CMSBinaryContent();
@@ -365,6 +378,7 @@ public class ResourceUtil {
             content.setName(blob.getFileName());
             content.setFile(tempFile);
             content.setMimeType(blob.getMimeType());
+            content.setFileSize(cout.getByteCount());
 
             return content;
 
@@ -373,9 +387,10 @@ public class ResourceUtil {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand#getId()
          */
+        @Override
         public String getId() {
             return "BlobHolderCommand" + path + "/" + blobIndex;
         };
@@ -385,7 +400,7 @@ public class ResourceUtil {
 
     /**
      * Gets the blob holder content.
-     * 
+     *
      * @param ctx the ctx
      * @param path the path
      * @param fileIndex the file index

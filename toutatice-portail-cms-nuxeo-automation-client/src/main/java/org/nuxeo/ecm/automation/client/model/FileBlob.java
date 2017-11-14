@@ -30,18 +30,32 @@ public class FileBlob extends Blob implements HasFile {
         this.file = file;
     }
 
+
+    /**
+     * Constructor.
+     *
+     * @param file     file
+     * @param fileName file name
+     * @param mimeType mime type
+     */
+    public FileBlob(File file, String fileName, String mimeType) {
+        super(fileName, mimeType);
+        this.file = file;
+    }
+
+
     @Override
     public InputStream getStream() throws IOException {
         return new FileInputStream(file);
     }
-    
+
     @Override
     public int getLength() {
         long length = file.length();
-        if (length > (long)Integer.MAX_VALUE) {
+        if (length > (long) Integer.MAX_VALUE) {
             return -1;
         }
-        return (int)length;
+        return (int) length;
     }
 
     public File getFile() {

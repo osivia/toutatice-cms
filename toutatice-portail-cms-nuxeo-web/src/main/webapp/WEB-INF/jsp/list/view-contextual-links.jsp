@@ -1,8 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false" %>
 
@@ -12,11 +12,11 @@
         <c:forEach var="document" items="${documents}" varStatus="status">
             <!-- Document properties -->
             
-            <!-- URL -->
-            <c:set var="url"><ttc:documentLink document="${document}" displayContext="document" /></c:set>
+            <!-- Link -->
+            <ttc:documentLink document="${document}" var="link" />
             
             <!-- Vignette -->
-            <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+            <c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
             
             <!-- Description -->
             <c:set var="description" value="${document.properties['dc:description']}" />
@@ -24,36 +24,36 @@
             
             
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <div class="media">
-                            <!-- Vignette -->
-                            <c:if test="${not empty vignetteURL}">
-                                <div class="media-left">
-                                    <img src="${vignetteURL}" alt="" class="media-object">
-                                </div>
-                            </c:if>
-                            
-                            <div class="media-body">
-                                <!-- Title -->
-                                <p class="media-heading"><ttc:title document="${document}" /></p>
-                    
-                                <!-- Description -->
-                                <c:if test="${not empty description}">
-                                    <p>${description}</p>
-                                </c:if>
-                            </div>
-                        </div>
+                <a href="${link.url}" class="thumbnail no-ajax-link"
+                    <c:if test="${link.external}">target="_blank"</c:if>
+                >
+                    <span class="media">
+                        <!-- Vignette -->
+                        <c:if test="${not empty vignetteURL}">
+                            <span class="media-left">
+                                <img src="${vignetteURL}" alt="" class="media-object">
+                            </span>
+                        </c:if>
                         
-                        <!-- Continuation button -->
-                        <div class="text-right">
-                            <a href="${url}" class="btn btn-default btn-sm">
-                                <i class="halflings halflings-zoom-in"></i>
-                                <span><is:getProperty key="DETAIL" /></span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                        <span class="caption media-body">
+                            <!-- Title -->
+                            <span class="media-heading">
+                                <span>${document.title}</span>
+                                
+                                <c:if test="${link.external}">
+                                    <small>
+                                        <i class="glyphicons glyphicons-new-window-alt"></i>
+                                    </small>
+                                </c:if>
+                            </span>
+                
+                            <!-- Description -->
+                            <c:if test="${not empty description}">
+                                <span class="text-muted">${description}</span>
+                            </c:if>
+                        </span>
+                    </span>
+                </a>
             </div>
             
             

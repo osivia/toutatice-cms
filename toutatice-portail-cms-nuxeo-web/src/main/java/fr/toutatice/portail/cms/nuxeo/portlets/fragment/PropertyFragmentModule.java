@@ -13,6 +13,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -29,14 +31,15 @@ import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Property fragment module.
  *
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class PropertyFragmentModule implements IFragmentModule {
+public class PropertyFragmentModule extends FragmentModule {
 
     /** Text property fragment identifier. */
     public static final String TEXT_ID = "text_property";
@@ -59,44 +62,20 @@ public class PropertyFragmentModule implements IFragmentModule {
     /** Reference URI. */
     private static final String REF_URI = "refURI";
 
-    /** Text singleton instance. */
-    private static IFragmentModule textInstance;
-    /** HTML singleton instance. */
-    private static IFragmentModule htmlInstance;
-
 
     /** HTML content indicator. */
     private final boolean html;
 
 
     /**
-     * Private constructor.
-     */
-    private PropertyFragmentModule(boolean html) {
-        super();
-        this.html = html;
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
+     * @param html HTML content indicator
      */
-    public static IFragmentModule getInstance(boolean html) {
-        IFragmentModule instance;
-        if (html) {
-            if (htmlInstance == null) {
-                htmlInstance = new PropertyFragmentModule(true);
-            }
-            instance = htmlInstance;
-        } else {
-            if (textInstance == null) {
-                textInstance = new PropertyFragmentModule(false);
-            }
-            instance = textInstance;
-        }
-        return instance;
+    public PropertyFragmentModule(PortletContext portletContext, boolean html) {
+        super(portletContext);
+        this.html = html;
     }
 
 
@@ -127,9 +106,10 @@ public class PropertyFragmentModule implements IFragmentModule {
             // Computed path
             nuxeoPath = nuxeoController.getComputedPath(nuxeoPath);
 
-            // Fetch Nuxeo document
-            Document document = nuxeoController.fetchDocument(nuxeoPath);
-            nuxeoController.setCurrentDoc(document);            
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(nuxeoPath);
+            Document document = documentContext.getDocument();
+            nuxeoController.setCurrentDoc(document);
 
             // Title
             if (StringUtils.isNotBlank(document.getTitle())) {
@@ -168,6 +148,9 @@ public class PropertyFragmentModule implements IFragmentModule {
                     if (this.html) {
                         // Transform HTML content
                         propertyValue = nuxeoController.transformHTMLContent(propertyValue);
+                    } else if ("dc:description".equals(propertyName)) {
+                        // Add CSS classes
+                        propertyValue = "<div class=\"text-left text-pre-wrap\">" + propertyValue + "</div>";
                     }
 
                     request.setAttribute("content", propertyValue);
@@ -226,24 +209,26 @@ public class PropertyFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
-        // Current window
-        PortalWindow window = WindowFactory.getWindow(request);
+        if ("admin".equals(request.getPortletMode().toString()) && "save".equals(request.getParameter(ActionRequest.ACTION_NAME))) {
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
 
-        // Nuxeo path
-        window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
+            // Nuxeo path
+            window.setProperty(NUXEO_PATH_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("nuxeoPath")));
 
-        // Property name
-        window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
+            // Property name
+            window.setProperty(PROPERTY_NAME_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("propertyName")));
 
-        // Scope
-        window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
+            // Scope
+            window.setProperty(SCOPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("scope")));
 
-        // CMS menu display indicator
-        window.setProperty(CMS_MENU_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cmsMenu")));
+            // CMS menu display indicator
+            window.setProperty(CMS_MENU_DISPLAY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("cmsMenu")));
+        }
     }
 
 

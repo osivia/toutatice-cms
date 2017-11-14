@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -19,11 +20,11 @@
 <div class="container">
     <form action="${selectURL}" method="post" class="form-horizontal" role="form">
         <fieldset>
-            <legend><is:getProperty key="FRAGMENT_TYPE_SELECT" /></legend>
+            <legend><op:translate key="FRAGMENT_TYPE_SELECT" /></legend>
             
 	        <!-- Fragment type -->
 	        <div class="form-group">
-	            <label for="fragment-type" class="control-label col-sm-3"><is:getProperty key="FRAGMENT_TYPE" /></label>
+	            <label for="fragment-type" class="control-label col-sm-3"><op:translate key="FRAGMENT_TYPE" /></label>
 	            <div class="col-sm-9">
 	                <select id="fragment-type" name="fragmentTypeId" onchange="this.form.submit()" class="form-control">
 	                    <option value=""></option>
@@ -43,7 +44,7 @@
 	        <!-- Select button -->
             <div class="form-group hidden-script">
                 <div class="col-sm-offset-3 col-sm-9">
-                    <button type="submit" class="btn btn-default btn-primary"><is:getProperty key="SELECT" /></button>
+                    <button type="submit" class="btn btn-default btn-primary"><op:translate key="SELECT" /></button>
                 </div>
             </div>
         </fieldset>
@@ -58,11 +59,11 @@
             
                 <c:choose>
                     <c:when test="${empty fragmentType.module.adminJSPName}">
-                        <p><is:getProperty key="FRAGMENT_MESSAGE_NO_CONFIGURATION" /></p>
+                        <p><op:translate key="FRAGMENT_MESSAGE_NO_CONFIGURATION" /></p>
                     </c:when>
                     
                     <c:otherwise>
-                        <jsp:include page="admin-${fragmentType.module.adminJSPName}.jsp" />
+                        <ttc:include page="admin-${fragmentType.module.adminJSPName}.jsp" />
                     </c:otherwise>
                 </c:choose>
             </fieldset>
@@ -70,8 +71,14 @@
             <!-- Buttons -->
 	        <div class="form-group">
 	            <div class="col-sm-offset-3 col-sm-9">
-	                <button type="submit" class="btn btn-default btn-primary"><is:getProperty key="SAVE" /></button>
-	                <button type="button" class="btn btn-default" onclick="closeFancybox()"><is:getProperty key="CANCEL" /></button>
+	                <button type="submit" class="btn btn-primary">
+                        <i class="glyphicons glyphicons-floppy-disk"></i>
+                        <span><op:translate key="SAVE" /></span>
+                    </button>
+                    
+	                <button type="button" class="btn btn-default" onclick="closeFancybox()">
+                        <span><op:translate key="CANCEL" /></span>
+                    </button>
 	            </div>
 	        </div>
         </form>

@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc"%>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -12,34 +13,24 @@
     <c:choose>
         <c:when test="${not empty document}">
             <c:choose>
-                <c:when test="${onlyDescription}">
-                    <jsp:include page="only-description.jsp" />
+                <c:when test="${onlyRemoteSections}">
+                    <ttc:include page="only-remote-sections.jsp" />
                 </c:when>
-                
+
+                <c:when test="${onlyDescription}">
+                    <ttc:include page="only-description.jsp" />
+                </c:when>
+
                 <c:otherwise>
-                    <!-- Document view -->
-                    <jsp:include page="dispatch.jsp" />
-                    
-                    <!-- Document attachments view -->
-                    <c:if test="${attachments}">
-                        <jsp:include page="attachments.jsp" />
-                    </c:if>
-                    
-                    <!-- Metadata -->
-                    <c:if test="${metadata}">
-                        <jsp:include page="metadata.jsp" />
-                    </c:if>
-                    
-                    <!-- Document comments view -->
-                    <jsp:include page="comments.jsp" />
+                    <ttc:include page="view-${dispatchLayoutJsp}-layout.jsp" />
                 </c:otherwise>
             </c:choose>
         </c:when>
-        
+
         <c:otherwise>
             <p class="text-danger">
                 <i class="halflings halflings-exclamation-sign"></i>
-                <span><is:getProperty key="MESSAGE_PATH_UNDEFINED" /></span>
+                <span><op:translate key="MESSAGE_PATH_UNDEFINED" /></span>
             </p>
         </c:otherwise>
     </c:choose>

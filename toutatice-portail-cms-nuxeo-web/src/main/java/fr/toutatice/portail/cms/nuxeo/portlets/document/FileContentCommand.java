@@ -17,13 +17,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.nuxeo.ecm.automation.client.model.StreamBlob;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -37,6 +40,12 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
  * @see INuxeoCommand
  */
 public class FileContentCommand implements INuxeoCommand {
+    
+
+    /** PDF content flag (used in preview). */
+    public static final String PDF_CONTENT = "pdf:content";
+    /** Error on PDF conversion (used in preview). */
+    public static final String PDF_CONVERSION_ERROR = "errorOnPdfConversion";
 
     Document document;
     String docPath;
@@ -64,6 +73,33 @@ public class FileContentCommand implements INuxeoCommand {
         this.streamingSupport = streamingSupport;
     }
 
+    public static PropertyMap getFileMap(Document nuxeoDocument, String fieldName)  {
+        
+        PropertyMap map = null;
+        
+        if( fieldName.contains("/")){
+            //files:files/1/file
+            
+            String tokens[] = fieldName.split("/");
+            int index = Integer.parseInt(tokens[1]);
+
+            PropertyList files = nuxeoDocument.getProperties().getList(tokens[0]);
+            if ((files != null) && (files.size() > index)) {
+                PropertyMap descFileMap = files.getMap(index);
+                if (descFileMap != null) {
+                    map = descFileMap.getMap(tokens[2]);
+
+                    // Add filename in case it is missing in schema "file"
+                    map.set("filename", descFileMap.getString("filename"));
+                }
+            }
+
+        }
+        else
+            map = nuxeoDocument.getProperties().getMap(fieldName);
+
+        return map;
+    }
 
     /**
      * {@inheritDoc}
@@ -74,77 +110,83 @@ public class FileContentCommand implements INuxeoCommand {
             this.document = (Document) session.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, "*").set("value", this.docPath).execute();
         }
 
-        PropertyMap map = this.document.getProperties().getMap(this.fieldName);
+        FileBlob fileBlob;
 
-        String pathFile = map.getString("data");
+        if (StringUtils.equals(fieldName, PDF_CONTENT)) {
+            // download the file from its remote location
+            fileBlob = (FileBlob) session.newRequest("Blob.AnyToPDF").setInput(this.document).execute();
+        } else {
+            PropertyMap map = getFileMap(document, fieldName);
 
-        if (this.streamingSupport) {
-            String url = null;
+            String pathFile = map.getString("data");
 
-            if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
-                url = pathFile;
-            } else {
-                url = session.getClient().getBaseUrl() + pathFile;
+            if (this.streamingSupport) {
+                String url = null;
+
+                if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
+                    url = pathFile;
+                } else {
+                    url = session.getClient().getBaseUrl() + pathFile;
+                }
+
+                StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
+
+                CMSBinaryContent content = new CMSBinaryContent();
+
+                String fileName = blob.getFileName();
+                if ("file".equals(fileName)) {
+                    fileName = map.getString("filename");
+                }
+                if ((fileName == null) || "null".equals(fileName)) {
+                    // Pb. sur l'upload, on prend le nom du document
+                    fileName = this.document.getTitle();
+                }
+
+                // File size
+                // Long fileSize = this.document.getProperties().getLong("common:size");
+                Long length = map.getLong("length");
+
+                content.setName(fileName);
+                content.setFileSize(length);
+                content.setMimeType(blob.getMimeType());
+                content.setStream(blob.getStream());
+                content.setLongLiveSession(session);
+
+                return content;
             }
-
-
-            StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
-
-            CMSBinaryContent content = new CMSBinaryContent();
-
-            String fileName = blob.getFileName();
-            if ((fileName == null) || "null".equals(fileName)) {
-
-                // Pb. sur l'upload, on prend le nom du document
-                fileName = this.document.getTitle();
-            }
-
-
-            // File size
-            Long fileSize = this.document.getProperties().getLong("common:size");
-
-            content.setName(fileName);
-            content.setFileSize(fileSize);
-            content.setMimeType(blob.getMimeType());
-            content.setStream(blob.getStream());
-            content.setLongLiveSession(session);
-
-            return content;
+            // download the file from its remote location
+            fileBlob = (FileBlob) session.getFile(pathFile);
         }
-
-        // download the file from its remote location
-        FileBlob blob = (FileBlob) session.getFile(pathFile);
-
-
+        
         /* Construction résultat */
 
-        InputStream in = new FileInputStream(blob.getFile());
+        InputStream in = new FileInputStream(fileBlob.getFile());
 
         File tempFile = File.createTempFile("tempFile", ".tmp");
         tempFile.deleteOnExit();
 
-        OutputStream out = new FileOutputStream(tempFile);
+        CountingOutputStream cout = new CountingOutputStream(new FileOutputStream(tempFile));
 
 
         try {
             byte[] b = new byte[1000000];
             int i = -1;
             while ((i = in.read(b)) != -1) {
-                out.write(b, 0, i);
+                cout.write(b, 0, i);
             }
-            out.flush();
+            cout.flush();
         } finally {
-            in.close();
-            out.close();
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(cout);
         }
 
-        blob.getFile().delete();
+        fileBlob.getFile().delete();
 
         CMSBinaryContent content = new CMSBinaryContent();
 
         // JSS v 1.0.10 : traitement nom fichier à null
 
-        String fileName = blob.getFileName();
+        String fileName = fileBlob.getFileName();
         if ((fileName == null) || "null".equals(fileName)) {
 
             // Pb. sur l'upload, on prend le nom du document
@@ -153,7 +195,8 @@ public class FileContentCommand implements INuxeoCommand {
 
         content.setName(fileName);
         content.setFile(tempFile);
-        content.setMimeType(blob.getMimeType());
+        content.setMimeType(fileBlob.getMimeType());
+        content.setFileSize(cout.getByteCount());
 
         return content;
 

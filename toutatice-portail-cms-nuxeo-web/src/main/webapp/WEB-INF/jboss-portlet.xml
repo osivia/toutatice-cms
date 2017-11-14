@@ -1,6 +1,5 @@
-<!DOCTYPE portlet-app PUBLIC
-   "-//JBoss Portal//DTD JBoss Portlet 2.6//EN"
-   "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE portlet-app PUBLIC "-//JBoss Portal//DTD JBoss Portlet 2.6//EN" "http://www.jboss.org/portal/dtd/jboss-portlet_2_6.dtd">
 
 <portlet-app>
 
@@ -40,7 +39,39 @@
             </icon>
         </portlet-info>
     </portlet>
+    
 
+    <!-- Drafts List -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewDraftsListPortlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+        
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
+    
+    <!-- Procedures List -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-viewProcedurePortlet</portlet-name>
+
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+        
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
 
     <!-- Portal site navigation -->
     <portlet>
@@ -78,11 +109,8 @@
         <header-content>
             <link rel="stylesheet" href="/css/publish-menu.min.css" />
         
-            <!-- Drag & drop -->
-            <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
-            
-            <!-- jQuery File Upload (Drag & drop dependency) -->
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
+            <!-- Drag & drop + Fancytree functions -->
+            <script type="text/javascript" src="/js/publish-menu.min.js"></script>
         </header-content>
         
         <portlet-info>
@@ -106,16 +134,13 @@
             <link rel="stylesheet" href="/css/file-browser.min.css" />
             
             <!-- Drag & drop -->
-            <script type="text/javascript" src="/js/jquery-ui-dnd.js"></script>
+            <script type="text/javascript" src="/js/file-browser.min.js"></script>
 
-            <!-- Flaticon -->
-            <link rel="stylesheet" href="/components/flaticon/flaticon.css" />
-            
             <!-- jQuery File Upload -->
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-process.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-ui.js" />
-            <script type="text/javascript" src="/components/jquery-file-upload-9.8.1/js/jquery.fileupload-validate.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-process.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-ui.js" />
+            <script type="text/javascript" src="/components/jquery-file-upload-9.12.3/js/jquery.fileupload-validate.js" />
         </header-content>
         
         <portlet-info>
@@ -138,6 +163,10 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
+        
+        <header-content>
+            <script type="text/javascript" src="/js/search.min.js"></script>
+        </header-content>
 
         <portlet-info>
             <icon>
@@ -151,10 +180,6 @@
     <!-- Fragment -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
-
-        <ajax>
-            <partial-refresh>false</partial-refresh>
-        </ajax>
 
         <transaction>
             <trans-attribute>Required</trans-attribute>
@@ -241,10 +266,45 @@
     </portlet>
     
     
+    <!-- Vocabulary Select2 -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-vocabulary-select2</portlet-name>
+        
+        <transaction>
+            <trans-attribute>Required</trans-attribute>
+        </transaction>
+
+        <portlet-info>
+            <icon>
+                <small-icon>/img/portlet_icon.png</small-icon>
+                <large-icon>/img/portlet_icon.png</large-icon>
+            </icon>
+        </portlet-info>
+    </portlet>
+    
+    
     <!-- Move document -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-move</portlet-name>
     </portlet>
+    
+    
+    <!-- Reorder documents -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-reorder</portlet-name>
+        
+        <header-content>
+            <script type="text/javascript" src="/js/reorder.min.js"></script>
+        </header-content>
+    </portlet>
+
+
+    <!-- Customization modules repository -->
+    <service>
+        <service-name>CustomizationModulesRepository</service-name>
+        <service-class>org.osivia.portal.api.customization.ICustomizationModulesRepository</service-class>
+        <service-ref>osivia:service=CustomizationService</service-ref>
+    </service>
 
 </portlet-app>
 	

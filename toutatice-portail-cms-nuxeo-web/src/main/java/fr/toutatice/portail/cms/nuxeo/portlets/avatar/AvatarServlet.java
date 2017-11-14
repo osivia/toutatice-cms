@@ -1,18 +1,15 @@
 /*
  * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- *
+ * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *    
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.avatar;
 
@@ -20,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -37,6 +33,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.directory.v2.IDirProvider;
+import org.osivia.portal.api.directory.v2.model.Person;
+import org.osivia.portal.api.directory.v2.service.PersonService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -47,10 +47,10 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
 
 /**
- * Servlet for caching and displaying avatar's from nuxeo
+ * Servlet for caching and displaying avatar's from Nuxeo.
  * 
  * @author lbillon
- * 
+ * @see HttpServlet
  */
 public class AvatarServlet extends HttpServlet {
 
@@ -67,49 +67,17 @@ public class AvatarServlet extends HttpServlet {
 
     public static void setPortletContext(PortletContext documentPortletCtx) {
         portletCtx = documentPortletCtx;
+        
+        // Directory service
+    	IDirProvider provider = Locator.findMBean(IDirProvider.class, IDirProvider.MBEAN_NAME);
+    	
+    	PERSON_SERVICE = provider.getDirService(PersonService.class);        
     }
 
     private static final int AVATAR_TIMEOUT = 3600;
 
-    // public boolean isResourceExpired(String sOriginalDate) {
-    //
-    // boolean isExpired = true;
-    //
-    // if (sOriginalDate != null) {
-    //
-    // SimpleDateFormat inputFormater = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    // inputFormater.setTimeZone(TimeZone.getTimeZone("GMT"));
-    // try {
-    // Date originalDate = inputFormater.parse(sOriginalDate);
-    // if (System.currentTimeMillis() < originalDate.getTime() + AVATAR_TIMEOUT * 1000)
-    // isExpired = false;
-    // } catch (Exception e) {
-    //
-    // }
-    // }
-    //
-    // return isExpired;
-    // }
+	private static PersonService PERSON_SERVICE;
 
-    // public boolean serveResourceByCache(HttpServletRequest resourceRequest, HttpServletResponse resourceResponse) throws PortletException, IOException {
-    //
-    // String sOriginalDate = resourceRequest.getHeader("if-modified-since");
-    // if (sOriginalDate == null)
-    // sOriginalDate = resourceRequest.getHeader("If-Modified-Since");
-    //
-    // if (!isResourceExpired(sOriginalDate)) { // validation
-    // // request
-    //
-    // // resourceResponse.setContentLength(0);
-    // resourceResponse.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-    //
-    // resourceResponse.setHeader("Last-Modified", sOriginalDate);
-    //
-    // return true;
-    // }
-    //
-    // return false;
-    // }
 
     public String formatResourceLastModified() {
 
@@ -118,42 +86,64 @@ public class AvatarServlet extends HttpServlet {
         return inputFormater.format(new Date(System.currentTimeMillis()));
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
+    public void doGet(HttpServletRequest theRequest, HttpServletResponse theResponse) throws IOException, ServletException {
+        // Nuxeo controller
+        NuxeoController ctx = new NuxeoController(portletCtx);
+        ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
 
         OutputStream output = theResponse.getOutputStream();
         try {
-
-
+            // Username
             String username = theRequest.getParameter("username");
-            username = URLDecoder.decode(username, "UTF-8");
 
-            NuxeoController ctx = new NuxeoController(portletCtx);
+            // Person
+            Person person = PERSON_SERVICE.getPerson(username);
 
-			ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-            ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+            // User identifier
+            String userId;
+            if (person == null) {
+                userId = null;
+            } else {
+                userId = person.getUid();
+            }
 
-            Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(username));
-
-            Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
+            
+            boolean genericAvatar = true;
 
             theResponse.setHeader("Cache-Control", "max-age=" + AVATAR_TIMEOUT);
-
             theResponse.setHeader("Last-Modified", formatResourceLastModified());
 
-            if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
-                FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
-                command.setTimestamp(theRequest.getParameter("t"));
 
-                CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
+            if (userId != null) {
+                Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(userId));
 
-                // Les headers doivent être positionnées avant la réponse
-                theResponse.setContentType(content.getMimeType());
+                if (userProfile != null) {
+                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
 
-                ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
+                    if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
+                        FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
+                        command.setTimestamp(theRequest.getParameter("t"));
 
-            } else {
+                        CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
 
+                        // Les headers doivent être positionnées avant la réponse
+                        theResponse.setContentType(content.getMimeType());
+
+                        ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
+
+                        genericAvatar = false;
+                    }
+                }
+            }
+
+
+            if (genericAvatar) {
                 // no avatar found, use the guest avatar
                 File file = new File(portletCtx.getRealPath("/img/guest.png"));
 
@@ -168,15 +158,11 @@ public class AvatarServlet extends HttpServlet {
 
                 theResponse.getOutputStream().write(data);
             }
-
-
-
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
             output.close();
         }
-
     }
 
 }

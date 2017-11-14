@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="internationalization" prefix="is" %>
-<%@ taglib uri="toutatice" prefix="ttc" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page contentType="text/html" isELIgnored="false"%>
 
@@ -13,15 +13,15 @@
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
-<c:set var="searchTitle"><is:getProperty key="SEARCH_TITLE" /></c:set>
-<c:set var="searchPlaceholder"><is:getProperty key="SEARCH_PLACEHOLDER" /></c:set>
+<c:set var="searchTitle"><op:translate key="SEARCH_TITLE" /></c:set>
+<c:set var="searchPlaceholder"><op:translate key="SEARCH_PLACEHOLDER" /></c:set>
 
 
 <div class="nuxeo-results-search">
     <!-- Search form -->
     <form action="${searchActionURL}" method="post" class="form" role="search">
         <div class="form-group">
-            <label class="sr-only" for="${namespace}-search-input"><is:getProperty key="SEARCH" /></label>
+            <label class="sr-only" for="${namespace}-search-input"><op:translate key="SEARCH" /></label>
             <div class="input-group">
                 <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
                 <span class="input-group-btn">
@@ -41,11 +41,11 @@
                 <span>${totalSize} </span>
                 <c:choose>
                     <c:when test="${totalSize > 1}">
-                        <is:getProperty key="SEARCH_RESULTS_INDICATOR" />
+                        <op:translate key="SEARCH_RESULTS_INDICATOR" />
                     </c:when>
                     
                     <c:otherwise>
-                        <is:getProperty key="SEARCH_RESULT_INDICATOR" />
+                        <op:translate key="SEARCH_RESULT_INDICATOR" />
                     </c:otherwise>
                 </c:choose>
             </p>
@@ -59,7 +59,7 @@
                     <ttc:documentLink document="${document}" var="link" />
             
                     <!-- Vignette -->
-                    <c:set var="vignetteURL"><ttc:getImageURL document="${document}" property="ttc:vignette" /></c:set>
+                    <c:set var="vignetteURL"><ttc:pictureLink document="${document}" property="ttc:vignette" /></c:set>
             
                     <!-- Description -->
                     <c:set var="description" value="${document.properties['dc:description']}" />
@@ -69,19 +69,17 @@
                     <li class="media">
                         <c:if test="${not empty vignetteURL}">
                             <div class="media-left">
-                                <p>
-                                    <img src="${vignetteURL}" alt="">
-                                </p>
+                                <img src="${vignetteURL}" alt="">
                             </div>
                         </c:if>
                         
-                        <div class="media-body">
+                        <div class="media-body media-middle">
                             <!-- Title -->
                             <div>
                                 <a href="${link.url}"
                                     <c:if test="${link.external}">target="_blank"</c:if>
                                 >
-                                    <i class="${document.type.glyph}"></i>
+                                    <i class="${document.type.icon}"></i>
                                     <span>${document.title}</span>
                                 </a>
                                 
@@ -97,7 +95,7 @@
                             </div>
                             
                             <!-- Description -->
-                            <p>${description}</p>
+                            <div class="text-pre-wrap">${description}</div>
                         </div>
                     </li>
                 </c:forEach>
@@ -122,6 +120,7 @@
                                     <portlet:renderURL var="pageURL">
                                         <portlet:param name="keywords" value="${keywords}" />
                                         <portlet:param name="currentPage" value="${index}" />
+                                        <portlet:param name="results" value="true"/>
                                     </portlet:renderURL>
                                     
                                     <li>

@@ -10,18 +10,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- *
- *
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -44,11 +40,12 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.IFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
 /**
- * View fragment portlet
+ * View fragment portlet.
  *
  * @see CMSPortlet
  */
@@ -64,8 +61,6 @@ public class ViewFragmentPortlet extends CMSPortlet {
 
     /** CMS customizer. */
     private INuxeoCustomizer customizer;
-    /** Fragment types technical map. DO NOT USE FOR DISPLAY. */
-    private Map<String, FragmentType> fragmentTypesMap;
 
 
     /**
@@ -87,13 +82,6 @@ public class ViewFragmentPortlet extends CMSPortlet {
         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         // CMS customizer
         this.customizer = nuxeoService.getCMSCustomizer();
-
-        // Fragment types technical map
-        List<FragmentType> fragmentTypes = this.customizer.getFragmentTypes(Locale.getDefault());
-        this.fragmentTypesMap = new HashMap<String, FragmentType>(fragmentTypes.size());
-        for (FragmentType fragmentType : fragmentTypes) {
-            this.fragmentTypesMap.put(fragmentType.getKey(), fragmentType);
-        }
     }
 
 
@@ -102,7 +90,13 @@ public class ViewFragmentPortlet extends CMSPortlet {
      */
     @Override
     public void processAction(ActionRequest request, ActionResponse response) throws IOException, PortletException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        // Current window
+        PortalWindow window = WindowFactory.getWindow(request);
+        // Action name
         String action = request.getParameter(ActionRequest.ACTION_NAME);
+
 
         if ("admin".equals(request.getPortletMode().toString())) {
             if ("select".equals(action)) {
@@ -111,32 +105,39 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 // Fragment type identifier
                 String fragmentTypeId = request.getParameter("fragmentTypeId");
                 response.setRenderParameter("fragmentTypeId", fragmentTypeId);
-            } else {
-                if ("save".equals(action)) {
-                    // Save action
+            } else if ("save".equals(action)) {
+                // Save action
 
-                    // Portal controller context
-                    PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
-                    // Current window
-                    PortalWindow window = WindowFactory.getWindow(request);
-
-                    // Fragment type
-                    String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
-                    window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
-                    if (fragmentTypeId != null) {
-                        FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
-                        if (fragmentType != null) {
-                            // Specific fragment admin action
-                            fragmentType.getModule().processAdminAction(portalControllerContext);
-                        }
-                    }
-                }
+                // Fragment type
+                String fragmentTypeId = StringUtils.trimToNull(request.getParameter("fragmentTypeId"));
+                window.setProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY, fragmentTypeId);
 
                 response.setPortletMode(PortletMode.VIEW);
                 response.setWindowState(WindowState.NORMAL);
             }
         }
-	}
+
+
+        // Module
+        String fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
+        if (fragmentTypeId != null) {
+            FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
+            if (fragmentType != null) {
+                // Module
+                IFragmentModule module = fragmentType.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    try {
+                        module.processAction(portalControllerContext);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
+                    }
+                }
+            }
+        }
+    }
 
 
     /**
@@ -149,8 +150,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
      */
     @RenderMode(name = "admin")
     public void doAdmin(RenderRequest request, RenderResponse response) throws IOException, PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
         // Current window
         PortalWindow window = WindowFactory.getWindow(request);
 
@@ -163,16 +166,27 @@ public class ViewFragmentPortlet extends CMSPortlet {
 
         // Fragment type
         if (fragmentTypeId != null) {
-            FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
+            FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
             if (fragmentType != null) {
-                // Specific fragment admin view
-                fragmentType.getModule().doAdmin(portalControllerContext);
+                // Module
+                IFragmentModule module = fragmentType.getModule();
+                if (module != null) {
+                    // Saved class loader
+                    ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    try {
+                        module.doAdmin(portalControllerContext);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(savedClassLoader);
+                    }
+                }
+
                 request.setAttribute("fragmentType", fragmentType);
             }
         }
 
         // Fragment types
-        List<FragmentType> fragmentTypes = this.customizer.getFragmentTypes(request.getLocale());
+        Collection<FragmentType> fragmentTypes = this.customizer.getFragmentTypes(request.getLocale()).values();
         List<FragmentType> filteredFragmentTypes = new ArrayList<FragmentType>(fragmentTypes.size());
         for (FragmentType fragmentType : fragmentTypes) {
             if (fragmentType.getModule().isDisplayedInAdmin()) {
@@ -181,11 +195,9 @@ public class ViewFragmentPortlet extends CMSPortlet {
         }
         request.setAttribute("fragmentTypes", filteredFragmentTypes);
 
-
         response.setContentType("text/html");
         this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
-	}
-
+    }
 
 
     /**
@@ -196,6 +208,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+
             // Portal controller context
             PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
             // Current window
@@ -205,9 +218,21 @@ public class ViewFragmentPortlet extends CMSPortlet {
             String fragmentTypeId = window.getProperty(FRAGMENT_TYPE_ID_WINDOW_PROPERTY);
             if (StringUtils.isNotEmpty(fragmentTypeId)) {
                 // Fragment type
-                FragmentType fragmentType = this.fragmentTypesMap.get(fragmentTypeId);
+                FragmentType fragmentType = this.customizer.getFragmentTypes(Locale.getDefault()).get(fragmentTypeId);
                 if (fragmentType != null) {
-                    fragmentType.getModule().doView(portalControllerContext);
+                    // Module
+                    IFragmentModule module = fragmentType.getModule();
+                    if (module != null) {
+                        // Saved class loader
+                        ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+                        Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                        try {
+                            module.doView(portalControllerContext);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(savedClassLoader);
+                        }
+                    }
+
                     request.setAttribute("fragmentType", fragmentType);
                 }
             }
@@ -221,6 +246,6 @@ public class ViewFragmentPortlet extends CMSPortlet {
         } catch (Exception e) {
             throw new PortletException(e);
         }
-	}
+    }
 
 }

@@ -27,7 +27,6 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.NavigationItem;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
@@ -70,7 +69,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 				
 		OperationRequest request;
 
-		request = session.newRequest("Document.Query");
+		request = session.newRequest("Document.QueryES");
 
 		
 		String itemRequest = "";
@@ -93,7 +92,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 		String nuxeoRequest = "( " + itemRequest + ")  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1) ";
 		
 		// Insertion du filtre sur les élements publiés
-        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE, InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER );
+        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);
 
 		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
 	

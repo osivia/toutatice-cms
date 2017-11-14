@@ -22,6 +22,10 @@ import org.nuxeo.ecm.automation.client.model.OperationInput;
 // TODO: comment me.
 public interface OperationRequest {
 
+    public static final String APP_HEADER = "X-Application-Name";
+
+    public static final String APP_HEADER_VALUE = "OSIVIA Portal";
+	
     Session getSession();
 
     String getUrl();

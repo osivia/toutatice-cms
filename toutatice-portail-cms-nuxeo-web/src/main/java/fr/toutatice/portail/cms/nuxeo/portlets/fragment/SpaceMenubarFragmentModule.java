@@ -3,6 +3,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.fragment;
 
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -11,49 +12,35 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.context.PortalControllerContext;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.IFragmentModule;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.fragment.FragmentModule;
 
 /**
  * Fragment permettant l'affichage d'une Menubar pour un espace (page).
  * --- appliqué pour le moment aux workspaces ---
  *
  * @author David Chevrier
- * @see IFragmentModule
+ * @see FragmentModule
  */
-public class SpaceMenubarFragmentModule implements IFragmentModule {
+public class SpaceMenubarFragmentModule extends FragmentModule {
 
     /** Space menubar fragment identifier. */
     public static final String ID = "space_menubar";
 
-    /** Singleton instance. */
-    private static IFragmentModule instance;
-
 
     /**
-     * Private constructor.
-     */
-    private SpaceMenubarFragmentModule() {
-        super();
-    }
-
-
-    /**
-     * Get singleton instance.
+     * Constructor.
      *
-     * @return singleton instance
+     * @param portletContext portlet context
      */
-    public static IFragmentModule getInstance() {
-        if (instance == null) {
-            instance = new SpaceMenubarFragmentModule();
-        }
-        return instance;
+    public SpaceMenubarFragmentModule(PortletContext portletContext) {
+        super(portletContext);
     }
 
 
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void doView(PortalControllerContext portalControllerContext) throws PortletException {
         // Request
@@ -66,17 +53,15 @@ public class SpaceMenubarFragmentModule implements IFragmentModule {
         String navigationPath = nuxeoController.getNavigationPath();
 
         if (navigationPath != null) {
-            Document doc = nuxeoController.fetchDocument(navigationPath);
+            // Nuxeo document
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(navigationPath);
+            Document document = documentContext.getDocument();
+            nuxeoController.setCurrentDoc(document);
 
-            nuxeoController.setCurrentDoc(doc);
             request.setAttribute("osivia.cms.menuBar.forceContextualization", true);
             nuxeoController.insertContentMenuBarItems();
 
-            // List<MenubarItem> menubar = (List<MenubarItem>) request.getAttribute(Constants.PORTLET_ATTR_MENU_BAR);
-
-            // if (menubar.isEmpty()) {
-                request.setAttribute("osivia.emptyResponse", "1");
-            // }
+            request.setAttribute("osivia.emptyResponse", "1");
         }
     }
 
@@ -94,7 +79,7 @@ public class SpaceMenubarFragmentModule implements IFragmentModule {
      * {@inheritDoc}
      */
     @Override
-    public void processAdminAction(PortalControllerContext portalControllerContext) throws PortletException {
+    public void processAction(PortalControllerContext portalControllerContext) throws PortletException {
         // Do nothing
     }
 

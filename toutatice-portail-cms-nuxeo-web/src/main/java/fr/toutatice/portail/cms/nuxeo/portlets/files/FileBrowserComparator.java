@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.osivia.portal.core.cms.CMSItemType;
+import org.osivia.portal.api.cms.DocumentType;
 
 /**
  * File browser comparator.
@@ -59,9 +59,9 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
             result = this.compare(item1.getIndex(), item2.getIndex());
         } else {
             // Folderish comparison
-            CMSItemType type1 = item1.getType();
+            DocumentType type1 = item1.getType();
             boolean folderish1 = (type1 != null) && type1.isFolderish();
-            CMSItemType type2 = item2.getType();
+            DocumentType type2 = item2.getType();
             boolean folderish2 = (type2 != null) && type2.isFolderish();
 
             if (folderish1 && !folderish2) {
@@ -85,7 +85,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
                     date2 = (Date) item2.getProperties().get("dc:created");
                 }
 
-                result = this.compare(date1, date2);
+                result = -this.compare(date1, date2);
             } else if ("contributor".equals(sort)) {
                 String contributor1 = (String) item1.getProperties().get("dc:lastContributor");
                 String contributor2 = (String) item2.getProperties().get("dc:lastContributor");
@@ -126,8 +126,10 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
      * @param object2 object #2
      * @return comparison value
      */
-    private <T extends Comparable<T>> int compare(T object1, T object2) {
+    private <T extends Comparable<T>> int compare(T object1P, T object2P) {
         int result;
+        Object object1 = object1P;
+        Object object2 = object2P;
         if (object1 == null) {
             result = -1;
         } else if (object2 == null) {
@@ -137,7 +139,7 @@ public class FileBrowserComparator implements Comparator<FileBrowserItem> {
             String string2 = (String) object2;
             result = string1.compareToIgnoreCase(string2);
         } else {
-            result = object1.compareTo(object2);
+            result = object1P.compareTo(object2P);
         }
         return result;
     }

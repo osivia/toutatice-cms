@@ -25,7 +25,9 @@ import java.util.Set;
  */
 public class PropertyMap implements Serializable {
 
-    private static final long serialVersionUID = -3260084599278006841L;
+
+
+	private static final long serialVersionUID = -3260084599278006841L;
 
     protected final LinkedHashMap<String, Object> map;
 
@@ -203,4 +205,11 @@ public class PropertyMap implements Serializable {
         }
         return buf.toString();
     }
+    
+    /**
+	 * @return the map
+	 */
+	public LinkedHashMap<String, Object> getMap() {
+		return map;
+	}
 }

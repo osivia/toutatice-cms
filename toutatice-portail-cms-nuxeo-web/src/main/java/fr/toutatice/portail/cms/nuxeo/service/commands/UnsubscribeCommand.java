@@ -41,8 +41,8 @@ public class UnsubscribeCommand extends EcmCommand {
 	public UnsubscribeCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-		super(EcmCommonCommands.unsubscribe.toString(), ReloadAfterCommandStrategy.refreshNavigation, "Notification.AllNotificationsUnsubscribe", null);
-		
+        super(EcmCommonCommands.unsubscribe.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Notification.AllNotificationsUnsubscribe", null);
+
 		this.itlzService = itlzService;
 		this.notifService = notifService;
 
