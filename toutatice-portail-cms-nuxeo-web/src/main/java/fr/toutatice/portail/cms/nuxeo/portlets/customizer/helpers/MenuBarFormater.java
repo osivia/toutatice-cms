@@ -254,7 +254,7 @@ public class MenuBarFormater {
                                 // Reorder
                                 this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                                 // Edition
-                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
+                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                                 // Delete
                                 this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                             }
@@ -1311,11 +1311,10 @@ public class MenuBarFormater {
      * @param pubInfos publication infos
      * @param menubar menubar
      * @param bundle internationalization bundle
-     * @param isTaskbarItem is taskbar item indicator
      * @throws CMSException
      */
     protected void getEditLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1346,12 +1345,7 @@ public class MenuBarFormater {
             // Menubar item
             MenubarItem item;
 
-            if (isTaskbarItem) {
-                String title = bundle.getString("EDIT");
-                item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
-                item.setDisabled(true);
-                menubar.add(item);
-            } else if ((type != null) && type.isEditable()) {
+            if ((type != null) && type.isEditable()) {
                 // Callback URL
                 String callbackURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
                 // ECM base URL
