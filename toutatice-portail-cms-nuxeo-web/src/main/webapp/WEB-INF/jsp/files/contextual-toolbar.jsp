@@ -91,10 +91,10 @@
                     </a>
                 </div>
 
-                <div class="btn-group btn-group-sm bulk-download" role="group">
-                    <!-- Zip Download -->
-                    <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
-                    <a href="#" data-url="${zipDownloadUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link force-tooltip download" data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}">
+                <!-- Bulk Download -->
+                <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
+                <div title="${title}" class="btn-group btn-group-sm bulk-download" data-toggle="tooltip" data-placement="top" data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}" role="group">
+                    <a href="#" target="_blank" data-url="${zipDownloadUrl}" class="btn btn-default navbar-btn no-ajax-link">
                         <i class="halflings halflings-download-alt"></i>
                         <span class="sr-only">${title}</span>
                     </a>

@@ -2361,10 +2361,14 @@ public class NuxeoController {
         // Document context
         NuxeoDocumentContext documentContext;
 
-        try {
-            documentContext = cmsService.getDocumentContext(cmsContext, path, NuxeoDocumentContext.class);
-        } catch (CMSException e) {
-            throw this.wrapNuxeoException(e);
+        if (path == null) {
+            documentContext = null;
+        } else {
+            try {
+                documentContext = cmsService.getDocumentContext(cmsContext, path, NuxeoDocumentContext.class);
+            } catch (CMSException e) {
+                throw this.wrapNuxeoException(e);
+            }
         }
 
         return documentContext;
