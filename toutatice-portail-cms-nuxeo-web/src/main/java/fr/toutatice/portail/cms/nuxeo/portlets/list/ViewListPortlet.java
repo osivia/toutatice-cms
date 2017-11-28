@@ -70,7 +70,6 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -210,6 +209,18 @@ public class ViewListPortlet extends ViewList {
             // Template
             ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
 
+            // Module
+            IPortletModule module = template.getModule();
+
+            // Request filter
+            String filter = null;
+            if (module != null && module instanceof IPrivilegedModule) {
+                IPrivilegedModule privilegedModule = (IPrivilegedModule) module;
+                nuxeoController.setAuthType(privilegedModule.getAuthType());
+                nuxeoController.setCacheType(privilegedModule.getCacheType());
+                filter = privilegedModule.getFilter(portalControllerContext);
+            }
+
             boolean requestExecution = false;
 
             PaginableDocuments documents = null;
@@ -254,6 +265,8 @@ public class ViewListPortlet extends ViewList {
                 if (nuxeoRequest != null) {
                     String schemas = template.getSchemas();
 
+                    // Apply request filter
+                    nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
 
                     // Nuxeo command
                     INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), 0, resultsLimit, schemas,
@@ -302,8 +315,6 @@ public class ViewListPortlet extends ViewList {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
             } else {
-                // Module
-                IPortletModule module = template.getModule();
                 if (module != null) {
                     // Saved class loader
                     ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
