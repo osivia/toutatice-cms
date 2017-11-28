@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>toutatice-portail.cms</groupId>
+        <artifactId>cms-parent</artifactId>
+        <version>4.6.2</version>
+    </parent>
+
+    <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
+    <packaging>jar</packaging>
+    <name>Toutatice Portal - API</name>
+
+    <dependencies>
+    
+        <!-- Nuxeo automation client -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <activation>
+                <property>
+                    <name>deploy.socle-libs.dir</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-jar</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <copy file="${basedir}/target/${project.build.finalName}.jar" todir="${deploy.socle-libs.dir}" />
+                                    </tasks>
+                                </configuration>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

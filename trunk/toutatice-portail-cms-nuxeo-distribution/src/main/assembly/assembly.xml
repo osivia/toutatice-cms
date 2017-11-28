@@ -1,0 +1,79 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<id>bin</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/jboss-as/server/production/deploy/socle</outputDirectory>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>${project.groupId}:toutatice-portail-cms-nuxeo-sar:sar:${project.version}</include>
+			</includes>
+		</dependencySet>
+
+		<dependencySet>
+			<outputDirectory>/jboss-as/server/production/lib</outputDirectory>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>${project.groupId}:toutatice-portail-cms-nuxeo-api:jar:${project.version}</include>
+			</includes>
+		</dependencySet>
+        
+        <dependencySet>
+            <outputDirectory>/jboss-as/server/production/deploy/jboss-web.deployer</outputDirectory>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+            <includes>
+                <include>${project.groupId}:toutatice-portail-cms-nuxeo-taglib:jar:${project.version}</include>
+            </includes>
+            <outputFileNameMapping>toutatice-taglib.jar</outputFileNameMapping>
+        </dependencySet>
+	</dependencySets>
+
+	<fileSets>
+
+		<fileSet>
+			<outputDirectory>/jboss-as/server/production/lib</outputDirectory>
+			<directory>target/dependency</directory>
+		</fileSet>
+
+		<fileSet>
+			<outputDirectory>/</outputDirectory>
+			<directory>target/osivia-distribution</directory>
+			
+			<includes>
+				<include>jboss-as/**</include>
+				<include>custom/**</include>
+			</includes>
+			<excludes>
+
+				<!-- exclude distribution environment specific files -->
+
+				<exclude>custom/params/environnement_portail.properties.*</exclude>
+				<exclude>jboss-as/server/production/run.conf.*</exclude>
+                <exclude>jboss-as/server/production/deploy/jboss-web.deployer/conf/web.xml</exclude>
+				<exclude>jboss-as/server/portal.properties</exclude>
+				
+				<!-- exclude EhCache replaced in the production/lib directory -->
+				<exclude>jboss-as/server/production/deploy/jboss-portal-ha.sar/lib/ehcache.jar</exclude>
+				<exclude>jboss-as/server/production/deploy/jboss-portal-ha.sar/conf/hibernate/workflow/hibernate.cfg.xml</exclude>
+			</excludes>
+		</fileSet>
+
+		<fileSet>
+			<outputDirectory>/</outputDirectory>
+			<directory>src/main/resources</directory>
+		</fileSet>
+	</fileSets>
+
+
+
+</assembly>
