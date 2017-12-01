@@ -13,7 +13,7 @@
 
 
 <div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
-    <div class="portlet-filler">
+    <div class="portlet-filler hidden-scrollbar">
         <c:if test="${startLevel eq 1 and empty displayItem.children}">
             <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
         </c:if>
