@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -237,13 +238,11 @@ public class MenuBarFormater {
                     // Edition dropdown menu
                     this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
-
-                    // Permalink
-                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
-
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
+                    // Permalink
+                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Draft options
@@ -334,21 +333,23 @@ public class MenuBarFormater {
      * @throws CMSException
      */
     protected boolean isInUserWorkspace(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        // CMS service
-        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+        // Browser adapter
+        BrowserAdapter browserAdapter = this.customizer.getBrowserAdapter();
 
         boolean userWorkspace = false;
         if (document != null) {
-            final String path = document.getPath() + "/";
+            String path = document.getPath() + "/";
 
-            final List<CMSItem> userWorkspaces = cmsService.getWorkspaces(cmsContext, true, false);
-            for (final CMSItem cmsItem : userWorkspaces) {
-                if (StringUtils.startsWith(path, cmsItem.getPath() + "/")) {
-                    userWorkspace = true;
-                    break;
-                }
+            // User workspaces
+            List<CMSItem> userWorkspaces = browserAdapter.getAllUserWorkspaces(cmsContext);
+
+            Iterator<CMSItem> iterator = userWorkspaces.iterator();
+            while (iterator.hasNext() && !userWorkspace) {
+                CMSItem cmsItem = iterator.next();
+                userWorkspace = StringUtils.startsWith(path, cmsItem.getPath() + "/");
             }
         }
+
         return userWorkspace;
     }
 

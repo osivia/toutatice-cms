@@ -1195,7 +1195,7 @@ public class CMSService implements ICMSService {
 
         List<CMSItem> workspaces;
         if (userWorkspaces) {
-            workspaces = browserAdapter.getUserWorkspaces(cmsContext);
+            workspaces = browserAdapter.getCurrentUserWorkspaces(cmsContext);
         } else {
             workspaces = browserAdapter.getWorkspaces(cmsContext, administrator);
         }

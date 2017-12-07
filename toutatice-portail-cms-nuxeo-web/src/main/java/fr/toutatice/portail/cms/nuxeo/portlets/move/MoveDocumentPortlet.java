@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -19,6 +18,7 @@ import org.osivia.portal.api.cms.DocumentState;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -36,7 +36,10 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
 
 /**
@@ -68,9 +71,10 @@ public class MoveDocumentPortlet extends CMSPortlet {
     /** Change space path. */
     private static final String CHANGE_SPACE_PATH = "/WEB-INF/jsp/move/change-space.jsp";
 
-
+    /** Nuxeo service. */
+    private final INuxeoService nuxeoService;
     /** Document DAO. */
-    private DocumentDAO documentDAO;
+    private final DocumentDAO documentDAO;
 
 
     /**
@@ -78,16 +82,9 @@ public class MoveDocumentPortlet extends CMSPortlet {
      */
     public MoveDocumentPortlet() {
         super();
-    }
 
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void init(PortletConfig config) throws PortletException {
-        super.init(config);
-
+        // Nuxeo service
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
         // DAO
         this.documentDAO = DocumentDAO.getInstance();
     }
@@ -100,6 +97,11 @@ public class MoveDocumentPortlet extends CMSPortlet {
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+
+        // CMS customizer
+        DefaultCMSCustomizer cmsCustomizer = (DefaultCMSCustomizer) this.nuxeoService.getCMSCustomizer();
+        // Browser adapter
+        BrowserAdapter browserAdapter = cmsCustomizer.getBrowserAdapter();
 
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
@@ -172,6 +174,10 @@ public class MoveDocumentPortlet extends CMSPortlet {
         // Document path
         String documentPath = window.getProperty(DOCUMENT_PATH_WINDOW_PROPERTY);
 
+        // User workspaces path
+        String userWorkspacesPath = browserAdapter.getUserWorkspacesPath();
+
+
         // Navigation path
         if (documentPath != null) {
             String navigationPath;
@@ -194,15 +200,21 @@ public class MoveDocumentPortlet extends CMSPortlet {
         }
 
         // Ignored paths
-        String ignoredPaths = window.getProperty(IGNORED_PATHS_WINDOW_PROPERTY);
-        if (ignoredPaths == null) {
-            ignoredPaths = documentPath;
-        }
+        String ignoredPaths = StringUtils.defaultIfEmpty(window.getProperty(IGNORED_PATHS_WINDOW_PROPERTY), documentPath);
         request.setAttribute("ignoredPaths", ignoredPaths);
 
         // Accepted types
         String acceptedTypes = window.getProperty(ACCEPTED_TYPES_WINDOW_PROPERTY);
         request.setAttribute("acceptedTypes", acceptedTypes);
+
+        // Excluded types
+        String excludedTypes;
+        if (StringUtils.startsWith(cmsBasePath, userWorkspacesPath)) {
+            excludedTypes = browserAdapter.getUserWorkspacesType();
+        } else {
+            excludedTypes = null;
+        }
+        request.setAttribute("excludedTypes", excludedTypes);
 
         // Error
         String error = request.getParameter("error");
