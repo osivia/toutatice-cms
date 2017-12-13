@@ -1,11 +1,11 @@
 /*
  * (C) Copyright 2014 OSIVIA (http://www.osivia.com)
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
@@ -17,10 +17,12 @@ import java.util.Calendar;
 
 import org.apache.commons.lang.StringUtils;
 
+import net.sf.json.JSONObject;
+
 
 /**
  * Object containing extended informations about a document (compare to CMSPublicationInfos).
- * 
+ *
  * @author David Chevrier.
  */
 public class ExtendedDocumentInfos {
@@ -57,13 +59,20 @@ public class ExtendedDocumentInfos {
     /** Error on PDF conversion. */
     private boolean errorOnPdfConversion;
 
+    private boolean isCurrentlyEdited;
+
+    private JSONObject currentlyEditedEntry;
+
+    private boolean isRecentlyEdited;
+
+    private JSONObject recentlyEditedEntry;
 
     /**
      * Constructor.
      */
     public ExtendedDocumentInfos() {
         super();
-        this.taskName = StringUtils.EMPTY;
+        taskName = StringUtils.EMPTY;
     }
 
 
@@ -103,7 +112,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for taskName.
-     * 
+     *
      * @return the taskName
      */
     public String getTaskName() {
@@ -112,7 +121,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for taskName.
-     * 
+     *
      * @param taskName the taskName to set
      */
     public void setTaskName(String taskName) {
@@ -121,7 +130,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for isOnlineTaskPending.
-     * 
+     *
      * @return the isOnlineTaskPending
      */
     public boolean isOnlineTaskPending() {
@@ -130,7 +139,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for isOnlineTaskPending.
-     * 
+     *
      * @param isOnlineTaskPending the isOnlineTaskPending to set
      */
     public void setOnlineTaskPending(boolean isOnlineTaskPending) {
@@ -139,7 +148,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for canUserValidateOnlineTask.
-     * 
+     *
      * @return the canUserValidateOnlineTask
      */
     public boolean isCanUserValidateOnlineTask() {
@@ -148,7 +157,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for canUserValidateOnlineTask.
-     * 
+     *
      * @param canUserValidateOnlineTask the canUserValidateOnlineTask to set
      */
     public void setCanUserValidateOnlineTask(boolean canUserValidateOnlineTask) {
@@ -157,7 +166,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for isUserOnlineTaskInitiator.
-     * 
+     *
      * @return the isUserOnlineTaskInitiator
      */
     public boolean isUserOnlineTaskInitiator() {
@@ -166,7 +175,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for isUserOnlineTaskInitiator.
-     * 
+     *
      * @param isUserOnlineTaskInitiator the isUserOnlineTaskInitiator to set
      */
     public void setUserOnlineTaskInitiator(boolean isUserOnlineTaskInitiator) {
@@ -175,7 +184,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for isValidationWorkflowRunning.
-     * 
+     *
      * @return the isValidationWorkflowRunning
      */
     public boolean isValidationWorkflowRunning() {
@@ -184,7 +193,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for isValidationWorkflowRunning.
-     * 
+     *
      * @param isValidationWorkflowRunning the isValidationWorkflowRunning to set
      */
     public void setValidationWorkflowRunning(boolean isValidationWorkflowRunning) {
@@ -193,7 +202,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for draftCount.
-     * 
+     *
      * @return the draftCount
      */
     public int getDraftCount() {
@@ -202,7 +211,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for draftCount.
-     * 
+     *
      * @param draftCount the draftCount to set
      */
     public void setDraftCount(int draftCount) {
@@ -211,7 +220,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for subscriptionStatus.
-     * 
+     *
      * @return the subscriptionStatus
      */
     public SubscriptionStatus getSubscriptionStatus() {
@@ -220,7 +229,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for subscriptionStatus.
-     * 
+     *
      * @param subscriptionStatus the subscriptionStatus to set
      */
     public void setSubscriptionStatus(SubscriptionStatus subscriptionStatus) {
@@ -229,7 +238,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for lockStatus.
-     * 
+     *
      * @return the lockStatus
      */
     public LockStatus getLockStatus() {
@@ -238,7 +247,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for lockStatus.
-     * 
+     *
      * @param lockStatus the lockStatus to set
      */
     public void setLockStatus(LockStatus lockStatus) {
@@ -247,7 +256,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for lockOwner.
-     * 
+     *
      * @return the lockOwner
      */
     public String getLockOwner() {
@@ -256,7 +265,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for lockOwner.
-     * 
+     *
      * @param lockOwner the lockOwner to set
      */
     public void setLockOwner(String lockOwner) {
@@ -265,7 +274,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for lockDate.
-     * 
+     *
      * @return the lockDate
      */
     public Calendar getLockDate() {
@@ -274,7 +283,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for lockDate.
-     * 
+     *
      * @param lockDate the lockDate to set
      */
     public void setLockDate(Calendar lockDate) {
@@ -283,7 +292,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for canSynchronize.
-     * 
+     *
      * @return the canSynchronize
      */
     public boolean isCanSynchronize() {
@@ -292,7 +301,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for canSynchronize.
-     * 
+     *
      * @param canSynchronize the canSynchronize to set
      */
     public void setCanSynchronize(boolean canSynchronize) {
@@ -301,7 +310,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for canUnsynchronize.
-     * 
+     *
      * @return the canUnsynchronize
      */
     public boolean isCanUnsynchronize() {
@@ -310,7 +319,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for canUnsynchronize.
-     * 
+     *
      * @param canUnsynchronize the canUnsynchronize to set
      */
     public void setCanUnsynchronize(boolean canUnsynchronize) {
@@ -319,7 +328,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Getter for synchronizationRootPath.
-     * 
+     *
      * @return the synchronizationRootPath
      */
     public String getSynchronizationRootPath() {
@@ -328,7 +337,7 @@ public class ExtendedDocumentInfos {
 
     /**
      * Setter for synchronizationRootPath.
-     * 
+     *
      * @param synchronizationRootPath the synchronizationRootPath to set
      */
     public void setSynchronizationRootPath(String synchronizationRootPath) {
@@ -366,5 +375,70 @@ public class ExtendedDocumentInfos {
     public void setErrorOnPdfConversion(boolean errorOnPdfConversion) {
         this.errorOnPdfConversion = errorOnPdfConversion;
     }
+
+
+    /**
+     * @return the isCurrentlyEdited
+     */
+    public boolean isCurrentlyEdited() {
+        return isCurrentlyEdited;
+    }
+
+
+    /**
+     * @param isCurrentlyEdited the isCurrentlyEdited to set
+     */
+    public void setCurrentlyEdited(boolean isCurrentlyEdited) {
+        this.isCurrentlyEdited = isCurrentlyEdited;
+    }
+
+
+    /**
+     * @return the currentlyEditedEntry
+     */
+    public JSONObject getCurrentlyEditedEntry() {
+        return currentlyEditedEntry;
+    }
+
+
+    /**
+     * @param currentlyEditedEntry the currentlyEditedEntry to set
+     */
+    public void setCurrentlyEditedEntry(JSONObject currentlyEditedEntry) {
+        this.currentlyEditedEntry = currentlyEditedEntry;
+    }
+
+
+    /**
+     * @return the recentlyEditedEntry
+     */
+    public JSONObject getRecentlyEditedEntry() {
+        return recentlyEditedEntry;
+    }
+
+
+    /**
+     * @param recentlyEditedEntry the recentlyEditedEntry to set
+     */
+    public void setRecentlyEditedEntry(JSONObject recentlyEditedEntry) {
+        this.recentlyEditedEntry = recentlyEditedEntry;
+    }
+
+
+    /**
+     * @return the isRecentlyEdited
+     */
+    public boolean isRecentlyEdited() {
+        return isRecentlyEdited;
+    }
+
+
+    /**
+     * @param isRecentlyEdited the isRecentlyEdited to set
+     */
+    public void setRecentlyEdited(boolean isRecentlyEdited) {
+        this.isRecentlyEdited = isRecentlyEdited;
+    }
+
 
 }
