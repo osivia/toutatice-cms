@@ -140,9 +140,9 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
 
                 if (infos.containsKey("isRecentlyEdited")) {
                     boolean isCurrentlyEdited = infos.getBoolean("isRecentlyEdited");
-                    docInfos.setCurrentlyEdited(isCurrentlyEdited);
+                    docInfos.setRecentlyEdited(isCurrentlyEdited);
                     if (isCurrentlyEdited) {
-                        docInfos.setCurrentlyEditedEntry(infos.getJSONObject("recentlyEditedEntry"));
+                        docInfos.setRecentlyEditedEntry(infos.getJSONObject("recentlyEditedEntry"));
                     }
                 }
             }
