@@ -16,6 +16,7 @@
  */
 package org.nuxeo.ecm.automation.client.jaxrs.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.codehaus.jackson.JsonParser;
@@ -37,6 +38,8 @@ public class JsonOperationMarshaller {
             jp.nextToken();
             if ("id".equals(key)) {
                 op.id = jp.getText();
+            } else if ("aliases".equals(key)) {
+                op.aliases = readStringArray(jp);
             } else if ("label".equals(key)) {
                 op.label = jp.getText();
             } else if ("category".equals(key)) {
@@ -59,8 +62,7 @@ public class JsonOperationMarshaller {
             tok = jp.nextToken();
         }
         if (tok == null) {
-            throw new IllegalArgumentException(
-                    "Unexpected end of stream.");
+            throw new IllegalArgumentException("Unexpected end of stream.");
         }
         return op;
     }
@@ -99,6 +101,8 @@ public class JsonOperationMarshaller {
                 para.name = jp.getText();
             } else if ("type".equals(key)) {
                 para.type = jp.getText();
+            } else if ("description".equals(key)) {
+                para.description = jp.getText();
             } else if ("required".equals(key)) {
                 para.isRequired = jp.getBooleanValue();
             } else if ("widget".equals(key)) {

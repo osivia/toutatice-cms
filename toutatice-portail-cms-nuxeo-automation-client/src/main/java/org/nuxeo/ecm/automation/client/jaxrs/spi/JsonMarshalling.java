@@ -15,6 +15,8 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
@@ -60,8 +62,7 @@ public class JsonMarshalling {
 	 */
 	public static class ThowrableTypeModifier extends TypeModifier {
 		@Override
-		public JavaType modifyType(JavaType type, Type jdkType,
-				TypeBindings context, TypeFactory typeFactory) {
+		public JavaType modifyType(JavaType type, Type jdkType, TypeBindings context, TypeFactory typeFactory) {
             Class<?> raw = type.getRawClass();
 			if (raw.isAssignableFrom(Throwable.class)) {
 				return typeFactory.constructType(RemoteThrowable.class);
@@ -86,8 +87,7 @@ public class JsonMarshalling {
 	}
 
 	@JsonCachable(false)
-	public static class ThrowableDeserializer extends
-			org.codehaus.jackson.map.deser.ThrowableDeserializer {
+	public static class ThrowableDeserializer extends org.codehaus.jackson.map.deser.ThrowableDeserializer {
 
 		protected HashMap<String, JsonNode> otherNodes = new HashMap<String, JsonNode>();
 
@@ -96,12 +96,10 @@ public class JsonMarshalling {
 		}
 
 		@Override
-		public Object deserializeFromObject(JsonParser jp,
-				DeserializationContext ctxt) throws IOException,
-				JsonProcessingException {
+		public Object deserializeFromObject(JsonParser jp, DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 
-            RemoteThrowable t = (RemoteThrowable) super.deserializeFromObject(
-                    jp, ctxt);
+			RemoteThrowable t = (RemoteThrowable) super.deserializeFromObject(jp, ctxt);
 			t.otherNodes.putAll(otherNodes);
 			return t;
 		}
@@ -123,29 +121,22 @@ public class JsonMarshalling {
 	public static JsonFactory newJsonFactory() {
         JsonFactory jf = new JsonFactory();
         ObjectMapper oc = new ObjectMapper(jf);
-        final TypeFactory typeFactoryWithModifier = oc.getTypeFactory().withModifier(
-                new ThowrableTypeModifier());
+		final TypeFactory typeFactoryWithModifier = oc.getTypeFactory().withModifier(new ThowrableTypeModifier());
 		oc.setTypeFactory(typeFactoryWithModifier);
-        oc.getDeserializationConfig().addHandler(
-                new DeserializationProblemHandler() {
+		oc.getDeserializationConfig().addHandler(new DeserializationProblemHandler() {
 			@Override
-			public boolean handleUnknownProperty(
-					DeserializationContext ctxt,
-					JsonDeserializer<?> deserializer,
-					Object beanOrClass, String propertyName)
-					throws IOException, JsonProcessingException {
+			public boolean handleUnknownProperty(DeserializationContext ctxt, JsonDeserializer<?> deserializer,
+					Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
 				if (deserializer instanceof ThrowableDeserializer) {
                             JsonParser jp = ctxt.getParser();
                             JsonNode propertyNode = jp.readValueAsTree();
-                            ((ThrowableDeserializer) deserializer).otherNodes.put(
-                                    propertyName, propertyNode);
+					((ThrowableDeserializer) deserializer).otherNodes.put(propertyName, propertyNode);
 					return true;
 				}
 				return false;
 			}
 		});
-        final SimpleModule module = new SimpleModule("automation",
-                Version.unknownVersion()) {
+		final SimpleModule module = new SimpleModule("automation", Version.unknownVersion()) {
 
 			@Override
 			public void setupModule(SetupContext context) {
@@ -154,16 +145,12 @@ public class JsonMarshalling {
 				context.addBeanDeserializerModifier(new BeanDeserializerModifier() {
 
 					@Override
-					public JsonDeserializer<?> modifyDeserializer(
-							DeserializationConfig config,
-							BasicBeanDescription beanDesc,
-							JsonDeserializer<?> deserializer) {
+					public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
+							BasicBeanDescription beanDesc, JsonDeserializer<?> deserializer) {
 						if (!Throwable.class.isAssignableFrom(beanDesc.getBeanClass())) {
-                            return super.modifyDeserializer(config, beanDesc,
-                                    deserializer);
+							return super.modifyDeserializer(config, beanDesc, deserializer);
 						}
-                        return new ThrowableDeserializer(
-                                (BeanDeserializer) deserializer);
+						return new ThrowableDeserializer((BeanDeserializer) deserializer);
 					}
 				});
 			}
@@ -197,9 +184,9 @@ public class JsonMarshalling {
 		return (JsonMarshaller<T>) marshallersByJavaType.get(clazz);
 	}
 
-	public static OperationRegistry readRegistry(String content)
-			throws Exception {
+	public static OperationRegistry readRegistry(String content) throws Exception {
         HashMap<String, OperationDocumentation> ops = new HashMap<String, OperationDocumentation>();
+		HashMap<String, OperationDocumentation> aliasesOps = new HashMap<String, OperationDocumentation>();
         HashMap<String, OperationDocumentation> chains = new HashMap<String, OperationDocumentation>();
         HashMap<String, String> paths = new HashMap<String, String>();
 
@@ -209,7 +196,7 @@ public class JsonMarshalling {
 		while (tok != JsonToken.END_OBJECT) {
             String key = jp.getCurrentName();
 			if ("operations".equals(key)) {
-				readOperations(jp, ops);
+				readOperations(jp, ops, aliasesOps);
 			} else if ("chains".equals(key)) {
 				readChains(jp, chains);
 			} else if ("paths".equals(key)) {
@@ -217,22 +204,28 @@ public class JsonMarshalling {
 			}
 			tok = jp.nextToken();
 		}
-		return new OperationRegistry(paths, ops, chains);
+		return new OperationRegistry(paths, ops, aliasesOps, chains);
 	}
 
-	private static void readOperations(JsonParser jp,
-			Map<String, OperationDocumentation> ops) throws Exception {
+	private static void readOperations(JsonParser jp, Map<String, OperationDocumentation> ops,
+			Map<String, OperationDocumentation> aliasesOps) throws Exception {
 		jp.nextToken(); // skip [
 		JsonToken tok = jp.nextToken();
 		while (tok != JsonToken.END_ARRAY) {
             OperationDocumentation op = JsonOperationMarshaller.read(jp);
 			ops.put(op.id, op);
+
+			if (!ArrayUtils.isEmpty(op.aliases)) {
+				for (String aliasId : op.aliases) {
+					aliasesOps.put(aliasId, op);
+				}
+			}
+
 			tok = jp.nextToken();
 		}
 	}
 
-	private static void readChains(JsonParser jp,
-			Map<String, OperationDocumentation> chains) throws Exception {
+	private static void readChains(JsonParser jp, Map<String, OperationDocumentation> chains) throws Exception {
 		jp.nextToken(); // skip [
 		JsonToken tok = jp.nextToken();
 		while (tok != JsonToken.END_ARRAY) {
@@ -242,8 +235,7 @@ public class JsonMarshalling {
 		}
 	}
 
-	private static void readPaths(JsonParser jp, Map<String, String> paths)
-			throws Exception {
+	private static void readPaths(JsonParser jp, Map<String, String> paths) throws Exception {
 		jp.nextToken(); // skip {
 		JsonToken tok = jp.nextToken();
 		while (tok != JsonToken.END_OBJECT) {
@@ -261,8 +253,7 @@ public class JsonMarshalling {
 		jp.nextToken(); // will return JsonToken.START_OBJECT (verify?)
 		jp.nextToken();
 		if (!Constants.KEY_ENTITY_TYPE.equals(jp.getText())) {
-            throw new RuntimeException(
-                    "unuspported respone type. No entity-type key found at top of the object");
+			throw new RuntimeException("unuspported respone type. No entity-type key found at top of the object");
 		}
 		jp.nextToken();
         String etype = jp.getText();
@@ -295,8 +286,7 @@ public class JsonMarshalling {
 		return writer.toString();
 	}
 
-	public static void writeMap(JsonGenerator jg, Map<String, Object> map)
-			throws Exception {
+	public static void writeMap(JsonGenerator jg, Map<String, Object> map) throws Exception {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             Object obj = entry.getValue();
 			if (obj.getClass() == String.class) {

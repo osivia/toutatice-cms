@@ -23,6 +23,7 @@ import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
+import fr.toutatice.portail.cms.nuxeo.api.transaction.INuxeoTransactionService;
 
 /**
  * Nuxeo service interface.
@@ -86,4 +87,10 @@ public interface INuxeoService extends ICMSIntegration {
      */
     IFormsService getFormsService();
 
+    /**
+     * Get transaction service.
+     * 
+     * @return transaction service
+     */
+    INuxeoTransactionService getNuxeoTransactionService();
 }
