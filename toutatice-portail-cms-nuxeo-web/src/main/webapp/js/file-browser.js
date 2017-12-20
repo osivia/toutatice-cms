@@ -555,6 +555,9 @@ function displayControls($browser) {
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$liveEdit = $toolbar.find(".live-edit"),
+		$allEdit = $toolbar.find(".all-edit"),
+		$singleEdit = $toolbar.find(".single-edit"),
 		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
 		$gallery = $toolbar.find(".gallery"),
@@ -581,6 +584,8 @@ function displayControls($browser) {
 		
 		$edit.addClass("disabled");
 		$driveEdit.addClass("hidden disabled");
+		$liveEdit.addClass("hidden disabled");
+		$allEdit.addClass("hidden disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -588,6 +593,7 @@ function displayControls($browser) {
 		if ($selected.length == 1) {
 			// Single element selected
 			$single.show();
+			$singleEdit.removeClass("hidden disabled");
 			$bulkDownload.hide();
 			$messageSelection.children().text("1 " + $messageSelection.data("message-single-selection"));
 			
@@ -678,6 +684,7 @@ function displayControls($browser) {
 			$bulkDownloadLink.children("span").text(title);
 			
 			$single.hide();
+			$singleEdit.addClass("hidden disabled");
 			$bulkDownload.show();
 			$messageSelection.children().text($selected.length + " " + $messageSelection.data("message-multiple-selection"));
 		}
@@ -700,7 +707,8 @@ function displayControls($browser) {
 					url: $toolbar.data("infos-url"),
 					data: {
 						path: $element.data("path"),
-						file: $element.data("file")
+						file: $element.data("file"),
+						liveeditable: $element.data("live-editable")
 					},
 					success : function(data, status, xhr) {
 						$element.data("loaded", true);
@@ -709,6 +717,7 @@ function displayControls($browser) {
 							$element.data("writable", (data["writable"] == true));
 							$element.data("copiable", (data["copiable"] == true));
 							$element.data("drive-edit-url", data["driveEditUrl"]);
+							$element.data("live-edit-url", data["liveEditUrl"]);
 						}
 						
 						ajaxPendingCounter--;
@@ -763,6 +772,9 @@ function updateControlRights($browser) {
 	var $toolbar = $browser.find(".table .table-header .contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
+		$liveEdit = $toolbar.find(".live-edit"),
+		$allEdit = $toolbar.find(".all-edit"),
+		$singleEdit = $toolbar.find(".single-edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -804,9 +816,22 @@ function updateControlRights($browser) {
 		// Drive edit
 		driveEditUrl = $selected.data("drive-edit-url");
 		driveEnabled = $selected.data("drive-enabled");
-		if (driveEditUrl) {
+		liveEditUrl = $selected.data("live-edit-url");
+		
+		if (driveEditUrl && liveEditUrl){
+			$driveEdit.attr("href", driveEditUrl);
+			$liveEdit.attr("href", liveEditUrl);
+			$driveEdit.removeClass("hidden disabled");
+			$liveEdit.removeClass("hidden disabled");
+			$allEdit.removeClass("hidden disabled");
+		}else if (driveEditUrl) {
 			$driveEdit.attr("href", driveEditUrl);
 			$driveEdit.removeClass("hidden disabled");
+			$singleEdit.removeClass("hidden disabled");
+		}else if(liveEditUrl){
+			$liveEdit.attr("href", liveEditUrl);
+			$liveEdit.removeClass("hidden disabled");
+			$singleEdit.removeClass("hidden disabled");
 		}
 		
 		// Copy

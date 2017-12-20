@@ -49,6 +49,8 @@ public class DocumentDTO implements Cloneable {
     private final List<CommentDTO> comments;
     /** Remote published documents of this document. */
     private final List<RemotePublishedDocumentDTO> publishedDocuments;
+    /** isLiveEditable */
+    private boolean liveEditable;
 
     /** Original Nuxeo document. */
     private Document document;
@@ -59,10 +61,10 @@ public class DocumentDTO implements Cloneable {
      */
     public DocumentDTO() {
         super();
-        this.properties = new HashMap<String, Object>();
-        this.attachments = new ArrayList<DocumentAttachmentDTO>();
-        this.comments = new ArrayList<CommentDTO>();
-        this.publishedDocuments = new ArrayList<RemotePublishedDocumentDTO>();
+        this.properties = new HashMap<>();
+        this.attachments = new ArrayList<>();
+        this.comments = new ArrayList<>();
+        this.publishedDocuments = new ArrayList<>();
     }
 
 
@@ -78,6 +80,7 @@ public class DocumentDTO implements Cloneable {
         this.path = documentDTO.path;
         this.type = documentDTO.type;
         this.icon = documentDTO.icon;
+        this.liveEditable = documentDTO.liveEditable;
         this.properties.putAll(documentDTO.properties);
         this.attachments.addAll(documentDTO.attachments);
         this.commentable = documentDTO.commentable;
@@ -178,7 +181,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Getter for icon.
-     * 
+     *
      * @return the icon
      */
     public String getIcon() {
@@ -187,7 +190,7 @@ public class DocumentDTO implements Cloneable {
 
     /**
      * Setter for icon.
-     * 
+     *
      * @param icon the icon to set
      */
     public void setIcon(String icon) {
@@ -265,5 +268,26 @@ public class DocumentDTO implements Cloneable {
     public List<RemotePublishedDocumentDTO> getPublishedDocuments() {
         return this.publishedDocuments;
     }
+
+
+    /**
+     * Getter for liveEditable.
+     *
+     * @return the liveEditable
+     */
+    public boolean isLiveEditable() {
+        return liveEditable;
+    }
+
+
+    /**
+     * Setter for liveEditable.
+     *
+     * @param liveEditable the liveEditable to set
+     */
+    public void setLiveEditable(boolean liveEditable) {
+        this.liveEditable = liveEditable;
+    }
+
 
 }

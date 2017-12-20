@@ -40,8 +40,33 @@
                     <span></span>
                 </span>
             </p>
-            
-            <div class="btn-group btn-group-sm single-selection" role="group">
+
+			<!-- Drive and Live edit -->
+			<div class="btn-group btn-group-sm navbar-btn all-edit" role="group">
+				<a href="#" class="btn btn-default live-edit"> 
+					<i class="halflings halflings-pencil"></i> 
+					<span><op:translate key="LIVE_EDIT" /></span>
+				</a>
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+					<li>
+						<a href="#" class="live-edit">
+							<i class="halflings halflings-pencil"></i> 
+							<span><op:translate key="LIVE_EDIT" /></span>
+						</a>
+					</li>
+					<li>
+						<a href="#" class="drive-edit"> 
+							<i class=""></i> 
+							<span><op:translate key="DRIVE_EDIT" /></span>
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="btn-group btn-group-sm navbar-btn single-edit" role="group">
                 <!-- Edit -->
                 <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
                     <i class="halflings halflings-pencil"></i>
@@ -54,6 +79,14 @@
                     <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
+                <!-- Live edit -->
+                <a href="#" class="btn btn-default live-edit">
+                	<i class="halflings halflings-pencil"></i>
+                    <span><op:translate key="LIVE_EDIT" /></span>
+                </a>
+            </div>
+            
+			<div class="btn-group btn-group-sm single-selection" role="group">
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                 <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">

@@ -31,8 +31,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -84,9 +82,11 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -120,7 +120,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     /** Error JSP path. */
     private static final String PATH_ERROR = "/WEB-INF/jsp/files/error.jsp";
 
-	private static final String HOST_JOKER = "__HOST__";
+    private static final String HOST_JOKER = "__HOST__";
 
 
     /** Bundle factory. */
@@ -145,7 +145,7 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
-    
+
     /**
      * {@inheritDoc}
      */
@@ -235,17 +235,17 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             } else if ("copy".equals(action)) {
                 // Copy action
-                
+
                 String sourcePath = request.getParameter("sourcePath");
                 String targetPath = getPath(window);
-        
+
                 INuxeoCommand command = new CopyDocumentCommand(sourcePath, targetPath);
                 nuxeoController.executeNuxeoCommand(command);
-                
-       
+
+
                 // Refresh navigation
                 request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-            
+
             } else if ("delete".equals(action)) {
                 // Delete action
 
@@ -256,14 +256,14 @@ public class FileBrowserPortlet extends CMSPortlet {
                             cmsService.putDocumentInTrash(cmsContext, id);
                         }
 
-                        
+
                         // Notification
                         String message = bundle.getString("SUCCESS_MESSAGE_DELETE");
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
-                        
+
                         // Refresh navigation
                         request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-                        
+
                     } catch (CMSException e) {
                         // Notification
                         String message = bundle.getString("ERROR_MESSAGE_ERROR_HAS_OCCURED");
@@ -289,8 +289,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     // Update public render parameter for associated portlets refresh
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
-                    
-                    
+
+
 
                     // Notification
                     String message;
@@ -340,7 +340,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Nuxeo command
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
-                    
+
                     // // Upload refreshing
                     // NuxeoDocumentContext documentContext = NuxeoController.getDocumentContext(request, response, this.getPortletContext(), parentId);
                     // Document document = documentContext.getDoc();
@@ -348,7 +348,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                     // Refresh navigation
                     request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-                    
+
 
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
@@ -391,6 +391,8 @@ public class FileBrowserPortlet extends CMSPortlet {
             String path = request.getParameter("path");
             // File document indicator
             String isFile = request.getParameter("file");
+            // live editable indicator
+            String liveeditable = request.getParameter("liveeditable");
 
             if (path != null) {
                 NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
@@ -404,8 +406,8 @@ public class FileBrowserPortlet extends CMSPortlet {
                     data.put("copiable", publicationInfos.isCopiable());
 
                     if (BooleanUtils.toBoolean(isFile)) {
-                    	String driveEditUrl = publicationInfos.getDriveEditURL();
-                    	
+                        String driveEditUrl = publicationInfos.getDriveEditURL();
+
                         // No host in nxdrive URL (get the current portal request host), refs #1421
                         if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
                             StringBuilder builder = new StringBuilder();
@@ -416,7 +418,21 @@ public class FileBrowserPortlet extends CMSPortlet {
                             driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
                         }
 
-						data.put("driveEditUrl", driveEditUrl);
+                        data.put("driveEditUrl", driveEditUrl);
+
+                        // onlyoffice
+                        if (BooleanUtils.toBoolean(liveeditable) && nuxeoController.getNuxeoCMSService().getCMSCustomizer().getCustomizationService()
+                                .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME)) {
+
+                            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+                            try {
+                                String startOnlyofficePortlerUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController);
+                                data.put("liveEditUrl", startOnlyofficePortlerUrl);
+                            } catch (PortalException e) {
+                                throw new PortletException(e);
+                            }
+                        }
                     }
                 } catch (CMSException e) {
                     // Do nothing
@@ -432,13 +448,13 @@ public class FileBrowserPortlet extends CMSPortlet {
             printWriter.close();
         } else if("zipDownload".equals(request.getResourceID())) {
             // bulk download
-            
+
             // selected download paths
             String[] paths = StringUtils.split(request.getParameter("paths"), ",");
-            
+
             NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
             CMSBinaryContent content = (CMSBinaryContent) nuxeoController.executeNuxeoCommand(new BulkFilesCommand(nuxeoController, paths));
-            
+
             response.setContentType(content.getMimeType());
             response.setProperty("Content-disposition", "inline; filename=\"" + content.getName() + "\"");
 
@@ -498,7 +514,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Computed path
                 path = nuxeoController.getComputedPath(path);
-                
+
                 // Publication informations
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
@@ -535,7 +551,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
                 // Documents DTO
                 int index = 1;
-                List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
+                List<FileBrowserItem> fileBrowserItems = new ArrayList<>(documents.size());
                 for (Document document : documents) {
                     DocumentDTO documentDto = this.documentDao.toDTO(document);
                     documentDto = setDraftInfos(document, documentDto);
@@ -545,14 +561,14 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Subscription indicator
                     boolean subscription = subscriptions.contains(document.getId());
                     fileBrowserItem.setSubscription(subscription);
-                    
+
                     fileBrowserItems.add(fileBrowserItem);
                 }
 
 
                 // Ordered indicator
                 DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
-                boolean ordered = ((cmsItemType != null) && cmsItemType.isOrdered());
+                boolean ordered = cmsItemType != null && cmsItemType.isOrdered();
                 request.setAttribute("ordered", ordered);
 
 
@@ -617,10 +633,10 @@ public class FileBrowserPortlet extends CMSPortlet {
         return path;
     }
 
-    
+
     /**
      * Set draft informations if document has draft.
-     * 
+     *
      * @param publicationInfos
      * @param document
      * @return document with modified properies
@@ -708,7 +724,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
             if (StringUtils.isEmpty(sort)) {
                 Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-                if ((attribute != null) && (attribute instanceof FileBrowserSortCriteria)) {
+                if (attribute != null && attribute instanceof FileBrowserSortCriteria) {
                     criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
 
                     if (!ordered && FileBrowserSortCriteria.SORT_BY_INDEX.equals(criteria.getSort())) {
@@ -818,7 +834,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         request.setAttribute("editUrl", editUrl);
 
         // Move URL
-        Map<String, String> moveProperties = new HashMap<String, String>();
+        Map<String, String> moveProperties = new HashMap<>();
         moveProperties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, currentDocument.getPath());
         moveProperties.put(MoveDocumentPortlet.DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY, "_IDS_");
         moveProperties.put(MoveDocumentPortlet.IGNORED_PATHS_WINDOW_PROPERTY, "_PATHS_");
