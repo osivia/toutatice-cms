@@ -26,23 +26,82 @@
         </p>
 
         <div>
-            <!-- Drive edit -->
+            <!-- Drive edit and Live edit-->
             <c:choose>
-                <c:when test="${not empty driveEditUrl}">
-                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
-                        <span><op:translate key="DRIVE_EDIT" /></span>
-                    </a>
-                </c:when>
-                
-                <c:when test="${driveEnabled}">
-                    <div class="alert alert-warning">
-                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
-                    </div>
-                
-                    <a href="#" class="btn btn-primary btn-block disabled">
-                        <span><op:translate key="DRIVE_EDIT" /></span>
-                    </a>
-                </c:when>
+            	<c:when test="${not empty onlyofficeEditUrl}">
+            		<c:choose>
+            			<c:when test="${not empty driveEditUrl}">
+            				<div class="btn-group flex-display" role="group">
+	            				<a href="${onlyofficeEditUrl}" class="btn btn-primary no-ajax-link">
+			                        <span><op:translate key="LIVE_EDIT" /></span>
+			                    </a>
+			                   	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							    	<span class="caret"></span>
+							    </button>
+			                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+			                    	<li>
+				                    	<a href="${onlyofficeEditUrl}" class="no-ajax-link">
+				                    		<i class="halflings halflings-pencil"></i>
+					                        <span><op:translate key="LIVE_EDIT" /></span>
+					                    </a>
+			                    	</li>
+			                    	<li>
+					                    <a href="${driveEditUrl}" class="no-ajax-link">
+					                    	<i class="halflings halflings-folder-open"></i>
+					                        <span><op:translate key="DRIVE_EDIT" /></span>
+					                    </a>
+				                    </li>
+			                    </ul>
+		                    </div>
+            			</c:when>
+            			<c:when test="${driveEnabled}">
+            				<div class="btn-group flex-display" role="group">
+	            				<a href="${onlyofficeEditUrl}" class="btn btn-primary no-ajax-link">
+			                        <span><op:translate key="LIVE_EDIT" /></span>
+			                    </a>
+			                   	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							    	<span class="caret"></span>
+							    </button>
+			                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+			                    	<li>
+				                    	<a href="${onlyofficeEditUrl}" class="no-ajax-link">
+				                    		<i class="halflings halflings-pencil"></i>
+					                        <span><op:translate key="LIVE_EDIT" /></span>
+					                    </a>
+			                    	</li>
+			                    	<li class="disabled" data-toggle="tooltip" title="<op:translate key='MESSAGE_DRIVE_CLIENT_NOT_STARTED' />">
+				                    	<a href="#" class="disabled">
+				                    		<i class="halflings halflings-folder-open"></i>
+					                        <span><op:translate key="DRIVE_EDIT" /></span>
+					                    </a>
+			                    	</li>
+			                    </ul>
+		                    </div>
+            			</c:when>
+            			<c:otherwise>
+            				<a href="${onlyofficeEditUrl}" class="btn btn-primary btn-block no-ajax-link">
+		                        <span><op:translate key="LIVE_EDIT" /></span>
+		                    </a>
+            			</c:otherwise>
+            		</c:choose>
+            	</c:when>
+            	<c:otherwise>
+	                <c:when test="${not empty driveEditUrl}">
+	                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
+	                        <span><op:translate key="DRIVE_EDIT" /></span>
+	                    </a>
+	                </c:when>
+	                
+	                <c:when test="${driveEnabled}">
+	                    <div class="alert alert-warning">
+	                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
+	                    </div>
+	                
+	                    <a href="#" class="btn btn-primary btn-block disabled">
+	                        <span><op:translate key="DRIVE_EDIT" /></span>
+	                    </a>
+	                </c:when>
+            	</c:otherwise>
             </c:choose>
 
             <!-- Download -->

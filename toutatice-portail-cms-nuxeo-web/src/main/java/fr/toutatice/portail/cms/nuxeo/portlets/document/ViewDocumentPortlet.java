@@ -43,6 +43,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -51,6 +52,9 @@ import org.osivia.portal.api.directory.v2.model.Person;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.IEcmCommandervice;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -126,12 +130,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
     /** View path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
 
+    /** ONLYOFFICE_PLUGIN_NAME */
+    private static final String ONLYOFFICE_PLUGIN_NAME = "onlyoffice.plugin";
+    /** ONLYOFFICE_PORTLET_INSTANCE */
+    private static final String ONLYOFFICE_PORTLET_INSTANCE = "osivia-services-onlyoffice-portletInstance";
 
     /** CMS service. */
     private CMSService cmsService;
     /** Nuxeo service. */
     private INuxeoService nuxeoService;
 
+    /** Internationalization bundle factory. */
+    private final IBundleFactory bundleFactory;
 
     /** Document DAO. */
     private final DocumentDAO documentDao;
@@ -151,6 +161,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
         documentDao = DocumentDAO.getInstance();
         commentDao = CommentDAO.getInstance();
         publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
+
+        // Internationalization bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -387,6 +402,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     addCurrentlyEditedNotification(nuxeoController, request.getUserPrincipal(), extendedDocumentInfos);
                 }
 
+                // handle live edition through onlyofice link
+                handleOnlyoffice(request, document.getPath(), nuxeoController);
+
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
                     generatePublishedDocumentsInfos(nuxeoController, document, documentDto, true);
@@ -430,6 +448,27 @@ public class ViewDocumentPortlet extends CMSPortlet {
             throw e;
         } catch (Exception e) {
             throw new PortletException(e);
+        }
+    }
+
+
+    private void handleOnlyoffice(RenderRequest request, String path, NuxeoController nuxeoController) throws PortalException {
+
+        boolean isOnlyofficeRegistered = cmsService.getCustomizer().getPluginManager().isPluginRegistered(ONLYOFFICE_PLUGIN_NAME);
+
+        if (isOnlyofficeRegistered) {
+
+            Bundle bundle = bundleFactory.getBundle(request.getLocale());
+
+            Map<String, String> windowProperties = new HashMap<>();
+            windowProperties.put(Constants.WINDOW_PROP_URI, path);
+            windowProperties.put("osivia.hideTitle", "1");
+            windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, bundle.getString("LIVE_EDIT"));
+
+            String onlyofficeEditUrl = nuxeoController.getPortalUrlFactory().getStartPortletUrl(nuxeoController.getPortalCtx(), ONLYOFFICE_PORTLET_INSTANCE,
+                    windowProperties);
+
+            request.setAttribute("onlyofficeEditUrl", onlyofficeEditUrl);
         }
     }
 
@@ -732,11 +771,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         // Try to get official host (in header)
                         String vhost = portalControllerContext.getHttpServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
 
-                        if(StringUtils.isBlank(vhost)) {
+                        if (StringUtils.isBlank(vhost)) {
                             // if blank, try to get the host by the request
                             vhost = request.getScheme() + "/" + request.getServerName();
-                        }
-                        else {
+                        } else {
                             vhost = vhost.replace("://", "/"); // Ndrive protocol
                         }
 
