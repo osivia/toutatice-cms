@@ -81,6 +81,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
@@ -129,11 +130,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private static final String PATH_ADMIN = "/WEB-INF/jsp/document/admin.jsp";
     /** View path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/document/view.jsp";
-
-    /** ONLYOFFICE_PLUGIN_NAME */
-    private static final String ONLYOFFICE_PLUGIN_NAME = "onlyoffice.plugin";
-    /** ONLYOFFICE_PORTLET_INSTANCE */
-    private static final String ONLYOFFICE_PORTLET_INSTANCE = "osivia-services-onlyoffice-portletInstance";
 
     /** CMS service. */
     private CMSService cmsService;
@@ -403,7 +399,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // handle live edition through onlyofice link
-                handleOnlyoffice(request, document.getPath(), nuxeoController);
+                handleLiveEdit(request, document.getPath(), nuxeoController);
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
@@ -452,21 +448,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
     }
 
 
-    private void handleOnlyoffice(RenderRequest request, String path, NuxeoController nuxeoController) throws PortalException {
+    private void handleLiveEdit(RenderRequest request, String path, NuxeoController nuxeoController) throws PortalException {
 
-        boolean isOnlyofficeRegistered = cmsService.getCustomizer().getPluginManager().isPluginRegistered(ONLYOFFICE_PLUGIN_NAME);
+        boolean isOnlyofficeRegistered = cmsService.getCustomizer().getPluginManager().isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
 
         if (isOnlyofficeRegistered) {
 
             Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
-            Map<String, String> windowProperties = new HashMap<>();
-            windowProperties.put(Constants.WINDOW_PROP_URI, path);
-            windowProperties.put("osivia.hideTitle", "1");
-            windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, bundle.getString("LIVE_EDIT"));
-
-            String onlyofficeEditUrl = nuxeoController.getPortalUrlFactory().getStartPortletUrl(nuxeoController.getPortalCtx(), ONLYOFFICE_PORTLET_INSTANCE,
-                    windowProperties);
+            String onlyofficeEditUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController);
 
             request.setAttribute("onlyofficeEditUrl", onlyofficeEditUrl);
         }

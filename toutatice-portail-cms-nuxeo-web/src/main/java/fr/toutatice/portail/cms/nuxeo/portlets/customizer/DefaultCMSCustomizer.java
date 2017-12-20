@@ -235,17 +235,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.cmsService = cmsService;
 
         // Binary delegations
-        this.delegations = new ConcurrentHashMap<String, Map<String, BinaryDelegation>>();
+        this.delegations = new ConcurrentHashMap<>();
         // Players
-        this.players = new ConcurrentHashMap<String, INuxeoPlayerModule>();
+        this.players = new ConcurrentHashMap<>();
         this.players.put("defaultPlayer", new DefaultPlayer());
         // Navigation panel players
-        this.navigationPanelPlayers = new ConcurrentHashMap<String, PanelPlayer>();
+        this.navigationPanelPlayers = new ConcurrentHashMap<>();
         this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
         // Avatar map
-        this.avatarMap = new ConcurrentHashMap<String, String>();
+        this.avatarMap = new ConcurrentHashMap<>();
         // Binary timestamps
-        this.binaryTimestamps = new ConcurrentHashMap<String, BinaryTimestamp>();
+        this.binaryTimestamps = new ConcurrentHashMap<>();
 
         // Plugin manager
         this.pluginManager = new CustomizationPluginMgr(this);
@@ -306,7 +306,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return editable windows
      */
     public Map<String, EditableWindow> initEditableWindows(Locale locale) {
-        Map<String, EditableWindow> map = new HashMap<String, EditableWindow>();
+        Map<String, EditableWindow> map = new HashMap<>();
         map.put("fgt.html", new HTMLEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "html_Frag_"));
         map.put("fgt.list", new ListEditableWindow("toutatice-portail-cms-nuxeo-viewListPortletInstance", "liste_Frag_"));
         map.put("fgt.picture", new PictureEditableWindow("toutatice-portail-cms-nuxeo-viewFragmentPortletInstance", "picture_Frag_"));
@@ -327,7 +327,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     public List<ListTemplate> initListTemplates(Locale locale) {
-        List<ListTemplate> templates = new ArrayList<ListTemplate>();
+        List<ListTemplate> templates = new ArrayList<>();
 
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(locale);
@@ -373,7 +373,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return the list
      */
     public List<FragmentType> initListFragments(Locale locale) {
-        List<FragmentType> fragmentTypes = new ArrayList<FragmentType>();
+        List<FragmentType> fragmentTypes = new ArrayList<>();
 
         // Bundle
         Bundle bundle = this.bundleFactory.getBundle(locale);
@@ -493,7 +493,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
         Document doc = docCtx.getDoc();
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
+        Map<String, String> windowProperties = new HashMap<>();
         windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(docCtx, true));
         windowProperties.put("osivia.cms.style", ViewList.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
@@ -523,7 +523,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Document document = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
+        Map<String, String> windowProperties = new HashMap<>();
         // windowProperties.put(Constants.WINDOW_PROP_SCOPE, docCtx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, navigationInfos.getState().toString());
         // windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, docCtx.getHideMetaDatas());
@@ -551,7 +551,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Document doc = docCtx.getDoc();
         BasicPublicationInfos navigationInfos = docCtx.getPublicationInfos(BasicPublicationInfos.class);
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
+        Map<String, String> windowProperties = new HashMap<>();
         windowProperties.put("osivia.nuxeoRequest", NuxeoController.createFolderRequest(docCtx, false));
         windowProperties.put("osivia.cms.style", ViewList.LIST_TEMPLATE_EDITORIAL);
         windowProperties.put("osivia.hideDecorators", "1");
@@ -580,7 +580,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public Player getCMSSectionPlayer(CMSServiceCtx ctx) {
         Document doc = (Document) ctx.getDoc();
 
-        Map<String, String> windowProperties = new HashMap<String, String>();
+        Map<String, String> windowProperties = new HashMap<>();
 
         windowProperties.put("osivia.nuxeoRequest", "ecm:path STARTSWITH '" + doc.getPath() + "' AND ecm:mixinType != 'Folderish' ORDER BY dc:modified DESC");
         windowProperties.put("osivia.cms.style", ViewList.LIST_TEMPLATE_EDITORIAL);
@@ -609,7 +609,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return portlet link
      */
     public Player createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid) {
-        Map<String, String> windowProperties = new HashMap<String, String>();
+        Map<String, String> windowProperties = new HashMap<>();
         windowProperties.put(Constants.WINDOW_PROP_SCOPE, ctx.getScope());
         windowProperties.put(Constants.WINDOW_PROP_VERSION, ctx.getDisplayLiveVersion());
         windowProperties.put(InternalConstants.METADATA_WINDOW_PROPERTY, ctx.getHideMetaDatas());
@@ -635,7 +635,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         CMSPublicationInfos pubInfos = this.cmsService.getPublicationInfos(cmsContext, document.getPath());
 
         // Workspace indicator
-        boolean workspace = (cmsContext.getContextualizationBasePath() != null) && (pubInfos.isLiveSpace());
+        boolean workspace = cmsContext.getContextualizationBasePath() != null && pubInfos.isLiveSpace();
 
         List<INuxeoPlayerModule> modules = this.pluginManager.customizeModules();
         DocumentContext<Document> docCtx = NuxeoController.getDocumentContext(cmsContext, document.getPath());
@@ -655,7 +655,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
 
-        if (("Folder".equals(document.getType()) || "OrderedFolder".equals(document.getType())) || ("Section".equals(document.getType()))) {
+        if ("Folder".equals(document.getType()) || "OrderedFolder".equals(document.getType()) || "Section".equals(document.getType())) {
             if (workspace) {
                 // File browser
                 cmsContext.setDisplayLiveVersion("1");
@@ -669,7 +669,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
                 // Vignette
                 PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
-                if ((vignetteProperties != null) && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
+                if (vignetteProperties != null && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
                     BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
                     binary.setFieldName("ttc:vignette");
                     binary.setDocument(document);
@@ -702,14 +702,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Can't get confs
             }
 
-            if ((configs != null) && (configs.size() > 0)) {
+            if (configs != null && configs.size() > 0) {
                 for (Document config : configs) {
                     String documentType = config.getProperties().getString(WebConfigurationHelper.CODE);
                     String playerInstance = config.getProperties().getString(WebConfigurationHelper.ADDITIONAL_CODE);
 
                     if (document.getType().equals(documentType) && this.players.containsKey(playerInstance)) {
 
-                        Map<String, String> windowProperties = new HashMap<String, String>();
+                        Map<String, String> windowProperties = new HashMap<>();
                         PropertyList list = config.getProperties().getList(WebConfigurationHelper.OPTIONS);
 
                         // Inject defined values in conf in the player properties map
@@ -795,7 +795,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return Nuxeo native viewer URL
      */
     public String getNuxeoNativeViewerUrl(CMSServiceCtx ctx) {
-        if (("file-browser-menu-workspace".equals(ctx.getDisplayContext()))) {
+        if ("file-browser-menu-workspace".equals(ctx.getDisplayContext())) {
             return this.getDefaultExternalViewer(ctx);
         }
         return null;
@@ -817,7 +817,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (!"detailedView".equals(displayContext)) {
             // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-            if (("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType()))) {
+            if ("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType())) {
                 // Check context
                 if ("download".equals(displayContext) || "downloadVersion".equals(displayContext)) {
                     url = createFileDownloadLink(cmsContext, document, displayContext);
@@ -848,7 +848,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Creates download URL of principal blob of document.
-     * 
+     *
      * @param cmsContext
      * @param document
      * @param displayContext
@@ -858,7 +858,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String downloadUrl = null;
 
         PropertyMap attachedFileProperties = document.getProperties().getMap("file:content");
-        if ((attachedFileProperties != null) && !attachedFileProperties.isEmpty()) {
+        if (attachedFileProperties != null && !attachedFileProperties.isEmpty()) {
 
             // Nuxeo controller
             NuxeoController nuxeoCtl = new NuxeoController(cmsContext.getRequest(), cmsContext.getResponse(), cmsContext.getPortletCtx());
@@ -996,7 +996,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
                 for (PortalObject child : ((Portal) po).getChildren(PortalObject.PAGE_MASK)) {
                     String cmsPath = child.getDeclaredProperty("osivia.cms.basePath");
-                    if ((cmsPath != null) && (cmsPath.length() > 0)) {
+                    if (cmsPath != null && cmsPath.length() > 0) {
                         if (pathFilter.length() > 0) {
                             pathFilter += " OR ";
                         }
@@ -1141,10 +1141,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // #1421 - If not specified, use current request url insteaod of nuxeo.url
         if(StringUtils.isBlank(nxPublicDomainUri) && ctx != null && ctx.getRequest() !=null) {
-        	nxPublicDomainUri = ctx.getRequest().getScheme() + "://" + ctx.getRequest().getServerName();
+            nxPublicDomainUri = ctx.getRequest().getScheme() + "://" + ctx.getRequest().getServerName();
         }
-        
-		return xslFunctions.link(nxPublicDomainUri + link);
+
+        return xslFunctions.link(nxPublicDomainUri + link);
     }
 
 
@@ -1168,7 +1168,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // CMS path
             String cmsPath = this.transformNuxeoURL(cmsContext, nuxeoURL);
 
-            Map<String, String> parameters = new HashMap<String, String>(0);
+            Map<String, String> parameters = new HashMap<>(0);
 
             String currentPagePath = null;
             if (cmsContext.getRequest() != null) {
@@ -1268,7 +1268,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     protected List<DocumentType> getCustomizedCMSItemTypes() {
-        return new ArrayList<DocumentType>();
+        return new ArrayList<>();
     }
 
 
@@ -1278,7 +1278,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return default CMS item types
      */
     public List<DocumentType> getDefaultCMSItemTypes() {
-        List<DocumentType> defaultTypes = new ArrayList<DocumentType>();
+        List<DocumentType> defaultTypes = new ArrayList<>();
 
         // Workspace
         defaultTypes.add(new DocumentType("Workspace", true, false, false, true, false, false, Arrays.asList("Folder", "Note", "Room"),
@@ -1304,7 +1304,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(new DocumentType("Note", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-note"));
         // Contextual link
         defaultTypes
-                .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
+        .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
         // Room
         defaultTypes.add(new DocumentType("Room", true, false, true, true, false, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
                 "glyphicons glyphicons-cube-black"));
@@ -1336,14 +1336,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String webId = doc.getString("ttc:webid");
 
-        String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
+        String permLinkPath = ((Document) cmsCtx.getDoc()).getPath();
 
         if (StringUtils.isNotEmpty(webId) && !ContextDocumentsHelper.isRemoteProxy(doc)) {
             String explicitUrl = doc.getString("ttc:explicitUrl");
             String extension = doc.getString("ttc:extensionUrl");
 
 
-            Map<String, String> properties = new HashMap<String, String>();
+            Map<String, String> properties = new HashMap<>();
             if (explicitUrl != null) {
                 properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
             }
@@ -1450,7 +1450,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return null;
     }
 
-    
+
     /**
      * Gets the binary resource URL.
      *
@@ -1521,11 +1521,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     if (fileMap != null) {
                         fileName = fileMap.getString("name");
                     }
-                } else if ((binary.getIndex() != null) && (cmsCtx.getDoc() != null)) {
+                } else if (binary.getIndex() != null && cmsCtx.getDoc() != null) {
                     int index = NumberUtils.toInt(binary.getIndex());
                     Document contextDocument = (Document) cmsCtx.getDoc();
                     PropertyList files = contextDocument.getProperties().getList("files:files");
-                    if ((files != null) && (files.size() > index)) {
+                    if (files != null && files.size() > index) {
                         PropertyMap fileMap = files.getMap(index);
                         if (fileMap != null) {
                             fileName = fileMap.getString("filename");
@@ -1598,7 +1598,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 binaryTimestamp.setReloadingRequired(true);
                 this.binaryTimestamps.put(path, binaryTimestamp);
             }
-            
+
 
             if ("pdf:content".equals(binary.getFieldName()) && refreshingPage) {
                 // Force reloading for PDF preview
@@ -1606,7 +1606,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             } else if (binaryTimestamp.isReloadingRequired()) {
                 // Reload required
                 reload = true;
-                
+
                 if (timestamp - binaryTimestamp.getTimestamp() > TimeUnit.SECONDS.toMillis(10)) {
                     // Don't reload the next time
                     binaryTimestamp.setReloadingRequired(false);
@@ -1667,7 +1667,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String id = cmsCtx.getServletRequest().getSession(true).getId();
         Map<String, BinaryDelegation> delegationMap = this.delegations.get(id);
         if (delegationMap == null) {
-            delegationMap = new ConcurrentHashMap<String, BinaryDelegation>();
+            delegationMap = new ConcurrentHashMap<>();
             this.delegations.put(id, delegationMap);
         }
         return delegationMap;
@@ -1712,7 +1712,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Map<String, EcmCommand> getEcmCommands() {
-        Map<String, EcmCommand> commands = new ConcurrentHashMap<String, EcmCommand>();
+        Map<String, EcmCommand> commands = new ConcurrentHashMap<>();
 
         commands.put(EcmCommonCommands.lock.name(), new LockCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(this.notificationsService, this.internationalizationService));
@@ -1752,7 +1752,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Search
         PanelPlayer searchPlayer = new PanelPlayer();
         searchPlayer.setInstance("toutatice-portail-cms-nuxeo-searchPortletInstance");
-        Map<String, String> properties = new HashMap<String, String>(1);
+        Map<String, String> properties = new HashMap<>(1);
         properties.put(Constants.WINDOW_PROP_URI, "${basePath}");
         searchPlayer.setProperties(properties);
         TaskbarItem search = factory.createTransversalTaskbarItem("SEARCH", "SEARCH_TASK", "glyphicons glyphicons-search", searchPlayer);
@@ -1775,7 +1775,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     protected PanelPlayer getFileBrowserPanelPlayer() {
         PanelPlayer player = new PanelPlayer();
         player.setInstance("toutatice-portail-cms-nuxeo-publishMenuPortletInstance");
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put("osivia.bootstrapPanelStyle", String.valueOf(true));
         properties.put("osivia.cms.template", "fancytree-lazy");
         properties.put("osivia.cms.startLevel", String.valueOf(2));
@@ -1809,7 +1809,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for portletContext.
-     * 
+     *
      * @return the portletContext
      */
     public PortletContext getPortletContext() {
@@ -1818,7 +1818,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for cmsService.
-     * 
+     *
      * @return the cmsService
      */
     public CMSService getCmsService() {
@@ -1827,7 +1827,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for delegations.
-     * 
+     *
      * @return the delegations
      */
     public Map<String, Map<String, BinaryDelegation>> getDelegations() {
@@ -1836,7 +1836,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for players.
-     * 
+     *
      * @return the players
      */
     public Map<String, INuxeoPlayerModule> getPlayers() {
@@ -1845,7 +1845,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for navigationPanelPlayers.
-     * 
+     *
      * @return the navigationPanelPlayers
      */
     public Map<String, PanelPlayer> getNavigationPanelPlayers() {
@@ -1854,7 +1854,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for avatarMap.
-     * 
+     *
      * @return the avatarMap
      */
     public Map<String, String> getAvatarMap() {
@@ -1863,7 +1863,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for pluginManager.
-     * 
+     *
      * @return the pluginManager
      */
     public CustomizationPluginMgr getPluginManager() {
@@ -1872,7 +1872,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for nuxeoConnection.
-     * 
+     *
      * @return the nuxeoConnection
      */
     public NuxeoConnectionProperties getNuxeoConnection() {
@@ -1881,7 +1881,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for userPagesLoader.
-     * 
+     *
      * @return the userPagesLoader
      */
     public UserPagesLoader getUserPagesLoader() {
@@ -1890,7 +1890,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for menubarFormater.
-     * 
+     *
      * @return the menubarFormater
      */
     public MenuBarFormater getMenubarFormater() {
@@ -1899,7 +1899,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for browserAdapter.
-     * 
+     *
      * @return the browserAdapter
      */
     public BrowserAdapter getBrowserAdapter() {
@@ -1908,7 +1908,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for navigationItemAdapter.
-     * 
+     *
      * @return the navigationItemAdapter
      */
     public NavigationItemAdapter getNavigationItemAdapter() {
@@ -1917,7 +1917,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for classLoader.
-     * 
+     *
      * @return the classLoader
      */
     public ClassLoader getClassLoader() {
@@ -1926,7 +1926,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for parser.
-     * 
+     *
      * @return the parser
      */
     public XMLReader getParser() {
@@ -1935,7 +1935,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for portalUrlFactory.
-     * 
+     *
      * @return the portalUrlFactory
      */
     public IPortalUrlFactory getPortalUrlFactory() {
@@ -1944,7 +1944,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for webIdService.
-     * 
+     *
      * @return the webIdService
      */
     public IWebIdService getWebIdService() {
@@ -1953,7 +1953,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for webUrlService.
-     * 
+     *
      * @return the webUrlService
      */
     public IWebUrlService getWebUrlService() {
@@ -1962,7 +1962,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for taskbarService.
-     * 
+     *
      * @return the taskbarService
      */
     public ITaskbarService getTaskbarService() {
@@ -1970,26 +1970,26 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
     /**
-     * Getter for customizationService.
-     * 
-     * @return the customizationService
+     * {@inheritDoc}
      */
+    @Override
     public ICustomizationService getCustomizationService() {
         return customizationService;
     }
 
     /**
      * Getter for nuxeoCommentsService.
-     * 
+     *
      * @return the nuxeoCommentsService
      */
+    @Override
     public INuxeoCommentsService getNuxeoCommentsService() {
         return nuxeoCommentsService;
     }
 
     /**
      * Getter for internationalizationService.
-     * 
+     *
      * @return the internationalizationService
      */
     public IInternationalizationService getInternationalizationService() {
@@ -1998,7 +1998,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for bundleFactory.
-     * 
+     *
      * @return the bundleFactory
      */
     public IBundleFactory getBundleFactory() {
@@ -2007,15 +2007,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Getter for notificationsService.
-     * 
+     *
      * @return the notificationsService
      */
     public INotificationsService getNotificationsService() {
         return notificationsService;
     }
-
-
-
-
 
 }
