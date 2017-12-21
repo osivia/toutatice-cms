@@ -557,6 +557,7 @@ function displayControls($browser) {
 		$driveEdit = $toolbar.find(".drive-edit"),
 		$liveEdit = $toolbar.find(".live-edit"),
 		$allEdit = $toolbar.find(".all-edit"),
+		$liDrive = $allEdit.find(".li-drive-edit"),
 		$singleEdit = $toolbar.find(".single-edit"),
 		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
@@ -586,6 +587,8 @@ function displayControls($browser) {
 		$driveEdit.addClass("hidden disabled");
 		$liveEdit.addClass("hidden disabled");
 		$allEdit.addClass("hidden disabled");
+		$liDrive.addClass("hidden disabled");
+		$singleEdit.addClass("hidden disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -593,7 +596,6 @@ function displayControls($browser) {
 		if ($selected.length == 1) {
 			// Single element selected
 			$single.show();
-			$singleEdit.removeClass("hidden disabled");
 			$bulkDownload.hide();
 			$messageSelection.children().text("1 " + $messageSelection.data("message-single-selection"));
 			
@@ -684,7 +686,6 @@ function displayControls($browser) {
 			$bulkDownloadLink.children("span").text(title);
 			
 			$single.hide();
-			$singleEdit.addClass("hidden disabled");
 			$bulkDownload.show();
 			$messageSelection.children().text($selected.length + " " + $messageSelection.data("message-multiple-selection"));
 		}
@@ -708,7 +709,6 @@ function displayControls($browser) {
 					data: {
 						path: $element.data("path"),
 						file: $element.data("file"),
-						liveeditable: $element.data("live-editable")
 					},
 					success : function(data, status, xhr) {
 						$element.data("loaded", true);
@@ -717,7 +717,6 @@ function displayControls($browser) {
 							$element.data("writable", (data["writable"] == true));
 							$element.data("copiable", (data["copiable"] == true));
 							$element.data("drive-edit-url", data["driveEditUrl"]);
-							$element.data("live-edit-url", data["liveEditUrl"]);
 						}
 						
 						ajaxPendingCounter--;
@@ -775,6 +774,7 @@ function updateControlRights($browser) {
 		$liveEdit = $toolbar.find(".live-edit"),
 		$allEdit = $toolbar.find(".all-edit"),
 		$singleEdit = $toolbar.find(".single-edit"),
+		$liDrive = $allEdit.find(".li-drive-edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -815,7 +815,7 @@ function updateControlRights($browser) {
 		
 		// Drive edit
 		driveEditUrl = $selected.data("drive-edit-url");
-		driveEnabled = $selected.data("drive-enabled");
+		driveEnabled = $toolbar.data("drive-enabled");
 		liveEditUrl = $selected.data("live-edit-url");
 		
 		if (driveEditUrl && liveEditUrl){
@@ -824,6 +824,7 @@ function updateControlRights($browser) {
 			$driveEdit.removeClass("hidden disabled");
 			$liveEdit.removeClass("hidden disabled");
 			$allEdit.removeClass("hidden disabled");
+			$liDrive.removeClass("hidden disabled");
 		}else if (driveEditUrl) {
 			$driveEdit.attr("href", driveEditUrl);
 			$driveEdit.removeClass("hidden disabled");
@@ -831,6 +832,13 @@ function updateControlRights($browser) {
 		}else if(liveEditUrl){
 			$liveEdit.attr("href", liveEditUrl);
 			$liveEdit.removeClass("hidden disabled");
+			if(driveEnabled){
+				$allEdit.removeClass("hidden disabled");
+				$liDrive.removeClass("hidden");
+			}else{
+				$singleEdit.removeClass("hidden disabled");
+			}
+		}else if (driveEnabled){
 			$singleEdit.removeClass("hidden disabled");
 		}
 		

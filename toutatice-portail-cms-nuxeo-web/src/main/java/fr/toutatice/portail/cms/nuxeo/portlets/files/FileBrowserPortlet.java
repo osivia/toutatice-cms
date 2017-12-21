@@ -391,8 +391,6 @@ public class FileBrowserPortlet extends CMSPortlet {
             String path = request.getParameter("path");
             // File document indicator
             String isFile = request.getParameter("file");
-            // live editable indicator
-            String liveeditable = request.getParameter("liveeditable");
 
             if (path != null) {
                 NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
@@ -419,20 +417,6 @@ public class FileBrowserPortlet extends CMSPortlet {
                         }
 
                         data.put("driveEditUrl", driveEditUrl);
-
-                        // onlyoffice
-                        if (BooleanUtils.toBoolean(liveeditable) && nuxeoController.getNuxeoCMSService().getCMSCustomizer().getCustomizationService()
-                                .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME)) {
-
-                            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
-
-                            try {
-                                String startOnlyofficePortlerUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController);
-                                data.put("liveEditUrl", startOnlyofficePortlerUrl);
-                            } catch (PortalException e) {
-                                throw new PortletException(e);
-                            }
-                        }
                     }
                 } catch (CMSException e) {
                     // Do nothing
@@ -548,6 +532,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     }
                 }
 
+                Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
                 // Documents DTO
                 int index = 1;
@@ -555,6 +540,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 for (Document document : documents) {
                     DocumentDTO documentDto = this.documentDao.toDTO(document);
                     documentDto = setDraftInfos(document, documentDto);
+                    documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
@@ -633,6 +619,17 @@ public class FileBrowserPortlet extends CMSPortlet {
         return path;
     }
 
+    private DocumentDTO setLiveEditUrl(DocumentDTO documentDTO, NuxeoController nuxeoController, Bundle bundle) throws PortalException {
+
+        // onlyoffice
+        if (documentDTO.isLiveEditable() && nuxeoController.getNuxeoCMSService().getCMSCustomizer().getCustomizationService()
+                .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME)) {
+
+            String startOnlyofficePortlerUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController);
+            documentDTO.getProperties().put("liveEditUrl", startOnlyofficePortlerUrl);
+        }
+        return documentDTO;
+    }
 
     /**
      * Set draft informations if document has draft.

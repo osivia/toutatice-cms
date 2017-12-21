@@ -57,7 +57,7 @@
 							<span><op:translate key="LIVE_EDIT" /></span>
 						</a>
 					</li>
-					<li>
+					<li class="li-drive-edit">
 						<a href="#" class="drive-edit"> 
 							<i class=""></i> 
 							<span><op:translate key="DRIVE_EDIT" /></span>
@@ -80,13 +80,13 @@
                 </a>
                 
                 <!-- Live edit -->
-                <a href="#" class="btn btn-default live-edit">
+                <a href="#" class="btn btn-default navbar-btn live-edit">
                 	<i class="halflings halflings-pencil"></i>
                     <span><op:translate key="LIVE_EDIT" /></span>
                 </a>
             </div>
             
-			<div class="btn-group btn-group-sm single-selection" role="group">
+			<div class="btn-group btn-group-sm navbar-btn single-selection" role="group">
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                 <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">
