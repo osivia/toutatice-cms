@@ -52,7 +52,7 @@
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
 					<li>
-						<a href="#" class="live-edit">
+						<a href="#" class="no-ajax-link live-edit">
 							<i class="halflings halflings-pencil"></i> 
 							<span><op:translate key="LIVE_EDIT" /></span>
 						</a>
@@ -80,7 +80,7 @@
                 </a>
                 
                 <!-- Live edit -->
-                <a href="#" class="btn btn-default navbar-btn live-edit">
+                <a href="#" class="btn btn-default navbar-btn no-ajax-link live-edit">
                 	<i class="halflings halflings-pencil"></i>
                     <span><op:translate key="LIVE_EDIT" /></span>
                 </a>
