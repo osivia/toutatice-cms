@@ -1099,6 +1099,7 @@ public class FormsServiceImpl implements IFormsService {
                 String startingStep = variables.get("pcd:startingStep");
                 if (StringUtils.isNotBlank(startingStep)) {
                     modelWebId = document.getString("pcd:webIdParent");
+                    document = getModel(portalControllerContext, modelWebId);
                     PropertyMap startingStepProperties = this.getStepProperties(document, startingStep);
                     if (startingStepProperties != null) {
                         currentStepProperties = startingStepProperties;
