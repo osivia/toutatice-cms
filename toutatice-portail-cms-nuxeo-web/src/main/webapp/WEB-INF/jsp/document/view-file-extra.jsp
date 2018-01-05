@@ -11,6 +11,14 @@
 <c:set var="name" value="${document.properties['file:content']['name']}" />
 <c:set var="size" value="${document.properties['file:content']['length']}" />
 
+<c:choose>
+	<c:when test="${isEditableByUser}">
+		<c:set var="onlyOfficeLabel" value="LIVE_EDIT" />
+	</c:when>
+	<c:otherwise>
+		<c:set var="onlyOfficeLabel" value="LIVE_VIEW" />
+	</c:otherwise>
+</c:choose>
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -42,7 +50,7 @@
 			                    	<li>
 				                    	<a href="${onlyofficeEditUrl}" class="no-ajax-link">
 				                    		<i class="halflings halflings-pencil"></i>
-					                        <span><op:translate key="LIVE_EDIT" /></span>
+					                        <span><op:translate key="${onlyOfficeLabel}" /></span>
 					                    </a>
 			                    	</li>
 			                    	<li>
@@ -66,7 +74,7 @@
 			                    	<li>
 				                    	<a href="${onlyofficeEditUrl}" class="no-ajax-link">
 				                    		<i class="halflings halflings-pencil"></i>
-					                        <span><op:translate key="LIVE_EDIT" /></span>
+					                        <span><op:translate key="${onlyOfficeLabel}" /></span>
 					                    </a>
 			                    	</li>
 			                    	<li class="disabled" data-toggle="tooltip" title="<op:translate key='MESSAGE_DRIVE_CLIENT_NOT_STARTED' />">
@@ -80,7 +88,7 @@
             			</c:when>
             			<c:otherwise>
             				<a href="${onlyofficeEditUrl}" class="btn btn-primary btn-block no-ajax-link">
-		                        <span><op:translate key="LIVE_EDIT" /></span>
+		                        <span><op:translate key="${onlyOfficeLabel}" /></span>
 		                    </a>
             			</c:otherwise>
             		</c:choose>

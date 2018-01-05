@@ -28,6 +28,15 @@
 <c:set var="messageNotFile"><op:translate key="FILE_BROWSER_NOT_FILE" /></c:set>
 <c:set var="messageTooLarge"><op:translate key="FILE_BROWSER_TOO_LARGE" /></c:set>
 
+<c:choose>
+	<c:when test="${editable}">
+		<c:set var="onlyOfficeLabel" value="LIVE_EDIT" />
+	</c:when>
+	<c:otherwise>
+		<c:set var="onlyOfficeLabel" value="LIVE_VIEW" />
+	</c:otherwise>
+</c:choose>
+
 
 <div class="contextual-toolbar" data-infos-url="${infosUrl}" data-drive-enabled="${driveEnabled}">
     <nav class="navbar navbar-default" role="toolbar">
@@ -45,7 +54,7 @@
 			<div class="btn-group btn-group-sm navbar-btn all-edit" role="group">
 				<a href="#" class="btn btn-default live-edit"> 
 					<i class="halflings halflings-pencil"></i> 
-					<span><op:translate key="LIVE_EDIT" /></span>
+					<span><op:translate key="${onlyOfficeLabel}" /></span>
 				</a>
 				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="caret"></span>
@@ -54,7 +63,7 @@
 					<li>
 						<a href="#" class="no-ajax-link live-edit">
 							<i class="halflings halflings-pencil"></i> 
-							<span><op:translate key="LIVE_EDIT" /></span>
+							<span><op:translate key="${onlyOfficeLabel}" /></span>
 						</a>
 					</li>
 					<li class="li-drive-edit">
@@ -82,7 +91,7 @@
                 <!-- Live edit -->
                 <a href="#" class="btn btn-default navbar-btn no-ajax-link live-edit">
                 	<i class="halflings halflings-pencil"></i>
-                    <span><op:translate key="LIVE_EDIT" /></span>
+                    <span><op:translate key="${onlyOfficeLabel}" /></span>
                 </a>
             </div>
             

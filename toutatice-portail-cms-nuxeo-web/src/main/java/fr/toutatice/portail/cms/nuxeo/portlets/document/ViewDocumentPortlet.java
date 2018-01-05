@@ -36,6 +36,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -100,8 +103,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -333,6 +334,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
             String path = window.getProperty(PATH_WINDOW_PROPERTY);
             // Computed path
             path = nuxeoController.getComputedPath(path);
+            // Publication informations
+            CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
+            
 
             if (StringUtils.isNotBlank(path)) {
                 // Document context
@@ -415,8 +419,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                     generatePublishedDocumentsInfos(nuxeoController, document, documentDto, false);
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
-                        // Publication informations
-                        CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
 
                         // Validation state
                         addValidationState(document, documentDto, extendedDocumentInfos);
@@ -434,6 +436,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         handleDriveEdition(nuxeoController.getPortalCtx(), document, documentDto, publicationInfos);
                     }
                 }
+                
+                request.setAttribute("isEditableByUser", publicationInfos.isEditableByUser());
+                
             }
 
             response.setContentType("text/html");
