@@ -94,21 +94,24 @@
             		</c:choose>
             	</c:when>
             	<c:otherwise>
-	                <c:when test="${not empty driveEditUrl}">
-	                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
-	                        <span><op:translate key="DRIVE_EDIT" /></span>
-	                    </a>
-	                </c:when>
+            		<c:choose>
+	            		<c:when test="${not empty driveEditUrl}">
+		                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
+		                        <span><op:translate key="DRIVE_EDIT" /></span>
+		                    </a>
+		                </c:when>
+		                
+		                <c:when test="${driveEnabled}">
+		                    <div class="alert alert-warning">
+		                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
+		                    </div>
+		                
+		                    <a href="#" class="btn btn-primary btn-block disabled">
+		                        <span><op:translate key="DRIVE_EDIT" /></span>
+		                    </a>
+		                </c:when>
+            		</c:choose>
 	                
-	                <c:when test="${driveEnabled}">
-	                    <div class="alert alert-warning">
-	                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
-	                    </div>
-	                
-	                    <a href="#" class="btn btn-primary btn-block disabled">
-	                        <span><op:translate key="DRIVE_EDIT" /></span>
-	                    </a>
-	                </c:when>
             	</c:otherwise>
             </c:choose>
 

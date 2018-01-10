@@ -29,7 +29,7 @@ public class OnlyofficeLiveEditHelper {
         return nuxeoController.getPortalUrlFactory().getStartPortletUrl(nuxeoController.getPortalCtx(), ONLYOFFICE_PORTLET_INSTANCE, windowProperties);
     }
 
-    public static OnlyofficeFileType GetFileType(String mimeType) {
+    public static OnlyofficeFileType getFileType(String mimeType) {
         if (documentMimetype.contains(mimeType)) {
             return OnlyofficeFileType.Text;
         }
@@ -41,6 +41,7 @@ public class OnlyofficeLiveEditHelper {
         if (presentationMimetype.contains(mimeType)) {
             return OnlyofficeFileType.Presentation;
         }
+        
         return OnlyofficeFileType.Text;
     }
 
@@ -59,8 +60,7 @@ public class OnlyofficeLiveEditHelper {
         return false;
     }
 
-    private static List<String> documentMimetype = Arrays.asList("text/xml", "text/html", "text/plain", "text/rtf", "application/rtf",
-            "application/x-extension-properties", "application/x-extension-conf", "application/msword",
+    private static List<String> documentMimetype = Arrays.asList("text/rtf", "application/rtf", "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.sun.xml.writer",
             "application/vnd.sun.xml.writer.template", "application/vnd.oasis.opendocument.text", "application/vnd.oasis.opendocument.text-template",
             "application/wordperfect");

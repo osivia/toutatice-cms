@@ -52,7 +52,7 @@
 
 			<!-- Drive and Live edit -->
 			<div class="btn-group btn-group-sm navbar-btn all-edit" role="group">
-				<a href="#" class="btn btn-default live-edit"> 
+				<a href="#" class="no-ajax-link btn btn-default live-edit"> 
 					<i class="halflings halflings-pencil"></i> 
 					<span><op:translate key="${onlyOfficeLabel}" /></span>
 				</a>

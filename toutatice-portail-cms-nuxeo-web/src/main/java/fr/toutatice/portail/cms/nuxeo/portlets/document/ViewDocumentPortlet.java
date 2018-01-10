@@ -403,7 +403,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // handle live edition through onlyofice link
-                handleLiveEdit(request, document.getPath(), nuxeoController);
+                handleLiveEdit(request, document.getPath(), documentDto, nuxeoController);
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
@@ -453,11 +453,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
     }
 
 
-    private void handleLiveEdit(RenderRequest request, String path, NuxeoController nuxeoController) throws PortalException {
+    private void handleLiveEdit(RenderRequest request, String path, DocumentDTO documentDto, NuxeoController nuxeoController) throws PortalException {
 
         boolean isOnlyofficeRegistered = cmsService.getCustomizer().getPluginManager().isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
 
-        if (isOnlyofficeRegistered) {
+        if (isOnlyofficeRegistered && documentDto.isLiveEditable()) {
 
             Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
@@ -478,19 +478,38 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private void addCurrentlyEditedNotification(NuxeoController nuxeoController, Principal principal, ExtendedDocumentInfos extendedDocumentInfos) {
         PersonService personService = DirServiceFactory.getService(PersonService.class);
 
-        Set<String> displayNames = new HashSet<>();
+        Set<String> editingNames = new HashSet<>();
+        Set<String> recentlyEditedNames = new HashSet<>();
+        
+    	boolean editedByMe = false;
 
         JSONObject currentlyEditedEntry = extendedDocumentInfos.getCurrentlyEditedEntry();
-        addDisplayNameToSet(principal, personService, displayNames, currentlyEditedEntry);
+        addDisplayNameToSet(principal, personService, editingNames, currentlyEditedEntry);
 
         JSONObject recentlyEditedEntry = extendedDocumentInfos.getRecentlyEditedEntry();
-        addDisplayNameToSet(principal, personService, displayNames, recentlyEditedEntry);
-
-        if (displayNames.size() == 1) {
-            addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY", NotificationsType.WARNING, displayNames.toArray()[0]);
-        } else if (displayNames.size() > 1) {
-            addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_MULTIPLE", NotificationsType.WARNING, StringUtils.join(displayNames, ", "));
+        addDisplayNameToSet(principal, personService, recentlyEditedNames, recentlyEditedEntry);
+        
+        if(isEditedByMe(principal,currentlyEditedEntry)) {
+        	editedByMe = true;	
         }
+        
+        if(editedByMe) {
+        	if(editingNames.size() > 0) {
+        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_OTHERS_AND_I", NotificationsType.WARNING, StringUtils.join(editingNames, ", "));
+        	}
+        	else {
+        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_ME", NotificationsType.WARNING);
+        	}
+        }
+        else {
+        	if(editingNames.size() > 0) {
+        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY", NotificationsType.WARNING, StringUtils.join(editingNames, ", "));
+        	}
+        	else if(recentlyEditedNames.size() > 0) {
+        		addNotification(nuxeoController.getPortalCtx(), "RECENTLY_EDITED_BY", NotificationsType.WARNING, StringUtils.join(recentlyEditedNames, ", "));
+        	}
+        }
+        
 
     }
 
@@ -501,17 +520,35 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 ListIterator userNamesI = usernamesArray.listIterator();
                 while (userNamesI.hasNext()) {
                     String userName = (String) userNamesI.next();
-                    if (principal == null || !StringUtils.equals(principal.getName(), userName)) {
+                    if (principal == null || !(StringUtils.equals(principal.getName(), userName))) {
                         Person person = personService.getPerson(userName);
                         if (person != null) {
                             displayNames.add(person.getDisplayName());
                         }
                     }
+
                 }
             }
         }
     }
+    
+    private boolean isEditedByMe(Principal principal, JSONObject currentlyEditedEntry) {
+    	
+        if (currentlyEditedEntry != null) {
+            JSONArray usernamesArray = currentlyEditedEntry.getJSONArray("username");
+            if (usernamesArray != null) {
+                ListIterator userNamesI = usernamesArray.listIterator();
+                while (userNamesI.hasNext()) {
+                    String userName = (String) userNamesI.next();
+                    if (principal != null && (StringUtils.equals(principal.getName(), userName))) {
+                    	return true;
+                    }
 
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Get dispatch JSP name.
