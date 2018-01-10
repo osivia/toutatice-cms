@@ -46,6 +46,8 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.PrivilegedPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -536,12 +538,23 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
     }
 
     private Map<String, String> buildVariableDefinition(String name, String label, String type, String varOptions) {
-        Map<String, String> variableDefinition = new HashMap<String, String>(4);
+        Map<String, String> variableDefinition = new HashMap<String, String>();
 
         variableDefinition.put("name", name);
         variableDefinition.put("label", label);
         variableDefinition.put("type", type);
         variableDefinition.put("varOptions", varOptions);
+
+        if ("VOCABULARY".equals(type) && StringUtils.isNotBlank(varOptions)) {
+            String vocabularyId;
+            try {
+                JSONObject object = JSONObject.fromObject(varOptions);
+                vocabularyId = object.getString("vocabularyId");
+            } catch (JSONException e) {
+                vocabularyId = null;
+            }
+            variableDefinition.put("vocabularyId", vocabularyId);
+        }
 
         return variableDefinition;
     }
