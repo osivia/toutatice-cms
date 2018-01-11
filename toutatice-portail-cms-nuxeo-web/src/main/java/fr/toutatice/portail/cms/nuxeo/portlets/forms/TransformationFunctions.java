@@ -463,7 +463,7 @@ public class TransformationFunctions {
             // Link
             Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
 
-            result = DOM4JUtils.write(link);
+            result = DOM4JUtils.writeCompact(link);
         }
 
         return result;
@@ -506,7 +506,7 @@ public class TransformationFunctions {
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", text);
 
-        return DOM4JUtils.write(link);
+        return DOM4JUtils.writeCompact(link);
     }
 
     /**
@@ -544,7 +544,7 @@ public class TransformationFunctions {
         // Link
         Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", text);
 
-        return DOM4JUtils.write(link);
+        return DOM4JUtils.writeCompact(link);
     }
 
 

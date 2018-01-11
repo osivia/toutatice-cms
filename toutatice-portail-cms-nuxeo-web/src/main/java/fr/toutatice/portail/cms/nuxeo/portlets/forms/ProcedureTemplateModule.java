@@ -46,6 +46,8 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.PrivilegedPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -277,6 +279,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
             // build the CSV and write to output
             response.setContentType("text/csv");
+            response.setCharacterEncoding("UTF-8");
             response.setProperty("Content-disposition", "attachment; filename=\"" + dashboardName + ".csv" + "\"");
             try {
                 printCSV(documents, exportVarList, variablesDefinitions, response.getPortletOutputStream(), nuxeoController);
@@ -297,6 +300,10 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
     private void printCSV(List<DocumentDTO> documents, PropertyList exportVarList, Map<String, Map<String, String>> variablesDefinitions,
             OutputStream portletOutputStream, NuxeoController nuxeoController) throws IOException {
         OutputStreamWriter writer = new OutputStreamWriter(portletOutputStream);
+
+        // force UTF-8 encoding
+        writer.write('\ufeff');
+
         CSVPrinter printer;
         try {
             String header[] = null;
@@ -345,7 +352,6 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
         Map<String, Map<String, String>> varsOptionsMap = new HashMap<String, Map<String, String>>(variablesDefinitions.size());
 
-
         for (Map<String, String> variablesDefinition : variablesDefinitions.values()) {
 
             String varName = variablesDefinition.get("name");
@@ -356,31 +362,30 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
                 varOptions = StringUtils.substringBetween(varOptions, "[", "]");
                 String[] varOptionT = StringUtils.splitByWholeSeparator(varOptions, "},{");
 
-                varOptionsMap = new HashMap<String, String>(varOptionT.length);
+                if (varOptionT != null) {
+                    varOptionsMap = new HashMap<String, String>(varOptionT.length);
+                    for (int j = 0; j < varOptionT.length; j++) {
+                        String varOption = varOptionT[j];
+                        String[] varOptionLV = StringUtils.split(varOption, ',');
+                        if (varOptionLV != null) {
+                            String varOptionValue = null;
+                            String varOptionLabel = null;
+                            for (int k = 0; k < varOptionLV.length; k++) {
+                                String varOptionLVS = varOptionLV[k];
+                                varOptionLVS = StringUtils.replaceChars(varOptionLVS, "\"{}", StringUtils.EMPTY);
 
-                for (int j = 0; j < varOptionT.length; j++) {
-                    String varOption = varOptionT[j];
-                    String[] varOptionLV = StringUtils.split(varOption, ',');
-                    if (varOptionLV != null) {
-                        String varOptionValue = null;
-                        String varOptionLabel = null;
-                        for (int k = 0; k < varOptionLV.length; k++) {
-                            String varOptionLVS = varOptionLV[k];
-                            varOptionLVS = StringUtils.replaceChars(varOptionLVS, "\"{}", StringUtils.EMPTY);
-
-                            if (StringUtils.startsWith(varOptionLVS, "label")) {
-                                varOptionLabel = StringUtils.substringAfterLast(varOptionLVS, ":");
-                            } else if (StringUtils.startsWith(varOptionLVS, "value")) {
-                                varOptionValue = StringUtils.substringAfterLast(varOptionLVS, ":");
+                                if (StringUtils.startsWith(varOptionLVS, "label")) {
+                                    varOptionLabel = StringUtils.substringAfterLast(varOptionLVS, ":");
+                                } else if (StringUtils.startsWith(varOptionLVS, "value")) {
+                                    varOptionValue = StringUtils.substringAfterLast(varOptionLVS, ":");
+                                }
+                            }
+                            if (StringUtils.isNotBlank(varOptionValue) && StringUtils.isNotBlank(varOptionLabel)) {
+                                varOptionsMap.put(varOptionValue, varOptionLabel);
                             }
                         }
-                        if (StringUtils.isNotBlank(varOptionValue) && StringUtils.isNotBlank(varOptionLabel)) {
-                            varOptionsMap.put(varOptionValue, varOptionLabel);
-                        }
                     }
-
                 }
-
             }
             varsOptionsMap.put(varName, varOptionsMap);
         }
@@ -533,12 +538,23 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
     }
 
     private Map<String, String> buildVariableDefinition(String name, String label, String type, String varOptions) {
-        Map<String, String> variableDefinition = new HashMap<String, String>(4);
+        Map<String, String> variableDefinition = new HashMap<String, String>();
 
         variableDefinition.put("name", name);
         variableDefinition.put("label", label);
         variableDefinition.put("type", type);
         variableDefinition.put("varOptions", varOptions);
+
+        if ("VOCABULARY".equals(type) && StringUtils.isNotBlank(varOptions)) {
+            String vocabularyId;
+            try {
+                JSONObject object = JSONObject.fromObject(varOptions);
+                vocabularyId = object.getString("vocabularyId");
+            } catch (JSONException e) {
+                vocabularyId = null;
+            }
+            variableDefinition.put("vocabularyId", vocabularyId);
+        }
 
         return variableDefinition;
     }

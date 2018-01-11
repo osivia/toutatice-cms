@@ -54,6 +54,7 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
+import org.osivia.portal.core.utils.URLUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
@@ -98,9 +99,7 @@ import net.sf.json.JSONObject;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
-    /**
-     * 
-     */
+    /** Host joker. */
     private static final String HOST_JOKER = "__HOST__";
     /** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
@@ -686,10 +685,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 // No host in nxdrive URL (get the current portal request host), refs #1421
                 if (StringUtils.contains(driveEditUrl, HOST_JOKER)) {
+                    // Try to get official host (in header)
+                    String vhost = portalControllerContext.getHttpServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
+
+                    if (StringUtils.isBlank(vhost)) {
+                        // if blank, try to get the host by the request
+                        vhost = request.getScheme() + "/" + request.getServerName();
+                    } else {
+                        vhost = vhost.replace("://", "/"); // Ndrive protocol
+                    }
+
                     StringBuilder builder = new StringBuilder();
-                    builder.append(request.getScheme());
-                    builder.append("/");
-                    builder.append(request.getServerName());
+                    builder.append(vhost);
                     builder.append("/nuxeo");
                     driveEditUrl = StringUtils.replace(driveEditUrl, HOST_JOKER, builder.toString());
                 }

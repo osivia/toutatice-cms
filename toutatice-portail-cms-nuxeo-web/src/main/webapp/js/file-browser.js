@@ -585,13 +585,13 @@ function displayControls($browser) {
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
+		$bulkDownload.addClass("hidden");
 		
 		$menubarBreadcrumbItems.addClass("disabled");
 		
 		if ($selected.length == 1) {
 			// Single element selected
 			$single.show();
-			$bulkDownload.hide();
 			$messageSelection.children().text("1 " + $messageSelection.data("message-single-selection"));
 			
 			
@@ -648,35 +648,35 @@ function displayControls($browser) {
 			
 		} else {
 			// Multiple elements selected
-			
+
 			// for bulkDownload, all documents must be files
 			var allFiles = true;
 			// size shouldn't exceed 100000000 bytes
 			var sizeSum = 0;
-			$selected.each(function(){
+			$selected.each(function() {
 				var $element = $JQry(this);
-				if(!$element.data("file")){
+				if (!$element.data("file")) {
 					allFiles = false;
 				}
 				sizeSum += $element.data("size");
 			});
 			var $bulkDownloadLink = $bulkDownload.children();
 			var title;
-			if(!allFiles){
+			if (!allFiles) {
 				$bulkDownloadLink.addClass("disabled");
-				title = $bulkDownloadLink.data("message-not-file");
-			}else if(sizeSum>100000000){
+				title = $bulkDownload.data("message-not-file");
+			} else if (sizeSum > 100000000) {
 				$bulkDownloadLink.addClass("disabled");
-				title = $bulkDownloadLink.data("message-too-large");
-			}else{
+				title = $bulkDownload.data("message-too-large");
+			} else {
 				$bulkDownloadLink.removeClass("disabled");
-				title = $bulkDownloadLink.data("message-ok");
+				title = $bulkDownload.data("message-ok");
 			}
-			$bulkDownloadLink.attr("title", title).tooltip('fixTitle')
+			$bulkDownload.attr("title", title).tooltip("fixTitle");
 			$bulkDownloadLink.children("span").text(title);
-			
+			$bulkDownload.removeClass("hidden");
+
 			$single.hide();
-			$bulkDownload.show();
 			$messageSelection.children().text($selected.length + " " + $messageSelection.data("message-multiple-selection"));
 		}
 		

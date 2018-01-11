@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -237,13 +238,11 @@ public class MenuBarFormater {
                     // Edition dropdown menu
                     this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
-
-                    // Permalink
-                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
-
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
+                    // Permalink
+                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Draft options
@@ -254,7 +253,7 @@ public class MenuBarFormater {
                                 // Reorder
                                 this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                                 // Edition
-                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
+                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                                 // Delete
                                 this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                             }
@@ -334,21 +333,23 @@ public class MenuBarFormater {
      * @throws CMSException
      */
     protected boolean isInUserWorkspace(CMSServiceCtx cmsContext, Document document) throws CMSException {
-        // CMS service
-        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+        // Browser adapter
+        BrowserAdapter browserAdapter = this.customizer.getBrowserAdapter();
 
         boolean userWorkspace = false;
         if (document != null) {
-            final String path = document.getPath() + "/";
+            String path = document.getPath() + "/";
 
-            final List<CMSItem> userWorkspaces = cmsService.getWorkspaces(cmsContext, true, false);
-            for (final CMSItem cmsItem : userWorkspaces) {
-                if (StringUtils.startsWith(path, cmsItem.getPath() + "/")) {
-                    userWorkspace = true;
-                    break;
-                }
+            // User workspaces
+            List<CMSItem> userWorkspaces = browserAdapter.getAllUserWorkspaces(cmsContext);
+
+            Iterator<CMSItem> iterator = userWorkspaces.iterator();
+            while (iterator.hasNext() && !userWorkspace) {
+                CMSItem cmsItem = iterator.next();
+                userWorkspace = StringUtils.startsWith(path, cmsItem.getPath() + "/");
             }
         }
+
         return userWorkspace;
     }
 
@@ -1311,11 +1312,10 @@ public class MenuBarFormater {
      * @param pubInfos publication infos
      * @param menubar menubar
      * @param bundle internationalization bundle
-     * @param isTaskbarItem is taskbar item indicator
      * @throws CMSException
      */
     protected void getEditLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1346,12 +1346,7 @@ public class MenuBarFormater {
             // Menubar item
             MenubarItem item;
 
-            if (isTaskbarItem) {
-                String title = bundle.getString("EDIT");
-                item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
-                item.setDisabled(true);
-                menubar.add(item);
-            } else if ((type != null) && type.isEditable()) {
+            if ((type != null) && type.isEditable()) {
                 // Callback URL
                 String callbackURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null, null);
                 // ECM base URL

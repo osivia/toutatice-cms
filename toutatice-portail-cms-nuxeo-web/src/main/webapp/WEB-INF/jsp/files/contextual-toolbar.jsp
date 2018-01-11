@@ -14,7 +14,7 @@
 <!-- Load document publication informations URL -->
 <portlet:resourceURL id="infos" var="infosUrl" />
 
-<!-- DOwnload zip of selected documents -->
+<!-- Download zip of selected documents -->
 <portlet:resourceURL id="zipDownload" var="zipDownloadUrl" >
 	<portlet:param name="paths" value="_PATHS_"/>
 </portlet:resourceURL>
@@ -90,7 +90,16 @@
                         <span class="sr-only">${title}</span>
                     </a>
                 </div>
-                
+
+                <!-- Bulk Download -->
+                <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
+                <div title="${title}" class="btn-group btn-group-sm bulk-download" data-toggle="tooltip" data-placement="top" data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}" role="group">
+                    <a href="#" target="_blank" data-url="${zipDownloadUrl}" class="btn btn-default navbar-btn no-ajax-link">
+                        <i class="halflings halflings-download-alt"></i>
+                        <span class="sr-only">${title}</span>
+                    </a>
+                </div>
+
                 <div class="btn-group btn-group-sm multiple-selection" role="group">
                     <!-- Move -->
                     <c:set var="title"><op:translate key="MOVE" /></c:set>
