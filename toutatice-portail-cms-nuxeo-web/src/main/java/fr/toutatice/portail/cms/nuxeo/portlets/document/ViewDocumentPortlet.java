@@ -32,9 +32,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
@@ -78,6 +75,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.CommentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.RemotePublishedDocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
+import fr.toutatice.portail.cms.nuxeo.api.transaction.INuxeoTransactionService;
 import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
@@ -89,6 +87,9 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.portlets.site.SitePictureServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.thumbnail.ThumbnailServlet;
 import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
+import fr.toutatice.portail.cms.nuxeo.service.transaction.NuxeoTransactionService;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * View Nuxeo document portlet.
@@ -98,10 +99,10 @@ import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
 public class ViewDocumentPortlet extends CMSPortlet {
 
     /**
-	 * 
-	 */
-	private static final String HOST_JOKER = "__HOST__";
-	/** Path window property name. */
+     * 
+     */
+    private static final String HOST_JOKER = "__HOST__";
+    /** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
@@ -180,6 +181,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // Forms service
             FormsServiceImpl formsService = new FormsServiceImpl(customizer);
             this.registerService(this.nuxeoService.getFormsService(), formsService);
+
+            // Nuxeo transaction service
+            INuxeoTransactionService transactionService = new NuxeoTransactionService();
+            this.registerService(this.nuxeoService.getNuxeoTransactionService(), transactionService);
 
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
