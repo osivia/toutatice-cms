@@ -16,6 +16,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -42,6 +43,10 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
     private CMSPublicationInfos cmsPublicationInfos;
     /** Extended document informations. */
     private ExtendedDocumentInfos extendedInfos;
+    /** CMS path. */
+    private String cmsPath;
+    /** WebId. */
+    private String webId;
 
     /** Initialized document indicator. */
     private boolean initializedDocument;
@@ -67,6 +72,8 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
     private final ICMSServiceLocator cmsServiceLocator;
     /** Nuxeo service. */
     private final INuxeoService nuxeoService;
+    /** WebId service. */
+    private final IWebIdService webIdService;
 
 
     /**
@@ -83,6 +90,8 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
         // Nuxeo service
         this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+        // WebId service
+        this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
     }
 
 
@@ -149,6 +158,33 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
     @Override
     public String getPath() {
         return this.path;
+    }
+
+
+    /**
+     * Get CMS path.
+     * 
+     * @return CMS path
+     */
+    public String getCmsPath() {
+        if (this.cmsPath == null) {
+            this.initCmsPublicationInfos();
+        }
+
+        return this.cmsPath;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getWebId() {
+        if (this.webId == null) {
+            this.initDocument();
+        }
+
+        return this.webId;
     }
 
 
@@ -247,10 +283,13 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             // CMS service
             ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
+            // CMS path
+            String cmsPath = this.getCmsPath();
+
             // CMS content
             CMSItem content;
             try {
-                content = cmsService.getContent(this.cmsContext, this.path);
+                content = cmsService.getContent(this.cmsContext, cmsPath);
             } catch (CMSException e) {
                 if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
                     throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
@@ -271,6 +310,11 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
 
             if ((nativeItem != null) && (nativeItem instanceof Document)) {
                 this.document = (Document) nativeItem;
+            }
+
+            // WebId
+            if (content != null) {
+                this.webId = content.getWebId();
             }
 
             this.initializedDocument = true;
@@ -324,8 +368,14 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
      */
     @Override
     public void reload() {
-        this.cmsContext.setForceReload(true);
-        this.refresh();
+        boolean savedValue = this.cmsContext.isForceReload();
+        try {
+            this.cmsContext.setForceReload(true);
+            this.refresh();
+            this.initDocument();
+        } finally {
+            this.cmsContext.setForceReload(savedValue);
+        }
     }
 
 
@@ -351,8 +401,20 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             // CMS service
             ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
+            // Fetch path
+            String fetchPath;
+            if (this.cmsPath != null) {
+                fetchPath = this.cmsPath;
+            } else if (this.webId != null) {
+                fetchPath = this.webIdService.webIdToFetchPath(this.webId);
+            } else if (StringUtils.startsWith(this.path, "/") || StringUtils.startsWith(this.path, IWebIdService.FETCH_PATH_PREFIX)) {
+                fetchPath = this.path;
+            } else {
+                fetchPath = this.webIdService.webIdToFetchPath(this.path);
+            }
+
             try {
-                this.cmsPublicationInfos = cmsService.getPublicationInfos(this.cmsContext, this.path);
+                this.cmsPublicationInfos = cmsService.getPublicationInfos(this.cmsContext, fetchPath);
             } catch (CMSException e) {
                 if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
                     throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
@@ -362,6 +424,9 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
                     throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
                 }
             }
+
+            // CMS path
+            this.cmsPath = this.cmsPublicationInfos.getDocumentPath();
 
             this.initializedCmsPublicationInfos = true;
         }
@@ -390,11 +455,14 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             // CMS service
             ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
+            // CMS path
+            String cmsPath = this.getCmsPath();
+
             if (cmsService instanceof CMSService) {
                 CMSService cmsServiceImpl = (CMSService) cmsService;
 
                 try {
-                    this.extendedInfos = cmsServiceImpl.getExtendedDocumentInfos(this.cmsContext, this.path);
+                    this.extendedInfos = cmsServiceImpl.getExtendedDocumentInfos(this.cmsContext, cmsPath);
                 } catch (CMSException e) {
                     if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
                         throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
@@ -417,6 +485,8 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
     private void refresh() {
         this.publicationInfos.refresh();
         this.permissions.refresh();
+        this.cmsPath = null;
+        this.webId = null;
         this.initializedDocument = false;
         this.initializedDocumentType = false;
         this.initializedCmsPublicationInfos = false;

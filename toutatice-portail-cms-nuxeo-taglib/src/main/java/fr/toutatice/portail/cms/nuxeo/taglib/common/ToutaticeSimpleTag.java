@@ -7,12 +7,15 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.servlet.jsp.JspException;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.taglib.common.PortalSimpleTag;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 
 /**
@@ -29,9 +32,14 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
 
     /** Document DTO. */
     private DocumentDTO document;
+    /** Path. */
+    private String path;
+
 
     /** Nuxeo tag service. */
     private final INuxeoTagService tagService;
+    /** Document DAO. */
+    private final DocumentDAO dao;
 
 
     /**
@@ -42,6 +50,8 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
 
         // Tag service
         this.tagService = NuxeoServiceFactory.getTagService();
+        // Document DAO
+        this.dao = DocumentDAO.getInstance();
     }
 
 
@@ -52,6 +62,13 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
     public void doTag() throws JspException, IOException {
         // Nuxeo controller
         NuxeoController nuxeoController = this.getNuxeoController();
+
+        if ((this.document == null) && StringUtils.isNotBlank(this.path)) {
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(this.path);
+            Document document = documentContext.getDocument();
+            nuxeoController.setCurrentDoc(document);
+            this.document = this.dao.toDTO(document);
+        }
 
         this.doTag(nuxeoController, this.document);
     }
@@ -113,6 +130,14 @@ public abstract class ToutaticeSimpleTag extends PortalSimpleTag {
         this.document = document;
     }
 
+    /**
+     * Setter for path.
+     * 
+     * @param path the path to set
+     */
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     /**
      * Getter for tagService.

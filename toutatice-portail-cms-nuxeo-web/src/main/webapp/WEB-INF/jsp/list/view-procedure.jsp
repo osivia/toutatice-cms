@@ -65,29 +65,43 @@
                 <tr>
 		            <c:forEach var="column" items="${dashboardColumns}" varStatus="status">
                         <c:set var="variableName" value="${column.map['variableName']}" />
+                        <c:set var="variableValue" value="${document.properties[variableName]}"></c:set>
+                        <c:set var="variableType" value="${variablesDefinitions[variableName]['type']}" />
+                        <c:set var="enableLink" value="${column.map['enableLink']}" />
+                        
                         <td>
-                            <c:set var="columnValue" value="${document.properties[variableName]}"></c:set>
+                            
                             <c:choose>
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'DATE'}">
-                                    <fmt:parseDate value="${columnValue}" var="columnValue" pattern="dd/MM/yyyy" />
-                                    <fmt:formatDate value="${columnValue}" var="columnValue" type="DATE" />
+                                <c:when test="${empty variableValue}"></c:when>
+                            
+                                <c:when test="${variableType eq 'DATE'}">
+                                    <fmt:parseDate value="${variableValue}" var="variableValue" pattern="dd/MM/yyyy" />
+                                    <fmt:formatDate value="${variableValue}" var="variableValue" type="DATE" />
                                 </c:when>
                                 
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'DATETIME'}">
-                                    <fmt:formatDate value="${columnValue}" var="columnValue" type="BOTH" />
+                                <c:when test="${variableType eq 'DATETIME'}">
+                                    <fmt:formatDate value="${variableValue}" var="variableValue" type="BOTH" />
                                 </c:when>
                                 
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'VOCABULARY'}">
-                                    <c:set var="columnValue"><ttc:vocabularyLabel name="${variablesDefinitions[variableName]['vocabularyId']}" key="${columnValue}" /></c:set>
+                                <c:when test="${variableType eq 'VOCABULARY'}">
+                                    <c:set var="variableValue"><ttc:vocabularyLabel name="${variablesDefinitions[variableName]['vocabularyId']}" key="${variableValue}" /></c:set>
+                                </c:when>
+                                
+                                <c:when test="${variableType eq 'PERSON'}">
+                                    <c:set var="variableValue"><ttc:user name="${variableValue}" linkable="false" /></c:set>
+                                </c:when>
+                                
+                                <c:when test="${variableType eq 'RECORD'}">
+                                    <c:set var="variableValue"><ttc:title path="${variableValue}" linkable="false" /></c:set>
                                 </c:when>
                             </c:choose>
                             
                             <c:choose>
-                                <c:when test="${column.map['enableLink']}">
-                                    <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
+                                <c:when test="${enableLink}">
+                                    <a href="${documentLink.url}" class="no-ajax-link">${variableValue}</a>
                                 </c:when>
                                 
-                                <c:otherwise>${columnValue}</c:otherwise>
+                                <c:otherwise>${variableValue}</c:otherwise>
                             </c:choose>
                         </td>
                     </c:forEach>
