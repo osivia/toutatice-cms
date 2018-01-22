@@ -663,13 +663,14 @@ public class MenuBarFormater {
         final DocumentType documentType = managedTypes.get(document.getType());
 
         if ((documentType != null) && documentType.isEditable()) {
+        	
+        	final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+        	
             if (pubInfos.isEditableByUser()) {
                 // Publish Spaces
                 if (!pubInfos.isLiveSpace()) {
                     // Edition state
                     EditionState editionState;
-
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
                     if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         // Current modification indicator
@@ -785,7 +786,8 @@ public class MenuBarFormater {
                             menubar.add(proxyItem);
                         }
                     } else {
-                        if (pubInfos.isUserCanValidate()) {
+                    	// #1780 User can unpublish local proxies with validation right, or remote proxies with Askforpublish and write right
+                        if (pubInfos.isUserCanValidate() || pubInfos.isUserCanUnpublishRemoteProxy()) {
                             // user can not unpublish root documents like portalsite, blogsite, website, ...
                             final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
                             unpublishItem.setAjaxDisabled(true);
@@ -807,14 +809,26 @@ public class MenuBarFormater {
                         }
 
                         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-                            // Go to live version
-                            final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
-                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
-
+                        	
                             final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
-                                    1, liveURL, null, null, null);
+                                    1, null, null, null, null);                        	
                             liveItem.setAjaxDisabled(true);
+                        	
+                        	if(!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
+	                            // Go to live version
+	                            final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
+	                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
+	
+	                            liveItem.setUrl(liveURL);
 
+	                        }
+                        	else {
+                        		// LBI #1782 - live is deleted
+                        		liveItem.setUrl("#");
+                        		liveItem.setDisabled(true);
+                        		liveItem.setTooltip(bundle.getString("CANNOT_GO_TO_LIVE"));
+                        	}
+                        	
                             menubar.add(liveItem);
 
                         } else {
@@ -828,6 +842,23 @@ public class MenuBarFormater {
                             menubar.add(previewItem);
                         }
                     }
+                }
+            }
+            else {
+            	// LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
+            	
+            	if (pubInfos.isUserCanUnpublishRemoteProxy()) {
+                    // user can not unpublish root documents like portalsite, blogsite, website, ...
+                    final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
+                    unpublishItem.setAjaxDisabled(true);
+
+                    // Unpublish menubar item
+                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
+                            pubInfos.getDocumentPath());
+
+                    unpublishItem.setUrl(unpublishURL);
+
+                    menubar.add(unpublishItem);
                 }
             }
         }
