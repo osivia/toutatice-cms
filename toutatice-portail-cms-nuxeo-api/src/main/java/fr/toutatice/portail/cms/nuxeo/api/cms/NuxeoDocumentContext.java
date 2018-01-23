@@ -51,6 +51,15 @@ public interface NuxeoDocumentContext extends DocumentContext {
 
 
     /**
+     * Get denormalized document.
+     * 
+     * @return document
+     * @since 4.7
+     */
+    Document getDenormalizedDocument();
+
+
+    /**
      * Get display context.
      * 
      * @return display context

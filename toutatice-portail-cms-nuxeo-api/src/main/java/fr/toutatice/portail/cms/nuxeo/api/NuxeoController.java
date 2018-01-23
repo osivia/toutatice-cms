@@ -2349,7 +2349,7 @@ public class NuxeoController {
     /**
      * Get document context.
      * 
-     * @param path document path
+     * @param path CMS path or webId
      * @return document context
      */
     public NuxeoDocumentContext getDocumentContext(String path) {
