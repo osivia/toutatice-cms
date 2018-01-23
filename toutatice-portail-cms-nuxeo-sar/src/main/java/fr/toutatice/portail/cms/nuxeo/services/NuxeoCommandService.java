@@ -367,8 +367,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
                 if ((re.getStatus() == 401) || (re.getStatus() == 403)) {
 				throw new CMSException(CMSException.ERROR_FORBIDDEN);
 			} else if (re.getStatus() == 500) {
-				// On ne notifie pas le statut sur les erreurs 500
-
+				// On ne notifie pas le statut sur les erreurs 500 mais le service est marqué à vérifier
+				this.getServiceStatut(ctx).markServiceToCheck(NuxeoConnectionProperties.getPrivateBaseUri().toString());
+				
 			} else {
 				this.getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
