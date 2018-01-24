@@ -96,6 +96,10 @@ public class DocumentService {
 
     public static final String FireEvent = "Notification.SendEvent";
     
+    public static final String ADD_FACETS = "Document.AddFacets";
+    
+    public static final String REMOVE_FACETS = "Document.RemoveFacets";
+    
     // The following are not yet implemented
 
     public static final String CheckOut = "Document.CheckOut";
@@ -507,5 +511,35 @@ public class DocumentService {
 
         return properties;
     }
+    
+    /**
+     * Add facets to a document (separated by a coma)
+     * @param doc
+     * @param facets
+     * @throws Exception
+     */
+    public void addFacets(DocRef doc, String facets) throws Exception {
+        OperationRequest req = this.session.newRequest(ADD_FACETS).setInput(doc);
+        
+        req.set("facets", facets);
+        req.setHeader(Constants.HEADER_NX_VOIDOP, "true");
+        req.execute();
+
+    }
+    
+    /**
+     * Remove facets on a document (separated by a coma)
+     * @param doc
+     * @param facets
+     * @throws Exception
+     */
+    public void removeFacets(DocRef doc, String facets) throws Exception {
+        OperationRequest req = this.session.newRequest(REMOVE_FACETS).setInput(doc);
+        
+        req.set("facets", facets);
+        req.setHeader(Constants.HEADER_NX_VOIDOP, "true");
+        req.execute();
+
+    }    
 
 }

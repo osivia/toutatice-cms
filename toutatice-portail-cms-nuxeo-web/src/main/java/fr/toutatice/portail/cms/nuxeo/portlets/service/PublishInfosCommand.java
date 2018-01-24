@@ -94,10 +94,23 @@ public class PublishInfosCommand implements INuxeoCommand {
                 publiInfos.setRemotePublished(adaptBoolean(infos.get("isRemotePublished")));
                 publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
                 publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
+                
+                
+                publiInfos.setPublished(adaptBoolean(infos.get("published")));
+                
+                // LBI #1780 Unpublishable remote proxy info
+                if (infos.containsKey("canUnpublishRemoteProxy")) {
+                	publiInfos.setUserCanUnpublishRemoteProxy(adaptBoolean(infos.get("canUnpublishRemoteProxy")));
+                }
+                
+                // LBI #1782 disable navigation to trashed docs
+                if (infos.containsKey("isLiveDeleted")) {
+                	publiInfos.setLiveDeleted(adaptBoolean(infos.get("isLiveDeleted")));
+                }
+                
                 publiInfos.setCommentableByUser(adaptBoolean(infos.get("isCommentableByUser")));
                 publiInfos.setAnonymouslyReadable(adaptBoolean(infos.get("anonymouslyReadable")));
 
-                publiInfos.setPublished(adaptBoolean(infos.get("published")));
                 publiInfos.setBeingModified(adaptBoolean(infos.get("isLiveModifiedFromProxy")));
                 publiInfos.setCopiable(adaptBoolean(infos.get("canCopy")));
 
