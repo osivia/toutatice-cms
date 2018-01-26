@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -36,8 +35,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.PropertyList;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.DocumentType;
@@ -66,7 +63,6 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.comments.GetCommentsCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
@@ -296,8 +292,10 @@ public class ViewDocumentPortlet extends CMSPortlet {
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         try {
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
             // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
             // CMS context
             CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
@@ -362,7 +360,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 request.setAttribute("dispatchLayoutJsp", dispatchLayoutJsp);
 
                 // DTO
-                DocumentDTO documentDto = this.documentDao.toDTO(document);
+                DocumentDTO documentDto = this.documentDao.toDTO(portalControllerContext, document);
                 request.setAttribute("document", documentDto);
 
                 // Title
@@ -377,9 +375,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 } else if (!onlyDescription || maximized) {
                     // Insert content menubar items
                     nuxeoController.insertContentMenuBarItems();
-
-                    // Attachments
-                    this.generateAttachments(nuxeoController, document, documentDto);
 
                     // Remote Published documents
                     this.generatePublishedDocumentsInfos(nuxeoController, documentContext, documentDto, false);
@@ -477,60 +472,6 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
 
     /**
-     * Generate document attachments.
-     *
-     * @param nuxeoController Nuxeo controller
-     * @param document Nuxeo document
-     * @param documentDto document DTO
-     */
-    private void generateAttachments(NuxeoController nuxeoController, Document document, DocumentDTO documentDto) {
-        // Document path
-        String path = document.getPath();
-
-        // Attachments
-        List<DocumentAttachmentDTO> attachments = documentDto.getAttachments();
-
-        // Attachments property list
-        PropertyList list = document.getProperties().getList("files:files");
-
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                // Attachment property map
-                PropertyMap map = list.getMap(i);
-
-                // Attachment
-                DocumentAttachmentDTO attachment = new DocumentAttachmentDTO();
-
-                // Attachment file property map
-                PropertyMap file = map.getMap("file");
-
-                // Attachment name
-                String name = file.getString("name");
-                if (StringUtils.isEmpty(name)) {
-                    name = map.getString("filename");
-                }
-                attachment.setName(name);
-
-                // Attachment icon
-                String mimeType = file.getString("mime-type");
-                String icon = this.documentDao.getIcon(mimeType);
-                attachment.setIcon(icon);
-
-                // Attachment size
-                Long size = file.getLong("length");
-                attachment.setSize(size);
-
-                // Attachement URL
-                String url = nuxeoController.createAttachedFileLink(path, String.valueOf(i));
-                attachment.setUrl(url);
-
-                attachments.add(attachment);
-            }
-        }
-    }
-
-
-    /**
      * Add document validation state.
      *
      * @param document Nuxeo document
@@ -590,6 +531,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             documentDTO.getComments().add(commentDTO);
         }
     }
+
 
     /**
      * @param cmsService

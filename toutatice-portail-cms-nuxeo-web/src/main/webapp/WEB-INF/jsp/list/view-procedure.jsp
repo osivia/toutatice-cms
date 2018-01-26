@@ -1,9 +1,13 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://www.osivia.org/jsp/taglib/osivia-portal" prefix="op" %>
+<%@ taglib uri="http://www.toutatice.fr/jsp/taglib/toutatice" prefix="ttc" %>
 
 <%@ page isELIgnored="false"%>
+
+
+<c:set var="imageErrorMessage"><op:translate key="IMAGE_ERROR_MESSAGE" /></c:set>
 
 
 <c:if test="${not empty exportVarList}">
@@ -13,6 +17,7 @@
 	
 	<ttc:addMenubarItem id="EXPORT_IN_CSV" labelKey="EXPORT_IN_CSV" url="${exportCSVUrl}" glyphicon="glyphicons glyphicons-table" ajax="false" />
 </c:if>
+
 
 <div class="table-responsive">
     <table class="table table-hover">
@@ -93,6 +98,22 @@
                                 
                                 <c:when test="${variableType eq 'RECORD'}">
                                     <c:set var="variableValue"><ttc:title path="${variableValue}" linkable="false" /></c:set>
+                                </c:when>
+                                
+                                <c:when test="${variableType eq 'FILE'}">
+                                    <c:choose>
+                                        <c:when test="${enableLink}">
+                                            <c:set var="variableValue"><i class="${variableValue.icon}"></i> <span>${variableValue.name}</span></c:set>
+                                        </c:when>
+                                        
+                                        <c:otherwise>
+                                            <c:set var="variableValue"><i class="${variableValue.icon}"></i> <a href="${variableValue.url}" target="_blank" class="no-ajax-link"><span>${variableValue.name}</span></a></c:set>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:when>
+                                
+                                <c:when test="${variableType eq 'PICTURE'}">
+                                    <c:set var="variableValue"><img src="${variableValue.url}" alt="${variableValue.name}" class="img-responsive" data-error-message="${imageErrorMessage}"></c:set>
                                 </c:when>
                             </c:choose>
                             

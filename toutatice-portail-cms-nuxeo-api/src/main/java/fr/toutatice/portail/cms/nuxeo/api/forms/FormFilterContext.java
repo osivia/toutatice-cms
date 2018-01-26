@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.portlet.model.UploadedFile;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
@@ -24,6 +25,8 @@ public class FormFilterContext {
     private Map<String, String> variables;
     /** The filters params. */
     private Map<String, Map<String, String>> filtersParams;
+    /** Uploaded files. */
+    private Map<String, UploadedFile> uploadedFiles;
 
     /** Model webId. */
     private String modelWebId;
@@ -92,6 +95,24 @@ public class FormFilterContext {
      */
     public void setVariables(Map<String, String> variables) {
         this.variables = variables;
+    }
+
+    /**
+     * Getter for uploadedFiles.
+     * 
+     * @return the uploadedFiles
+     */
+    public Map<String, UploadedFile> getUploadedFiles() {
+        return uploadedFiles;
+    }
+
+    /**
+     * Setter for uploadedFiles.
+     * 
+     * @param uploadedFiles the uploadedFiles to set
+     */
+    public void setUploadedFiles(Map<String, UploadedFile> uploadedFiles) {
+        this.uploadedFiles = uploadedFiles;
     }
 
     /**

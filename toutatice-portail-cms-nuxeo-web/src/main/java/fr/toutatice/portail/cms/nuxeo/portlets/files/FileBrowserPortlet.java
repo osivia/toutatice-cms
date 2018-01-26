@@ -31,8 +31,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -89,6 +87,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -506,7 +505,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
                 Document currentDocument = documentContext.getDocument();
                 nuxeoController.setCurrentDoc(currentDocument);
-                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDao.toDTO(currentDocument));
+                FileBrowserItem fileBrowser = new FileBrowserItem(this.documentDao.toDTO(portalControllerContext, currentDocument));
                 request.setAttribute("document", fileBrowser);
 
                 // Fetch Nuxeo children documents
@@ -533,7 +532,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 int index = 1;
                 List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
                 for (Document document : documents) {
-                    DocumentDTO documentDto = this.documentDao.toDTO(document);
+                    DocumentDTO documentDto = this.documentDao.toDTO(portalControllerContext, document);
                     documentDto = setDraftInfos(document, documentDto);
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);

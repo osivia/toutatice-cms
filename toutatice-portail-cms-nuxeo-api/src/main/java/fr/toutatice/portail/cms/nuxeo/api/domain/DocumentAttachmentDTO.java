@@ -26,6 +26,8 @@ public class DocumentAttachmentDTO {
     private String icon;
     /** Attachment size. */
     private Long size;
+    /** Attachment digest. */
+    private String digest;
     /** Attachment URL. */
     private String url;
 
@@ -99,6 +101,24 @@ public class DocumentAttachmentDTO {
      */
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    /**
+     * Getter for digest.
+     * 
+     * @return the digest
+     */
+    public String getDigest() {
+        return digest;
+    }
+
+    /**
+     * Setter for digest.
+     * 
+     * @param digest the digest to set
+     */
+    public void setDigest(String digest) {
+        this.digest = digest;
     }
 
     /**

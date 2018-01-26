@@ -43,6 +43,7 @@ import org.osivia.portal.core.web.IWebIdService;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.PrivilegedPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
@@ -113,7 +114,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         // get real values for each doc
         List<DocumentDTO> documents = (List<DocumentDTO>) request.getAttribute("documents");
         for (DocumentDTO documentDTO : documents) {
-            updateDocValues(dashBoardColumns, varsOptionsMap, documentDTO);
+            updateDocValues(dashBoardColumns, variablesDefinitions, varsOptionsMap, documentDTO);
         }
 
 
@@ -145,10 +146,9 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
      * @param varsOptionsMap
      * @param documentDTO
      */
-    private void updateDocValues(List<Object> dashBoardColumns, Map<String, Map<String, String>> varsOptionsMap, DocumentDTO documentDTO) {
-        Map<String, Object> docProperties = documentDTO.getProperties();
-
-        Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO, docProperties);
+    private void updateDocValues(List<Object> dashBoardColumns, Map<String, Map<String, String>> variablesDefinitions,
+            Map<String, Map<String, String>> varsOptionsMap, DocumentDTO documentDTO) {
+        Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO);
 
         if (globalVariablesValues != null) {
             for (Object columnO : dashBoardColumns) {
@@ -156,8 +156,10 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
                 String variableName = column.getString("variableName");
                 String varValue = globalVariablesValues.get(variableName);
+                Map<String, String> varOptionsMap = varsOptionsMap.get(variableName);
+                Map<String, String> variableDefinition = variablesDefinitions.get(variableName);
 
-                updateValue(varsOptionsMap, docProperties, variableName, varValue);
+                updateValue(documentDTO, variableName, varValue, varOptionsMap, variableDefinition);
             }
         }
     }
@@ -166,10 +168,11 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
      * retrieves the globalVariablesValues properties based on document type
      * 
      * @param documentDTO
-     * @param docProperties
      * @return
      */
-    private Map<String, String> getGlobalVariableValues(DocumentDTO documentDTO, Map<String, Object> docProperties) {
+    private Map<String, String> getGlobalVariableValues(DocumentDTO documentDTO) {
+        Map<String, Object> docProperties = documentDTO.getProperties();
+
         Map<String, String> globalVariablesValues = null;
         if (StringUtils.equals(documentDTO.getDocument().getType(), "Record")) {
             globalVariablesValues = (Map<String, String>) docProperties.get("rcd:globalVariablesValues");
@@ -179,25 +182,60 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         return globalVariablesValues;
     }
 
+
     /**
-     * update the doc with custom labels
+     * Update document with customized values.
      * 
-     * @param varsOptionsMap
-     * @param docProperties
-     * @param variableName
-     * @param varValue
+     * @param documentDTO document DTO
+     * @param variableName variable name
+     * @param varValue variable value
+     * @param varOptionsMap variable options
+     * @param variableDefinition variable definition
      */
-    private void updateValue(Map<String, Map<String, String>> varsOptionsMap, Map<String, Object> docProperties, String variableName, String varValue) {
+    private void updateValue(DocumentDTO documentDTO, String variableName, String varValue, Map<String, String> varOptionsMap,
+            Map<String, String> variableDefinition) {
         if (StringUtils.isNotBlank(varValue)) {
-            Map<String, String> varOptionsMap = varsOptionsMap.get(variableName);
-            if (varOptionsMap != null) {
-                String[] values = StringUtils.split(varValue, ',');
-                for (int j = 0; j < values.length; j++) {
-                    values[j] = varOptionsMap.get(values[j]) != null ? varOptionsMap.get(values[j]) : values[j];
-                }
-                varValue = StringUtils.join(values, ',');
+            Object value;
+
+            String type;
+            if (variableDefinition == null) {
+                type = null;
+            } else {
+                type = variableDefinition.get("type");
             }
-            docProperties.put(variableName, varValue);
+
+            if ("FILE".equals(type) || "PICTURE".equals(type)) {
+                try {
+                    JSONObject jsonObject = JSONObject.fromObject(varValue);
+                    String digest = jsonObject.getString("digest");
+                    String fileName = jsonObject.getString("fileName");
+
+                    value = null;
+                    Iterator<DocumentAttachmentDTO> iterator = documentDTO.getAttachments().iterator();
+
+                    while ((value == null) && iterator.hasNext()) {
+                        DocumentAttachmentDTO attachment = iterator.next();
+
+                        if (StringUtils.equals(digest, attachment.getDigest()) && StringUtils.equals(fileName, attachment.getName())) {
+                            value = attachment;
+                        }
+                    }
+                } catch (JSONException e) {
+                    value = null;
+                }
+            } else if (varOptionsMap != null) {
+                String[] splittedValues = StringUtils.split(varValue, ',');
+                for (int j = 0; j < splittedValues.length; j++) {
+                    splittedValues[j] = varOptionsMap.get(splittedValues[j]) != null ? varOptionsMap.get(splittedValues[j]) : splittedValues[j];
+                }
+
+                value = StringUtils.join(splittedValues, ',');
+            } else {
+                value = varValue;
+            }
+
+
+            documentDTO.getProperties().put(variableName, value);
         }
     }
 
@@ -319,7 +357,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
                 for (DocumentDTO documentDTO : documents) {
                     final Map<String, Object> docProperties = documentDTO.getProperties();
                     
-                    Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO, docProperties);
+                    Map<String, String> globalVariablesValues = getGlobalVariableValues(documentDTO);
                     
                     record = new Object[exportVarList.size()];
                     for (int i = 0; i < exportVarList.size(); i++) {
@@ -328,8 +366,10 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
 
                         String variableName = exportVarList.getString(i);
                         String varValue = globalVariablesValues.get(variableName);
+                        Map<String, String> varOptionsMap = varsOptionsMap.get(variableName);
+                        Map<String, String> variableDefinition = variablesDefinitions.get(variableName);
 
-                        updateValue(varsOptionsMap, docProperties, variableName, varValue);
+                        updateValue(documentDTO, variableName, varValue, varOptionsMap, variableDefinition);
                         
                         record[i] = docProperties.get(variableName);
                     }

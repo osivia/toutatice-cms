@@ -95,8 +95,10 @@ public class MoveDocumentPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
         // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
 
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = (DefaultCMSCustomizer) this.nuxeoService.getCMSCustomizer();
@@ -166,7 +168,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
             }
 
             // Document DTO
-            DocumentDTO spaceDto = this.documentDAO.toDTO(space);
+            DocumentDTO spaceDto = this.documentDAO.toDTO(portalControllerContext, space);
             request.setAttribute("spaceDocument", spaceDto);
         }
         request.setAttribute("cmsBasePath", cmsBasePath);

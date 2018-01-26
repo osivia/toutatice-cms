@@ -15,6 +15,7 @@ import javax.portlet.RenderResponse;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -65,8 +66,10 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
         try {
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
             // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
             // Bundle
@@ -86,7 +89,7 @@ public class ViewDraftsListPortlet extends ViewListPortlet {
             // Result list
             List<DocumentDTO> draftDocsDTO = new ArrayList<DocumentDTO>(draftDocs.size());
             for (Document document : draftDocs) {
-                DocumentDTO documentDTO = DocumentDAO.getInstance().toDTO(document);
+                DocumentDTO documentDTO = DocumentDAO.getInstance().toDTO(portalControllerContext, document);
                 draftDocsDTO.add(documentDTO);
             }
             request.setAttribute("documents", draftDocsDTO);

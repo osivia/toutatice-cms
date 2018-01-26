@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
 import java.util.Date;
 
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
 import org.osivia.portal.api.directory.v2.service.PersonService;
@@ -57,6 +58,15 @@ public final class CommentDAO implements IDAO<JSONObject, CommentDTO> {
      */
     @Override
     public CommentDTO toDTO(JSONObject jsonObject) {
+        return this.toDTO(null, jsonObject);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CommentDTO toDTO(PortalControllerContext portalControllerContext, JSONObject jsonObject) {
         CommentDTO dto = new CommentDTO();
 
         // Identifier

@@ -78,10 +78,11 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Portal controller context
-        PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
         // CMS context
@@ -125,7 +126,7 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
         List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(children.size());
         for (CMSItem child : children) {
             Document document = (Document) child.getNativeItem();
-            DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+            DocumentDTO documentDTO = this.documentDAO.toDTO(portalControllerContext, document);
             documentsDTO.add(documentDTO);
         }
         request.setAttribute("documents", documentsDTO);

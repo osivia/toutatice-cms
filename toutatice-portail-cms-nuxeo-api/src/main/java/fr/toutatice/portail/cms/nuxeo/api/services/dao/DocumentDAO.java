@@ -30,8 +30,11 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileDocumentType;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -92,6 +95,15 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      */
     @Override
     public DocumentDTO toDTO(Document document) {
+        return this.toDTO(null, document);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DocumentDTO toDTO(PortalControllerContext portalControllerContext, Document document) {
         DocumentDTO dto = new DocumentDTO();
 
         // Identifier
@@ -119,6 +131,11 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
         // Original Nuxeo document
         dto.setDocument(document);
+
+        // Attachments
+        if (portalControllerContext != null) {
+            this.generateAttachments(portalControllerContext, document, dto);
+        }
 
         return dto;
     }
@@ -295,6 +312,67 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         }
 
         return icon;
+    }
+
+
+    /**
+     * Generate document attachments.
+     *
+     * @param document Nuxeo document
+     * @param documentDto document DTO
+     */
+    private void generateAttachments(PortalControllerContext portalControllerContext, Document document, DocumentDTO documentDto) {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        nuxeoController.setCurrentDoc(document);
+
+        // Document path
+        String path = document.getPath();
+
+        // Attachments
+        List<DocumentAttachmentDTO> attachments = documentDto.getAttachments();
+
+        // Attachments property list
+        PropertyList list = document.getProperties().getList("files:files");
+
+        if ((list != null) && !list.isEmpty()) {
+            for (int i = 0; i < list.size(); i++) {
+                // Attachment property map
+                PropertyMap map = list.getMap(i);
+
+                // Attachment
+                DocumentAttachmentDTO attachment = new DocumentAttachmentDTO();
+
+                // Attachment file property map
+                PropertyMap file = map.getMap("file");
+
+                // Attachment name
+                String name = file.getString("name");
+                if (StringUtils.isEmpty(name)) {
+                    name = map.getString("filename");
+                }
+                attachment.setName(name);
+
+                // Attachment icon
+                String mimeType = file.getString("mime-type");
+                String icon = this.getIcon(mimeType);
+                attachment.setIcon(icon);
+
+                // Attachment size
+                Long size = file.getLong("length");
+                attachment.setSize(size);
+
+                // Attachment digest
+                String digest = file.getString("digest");
+                attachment.setDigest(digest);
+
+                // Attachement URL
+                String url = nuxeoController.createAttachedFileLink(path, String.valueOf(i));
+                attachment.setUrl(url);
+
+                attachments.add(attachment);
+            }
+        }
     }
 
 }

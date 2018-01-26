@@ -4,10 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -84,15 +82,11 @@ public class TestServiceImpl implements ITestService {
      */
     @Override
     public void injectTagsData(PortalControllerContext portalControllerContext, Configuration configuration) throws PortletException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         // Request
         PortletRequest request = portalControllerContext.getRequest();
-        // Response
-        PortletResponse response = portalControllerContext.getResponse();
-        // Portlet context
-        PortletContext portletContext = portalControllerContext.getPortletCtx();
 
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
         // CMS context
@@ -108,7 +102,7 @@ public class TestServiceImpl implements ITestService {
             // Nuxeo document
             Document nuxeoDocument = documentContext.getDocument();
             // Document DTO
-            DocumentDTO document = this.documentDao.toDTO(nuxeoDocument);
+            DocumentDTO document = this.documentDao.toDTO(portalControllerContext, nuxeoDocument);
             request.setAttribute("document", document);
 
             // Comments

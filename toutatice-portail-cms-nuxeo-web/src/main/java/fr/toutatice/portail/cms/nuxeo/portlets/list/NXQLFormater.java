@@ -322,7 +322,7 @@ public class NXQLFormater {
     public String formatAdvancedSearch(String keyWords) {
         StringBuffer buffer = new StringBuffer();
 
-        String[] keyWds = StringUtils.split(keyWords, " ");
+        String[] keyWds = StringUtils.split(keyWords);
         Iterator<String> itKeyWords = Arrays.asList(keyWds).iterator();
 
         while (itKeyWords.hasNext()) {
@@ -330,11 +330,9 @@ public class NXQLFormater {
 
             buffer.append("(ecm:fulltext = '");
             buffer.append(keyWord);
-            buffer.append("'");
-            buffer.append(" OR ");
-            buffer.append("ecm:fulltext = '");
+            buffer.append("' OR dc:title ILIKE = '");
             buffer.append(keyWord);
-            buffer.append("*')");
+            buffer.append("%')");
 
             if (itKeyWords.hasNext()) {
                 buffer.append(" AND ");

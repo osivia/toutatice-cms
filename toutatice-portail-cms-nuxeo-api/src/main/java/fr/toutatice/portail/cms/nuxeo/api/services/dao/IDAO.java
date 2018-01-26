@@ -13,6 +13,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
+import org.osivia.portal.api.context.PortalControllerContext;
+
 /**
  * Data access object service interface.
  *
@@ -27,7 +29,18 @@ public interface IDAO<Type, DTO> {
      *
      * @param object object
      * @return data transfert object
+     * @deprecated
      */
     DTO toDTO(Type object);
+
+
+    /**
+     * Convert object to data transfert object.
+     *
+     * @param portalControllerContext
+     * @param object object
+     * @return data transfert object
+     */
+    DTO toDTO(PortalControllerContext portalControllerContext, Type object);
 
 }

@@ -37,6 +37,7 @@ import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -165,8 +166,10 @@ public class SearchPortlet extends CMSPortlet {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
         // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
         // Current window
         PortalWindow portalWindow = WindowFactory.getWindow(request);
         // Bundle
@@ -206,7 +209,7 @@ public class SearchPortlet extends CMSPortlet {
                 // Result list
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(docs.size());
                 for (Document document : docs) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    DocumentDTO documentDTO = this.documentDAO.toDTO(portalControllerContext, document);
                     documentsDTO.add(documentDTO);
                 }
 

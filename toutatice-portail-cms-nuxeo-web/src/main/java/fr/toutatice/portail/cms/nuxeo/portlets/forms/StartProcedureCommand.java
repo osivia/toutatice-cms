@@ -3,37 +3,26 @@ package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Blobs;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.nuxeo.ecm.automation.client.model.DocRef;
+import org.osivia.portal.api.portlet.model.UploadedFile;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 
 /**
  * Start procedure Nuxeo command.
  *
  * @author Cédric Krommenhoek
- * @see INuxeoCommand
+ * @see AbstractProcedureCommand
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class StartProcedureCommand implements INuxeoCommand {
+public class StartProcedureCommand extends AbstractProcedureCommand {
 
-    /** Task title */
-    private final String taskTitle;
-    /** Task actors. */
-    private final String actors;
-    /** Task additional authorizations. */
-    private final String additionalAuthorizations;
-    /** Task properties */
-    private final PropertyMap properties;
-    /** Task associated BLOBs */
-    private final Blobs blobs;
+    /** Request operation identifier. */
+    private static final String OPERATION_ID = "Services.StartProcedure";
 
 
     /**
@@ -43,28 +32,11 @@ public class StartProcedureCommand implements INuxeoCommand {
      * @param actors task actors
      * @param additionalAuthorizations task additional authorizations
      * @param properties task properties
-     */
-    public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties) {
-        this(title, actors, additionalAuthorizations, properties, null);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param title task title
-     * @param actors task actors
-     * @param additionalAuthorizations task additional authorizations
-     * @param properties task properties
-     * @param blobs task BLOBs
+     * @param uploadedFiles task uploaded files
      */
     public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties,
-            Blobs blobs) {
-        super();
-        this.taskTitle = title;
-        this.actors = StringUtils.trimToNull(StringUtils.join(actors, ","));
-        this.additionalAuthorizations = StringUtils.trimToNull(StringUtils.join(additionalAuthorizations, ","));
-        this.properties = new PropertyMap(properties);
-        this.blobs = blobs;
+            Map<String, UploadedFile> uploadedFiles) {
+        super(title, actors, additionalAuthorizations, properties, uploadedFiles);
     }
 
 
@@ -74,18 +46,15 @@ public class StartProcedureCommand implements INuxeoCommand {
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
         // Operation request
-        OperationRequest request = nuxeoSession.newRequest("Services.StartProcedure");
+        OperationRequest operationRequest = this.createOperationRequest(nuxeoSession);
 
-        request.set("taskTitle", this.taskTitle);
-        request.set("actors", this.actors);
-        request.set("additionalAuthorizations", this.additionalAuthorizations);
-        request.set("properties", this.properties);
+        // Result
+        DocRef result = (DocRef) operationRequest.execute();
 
-        if (this.blobs != null) {
-            request.setInput(this.blobs);
-        }
+        // Update blobs
+        this.updateBlobs(nuxeoSession, result);
 
-        return request.execute();
+        return result;
     }
 
 
@@ -93,8 +62,8 @@ public class StartProcedureCommand implements INuxeoCommand {
      * {@inheritDoc}
      */
     @Override
-    public String getId() {
-        return null;
+    protected String getOperationId() {
+        return OPERATION_ID;
     }
 
 }

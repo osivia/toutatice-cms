@@ -13,8 +13,10 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
-import net.sf.json.JSONObject;
+import org.osivia.portal.api.context.PortalControllerContext;
+
 import fr.toutatice.portail.cms.nuxeo.api.domain.RemotePublishedDocumentDTO;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -46,11 +48,21 @@ public class RemotePublishedDocumentDAO implements IDAO<JSONObject, RemotePublis
         return instance;
     }
     
+
     /**
      * {@inheritDoc}
      */
     @Override
     public RemotePublishedDocumentDTO toDTO(JSONObject jsonObject) {
+        return this.toDTO(null, jsonObject);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RemotePublishedDocumentDTO toDTO(PortalControllerContext portalControllerContext, JSONObject jsonObject) {
         RemotePublishedDocumentDTO publishedDocDTO = new RemotePublishedDocumentDTO();
         
         publishedDocDTO.setNxUrl(jsonObject.getString("url"));

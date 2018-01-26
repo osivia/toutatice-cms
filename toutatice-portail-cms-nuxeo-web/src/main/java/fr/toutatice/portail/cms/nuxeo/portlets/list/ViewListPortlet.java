@@ -70,6 +70,7 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -196,10 +197,10 @@ public class ViewListPortlet extends ViewList {
     @Override
     public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
         try {
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
             // Portal controller context
-            PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
             // Configuration
@@ -279,7 +280,7 @@ public class ViewListPortlet extends ViewList {
                     // Result list
                     List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documents.size());
                     for (Document document : documents) {
-                        DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                        DocumentDTO documentDTO = this.documentDAO.toDTO(portalControllerContext, document);
                         documentsDTO.add(documentDTO);
                     }
                     request.setAttribute("documents", documentsDTO);
@@ -694,7 +695,7 @@ public class ViewListPortlet extends ViewList {
                 // Result list
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documentsList.size());
                 for (Document document : documentsList) {
-                    DocumentDTO documentDTO = this.documentDAO.toDTO(document);
+                    DocumentDTO documentDTO = this.documentDAO.toDTO(portalControllerContext, document);
                     documentsDTO.add(documentDTO);
                 }
                 request.setAttribute("documents", documentsDTO);

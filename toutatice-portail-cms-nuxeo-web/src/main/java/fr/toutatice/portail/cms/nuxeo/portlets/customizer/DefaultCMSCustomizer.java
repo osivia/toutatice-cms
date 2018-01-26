@@ -164,7 +164,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Default schemas. */
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
     /** PROCEDURE_SCHEMAS */
-    public static final String PROCEDURE_SCHEMAS = "dublincore, common, toutatice, procedureInstance, record";
+    public static final String PROCEDURE_SCHEMAS = "dublincore, common, toutatice, files, procedureInstance, record";
     /** Template "download". */
     public static final String TEMPLATE_DOWNLOAD = "download";
 

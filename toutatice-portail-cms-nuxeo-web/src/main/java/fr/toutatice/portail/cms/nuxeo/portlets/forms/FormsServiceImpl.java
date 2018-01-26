@@ -1,5 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,16 +30,18 @@ import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
@@ -54,6 +60,7 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.portlet.model.UploadedFile;
 import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -77,6 +84,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetTasksCommand;
+import net.sf.json.JSONObject;
 
 /**
  * Forms service implementation.
@@ -95,6 +103,10 @@ public class FormsServiceImpl implements IFormsService {
     private final DefaultCMSCustomizer cmsCustomizer;
     /** Log. */
     private final Log log;
+
+    /** JSON object mapper. */
+    private final ObjectMapper mapper;
+
     /** CMS service locator. */
     private final ICMSServiceLocator cmsServiceLocator;
     /** Tasks service. */
@@ -116,6 +128,10 @@ public class FormsServiceImpl implements IFormsService {
         super();
         this.cmsCustomizer = cmsCustomizer;
         this.log = LogFactory.getLog(this.getClass());
+
+        // JSON object mapper
+        this.mapper = new ObjectMapper();
+        this.mapper.getSerializationConfig().setSerializationInclusion(Inclusion.NON_DEFAULT);
 
         // CMS service locator
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
@@ -150,6 +166,16 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, String actionId, Map<String, String> variables)
             throws PortalException, FormFilterException {
+        return this.start(portalControllerContext, modelWebId, actionId, variables, null);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, String> start(PortalControllerContext portalControllerContext, String modelWebId, String actionId, Map<String, String> variables,
+            Map<String, UploadedFile> uploadedFiles) throws PortalException, FormFilterException {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
@@ -199,14 +225,14 @@ public class FormsServiceImpl implements IFormsService {
         String procedureInitiator = "";
         HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
         if(httpServletRequest != null) {
-        	procedureInitiator = httpServletRequest.getRemoteUser();
+            procedureInitiator = httpServletRequest.getRemoteUser();
             // Required fields validation
             this.requiredFieldsValidation(portalControllerContext, formStepProperties, variables);
         }
         else {
-        	// #1569 - Specific parameters for procedures in batch mode
-        	procedureInitiator = "admin";
-        	cmsContext.setScope("superuser_no_cache");
+            // #1569 - Specific parameters for procedures in batch mode
+            procedureInitiator = "admin";
+            cmsContext.setScope("superuser_no_cache");
         }
 
         // Next step
@@ -241,35 +267,40 @@ public class FormsServiceImpl implements IFormsService {
         String uuid = UUID.randomUUID().toString();
         variables.put("uuid", uuid);
 
-		String startDate = DATE_FORMAT.format(new Date());
+        // Uploaded files
+        if (uploadedFiles == null) {
+            uploadedFiles = new HashMap<>(0);
+        }
+        variables.putAll(this.getUploadedFilesVariables(portalControllerContext, uploadedFiles));
+
+        // Start date
+        String startDate = DATE_FORMAT.format(new Date());
 
         // Construction du contexte et appel des filtres
-        FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, portalControllerContext,
-                procedureInitiator, startDate, startDate, procedureInitiator, nextStep, startingStep, bundle);
-
-        if (!StringUtils.equals(ENDSTEP, filterContext.getNextStep())) {
-            // Properties
-            Map<String, Object> properties = new HashMap<String, Object>();
-            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
-            properties.put("pi:procedureModelWebId", modelWebId);
-            properties.put("pi:globalVariablesValues", this.generateVariablesJSON(variables));
-
-            // Nuxeo command
-            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties);
-            try {
-                this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
-            } catch (CMSException e) {
-                throw new PortalException(e);
-            }
-        }
+        FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, uploadedFiles,
+                portalControllerContext, procedureInitiator, startDate, startDate, procedureInitiator, nextStep, startingStep, bundle);
 
 
         // End step indicator
         boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
 
-
-        // Email notification
         if (!endStep) {
+            // Properties
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put("pi:currentStep", actionProperties.getString("stepReference"));
+            properties.put("pi:procedureModelWebId", modelWebId);
+            properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, variables));
+            
+            // Nuxeo command
+            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties,
+                    uploadedFiles);
+            try {
+                this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            } catch (CMSException e) {
+                throw new PortalException(e);
+            }
+
+            // Email notification
             try {
                 this.sendEmailNotification(portalControllerContext, uuid, procedureInitiator);
             } catch (CMSException e) {
@@ -277,14 +308,10 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
 
-        if (StringUtils.equals(model.getType(), "RecordFolder")) {
-            // creation record
-        }
-
-
         return filterContext.getVariables();
     }
     
+
     /**
      * @param model
      * @param nextStep
@@ -349,6 +376,16 @@ public class FormsServiceImpl implements IFormsService {
     @Override
     public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
             Map<String, String> variables) throws PortalException, FormFilterException {
+        return this.proceed(portalControllerContext, taskProperties, actionId, variables, null);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, String> proceed(PortalControllerContext portalControllerContext, PropertyMap taskProperties, String actionId,
+            Map<String, String> variables, Map<String, UploadedFile> uploadedFiles) throws PortalException, FormFilterException {
         // CMS service
         ICMSService cmsService = cmsServiceLocator.getCMSService();
         // CMS context
@@ -427,6 +464,12 @@ public class FormsServiceImpl implements IFormsService {
             variables = new HashMap<String, String>();
         }
 
+        // Uploaded files
+        if (uploadedFiles == null) {
+            uploadedFiles = new HashMap<>(0);
+        }
+        variables.putAll(this.getUploadedFilesVariables(portalControllerContext, uploadedFiles));
+
         // Procedure instance UUID
         String procedureInstanceUuid = globalVariableValues.get("uuid");
 
@@ -435,18 +478,18 @@ public class FormsServiceImpl implements IFormsService {
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
-                globalVariableValues, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep, currentStep,
-                bundle);
+                globalVariableValues, uploadedFiles, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep,
+                currentStep, bundle);
 
         // Properties
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("pi:currentStep", actionProperties.getString("stepReference"));
         properties.put("pi:procedureModelWebId", modelWebId);
-        properties.put("pi:globalVariablesValues", this.generateVariablesJSON(globalVariableValues));
+        properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, globalVariableValues));
 
         // Nuxeo command
         INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(),
-                properties);
+                properties, uploadedFiles);
         try {
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
@@ -491,6 +534,28 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         return updatedVariables;
+    }
+
+
+    /**
+     * Get file digest.
+     * 
+     * @param file file
+     * @return digest
+     * @throws IOException
+     */
+    private String getDigest(File file) throws IOException {
+        String digest;
+
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+            digest = DigestUtils.md5Hex(inputStream);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+        }
+
+        return digest;
     }
 
 
@@ -551,9 +616,9 @@ public class FormsServiceImpl implements IFormsService {
      * @throws FormFilterException
      */
     private FormFilterContext callFilters(String modelWebId, String procedureInstanceUuid, String actionId, Map<String, String> variables,
-            PropertyMap actionProperties, List<String> actors, Map<String, String> globalVariableValues, PortalControllerContext portalControllerContext,
-            String procedureInitiator, String startDate, String lastModified, String taskInitiator, String nextStep, String currentStep,  Bundle bundle)
-            throws FormFilterException, PortalException {
+            PropertyMap actionProperties, List<String> actors, Map<String, String> globalVariableValues, Map<String, UploadedFile> uploadedFiles,
+            PortalControllerContext portalControllerContext, String procedureInitiator, String startDate, String lastModified, String taskInitiator,
+            String nextStep, String currentStep, Bundle bundle) throws FormFilterException, PortalException {
         // on retrouve les filtres installés
         CustomizationPluginMgr pluginManager = this.cmsCustomizer.getPluginManager();
         Map<String, FormFilter> portalFilters = pluginManager.getFormFilters();
@@ -600,6 +665,7 @@ public class FormsServiceImpl implements IFormsService {
         filterContext.setModelWebId(modelWebId);
         filterContext.setProcedureInstanceUuid(procedureInstanceUuid);
         filterContext.setActionId(actionId);
+        filterContext.setUploadedFiles(uploadedFiles);
         if (globalVariableValues != null) {
             // Copy submitted variables into Global Variables Values
             globalVariableValues.putAll(variables);
@@ -736,24 +802,6 @@ public class FormsServiceImpl implements IFormsService {
         }
 
         return properties;
-    }
-
-
-    /**
-     * Generate variables JSON content.
-     *
-     * @param variables variables
-     * @return JSON
-     */
-    private String generateVariablesJSON(Map<String, String> variables) {
-        JSONArray array = new JSONArray();
-        for (Entry<String, String> entry : variables.entrySet()) {
-            JSONObject object = new JSONObject();
-            object.put("name", entry.getKey());
-            object.put("value", entry.getValue());
-            array.add(object);
-        }
-        return array.toString();
     }
 
 
@@ -1069,6 +1117,7 @@ public class FormsServiceImpl implements IFormsService {
             if (variables == null) {
                 variables = new HashMap<String, String>();
             }
+            Map<String, UploadedFile> uploadedFiles = new HashMap<>(0);
             String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
             Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
             Bundle bundle = this.bundleFactory.getBundle(locale);
@@ -1152,12 +1201,91 @@ public class FormsServiceImpl implements IFormsService {
             if (currentStepProperties != null) {
                 initActionProperties = currentStepProperties.getMap("initAction");
                 if (initActionProperties != null) {
-                    variables = callFilters(modelWebId, procedureInstanceUuid, null, variables, initActionProperties, null, null, portalControllerContext,
-                            procedureInitiator, startDate, lastModified, previousTaskInitiator, null, null, bundle).getVariables();
+                    variables = callFilters(modelWebId, procedureInstanceUuid, null, variables, initActionProperties, null, null, uploadedFiles,
+                            portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, null, null, bundle).getVariables();
                 }
             }
         }
         return variables;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, String> getUploadedFilesVariables(PortalControllerContext portalControllerContext, Map<String, UploadedFile> uploadedFiles)
+            throws PortalException {
+        Map<String, String> variables;
+
+        if (MapUtils.isEmpty(uploadedFiles)) {
+            variables = new HashMap<>(0);
+        } else {
+            variables = new HashMap<>(uploadedFiles.size());
+
+            for (Entry<String, UploadedFile> entry : uploadedFiles.entrySet()) {
+                String variableName = entry.getKey();
+                UploadedFile uploadedFile = entry.getValue();
+
+                // Temporary file
+                File temporaryFile = uploadedFile.getTemporaryFile();
+
+                if (uploadedFile.isDeleted()) {
+                    variables.put(variableName, null);
+                } else if (temporaryFile != null) {
+                    // Digest
+                    String digest;
+                    try {
+                        digest = this.getDigest(temporaryFile);
+                    } catch (IOException e) {
+                        throw new PortalException(e);
+                    }
+
+                    JSONObject object = new JSONObject();
+                    object.put("digest", digest);
+                    object.put("fileName", uploadedFile.getTemporaryMetadata().getFileName());
+
+                    variables.put(variableName, object.toString());
+                }
+            }
+        }
+
+        return variables;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String convertToJson(PortalControllerContext portalControllerContext, Object object) throws PortalException {
+        // JSON object writer
+        ObjectWriter writer = mapper.writer();
+
+        try {
+            return writer.writeValueAsString(object);
+        } catch (IOException e) {
+            throw new PortalException(e);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String convertVariablesToJson(PortalControllerContext portalControllerContext, Map<String, String> variables) throws PortalException {
+        // Objects
+        Set<Map<String, String>> objects = new HashSet<>();
+        for (Entry<String, String> entry : variables.entrySet()) {
+            Map<String, String> object = new HashMap<>(2);
+            object.put("name", entry.getKey());
+            object.put("value", StringUtils.trimToEmpty(entry.getValue()));
+
+            objects.add(object);
+        }
+
+        return this.convertToJson(portalControllerContext, objects);
     }
 
 
