@@ -107,13 +107,22 @@
                                         </c:when>
                                         
                                         <c:otherwise>
-                                            <c:set var="variableValue"><i class="${variableValue.icon}"></i> <a href="${variableValue.url}" target="_blank" class="no-ajax-link"><span>${variableValue.name}</span></a></c:set>
+                                            <c:set var="variableValue">
+                                                <i class="${variableValue.icon}"></i>
+                                                <a href="${variableValue.url}" target="_blank" class="no-ajax-link">
+                                                    <span>${variableValue.name}</span>
+                                                </a>
+                                            </c:set>
                                         </c:otherwise>
                                     </c:choose>
                                 </c:when>
                                 
                                 <c:when test="${variableType eq 'PICTURE'}">
-                                    <c:set var="variableValue"><img src="${variableValue.url}" alt="${variableValue.name}" class="img-responsive" data-error-message="${imageErrorMessage}"></c:set>
+                                    <c:set var="variableValue">
+                                        <a href="${variableValue.url}" class="thumbnail no-margin-bottom no-ajax-link" data-fancybox="gallery" data-caption="${variableValue.name}" data-type="image">
+                                            <img src="${variableValue.url}" alt="${variableValue.name}" class="vignette img-responsive" data-error-message="${imageErrorMessage}">
+                                        </a>
+                                    </c:set>
                                 </c:when>
                             </c:choose>
                             
