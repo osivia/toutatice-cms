@@ -34,9 +34,8 @@ public class StartProcedureCommand extends AbstractProcedureCommand {
      * @param properties task properties
      * @param uploadedFiles task uploaded files
      */
-    public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties,
-            Map<String, UploadedFile> uploadedFiles) {
-        super(title, actors, additionalAuthorizations, properties, uploadedFiles);
+    public StartProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties) {
+        super(title, actors, additionalAuthorizations, properties);
     }
 
 
@@ -51,8 +50,6 @@ public class StartProcedureCommand extends AbstractProcedureCommand {
         // Result
         DocRef result = (DocRef) operationRequest.execute();
 
-        // Update blobs
-        this.updateBlobs(nuxeoSession, result);
 
         return result;
     }

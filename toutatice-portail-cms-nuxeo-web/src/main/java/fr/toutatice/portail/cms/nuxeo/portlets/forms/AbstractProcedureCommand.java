@@ -43,8 +43,7 @@ public abstract class AbstractProcedureCommand implements INuxeoCommand {
     private final String additionalAuthorizations;
     /** Task properties */
     private final PropertyMap properties;
-    /** Task uploaded files. */
-    private final Map<String, UploadedFile> uploadedFiles;
+
 
 
     /**
@@ -56,14 +55,13 @@ public abstract class AbstractProcedureCommand implements INuxeoCommand {
      * @param properties task properties
      * @param uploadedFiles task uploaded files
      */
-    public AbstractProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties,
-            Map<String, UploadedFile> uploadedFiles) {
+    public AbstractProcedureCommand(String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties) {
         super();
         this.title = title;
         this.actors = StringUtils.trimToNull(StringUtils.join(actors, ","));
         this.additionalAuthorizations = StringUtils.trimToNull(StringUtils.join(additionalAuthorizations, ","));
         this.properties = new PropertyMap(properties);
-        this.uploadedFiles = uploadedFiles;
+
     }
 
 
@@ -101,71 +99,5 @@ public abstract class AbstractProcedureCommand implements INuxeoCommand {
     protected abstract String getOperationId();
 
 
-    /**
-     * Update blobs.
-     * 
-     * @param nuxeoSession Nuxeo session
-     * @param docRef document reference
-     * @throws Exception
-     */
-    protected void updateBlobs(Session nuxeoSession, DocRef docRef) throws Exception {
-        if (MapUtils.isNotEmpty(this.uploadedFiles)) {
-            // Document service
-            DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
-
-            // Added blobs
-            List<Blob> blobs = new ArrayList<>(this.uploadedFiles.size());
-            // Removed blob indexes
-            SortedSet<Integer> removedIndexes = new TreeSet<>(Collections.reverseOrder());
-
-            for (UploadedFile uploadedFile : this.uploadedFiles.values()) {
-                // Temporary file
-                File temporaryFile = uploadedFile.getTemporaryFile();
-
-                if ((uploadedFile.getIndex() != null) && (uploadedFile.isDeleted() || (temporaryFile != null))) {
-                    // Remove existing blob
-                    removedIndexes.add(uploadedFile.getIndex());
-                }
-
-                if (temporaryFile != null) {
-                    // File name
-                    String fileName = uploadedFile.getTemporaryMetadata().getFileName();
-                    // Mime type
-                    String mimeType;
-                    if (uploadedFile.getTemporaryMetadata().getMimeType() == null) {
-                        mimeType = null;
-                    } else {
-                        mimeType = uploadedFile.getTemporaryMetadata().getMimeType().getBaseType();
-                    }
-
-                    // File blob
-                    Blob blob = new FileBlob(temporaryFile, fileName, mimeType);
-
-                    blobs.add(blob);
-                }
-            }
-
-            for (Integer index : removedIndexes) {
-                StringBuilder xpath = new StringBuilder();
-                xpath.append(FILES_PROPERTY);
-                xpath.append("/item[");
-                xpath.append(index);
-                xpath.append("]");
-
-                documentService.removeBlob(docRef, xpath.toString());
-            }
-
-            if (!blobs.isEmpty()) {
-                documentService.setBlobs(docRef, new Blobs(blobs), FILES_PROPERTY);
-            }
-
-            // Delete temporary files
-            for (UploadedFile uploadedFile : this.uploadedFiles.values()) {
-                if (uploadedFile.getTemporaryFile() != null) {
-                    uploadedFile.getTemporaryFile().delete();
-                }
-            }
-        }
-    }
-
+  
 }

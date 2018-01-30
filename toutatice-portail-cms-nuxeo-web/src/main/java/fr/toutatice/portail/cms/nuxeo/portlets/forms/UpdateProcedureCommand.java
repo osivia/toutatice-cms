@@ -28,6 +28,9 @@ public class UpdateProcedureCommand extends AbstractProcedureCommand {
     /** Procedure instance path. */
     private final String path;
 
+    
+    /** Force file upload */
+    private DocRef uploadDocument = null;
 
     /**
      * Constructor.
@@ -39,9 +42,8 @@ public class UpdateProcedureCommand extends AbstractProcedureCommand {
      * @param properties task properties
      * @param uploadedFiles task uploaded files
      */
-    public UpdateProcedureCommand(String path, String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties,
-            Map<String, UploadedFile> uploadedFiles) {
-        super(title, actors, additionalAuthorizations, properties, uploadedFiles);
+    public UpdateProcedureCommand(String path, String title, Set<String> actors, Set<String> additionalAuthorizations, Map<String, Object> properties) {
+        super(title, actors, additionalAuthorizations, properties);
         this.path = path;
     }
 
@@ -58,8 +60,6 @@ public class UpdateProcedureCommand extends AbstractProcedureCommand {
         // Result
         DocRef result = (DocRef) operationRequest.execute();
 
-        // Update blobs
-        this.updateBlobs(nuxeoSession, result);
 
         return result;
     }

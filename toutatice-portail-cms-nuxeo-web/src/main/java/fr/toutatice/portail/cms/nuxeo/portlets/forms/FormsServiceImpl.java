@@ -43,6 +43,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.dom4j.Element;
+import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -291,13 +292,19 @@ public class FormsServiceImpl implements IFormsService {
             properties.put("pi:procedureModelWebId", modelWebId);
             properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, variables));
             
+            String savedScope = cmsContext.getScope();
             // Nuxeo command
-            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties,
-                    uploadedFiles);
+            INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties);
             try {
-                this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+                cmsContext.setScope("superuser_no_cache");
+                INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
+                this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
             } catch (CMSException e) {
                 throw new PortalException(e);
+            }
+            finally	{
+            	cmsContext.setScope(savedScope);
             }
 
             // Email notification
@@ -487,15 +494,25 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:procedureModelWebId", modelWebId);
         properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, globalVariableValues));
 
+        
+        String savedScope1 = cmsContext.getScope();
         // Nuxeo command
         INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(),
-                properties, uploadedFiles);
+                properties);
         try {
-            this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+        	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            cmsContext.setScope("superuser_no_cache");
+            INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
+            this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
         } catch (CMSException e) {
             throw new PortalException(e);
         }
-
+        finally	{
+        	cmsContext.setScope(savedScope1);
+        }
+        
+        
+        
 
         // End step indicator
         boolean endStep = ENDSTEP.equals(filterContext.getNextStep());
