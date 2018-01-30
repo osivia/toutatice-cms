@@ -72,7 +72,7 @@
                         <c:set var="variableName" value="${column.map['variableName']}" />
                         <c:set var="variableValue" value="${document.properties[variableName]}"></c:set>
                         <c:set var="variableType" value="${variablesDefinitions[variableName]['type']}" />
-                        <c:set var="enableLink" value="${column.map['enableLink']}" />
+                        <c:set var="enableLink" value="${column.map['enableLink'] && document.properties['pi:currentStep'] != 'endStep'}" />
                         
                         <td>
                             
