@@ -1545,28 +1545,26 @@ public class NuxeoController {
      * @return the object returned by the command
      * @throws Exception the exception
      */
-
     public Object executeNuxeoCommand(final INuxeoCommand command) {
-
-        NuxeoCommandContext ctx;
+        // Nuxeo command context
+        NuxeoCommandContext commandContext;
         if (this.request != null) {
-            ctx = new NuxeoCommandContext(this.portletCtx, this.request);
+            commandContext = new NuxeoCommandContext(this.portletCtx, this.request);
         } else if (this.servletRequest != null) {
-            ctx = new NuxeoCommandContext(this.portletCtx, this.servletRequest);
+            commandContext = new NuxeoCommandContext(this.portletCtx, this.servletRequest);
         } else {
-            ctx = new NuxeoCommandContext(this.portletCtx);
+            commandContext = new NuxeoCommandContext(this.portletCtx);
         }
 
-        ctx.setAuthType(this.getAuthType());
-        ctx.setAuthProfil(this.getScopeProfil());
-        ctx.setCacheTimeOut(this.cacheTimeOut);
-        ctx.setCacheType(this.cacheType);
-        ctx.setAsynchronousUpdates(this.asynchronousUpdates);
-        ctx.setAsynchronousCommand(this.asynchronousCommand);
+        commandContext.setAuthType(this.getAuthType());
+        commandContext.setAuthProfil(this.getScopeProfil());
+        commandContext.setCacheTimeOut(this.cacheTimeOut);
+        commandContext.setCacheType(this.cacheType);
+        commandContext.setAsynchronousUpdates(this.asynchronousUpdates);
+        commandContext.setAsynchronousCommand(this.asynchronousCommand);
 
         try {
-
-            return this.getNuxeoCommandService().executeCommand(ctx, new INuxeoServiceCommand() {
+            return this.getNuxeoCommandService().executeCommand(commandContext, new INuxeoServiceCommand() {
 
                 @Override
                 public String getId() {
@@ -1578,13 +1576,9 @@ public class NuxeoController {
                     return command.execute(nuxeoSession);
                 }
             });
-
-
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
-
-
     }
 
 
@@ -2357,6 +2351,23 @@ public class NuxeoController {
         ICMSService cmsService = getCMSService();
         // CMS context
         CMSServiceCtx cmsContext = this.getCMSCtx();
+
+        // Scope
+        if (StringUtils.isEmpty(cmsContext.getScope())) {
+            String scope;
+            if ((NuxeoCommandContext.AUTH_TYPE_SUPERUSER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT == this.getCacheType())) {
+                scope = "superuser_context";
+            } else if ((NuxeoCommandContext.AUTH_TYPE_SUPERUSER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_NONE == this.getCacheType())) {
+                scope = "superuser_no_cache";
+            } else if ((NuxeoCommandContext.AUTH_TYPE_USER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_SESSION == this.getCacheType())) {
+                scope = "user_session";
+            } else if ((NuxeoCommandContext.AUTH_TYPE_ANONYMOUS == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT == this.getCacheType())) {
+                scope = "anonymous";
+            } else {
+                scope = null;
+            }
+            cmsContext.setScope(scope);
+        }
 
         // Document context
         NuxeoDocumentContext documentContext;

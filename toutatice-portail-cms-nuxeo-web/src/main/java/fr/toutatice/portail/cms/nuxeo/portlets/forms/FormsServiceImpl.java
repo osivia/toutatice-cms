@@ -221,13 +221,19 @@ public class FormsServiceImpl implements IFormsService {
         // Action properties
         PropertyMap actionProperties = this.getActionProperties(actionStepProperties, actionId, startingStep, bundle);
 
+        // Uploaded files
+        if (uploadedFiles == null) {
+            uploadedFiles = new HashMap<>(0);
+        }
+        variables.putAll(this.getUploadedFilesVariables(portalControllerContext, uploadedFiles));
+
         // Procedure initiator
         String procedureInitiator = "";
         HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
         if(httpServletRequest != null) {
             procedureInitiator = httpServletRequest.getRemoteUser();
             // Required fields validation
-            this.requiredFieldsValidation(portalControllerContext, formStepProperties, variables);
+            this.requiredFieldsValidation(portalControllerContext, formStepProperties, variables, uploadedFiles);
         }
         else {
             // #1569 - Specific parameters for procedures in batch mode
@@ -266,12 +272,6 @@ public class FormsServiceImpl implements IFormsService {
         // UUID
         String uuid = UUID.randomUUID().toString();
         variables.put("uuid", uuid);
-
-        // Uploaded files
-        if (uploadedFiles == null) {
-            uploadedFiles = new HashMap<>(0);
-        }
-        variables.putAll(this.getUploadedFilesVariables(portalControllerContext, uploadedFiles));
 
         // Start date
         String startDate = DATE_FORMAT.format(new Date());
@@ -474,7 +474,7 @@ public class FormsServiceImpl implements IFormsService {
         String procedureInstanceUuid = globalVariableValues.get("uuid");
 
         // Required fields validation
-        this.requiredFieldsValidation(portalControllerContext, previousStepProperties, variables);
+        this.requiredFieldsValidation(portalControllerContext, previousStepProperties, variables, uploadedFiles);
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
@@ -565,9 +565,11 @@ public class FormsServiceImpl implements IFormsService {
      * @param portalControllerContext portal controller context
      * @param step current step properties
      * @param variables current variables
+     * @param uploadedFiles uploaded files
      * @throws FormFilterException
      */
-    private void requiredFieldsValidation(PortalControllerContext portalControllerContext, PropertyMap step, Map<String, String> variables)
+    private void requiredFieldsValidation(PortalControllerContext portalControllerContext, PropertyMap step, Map<String, String> variables,
+            Map<String, UploadedFile> uploadedFiles)
             throws FormFilterException {
         // Internationalization bundle
         Locale locale = portalControllerContext.getHttpServletRequest().getLocale();

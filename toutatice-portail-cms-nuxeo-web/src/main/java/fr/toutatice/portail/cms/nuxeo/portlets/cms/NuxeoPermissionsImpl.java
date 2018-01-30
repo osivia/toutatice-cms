@@ -234,9 +234,9 @@ public class NuxeoPermissionsImpl implements NuxeoPermissions {
 
 
     /**
-     * Refresh publication informations.
+     * Reset publication informations.
      */
-    public void refresh() {
+    public void reset() {
         this.initializedCmsPublicationInfos = false;
         this.initializedExtendedInfos = false;
     }

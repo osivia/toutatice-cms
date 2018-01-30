@@ -601,9 +601,9 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
 
 
     /**
-     * Refresh publication informations.
+     * Reset publication informations.
      */
-    public void refresh() {
+    public void reset() {
         this.initializedCmsPublicationInfos = false;
         this.initializedExtendedInfos = false;
     }

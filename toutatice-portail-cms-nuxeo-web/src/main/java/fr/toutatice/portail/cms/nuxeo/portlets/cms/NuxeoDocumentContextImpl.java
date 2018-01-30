@@ -412,13 +412,14 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
      */
     @Override
     public void reload() {
-        boolean savedValue = this.cmsContext.isForceReload();
+        boolean savedForceReload = this.cmsContext.isForceReload();
         try {
             this.cmsContext.setForceReload(true);
-            this.refresh();
+            this.reset();
             this.initDocument();
+            this.initDenormalizedDocument();
         } finally {
-            this.cmsContext.setForceReload(savedValue);
+            this.cmsContext.setForceReload(savedForceReload);
         }
     }
 
@@ -524,11 +525,11 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
 
 
     /**
-     * Refresh document context.
+     * Reset document context.
      */
-    private void refresh() {
-        this.publicationInfos.refresh();
-        this.permissions.refresh();
+    private void reset() {
+        this.publicationInfos.reset();
+        this.permissions.reset();
         this.cmsPath = null;
         this.webId = null;
         this.initializedDocument = false;

@@ -418,21 +418,19 @@ public class CMSService implements ICMSService {
                 if ("user_session".equals(scope)) {
                     commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_USER);
                     commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_SESSION);
+                } else if ("anonymous".equals(scope)) {
+                    commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
+                    commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                } else if ("superuser_context".equals(scope)) {
+                    commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                    commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+                } else if ("superuser_no_cache".equals(scope)) {
+                    commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                    commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
                 } else {
-                    if ("anonymous".equals(scope)) {
-                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_ANONYMOUS);
-                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-                    } else if ("superuser_context".equals(scope)) {
-                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-                    } else if ("superuser_no_cache".equals(scope)) {
-                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
-                    } else {
-                        commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
-                        commandCtx.setAuthProfil(this.getProfilManager().getProfil(scope));
-                        commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-                    }
+                    commandCtx.setAuthType(NuxeoCommandContext.AUTH_TYPE_PROFIL);
+                    commandCtx.setAuthProfil(this.getProfilManager().getProfil(scope));
+                    commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
                 }
             }
         }
