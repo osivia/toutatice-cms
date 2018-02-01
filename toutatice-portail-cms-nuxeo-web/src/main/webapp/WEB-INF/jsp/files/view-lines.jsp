@@ -179,7 +179,8 @@
                         
                         
                             <li>
-                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-size="${size}" data-editable="${document.type.supportsPortalForms}" data-icon="${glyph}" data-download-url="${downloadUrl}" data-live-edit-url="${document.properties['liveEditUrl']}">
+                                <div class="data" data-id="${document.id}" data-path="${document.path}" data-draft-path="${document.properties['draftPath']}" data-type="${document.type.name}" data-file="${document.type.file}" data-size="${size}" data-editable="${document.type.supportsPortalForms}" data-icon="${glyph}" data-download-url="${downloadUrl}" 
+                                	data-onlyoffice-edit-lock-url="${document.properties['onlyofficeEditLockUrl']}" data-onlyoffice-edit-collab-url="${document.properties['onlyofficeEditCollabUrl']}">
                                     <div class="${document.type.folderish ? 'droppable' : ''}" data-accepted-types="${document.type.folderish ? fn:join(document.acceptedTypes, ',') : ''}">
                                         <div class="table-row">
                                             <div class="row">

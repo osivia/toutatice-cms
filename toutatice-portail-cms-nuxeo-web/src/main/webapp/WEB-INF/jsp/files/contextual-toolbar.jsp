@@ -52,20 +52,27 @@
 
 			<!-- Drive and Live edit -->
 			<div class="btn-group btn-group-sm navbar-btn all-edit" role="group">
-				<a href="#" class="no-ajax-link btn btn-default live-edit"> 
+
+				<a href="#" class="no-ajax-link btn btn-default onlyoffice-edit-lock"> 
 					<i class="halflings halflings-pencil"></i> 
-					<span><op:translate key="${onlyOfficeLabel}" /></span>
+					<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
 				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
 					<li>
-						<a href="#" class="no-ajax-link live-edit">
+						<a href="#" class="no-ajax-link onlyoffice-edit-lock">
 							<i class="halflings halflings-pencil"></i> 
-							<span><op:translate key="${onlyOfficeLabel}" /></span>
+							<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 						</a>
 					</li>
+					<li>
+						<a href="#" class="no-ajax-link onlyoffice-edit-collab">
+							<i class="halflings halflings-group"></i> 
+							<span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
+						</a>
+					</li>					
 					<li class="li-drive-edit">
 						<a href="#" class="drive-edit"> 
 							<i class=""></i> 
@@ -88,14 +95,37 @@
                     <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
-                <!-- Live edit -->
-                <a href="#" class="btn btn-default navbar-btn no-ajax-link live-edit">
-                	<i class="halflings halflings-pencil"></i>
-                    <span><op:translate key="${onlyOfficeLabel}" /></span>
-                </a>
+                <a href="#" class="no-ajax-link btn btn-default onlyoffice-edit-lock"> 
+					<i class="halflings halflings-pencil"></i> 
+					<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
+				</a>
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="caret"></span>
+				</button>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+					<li>
+						<a href="#" class="no-ajax-link onlyoffice-edit-lock">
+							<i class="halflings halflings-pencil"></i> 
+							<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
+						</a>
+					</li>
+					<li>
+						<a href="#" class="no-ajax-link onlyoffice-edit-collab">
+							<i class="halflings halflings-group"></i> 
+							<span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
+						</a>
+					</li>
+				</ul>
+                          
             </div>
             
 			<div class="btn-group btn-group-sm navbar-btn single-selection" role="group">
+			
+				<!-- Read onlin -->
+                <a href="#" class="btn btn-default navbar-btn no-ajax-link onlyoffice-read">
+					<span><op:translate key="ONLYOFFICE_VIEW" /></span>
+				</a> 
+							
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                 <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">

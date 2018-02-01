@@ -461,9 +461,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
-            String onlyofficeEditUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController);
+            String onlyofficeEditLockUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController, Boolean.TRUE);
+            String onlyofficeEditCollabUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController, Boolean.FALSE);
 
-            request.setAttribute("onlyofficeEditUrl", onlyofficeEditUrl);
+            request.setAttribute("onlyofficeEditLockUrl", onlyofficeEditLockUrl);
+            request.setAttribute("onlyofficeEditCollabUrl", onlyofficeEditCollabUrl);
         }
     }
 

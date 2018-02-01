@@ -19,12 +19,13 @@ public class OnlyofficeLiveEditHelper {
     /** ONLYOFFICE_PORTLET_INSTANCE */
     public static final String ONLYOFFICE_PORTLET_INSTANCE = "osivia-services-onlyoffice-portletInstance";
 
-    public static String getStartOnlyofficePortlerUrl(Bundle bundle, String documentPath, NuxeoController nuxeoController) throws PortalException {
+    public static String getStartOnlyofficePortlerUrl(Bundle bundle, String documentPath, NuxeoController nuxeoController, Boolean withLock) throws PortalException {
 
         Map<String, String> windowProperties = new HashMap<>();
         windowProperties.put(Constants.WINDOW_PROP_URI, documentPath);
         windowProperties.put("osivia.hideTitle", "1");
-        windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, bundle.getString("LIVE_EDIT"));
+        windowProperties.put("osivia.onlyoffice.withLock",withLock.toString());
+        windowProperties.put(InternalConstants.PROP_WINDOW_TITLE, bundle.getString("ONLYOFFICE_EDIT"));
 
         return nuxeoController.getPortalUrlFactory().getStartPortletUrl(nuxeoController.getPortalCtx(), ONLYOFFICE_PORTLET_INSTANCE, windowProperties);
     }

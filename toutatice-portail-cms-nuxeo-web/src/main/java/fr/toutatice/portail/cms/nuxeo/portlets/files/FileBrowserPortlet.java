@@ -31,6 +31,8 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -86,7 +88,6 @@ import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -625,8 +626,11 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (documentDTO.isLiveEditable() && nuxeoController.getNuxeoCMSService().getCMSCustomizer().getCustomizationService()
                 .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME)) {
 
-            String startOnlyofficePortlerUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController);
-            documentDTO.getProperties().put("liveEditUrl", startOnlyofficePortlerUrl);
+            String onlyofficeEditLockUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.TRUE);
+            documentDTO.getProperties().put("onlyofficeEditLockUrl", onlyofficeEditLockUrl);
+            
+            String onlyofficeEditCollabUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.FALSE);
+            documentDTO.getProperties().put("onlyofficeEditCollabUrl", onlyofficeEditCollabUrl);            
         }
         return documentDTO;
     }
