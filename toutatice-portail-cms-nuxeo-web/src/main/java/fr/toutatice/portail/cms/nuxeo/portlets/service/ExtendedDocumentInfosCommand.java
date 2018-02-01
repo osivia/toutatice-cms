@@ -29,6 +29,7 @@ import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.PinStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 
@@ -109,6 +110,10 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
                     if (infos.containsKey("lockOwner")) {
                         docInfos.setLockOwner(infos.get("lockOwner").toString());
                     }
+                }
+                if (infos.containsKey("pin_status")) {
+                    String status = StringUtils.upperCase(infos.get("pin_status").toString());
+                    docInfos.setPinStatus(PinStatus.valueOf(status));
                 }
 
                 /* Infos from Drive */

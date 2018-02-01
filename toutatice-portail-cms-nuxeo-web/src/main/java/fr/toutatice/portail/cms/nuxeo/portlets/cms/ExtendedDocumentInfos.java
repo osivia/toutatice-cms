@@ -18,6 +18,7 @@ import java.util.Calendar;
 import org.apache.commons.lang.StringUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.PinStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 
 
@@ -44,6 +45,8 @@ public class ExtendedDocumentInfos {
     private SubscriptionStatus subscriptionStatus;
     /** Lock status */
     private LockStatus lockStatus;
+    /** Pin status */
+    private PinStatus pinStatus;
     /** Owner of the lock */
     private String lockOwner;
     /** The time when document has been locked */
@@ -353,6 +356,20 @@ public class ExtendedDocumentInfos {
     public void setParentWebId(String parentWebId) {
         this.parentWebId = parentWebId;
     }
+
+    /**
+     * @return the pin status
+     */
+	public PinStatus getPinStatus() {
+		return pinStatus;
+	}
+
+	/**
+	 * @param pinStatus the status to set
+	 */
+	public void setPinStatus(PinStatus pinStatus) {
+		this.pinStatus = pinStatus;
+	}
 
 
 }

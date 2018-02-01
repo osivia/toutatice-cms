@@ -83,6 +83,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.PinStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
@@ -283,6 +284,9 @@ public class MenuBarFormater {
                             // Follow
                             this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
+                            //Pin link
+                            if (!isWorkspace) this.getPinLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                            
                             if (!isWorkspace && !isTaskbarItem) {
                                 // Lock
                                 this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
@@ -1097,6 +1101,52 @@ public class MenuBarFormater {
         }
     }
 
+    /**
+     * Get pin link.
+     *
+     * @param portalControllerContext portal controller context
+     * @param cmsContext CMS service context
+     * @param bundle internationalization bundle
+     * @throws PortalException
+     */
+    protected void getPinLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+            ExtendedDocumentInfos extendedInfos) throws CMSException {
+        // Current document
+        final Document document = (Document) cmsContext.getDoc();
+        final String path = document.getPath();
+
+
+        final PinStatus pinStatus = extendedInfos.getPinStatus();
+
+        if ((pinStatus != null) && (pinStatus != PinStatus.CANNOT_PIN)) {
+            String url = "";
+
+            try {
+                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
+                final MenubarItem pinItem = new MenubarItem("PIN_URL", null, null, parent, 15, url, null, null, null);
+                pinItem.setAjaxDisabled(true);
+
+                if (pinStatus == PinStatus.CAN_PIN) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.pin);
+
+                    pinItem.setUrl(url);
+                    pinItem.setGlyphicon("glyphicons glyphicons-paper-clip");
+                    pinItem.setTitle(bundle.getString("PIN_ACTION"));
+                } else if (pinStatus == PinStatus.CAN_UNPIN) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unpin);
+
+                    pinItem.setUrl(url);
+                    pinItem.setTitle(bundle.getString("UNPIN_ACTION"));
+                }
+
+                menubar.add(pinItem);
+
+            } catch (final PortalException ex) {
+                this.log.warn(ex.getMessage());
+            }
+        }
+    }
+    
     /**
      * @param portalControllerContext
      * @param cmsContext
