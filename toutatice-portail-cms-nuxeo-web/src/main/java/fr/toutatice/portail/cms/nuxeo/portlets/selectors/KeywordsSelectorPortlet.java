@@ -32,6 +32,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -128,7 +129,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 if (selectorId != null) {
                     String keyword = null;
                     if (!clear) {
-                        keyword = request.getParameter("keyword");
+                        keyword = StringEscapeUtils.escapeHtml(request.getParameter("keyword"));
                     }
 
                     Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
