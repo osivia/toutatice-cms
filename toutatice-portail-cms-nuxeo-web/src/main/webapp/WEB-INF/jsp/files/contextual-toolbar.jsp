@@ -63,19 +63,16 @@
 				<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
 					<li>
 						<a href="#" class="no-ajax-link onlyoffice-edit-lock">
-							<i class="halflings halflings-pencil"></i> 
 							<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 						</a>
 					</li>
 					<li>
 						<a href="#" class="no-ajax-link onlyoffice-edit-collab">
-							<i class="halflings halflings-group"></i> 
 							<span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
 						</a>
 					</li>					
 					<li class="li-drive-edit">
 						<a href="#" class="drive-edit"> 
-							<i class=""></i> 
 							<span><op:translate key="DRIVE_EDIT" /></span>
 						</a>
 					</li>
@@ -85,19 +82,17 @@
 			<div class="btn-group btn-group-sm navbar-btn single-edit" role="group">
                 <!-- Edit -->
                 <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
-                    <i class="halflings halflings-pencil"></i>
                     <span><op:translate key="EDIT" /></span>
                 </a>
                 
                 <!-- Drive edit -->
                 <a href="#" class="btn btn-default navbar-btn drive-edit">
-                    <i class=""></i>
                     <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
                 <a href="#" class="no-ajax-link btn btn-default onlyoffice-edit-lock"> 
-					<i class="halflings halflings-pencil"></i> 
-					<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
+                	<i class="halflings halflings-pencil"></i> 
+                	<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
 				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="caret"></span>
@@ -105,13 +100,11 @@
                 <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
 					<li>
 						<a href="#" class="no-ajax-link onlyoffice-edit-lock">
-							<i class="halflings halflings-pencil"></i> 
 							<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 						</a>
 					</li>
 					<li>
 						<a href="#" class="no-ajax-link onlyoffice-edit-collab">
-							<i class="halflings halflings-group"></i> 
 							<span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
 						</a>
 					</li>

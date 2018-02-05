@@ -57,6 +57,7 @@
             				<!-- onlyoffice in write mode -->
             				<div class="btn-group flex-display" role="group">
 	            				<a href="${onlyofficeEditLockUrl}" class="btn btn-primary no-ajax-link">
+	            					<i class="halflings halflings-pencil"></i>
 			                        <span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 			                    </a>
 			                   	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -66,14 +67,12 @@
 			                    	<li>
 			                    		<!--  onlyoffice in write mode with lock -->
 				                    	<a href="${onlyofficeEditLockUrl}" class="no-ajax-link">
-				                    		<i class="halflings halflings-pencil"></i>
-					                        <span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
+				                    		<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 					                    </a>
 			                    	</li>
 			                    	<li>
 			                    		<!--  onlyoffice in write mode collaborative -->
 				                    	<a href="${onlyofficeEditCollabUrl}" class="no-ajax-link">
-				                    		<i class="halflings halflings-group"></i>
 					                        <span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
 					                    </a>
 			                    	</li>
@@ -84,7 +83,6 @@
 			                    			<!-- Nuxeo drive online -->
 					                    	<li>
 							                    <a href="${driveEditUrl}" class="no-ajax-link">
-							                    	<i class="halflings halflings-folder-open"></i>
 							                        <span><op:translate key="DRIVE_EDIT" /></span>
 							                    </a>
 						                    </li>			                    		
@@ -94,7 +92,6 @@
 			                 				<!-- Nuxeo drive offline -->
 					                 		<li class="disabled" data-toggle="tooltip" title="<op:translate key='MESSAGE_DRIVE_CLIENT_NOT_STARTED' />">
 						                    	<a href="#" class="disabled">
-						                    		<i class="halflings halflings-folder-open"></i>
 							                        <span><op:translate key="DRIVE_EDIT" /></span>
 							                    </a>
 					                    	</li>
