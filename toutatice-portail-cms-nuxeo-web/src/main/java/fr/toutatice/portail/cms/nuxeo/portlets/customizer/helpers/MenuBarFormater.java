@@ -206,14 +206,14 @@ public class MenuBarFormater {
 
         // Check if current user is a global administrator
         boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
-        // Check if current is a workspace
-        boolean isWorkspace = this.isWorkspace(document);
+        // Check if current is a workspace or a room
+        boolean isWorkspaceOrRoom = this.isWorkspaceOrRoom(document);
         // Check if current item is located inside a user workspace
         boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
         // Check if current item is a taskbar item
-        boolean isTaskbarItem = !isWorkspace && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+        boolean isTaskbarItem = !isWorkspaceOrRoom && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
         // Check if current document is inside a workspace and current user is an administrator of this workspace
-        boolean isWorkspaceAdmin = (isWorkspace || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
+        boolean isWorkspaceAdmin = (isWorkspaceOrRoom || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
 
 
         try {
@@ -225,7 +225,7 @@ public class MenuBarFormater {
             this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
 
             // Creation
-            if (!isWorkspace) {
+            if (!isWorkspaceOrRoom) {
                 this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
             }
 
@@ -243,7 +243,7 @@ public class MenuBarFormater {
                 // Contextualization
                 this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                if (!isWorkspace) {
+                if (!isWorkspaceOrRoom) {
                     if (!isTaskbarItem || isWorkspaceAdmin) {
                         // Reorder
                         this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
@@ -256,10 +256,15 @@ public class MenuBarFormater {
                     if (!isTaskbarItem) {
                         // Change edition mode
                         this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
-                        // Move
-                        this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
                     }
                 }
+
+
+                if (!isTaskbarItem) {
+                    // Move
+                    this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                }
+
 
                 // === other tools
                 // Live version browser
@@ -282,7 +287,7 @@ public class MenuBarFormater {
                     // Follow
                     this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                    if (!isWorkspace && !isTaskbarItem) {
+                    if (!isWorkspaceOrRoom && !isTaskbarItem) {
                         // Lock
                         this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
@@ -311,12 +316,12 @@ public class MenuBarFormater {
 
 
     /**
-     * Check if current document is a workspace.
+     * Check if current document is a workspace or a room.
      *
      * @param document current Nuxeo document
-     * @return true if current document is a workspace
+     * @return true if current document is a workspace or a room
      */
-    protected boolean isWorkspace(Document document) {
+    protected boolean isWorkspaceOrRoom(Document document) {
         String type = document.getType();
         return ("Workspace".equals(type) || "Room".equals(type));
     }
@@ -1503,7 +1508,7 @@ public class MenuBarFormater {
             // CMS item type
             final DocumentType cmsItemType = this.customizer.getCMSItemTypes().get(document.getType());
 
-            if ((cmsItemType != null) && cmsItemType.isSupportsPortalForms()) {
+            if ((cmsItemType != null) && (cmsItemType.isSupportsPortalForms() || "Room".equals(document.getType()))) {
                 // We do not authorize remote proxies move to keep consistent refrences
                 boolean isMovable = cmsItemType.isMovable();
                 if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {

@@ -16,8 +16,8 @@
     <portlet:param name="cmsNavigationPath" value="${cmsNavigationPath}" />
     <portlet:param name="live" value="true" />
     <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
-    <portlet:param name="excludedTypes" value="Workspace,Room" />
     <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
+    <portlet:param name="excludedTypes" value="${excludedTypes}" />
 </portlet:resourceURL>
 
 <portlet:actionURL name="move" var="moveURL"></portlet:actionURL>
@@ -59,20 +59,22 @@
         </div>
     </div>
     
-    <!-- Space -->
-    <div class="form-group">
-        <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
-        <div class="col-sm-9">
-            <div class="form-inline">
-                <p class="form-control-static">${spaceDocument.title}</p>
-                <c:if test="${spaceDocument.type.name=='Workspace'}">
-	                <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
-	                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
-	                </a>
-                </c:if>
+    <!-- Space change -->
+    <c:if test="${enableSpaceChange}">
+        <div class="form-group">
+            <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
+            <div class="col-sm-9">
+                <div class="form-inline">
+                    <p class="form-control-static">${spaceDocument.title}</p>
+                    <c:if test="${spaceDocument.type.name=='Workspace'}">
+    	                <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
+    	                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
+    	                </a>
+                    </c:if>
+                </div>
             </div>
         </div>
-    </div>
+    </c:if>
     
     <!-- Buttons -->
     <div class="form-group">
