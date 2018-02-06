@@ -2986,13 +2986,16 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public void updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
+    public boolean updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
         // Controller context
         ControllerContext controllerContext = cmsContext.getControllerContext();
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
         // User
         String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+
+        // Updated task indicator
+        boolean updated;
 
         if (StringUtils.isNotEmpty(user)) {
             // Task actors
@@ -3009,8 +3012,11 @@ public class CMSService implements ICMSService {
 
                     // Proceed
                     this.formsService.proceed(portalControllerContext, task, actionId, variables);
+
+                    updated = true;
                 } else {
-                    // 404 not found: do nothing
+                    // 404 not found
+                    updated = false;
                 }
             } catch (CMSException e) {
                 throw e;
@@ -3020,6 +3026,8 @@ public class CMSService implements ICMSService {
         } else {
             throw new CMSException("Unknown user error.");
         }
+
+        return updated;
     }
 
 
