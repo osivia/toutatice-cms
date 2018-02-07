@@ -330,7 +330,7 @@ public class NXQLFormater {
 
             buffer.append("(ecm:fulltext = '");
             buffer.append(keyWord);
-            buffer.append("' OR dc:title ILIKE = '");
+            buffer.append("' OR dc:title ILIKE  '");
             buffer.append(keyWord);
             buffer.append("%')");
 
