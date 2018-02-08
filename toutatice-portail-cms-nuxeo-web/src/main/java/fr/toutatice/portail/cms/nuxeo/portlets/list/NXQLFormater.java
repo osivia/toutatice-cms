@@ -18,8 +18,10 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.portlet.PortletRequest;
@@ -61,16 +63,21 @@ public class NXQLFormater {
      * @return formatted text search
      */
     public String formatTextSearch(String fieldName, List<String> searchValues) {
-        StringBuffer request = new StringBuffer();
+        StringBuilder request = new StringBuilder();
         request.append("(");
 
         boolean firstItem = true;
         for (String searchWord : searchValues) {
-            if (!firstItem) {
+            if (firstItem) {
+                firstItem = false;
+            } else {
                 request.append(" OR ");
             }
-            request.append(fieldName + " ILIKE \"%" + searchWord + "%\"");
-            firstItem = false;
+
+            request.append(fieldName);
+            request.append(" ILIKE '%");
+            request.append(StringUtils.replace(searchWord, "'", "\\'"));
+            request.append("%'");
         }
 
         request.append(")");
@@ -87,21 +94,26 @@ public class NXQLFormater {
      * @return formatted vocabulary search
      */
     public String formatVocabularySearch(String fieldName, List<String> selectedVocabsEntries) {
-        StringBuffer clause = new StringBuffer();
+        StringBuilder clause = new StringBuilder();
         clause.append("(");
 
         boolean firstItem = true;
         for (String selectedVocabsEntry : selectedVocabsEntries) {
             if (!selectedVocabsEntry.contains(VocabSelectorPortlet.OTHER_ENTRIES_CHOICE)) {
-                if (!firstItem) {
+                if (firstItem) {
+                    firstItem = false;
+                } else {
                     clause.append(" OR ");
                 }
-                clause.append(fieldName + " STARTSWITH '" + selectedVocabsEntry + "'");
-                firstItem = false;
+                clause.append(fieldName);
+                clause.append(" STARTSWITH '");
+                clause.append(StringUtils.replace(selectedVocabsEntry, "'", "\\'"));
+                clause.append("'");
             }
         }
 
         clause.append(")");
+
         return clause.toString();
     }
 
@@ -118,7 +130,7 @@ public class NXQLFormater {
      */
     public String formatOthersVocabularyEntriesSearch(PortletRequest portletRequest, List<?> vocabsNames, String fieldName, List<String> selectedVocabsEntries)
             throws Exception {
-        StringBuffer clause = new StringBuffer();
+        StringBuilder clause = new StringBuilder();
 
         int nbOtherEntries = 0;
         for (String selectedEntry : selectedVocabsEntries) {
@@ -127,8 +139,8 @@ public class NXQLFormater {
                     clause.append(" OR ");
                 }
                 nbOtherEntries++;
-                StringBuffer clauseBeforeOther = new StringBuffer();
-                StringBuffer otherClause = new StringBuffer();
+                StringBuilder clauseBeforeOther = new StringBuilder();
+                StringBuilder otherClause = new StringBuilder();
 
                 String selectedValuesBeforeOthers = StringUtils.substringBeforeLast(selectedEntry, "/");
                 if (VocabSelectorPortlet.OTHER_ENTRIES_CHOICE.equalsIgnoreCase(selectedValuesBeforeOthers)) {
@@ -141,7 +153,7 @@ public class NXQLFormater {
                     clauseBeforeOther.append(" ( ");
                     clauseBeforeOther.append(fieldName);
                     clauseBeforeOther.append(" STARTSWITH '");
-                    clauseBeforeOther.append(selectedValuesBeforeOthers);
+                    clauseBeforeOther.append(StringUtils.replace(selectedValuesBeforeOthers, "'", "\\'"));
                     clauseBeforeOther.append("' ");
                     clauseBeforeOther.append(") AND ");
                 }
@@ -188,8 +200,8 @@ public class NXQLFormater {
 
                         otherClause.append(fieldName);
                         otherClause.append(" STARTSWITH '");
-                        otherClause.append(selectedValuesBeforeOthers);
-                        otherClause.append(entry);
+                        otherClause.append(StringUtils.replace(selectedValuesBeforeOthers, "'", "\\'"));
+                        otherClause.append(StringUtils.replace(entry, "'", "\\'"));
                         otherClause.append("' ");
 
                         firstItem = false;
@@ -203,7 +215,7 @@ public class NXQLFormater {
             }
         }
 
-        StringBuffer otherClause = new StringBuffer();
+        StringBuilder otherClause = new StringBuilder();
         if (nbOtherEntries > 0) {
             otherClause.append("(");
 
@@ -241,7 +253,7 @@ public class NXQLFormater {
      * @return formatted date search
      */
     public String formatDateSearch(String fieldName, List<String> searchValue) {
-        StringBuffer request = new StringBuffer();
+        StringBuilder request = new StringBuilder();
 
         if ((searchValue != null) && (searchValue.size() > 0)) {
             request.append("(");
@@ -268,9 +280,9 @@ public class NXQLFormater {
                     request.append("(");
                     request.append(fieldName);
                     request.append(" BETWEEN DATE '");
-                    request.append(from);
+                    request.append(StringUtils.replace(from, "'", "\\'"));
                     request.append("' AND DATE '");
-                    request.append(to);
+                    request.append(StringUtils.replace(to, "'", "\\'"));
                     request.append("')");
                 } catch (ParseException e) {
                     continue;
@@ -291,11 +303,47 @@ public class NXQLFormater {
      * @return formatted advanced search
      */
     public String formatAdvancedSearch(List<String> searchValues) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("ecm:fulltext = '");
-        buffer.append(StringUtils.join(searchValues, " "));
-        buffer.append(" -noindex'");
-        return buffer.toString();
+        StringBuilder builder = new StringBuilder();
+
+        Iterator<String> itSearchValues = searchValues.iterator();
+        while (itSearchValues.hasNext()) {
+            builder.append(formatAdvancedSearch(itSearchValues.next()));
+            // Multi valued selector
+            if (itSearchValues.hasNext()) {
+                builder.append(" AND ");
+            }
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Format advanced search.
+     * 
+     * @param keyWords key words
+     * @return formatted advanced search
+     */
+    public String formatAdvancedSearch(String keyWords) {
+        StringBuilder builder = new StringBuilder();
+
+        String[] keyWds = StringUtils.split(keyWords);
+        Iterator<String> itKeyWords = Arrays.asList(keyWds).iterator();
+
+        while (itKeyWords.hasNext()) {
+            String keyWord = StringUtils.replace(itKeyWords.next(), "'", "\\'");
+
+            builder.append("(ecm:fulltext = '");
+            builder.append(keyWord);
+            builder.append("' OR dc:title ILIKE '");
+            builder.append(keyWord);
+            builder.append("%')");
+
+            if (itKeyWords.hasNext()) {
+                builder.append(" AND ");
+            }
+        }
+
+        return builder.toString();
     }
 
 }

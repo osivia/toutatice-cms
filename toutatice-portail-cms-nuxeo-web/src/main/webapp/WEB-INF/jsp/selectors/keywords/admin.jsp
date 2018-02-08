@@ -15,7 +15,7 @@
     <div class="form-group">
         <label for="selector-label" class="control-label col-sm-3"><op:translate key="SELECTOR_LABEL" /></label>
         <div class="col-sm-9">
-            <input id="selector-label" type="text" name="libelle" value="${libelle}" class="form-control">
+            <input id="selector-label" type="text" name="selectorLabel" value="${selectorLabel}" class="form-control">
         </div>
     </div>
     
@@ -27,15 +27,30 @@
         </div>
     </div>
     
-    <!-- Mono-valued indicator -->
+    <!-- Selector type -->
     <div class="form-group">
         <div class="col-sm-offset-3 col-sm-9">
-            <div class="checkbox">
+            <!-- Multi-valued -->
+            <div class="radio">
                 <label>
-                    <input type="checkbox" name="keywordMonoValued" value="1"
-                        <c:if test="${keywordMonoValued eq '1'}">checked="checked"</c:if>
-                    >
-                    <span><op:translate key="SELECTOR_MONO_VALUED" /></span>
+                    <input type="radio" name="selectorType" value="0" ${selectorType eq '0' ? 'checked' : ''}>
+                    <span><op:translate key="SELECTOR_TYPE_MULTI_VALUED"/></span>
+                </label>
+            </div>
+            
+            <!-- Mono-valued -->
+            <div class="radio">
+                <label>
+                    <input type="radio" name="selectorType" value="1" ${selectorType eq '1' ? 'checked' : ''}>
+                    <span><op:translate key="SELECTOR_TYPE_MONO_VALUED"/></span>
+                </label>
+            </div>
+            
+            <!-- Mono-valued with auto-submit -->
+            <div class="radio">
+                <label>
+                    <input type="radio" name="selectorType" value="2" ${selectorType eq '2' ? 'checked' : ''}>
+                    <span><op:translate key="SELECTOR_TYPE_MONO_VALUED_AUTO_SUBMIT"/></span>
                 </label>
             </div>
         </div>
@@ -44,7 +59,7 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-offset-3 col-sm-9">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary no-ajax-link">
                 <i class="halflings halflings-floppy-disk"></i>
                 <span><op:translate key="SAVE" /></span>
             </button>

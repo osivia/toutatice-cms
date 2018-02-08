@@ -104,13 +104,13 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         DocumentType type = this.getType(document.getType());
         dto.setType(type);
         // Icon
-        if (type != null && type.isFile()) {
-            String icon = this.getIcon(document);
-
-            if (icon == null) {
+        if (type != null) {
+            String icon;
+            if (type.isFile()) {
+                icon = StringUtils.defaultIfEmpty(this.getIcon(document), type.getGlyph());
+            } else {
                 icon = type.getGlyph();
             }
-
             dto.setIcon(icon);
         }
         // liveEdit

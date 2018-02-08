@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.search;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -80,7 +81,7 @@ public class SearchCommand implements INuxeoCommand{
 		
 		searchKeywords += " -noindex";
 		
-		searchQuery = addClause(searchQuery, "ecm:fulltext = '" + searchKeywords + "'" );
+        searchQuery = addClause(searchQuery, "ecm:fulltext = '" + StringUtils.replace(searchKeywords, "'", "\\'") + "'");
 		
 
 
