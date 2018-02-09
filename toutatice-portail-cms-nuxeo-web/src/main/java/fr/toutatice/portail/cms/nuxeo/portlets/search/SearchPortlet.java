@@ -30,6 +30,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.model.portal.Page;
