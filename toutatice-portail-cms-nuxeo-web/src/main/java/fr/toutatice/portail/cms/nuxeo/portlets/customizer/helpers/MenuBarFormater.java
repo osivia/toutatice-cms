@@ -1130,7 +1130,7 @@ public class MenuBarFormater {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.pin);
 
                     pinItem.setUrl(url);
-                    pinItem.setGlyphicon("glyphicons glyphicons-paper-clip");
+                    pinItem.setGlyphicon("glyphicons glyphicons-paperclip");
                     pinItem.setTitle(bundle.getString("PIN_ACTION"));
                 } else if (pinStatus == PinStatus.CAN_UNPIN) {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unpin);
