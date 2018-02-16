@@ -6,7 +6,7 @@ $JQry(function() {
 			var enterKey = 13,
 				timer;
 			
-			$element.find("input[name=keyword]").keyup(function(event) {
+			$element.find("input[name=keyword]").on("input", function(event) {
 				// Clear timer
 				clearTimeout(timer);
 				
