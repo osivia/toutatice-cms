@@ -46,6 +46,8 @@ public class ListConfiguration {
     private String creationParentPath;
     /** Creation content type. */
     private String creationContentType;
+    /** Set type */
+    private String setType;
     
 
     
@@ -365,5 +367,22 @@ public class ListConfiguration {
     public void setCreationContentType(String creationContentType) {
         this.creationContentType = creationContentType;
     }
+
+
+    /**
+     * Getter for setType
+     * @return setType
+     */
+	public String getSetType() {
+		return setType;
+	}
+
+	/** 
+	 * Setter for setType 
+	 * @param setType setType
+	 */
+	public void setSetType(String setType) {
+		this.setType = setType;
+	}
 
 }

@@ -47,7 +47,9 @@ public enum Customizable {
     /** Taskbar items. */
     TASKBAR_ITEMS("osivia.customizer.cms.taskbarItems"),
     /** Template adapters. */
-    TEMPLATE_ADAPTERS("osivia.customizer.cms.templateAdapters");
+    TEMPLATE_ADAPTERS("osivia.customizer.cms.templateAdapters"),
+	/** Set types. */
+	SET_TYPES("osivia.customizer.cms.setTypes");
 
 
     /** Property name. */

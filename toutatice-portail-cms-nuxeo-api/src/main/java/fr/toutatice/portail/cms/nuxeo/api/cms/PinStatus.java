@@ -6,7 +6,7 @@ public enum PinStatus {
 	/** Can unpin if a pin is already set */
 	CAN_UNPIN,
 	/**
-	 * Cases : Workspace parent hasn't HasPins facet, or the document is in a
+	 * Cases : Workspace parent hasn't Set facet, or the document is in a
 	 * Publication spaces or personal spaces and pin is not allowed
 	 */
 	CANNOT_PIN;

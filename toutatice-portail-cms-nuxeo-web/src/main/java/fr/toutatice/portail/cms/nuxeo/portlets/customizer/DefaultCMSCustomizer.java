@@ -81,6 +81,7 @@ import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
@@ -940,8 +941,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "
-                    + "AND ecm:currentLifeCycleState <> 'deleted'";
+            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
 
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
@@ -2037,7 +2037,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             throw new CMSException(e);
         }
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Collection<SetType> getSetTypes() {
+    	Map<String, SetType> mapSetTypes = this.pluginManager.getSetTypes();
+    	Collection<SetType> collectionSetType = new ArrayList<>();
+    	if (mapSetTypes != null) collectionSetType = mapSetTypes.values();
+    	return collectionSetType;
+    }
+    
 
     /**
      * Getter for portletContext.

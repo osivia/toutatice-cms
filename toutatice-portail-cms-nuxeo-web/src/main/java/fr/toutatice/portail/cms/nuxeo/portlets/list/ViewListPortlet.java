@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +51,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -104,6 +107,11 @@ public class ViewListPortlet extends ViewList {
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
+    
+	private static final String SETS_PROPERTY = "sets:sets";
+	private static final String LIST_WEBID_PROPERTY= "webids";
+	private static final String NAME_PROPERTY = "name";
+	private static final String WEBID_PROPERTY = "ttc:webid";
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -406,6 +414,8 @@ public class ViewListPortlet extends ViewList {
 
                 // Content type
                 window.setProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationContentType")));
+                
+                window.setProperty(SETTYPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("setType")));
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -468,6 +478,9 @@ public class ViewListPortlet extends ViewList {
 
             // Templates
             request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            
+            //Set types
+            request.setAttribute("setTypes", this.customizer.getSetTypes());
 
 
             response.setContentType("text/html");
@@ -583,6 +596,48 @@ public class ViewListPortlet extends ViewList {
                 }
             }
 
+            //Sets
+            boolean sets = StringUtils.isNotEmpty(configuration.getSetType());
+            Document workspace = null;
+            List<Object> setsWebidList = null;
+            if (sets)
+    		{
+                // CMS base path
+                String basePath = nuxeoController.getBasePath();
+                if (basePath == null) {
+                    workspace =  null;
+                } else
+                {
+    	            // Nuxeo document context
+    	            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(basePath);
+    	
+    	            // get workspace document
+    	            workspace = documentContext.getDocument();
+                }
+
+                if (workspace != null)
+                {
+                	PropertyList list = (PropertyList) workspace.getProperties().get(SETS_PROPERTY);
+                	if (list != null && list.list().size() >0)
+                	{
+                		for (Object map : list.list())
+                		{
+                			if (StringUtils.equals(configuration.getSetType(), ((PropertyMap) map).getString(NAME_PROPERTY)))
+                			{
+                				PropertyList propertyListWebId = ((PropertyMap) map).getList(LIST_WEBID_PROPERTY);
+                				setsWebidList = propertyListWebId.list();
+                				break;
+                			}
+                		}
+                	}
+                	String workspacePath = workspace.getPath();
+                	nuxeoRequest = this.addSetClause(nuxeoRequest, setsWebidList, workspacePath);
+                } else
+                {
+                	//Add a clause to get no document
+                	nuxeoRequest += "ecm:currentLifeCycleState <> 'deleted' and ecm:currentLifeCycleState = 'deleted' ";
+                }
+    		}
 
             // Apply request filter
             nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
@@ -690,13 +745,39 @@ public class ViewListPortlet extends ViewList {
                     DocumentWebidComparator comparator = new DocumentWebidComparator(webidOrder);
                     Collections.sort(documentsList, comparator);
                 }
-
+                
                 // Result list
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documentsList.size());
                 for (Document document : documentsList) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                     documentsDTO.add(documentDTO);
                 }
+
+                //If sets : order the documentsDTO list
+                if (sets)
+                {
+                	Map<Object, DocumentDTO> mapSets = new HashMap<Object, DocumentDTO>();
+
+                	//The result list is not sorted because of the 'in' clause
+                	//First put dto in a hashmap
+                	if (documentsDTO != null)
+                	{
+                		for (DocumentDTO dto: documentsDTO)
+                		{
+                			mapSets.put(dto.getProperties().get(WEBID_PROPERTY), dto);
+                		}
+                	}
+                	//Then add dto in a list in the order of the listwebid
+                	if (workspace != null && setsWebidList != null)
+                	{
+                		documentsDTO = new ArrayList<DocumentDTO>(documentsDTO == null? 0 : documentsDTO.size());
+                		for (Object webid: setsWebidList)
+                		{
+                			if (mapSets.get(webid)!=null) documentsDTO.add(mapSets.get(webid));
+                		}
+                	}
+                }
+                
                 request.setAttribute("documents", documentsDTO);
 
 
@@ -924,7 +1005,38 @@ public class ViewListPortlet extends ViewList {
         return (String) interpreter.eval(nuxeoRequest);
     }
 
-
+    /**
+     * Add set clause to get documents in which webids are in listWebid
+     * @param request request
+     * @param listWebid list of webid
+     * @return 
+     */
+    private String addSetClause(String request, List<Object> listWebid, String workspacePath)
+    {
+    	StringBuilder clause = new StringBuilder();
+    	clause.append(request);
+    	clause.append("ecm:path startswith '").append(workspacePath).append("' ");
+    	clause.append("and ecm:currentLifeCycleState <> 'deleted' ");
+    	clause.append(" and ttc:webid in (");
+        if (listWebid != null && listWebid.size() > 0)
+        {
+        	Iterator<Object> it = listWebid.iterator();
+        	boolean first = true;
+        	while (it.hasNext())
+        	{
+        		if (!first) clause.append(",");
+        		clause.append("'").append(it.next()).append("'");
+        		first = false;
+        	}
+        } else
+        {
+        	clause.append("''");
+        }
+        clause.append(") ");
+        return clause.toString();
+    }
+    
+    
     /**
      * Apply request filter.
      * 
@@ -1016,6 +1128,9 @@ public class ViewListPortlet extends ViewList {
 
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
+        
+        //Set type
+        configuration.setSetType(window.getProperty(SETTYPE_WINDOW_PROPERTY));
 
 
         return configuration;
