@@ -53,7 +53,7 @@
 			<!-- Drive and Live edit -->
 			<div class="btn-group btn-group-sm navbar-btn all-edit" role="group">
 
-				<a href="#" class="no-ajax-link btn btn-default onlyoffice-edit-lock"> 
+				<a href="#" class="no-ajax-link btn btn-default navbar-btn onlyoffice-edit-lock"> 
 					<i class="halflings halflings-pencil"></i> 
 					<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
@@ -90,7 +90,7 @@
                     <span><op:translate key="DRIVE_EDIT" /></span>
                 </a>
                 
-                <a href="#" class="no-ajax-link btn btn-default onlyoffice-edit-lock"> 
+                <a href="#" class="no-ajax-link btn btn-default navbar-btn onlyoffice-edit-lock"> 
                 	<i class="halflings halflings-pencil"></i> 
                 	<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
