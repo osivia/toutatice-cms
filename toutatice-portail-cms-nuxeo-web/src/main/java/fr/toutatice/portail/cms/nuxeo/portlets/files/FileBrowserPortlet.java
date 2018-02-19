@@ -541,7 +541,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 for (Document document : documents) {
                     DocumentDTO documentDto = this.documentDao.toDTO(document);
                     documentDto = setDraftInfos(document, documentDto);
-                    documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
+                    
+                    if(request.getUserPrincipal() != null) {
+                    	documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
+                    }
+                    
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 

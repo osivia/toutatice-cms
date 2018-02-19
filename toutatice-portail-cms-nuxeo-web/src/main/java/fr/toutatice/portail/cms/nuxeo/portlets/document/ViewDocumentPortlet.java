@@ -403,7 +403,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // handle live edition through onlyofice link
-                handleLiveEdit(request, document.getPath(), documentDto, nuxeoController);
+                if(request.getUserPrincipal() != null) {
+                	handleLiveEdit(request, document.getPath(), documentDto, nuxeoController);
+                }
 
                 if (onlyRemoteSections && maximized) {
                     // Remote Published documents
