@@ -57,7 +57,7 @@
 					<i class="halflings halflings-pencil"></i> 
 					<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
-				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<button type="button" class="btn btn-default dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
@@ -94,7 +94,7 @@
                 	<i class="halflings halflings-pencil"></i> 
                 	<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
 				</a>
-				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<button type="button" class="btn btn-default dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="caret"></span>
 				</button>
                 <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
