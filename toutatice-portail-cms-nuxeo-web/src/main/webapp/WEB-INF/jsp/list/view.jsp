@@ -8,11 +8,19 @@
 
 <portlet:defineObjects />
 
+<c:if test="${infiniteScroll eq '1'}">
+	<portlet:resourceURL id="loadMore" var="loadMoreUrl">
+		<portlet:param name="currentPage" value="_CURRENTPAGE_"/>
+		<portlet:param name="currentState" value="${renderRequest.windowState}" />
+        <portlet:param name="lastSelectors" value="${lastSelectors}" />
+        <portlet:param name="injectdocs" value="true"/>
+	</portlet:resourceURL>
+</c:if>
 
 <!-- Customize menubar -->
 <jsp:include page="menubar.jsp" />
 
-<div class="list clearfix">
+<div class="list clearfix <c:if test="${infiniteScroll eq '1'}">infinite-list" data-load-more-url="${loadMoreUrl}</c:if>">
     <c:choose>
         <c:when test="${empty error}">
             <!-- Request -->
@@ -25,8 +33,10 @@
                 <ttc:include page="view-${style}.jsp" />
             </div>
             
-            <!-- Pagination -->
-            <jsp:include page="pagination.jsp" />
+            <c:if test="${infiniteScroll ne '1'}">
+	            <!-- Pagination -->
+	            <jsp:include page="pagination.jsp" />
+            </c:if>
         </c:when>
         
         <c:otherwise>

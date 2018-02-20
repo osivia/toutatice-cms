@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
@@ -73,6 +74,7 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -244,6 +246,12 @@ public class ViewListPortlet extends ViewList {
                 String limit = request.getParameter("limit");
                 if (limit != null) {
                     resultsLimit = Integer.parseInt(limit);
+                } else {
+                    if (WindowState.MAXIMIZED.equals(request.getWindowState()) && configuration.getMaximizedPagination() != null) {
+                        resultsLimit = configuration.getMaximizedPagination();
+                    } else if (configuration.getNormalPagination() != null) {
+                        resultsLimit = configuration.getNormalPagination();
+                    }
                 }
             }
 
@@ -265,19 +273,28 @@ public class ViewListPortlet extends ViewList {
                     interpreter.set("spacePath", nuxeoController.getSpacePath());
                     interpreter.set("navigationPath", nuxeoController.getNavigationPath());
                     interpreter.set("contentPath", nuxeoController.getContentPath());
+                    interpreter.set("spaceId", null);
+                    if (nuxeoController.getNavigationPath() != null) {
+                        CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(nuxeoController.getCMSCtx(),
+                                nuxeoController.getNavigationPath());
+                        interpreter.set("navigationPubInfos", navigationPubInfos);
+                        interpreter.set("spaceId", navigationPubInfos.getSpaceID());
+                    }
 
                     nuxeoRequest = (String) interpreter.eval(nuxeoRequest);
                 }
 
 
                 if (nuxeoRequest != null) {
+                    int currentPage = NumberUtils.toInt(request.getParameter("currentPage"));
+
                     String schemas = template.getSchemas();
 
                     // Apply request filter
                     nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
 
                     // Nuxeo command
-                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), 0, resultsLimit, schemas,
+                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), currentPage, resultsLimit, schemas,
                             configuration.getContentFilter());
                     ((ListCommand) command).setForceVCS(configuration.isForceVCS());
 
@@ -291,9 +308,7 @@ public class ViewListPortlet extends ViewList {
                         documentsDTO.add(documentDTO);
                     }
                     request.setAttribute("documents", documentsDTO);
-
                 }
-
             }
 
             if ("rss".equals(request.getParameter("type"))) {
@@ -333,8 +348,9 @@ public class ViewListPortlet extends ViewList {
                         Thread.currentThread().setContextClassLoader(savedClassLoader);
                     }
                 }
-
-                if (!response.isCommitted()) {
+                if ("loadMore".equals(request.getResourceID())) {
+                    includeJsp(request, response, template, module);
+                } else if (!response.isCommitted()) {
                     super.serveResource(request, response);
                 }
             }
@@ -343,6 +359,28 @@ public class ViewListPortlet extends ViewList {
         } catch (Exception e) {
             throw new PortletException(e);
         }
+    }
+
+
+    /**
+     * Génère le html renvoyé dans la resource à l'aide de la jsp du style
+     * 
+     * @param request
+     * @param response
+     * @param template
+     * @param module
+     * @throws PortletException
+     * @throws IOException
+     */
+    private void includeJsp(ResourceRequest request, ResourceResponse response, ListTemplate template, IPortletModule module)
+            throws PortletException, IOException {
+        String customS = module != null ? "custom/" : StringUtils.EMPTY;
+        PortletContext portletContext = module != null ? module.getPortletContext() : this.getPortletContext();
+        response.setContentType("text/html");
+        String style = StringUtils.lowerCase(template.getKey());
+        String viewPath = "/WEB-INF/" + customS + "jsp/list/view-" + style + ".jsp";
+        PortletRequestDispatcher dispatcher = portletContext.getRequestDispatcher(viewPath);
+        dispatcher.include(request, response);
     }
 
 
@@ -716,6 +754,10 @@ public class ViewListPortlet extends ViewList {
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
 
+                // infinite scroll
+                if (configuration.isInfiniteScroll()) {
+                    request.setAttribute("infiniteScroll", "1");
+                }
 
                 // Request page size
                 int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
@@ -1110,6 +1152,9 @@ public class ViewListPortlet extends ViewList {
 
         // Maximized view pagination
         configuration.setMaximizedPagination(NumberUtils.createInteger(StringUtils.trimToNull(window.getProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY))));
+
+        // Infinite scroll
+        configuration.setInfiniteScroll(BooleanUtils.toBoolean(window.getProperty(INFINITE_SCROLL_WINDOW_PROPERTY)));
 
         // Template
         configuration.setTemplate(window.getProperty(TEMPLATE_WINDOW_PROPERTY));
