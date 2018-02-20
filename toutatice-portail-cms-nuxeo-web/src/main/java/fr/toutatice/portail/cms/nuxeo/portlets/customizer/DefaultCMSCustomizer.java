@@ -144,11 +144,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.service.commands.DeleteDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.PinCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.AddToQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.UnpinCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
@@ -1952,8 +1952,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.notificationsService, this.internationalizationService));
         
-        commands.put(EcmCommonCommands.pin.name(), new PinCommand(this.notificationsService, this.internationalizationService));
-        commands.put(EcmCommonCommands.unpin.name(), new UnpinCommand(this.notificationsService, this.internationalizationService));
+        commands.put(EcmCommonCommands.addToQuickAccess.name(), new AddToQuickAccessCommand(this.notificationsService, this.internationalizationService));
+        commands.put(EcmCommonCommands.removeFromQuickAccess.name(), new RemoveFromQuickAccessCommand(this.notificationsService, this.internationalizationService));
 
         commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.notificationsService, this.internationalizationService));

@@ -28,7 +28,7 @@ import org.osivia.portal.api.notifications.NotificationsType;
  * @author jbarberet
  *
  */
-public class PinCommand extends EcmCommand {
+public class AddToQuickAccessCommand extends EcmCommand {
 
 	private INotificationsService notifService;
 	
@@ -38,10 +38,10 @@ public class PinCommand extends EcmCommand {
 	 * @param notifService
 	 * @param itlzService
 	 */
-	public PinCommand(INotificationsService notifService,
+	public AddToQuickAccessCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-        super(EcmCommonCommands.pin.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.Pin", null);
+        super(EcmCommonCommands.addToQuickAccess.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.AddToQuickAccess", null);
 		
 		this.itlzService = itlzService;
 		this.notifService = notifService;
@@ -53,7 +53,7 @@ public class PinCommand extends EcmCommand {
 	 */
 	@Override
 	public void notifyAfterCommand(ControllerContext ctx) {
-		String success = itlzService.getString("SUCCESS_MESSAGE_PIN", ctx.getServerInvocation().getRequest().getLocale());
+		String success = itlzService.getString("SUCCESS_MESSAGE_ADD_TO_QUICKACCESS", ctx.getServerInvocation().getRequest().getLocale());
 		
 		PortalControllerContext pcc = new PortalControllerContext(ctx);
 		notifService.addSimpleNotification(pcc, success, NotificationsType.SUCCESS);

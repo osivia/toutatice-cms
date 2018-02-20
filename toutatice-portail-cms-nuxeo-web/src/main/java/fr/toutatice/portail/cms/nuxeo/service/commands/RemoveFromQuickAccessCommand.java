@@ -28,7 +28,7 @@ import org.osivia.portal.api.notifications.NotificationsType;
  * @author loic
  *
  */
-public class UnpinCommand extends EcmCommand {
+public class RemoveFromQuickAccessCommand extends EcmCommand {
 
 	private INotificationsService notifService;
 	
@@ -38,10 +38,10 @@ public class UnpinCommand extends EcmCommand {
 	 * @param notifService
 	 * @param itlzService
 	 */
-	public UnpinCommand(INotificationsService notifService,
+	public RemoveFromQuickAccessCommand(INotificationsService notifService,
 			IInternationalizationService itlzService) {
 		
-        super(EcmCommonCommands.unpin.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.UnPin", null);
+        super(EcmCommonCommands.removeFromQuickAccess.toString(), ReloadAfterCommandStrategy.REFRESH_PAGE, "Document.RemoveFromQuickAccess", null);
 		
 		this.itlzService = itlzService;
 		this.notifService = notifService;
@@ -53,7 +53,7 @@ public class UnpinCommand extends EcmCommand {
 	 */
 	@Override
 	public void notifyAfterCommand(ControllerContext ctx) {
-		String success = itlzService.getString("SUCCESS_MESSAGE_UNPIN", ctx.getServerInvocation().getRequest().getLocale());
+		String success = itlzService.getString("SUCCESS_MESSAGE_REMOVE_FROM_QUICKACCESS", ctx.getServerInvocation().getRequest().getLocale());
 		
 		PortalControllerContext pcc = new PortalControllerContext(ctx);
 		notifService.addSimpleNotification(pcc, success, NotificationsType.SUCCESS);

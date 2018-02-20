@@ -83,7 +83,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
-import fr.toutatice.portail.cms.nuxeo.api.cms.PinStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
@@ -284,8 +284,8 @@ public class MenuBarFormater {
                             // Follow
                             this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                            //Pin link
-                            if (!isWorkspace) this.getPinLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                            //QuickAccess link
+                            if (!isWorkspace) this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
                             
                             if (!isWorkspace && !isTaskbarItem) {
                                 // Lock
@@ -1102,44 +1102,43 @@ public class MenuBarFormater {
     }
 
     /**
-     * Get pin link.
+     * Get quick access link.
      *
      * @param portalControllerContext portal controller context
      * @param cmsContext CMS service context
      * @param bundle internationalization bundle
      * @throws PortalException
      */
-    protected void getPinLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+    protected void getQuickAccesLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
             ExtendedDocumentInfos extendedInfos) throws CMSException {
         // Current document
         final Document document = (Document) cmsContext.getDoc();
         final String path = document.getPath();
 
 
-        final PinStatus pinStatus = extendedInfos.getPinStatus();
+        final QuickAccessStatus quickAccessStatus = extendedInfos.getQuickAccessStatus();
 
-        if ((pinStatus != null) && (pinStatus != PinStatus.CANNOT_PIN)) {
+        if ((quickAccessStatus != null) && (quickAccessStatus != QuickAccessStatus.CANNOT_ADD_TO_QUICKACCESS)) {
             String url = "";
 
             try {
                 final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
-                final MenubarItem pinItem = new MenubarItem("PIN_URL", null, null, parent, 15, url, null, null, null);
-                pinItem.setAjaxDisabled(true);
+                final MenubarItem item = new MenubarItem("QUICKACCESS_URL", null, null, parent, 15, url, null, null, null);
+                item.setAjaxDisabled(true);
 
-                if (pinStatus == PinStatus.CAN_PIN) {
-                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.pin);
+                if (quickAccessStatus == QuickAccessStatus.CAN_ADD_TO_QUICKACCESS) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.addToQuickAccess);
 
-                    pinItem.setUrl(url);
-                    pinItem.setGlyphicon("glyphicons glyphicons-paperclip");
-                    pinItem.setTitle(bundle.getString("PIN_ACTION"));
-                } else if (pinStatus == PinStatus.CAN_UNPIN) {
-                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unpin);
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("QUICKACCESS_ADD_ACTION"));
+                } else if (quickAccessStatus == QuickAccessStatus.CAN_REMOVE_FROM_QUICKACCESS) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.removeFromQuickAccess);
 
-                    pinItem.setUrl(url);
-                    pinItem.setTitle(bundle.getString("UNPIN_ACTION"));
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("QUICKACCESS_REMOVE_ACTION"));
                 }
 
-                menubar.add(pinItem);
+                menubar.add(item);
 
             } catch (final PortalException ex) {
                 this.log.warn(ex.getMessage());

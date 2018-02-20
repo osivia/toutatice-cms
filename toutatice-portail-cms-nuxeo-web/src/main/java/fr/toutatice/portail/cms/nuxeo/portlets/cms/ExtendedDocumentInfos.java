@@ -18,7 +18,7 @@ import java.util.Calendar;
 import org.apache.commons.lang.StringUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
-import fr.toutatice.portail.cms.nuxeo.api.cms.PinStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 
 
@@ -45,8 +45,8 @@ public class ExtendedDocumentInfos {
     private SubscriptionStatus subscriptionStatus;
     /** Lock status */
     private LockStatus lockStatus;
-    /** Pin status */
-    private PinStatus pinStatus;
+    /** Quick access status */
+    private QuickAccessStatus quickAccessStatus;
     /** Owner of the lock */
     private String lockOwner;
     /** The time when document has been locked */
@@ -358,17 +358,17 @@ public class ExtendedDocumentInfos {
     }
 
     /**
-     * @return the pin status
+     * @return the quick access status
      */
-	public PinStatus getPinStatus() {
-		return pinStatus;
+	public QuickAccessStatus getQuickAccessStatus() {
+		return quickAccessStatus;
 	}
 
 	/**
-	 * @param pinStatus the status to set
+	 * @param quickAccessStatus the status to set
 	 */
-	public void setPinStatus(PinStatus pinStatus) {
-		this.pinStatus = pinStatus;
+	public void setQuickAccessStatus(QuickAccessStatus pinStatus) {
+		this.quickAccessStatus = pinStatus;
 	}
 
 
