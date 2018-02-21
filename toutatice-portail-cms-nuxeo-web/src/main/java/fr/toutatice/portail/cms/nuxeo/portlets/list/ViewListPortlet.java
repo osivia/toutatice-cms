@@ -640,6 +640,7 @@ public class ViewListPortlet extends ViewList {
             List<Object> setsWebidList = null;
             if (sets)
     		{
+            	if (nuxeoRequest == null) nuxeoRequest = "";
                 // CMS base path
                 String basePath = nuxeoController.getBasePath();
                 if (basePath == null) {
