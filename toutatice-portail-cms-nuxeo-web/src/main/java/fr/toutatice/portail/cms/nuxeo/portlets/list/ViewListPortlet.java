@@ -109,6 +109,9 @@ public class ViewListPortlet extends ViewList {
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
+    /** INFINITE_VIEW */
+    protected static final String INFINITE_VIEW = "/WEB-INF/jsp/list/view-infinite-scroll.jsp";
+
     
 	private static final String SETS_PROPERTY = "sets:sets";
 	private static final String LIST_WEBID_PROPERTY= "webids";
@@ -287,6 +290,7 @@ public class ViewListPortlet extends ViewList {
 
                 if (nuxeoRequest != null) {
                     int currentPage = NumberUtils.toInt(request.getParameter("currentPage"));
+                    request.setAttribute("currentPage", currentPage);
 
                     String schemas = template.getSchemas();
 
@@ -540,6 +544,7 @@ public class ViewListPortlet extends ViewList {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        String pathView = PATH_VIEW;
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
@@ -755,11 +760,6 @@ public class ViewListPortlet extends ViewList {
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
 
-                // infinite scroll
-                if (configuration.isInfiniteScroll()) {
-                    request.setAttribute("infiniteScroll", "1");
-                }
-
                 // Request page size
                 int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
                 if (pageSize > 0) {
@@ -955,6 +955,9 @@ public class ViewListPortlet extends ViewList {
                     request.setAttribute("error", "Requête non définie");
                 }
             }
+            if (configuration.isInfiniteScroll()) {
+                pathView = INFINITE_VIEW;
+            }
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (EvalError e) {
@@ -969,7 +972,7 @@ public class ViewListPortlet extends ViewList {
         response.setContentType("text/html");
 
 
-        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(pathView);
         dispatcher.include(request, response);
     }
 
