@@ -205,6 +205,7 @@ public class FormsServiceImpl implements IFormsService {
         else {
         	// #1569 - Specific parameters for procedures in batch mode
         	procedureInitiator = "admin";
+        	cmsContext.setScope("superuser_no_cache");
         }
 
         // Next step
@@ -254,16 +255,10 @@ public class FormsServiceImpl implements IFormsService {
 
             // Nuxeo command
             INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties);
-            String savedScope = cmsContext.getScope();
             try {
-                // procedure operations executes in su mode
-                cmsContext.setScope("superuser_no_cache");
-
                 this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
             } catch (CMSException e) {
                 throw new PortalException(e);
-            } finally {
-                cmsContext.setScope(savedScope);
             }
         }
 
@@ -451,16 +446,10 @@ public class FormsServiceImpl implements IFormsService {
         // Nuxeo command
         INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(),
                 properties);
-        String savedScope = cmsContext.getScope();
         try {
-            // procedure operations executes in su mode
-            cmsContext.setScope("superuser_no_cache");
-
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
         } catch (CMSException e) {
             throw new PortalException(e);
-        } finally {
-            cmsContext.setScope(savedScope);
         }
 
 
@@ -487,18 +476,19 @@ public class FormsServiceImpl implements IFormsService {
         boolean deleteOnEnding = BooleanUtils.toBoolean(updatedVariables.get(DELETE_ON_ENDING_PARAMETER));
         if (deleteOnEnding && endStep) {
             // Save current scope
-            savedScope = cmsContext.getScope();
-            String savedForcePublicationInfosScope = cmsContext.getForcePublicationInfosScope();
+            String savedScope = cmsContext.getScope();
+            String savedForcedScope = cmsContext.getForcePublicationInfosScope();
+
             try {
-                cmsContext.setForcePublicationInfosScope("superuser_no_cache");
                 cmsContext.setScope("superuser_no_cache");
+                cmsContext.setForcePublicationInfosScope("superuser_no_cache");
 
                 cmsService.deleteDocument(cmsContext, instancePath);
             } catch (CMSException e) {
                 throw new PortalException(e);
             } finally {
-                cmsContext.setForcePublicationInfosScope(savedForcePublicationInfosScope);
                 cmsContext.setScope(savedScope);
+                cmsContext.setForcePublicationInfosScope(savedForcedScope);
             }
         }
 
