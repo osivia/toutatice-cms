@@ -70,6 +70,7 @@ import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.statistics.SpaceStatistics;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
@@ -145,6 +146,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
@@ -195,6 +197,9 @@ public class CMSService implements ICMSService {
     /** Directory group service. */
     private final GroupService groupService;
 
+    /** Statistics CMS service delegation. */
+    private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
+
 
     /**
      * Constructor.
@@ -212,6 +217,8 @@ public class CMSService implements ICMSService {
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
+
+        this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
     }
 
 
@@ -3122,6 +3129,32 @@ public class CMSService implements ICMSService {
         subscriptions.addAll(documents.list());
 
         return subscriptions;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<SpaceStatistics> getSpaceStatistics(CMSServiceCtx cmsContext, Set<String> paths) throws CMSException {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+
+        return this.statisticsServiceDelegation.getSpaceStatistics(cmsContext, paths);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateStatistics(CMSServiceCtx cmsContext, HttpSession httpSession, List<SpaceStatistics> spaceStatistics) throws CMSException {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+
+        this.statisticsServiceDelegation.updateStatistics(cmsContext, httpSession, spaceStatistics);
     }
 
 }
