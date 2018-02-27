@@ -4,7 +4,7 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>4.6-SNAPSHOT</version>
+    <version>4.6.6</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
@@ -348,7 +348,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/4.6-maintenance</developerConnection>
+        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/tags/4.6.6</developerConnection>
     </scm>
 
 
