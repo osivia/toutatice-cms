@@ -38,6 +38,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.PortalApplicationException;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -618,7 +619,7 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         try {
             parentExecutor.executeChildren(filterContext);
-        } catch (FormFilterException e) {
+        } catch (FormFilterException | PortalApplicationException e) {
             throw e;
         } catch (PortalException e) {
             if (e.getCause() != null && e.getMessage() != null) {
