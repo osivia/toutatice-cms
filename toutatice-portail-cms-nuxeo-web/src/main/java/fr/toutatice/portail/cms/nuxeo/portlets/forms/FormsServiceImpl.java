@@ -292,19 +292,14 @@ public class FormsServiceImpl implements IFormsService {
             properties.put("pi:procedureModelWebId", modelWebId);
             properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, variables));
             
-            String savedScope = cmsContext.getScope();
             // Nuxeo command
             INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties);
             try {
             	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
-                cmsContext.setScope("superuser_no_cache");
                 INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
                 this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
             } catch (CMSException e) {
                 throw new PortalException(e);
-            }
-            finally	{
-            	cmsContext.setScope(savedScope);
             }
 
             // Email notification
@@ -495,20 +490,15 @@ public class FormsServiceImpl implements IFormsService {
         properties.put("pi:globalVariablesValues", this.convertVariablesToJson(portalControllerContext, globalVariableValues));
 
         
-        String savedScope1 = cmsContext.getScope();
         // Nuxeo command
         INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(),
                 properties);
         try {
         	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
-            cmsContext.setScope("superuser_no_cache");
             INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
         } catch (CMSException e) {
             throw new PortalException(e);
-        }
-        finally	{
-        	cmsContext.setScope(savedScope1);
         }
         
         
@@ -704,7 +694,7 @@ public class FormsServiceImpl implements IFormsService {
         } catch (FormFilterException e) {
             throw e;
         } catch (PortalException e) {
-            if (e.getCause() != null && e.getMessage() != null) {
+            if ((e.getCause() != null) && (e.getMessage() != null)) {
                 String message = bundle.getString("FORMS_FILTER_ERROR_FILTER", e.getMessage());
                 log.error(message, e);
                 throw new PortalException(message, e);
