@@ -24,9 +24,9 @@
         <p>
             <span><ttc:fileSize size="${size}" /></span>
         </p>
-
+		
 		<c:choose>
-	        <c:when test="${driveEnabled and empty driveEditUr}">
+	        <c:when test="${driveEnabled and empty driveEditUrl}">
 	            <div class="alert alert-warning">
 	                <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
 	            </div>
