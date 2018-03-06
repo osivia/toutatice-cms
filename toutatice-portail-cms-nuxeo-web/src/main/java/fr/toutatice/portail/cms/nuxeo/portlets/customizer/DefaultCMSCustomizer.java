@@ -90,6 +90,7 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSPage;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -2240,5 +2241,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public INotificationsService getNotificationsService() {
         return notificationsService;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public List<Document> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException {
+		
+		List<CMSItem> listItem = this.browserAdapter.getUserWorkspaces(cmsContext, userName);
+		List<Document> listDocument = new ArrayList<>();
+		for(CMSItem item : listItem)
+		{
+			if (item.getNativeItem() instanceof Document) 
+			{
+				listDocument.add((Document) item.getNativeItem());
+			}
+		}
+		return listDocument;
+	}
 
 }

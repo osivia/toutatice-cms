@@ -172,7 +172,7 @@ public class BrowserAdapter {
      * @return user workspaces
      * @throws CMSException
      */
-    private List<CMSItem> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException {
+    public List<CMSItem> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException {
         // Query
         String query = this.getUserWorkspacesQuery(userName);
         // Schemas
