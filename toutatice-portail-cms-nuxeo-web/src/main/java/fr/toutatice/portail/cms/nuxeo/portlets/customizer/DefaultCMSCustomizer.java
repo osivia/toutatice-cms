@@ -131,6 +131,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurati
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
@@ -1554,17 +1555,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * @return webId
      */
     public String getContentWebIdPath(CMSServiceCtx cmsCtx, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos) {
-        Document doc = (Document) cmsCtx.getDoc();
-
+        // Document
+        Document document = (Document) cmsCtx.getDoc();
         // CMS path
-        String permLinkPath = ((Document) (cmsCtx.getDoc())).getPath();
+        String path = document.getPath();
+        // WebId
+        String webId = DocumentHelper.getWebId(document);
 
-        String webId = DocumentHelper.getWebId(doc);
+        // Force CMS path indicator
+        boolean forceCmsPath = false;
 
-        // Switch on CMS path indicator
-        boolean switchPath = false;
         if (StringUtils.isNotBlank(webId)) {
-
             // Not List case where we always use CMS path
             if (pubInfos != null) {
                 // Case of permlink of remote proxy
@@ -1573,18 +1574,19 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     if (extendedInfos != null) {
                         webId = webId.concat(IWebIdService.RPXY_WID_MARKER).concat(extendedInfos.getParentWebId());
                     } else {
-                        // Switch on CMS path
-                        switchPath = true;
+                        forceCmsPath = true;
                     }
                 }
+            } else {
+                forceCmsPath = ContextDocumentsHelper.isRemoteProxy(document);
+            }
 
-                if (!switchPath) {
-                    permLinkPath = getWebIdService().webIdToCmsPath(webId);
-                }
+            if (!forceCmsPath) {
+                path = getWebIdService().webIdToCmsPath(webId);
             }
         }
 
-        return permLinkPath;
+        return path;
     }
 
 
