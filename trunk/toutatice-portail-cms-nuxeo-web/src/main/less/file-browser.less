@@ -1,0 +1,536 @@
+//
+// Toutatice CMS - File browser
+// --------------------------------------------------
+
+
+@screen-sm-min: 768px;
+@screen-xs-max: (@screen-sm-min - 1);
+
+
+.file-browser {
+    
+    // Selectable
+    .selectable {
+        .user-select(@select: none);
+    }
+    
+    
+    // Selectable : selected
+    .ui-selected {
+        .transition-property(@transition-property: opacity);
+        .transition-duration(@transition-duration: 200ms);
+        
+        span, a {
+            color: #fff;
+        }
+        
+        .document-title {
+            position: relative;
+            
+            &::before {
+                content: "\00a0";
+            
+                visibility: hidden;
+            }
+            
+            > * {
+                position: absolute;
+                left: 0;
+                z-index: 2;
+                
+                max-width: 100%;
+                
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        
+        .draggable-shadowbox {
+            visibility: visible;
+        }
+        
+        &.dragged {
+            &, .draggable-shadowbox {
+                opacity: 0.3;
+            }
+        }
+    }
+    
+    
+    // Draggable shadowbox
+    .draggable-shadowbox {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        z-index: 1;
+        
+        visibility: hidden;
+    }
+    
+    
+    // File upload
+    .drop-zone {
+        position: relative;
+        min-height: 140px;
+        
+        .file-upload-shadowbox {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            
+            display: none;
+            margin: 0;
+            padding: 0;
+
+            opacity: 0.6;
+            
+            & > div {
+                padding: 0 30px;
+            }
+        }
+        
+        &.in {
+            .file-upload-shadowbox {
+                display: block;
+            }
+        }
+        
+        &.hover {
+            .file-upload-shadowbox {
+                background-color: inherit;
+            }
+        }
+    }    
+    
+    
+    // View lines
+    .file-browser-lines {
+        @border-color: #ddd;
+        @line-height: 32px;
+        @table-cell-padding: 8px;
+        
+        .table {
+            .table-body {
+                li {
+                    position: relative;
+                }
+                
+                .row {
+                    [class*="col-"] {
+                        line-height: @line-height;
+                    }
+                }
+                
+                .selectable:not(.remove-hover) {
+                    .data:not(.ui-selected) {
+                        .table-row {
+                            &:hover {
+                                cursor: pointer;
+                                background-color: #f8f8f8;
+                            }
+                        }
+                    }
+                }
+                
+                // Fancybox gallery
+                [data-fancybox] {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    
+                    visibility: hidden;
+                    
+                    margin: 0;
+                    padding: 0;
+                }
+            }
+        }
+    
+    
+        .document-index {
+            float: left;
+            width: 35px;
+        }
+    
+    
+        // Icon
+        .document-icon {
+            float: left;
+            width: @line-height;
+            margin-right: @table-cell-padding;
+    
+            text-align: center;
+            
+            cursor: move;
+            
+            > * {
+                color: #333;
+                background-color: #fff;
+                border-radius: 50%;
+    
+                &.folderish {
+                    color: #fff;
+                    background-color: #333;
+                }
+            }
+            
+            .flaticon {
+                top: 2px;
+
+                font-size: 20px;
+            }
+        }
+        
+        
+        // Lock indicator
+        .document-lock, .document-subscription {
+            float: right;
+            width: @line-height;
+            margin-left: @table-cell-padding;
+            
+            text-align: center;
+        }
+    
+    
+        // Title
+        .document-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    
+    
+        // Avatar 
+        .avatar {
+            height: @line-height - (2 * @table-cell-padding);
+            vertical-align: text-bottom;
+        }
+
+        
+        // Draggable shadowbox
+        .draggable-shadowbox {
+            border-bottom-style: solid;
+            border-width: 1px;
+        }
+        
+        
+        // Droppable
+        .droppable-hover {
+            margin-top: -1px;
+        
+            border-style: solid;
+            border-width: 2px;
+            
+            > * {
+                margin: -1px -2px -2px;
+            }
+            
+            .table-row {
+                border-color: transparent;
+            }
+        }
+        
+        
+        // Sortable
+        .sortable-handle {
+            @height: @line-height - 6px;
+            @background-color: #fff;
+            
+            position: absolute;
+            top: floor((@line-height - @height) / 2);
+            left: 4px;
+            height: @height;
+            width: @height;
+            z-index: 2;
+            
+            visibility: hidden;
+            
+            background-color: @background-color;
+            border-radius: 50%;
+            line-height: @height;
+            cursor: move;
+            
+            &:hover {
+                color: #333;
+                background-color: darken(@background-color, 10%);
+            }
+        }
+        
+        .ui-selected {
+            .sortable-handle {
+                visibility: visible;
+            }
+        }
+        
+        
+        .contextual-toolbar {
+            .label.message-selection {
+                font-size: 100%; 
+            }
+        }
+    }
+    
+    
+    // View thumbnails
+    .file-browser-thumbnails {
+        @thumbnail-height: 100px;
+        
+        li {
+            margin-bottom: 20px;
+        }
+        
+        .thumbnail {
+            position: relative;
+            
+            margin-bottom: 0;
+            text-decoration: none;
+            
+            .img-container {
+                position: relative;
+                display: block;
+                
+                height: @thumbnail-height;
+                
+                color: #333;
+                background-color: #fff;
+                
+                text-align: center;
+                
+                img {
+                    max-height: 100%;
+                    
+                    margin: auto;
+                }
+
+                i { 
+                    &.flaticon {
+                        font-size: @thumbnail-height;
+                    }
+                    
+                    &:not(.flaticon) {
+                        margin-top: 20px;
+                        
+                        font-size: @thumbnail-height - (2 * 20px);
+                    }
+                }
+            }
+            
+            .caption {
+                display: block;
+            }
+            
+            ~ * {
+                padding: 0 3px;
+            }
+        }
+        
+        .folders, .files {
+            margin-bottom: 0;
+        }
+        
+        .folders {
+            + hr {
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .files {
+            .thumbnail {
+                margin-bottom: 5px;
+            }
+        }
+        
+        
+        .document-icon {
+            float: left;
+            height: 20px;
+            
+            margin-right: 5px;
+        }
+        
+        
+        .document-lock, .document-subscription {
+            float: right;
+            margin-left: 8px;
+            margin-right: 3px;
+        }
+    
+    
+        .document-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+
+        &.reorganization {
+            .contextual-toolbar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: -1;
+                
+                opacity: 0;
+                
+                &, ~ * {
+                    .transition-property(@transition-property: opacity);
+                    .transition-duration(@transition-duration: 200ms);
+                }
+                
+                &.in {
+                    z-index: 995;
+                    
+                    opacity: 1;
+                }
+                
+                @media screen and (max-width: @screen-xs-max) {
+                    position: fixed;
+                    
+                    .navbar {
+                        margin-bottom: 0;
+                        
+                        border-style: solid none none;
+                    }
+                }
+                
+                @media screen and (min-width: @screen-sm-min) {
+                    position: absolute;
+                    
+                    &.in {
+                        ~ * {
+                            opacity: 0;
+                        }
+                    }
+                }
+            }
+            
+            .thumbnail {
+                .transition-property(@transition-property: none);
+            }
+            
+            // Sortable
+            .sortable-handle {
+                @height: 28px;
+                @background-color: #fff;
+            
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                height: @height;
+                width: @height;
+                z-index: 2;
+            
+                visibility: hidden;
+            
+                background-color: @background-color;
+                border-radius: 50%;
+                line-height: @height;
+                cursor: move;
+                
+                .box-shadow(@shadow: 0 1px 1px fade(#000, 5%));
+                
+                &:hover {
+                    color: #333;
+                    background-color: darken(@background-color, 10%);
+                }
+            }
+            
+            .folders {
+                .sortable-handle {
+                    top: 0;
+                    bottom: 0;
+                    
+                    margin-top: auto;
+                    margin-bottom: auto;
+                }
+            }
+            
+            .ui-selecting, .ui-selected, .droppable-hover {
+                .thumbnail {
+                    background-color: transparent;
+                    border-color: transparent;
+                }
+            }
+            
+            .ui-selected {
+                .sortable-handle {
+                    visibility: visible;
+                }
+                
+                .thumbnail {
+                    .caption {
+                        color: #fff;
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    // File upload
+    .file-upload {
+        right: 15px;
+        bottom: 0px;
+        position: fixed;
+        width: 33%;
+        z-index: 20;
+        max-height: 500px;
+        
+        .panel {
+            .box-shadow(@shadow: 0 0 10px fade(#000, 30%));
+        }
+        
+        .file-upload-list{
+            overflow: auto;
+            max-height: 200px;
+        }
+    }
+}
+
+
+.file-browser-helper {
+    > * {
+        position: relative;
+        z-index: 1100;
+        
+        padding: 8px;
+        
+        &:extend(.file-browser .file-browser-lines .table .table-body .row [class*="col-"]);
+    }
+    
+    .document-icon {
+        &:extend(.file-browser .file-browser-lines .document-icon all);
+    }
+}
+
+
+.box-shadow(@shadow) {
+    -webkit-box-shadow: @shadow;
+            box-shadow: @shadow;
+}
+
+.transition-property(@transition-property) {
+  -webkit-transition-property: @transition-property;
+          transition-property: @transition-property;
+}
+
+.transition-duration(@transition-duration) {
+  -webkit-transition-duration: @transition-duration;
+          transition-duration: @transition-duration;
+}
+
+.user-select(@select) {
+  -webkit-user-select: @select;
+     -moz-user-select: @select;
+      -ms-user-select: @select; // IE10+
+          user-select: @select;
+}
