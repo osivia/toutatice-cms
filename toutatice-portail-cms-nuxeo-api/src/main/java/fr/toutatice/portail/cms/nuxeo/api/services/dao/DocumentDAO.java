@@ -36,6 +36,7 @@ import org.osivia.portal.api.locator.Locator;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 
@@ -125,6 +126,8 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
             }
             dto.setIcon(icon);
         }
+        // liveEdit
+        dto.setLiveEditable(isLiveEditable(document));
         // Properties
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
@@ -148,7 +151,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @return list
      */
     private List<Object> toList(PropertyList propertyList) {
-        List<Object> list = new ArrayList<Object>(propertyList.size());
+        List<Object> list = new ArrayList<>(propertyList.size());
 
         int index = 0;
         for (Object object : propertyList.list()) {
@@ -186,7 +189,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @return map
      */
     private Map<String, Object> toMap(PropertyMap propertyMap) {
-        Map<String, Object> map = new HashMap<String, Object>(propertyMap.size());
+        Map<String, Object> map = new HashMap<>(propertyMap.size());
 
         for (Entry<String, Object> entry : propertyMap.map().entrySet()) {
             String key = entry.getKey();
@@ -232,10 +235,29 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         return types.get(type);
     }
 
+    private boolean isLiveEditable(Document document) {
+        // Document properties
+        PropertyMap properties = document.getProperties();
+        // File content
+        PropertyMap fileContent = properties.getMap("file:content");
+
+        if (fileContent != null) {
+            String mimeType = fileContent.getString("mime-type");
+            if (StringUtils.isNotBlank(mimeType)) {
+                boolean isPluginRegistered = this.nuxeoService.getCMSCustomizer().getCustomizationService()
+                        .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
+                if (isPluginRegistered) {
+                    return OnlyofficeLiveEditHelper.isMimeTypeSupported(mimeType);
+                }
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Get document icon.
-     * 
+     *
      * @param document document
      * @return icon, may be null
      */
@@ -262,7 +284,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
     /**
      * Get icon from mime type representation.
-     * 
+     *
      * @param mimeType mime type representation
      * @return icon, may be null
      */

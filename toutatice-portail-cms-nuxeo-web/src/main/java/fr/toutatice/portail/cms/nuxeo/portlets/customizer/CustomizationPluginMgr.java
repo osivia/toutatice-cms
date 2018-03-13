@@ -127,20 +127,20 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.customizer = customizer;
 
         // Customization service
-        this.customizationService = Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
-        this.customizationService.setCMSObserver(this);
+        customizationService = Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
+        customizationService.setCMSObserver(this);
 
-        this.customizationAttributesCache = new ConcurrentHashMap<Locale, Map<String, Object>>();
-        this.customizedJavaServerPagesCache = new ConcurrentHashMap<String, CustomizedJsp>();
-        this.fragmentsCache = new ConcurrentHashMap<Locale, Map<String, FragmentType>>();
-        this.ewCache = new ConcurrentHashMap<Locale, Map<String, EditableWindow>>();
-        this.templatesCache = new ConcurrentHashMap<Locale, List<ListTemplate>>();
-        this.menuTemplatesCache = new ConcurrentHashMap<Locale, SortedMap<String, String>>();
+        customizationAttributesCache = new ConcurrentHashMap<>();
+        customizedJavaServerPagesCache = new ConcurrentHashMap<>();
+        fragmentsCache = new ConcurrentHashMap<>();
+        ewCache = new ConcurrentHashMap<>();
+        templatesCache = new ConcurrentHashMap<>();
+        menuTemplatesCache = new ConcurrentHashMap<>();
 
         // JSP locks
-        this.jspLocks = new ConcurrentHashMap<>();
+        jspLocks = new ConcurrentHashMap<>();
 
-        this.customizationDeployementTS = System.currentTimeMillis();
+        customizationDeployementTS = System.currentTimeMillis();
     }
 
 
@@ -151,20 +151,20 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return the customization attributes
      */
     private Map<String, Object> getCustomizationAttributes(Locale locale) {
-        Map<String, Object> attributes = this.customizationAttributesCache.get(locale);
+        Map<String, Object> attributes = customizationAttributesCache.get(locale);
         if (attributes == null) {
-            Map<String, Object> customizationAttributes = new ConcurrentHashMap<String, Object>();
+            Map<String, Object> customizationAttributes = new ConcurrentHashMap<>();
             CustomizationContext customizationContext = new CustomizationContext(customizationAttributes, locale);
 
             /* Inject default types */
-            List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
+            List<DocumentType> defaultTypes = customizer.getDefaultCMSItemTypes();
             Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
 
             for (DocumentType defaultType : defaultTypes) {
                 types.put(defaultType.getName(), defaultType.clone());
             }
 
-            List<DocumentType> customizedTypes = this.customizer.getCustomizedCMSItemTypes();
+            List<DocumentType> customizedTypes = customizer.getCustomizedCMSItemTypes();
             for (DocumentType customizedType : customizedTypes) {
                 types.put(customizedType.getName(), customizedType.clone());
             }
@@ -172,13 +172,13 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             customizationAttributes.put(Customizable.DOC_TYPE.toString(), types);
 
-            this.customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
+            customizationService.customize(ICustomizationModule.PLUGIN_ID, customizationContext);
 
 
-            this.customizationAttributesCache.put(locale, customizationAttributes);
+            customizationAttributesCache.put(locale, customizationAttributes);
         }
 
-        return this.customizationAttributesCache.get(locale);
+        return customizationAttributesCache.get(locale);
     }
 
 
@@ -194,9 +194,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     @SuppressWarnings("unchecked")
     public CustomizedJsp customizeJSP(String name, PortletContext portletContext, PortletRequest request) throws IOException {
         // Customized JavaServer page
-        CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
+        CustomizedJsp customizedPage = customizedJavaServerPagesCache.get(name);
 
-        if ((customizedPage == null) && (name != null)) {
+        if (customizedPage == null && name != null) {
 
             ReentrantLock customizeJSPLock = customizeJSPLockTable.get(name);
             if (customizeJSPLock == null) {
@@ -209,23 +209,23 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 if (customizedPage == null) {
                     // Locale
                     Locale locale = request.getLocale();
-                    Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+                    Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
                     // Default initialization
                     customizedPage = new CustomizedJsp(name, null);
 
                     // Customized JavaServer pages
                     Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
-                    if ((name != null) && (customizedPages != null)) {
+                    if (name != null && customizedPages != null) {
                         String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
                         CustomizedJsp page = customizedPages.get(relativePath);
 
-                        if ((page != null) && (name.contains("."))) {
+                        if (page != null && name.contains(".")) {
                             // Destination
                             StringBuilder destination = new StringBuilder();
                             destination.append(StringUtils.substringBeforeLast(name, "."));
                             destination.append(CUSTOM_JSP_EXTENTION);
-                            destination.append(this.customizationDeployementTS);
+                            destination.append(customizationDeployementTS);
                             destination.append(".");
                             destination.append(StringUtils.substringAfterLast(name, "."));
 
@@ -241,7 +241,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                             customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
                         }
                     }
-                    this.customizedJavaServerPagesCache.put(name, customizedPage);
+                    customizedJavaServerPagesCache.put(name, customizedPage);
                 }
             } finally {
                 customizeJSPLock.unlock();
@@ -261,14 +261,14 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public List<ListTemplate> customizeListTemplates(Locale locale) {
-        List<ListTemplate> templates = this.templatesCache.get(locale);
+        List<ListTemplate> templates = templatesCache.get(locale);
 
         if (templates == null) {
-            templates = this.customizer.initListTemplates(locale);
+            templates = customizer.initListTemplates(locale);
 
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
-            Map<String, ListTemplate> templatesMap = ((Map<String, ListTemplate>) customizationAttributes.get(Customizable.LIST_TEMPLATE.toString() + locale));
+            Map<String, ListTemplate> templatesMap = (Map<String, ListTemplate>) customizationAttributes.get(Customizable.LIST_TEMPLATE.toString() + locale);
 
             if (templatesMap != null) {
                 Set<Entry<String, ListTemplate>> customTemplates = templatesMap.entrySet();
@@ -277,7 +277,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 }
             }
 
-            this.templatesCache.put(locale, templates);
+            templatesCache.put(locale, templates);
         }
 
         return templates;
@@ -293,16 +293,16 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public Map<String, FragmentType> getFragments(Locale locale) {
-        Map<String, FragmentType> fragments = this.fragmentsCache.get(locale);
+        Map<String, FragmentType> fragments = fragmentsCache.get(locale);
 
         if (fragments == null) {
-            List<FragmentType> initList = this.customizer.initListFragments(locale);
-            fragments = new Hashtable<String, FragmentType>();
+            List<FragmentType> initList = customizer.initListFragments(locale);
+            fragments = new Hashtable<>();
             for (FragmentType fragment : initList) {
                 fragments.put(fragment.getKey(), fragment);
             }
 
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
             List<FragmentType> fragmentsList = (List<FragmentType>) customizationAttributes.get(Customizable.FRAGMENT.toString() + locale);
 
@@ -312,7 +312,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 }
             }
 
-            this.fragmentsCache.put(locale, fragments);
+            fragmentsCache.put(locale, fragments);
         }
 
         return fragments;
@@ -328,16 +328,16 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public Map<String, EditableWindow> customizeEditableWindows(Locale locale) {
-        Map<String, EditableWindow> ew = this.ewCache.get(locale);
+        Map<String, EditableWindow> ew = ewCache.get(locale);
 
         if (ew == null) {
-            Map<String, EditableWindow> initList = this.customizer.initEditableWindows(locale);
-            ew = new Hashtable<String, EditableWindow>();
+            Map<String, EditableWindow> initList = customizer.initEditableWindows(locale);
+            ew = new Hashtable<>();
             for (Map.Entry<String, EditableWindow> customEw : initList.entrySet()) {
                 ew.put(customEw.getKey(), customEw.getValue());
             }
 
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
             Map<String, EditableWindow> ewList = (Map<String, EditableWindow>) customizationAttributes.get(Customizable.EDITABLE_WINDOW.toString() + locale);
 
@@ -347,7 +347,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 }
             }
 
-            this.ewCache.put(locale, ew);
+            ewCache.put(locale, ew);
         }
 
         return ew;
@@ -362,11 +362,11 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public Map<String, DocumentType> customizeCMSItemTypes() {
-        if (this.typesCache == null) {
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
-            this.typesCache = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
+        if (typesCache == null) {
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
+            typesCache = (Map<String, DocumentType>) customizationAttributes.get(Customizable.DOC_TYPE.toString());
         }
-        return this.typesCache;
+        return typesCache;
     }
 
 
@@ -379,16 +379,16 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public List<MenubarModule> customizeMenubarModules() {
-        if (this.menubarModulesCache == null) {
+        if (menubarModulesCache == null) {
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
-            this.menubarModulesCache = (List<MenubarModule>) attributes.get(Customizable.MENUBAR.toString());
-            if (this.menubarModulesCache == null) {
-                this.menubarModulesCache = new ArrayList<MenubarModule>(0);
+            menubarModulesCache = (List<MenubarModule>) attributes.get(Customizable.MENUBAR.toString());
+            if (menubarModulesCache == null) {
+                menubarModulesCache = new ArrayList<>(0);
             }
         }
-        return this.menubarModulesCache;
+        return menubarModulesCache;
     }
 
 
@@ -400,18 +400,18 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public List<IPlayerModule> customizeModules() {
-        if (this.dynamicModules == null) {
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
+        if (dynamicModules == null) {
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(Locale.getDefault());
             List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
 
             this.dynamicModules = new ArrayList<IPlayerModule>();
             if (players != null) {
-                this.dynamicModules.addAll(players);
+                dynamicModules.addAll(players);
             }
 
         }
 
-        return this.dynamicModules;
+        return dynamicModules;
 
     }
 
@@ -423,14 +423,14 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return menu templates
      */
     public SortedMap<String, String> customizeMenuTemplates(Locale locale) {
-        SortedMap<String, String> templates = this.menuTemplatesCache.get(locale);
+        SortedMap<String, String> templates = menuTemplatesCache.get(locale);
 
         if (templates == null) {
-            templates = this.customizer.initMenuTemplates(locale);
+            templates = customizer.initMenuTemplates(locale);
 
-            Map<String, Object> customizationAttributes = this.getCustomizationAttributes(locale);
+            Map<String, Object> customizationAttributes = getCustomizationAttributes(locale);
 
-            SortedMap<?, ?> customizedTemplates = ((SortedMap<?, ?>) customizationAttributes.get(Customizable.MENU_TEMPLATE.toString() + locale));
+            SortedMap<?, ?> customizedTemplates = (SortedMap<?, ?>) customizationAttributes.get(Customizable.MENU_TEMPLATE.toString() + locale);
 
             if (customizedTemplates != null) {
                 Set<?> entrySet = customizedTemplates.entrySet();
@@ -443,7 +443,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 }
             }
 
-            this.menuTemplatesCache.put(locale, templates);
+            menuTemplatesCache.put(locale, templates);
         }
 
         return templates;
@@ -456,21 +456,21 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return navigation adapters
      */
     public List<INavigationAdapterModule> customizeNavigationAdapters() {
-        if (this.navigationAdaptersCache == null) {
+        if (navigationAdaptersCache == null) {
             // Cache
-            this.navigationAdaptersCache = new ArrayList<INavigationAdapterModule>();
+            navigationAdaptersCache = new ArrayList<>();
 
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
             // Customized modules
             List<?> customizedModules = (List<?>) attributes.get(Customizable.NAVIGATION_ADAPTERS.toString());
             if (customizedModules != null) {
-                CollectionUtils.addAll(this.navigationAdaptersCache, customizedModules.iterator());
+                CollectionUtils.addAll(navigationAdaptersCache, customizedModules.iterator());
             }
         }
 
-        return this.navigationAdaptersCache;
+        return navigationAdaptersCache;
     }
 
 
@@ -480,21 +480,21 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @return domain contextualization
      */
     public List<DomainContextualization> customizeDomainContextualization() {
-        if (this.domainContextualizationCache == null) {
+        if (domainContextualizationCache == null) {
             // Cache
-            this.domainContextualizationCache = new ArrayList<DomainContextualization>();
+            domainContextualizationCache = new ArrayList<>();
 
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
             // Customized modules
             List<?> customizedModules = (List<?>) attributes.get(Customizable.DOMAIN_CONTEXTUALIZATION.toString());
             if (customizedModules != null) {
-                CollectionUtils.addAll(this.domainContextualizationCache, customizedModules.iterator());
+                CollectionUtils.addAll(domainContextualizationCache, customizedModules.iterator());
             }
         }
 
-        return this.domainContextualizationCache;
+        return domainContextualizationCache;
     }
 
 
@@ -505,20 +505,20 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public Map<String, TabGroup> customizeTabGroups() {
-        if (this.tabGroupsCache == null) {
+        if (tabGroupsCache == null) {
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
             // Customized tab groups
             Map<String, TabGroup> tabGroups = (Map<String, TabGroup>) attributes.get(Customizable.TAB_GROUPS.toString());
             if (tabGroups == null) {
-                this.tabGroupsCache = new ConcurrentHashMap<String, TabGroup>();
+                tabGroupsCache = new ConcurrentHashMap<>();
             } else {
-                this.tabGroupsCache = tabGroups;
+                tabGroupsCache = tabGroups;
             }
 
         }
-        return this.tabGroupsCache;
+        return tabGroupsCache;
     }
 
 
@@ -529,12 +529,12 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * @throws CMSException
      */
     public TaskbarItems customizeTaskbarItems() throws CMSException {
-        if (this.taskbarItemsCache == null) {
+        if (taskbarItemsCache == null) {
             // Default taskbar items
-            TaskbarItems defaultTaskbarItems = this.customizer.getDefaultTaskbarItems();
+            TaskbarItems defaultTaskbarItems = customizer.getDefaultTaskbarItems();
 
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
             // Customized taskbar items
             TaskbarItems customizedTaskbarItems = (TaskbarItems) attributes.get(Customizable.TASKBAR_ITEMS.toString());
@@ -548,7 +548,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                 this.taskbarItemsCache = customizedTaskbarItems;
             }
         }
-        return this.taskbarItemsCache;
+        return taskbarItemsCache;
     }
 
 
@@ -559,16 +559,16 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public List<TemplateAdapter> customizeTemplateAdapters() {
-        if (this.templateAdaptersCache == null) {
+        if (templateAdaptersCache == null) {
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
-            this.templateAdaptersCache = (List<TemplateAdapter>) attributes.get(Customizable.TEMPLATE_ADAPTERS.toString());
-            if (this.templateAdaptersCache == null) {
-                this.templateAdaptersCache = new ArrayList<TemplateAdapter>(0);
+            templateAdaptersCache = (List<TemplateAdapter>) attributes.get(Customizable.TEMPLATE_ADAPTERS.toString());
+            if (templateAdaptersCache == null) {
+                templateAdaptersCache = new ArrayList<>(0);
             }
         }
-        return this.templateAdaptersCache;
+        return templateAdaptersCache;
     }
 
 
@@ -579,17 +579,35 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     @SuppressWarnings("unchecked")
     public Map<String, FormFilter> getFormFilters() {
-        if (this.formFiltersCache == null) {
+        if (formFiltersCache == null) {
             // Customization attributes
-            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            Map<String, Object> attributes = getCustomizationAttributes(Locale.getDefault());
 
-            this.formFiltersCache = (Map<String, FormFilter>) attributes.get(Customizable.FORM_FILTERS.toString());
-            if (this.formFiltersCache == null) {
-                this.formFiltersCache = new ConcurrentHashMap<String, FormFilter>(0);
+            formFiltersCache = (Map<String, FormFilter>) attributes.get(Customizable.FORM_FILTERS.toString());
+            if (formFiltersCache == null) {
+                formFiltersCache = new ConcurrentHashMap<>(0);
             }
         }
 
-        return this.formFiltersCache;
+        return formFiltersCache;
+    }
+
+    /**
+     * lists the names of registered plugins
+     *
+     */
+    public List<String> getRegisteredPluginNames() {
+        return customizationService.getRegisteredPluginNames();
+    }
+
+    /**
+     * Checks if a plugin with the provided name is registered
+     *
+     * @param pluginName
+     */
+    public boolean isPluginRegistered(String pluginName) {
+        return customizationService.isPluginRegistered(pluginName);
+
     }
 
 
@@ -599,26 +617,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     @Override
     public void notifyDeployment() {
         // Reinit timestamp
-        this.customizationDeployementTS = System.currentTimeMillis();
+        customizationDeployementTS = System.currentTimeMillis();
 
         // Reset caches
-        this.dynamicModules = null;
-        this.typesCache = null;
-        this.navigationAdaptersCache = null;
-        this.domainContextualizationCache = null;
-        this.tabGroupsCache = null;
-        this.taskbarItemsCache = null;
-        this.menubarModulesCache = null;
-        this.templateAdaptersCache = null;
-        this.formFiltersCache = null;
+        dynamicModules = null;
+        typesCache = null;
+        navigationAdaptersCache = null;
+        domainContextualizationCache = null;
+        tabGroupsCache = null;
+        taskbarItemsCache = null;
+        menubarModulesCache = null;
+        templateAdaptersCache = null;
+        formFiltersCache = null;
 
         // Clear caches
-        this.customizationAttributesCache.clear();
-        this.customizedJavaServerPagesCache.clear();
-        this.fragmentsCache.clear();
-        this.ewCache.clear();
-        this.templatesCache.clear();
-        this.menuTemplatesCache.clear();
+        customizationAttributesCache.clear();
+        customizedJavaServerPagesCache.clear();
+        fragmentsCache.clear();
+        ewCache.clear();
+        templatesCache.clear();
+        menuTemplatesCache.clear();
     }
 
 }

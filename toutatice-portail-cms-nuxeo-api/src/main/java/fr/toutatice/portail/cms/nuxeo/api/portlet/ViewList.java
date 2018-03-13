@@ -78,5 +78,7 @@ public abstract class ViewList extends CMSPortlet {
     public static final String LIST_TEMPLATE_CONTEXTUAL_LINKS = "contextual-links";
     /** LIST_TEMPLATE_PROCEDURE */
     public static final String LIST_TEMPLATE_PROCEDURE = "procedure";
+    /** List template search results. */
+    public static final String LIST_TEMPLATE_SEARCH_RESULTS = "search-results";
 
 }

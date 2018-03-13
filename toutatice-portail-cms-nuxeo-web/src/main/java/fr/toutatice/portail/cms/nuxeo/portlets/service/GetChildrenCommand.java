@@ -53,8 +53,8 @@ public class GetChildrenCommand implements INuxeoCommand {
         String filteredClause = NuxeoQueryFilter.addPublicationFilter(filterContext, clause.toString());
 
         // Operation request
-        OperationRequest request = nuxeoSession.newRequest("Document.Query");
-        request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
+        OperationRequest request = nuxeoSession.newRequest("Document.QueryES");
+        request.set(Constants.HEADER_NX_SCHEMAS, "*");
         request.set("query", "SELECT * FROM Document WHERE " + filteredClause);
 
         return request.execute();

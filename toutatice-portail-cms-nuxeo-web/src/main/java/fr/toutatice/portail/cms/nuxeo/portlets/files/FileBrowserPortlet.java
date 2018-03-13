@@ -84,6 +84,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
@@ -433,13 +434,13 @@ public class FileBrowserPortlet extends CMSPortlet {
             printWriter.close();
         } else if("zipDownload".equals(request.getResourceID())) {
             // bulk download
-            
+
             // selected download paths
             String[] paths = StringUtils.split(request.getParameter("paths"), ",");
-            
+
             NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
             CMSBinaryContent content = (CMSBinaryContent) nuxeoController.executeNuxeoCommand(new BulkFilesCommand(nuxeoController, paths));
-            
+
             response.setContentType(content.getMimeType());
             response.setProperty("Content-disposition", "inline; filename=\"" + content.getName() + "\"");
 
@@ -494,6 +495,9 @@ public class FileBrowserPortlet extends CMSPortlet {
                 // CMS context
                 CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
+				// Computed path
+                path = nuxeoController.getComputedPath(path);
+
                 // Publication informations
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
@@ -527,27 +531,33 @@ public class FileBrowserPortlet extends CMSPortlet {
                     }
                 }
 
+                Bundle bundle = bundleFactory.getBundle(request.getLocale());
 
                 // Documents DTO
                 int index = 1;
-                List<FileBrowserItem> fileBrowserItems = new ArrayList<FileBrowserItem>(documents.size());
+                List<FileBrowserItem> fileBrowserItems = new ArrayList<>(documents.size());
                 for (Document document : documents) {
                     DocumentDTO documentDto = this.documentDao.toDTO(portalControllerContext, document);
                     documentDto = setDraftInfos(document, documentDto);
+                    
+                    if(request.getUserPrincipal() != null) {
+                    	documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
+                    }
+                    
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
                     // Subscription indicator
                     boolean subscription = subscriptions.contains(document.getId());
                     fileBrowserItem.setSubscription(subscription);
-                    
+
                     fileBrowserItems.add(fileBrowserItem);
                 }
 
 
                 // Ordered indicator
                 DocumentType cmsItemType = nuxeoController.getCMSItemTypes().get(currentDocument.getType());
-                boolean ordered = ((cmsItemType != null) && cmsItemType.isOrdered());
+                boolean ordered = cmsItemType != null && cmsItemType.isOrdered();
                 request.setAttribute("ordered", ordered);
 
 
@@ -622,9 +632,24 @@ public class FileBrowserPortlet extends CMSPortlet {
     }
 
 
+    private DocumentDTO setLiveEditUrl(DocumentDTO documentDTO, NuxeoController nuxeoController, Bundle bundle) throws PortalException {
+
+        // onlyoffice
+        if (documentDTO.isLiveEditable() && nuxeoController.getNuxeoCMSService().getCMSCustomizer().getCustomizationService()
+                .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME)) {
+
+            String onlyofficeEditLockUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.TRUE);
+            documentDTO.getProperties().put("onlyofficeEditLockUrl", onlyofficeEditLockUrl);
+            
+            String onlyofficeEditCollabUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.FALSE);
+            documentDTO.getProperties().put("onlyofficeEditCollabUrl", onlyofficeEditCollabUrl);            
+        }
+        return documentDTO;
+    }
+
     /**
      * Set draft informations if document has draft.
-     * 
+     *
      * @param publicationInfos
      * @param document
      * @return document with modified properies
@@ -715,7 +740,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
             if (StringUtils.isEmpty(sort)) {
                 Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-                if ((attribute != null) && (attribute instanceof FileBrowserSortCriteria)) {
+                if (attribute != null && attribute instanceof FileBrowserSortCriteria) {
                     criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
 
                     if (!ordered && FileBrowserSortCriteria.SORT_BY_INDEX.equals(criteria.getSort())) {
@@ -856,7 +881,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         request.setAttribute("editUrl", editUrl);
 
         // Move URL
-        Map<String, String> moveProperties = new HashMap<String, String>();
+        Map<String, String> moveProperties = new HashMap<>();
         moveProperties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, currentDocument.getPath());
         moveProperties.put(MoveDocumentPortlet.DOCUMENTS_IDENTIFIERS_WINDOW_PROPERTY, "_IDS_");
         moveProperties.put(MoveDocumentPortlet.IGNORED_PATHS_WINDOW_PROPERTY, "_PATHS_");

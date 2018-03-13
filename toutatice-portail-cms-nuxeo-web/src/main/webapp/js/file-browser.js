@@ -552,7 +552,12 @@ function displayControls($browser) {
 		$waiter = $toolbar.find(".ajax-waiter"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
-		$editDriveEnabled = $toolbar.find(".edit-drive-enabled"),
+		$onlyofficeRead = $toolbar.find(".onlyoffice-read"),		
+		$onlyofficeEditLock = $toolbar.find(".onlyoffice-edit-lock"),
+		$onlyofficeEditCollab = $toolbar.find(".onlyoffice-edit-collab"),
+		$allEdit = $toolbar.find(".all-edit"),
+		$liDrive = $allEdit.find(".li-drive-edit"),
+		$singleEdit = $toolbar.find(".single-edit"),
 		$download = $toolbar.find(".download"),
 		$copy = $toolbar.find(".copy"),
 		$gallery = $toolbar.find(".gallery"),
@@ -581,7 +586,12 @@ function displayControls($browser) {
 		
 		$edit.addClass("disabled");
 		$driveEdit.addClass("hidden disabled");
-		$editDriveEnabled.addClass("hidden disabled");
+		$onlyofficeRead.addClass("hidden disabled");
+		$onlyofficeEditLock.addClass("hidden disabled");
+		$onlyofficeEditCollab.addClass("hidden disabled");		
+		$allEdit.addClass("hidden disabled");
+		$liDrive.addClass("hidden disabled");
+		$singleEdit.addClass("hidden disabled");
 		$copy.addClass("disabled");
 		$move.addClass("disabled");
 		$delete.addClass("disabled");
@@ -600,12 +610,15 @@ function displayControls($browser) {
 			
 			
 			// Drive edition replacement for file types
-			if ($selected.data("file") && $toolbar.data("drive-enabled")) {
+			if ($selected.data("file")) {
 				$edit.addClass("hidden");
-				$driveEdit.removeClass("hidden");
-				$editDriveEnabled.removeClass("hidden");
-				
 				$driveEdit.find("i").attr("class", $selected.data("icon"));
+				
+				if ($toolbar.data("drive-enabled")) {
+					$driveEdit.removeClass("hidden");
+				}
+			} else {
+				$edit.removeClass("hidden");
 			}
 			
 			
@@ -698,7 +711,7 @@ function displayControls($browser) {
 					url: $toolbar.data("infos-url"),
 					data: {
 						path: $element.data("path"),
-						file: $element.data("file")
+						file: $element.data("file"),
 					},
 					success : function(data, status, xhr) {
 						$element.data("loaded", true);
@@ -763,7 +776,12 @@ function updateControlRights($browser) {
 	var $toolbar = $browser.find(".contextual-toolbar"),
 		$edit = $toolbar.find(".edit"),
 		$driveEdit = $toolbar.find(".drive-edit"),
-		$editDriveEnabled = $toolbar.find(".edit-drive-enabled"),
+		$onlyofficeRead = $toolbar.find(".onlyoffice-read"),		
+		$onlyofficeEditLock = $toolbar.find(".onlyoffice-edit-lock"),
+		$onlyofficeEditCollab = $toolbar.find(".onlyoffice-edit-collab"),
+		$allEdit = $toolbar.find(".all-edit"),
+		$singleEdit = $toolbar.find(".single-edit"),
+		$liDrive = $allEdit.find(".li-drive-edit"),
 		$copy = $toolbar.find(".copy"),
 		$move = $toolbar.find(".move"),
 		$delete = $toolbar.find(".delete"),
@@ -800,15 +818,43 @@ function updateControlRights($browser) {
 		// Edit
 		if ($selected.data("editable") && writable) {
 			$edit.removeClass("disabled");
-			$editDriveEnabled.removeClass("disabled");
 		}
 		
 		// Drive edit
 		driveEditUrl = $selected.data("drive-edit-url");
-		driveEnabled = $selected.data("drive-enabled");
-		if (driveEditUrl) {
+		driveEnabled = $toolbar.data("drive-enabled");
+		onlyofficeEditLockUrl = $selected.data("onlyoffice-edit-lock-url");
+		onlyofficeEditCollabUrl = $selected.data("onlyoffice-edit-collab-url");
+		
+		if (writable && driveEditUrl && onlyofficeEditCollabUrl){
 			$driveEdit.attr("href", driveEditUrl);
-			$driveEdit.removeClass("disabled");
+			$onlyofficeEditLock.attr("href", onlyofficeEditLockUrl);
+			$onlyofficeEditCollab.attr("href", onlyofficeEditCollabUrl);
+			$driveEdit.removeClass("hidden disabled");
+			$onlyofficeEditLock.removeClass("hidden disabled");
+			$onlyofficeEditCollab.removeClass("hidden disabled");
+			$allEdit.removeClass("hidden disabled");
+			$liDrive.removeClass("hidden disabled");
+		}else if (driveEditUrl) {
+			$driveEdit.attr("href", driveEditUrl);
+			$driveEdit.removeClass("hidden disabled");
+			$singleEdit.removeClass("hidden disabled");
+		}else if(writable && onlyofficeEditCollabUrl){
+			$onlyofficeEditLock.attr("href", onlyofficeEditLockUrl);
+			$onlyofficeEditCollab.attr("href", onlyofficeEditCollabUrl);
+			$onlyofficeEditLock.removeClass("hidden disabled");
+			$onlyofficeEditCollab.removeClass("hidden disabled");
+			if(driveEnabled){
+				$allEdit.removeClass("hidden disabled");
+				$liDrive.removeClass("hidden");
+			}else{
+				$singleEdit.removeClass("hidden disabled");
+			}
+		}else if(onlyofficeEditCollabUrl){
+			$onlyofficeRead.attr("href", onlyofficeEditCollabUrl);
+			$onlyofficeRead.removeClass("hidden disabled");
+		}else if (driveEnabled){
+			$singleEdit.removeClass("hidden disabled");
 		}
 		
 		// Copy

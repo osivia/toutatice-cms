@@ -59,7 +59,7 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-offset-3 col-sm-9">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary no-ajax-link">
                 <i class="halflings halflings-floppy-disk"></i>
                 <span><op:translate key="SAVE" /></span>
             </button>

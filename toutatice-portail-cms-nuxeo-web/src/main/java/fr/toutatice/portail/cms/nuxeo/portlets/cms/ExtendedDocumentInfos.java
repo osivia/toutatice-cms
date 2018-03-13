@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -59,6 +60,14 @@ public class ExtendedDocumentInfos {
     private boolean pdfConvertible;
     /** Error on PDF conversion. */
     private boolean errorOnPdfConversion;
+
+    private boolean isCurrentlyEdited;
+
+    private JSONObject currentlyEditedEntry;
+
+    private boolean isRecentlyEdited;
+
+    private JSONObject recentlyEditedEntry;
 
     /** Documents's parent document. */
     private String parentWebId;
@@ -337,6 +346,86 @@ public class ExtendedDocumentInfos {
      */
     public void setErrorOnPdfConversion(boolean errorOnPdfConversion) {
         this.errorOnPdfConversion = errorOnPdfConversion;
+    }
+
+
+    /**
+     * Getter for isCurrentlyEdited.
+     * 
+     * @return the isCurrentlyEdited
+     */
+    public boolean isCurrentlyEdited() {
+        return isCurrentlyEdited;
+    }
+
+
+    /**
+     * Setter for isCurrentlyEdited.
+     * 
+     * @param isCurrentlyEdited the isCurrentlyEdited to set
+     */
+    public void setCurrentlyEdited(boolean isCurrentlyEdited) {
+        this.isCurrentlyEdited = isCurrentlyEdited;
+    }
+
+
+    /**
+     * Getter for currentlyEditedEntry.
+     * 
+     * @return the currentlyEditedEntry
+     */
+    public JSONObject getCurrentlyEditedEntry() {
+        return currentlyEditedEntry;
+    }
+
+
+    /**
+     * Setter for currentlyEditedEntry.
+     * 
+     * @param currentlyEditedEntry the currentlyEditedEntry to set
+     */
+    public void setCurrentlyEditedEntry(JSONObject currentlyEditedEntry) {
+        this.currentlyEditedEntry = currentlyEditedEntry;
+    }
+
+
+    /**
+     * Getter for isRecentlyEdited.
+     * 
+     * @return the isRecentlyEdited
+     */
+    public boolean isRecentlyEdited() {
+        return isRecentlyEdited;
+    }
+
+
+    /**
+     * Setter for isRecentlyEdited.
+     * 
+     * @param isRecentlyEdited the isRecentlyEdited to set
+     */
+    public void setRecentlyEdited(boolean isRecentlyEdited) {
+        this.isRecentlyEdited = isRecentlyEdited;
+    }
+
+
+    /**
+     * Getter for recentlyEditedEntry.
+     * 
+     * @return the recentlyEditedEntry
+     */
+    public JSONObject getRecentlyEditedEntry() {
+        return recentlyEditedEntry;
+    }
+
+
+    /**
+     * Setter for recentlyEditedEntry.
+     * 
+     * @param recentlyEditedEntry the recentlyEditedEntry to set
+     */
+    public void setRecentlyEditedEntry(JSONObject recentlyEditedEntry) {
+        this.recentlyEditedEntry = recentlyEditedEntry;
     }
 
 

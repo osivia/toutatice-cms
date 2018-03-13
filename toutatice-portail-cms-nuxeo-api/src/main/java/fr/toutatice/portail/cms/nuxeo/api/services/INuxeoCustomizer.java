@@ -34,6 +34,7 @@ import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.customization.ICustomizationService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -61,17 +62,17 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Create custom link.
-     * 
+     *
      * custom links are useful during the cms link generation when the cms controller phase
      * is not adapted
-     * 
+     *
      *  Use cases :
      * - the action for the link is powered directly by the portlet (for example, the download of an attached file)
      * - the link opens an external application
-     * 
+     *
      * if this method returns null, then the standard cms pattern will be applied
-     * 
-     * 
+     *
+     *
      * displayContext : menu, download, fileExplorer, permlink ...
      *
      * @param ctx CMS context
@@ -111,7 +112,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @throws Exception the exception
      */
     String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception;
-    
+
     /**
      * Add search filter.
      *
@@ -213,7 +214,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @throws CMSException the CMS exception
      */
     Link getUserAvatar(String username);
-    
+
     /**
      * Get the user avatar.
      *
@@ -224,7 +225,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @deprecated use getUserAvatar(String username);
      */
     @Deprecated
-	Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
+    Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
 
     /**
      * Refresh the user avatar.
@@ -234,7 +235,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the timestamp associated with the refresh event
      */
     String refreshUserAvatar(String username);
-    
+
     /**
      * Refresh the user avatar.
      *
@@ -244,7 +245,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @deprecated use refreshUserAvatar(String username);
      */
     @Deprecated
-	String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
+    String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
 
     /**
      * Get templates list.
@@ -266,7 +267,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * get forms filters
-     * 
+     *
      * @return the filters
      */
     Map<String, FormFilter> getFormsFilters();
@@ -279,7 +280,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return editable winsow list
      */
     Map<String,EditableWindow> getEditableWindows(Locale locale);
-    
+
     /**
      * Get menu templates.
      *
@@ -287,11 +288,11 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return menu templates
      */
     SortedMap<String, String> getMenuTemplates(Locale locale);
-    
-    
+
+
     /**
      * Customize jsp new.
-     * 
+     *
      * @param name the name
      * @param portletContext the portlet context
      * @param request the request
@@ -311,7 +312,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
 
-    
     /**
      * Define ECM commands.
      *
@@ -335,5 +335,13 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return
      */
     List<Document> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException;
+    
+    
+    /**
+     * Getter for customizationService.
+     *
+     * @return the customizationService
+     */
+    ICustomizationService getCustomizationService();
 
 }

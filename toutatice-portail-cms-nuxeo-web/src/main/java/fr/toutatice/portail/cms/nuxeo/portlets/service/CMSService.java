@@ -74,6 +74,7 @@ import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.statistics.SpaceStatistics;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
@@ -150,6 +151,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
@@ -201,6 +203,9 @@ public class CMSService implements ICMSService {
     /** Directory group service. */
     private final GroupService groupService;
 
+    /** Statistics CMS service delegation. */
+    private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
+
 
     /**
      * Constructor.
@@ -218,6 +223,8 @@ public class CMSService implements ICMSService {
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
+
+        this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
     }
 
 
@@ -3023,13 +3030,16 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public void updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
+    public boolean updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
         // Controller context
         ControllerContext controllerContext = cmsContext.getControllerContext();
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
         // User
         String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+
+        // Updated task indicator
+        boolean updated;
 
         if (StringUtils.isNotEmpty(user)) {
             // Task actors
@@ -3046,8 +3056,11 @@ public class CMSService implements ICMSService {
 
                     // Proceed
                     this.formsService.proceed(portalControllerContext, task, actionId, variables);
+
+                    updated = true;
                 } else {
-                    // 404 not found: do nothing
+                    // 404 not found
+                    updated = false;
                 }
             } catch (CMSException e) {
                 throw e;
@@ -3057,6 +3070,8 @@ public class CMSService implements ICMSService {
         } else {
             throw new CMSException("Unknown user error.");
         }
+
+        return updated;
     }
 
 
@@ -3272,6 +3287,32 @@ public class CMSService implements ICMSService {
             }
         }
         return false;
+    }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<SpaceStatistics> getSpaceStatistics(CMSServiceCtx cmsContext, Set<String> paths) throws CMSException {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+
+        return this.statisticsServiceDelegation.getSpaceStatistics(cmsContext, paths);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateStatistics(CMSServiceCtx cmsContext, HttpSession httpSession, List<SpaceStatistics> spaceStatistics) throws CMSException {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+
+        this.statisticsServiceDelegation.updateStatistics(cmsContext, httpSession, spaceStatistics);
     }
 
 }

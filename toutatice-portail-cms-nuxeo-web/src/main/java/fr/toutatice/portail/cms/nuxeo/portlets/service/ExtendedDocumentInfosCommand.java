@@ -34,19 +34,19 @@ import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 
 /**
  * Extended document informations Nuxeo command.
- * 
+ *
  * @author David Chevrier
  * @see INuxeoCommand
  */
 public class ExtendedDocumentInfosCommand implements INuxeoCommand {
 
     /** Document path. */
-    private String path;
+    private final String path;
 
 
     /**
      * Constructor.
-     * 
+     *
      * @param path document path
      */
     public ExtendedDocumentInfosCommand(String path) {
@@ -64,10 +64,10 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
 
         // Operation request
         OperationRequest request = nuxeoSession.newRequest("Document.FetchExtendedDocInfos");
-        if (this.path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
-            request.set("webid", this.path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
+        if (path.startsWith(IWebIdService.FETCH_PATH_PREFIX)) {
+            request.set("webid", path.replaceAll(IWebIdService.FETCH_PATH_PREFIX, StringUtils.EMPTY));
         } else {
-            request.set("path", this.path);
+            request.set("path", path);
         }
 
         // Request execution
@@ -80,7 +80,7 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
             Iterator<?> iterator = infosContent.iterator();
             while (iterator.hasNext()) {
                 JSONObject infos = (JSONObject) iterator.next();
-                
+
                 // DCH: FIXME: abstract task infos (like name)
                 if (infos.containsKey("taskName")) {
                     String taskName = infos.getString("taskName");
@@ -126,13 +126,29 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
                 if (infos.containsKey("draftCount")) {
                     docInfos.setDraftCount(infos.getInt("draftCount"));
                 }
-                
+
                 // File PDF conversion
                 if(infos.containsKey("isPdfConvertible")){
                     docInfos.setPdfConvertible(infos.getBoolean("isPdfConvertible"));
                 }
                 if(infos.containsKey("errorOnPdfConversion")){
                     docInfos.setErrorOnPdfConversion(infos.getBoolean("errorOnPdfConversion"));
+                }
+
+				if (infos.containsKey("isCurrentlyEdited")) {
+                    boolean isCurrentlyEdited = infos.getBoolean("isCurrentlyEdited");
+                    docInfos.setCurrentlyEdited(isCurrentlyEdited);
+                    if (isCurrentlyEdited) {
+                        docInfos.setCurrentlyEditedEntry(infos.getJSONObject("currentlyEditedEntry"));
+                    }
+                }
+
+                if (infos.containsKey("isRecentlyEdited")) {
+                    boolean isCurrentlyEdited = infos.getBoolean("isRecentlyEdited");
+                    docInfos.setRecentlyEdited(isCurrentlyEdited);
+                    if (isCurrentlyEdited) {
+                        docInfos.setRecentlyEditedEntry(infos.getJSONObject("recentlyEditedEntry"));
+                    }
                 }
 
                 // Parent webId
@@ -159,7 +175,7 @@ public class ExtendedDocumentInfosCommand implements INuxeoCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getName());
         builder.append("/");
-        builder.append(this.path);
+        builder.append(path);
 
         return builder.toString();
     }
