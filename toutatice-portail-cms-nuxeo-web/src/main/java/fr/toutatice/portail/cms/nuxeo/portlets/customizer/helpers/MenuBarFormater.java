@@ -84,6 +84,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
@@ -212,15 +213,15 @@ public class MenuBarFormater {
 
 
             // Check if current user is a global administrator
-        boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
-        // Check if current is a workspace or a room
-        boolean isWorkspaceOrRoom = this.isWorkspaceOrRoom(document);
-        // Check if current item is located inside a user workspace
-        boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
-        // Check if current item is a taskbar item
-        boolean isTaskbarItem = !isWorkspaceOrRoom && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
-        // Check if current document is inside a workspace and current user is an administrator of this workspace
-        boolean isWorkspaceAdmin = (isWorkspaceOrRoom || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
+            boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
+            // Check if current is a workspace or a room
+            boolean isWorkspaceOrRoom = this.isWorkspaceOrRoom(document);
+            // Check if current item is located inside a user workspace
+            boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
+            // Check if current item is a taskbar item
+            boolean isTaskbarItem = !isWorkspaceOrRoom && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
+            // Check if current document is inside a workspace and current user is an administrator of this workspace
+            boolean isWorkspaceAdmin = (isWorkspaceOrRoom || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
 
 
             try {
@@ -232,9 +233,9 @@ public class MenuBarFormater {
                 this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
 
                 // Creation
-            if (!isWorkspaceOrRoom) {
-                this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-            }
+                if (!isWorkspaceOrRoom) {
+                    this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                }
 
                 if (!webPageFragment) {
                     // Edition dropdown menu
@@ -265,13 +266,13 @@ public class MenuBarFormater {
                                 this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
                             }
                         }
-                        
-                        
+
+
                         if (!isTaskbarItem) {
-                    // Move
-                    this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                }
-                        
+                            // Move
+                            this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                        }
+
 
                         // === other tools
                         // Live version browser
@@ -288,6 +289,10 @@ public class MenuBarFormater {
                         if (!insideUserWorkspace) {
                             // Follow
                             this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+
+                            // QuickAccess link
+                            if (!isWorkspaceOrRoom)
+                                this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
                             if (!isWorkspaceOrRoom && !isTaskbarItem) {
                                 // Lock
@@ -463,8 +468,7 @@ public class MenuBarFormater {
      * @param publicationInfos
      * @throws Exception
      */
-    public void formatContentMenuBar(CMSServiceCtx cmsCtx, CMSPublicationInfos publicationInfos, ExtendedDocumentInfos extendedDocumentInfos)
-            throws Exception {
+    public void formatContentMenuBar(CMSServiceCtx cmsCtx, CMSPublicationInfos publicationInfos, ExtendedDocumentInfos extendedDocumentInfos) throws Exception {
         this.formatDefaultContentMenuBar(cmsCtx, publicationInfos, extendedDocumentInfos);
     }
 
@@ -540,7 +544,7 @@ public class MenuBarFormater {
      * @param cmsContext CMS service context
      * @param menubar menubar items
      * @param bundle internationalization bundle
-     * @param isGlobalAdministrator 
+     * @param isGlobalAdministrator
      */
     protected void getAdministrationLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
             List<MenubarItem> menubar, Bundle bundle, boolean isGlobalAdministrator) throws CMSException {
@@ -671,9 +675,9 @@ public class MenuBarFormater {
         final DocumentType documentType = managedTypes.get(document.getType());
 
         if ((documentType != null) && documentType.isEditable()) {
-        	
-        	final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-        	
+
+            final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+
             if (pubInfos.isEditableByUser()) {
                 // Publish Spaces
                 if (!pubInfos.isLiveSpace()) {
@@ -682,8 +686,8 @@ public class MenuBarFormater {
 
                     if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         // Current modification indicator
-                        MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"),
-                                MenubarGroup.CMS, -12, "label label-default");
+                        MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), MenubarGroup.CMS,
+                                -12, "label label-default");
                         modificationIndicator.setState(true);
                         menubar.add(modificationIndicator);
                     }
@@ -794,7 +798,7 @@ public class MenuBarFormater {
                             menubar.add(proxyItem);
                         }
                     } else {
-                    	// #1780 User can unpublish local proxies with validation right, or remote proxies with Askforpublish and write right
+                        // #1780 User can unpublish local proxies with validation right, or remote proxies with Askforpublish and write right
                         if (pubInfos.isUserCanValidate() || pubInfos.isUserCanUnpublishRemoteProxy()) {
                             // user can not unpublish root documents like portalsite, blogsite, website, ...
                             final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
@@ -817,26 +821,25 @@ public class MenuBarFormater {
                         }
 
                         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
-                        	
-                            final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
-                                    1, null, null, null, null);                        	
-                            liveItem.setAjaxDisabled(true);
-                        	
-                        	if(!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
-	                            // Go to live version
-	                            final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
-	                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
-	
-	                            liveItem.setUrl(liveURL);
 
-	                        }
-                        	else {
-                        		// LBI #1782 - live is deleted
-                        		liveItem.setUrl("#");
-                        		liveItem.setDisabled(true);
-                        		liveItem.setTooltip(bundle.getString("CANNOT_GO_TO_LIVE"));
-                        	}
-                        	
+                            final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
+                                    1, null, null, null, null);
+                            liveItem.setAjaxDisabled(true);
+
+                            if (!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
+                                // Go to live version
+                                final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
+                                        IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
+
+                                liveItem.setUrl(liveURL);
+
+                            } else {
+                                // LBI #1782 - live is deleted
+                                liveItem.setUrl("#");
+                                liveItem.setDisabled(true);
+                                liveItem.setTooltip(bundle.getString("CANNOT_GO_TO_LIVE"));
+                            }
+
                             menubar.add(liveItem);
 
                         } else {
@@ -851,18 +854,16 @@ public class MenuBarFormater {
                         }
                     }
                 }
-            }
-            else {
-            	// LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
-            	
-            	if (pubInfos.isUserCanUnpublishRemoteProxy()) {
+            } else {
+                // LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
+
+                if (pubInfos.isUserCanUnpublishRemoteProxy()) {
                     // user can not unpublish root documents like portalsite, blogsite, website, ...
                     final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
                     unpublishItem.setAjaxDisabled(true);
 
                     // Unpublish menubar item
-                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
-                            pubInfos.getDocumentPath());
+                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
 
                     unpublishItem.setUrl(unpublishURL);
 
@@ -973,7 +974,7 @@ public class MenuBarFormater {
             menubar.add(browserItem);
         }
     }
-    
+
 
     /**
      * Get synchronize link.
@@ -1101,6 +1102,51 @@ public class MenuBarFormater {
                         this.log.warn(ex.getMessage());
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Get quick access link.
+     *
+     * @param portalControllerContext portal controller context
+     * @param cmsContext CMS service context
+     * @param bundle internationalization bundle
+     * @throws PortalException
+     */
+    protected void getQuickAccesLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
+            ExtendedDocumentInfos extendedInfos) throws CMSException {
+        // Current document
+        final Document document = (Document) cmsContext.getDoc();
+        final String path = document.getPath();
+
+
+        final QuickAccessStatus quickAccessStatus = extendedInfos.getQuickAccessStatus();
+
+        if ((quickAccessStatus != null) && (quickAccessStatus != QuickAccessStatus.CANNOT_ADD_TO_QUICKACCESS)) {
+            String url = "";
+
+            try {
+                final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID);
+                final MenubarItem item = new MenubarItem("QUICKACCESS_URL", null, null, parent, 15, url, null, null, null);
+                item.setAjaxDisabled(true);
+
+                if (quickAccessStatus == QuickAccessStatus.CAN_ADD_TO_QUICKACCESS) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.addToQuickAccess);
+
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("QUICKACCESS_ADD_ACTION"));
+                } else if (quickAccessStatus == QuickAccessStatus.CAN_REMOVE_FROM_QUICKACCESS) {
+                    url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.removeFromQuickAccess);
+
+                    item.setUrl(url);
+                    item.setTitle(bundle.getString("QUICKACCESS_REMOVE_ACTION"));
+                }
+
+                menubar.add(item);
+
+            } catch (final PortalException ex) {
+                this.log.warn(ex.getMessage());
             }
         }
     }
@@ -1477,32 +1523,32 @@ public class MenuBarFormater {
                 if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
                     isMovable = false;
                 }
-                
+
                 if (isMovable) {
-                // Move document popup URL
-                String moveDocumentURL;
-                try {
-                    final Map<String, String> properties = new HashMap<String, String>();
-                    properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
-                    properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
-                    properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
+                    // Move document popup URL
+                    String moveDocumentURL;
+                    try {
+                        final Map<String, String> properties = new HashMap<String, String>();
+                        properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
+                        properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
+                        properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
-                    moveDocumentURL = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
-                            properties, PortalUrlType.POPUP);
-                } catch (final PortalException e) {
-                    moveDocumentURL = null;
+                        moveDocumentURL = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+                                properties, PortalUrlType.POPUP);
+                    } catch (final PortalException e) {
+                        moveDocumentURL = null;
+                    }
+
+                    if (moveDocumentURL != null) {
+                        final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+
+                        final MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL,
+                                null, null, "fancyframe_refresh");
+                        item.setAjaxDisabled(true);
+
+                        menubar.add(item);
+                    }
                 }
-
-                if (moveDocumentURL != null) {
-                    final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
-
-                    final MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL, null,
-                            null, "fancyframe_refresh");
-                    item.setAjaxDisabled(true);
-
-                    menubar.add(item);
-                }
-            }
             }
         }
     }
@@ -2251,7 +2297,7 @@ public class MenuBarFormater {
         DOM4JUtils.addAttribute(button, "type", "button");
         DOM4JUtils.addDataAttribute(button, "clipboard-target", "#" + linkId);
         mediaRight.add(button);
-        
+
         return DOM4JUtils.writeCompact(container);
     }
 

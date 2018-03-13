@@ -34,6 +34,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
+import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItems;
@@ -478,6 +479,24 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         return filters;
     }
 
+    /**
+     * Get Set types
+     * @param context customization context
+     * @return set types
+     */
+    @SuppressWarnings("unchecked")
+	protected Map<String, SetType> getSetTypes(CustomizationContext context) {
+    	// Customization context attributes
+        Map<String, Object> attributes = context.getAttributes();
+        
+        Map<String, SetType> setTypes = (Map<String, SetType>) attributes.get(Customizable.SET_TYPES.toString());
+        if (setTypes == null)
+        {
+        	setTypes = new ConcurrentHashMap<>();
+        	attributes.put(Customizable.SET_TYPES.toString(), setTypes);
+        }
+        return setTypes;
+    }
 
     /**
      * Getter for taskbarService.

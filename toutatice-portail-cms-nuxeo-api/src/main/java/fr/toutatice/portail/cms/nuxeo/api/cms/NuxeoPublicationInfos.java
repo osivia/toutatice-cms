@@ -155,4 +155,10 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
      */
     boolean isErrorOnPdfConversion();
 
+    /**
+     * Check if the workspace has the Sets facet
+     * @return
+     */
+    boolean isFacetSets();
+    
 }

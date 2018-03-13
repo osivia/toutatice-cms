@@ -7,6 +7,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
+import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 
 /**
@@ -85,6 +86,8 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
     private boolean initializedCmsPublicationInfos;
     /** Initialized extended document informations indicator. */
     private boolean initializedExtendedInfos;
+    /** Facet Sets */
+    private boolean facetSets;
 
 
     /** Document context. */
@@ -557,6 +560,17 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
         return this.errorOnPdfConversion;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isFacetSets() {
+        if (!this.initializedExtendedInfos) {
+            this.initExtendedInfos();
+        }
+
+        return this.facetSets;
+    }
 
     /**
      * Initialize extended document informations.
@@ -596,6 +610,8 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
             this.errorOnPdfConversion = extendedInfos.isErrorOnPdfConversion();
 
             this.initializedExtendedInfos = true;
+            // Facet Sets
+            this.facetSets = QuickAccessStatus.CANNOT_ADD_TO_QUICKACCESS != extendedInfos.getQuickAccessStatus();
         }
     }
 

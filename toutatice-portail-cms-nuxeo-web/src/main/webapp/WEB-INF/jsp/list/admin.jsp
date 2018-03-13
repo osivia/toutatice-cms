@@ -114,12 +114,31 @@ return nuxeoRequest.toString();
                         <span><op:translate key="LIST_BEAN_SHELL" /></span>
                     </label>
                 </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="forceVCS" ${forceVCSChecked}>
-                        <span><op:translate key="LIST_FORCE_VCS" /></span>
-                    </label>
-                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <!-- Set type -->
+		    <label for="setType" class="control-label col-sm-4"><op:translate key="LIST_SETTYPE" /></label>
+			<div class="col-sm-8">
+				<select id="setType" name="setType" class="form-control" onchange="$JQry('#paging').prop('disabled',$JQry(this).val().length > 0)">
+					<option value=""></option>
+					<c:forEach var="setType" items="${setTypes}">
+						<c:remove var="selectedSet" />
+						<c:if test="${setType.id eq configuration.setType}">
+							<c:set var="selectedSet" value="selected" />
+						</c:if>
+
+						<option value="${setType.id}" ${selectedSet}><op:translate key="${setType.key}" classLoader="${setType.customizedClassLoader}"/></option>
+					</c:forEach>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="checkbox col-sm-8 col-sm-offset-4">
+                <label>
+                    <input type="checkbox" name="forceVCS" ${forceVCSChecked}>
+                    <span><op:translate key="LIST_FORCE_VCS" /></span>
+                </label>
             </div>
         </div>
 
@@ -183,30 +202,31 @@ return nuxeoRequest.toString();
                 </div>
             </div>
         </div>
-    
-        <!-- Results limit -->
-        <div class="form-group">                
-            <label for="results-limit" class="control-label col-sm-4"><op:translate key="LIST_RESULTS_LIMIT" /></label>
-            <div class="col-sm-8">
-                <input id="results-limit" type="number" name="resultsLimit" value="${configuration.resultsLimit}" class="form-control" />
-            </div>
-        </div>
-        
-        <!-- Normal view pagination -->
-        <div class="form-group">                
-            <label for="normal-pagination" class="control-label col-sm-4"><op:translate key="LIST_NORMAL_PAGINATION" /></label>
-            <div class="col-sm-8">
-                <input id="normal-pagination" type="number" name="normalPagination" value="${configuration.normalPagination}" class="form-control" />
-            </div>
-        </div>
-        
-        <!-- Maximized view pagination -->
-        <div class="form-group">                
-            <label for="maximized-pagination" class="control-label col-sm-4"><op:translate key="LIST_MAXIMIZED_PAGINATION" /></label>
-            <div class="col-sm-8">
-                <input id="maximized-pagination" type="number" name="maximizedPagination" value="${configuration.maximizedPagination}" class="form-control" />
-            </div>
-        </div>
+    	<fieldset id="paging" ${empty configuration.setType? '' : 'disabled'}>
+	        <!-- Results limit -->
+	        <div class="form-group">                
+	            <label for="results-limit" class="control-label col-sm-4"><op:translate key="LIST_RESULTS_LIMIT" /></label>
+	            <div class="col-sm-8">
+	                <input id="results-limit" type="number" name="resultsLimit" value="${configuration.resultsLimit}" class="form-control" />
+	            </div>
+	        </div>
+	        
+	        <!-- Normal view pagination -->
+	        <div class="form-group">                
+	            <label for="normal-pagination" class="control-label col-sm-4"><op:translate key="LIST_NORMAL_PAGINATION" /></label>
+	            <div class="col-sm-8">
+	                <input id="normal-pagination" type="number" name="normalPagination" value="${configuration.normalPagination}" class="form-control" />
+	            </div>
+	        </div>
+	        
+	        <!-- Maximized view pagination -->
+	        <div class="form-group">                
+	            <label for="maximized-pagination" class="control-label col-sm-4"><op:translate key="LIST_MAXIMIZED_PAGINATION" /></label>
+	            <div class="col-sm-8">
+	                <input id="maximized-pagination" type="number" name="maximizedPagination" value="${configuration.maximizedPagination}" class="form-control" />
+	            </div>
+	        </div>
+        </fieldset>
         
 		<!-- Metadata -->
         <div class="form-group">

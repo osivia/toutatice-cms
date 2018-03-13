@@ -48,6 +48,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.PortalApplicationException;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -528,15 +529,18 @@ public class FormsServiceImpl implements IFormsService {
         if (deleteOnEnding && endStep) {
             // Save current scope
             String savedScope = cmsContext.getScope();
+            String savedForcedScope = cmsContext.getForcePublicationInfosScope();
 
             try {
                 cmsContext.setScope("superuser_no_cache");
+                cmsContext.setForcePublicationInfosScope("superuser_no_cache");
 
                 cmsService.deleteDocument(cmsContext, instancePath);
             } catch (CMSException e) {
                 throw new PortalException(e);
             } finally {
                 cmsContext.setScope(savedScope);
+                cmsContext.setForcePublicationInfosScope(savedForcedScope);
             }
         }
 
@@ -691,7 +695,7 @@ public class FormsServiceImpl implements IFormsService {
         // on execute les filtres de premier niveau
         try {
             parentExecutor.executeChildren(filterContext);
-        } catch (FormFilterException e) {
+        } catch (FormFilterException | PortalApplicationException e) {
             throw e;
         } catch (PortalException e) {
             if ((e.getCause() != null) && (e.getMessage() != null)) {

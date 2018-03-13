@@ -18,6 +18,7 @@ import java.util.Calendar;
 import org.apache.commons.lang.StringUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
+import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import net.sf.json.JSONObject;
 
@@ -45,6 +46,8 @@ public class ExtendedDocumentInfos {
     private SubscriptionStatus subscriptionStatus;
     /** Lock status */
     private LockStatus lockStatus;
+    /** Quick access status */
+    private QuickAccessStatus quickAccessStatus;
     /** Owner of the lock */
     private String lockOwner;
     /** The time when document has been locked */
@@ -442,6 +445,20 @@ public class ExtendedDocumentInfos {
     public void setParentWebId(String parentWebId) {
         this.parentWebId = parentWebId;
     }
+
+    /**
+     * @return the quick access status
+     */
+	public QuickAccessStatus getQuickAccessStatus() {
+		return quickAccessStatus;
+	}
+
+	/**
+	 * @param quickAccessStatus the status to set
+	 */
+	public void setQuickAccessStatus(QuickAccessStatus pinStatus) {
+		this.quickAccessStatus = pinStatus;
+	}
 
 
 }

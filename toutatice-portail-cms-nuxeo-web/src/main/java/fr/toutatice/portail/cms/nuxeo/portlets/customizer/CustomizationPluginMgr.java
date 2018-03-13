@@ -40,6 +40,7 @@ import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
+import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
@@ -112,6 +113,8 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     private List<TemplateAdapter> templateAdaptersCache;
     /** Navigation adapters cache. */
     private Map<String, FormFilter> formFiltersCache;
+    /** Set types cache. */
+    private Map<String, SetType> setTypesCache;
 
     /** Customization deployement ts. */
     private long customizationDeployementTS;
@@ -610,7 +613,24 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
     }
 
-
+    /**
+     * Customize set types.
+     * 
+     * @return set types
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, SetType> getSetTypes() {
+    	if (this.setTypesCache == null) {
+    		// Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+            this.setTypesCache = (Map<String, SetType>) attributes.get(Customizable.SET_TYPES.toString());
+            if (this.setTypesCache == null) {
+            	this.setTypesCache = new ConcurrentHashMap<>(0);
+            }
+    	}
+    	return setTypesCache;
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -629,6 +649,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         menubarModulesCache = null;
         templateAdaptersCache = null;
         formFiltersCache = null;
+        this.setTypesCache = null;
 
         // Clear caches
         customizationAttributesCache.clear();
