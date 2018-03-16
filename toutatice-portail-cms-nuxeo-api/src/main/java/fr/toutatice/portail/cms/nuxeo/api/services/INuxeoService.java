@@ -23,7 +23,6 @@ import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
-import fr.toutatice.portail.cms.nuxeo.api.transaction.INuxeoTransactionService;
 
 /**
  * Nuxeo service interface.
@@ -33,16 +32,16 @@ import fr.toutatice.portail.cms.nuxeo.api.transaction.INuxeoTransactionService;
 public interface INuxeoService extends ICMSIntegration {
 
     /** MBean name. */
-    String MBEAN_NAME = "osivia:service=NuxeoService";
+	String MBEAN_NAME = "osivia:service=NuxeoService";
 
 
-    /**
-     * Creates the user session.
-     *
-     * @param userId the user id
-     * @return the session
-     * @throws Exception the exception
-     */
+	/**
+	 * Creates the user session.
+	 *
+	 * @param userId the user id
+	 * @return the session
+	 * @throws Exception the exception
+	 */
     Session createUserSession(String userId) throws Exception;
 
 
@@ -56,7 +55,7 @@ public interface INuxeoService extends ICMSIntegration {
     INuxeoCommandService startNuxeoCommandService(PortletContext portletCtx) throws Exception;
 
 
-    /**
+	/**
      * Register CMS customizer.
      *
      * @param cmsCustomizer CMS customizer
@@ -87,10 +86,4 @@ public interface INuxeoService extends ICMSIntegration {
      */
     IFormsService getFormsService();
 
-    /**
-     * Get transaction service.
-     * 
-     * @return transaction service
-     */
-    INuxeoTransactionService getNuxeoTransactionService();
 }

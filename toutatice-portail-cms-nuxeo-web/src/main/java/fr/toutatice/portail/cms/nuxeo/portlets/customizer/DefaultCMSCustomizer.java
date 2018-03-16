@@ -81,6 +81,7 @@ import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItem;
@@ -143,9 +144,11 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import fr.toutatice.portail.cms.nuxeo.service.commands.DeleteDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.AddToQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
@@ -938,8 +941,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "
-                    + "AND ecm:currentLifeCycleState <> 'deleted'";
+            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
 
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
@@ -1949,6 +1951,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.notificationsService, this.internationalizationService));
+        
+        commands.put(EcmCommonCommands.addToQuickAccess.name(), new AddToQuickAccessCommand(this.notificationsService, this.internationalizationService));
+        commands.put(EcmCommonCommands.removeFromQuickAccess.name(), new RemoveFromQuickAccessCommand(this.notificationsService, this.internationalizationService));
 
         commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.notificationsService, this.internationalizationService));
@@ -2032,7 +2037,18 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             throw new CMSException(e);
         }
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Collection<SetType> getSetTypes() {
+    	Map<String, SetType> mapSetTypes = this.pluginManager.getSetTypes();
+    	Collection<SetType> collectionSetType = new ArrayList<>();
+    	if (mapSetTypes != null) collectionSetType = mapSetTypes.values();
+    	return collectionSetType;
+    }
+    
 
     /**
      * Getter for portletContext.

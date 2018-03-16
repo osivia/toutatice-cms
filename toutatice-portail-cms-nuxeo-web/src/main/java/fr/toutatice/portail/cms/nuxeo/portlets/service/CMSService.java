@@ -1195,7 +1195,7 @@ public class CMSService implements ICMSService {
 
         List<CMSItem> workspaces;
         if (userWorkspaces) {
-            workspaces = browserAdapter.getCurrentUserWorkspaces(cmsContext);
+            workspaces = browserAdapter.getUserWorkspaces(cmsContext);
         } else {
             workspaces = browserAdapter.getWorkspaces(cmsContext, administrator);
         }
@@ -2268,19 +2268,30 @@ public class CMSService implements ICMSService {
         cmsCtx.setDisplayLiveVersion("0");
         CMSItem cmsPublishedItem = this.getContent(cmsCtx, pagePath);
         Document publishedDoc = (Document) cmsPublishedItem.getNativeItem();
-        String publishedDocPath = StringUtils.removeEnd(publishedDoc.getPath(), ".proxy");
-
         cmsCtx.setDisplayLiveVersion("1");
-        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
-        Document doc = (Document) cmsItem.getNativeItem();
 
-        Document inputDoc = doc;
-        boolean isRemoteProxy = !publishedDocPath.equals(doc.getPath());
+
+        Document inputDoc;
+        boolean isRemoteProxy = false;
+        
+        PropertyList facetsProp = publishedDoc.getFacets();
+        for(Object facet : facetsProp.list()) {
+        	if(facet.toString().equals("isRemoteProxy")) {
+        		isRemoteProxy = true;
+        	}
+        }
+        
         if(isRemoteProxy){
             // Remote proxy
             inputDoc = publishedDoc;
             reloadPagePath = StringUtils.substringBeforeLast(pagePath, "/");
             cmsCtx.setDisplayLiveVersion("0");
+        }
+        else {
+        	// local proxy
+            CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+            inputDoc = (Document) cmsItem.getNativeItem();
+            
         }
 
         try {

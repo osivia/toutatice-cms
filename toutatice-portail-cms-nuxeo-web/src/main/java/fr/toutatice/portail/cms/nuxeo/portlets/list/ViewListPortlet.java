@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
@@ -50,6 +52,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -70,6 +74,7 @@ import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -104,6 +109,14 @@ public class ViewListPortlet extends ViewList {
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
+    /** INFINITE_VIEW */
+    protected static final String INFINITE_VIEW = "/WEB-INF/jsp/list/view-infinite-scroll.jsp";
+
+    
+	private static final String SETS_PROPERTY = "sets:sets";
+	private static final String LIST_WEBID_PROPERTY= "webids";
+	private static final String NAME_PROPERTY = "name";
+	private static final String WEBID_PROPERTY = "ttc:webid";
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -236,6 +249,12 @@ public class ViewListPortlet extends ViewList {
                 String limit = request.getParameter("limit");
                 if (limit != null) {
                     resultsLimit = Integer.parseInt(limit);
+                } else {
+                    if (WindowState.MAXIMIZED.equals(request.getWindowState()) && configuration.getMaximizedPagination() != null) {
+                        resultsLimit = configuration.getMaximizedPagination();
+                    } else if (configuration.getNormalPagination() != null) {
+                        resultsLimit = configuration.getNormalPagination();
+                    }
                 }
             }
 
@@ -257,19 +276,29 @@ public class ViewListPortlet extends ViewList {
                     interpreter.set("spacePath", nuxeoController.getSpacePath());
                     interpreter.set("navigationPath", nuxeoController.getNavigationPath());
                     interpreter.set("contentPath", nuxeoController.getContentPath());
+                    interpreter.set("spaceId", null);
+                    if (nuxeoController.getNavigationPath() != null) {
+                        CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(nuxeoController.getCMSCtx(),
+                                nuxeoController.getNavigationPath());
+                        interpreter.set("navigationPubInfos", navigationPubInfos);
+                        interpreter.set("spaceId", navigationPubInfos.getSpaceID());
+                    }
 
                     nuxeoRequest = (String) interpreter.eval(nuxeoRequest);
                 }
 
 
                 if (nuxeoRequest != null) {
+                    int currentPage = NumberUtils.toInt(request.getParameter("currentPage"));
+                    request.setAttribute("currentPage", currentPage);
+
                     String schemas = template.getSchemas();
 
                     // Apply request filter
                     nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
 
                     // Nuxeo command
-                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), 0, resultsLimit, schemas,
+                    INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), currentPage, resultsLimit, schemas,
                             configuration.getContentFilter());
                     ((ListCommand) command).setForceVCS(configuration.isForceVCS());
 
@@ -283,9 +312,7 @@ public class ViewListPortlet extends ViewList {
                         documentsDTO.add(documentDTO);
                     }
                     request.setAttribute("documents", documentsDTO);
-
                 }
-
             }
 
             if ("rss".equals(request.getParameter("type"))) {
@@ -325,8 +352,9 @@ public class ViewListPortlet extends ViewList {
                         Thread.currentThread().setContextClassLoader(savedClassLoader);
                     }
                 }
-
-                if (!response.isCommitted()) {
+                if ("loadMore".equals(request.getResourceID())) {
+                    includeJsp(request, response, template, module);
+                } else if (!response.isCommitted()) {
                     super.serveResource(request, response);
                 }
             }
@@ -335,6 +363,28 @@ public class ViewListPortlet extends ViewList {
         } catch (Exception e) {
             throw new PortletException(e);
         }
+    }
+
+
+    /**
+     * Génère le html renvoyé dans la resource à l'aide de la jsp du style
+     * 
+     * @param request
+     * @param response
+     * @param template
+     * @param module
+     * @throws PortletException
+     * @throws IOException
+     */
+    private void includeJsp(ResourceRequest request, ResourceResponse response, ListTemplate template, IPortletModule module)
+            throws PortletException, IOException {
+        String customS = module != null ? "custom/" : StringUtils.EMPTY;
+        PortletContext portletContext = module != null ? module.getPortletContext() : this.getPortletContext();
+        response.setContentType("text/html");
+        String style = StringUtils.lowerCase(template.getKey());
+        String viewPath = "/WEB-INF/" + customS + "jsp/list/view-" + style + ".jsp";
+        PortletRequestDispatcher dispatcher = portletContext.getRequestDispatcher(viewPath);
+        dispatcher.include(request, response);
     }
 
 
@@ -406,6 +456,8 @@ public class ViewListPortlet extends ViewList {
 
                 // Content type
                 window.setProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("creationContentType")));
+                
+                window.setProperty(SETTYPE_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("setType")));
             }
 
             response.setPortletMode(PortletMode.VIEW);
@@ -468,6 +520,9 @@ public class ViewListPortlet extends ViewList {
 
             // Templates
             request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            
+            //Set types
+            request.setAttribute("setTypes", this.customizer.getSetTypes());
 
 
             response.setContentType("text/html");
@@ -489,6 +544,7 @@ public class ViewListPortlet extends ViewList {
      */
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
+        String pathView = PATH_VIEW;
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
@@ -583,6 +639,49 @@ public class ViewListPortlet extends ViewList {
                 }
             }
 
+            //Sets
+            boolean sets = StringUtils.isNotEmpty(configuration.getSetType());
+            Document workspace = null;
+            List<Object> setsWebidList = null;
+            if (sets)
+    		{
+            	if (nuxeoRequest == null) nuxeoRequest = "";
+                // CMS base path
+                String basePath = nuxeoController.getBasePath();
+                if (basePath == null) {
+                    workspace =  null;
+                } else
+                {
+    	            // Nuxeo document context
+    	            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(basePath);
+    	
+    	            // get workspace document
+    	            workspace = documentContext.getDocument();
+                }
+
+                if (workspace != null)
+                {
+                	PropertyList list = (PropertyList) workspace.getProperties().get(SETS_PROPERTY);
+                	if (list != null && list.list().size() >0)
+                	{
+                		for (Object map : list.list())
+                		{
+                			if (StringUtils.equals(configuration.getSetType(), ((PropertyMap) map).getString(NAME_PROPERTY)))
+                			{
+                				PropertyList propertyListWebId = ((PropertyMap) map).getList(LIST_WEBID_PROPERTY);
+                				setsWebidList = propertyListWebId.list();
+                				break;
+                			}
+                		}
+                	}
+                	String workspacePath = workspace.getPath();
+                	nuxeoRequest = this.addSetClause(nuxeoRequest, setsWebidList, workspacePath);
+                } else
+                {
+                	//Add a clause to get no document
+                	nuxeoRequest += "ecm:currentLifeCycleState <> 'deleted' and ecm:currentLifeCycleState = 'deleted' ";
+                }
+    		}
 
             // Apply request filter
             nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
@@ -661,7 +760,6 @@ public class ViewListPortlet extends ViewList {
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
 
-
                 // Request page size
                 int requestPageSize = DEFAULT_REQUEST_PAGE_SIZE;
                 if (pageSize > 0) {
@@ -690,13 +788,39 @@ public class ViewListPortlet extends ViewList {
                     DocumentWebidComparator comparator = new DocumentWebidComparator(webidOrder);
                     Collections.sort(documentsList, comparator);
                 }
-
+                
                 // Result list
                 List<DocumentDTO> documentsDTO = new ArrayList<DocumentDTO>(documentsList.size());
                 for (Document document : documentsList) {
                     DocumentDTO documentDTO = this.documentDAO.toDTO(document);
                     documentsDTO.add(documentDTO);
                 }
+
+                //If sets : order the documentsDTO list
+                if (sets)
+                {
+                	Map<Object, DocumentDTO> mapSets = new HashMap<Object, DocumentDTO>();
+
+                	//The result list is not sorted because of the 'in' clause
+                	//First put dto in a hashmap
+                	if (documentsDTO != null)
+                	{
+                		for (DocumentDTO dto: documentsDTO)
+                		{
+                			mapSets.put(dto.getProperties().get(WEBID_PROPERTY), dto);
+                		}
+                	}
+                	//Then add dto in a list in the order of the listwebid
+                	if (workspace != null && setsWebidList != null)
+                	{
+                		documentsDTO = new ArrayList<DocumentDTO>(documentsDTO == null? 0 : documentsDTO.size());
+                		for (Object webid: setsWebidList)
+                		{
+                			if (mapSets.get(webid)!=null) documentsDTO.add(mapSets.get(webid));
+                		}
+                	}
+                }
+                
                 request.setAttribute("documents", documentsDTO);
 
 
@@ -831,6 +955,9 @@ public class ViewListPortlet extends ViewList {
                     request.setAttribute("error", "Requête non définie");
                 }
             }
+            if (configuration.isInfiniteScroll()) {
+                pathView = INFINITE_VIEW;
+            }
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (EvalError e) {
@@ -845,7 +972,7 @@ public class ViewListPortlet extends ViewList {
         response.setContentType("text/html");
 
 
-        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(PATH_VIEW);
+        PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher(pathView);
         dispatcher.include(request, response);
     }
 
@@ -924,7 +1051,38 @@ public class ViewListPortlet extends ViewList {
         return (String) interpreter.eval(nuxeoRequest);
     }
 
-
+    /**
+     * Add set clause to get documents in which webids are in listWebid
+     * @param request request
+     * @param listWebid list of webid
+     * @return 
+     */
+    private String addSetClause(String request, List<Object> listWebid, String workspacePath)
+    {
+    	StringBuilder clause = new StringBuilder();
+    	clause.append(request);
+    	clause.append("ecm:path startswith '").append(workspacePath).append("' ");
+    	clause.append("and ecm:currentLifeCycleState <> 'deleted' ");
+    	clause.append(" and ttc:webid in (");
+        if (listWebid != null && listWebid.size() > 0)
+        {
+        	Iterator<Object> it = listWebid.iterator();
+        	boolean first = true;
+        	while (it.hasNext())
+        	{
+        		if (!first) clause.append(",");
+        		clause.append("'").append(it.next()).append("'");
+        		first = false;
+        	}
+        } else
+        {
+        	clause.append("''");
+        }
+        clause.append(") ");
+        return clause.toString();
+    }
+    
+    
     /**
      * Apply request filter.
      * 
@@ -999,6 +1157,9 @@ public class ViewListPortlet extends ViewList {
         // Maximized view pagination
         configuration.setMaximizedPagination(NumberUtils.createInteger(StringUtils.trimToNull(window.getProperty(MAXIMIZED_PAGINATION_WINDOW_PROPERTY))));
 
+        // Infinite scroll
+        configuration.setInfiniteScroll(BooleanUtils.toBoolean(window.getProperty(INFINITE_SCROLL_WINDOW_PROPERTY)));
+
         // Template
         configuration.setTemplate(window.getProperty(TEMPLATE_WINDOW_PROPERTY));
 
@@ -1016,6 +1177,9 @@ public class ViewListPortlet extends ViewList {
 
         // Content type
         configuration.setCreationContentType(window.getProperty(CREATION_CONTENT_TYPE_WINDOW_PROPERTY));
+        
+        //Set type
+        configuration.setSetType(window.getProperty(SETTYPE_WINDOW_PROPERTY));
 
 
         return configuration;

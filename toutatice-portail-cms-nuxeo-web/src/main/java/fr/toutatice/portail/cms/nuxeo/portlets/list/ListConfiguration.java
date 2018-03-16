@@ -46,11 +46,10 @@ public class ListConfiguration {
     private String creationParentPath;
     /** Creation content type. */
     private String creationContentType;
-    
-
-    
-
-
+    /** Set type */
+    private String setType;
+    /** infiniteScroll */
+    private boolean infiniteScroll;
 
     
     /**
@@ -364,6 +363,40 @@ public class ListConfiguration {
      */
     public void setCreationContentType(String creationContentType) {
         this.creationContentType = creationContentType;
+    }
+    
+    /**
+     * Getter for setType
+     * @return setType
+     */
+    public String getSetType() {
+        return setType;
+    }
+
+    /** 
+     * Setter for setType 
+     * @param setType setType
+     */
+    public void setSetType(String setType) {
+        this.setType = setType;
+    }
+
+
+    /**
+     * Getter for infiniteScroll.
+     * @return the infiniteScroll
+     */
+    public boolean isInfiniteScroll() {
+        return infiniteScroll;
+    }
+
+
+    /**
+     * Setter for infiniteScroll.
+     * @param infiniteScroll the infiniteScroll to set
+     */
+    public void setInfiniteScroll(boolean infiniteScroll) {
+        this.infiniteScroll = infiniteScroll;
     }
 
 }

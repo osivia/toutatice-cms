@@ -34,7 +34,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
-import fr.toutatice.portail.cms.nuxeo.api.transaction.INuxeoTransactionService;
 
 /**
  * Nuxeo service implementation.
@@ -61,8 +60,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     private final INuxeoTagService tagService;
     /** Forms service. */
     private final IFormsService formsService;
-    /** Nuxeo transaction service. */
-    INuxeoTransactionService nxTransactionService;
 
 
     /**
@@ -75,8 +72,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
         this.tagService = createProxy(INuxeoTagService.class);
         // Forms service proxy
         this.formsService = createProxy(IFormsService.class);
-        // Nx transaction service
-        this.nxTransactionService = createProxy(INuxeoTransactionService.class);
     }
 
 
@@ -163,9 +158,9 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
             }
 
             String name = "createAutomationSession,user='" + nuxeoUserId;
-
-            if (session != null) {
-                name += ", nuxeoSession=" + session.hashCode();
+            
+            if(session != null) {
+            	name += ", nuxeoSession=" + session.hashCode();
             }
 
             this.profiler.logEvent("NUXEO", name, elapsedTime, error);
@@ -208,14 +203,6 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
     @Override
     public IFormsService getFormsService() {
         return this.formsService;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public INuxeoTransactionService getNuxeoTransactionService() {
-        return this.nxTransactionService;
     }
 
 

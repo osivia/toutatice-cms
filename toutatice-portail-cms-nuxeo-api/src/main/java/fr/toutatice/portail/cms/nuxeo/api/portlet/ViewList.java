@@ -47,6 +47,8 @@ public abstract class ViewList extends CMSPortlet {
     public static final String NORMAL_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSize";
     /** Maximized view pagination window property name. */
     public static final String MAXIMIZED_PAGINATION_WINDOW_PROPERTY = "osivia.cms.pageSizeMax";
+    /** Infinite view window property */
+    public static final String INFINITE_SCROLL_WINDOW_PROPERTY = "osivia.cms.infiniteScroll";
     /** Template window property name. */
     public static final String TEMPLATE_WINDOW_PROPERTY = "osivia.cms.style";
     /** Permalink reference window property name. */
@@ -63,6 +65,8 @@ public abstract class ViewList extends CMSPortlet {
     public static final String WEBID_ORDERING_WINDOW_PROPERTY = "osivia.cms.ordering";
     /** webid ordering size property name */
     public static final String WEBID_ORDERING_SIZE_WINDOW_PROPERTY = "osivia.cms.ordering.size";
+    /** settype property name */
+    public static final String SETTYPE_WINDOW_PROPERTY = "osivia.set.id";
 
 
     /* Default style for lists */

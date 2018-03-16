@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileDocumentType;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -326,5 +328,11 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the CMS file browser
      */
     Player getCMSFileBrowser(NuxeoDocumentContext documentContext);
+    
+    /**
+     * Gets set types list
+     * @return the set types map
+     */
+    Collection<SetType> getSetTypes();
 
 }

@@ -17,7 +17,6 @@
     <portlet:param name="live" value="true" />
     <portlet:param name="ignoredPaths" value="${ignoredPaths}" />
     <portlet:param name="acceptedTypes" value="${acceptedTypes}" />
-    <portlet:param name="excludedTypes" value="${excludedTypes}" />
 </portlet:resourceURL>
 
 <portlet:actionURL name="move" var="moveURL"></portlet:actionURL>

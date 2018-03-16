@@ -59,38 +59,34 @@
         </thead>
         <tbody>
 		    <c:forEach var="document" items="${documents}">
-				<c:set var="webid" value="${document.properties['ttc:webid']}" />
-				<ttc:documentLink document="${document}" var="documentLink"/>
 				
-                <tr>
+				<c:set var="webid" value="${document.properties['ttc:webid']}" />
+                
+				<ttc:documentLink document="${document}" var="documentLink"/>
+				<tr>
 		            <c:forEach var="column" items="${dashboardColumns}" varStatus="status">
                         <c:set var="variableName" value="${column.map['variableName']}" />
-                        <td>
-                            <c:set var="columnValue" value="${document.properties[variableName]}"></c:set>
-                            <c:choose>
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'DATE'}">
-                                    <fmt:parseDate value="${columnValue}" var="columnValue" pattern="dd/MM/yyyy" />
-                                    <fmt:formatDate value="${columnValue}" var="columnValue" type="DATE" />
-                                </c:when>
-                                
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'DATETIME'}">
-                                    <fmt:formatDate value="${columnValue}" var="columnValue" type="BOTH" />
-                                </c:when>
-                                
-                                <c:when test="${variablesDefinitions[variableName]['type'] eq 'VOCABULARY'}">
-                                    <c:set var="columnValue"><ttc:vocabularyLabel name="${variablesDefinitions[variableName]['vocabularyId']}" key="${columnValue}" /></c:set>
-                                </c:when>
-                            </c:choose>
-                            
-                            <c:choose>
-                                <c:when test="${column.map['enableLink']}">
-                                    <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
-                                </c:when>
-                                
-                                <c:otherwise>${columnValue}</c:otherwise>
-                            </c:choose>
-                        </td>
-                    </c:forEach>
+		                  <td>
+                              <c:set var="columnValue" value="${document.properties[variableName]}"></c:set>
+		                      
+		                      <c:if test="${variablesDefinitions[variableName]['type'] eq 'DATE'}">
+		                          <fmt:parseDate value = "${columnValue}" var="columnValue" pattern = "dd/MM/yyyy" />
+                                  <fmt:formatDate value="${columnValue}" var="columnValue" type="DATE"/>
+                              </c:if>
+	                          <c:if test="${variablesDefinitions[variableName]['type'] eq 'DATETIME'}">
+	                              <fmt:formatDate value="${columnValue}" var="columnValue" type="BOTH"/>
+	                          </c:if>
+	                          
+	                          <c:choose>
+	                               <c:when test="${column.map['enableLink']}">
+				                      <a href="${documentLink.url}" class="no-ajax-link">${columnValue}</a>
+	                               </c:when>
+	                               <c:otherwise>
+				                      ${columnValue}
+	                               </c:otherwise>
+	                          </c:choose>
+		                  </td>
+		            </c:forEach>
 				</tr>
 		    </c:forEach>
         </tbody>

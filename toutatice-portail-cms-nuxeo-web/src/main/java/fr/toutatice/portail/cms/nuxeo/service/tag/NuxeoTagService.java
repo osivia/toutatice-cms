@@ -90,7 +90,8 @@ public class NuxeoTagService implements INuxeoTagService {
                 // Picture
                 String url;
                 if (StringUtils.isEmpty(property)) {
-                    url = nuxeoController.createPictureLink(nuxeoDocument.getPath(), StringUtils.defaultIfEmpty(displayContext, "Original"));
+                    // url = nuxeoController.createPictureLink(nuxeoDocument.getPath(), StringUtils.defaultIfEmpty(displayContext, "Original"));
+                    url = nuxeoController.createFileLink(nuxeoDocument, "file:content");
                 } else if (nuxeoDocument.getProperties().getMap(property) != null) {
                     url = nuxeoController.createFileLink(nuxeoDocument, property);
                 } else {
@@ -187,16 +188,16 @@ public class NuxeoTagService implements INuxeoTagService {
      */
     @Override
     public Link getUserProfileLink(NuxeoController nuxeoController, String name, String displayName) {
-    	Person person = personService.getPerson(name);
-    	Link link = null;
-    	if(person != null) {
-    		try {
-				link = personService.getCardUrl(nuxeoController.getPortalCtx(), person);
-			} catch (PortalException e) {
-				// Do nohing
-			}
-    	}
-    	
+        Person person = personService.getPerson(name);
+        Link link = null;
+        if (person != null) {
+            try {
+                link = personService.getCardUrl(nuxeoController.getPortalCtx(), person);
+            } catch (PortalException e) {
+                // Do nohing
+            }
+        }
+
         return link;
     }
 

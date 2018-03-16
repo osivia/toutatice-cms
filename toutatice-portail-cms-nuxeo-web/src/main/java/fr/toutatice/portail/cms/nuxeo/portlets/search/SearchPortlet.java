@@ -30,6 +30,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.core.model.portal.Page;
@@ -118,7 +119,8 @@ public class SearchPortlet extends CMSPortlet {
             // View
             if ("search".equals(action)) {
                 // Refresh search keywords
-                response.setRenderParameter("keywords", request.getParameter("keywords"));
+                String keywords = request.getParameter("keywords");
+                response.setRenderParameter("keywords", keywords);
             }
         } else if ("admin".equals(request.getPortletMode().toString())) {
             // Admin
@@ -213,7 +215,7 @@ public class SearchPortlet extends CMSPortlet {
                 int minPage = Math.max(0, currentPage - docs.getPageSize());
                 int maxPage = Math.min(currentPage + docs.getPageSize(), docs.getPageCount()) - 1;
 
-                request.setAttribute("keywords", keywords);
+                request.setAttribute("keywords", StringEscapeUtils.escapeHtml(keywords));
                 request.setAttribute("documents", documentsDTO);
                 request.setAttribute("totalSize", docs.getTotalSize());
                 request.setAttribute("currentPage", currentPage);
