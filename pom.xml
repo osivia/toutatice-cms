@@ -348,7 +348,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/4.8-SNAPSHOT</developerConnection>
+        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/4.8-maintenance</developerConnection>
     </scm>
 
 
