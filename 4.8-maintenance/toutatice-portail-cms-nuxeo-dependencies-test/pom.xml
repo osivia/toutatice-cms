@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>toutatice-portail.cms</groupId>
+        <artifactId>cms-parent</artifactId>
+        <version>4.8</version>
+    </parent>
+
+    <artifactId>toutatice-portail-cms-nuxeo-dependencies-test</artifactId>
+    <packaging>jar</packaging>
+    <name>Toutatice Portal - Test dependencies</name>
+
+
+    <dependencies>
+  
+        <!-- OSIVIA Portal -->
+        <dependency>
+            <groupId>org.osivia.portal</groupId>
+            <artifactId>osivia-portal-dependencies-test</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
