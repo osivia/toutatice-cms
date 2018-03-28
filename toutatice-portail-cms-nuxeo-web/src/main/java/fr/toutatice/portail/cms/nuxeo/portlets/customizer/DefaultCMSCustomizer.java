@@ -143,14 +143,14 @@ import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.service.commands.AddToQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.DeleteDocumentCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.AddToQuickAccessCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
@@ -1097,7 +1097,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String finalRequest = beforeOrderBy;
 
         if (finalRequest.length() > 0) {
-            finalRequest += " AND ";
+            finalRequest = "(" + finalRequest + ") AND ";
         }
         finalRequest += "(" + requestFilter + ") ";
 

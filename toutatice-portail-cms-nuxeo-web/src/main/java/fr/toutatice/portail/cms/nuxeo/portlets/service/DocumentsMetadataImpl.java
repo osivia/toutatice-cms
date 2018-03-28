@@ -2,18 +2,20 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.web.IWebUrlService;
-
-import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 
 /**
  * Documents metadata implementation.
@@ -81,7 +83,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         // Symlinks
         for (Symlink symlink : this.symlinks) {
             // Paths
-            this.paths.put(symlink.getVirtualPath(), new PathValues(null, symlink.getSegment()));
+            this.paths.put(symlink.getVirtualPath(), new PathValues(symlink.getTargetWebId(), symlink.getSegment()));
 
             // Web URL segments
             this.segments.put(new SegmentKey(symlink.getParentPath(), symlink.getSegment()), symlink.getTargetPath());
@@ -201,7 +203,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
 
         // Build web path
-        boolean incompleteWebPath = false;
+        boolean incompleteWebPath = !StringUtils.startsWith(workingPath.toString(), this.basePath);
         for (int i = factor; i < splittedPath.length; i++) {
             workingPath.append("/");
             workingPath.append(splittedPath[i]);
@@ -382,91 +384,188 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      * {@inheritDoc}
      */
     @Override
+    public List<Symlink> getSymlinks() {
+        return this.symlinks;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void update(DocumentsMetadata updates) {
-        for (EcmDocument ecmDocument : updates.getDocuments()) {
-            if (ecmDocument instanceof Document) {
-                // Nuxeo document
-                Document document = (Document) ecmDocument;
+        if (CollectionUtils.isNotEmpty(updates.getDocuments())) {
+            // Update symlinks
+            this.updateSymlinks(updates);
 
-                // WebId
-                String webId = document.getString(WEB_ID_PROPERTY);
-                // Path
-                String path = StringUtils.removeEnd(document.getPath(), ".proxy");
-                // Segment
-                String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
+            for (EcmDocument ecmDocument : updates.getDocuments()) {
+                if (ecmDocument instanceof Document) {
+                    // Nuxeo document
+                    Document document = (Document) ecmDocument;
 
-                if (StringUtils.isNotBlank(webId)) {
-                    // Original path
-                    String originalPath = this.webIds.get(webId);
-                    // Original path values
-                    PathValues originalPathValues;
-                    if (originalPath != null) {
-                        originalPathValues = this.paths.get(originalPath);
-                    } else {
-                        originalPathValues = null;
-                    }
-                    // Original segment
-                    String originalSegment;
-                    if (originalPathValues != null) {
-                        originalSegment = originalPathValues.segment;
-                    } else {
-                        originalSegment = null;
+                    // WebId
+                    String webId = document.getString(WEB_ID_PROPERTY);
+                    // Path
+                    String path = StringUtils.removeEnd(document.getPath(), ".proxy");
+
+                    // Symlink
+                    Symlink symlink = null;
+                    if (!path.startsWith(this.basePath)) {
+                        for (Symlink link : this.symlinks) {
+                            if (path.startsWith(link.getTargetPath())) {
+                                symlink = link;
+                                break;
+                            }
+                        }
                     }
 
+                    // Segment
+                    String segment;
+                    if (symlink == null) {
+                        segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
+                    } else {
+                        segment = symlink.getSegment();
+                    }
 
-                    if (!StringUtils.equals(path, originalPath) || !StringUtils.equals(segment, originalSegment)) {
-                        // Update webIds
+                    if (StringUtils.isNotBlank(webId)) {
+                        // Original path
+                        String originalPath = this.webIds.get(webId);
+                        // Original path values
+                        PathValues originalPathValues;
                         if (originalPath != null) {
-                            for (Entry<String, String> entry : this.webIds.entrySet()) {
-                                String currentWebId = entry.getKey();
-                                String currentPath = entry.getValue();
-                                if (currentPath.startsWith(originalPath)) {
-                                    this.webIds.put(currentWebId, path + StringUtils.substringAfter(currentPath, originalPath));
+                            originalPathValues = this.paths.get(originalPath);
+                        } else {
+                            originalPathValues = null;
+                        }
+                        // Original segment
+                        String originalSegment;
+                        if (originalPathValues != null) {
+                            originalSegment = originalPathValues.segment;
+                        } else {
+                            originalSegment = null;
+                        }
 
-                                    // Remove obsolete web path
-                                    this.toWebPaths.remove(currentWebId);
+
+                        if (!StringUtils.equals(path, originalPath) || !StringUtils.equals(segment, originalSegment)) {
+                            // Update webIds
+                            if (originalPath != null) {
+                                for (Entry<String, String> entry : this.webIds.entrySet()) {
+                                    String currentWebId = entry.getKey();
+                                    String currentPath = entry.getValue();
+                                    if (currentPath.startsWith(originalPath)) {
+                                        this.webIds.put(currentWebId, path + StringUtils.substringAfter(currentPath, originalPath));
+
+                                        // Remove obsolete web path
+                                        this.toWebPaths.remove(currentWebId);
+                                    }
                                 }
                             }
-                        }
-                        this.webIds.put(webId, path);
+                            this.webIds.put(webId, path);
 
-                        // Update paths
-                        if (originalPath != null) {
-                            this.paths.remove(originalPath);
-                            for (Entry<String, PathValues> entry : this.paths.entrySet()) {
-                                String currentPath = entry.getKey();
-                                if (currentPath.startsWith(originalPath)) {
-                                    this.paths.remove(currentPath);
-                                    this.paths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
+                            // Update paths
+                            if (originalPath != null) {
+                                this.paths.remove(originalPath);
+                                for (Entry<String, PathValues> entry : this.paths.entrySet()) {
+                                    String currentPath = entry.getKey();
+                                    if (currentPath.startsWith(originalPath)) {
+                                        this.paths.remove(currentPath);
+                                        this.paths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
+                                    }
                                 }
                             }
-                        }
-                        this.paths.put(path, new PathValues(webId, segment));
+                            this.paths.put(path, new PathValues(webId, segment));
 
-                        // Update segments
-                        if ((originalPath != null) && (originalSegment != null)) {
-                            this.segments.remove(new SegmentKey(StringUtils.substringBeforeLast(originalPath, "/"), originalSegment));
-                            for (Entry<SegmentKey, String> entry : this.segments.entrySet()) {
-                                SegmentKey key = entry.getKey();
-                                if (key.parentPath.startsWith(originalPath)) {
-                                    this.segments.put(new SegmentKey(path, key.segment), path + StringUtils.substringAfter(entry.getValue(), originalPath));
+                            // Update segments
+                            if ((originalPath != null) && (originalSegment != null)) {
+                                this.segments.remove(new SegmentKey(StringUtils.substringBeforeLast(originalPath, "/"), originalSegment));
+                                for (Entry<SegmentKey, String> entry : this.segments.entrySet()) {
+                                    SegmentKey key = entry.getKey();
+                                    if (key.parentPath.startsWith(originalPath)) {
+                                        this.segments.put(new SegmentKey(path, key.segment), path + StringUtils.substringAfter(entry.getValue(), originalPath));
+                                    }
                                 }
                             }
-                        }
-                        if (!path.equals(this.basePath) && (segment != null)) {
-                            this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
-                        }
+                            if (!path.equals(this.basePath) && (segment != null)) {
+                                this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
+                            }
 
-                        // Remove obsolete web path
-                        this.toWebPaths.remove(webId);
+                            // Remove obsolete web path
+                            this.toWebPaths.remove(webId);
+                        }
                     }
                 }
             }
         }
 
-
         // Update timestamp
         this.timestamp = Math.max(this.timestamp, updates.getTimestamp());
+    }
+
+
+    /**
+     * Update symlinks.
+     * 
+     * @param updates update values
+     */
+    private void updateSymlinks(DocumentsMetadata updates) {
+        // Original symlinks
+        Set<Symlink> originalSymlinks = new HashSet<>(this.symlinks);
+        // Removed symlinks
+        Set<Symlink> removedSymlinks = new HashSet<>(this.symlinks);
+        // Added symlinks
+        Set<Symlink> addedSymlinks = new HashSet<>();
+
+
+        // Loop on updated symlinks
+        for (Symlink symlink : updates.getSymlinks()) {
+            if (originalSymlinks.contains(symlink)) {
+                removedSymlinks.remove(symlink);
+            } else {
+                addedSymlinks.add(symlink);
+            }
+        }
+
+
+        // Updated paths
+        Set<String> updatedPaths = new HashSet<>(removedSymlinks.size());
+
+
+        // Remove obsolete symlinks
+        for (Symlink symlink : removedSymlinks) {
+            updatedPaths.add(symlink.getTargetPath());
+
+            // Paths
+            this.paths.remove(symlink.getVirtualPath());
+
+            // Web URL segments
+            this.segments.remove(new SegmentKey(symlink.getParentPath(), symlink.getSegment()));
+        }
+        this.symlinks.removeAll(removedSymlinks);
+
+
+        // Add new symlinks
+        for (Symlink symlink : addedSymlinks) {
+            // Paths
+            this.paths.put(symlink.getVirtualPath(), new PathValues(symlink.getTargetWebId(), symlink.getSegment()));
+
+            // Web URL segments
+            this.segments.put(new SegmentKey(symlink.getParentPath(), symlink.getSegment()), symlink.getTargetPath());
+        }
+        this.symlinks.addAll(addedSymlinks);
+
+
+        // Remove obsolete web paths
+        if (CollectionUtils.isNotEmpty(updatedPaths)) {
+            String[] prefixes = updatedPaths.toArray(new String[updatedPaths.size()]);
+
+            for (Entry<String, String> entry : this.webIds.entrySet()) {
+                String currentWebId = entry.getKey();
+                String currentPath = entry.getValue();
+                if (StringUtils.startsWithAny(currentPath, prefixes)) {
+                    this.toWebPaths.remove(currentWebId);
+                }
+            }
+        }
     }
 
 

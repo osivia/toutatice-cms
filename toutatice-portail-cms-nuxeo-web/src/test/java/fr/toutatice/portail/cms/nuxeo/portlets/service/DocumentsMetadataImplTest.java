@@ -11,9 +11,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.core.cms.DocumentsMetadata;
-
-import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 
 /**
  * Documents metadata implementation test class.
@@ -101,7 +100,7 @@ public class DocumentsMetadataImplTest {
             targetPath = OTHER_PATH + "/folder" + i;
             targetWebId = "folder" + i;
 
-            Symlink symlink = new Symlink(parentPath, segment, targetPath, targetWebId);
+            Symlink symlink = this.createSymlinkMock(parentPath, segment, targetPath, targetWebId);
             symlinks.add(symlink);
 
 
@@ -195,6 +194,29 @@ public class DocumentsMetadataImplTest {
         EasyMock.expect(document.getDate(DocumentsMetadataImpl.MODIFIED_PROPERTY)).andReturn(modified).anyTimes();
         EasyMock.replay(document);
         return document;
+    }
+
+
+    /**
+     * Create symlink mock.
+     * 
+     * @param parentPath symlink parent path
+     * @param segment symlink segment
+     * @param targetPath symlink target path
+     * @param targetWebId symlink target webId
+     * @return symlink
+     */
+    private Symlink createSymlinkMock(String parentPath, String segment, String targetPath, String targetWebId) {
+        String virtualPath = parentPath + "/symlink_" + segment;
+
+        Symlink symlink = EasyMock.createMock(Symlink.class);
+        EasyMock.expect(symlink.getParentPath()).andReturn(parentPath).anyTimes();
+        EasyMock.expect(symlink.getSegment()).andReturn(segment).anyTimes();
+        EasyMock.expect(symlink.getTargetPath()).andReturn(targetPath).anyTimes();
+        EasyMock.expect(symlink.getTargetWebId()).andReturn(targetWebId).anyTimes();
+        EasyMock.expect(symlink.getVirtualPath()).andReturn(virtualPath).anyTimes();
+        EasyMock.replay(symlink);
+        return symlink;
     }
 
 

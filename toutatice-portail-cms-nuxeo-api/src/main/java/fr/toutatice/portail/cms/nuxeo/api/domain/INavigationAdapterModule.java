@@ -1,10 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
-import java.util.List;
-
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.Symlinks;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.CMSItem;
 
 /**
  * Navigation adapter module interface.
@@ -31,6 +31,16 @@ public interface INavigationAdapterModule {
      * @return symlinks
      * @throws CMSException
      */
-    List<Symlink> getSymlinks(PortalControllerContext portalControllerContext) throws CMSException;
+    Symlinks getSymlinks(PortalControllerContext portalControllerContext) throws CMSException;
     
+
+    /**
+     * Adapt navigation item.
+     * 
+     * @param portalControllerContext portal controller context
+     * @param navigationItem navigation item
+     * @throws CMSException
+     */
+    void adaptNavigationItem(PortalControllerContext portalControllerContext, CMSItem navigationItem) throws CMSException;
+
 }

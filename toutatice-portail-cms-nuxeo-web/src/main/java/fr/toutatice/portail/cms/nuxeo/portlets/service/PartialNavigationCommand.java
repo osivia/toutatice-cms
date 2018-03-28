@@ -124,7 +124,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 			/* Update current Item */
 			String navPath = child.getPath();
 			
-			navItem = navItems.get(child.getPath());
+            navItem = navItems.get(navPath);
 			if (navItem == null) {
 
 				navItem = new NavigationItem();
@@ -132,6 +132,7 @@ public class PartialNavigationCommand implements INuxeoCommand {
 				navItems.put(navPath, navItem);
 			}
 			navItem.setMainDoc(child);
+            navItem.setPath(navPath);
 
 			/* Update parent children */
 
@@ -143,19 +144,25 @@ public class PartialNavigationCommand implements INuxeoCommand {
 				navItems.put(parentPath, navItem);
 			}
 			
-			//v2.0-SP1 : éviter les doublons d'enfants
+                // v2.0-SP1 : éviter les doublons d'enfants
+
+                boolean isAlreadyAChild = false;
 			
-			boolean isAlreadyAChild = false;
+                for (NavigationItem childNavItem : navItem.getChildren()) {
+                    Document childDoc = (Document) childNavItem.getMainDoc();
+                    if ((childDoc != null) && childDoc.getPath().equals(child.getPath())) {
+                        isAlreadyAChild = true;
+                    }
+                }
 			
-			for( Object iChild: navItem.getChildren())	{
-				Document childDoc = (Document) iChild;
-				if( childDoc.getPath().equals(child.getPath()))
-						isAlreadyAChild = true;	
-			}
-			
-			if( !isAlreadyAChild)
-				navItem.getChildren().add(child);
-			}
+                if (!isAlreadyAChild) {
+                    NavigationItem childNavItem = new NavigationItem();
+                    childNavItem.setMainDoc(child);
+                    childNavItem.setPath(child.getPath());
+
+                    navItem.getChildren().add(childNavItem);
+                }
+            }
 		}
 		
 		

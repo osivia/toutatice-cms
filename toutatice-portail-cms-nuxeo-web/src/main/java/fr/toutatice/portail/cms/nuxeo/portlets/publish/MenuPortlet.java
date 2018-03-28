@@ -271,7 +271,7 @@ public class MenuPortlet extends CMSPortlet {
             // Fetch content
             CMSItem item = cmsService.getContent(cmsContext, id);
 
-            path = item.getPath();
+            path = item.getNavigationPath();
         } catch (CMSException e) {
             path = null;
         }
@@ -407,7 +407,7 @@ public class MenuPortlet extends CMSPortlet {
 
         // Path
         printWriter.write("\"path\" : \"");
-        printWriter.write(item.getNavItem().getPath());
+        printWriter.write(item.getNavItem().getNavigationPath());
         printWriter.write("\", ");
 
         // Accepted types
@@ -589,10 +589,10 @@ public class MenuPortlet extends CMSPortlet {
         boolean fetchedChildren = BooleanUtils.isFalse(unfetchedChildren);
 
 
-        if (this.isSelected(options.getCurrentPath(), navigationItem.getPath())) {
+        if (this.isSelected(options.getCurrentPath(), navigationItem.getNavigationPath())) {
             selected = true;
 
-            if (StringUtils.equals(options.getCurrentPath(), navigationItem.getPath())) {
+            if (StringUtils.equals(options.getCurrentPath(), navigationItem.getNavigationPath())) {
                 current = true;
             }
         }
@@ -600,7 +600,8 @@ public class MenuPortlet extends CMSPortlet {
         // Primary path selected indicator
         boolean primaryPathSelected = (selected && !current);
 
-        if (this.isSelected(options.getAuxiliaryPath(), navigationItem.getPath()) && !StringUtils.equals(options.getAuxiliaryPath(), navigationItem.getPath())) {
+        if (this.isSelected(options.getAuxiliaryPath(), navigationItem.getNavigationPath())
+                && !StringUtils.equals(options.getAuxiliaryPath(), navigationItem.getNavigationPath())) {
             selected = true;
         }
 
@@ -677,7 +678,8 @@ public class MenuPortlet extends CMSPortlet {
         List<NavigationDisplayItem> navigationDisplayItemChildren;
 
         if ((!options.isLazy() && (level < options.getMaxLevels())) || (options.isLazy() && loaded)) {
-            List<CMSItem> navigationItemChildren = cmsService.getPortalNavigationSubitems(cmsContext, options.getBasePath(), navigationItem.getPath());
+            List<CMSItem> navigationItemChildren = cmsService.getPortalNavigationSubitems(cmsContext, options.getBasePath(),
+                    navigationItem.getNavigationPath());
             navigationDisplayItemChildren = new ArrayList<NavigationDisplayItem>(navigationItemChildren.size());
 
             for (CMSItem navigationItemChild : navigationItemChildren) {

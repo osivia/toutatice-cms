@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -59,6 +60,8 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.Symlink;
+import org.osivia.portal.api.cms.Symlinks;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -120,7 +123,6 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
-import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -274,6 +276,7 @@ public class CMSService implements ICMSService {
 
         // CMS item
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
+        cmsItem.setCmsPath(doc.getPath());
 
         // CMS item type
         DocumentType type = this.customizer.getCMSItemTypes().get(doc.getType());
@@ -331,6 +334,18 @@ public class CMSService implements ICMSService {
         }
 
         this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(cmsItem, publishSpaceItem);
+
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+
+        List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
+        if (CollectionUtils.isNotEmpty(navigationAdapters)) {
+            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
+
+            for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
+                navigationAdapter.adaptNavigationItem(portalControllerContext, cmsItem);
+            }
+        }
 
         return cmsItem;
     }
@@ -828,7 +843,7 @@ public class CMSService implements ICMSService {
             /* On récupère le dernier arbre de publication partiel */
 
 
-            String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getPath();
+            String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getNavigationPath();
             Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
             boolean refreshing = PageProperties.getProperties().isRefreshingPage();
             PartialNavigationInvoker partialNavInvoker = null;
@@ -864,7 +879,7 @@ public class CMSService implements ICMSService {
 
             boolean isParent = false;
 
-            while (pathToCheck.contains(publishSpaceConfig.getPath())) {
+            while (pathToCheck.contains(publishSpaceConfig.getNavigationPath())) {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
 
@@ -965,8 +980,15 @@ public class CMSService implements ICMSService {
             if ( "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
-                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
-                        forceLiveVersion)));
+                // Plugin manager
+                CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+                // Navigation adapters
+                List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
+
+                // Nuxeo command
+                INuxeoCommand command = new DocumentPublishSpaceNavigationCommand(cmsCtx, publishSpaceConfig, forceLiveVersion, navigationAdapters);
+
+                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, command);
             }
 
             if (navItems != null) {
@@ -977,7 +999,7 @@ public class CMSService implements ICMSService {
                     if (item == null) {
                         if (navItem.getMainDoc() != null) {
                             navItem.setAdaptedCMSItem(this.createNavigationItem(cmsCtx, livePath, ((Document) navItem.getMainDoc()).getTitle(),
-                                    (Document) navItem.getMainDoc(), publishSpaceConfig.getPath()));
+                                    (Document) navItem.getMainDoc(), publishSpaceConfig.getNavigationPath()));
                         } else {
                             return null;
                         }
@@ -1035,8 +1057,15 @@ public class CMSService implements ICMSService {
             if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
             } else {
-                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new DocumentPublishSpaceNavigationCommand(publishSpaceConfig,
-                        forceLiveVersion)));
+                // Plugin manager
+                CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+                // Navigation adapters
+                List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
+
+                // Nuxeo command
+                INuxeoCommand command = new DocumentPublishSpaceNavigationCommand(cmsCtx, publishSpaceConfig, forceLiveVersion, navigationAdapters);
+
+                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, command);
             }
 
             if (navItems != null) {
@@ -1045,11 +1074,8 @@ public class CMSService implements ICMSService {
                     List<CMSItem> childrens = new ArrayList<CMSItem>();
 
 
-                    for (Object child : navItem.getChildren()) {
-
-                        Document docChild = (Document) child;
-
-                        String childNavPath = DocumentHelper.computeNavPath(docChild.getPath());
+                    for (NavigationItem child : navItem.getChildren()) {
+                        String childNavPath = child.getPath();
 
                         NavigationItem navChild = navItems.get(childNavPath);
 
@@ -1245,6 +1271,7 @@ public class CMSService implements ICMSService {
                         // Navigation item
                         NavigationItem navigationItem = this.getNavigationItem(navigationItems, path);
                         navigationItem.setMainDoc(document);
+                        navigationItem.setPath(path);
 
                         // CMS item
                         CMSItem cmsItem = this.createNavigationItem(cmsContext, path, document.getTitle(), document, basePath);
@@ -1394,6 +1421,18 @@ public class CMSService implements ICMSService {
 
                 this.getCustomizer().getNavigationItemAdapter().adaptPublishSpaceNavigationItem(configItem, configItem);
 
+                // Plugin manager
+                CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+
+                List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
+                if (CollectionUtils.isNotEmpty(navigationAdapters)) {
+                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
+
+                    for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
+                        navigationAdapter.adaptNavigationItem(portalControllerContext, configItem);
+                    }
+                }
+
                 portalRequest.setAttribute(requestKey, configItem);
 
             } finally {
@@ -1402,18 +1441,17 @@ public class CMSService implements ICMSService {
                 cmsCtx.setForcePublicationInfosScope(savedPubInfosScope);
             }
 
-        } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                if ((e instanceof NuxeoException) && (((NuxeoException) e).getErrorCode() == NuxeoException.ERROR_NOTFOUND)) {
-                    return null;
-                } else {
-                    throw new CMSException(e);
-                }
+        } catch (CMSException e) {
+            throw e;
+        } catch (NuxeoException e) {
+            if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
+                return null;
             } else {
-                throw (CMSException) e;
+                throw new CMSException(e);
             }
+        } catch (Exception e) {
+            throw new CMSException(e);
         }
-
 
         return configItem;
     }
@@ -1520,38 +1558,51 @@ public class CMSService implements ICMSService {
 
 
         try {
-            // Fetch document
-            CMSItem pageItem = this.fetchContent(cmsContext, workingPath);
-            Document document = (Document) pageItem.getNativeItem();
+            // Get navigation item to convert virtual navigation path to real path
+            CMSItem navigationItem;
+            if (publishSpacePath == null) {
+                navigationItem = null;
+            } else {
+                navigationItem = this.getPortalNavigationItem(cmsContext, publishSpacePath, workingPath);
+            }
 
-            if (publishSpacePath != null) {
-                // Fragments
-                PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
-                if ((fragments != null) && !fragments.isEmpty()) {
-                    Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
+            if (navigationItem != null) {
+                Document navigationDocument = (Document) navigationItem.getNativeItem();
 
-                    // Region windows count
-                    int regionWindowsCount = 0;
+                // Fetch document
+                CMSItem pageItem = this.fetchContent(cmsContext, navigationDocument.getPath());
+                Document document = (Document) pageItem.getNativeItem();
 
-                    // Loop
-                    for (int i = 0; i < fragments.size(); i++) {
-                        PropertyMap fragment = fragments.getMap(i);
-                        String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
+                if (publishSpacePath != null) {
+                    // Fragments
+                    PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
+                    if ((fragments != null) && !fragments.isEmpty()) {
+                        Map<String, EditableWindow> editableWindows = this.customizer
+                                .getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
 
-                        if (inheritedRegions.get(regionId) == null) {
-                            String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
+                        // Region windows count
+                        int regionWindowsCount = 0;
 
-                            EditableWindow editableWindow = editableWindows.get(category);
-                            if (editableWindow != null) {
-                                // Window creation
-                                int windowId = windowsCount + regionWindowsCount;
-                                Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
-                                CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
-                                windows.add(window);
-                                regionWindowsCount++;
-                            } else {
-                                // Si type de portlet non trouvé, erreur.
-                                LOG.warn("Type de fragment " + category + " non géré");
+                        // Loop
+                        for (int i = 0; i < fragments.size(); i++) {
+                            PropertyMap fragment = fragments.getMap(i);
+                            String regionId = fragment.getString(EditableWindowHelper.REGION_IDENTIFIER);
+
+                            if (inheritedRegions.get(regionId) == null) {
+                                String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
+
+                                EditableWindow editableWindow = editableWindows.get(category);
+                                if (editableWindow != null) {
+                                    // Window creation
+                                    int windowId = windowsCount + regionWindowsCount;
+                                    Map<String, String> properties = editableWindow.fillProps(document, fragment, editionMode);
+                                    CMSEditableWindow window = editableWindow.createNewEditabletWindow(windowId, properties);
+                                    windows.add(window);
+                                    regionWindowsCount++;
+                                } else {
+                                    // Si type de portlet non trouvé, erreur.
+                                    LOG.warn("Type de fragment " + category + " non géré");
+                                }
                             }
                         }
                     }
@@ -2756,20 +2807,47 @@ public class CMSService implements ICMSService {
         CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
         // Document
         Document document = (Document) cmsContext.getDoc();
+        // Document path
+        String path = document.getPath();
         
         // Draft case
-        CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, document.getPath());
-        if(publicationInfos.isDraft()) {
-        	return publicationInfos.getDraftContextualizationPath();
+        CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, path);
+        if (publicationInfos.isDraft()) {
+            return publicationInfos.getDraftContextualizationPath();
         }
-        
+
         // Adapted navigation path
         String navigationPath = null;
 
         // Navigation adapters
         List<INavigationAdapterModule> adapters = pluginManager.customizeNavigationAdapters();
-        for (INavigationAdapterModule adapter : adapters) {
-            navigationPath = adapter.adaptNavigationPath(portalControllerContext, document);
+
+        if (CollectionUtils.isNotEmpty(adapters)) {
+            Iterator<INavigationAdapterModule> adaptersIterator = adapters.iterator();
+
+            while (StringUtils.isEmpty(navigationPath) && adaptersIterator.hasNext()) {
+                INavigationAdapterModule adapter = adaptersIterator.next();
+
+                // Adapt navigation path
+                navigationPath = adapter.adaptNavigationPath(portalControllerContext, document);
+
+                if (StringUtils.isEmpty(navigationPath)) {
+                    // Symlinks
+                    Symlinks symlinks = adapter.getSymlinks(portalControllerContext);
+
+                    if ((symlinks != null) && CollectionUtils.isNotEmpty(symlinks.getLinks())) {
+                        Iterator<Symlink> symlinksIterator = symlinks.getLinks().iterator();
+
+                        while (StringUtils.isEmpty(navigationPath) && symlinksIterator.hasNext()) {
+                            Symlink symlink = symlinksIterator.next();
+
+                            if (StringUtils.startsWith(path, symlink.getTargetPath())) {
+                                navigationPath = symlink.getNavigationPath();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return navigationPath;
@@ -2861,11 +2939,11 @@ public class CMSService implements ICMSService {
         }
 
         // Symlinks
-        List<Symlink> symlinks = null;
+        Symlinks symlinks = null;
         for (INavigationAdapterModule adapter : adapters) {
-            List<Symlink> adapterSymlinks = adapter.getSymlinks(portalControllerContext);
-            if (CollectionUtils.isNotEmpty(adapterSymlinks)) {
-                if (CollectionUtils.isEmpty(symlinks)) {
+            Symlinks adapterSymlinks = adapter.getSymlinks(portalControllerContext);
+            if (adapterSymlinks != null) {
+                if (symlinks == null) {
                     symlinks = adapterSymlinks;
                 } else {
                     symlinks.addAll(adapterSymlinks);

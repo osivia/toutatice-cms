@@ -16,200 +16,281 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.cms.Symlink;
+import org.osivia.portal.api.cms.Symlinks;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
+import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.NavigationItem;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 
 
-
 /**
- * Return all the navigation items
+ * Return all the navigation items.
  *
  * @author jeanseb
- *
+ * @see INuxeoCommand
  */
 public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
-    
-    /** Logger. */
-    protected static final Log logger = LogFactory.getLog(CMSService.class);
+
+    /** Default navigation schemas. */
+    private static final String DEFAULT_NAVIGATION_SCHEMAS = "dublincore, common, toutatice, regions, record";
 
 
-	CMSItem publishSpaceConfig;
+    /** CMS context. */
+    private final CMSServiceCtx cmsContext;
+    /** Space config. */
+    private final CMSItem spaceConfig;
+    /** Live version indicator. */
+    private final boolean live;
+    /** Navigation adapters. */
+    private final List<INavigationAdapterModule> navigationAdapters;
 
-	/** Récupérer aussi les versions en cours de travail */
-    private boolean forceLiveVersion;
-    
-    /** Possibility to use ElasticSearch (available from Nuxeo 6.0) */
-    private boolean useES = false;
 
-    public final static String basicNavigationSchemas = "dublincore, common, toutatice, regions";
+    /**
+     * Constructor.
+     *
+     * @param cmsContext CMS context
+     * @param spaceConfig space config.
+     * @param forceLiveVersion force live version indicator
+     * @param navigationAdapters navigation adapters
+     */
+    public DocumentPublishSpaceNavigationCommand(CMSServiceCtx cmsContext, CMSItem spaceConfig, boolean forceLiveVersion,
+            List<INavigationAdapterModule> navigationAdapters) {
+        super();
+        this.cmsContext = cmsContext;
+        this.spaceConfig = spaceConfig;
+        this.live = forceLiveVersion || "1".equals(this.spaceConfig.getProperties().get("displayLiveVersion"));
+        this.navigationAdapters = navigationAdapters;
+    }
 
-    public DocumentPublishSpaceNavigationCommand(CMSItem publishSpaceConfig, boolean forceLiveVersion) {
-		super();
 
-		this.publishSpaceConfig = publishSpaceConfig;
-        this.forceLiveVersion = forceLiveVersion;
-        this.useES = NuxeoCompatibility.canUseES();
-	}
-
-	@Override
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object execute(Session session) throws Exception {
-	    
-	    boolean canUseES = useES && BooleanUtils.toBoolean(this.publishSpaceConfig.getProperties().get("useES"));
+        // Base path
+        String basePath = this.spaceConfig.getNavigationPath();
 
-		OperationRequest request;
-		
-		if(canUseES){
-		    request = session.newRequest("Document.QueryES");
-		} else {
-		    request = session.newRequest("Document.Query");
-		}
-		
+        // Symlinks
+        Symlinks symlinks;
+        if (CollectionUtils.isEmpty(this.navigationAdapters)) {
+            symlinks = null;
+        } else {
+            symlinks = new Symlinks();
 
-		// TODO : gerer le PortalVirtualPage de maniere générique
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.cmsContext.getControllerContext());
 
-        boolean live = "1".equals(this.publishSpaceConfig.getProperties().get("displayLiveVersion"));
+            // Navigation adapters
+            for (INavigationAdapterModule navigationAdapter : this.navigationAdapters) {
+                Symlinks adapterSymlinks = navigationAdapter.getSymlinks(portalControllerContext);
+                if (adapterSymlinks != null) {
+                    symlinks.addAll(adapterSymlinks);
+                }
+            }
+        }
 
-        if (this.forceLiveVersion)
-        // XXX temp
-            live = true;
-
-		String uuid =  ((Document)this.publishSpaceConfig.getNativeItem()).getId();
-		String path = this.publishSpaceConfig.getPath();
-		
-		String parentCriteria = "ecm:path STARTSWITH";
-//		if(canUseES){
-//		    parentCriteria = "ecm:ancestorId = ";
-//		    path = uuid;
-//		}
-		
-
-		//String nuxeoRequest = "( ecm:path = '" + spacePath + "' OR ecm:path STARTSWITH '" + path + "')  AND (  ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1 OR ecm:primaryType = 'PortalVirtualPage')";
-
-		// Modif JSS 20130130 : vu avec oliver
-		//  1 - filtre uniquement sur ttc:showInMenu
-		//  2 - le 'ecm:path =' pose des problemes de perfs quand il est compibné avec un OR ecm:path startswith -> fetch specifique pour récuperer la racine
-		//  3 - suppression cas particulier PortalVirtualPage
-
-		String nuxeoRequest = "( " + parentCriteria  + " '" + path + "'  AND  (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)  )";
+        // Extra navigation paths
+        Set<String> extraPaths;
+        if ((symlinks == null) || CollectionUtils.isEmpty(symlinks.getPaths())) {
+            extraPaths = new HashSet<>(0);
+        } else {
+            extraPaths = symlinks.getPaths();
+        }
 
 
-        NuxeoQueryFilterContext queryFilter = new NuxeoQueryFilterContext(live ? NuxeoQueryFilterContext.STATE_LIVE : NuxeoQueryFilterContext.STATE_DEFAULT);
+        // Operation request
+        OperationRequest operationRequest = session.newRequest("Document.Query");
 
-		// Insertion du filtre sur les élements publiés
-		String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilter, nuxeoRequest);
-		
+        // Nuxeo query clause
+        StringBuilder clause = new StringBuilder();
+        clause.append("(ecm:path STARTSWITH '");
+        clause.append(basePath);
+        if (!this.live) {
+            clause.append("' OR ecm:path = '");
+            clause.append(basePath);
+            clause.append(".proxy");
+        }
+        clause.append("') AND (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1)");
 
-		request.set("query", "SELECT * FROM Document WHERE " + filteredRequest + " ORDER BY ecm:pos");
+        // Nuxeo query filter
+        NuxeoQueryFilterContext filter;
+        if (this.live) {
+            filter = NuxeoQueryFilterContext.CONTEXT_LIVE;
+        } else {
+            filter = NuxeoQueryFilterContext.CONTEXT_DEFAULT;
+        }
 
-		//test sans proxy ok
-		//String nuxeoRequest = "ecm:parentId = 'a984744a-838c-4f89-9627-50acec8df78b'";
-		//request.set("query", "SELECT * FROM Document WHERE " + nuxeoRequest + " ORDER BY ecm:pos");
-
-		String navigationSchemas = basicNavigationSchemas;
-
-		String extraNavigationSchemas = System.getProperty("nuxeo.navigationSchemas");
-
-		if( extraNavigationSchemas != null)
-            navigationSchemas += "," + extraNavigationSchemas;
-
-		if(canUseES){
-		    request.set(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
-		} else {
-		    request.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas);
-		}
-		
-		//request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
-		// Build navItems
-		Map<String, NavigationItem> navItems = new HashMap<String, NavigationItem>();
-
-		Documents children = (Documents) request.execute();
+        // Apply Nuxeo query clause filter
+        String filteredClause = NuxeoQueryFilter.addPublicationFilter(filter, clause.toString());
+        if (CollectionUtils.isNotEmpty(extraPaths)) {
+            // Update clause with extra navigation paths;
+            filteredClause = this.updateClause(basePath, filteredClause, extraPaths);
+        }
 
 
-		/* Make children list */
+        // Nuxeo query
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT * FROM Document WHERE ");
+        query.append(filteredClause);
+        query.append(" ORDER BY ecm:pos");
+        operationRequest.set("query", query.toString());
+
+        // Navigation schemas
+        StringBuilder navigationSchemas = new StringBuilder();
+        navigationSchemas.append(DEFAULT_NAVIGATION_SCHEMAS);
+        String extraNavigationSchemas = System.getProperty("nuxeo.navigationSchemas");
+        if (StringUtils.isNotBlank(extraNavigationSchemas)) {
+            navigationSchemas.append(", ");
+            navigationSchemas.append(extraNavigationSchemas);
+        }
+        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas.toString());
+
+        // Operation execution
+        Documents children = (Documents) operationRequest.execute();
+
+        // Navigation items
+        Map<String, NavigationItem> navigationItems = new HashMap<>(children.size());
+
+        for (Document child : children) {
+            // Path
+            String path = child.getPath();
+
+            // Navigation path
+            String navigationPath;
+            if (StringUtils.startsWith(path, basePath)) {
+                navigationPath = path;
+            } else {
+                // Symlink
+                Symlink symlink = null;
+
+                if ((symlinks != null) && CollectionUtils.isNotEmpty(symlinks.getLinks())) {
+                    Iterator<Symlink> iterator = symlinks.getLinks().iterator();
+                    while ((symlink == null) && iterator.hasNext()) {
+                        Symlink link = iterator.next();
+
+                        if (StringUtils.startsWith(path, link.getTargetPath())) {
+                            symlink = link;
+                        }
+                    }
+                }
+
+                if (symlink == null) {
+                    // FIXME
+                    navigationPath = basePath + "/_" + StringUtils.substringAfterLast(path, "/");
+                } else {
+                    navigationPath = symlink.getNavigationPath() + "/_" + StringUtils.substringAfterLast(path, "/");
+                }
+            }
+            navigationPath = DocumentHelper.computeNavPath(navigationPath);
+
+            // Navigation item
+            NavigationItem navigationItem = navigationItems.get(navigationPath);
+            if (navigationItem == null) {
+                navigationItem = new NavigationItem();
+                navigationItems.put(navigationPath, navigationItem);
+            }
+            navigationItem.setMainDoc(child);
+            navigationItem.setPath(navigationPath);
+        }
 
 
-		List<Document>  concatDocuments = new ArrayList<Document>();
+        // Update navigation item children
+        for (Entry<String, NavigationItem> entry : navigationItems.entrySet()) {
+            String navigationPath = entry.getKey();
+            String parentPath = StringUtils.substringBeforeLast(navigationPath, "/");
+            if (StringUtils.startsWith(navigationPath, basePath)) {
+                // Navigation item
+                NavigationItem navigationItem = entry.getValue();
 
-		// Add root document
-		// oblige de sortir de la requete principale pour des problemes de perfs
-		org.nuxeo.ecm.automation.client.model.Document doc = (org.nuxeo.ecm.automation.client.model.Document) session
-		.newRequest("Document.Fetch").setHeader(Constants.HEADER_NX_SCHEMAS, navigationSchemas).set("value", uuid).execute();
+                // Navigation item parent
+                NavigationItem parent = navigationItems.get(parentPath);
+                if (parent != null) {
+                    parent.getChildren().add(navigationItem);
+                }
+            }
+        }
 
-		concatDocuments.add(doc);
+        return navigationItems;
+    }
 
-		for (Document child : children) {
-			concatDocuments.add(child);
 
-		}
+    /**
+     * Update Nuxeo query clause with extra navigation paths.
+     * 
+     * @param basePath base path
+     * @param clause Nuxeo query clause
+     * @param extraPaths extra navigation paths
+     * @return updated Nuxeo query clause
+     * @throws CMSException
+     */
+    private String updateClause(String basePath, String clause, Set<String> extraPaths) throws CMSException {
+        // Extended Nuxeo query clause
+        StringBuilder extendedClause = new StringBuilder();
 
-		// Iterate over childrens to update hierarchy
+        boolean first = true;
+        for (String extraPath : extraPaths) {
+            if (first) {
+                first = false;
+            } else {
+                extendedClause.append(" OR ");
+            }
 
-		for (Document child : concatDocuments) {
+            extendedClause.append("ecm:path STARTSWITH '");
+            extendedClause.append(extraPath);
+            extendedClause.append("'");
+        }
 
-			NavigationItem navItem;
+        // Filtered extended Nuxeo query clause
+        String filteredExtendedClause = NuxeoQueryFilter.addPublicationFilter(NuxeoQueryFilterContext.CONTEXT_LIVE, extendedClause.toString());
 
-			/* Update current Item */
-			String navPath = DocumentHelper.computeNavPath(child.getPath());
+        // Update filtered Nuxeo query clause
+        StringBuilder updatedFilteredClause = new StringBuilder();
+        updatedFilteredClause.append("(");
+        updatedFilteredClause.append(clause);
+        updatedFilteredClause.append(") OR (");
+        updatedFilteredClause.append(filteredExtendedClause);
+        updatedFilteredClause.append(")");
 
-			navItem = navItems.get(navPath);
-			if (navItem == null) {
+        return updatedFilteredClause.toString();
+    }
 
-				navItem = new NavigationItem();
-				navItems.put(navPath, navItem);
-			}
-			navItem.setMainDoc(child);
 
-			/* Update parent children */
-
-			String parentPath = navPath.substring(0, navPath.lastIndexOf('/'));
-			if( parentPath.contains(path))	{
-				navItem = navItems.get(parentPath);
-			if (navItem == null) {
-				navItem = new NavigationItem();
-				navItems.put(parentPath, navItem);
-			}
-			navItem.getChildren().add(child);
-			}
-		}
-
-		/*
-		if( this.forceLiveVersion){
-		    for( NavigationItem item : navItems.values()){
-		        logger.info("DocumentPublishSpaceNavigationCommand" + ((Document) item.getMainDoc()).getPath() + ":" + ((Document) item.getMainDoc()).getProperties().getString("ttc:theme"));
-		    }
-		}
-		*/
-		
-
-		return navItems;
-
-	}
-
-	@Override
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getId() {
-        String sLive = "false";
-        if (this.forceLiveVersion)
-            sLive = "true";
-        return "PublishSpaceNavigationCommandT2/" + sLive + "/" + this.publishSpaceConfig.getPath();
-	};
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getSimpleName());
+        builder.append("|");
+        builder.append(this.spaceConfig.getCmsPath());
+        builder.append("|");
+        builder.append(this.live);
+        return builder.toString();
+    };
 
 }

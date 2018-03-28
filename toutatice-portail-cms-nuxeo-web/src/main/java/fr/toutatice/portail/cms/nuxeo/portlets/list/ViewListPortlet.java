@@ -1003,7 +1003,7 @@ public class ViewListPortlet extends ViewList {
         // Initialization to avoid undefined errors when request building with with var
         interpreter.set("navigationPubInfos", null);
         interpreter.set("spaceId", null);
-        if (nuxeoController.getNavigationPath() != null) {
+        if (StringUtils.startsWith(nuxeoController.getContentPath(), nuxeoController.getNavigationPath()) && nuxeoController.getNavigationPath() != null) {
             CMSPublicationInfos navigationPubInfos = NuxeoController.getCMSService().getPublicationInfos(nuxeoController.getCMSCtx(),
                     nuxeoController.getNavigationPath());
             interpreter.set("navigationPubInfos", navigationPubInfos);
