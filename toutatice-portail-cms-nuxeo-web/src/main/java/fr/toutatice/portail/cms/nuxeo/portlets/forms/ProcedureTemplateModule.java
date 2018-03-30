@@ -481,7 +481,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
      * @param iter
      */
     private boolean isAuthorized(PropertyList groups) {
-        if (groups == null || groups.isEmpty()) {
+        if (groups == null || groups.isEmpty() || groups.list().contains("members")) {
             return true;
         }
 
