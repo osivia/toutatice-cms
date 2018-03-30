@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.rename;
 
+import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -27,8 +28,12 @@ public class RenameCommand implements INuxeoCommand {
 
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
-        DocumentService documentService = new DocumentService(nuxeoSession);
-        return documentService.setProperty(document, "dc:title", newTitle);
+        OperationRequest request = nuxeoSession.newRequest(DocumentService.UpdateDocument);
+        request.setInput(document);
+        request.set("properties", "dc:title=" + newTitle);
+        request.setHeader(DocumentService.ES_SYNC_FLAG, String.valueOf(true));
+        return request.execute();
+
     }
 
     @Override

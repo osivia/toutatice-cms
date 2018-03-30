@@ -118,7 +118,15 @@
                 <a href="#" class="btn btn-default navbar-btn no-ajax-link onlyoffice-read">
 					<span><op:translate key="ONLYOFFICE_VIEW" /></span>
 				</a> 
-							
+				
+				<!-- Rename -->
+				<c:set var="title"><op:translate key="RENAME_DOCUMENT" /></c:set>
+				<a href="#" data-load-url="#" data-url="${renameDocumentUrl}" data-title="${title}" data-target="#osivia-modal" title="${title}" 
+					data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link">
+                   <i class="halflings halflings-edit"></i>
+                   <span class="sr-only">${title}</span>
+                 </a>
+				
                 <!-- Download -->
                 <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
                 <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">

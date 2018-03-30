@@ -1392,15 +1392,13 @@ public class MenuBarFormater {
                 // Edition dropdown
                 MenubarDropdown editionDropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
                 // Rename menu item
-                String title = bundle.getString("RENAME_DOCUMENT");
-                MenubarItem renameMenubarItem = new MenubarItem("RENAME", title, "glyphicons glyphicons-edit", editionDropdown,
+                MenubarItem renameMenubarItem = new MenubarItem("RENAME", bundle.getString("RENAME"), "glyphicons glyphicons-edit", editionDropdown,
                         0, HTMLConstants.A_HREF_DEFAULT, null, null, null);
                 renameMenubarItem.getData().put("target", "#osivia-modal");
                 renameMenubarItem.getData().put("load-url", renameDocumentUrl);
-                renameMenubarItem.getData().put("title", title);
+                renameMenubarItem.getData().put("title", bundle.getString("RENAME_DOCUMENT"));
                 menubar.add(renameMenubarItem);
             }
-
         }
     }
 

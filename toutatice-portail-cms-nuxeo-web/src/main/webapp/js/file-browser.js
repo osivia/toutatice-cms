@@ -578,7 +578,14 @@ function displayControls($browser) {
 	$links.each(function(index, element) {
 		var $element = $JQry(element);
 		
-		$element.attr("href", $element.data("url"));
+		
+		if($element.data("load-url")){
+			// for modals
+			$element.data("load-url", $element.data("url"));
+		}else{
+			// for links
+			$element.attr("href", $element.data("url"));
+		}
 	});
 	
 	if ($selected.length) {
@@ -647,18 +654,24 @@ function displayControls($browser) {
 				// Update path
 				var path = $selected.data("path");
 				
-				// Edition of document having draft
-				var draftPath = $selected.data("draft-path");
-				if(draftPath && $element.hasClass('edit')){
-					path = draftPath;
+				if($element.data("load-url")){
+					// for modals
+					var loadUrl = $element.data("load-url");
+					loadUrl = loadUrl.replace("_PATH_", path);
+					$element.data("load-url", loadUrl);
+				}else{
+					// for links
+					
+					// Edition of document having draft
+					var draftPath = $selected.data("draft-path");
+					if(draftPath && $element.hasClass('edit')){
+						path = draftPath;
+					}
+					
+					url = url.replace("_PATH_", path);
+					$element.attr("href", url);
 				}
-				
-				url = url.replace("_PATH_", path);
-				
-				$element.attr("href", url);
 			});
-
-			
 			
 		} else {
 			// Multiple elements selected

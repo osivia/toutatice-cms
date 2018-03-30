@@ -11,6 +11,7 @@ import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.notifications.NotificationsType;
@@ -35,6 +36,7 @@ public class RenamePortlet extends CMSPortlet {
     /** View JSP path. */
     private static final String PATH_VIEW = "/WEB-INF/jsp/rename/view.jsp";
 
+    public static final String DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY = "osivia.rename.document.redirect.path";
 
     public RenamePortlet() {
         super();
@@ -84,8 +86,12 @@ public class RenamePortlet extends CMSPortlet {
                 Document updatedDcoument = (Document) nuxeoController.executeNuxeoCommand(new RenameCommand(currentDocument, newDocTitle));
                 addNotification(nuxeoController.getPortalCtx(), "RENAME_DOCUMENT_SUCCESS", NotificationsType.SUCCESS);
 
-                // Refresh document
-                String redirectionUrl = nuxeoController.getPortalUrlFactory().getCMSUrl(nuxeoController.getPortalCtx(), null, updatedDcoument.getPath(), null,
+                // Redirect
+                String redirectPath = window.getProperty(DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY);
+                if (StringUtils.isEmpty(redirectPath)) {
+                    redirectPath = updatedDcoument.getPath();
+                }
+                String redirectionUrl = nuxeoController.getPortalUrlFactory().getCMSUrl(nuxeoController.getPortalCtx(), null, redirectPath, null,
                         null, IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
                 response.sendRedirect(redirectionUrl);
             }
