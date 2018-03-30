@@ -274,6 +274,24 @@
     </deployment>
     
     
+    <!-- Rename document -->
+    <deployment>
+        <if-exists>overwrite</if-exists>
+        <instance>
+            <instance-id>toutatice-portail-cms-nuxeo-rename-portlet-instance</instance-id>
+            <portlet-ref>toutatice-portail-cms-nuxeo-rename</portlet-ref>
+            <display-name xml:lang="en">Rename document</display-name>
+            <display-name xml:lang="fr">Renommage du document</display-name>
+            <security-constraint>
+                <policy-permission>
+                    <action-name>view</action-name>
+                    <unchecked />
+                </policy-permission>
+            </security-constraint>
+        </instance>
+    </deployment>
+    
+    
     <!-- Reorder documents -->
     <deployment>
         <if-exists>overwrite</if-exists>

@@ -290,6 +290,12 @@
     </portlet>
     
     
+    <!-- Rename document -->
+    <portlet>
+        <portlet-name>toutatice-portail-cms-nuxeo-rename</portlet-name>
+    </portlet>
+    
+    
     <!-- Reorder documents -->
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-reorder</portlet-name>
