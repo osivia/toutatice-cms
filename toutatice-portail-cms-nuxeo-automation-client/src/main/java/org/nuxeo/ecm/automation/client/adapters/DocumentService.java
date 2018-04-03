@@ -228,7 +228,7 @@ public class DocumentService {
     }
 
     public Document addPermission(DocRef doc, String user, String permission, String acl, boolean blockInheritance) throws Exception {
-        OperationRequest req = this.session.newRequest(AddPermission).setInput(doc).set("user", user).set("permission", permission).set("blockInheritance",
+        OperationRequest req = this.session.newRequest(AddPermission).setInput(doc).set("username", user).set("permission", permission).set("blockInheritance",
                 blockInheritance);
         return (Document) req.execute();
     }

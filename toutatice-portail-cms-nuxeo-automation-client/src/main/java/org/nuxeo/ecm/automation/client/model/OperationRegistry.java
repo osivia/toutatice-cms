@@ -26,13 +26,16 @@ public class OperationRegistry implements Serializable {
     protected Map<String, String> paths;
 
     protected Map<String, OperationDocumentation> ops;
+    
+    protected Map<String, OperationDocumentation> aliasesOps;
 
     protected Map<String, OperationDocumentation> chains;
 
     public OperationRegistry(Map<String, String> paths,
-            Map<String, OperationDocumentation> ops,
+            Map<String, OperationDocumentation> ops, Map<String, OperationDocumentation> aliasesOps,
             Map<String, OperationDocumentation> chains) {
         this.ops = ops;
+        this.aliasesOps = aliasesOps;
         this.chains = chains;
         this.paths = paths;
     }
@@ -44,8 +47,11 @@ public class OperationRegistry implements Serializable {
     public OperationDocumentation getOperation(String key) {
         OperationDocumentation op = ops.get(key);
         if (op == null) {
-            op = chains.get(key);
-        }
+            op = aliasesOps.get(key);
+        	if(op == null) {
+        		op = chains.get(key);
+        	}
+        } 
         return op;
     }
 
