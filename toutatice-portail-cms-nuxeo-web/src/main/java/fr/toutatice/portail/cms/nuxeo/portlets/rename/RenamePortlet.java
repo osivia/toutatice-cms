@@ -55,6 +55,7 @@ public class RenamePortlet extends CMSPortlet {
         NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
         // Current Document
         Document currentDocument = getCurrentDocument(window, nuxeoController);
+
         request.setAttribute("currentDocTitle", currentDocument.getTitle());
         DocumentDTO currentDocumentDto = DocumentDAO.getInstance().toDTO(currentDocument);
         request.setAttribute("docIcon", currentDocumentDto.getIcon());
@@ -86,6 +87,9 @@ public class RenamePortlet extends CMSPortlet {
                 Document updatedDcoument = (Document) nuxeoController.executeNuxeoCommand(new RenameCommand(currentDocument, newDocTitle));
                 addNotification(nuxeoController.getPortalCtx(), "RENAME_DOCUMENT_SUCCESS", NotificationsType.SUCCESS);
 
+                // refresh portlet cache
+                nuxeoController.getDocumentContext(updatedDcoument.getPath(), true);
+
                 // Redirect
                 String redirectPath = window.getProperty(DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY);
                 if (StringUtils.isEmpty(redirectPath)) {
@@ -99,21 +103,15 @@ public class RenamePortlet extends CMSPortlet {
     }
 
     /**
-     * Retrieves the current document
-     *
      * @param window
      * @param nuxeoController
      * @return
      */
     private Document getCurrentDocument(PortalWindow window, NuxeoController nuxeoController) {
-        Document currentDocument = nuxeoController.getCurrentDoc();
-        if (currentDocument == null) {
-            String path = window.getProperty(Constants.WINDOW_PROP_URI);
-            path = nuxeoController.getComputedPath(path);
-            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
-            currentDocument = documentContext.getDoc();
-            nuxeoController.setCurrentDoc(currentDocument);
-        }
+        String path = window.getProperty(Constants.WINDOW_PROP_URI);
+        path = nuxeoController.getComputedPath(path);
+        NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path, true);
+        Document currentDocument = documentContext.getDoc();
         return currentDocument;
     }
 }
