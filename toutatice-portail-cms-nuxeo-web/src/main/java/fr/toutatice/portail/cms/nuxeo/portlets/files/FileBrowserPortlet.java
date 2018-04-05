@@ -31,16 +31,17 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -88,6 +89,8 @@ import fr.toutatice.portail.cms.nuxeo.api.liveedit.OnlyofficeLiveEditHelper;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.rename.RenamePortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -95,6 +98,12 @@ import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** default maximum size of uploaded file in Mb */
+    private static final long MAX_FILE_SIZE_DEFAULT = 500;
+
+    /** maximum size of uploaded file in Mb */
+    private static final String MAX_FILE_SIZE = System.getProperty("osivia.filebrowser.max.upload.size", String.valueOf(MAX_FILE_SIZE_DEFAULT));
 
     /** Synchronized ES indexation flag. */
     public static final String ES_SYNC_FLAG = "nx_es_sync";
@@ -338,7 +347,15 @@ public class FileBrowserPortlet extends CMSPortlet {
                     PortletFileUpload fileUpload = new PortletFileUpload(fileItemFactory);
                     List<FileItem> fileItems = fileUpload.parseRequest(request);
 
-                    // Nuxeo command
+                    // file size check
+                    if (fileItems!=null) {
+                        for (FileItem fileItem : fileItems) {
+                            long maximumFileSizeInMb = NumberUtils.toLong(MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+                            if(fileItem.getSize() > maximumFileSizeInMb*FileUtils.ONE_MB) {
+                                throw new FileSizeLimitExceededException(null, fileItem.getSize(), maximumFileSizeInMb * FileUtils.ONE_MB);
+                            }
+                        }
+                    }
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
 
@@ -354,10 +371,13 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
                     notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_SUCCESS"));
+                } catch (FileSizeLimitExceededException e) {
+                    notifications = new Notifications(NotificationsType.ERROR, FILE_UPLOAD_NOTIFICATIONS_DURATION);
+                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_ERROR"));
                 } catch (FileUploadException e) {
                     // Notification
                     notifications = new Notifications(NotificationsType.ERROR, FILE_UPLOAD_NOTIFICATIONS_DURATION);
-                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_ERROR"));
+                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_FILE_SIZE_TOO_LARGE", MAX_FILE_SIZE));
                 }
 
                 this.notificationsService.addNotifications(portalControllerContext, notifications);
@@ -431,7 +451,7 @@ public class FileBrowserPortlet extends CMSPortlet {
             PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
             printWriter.write(data.toString());
             printWriter.close();
-        } else if("zipDownload".equals(request.getResourceID())) {
+        } else if ("zipDownload".equals(request.getResourceID())) {
             // bulk download
 
             // selected download paths
@@ -541,11 +561,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 for (Document document : documents) {
                     DocumentDTO documentDto = this.documentDao.toDTO(document);
                     documentDto = setDraftInfos(document, documentDto);
-                    
+
                     if(request.getUserPrincipal() != null) {
-                    	documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
+                        documentDto = setLiveEditUrl(documentDto, nuxeoController, bundle);
                     }
-                    
+
                     FileBrowserItem fileBrowserItem = new FileBrowserItem(documentDto);
                     fileBrowserItem.setIndex(index++);
 
@@ -577,6 +597,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 Comparator<FileBrowserItem> comparator = new FileBrowserComparator(criteria);
                 Collections.sort(fileBrowserItems, comparator);
                 request.setAttribute("documents", fileBrowserItems);
+
+                // max file upload size
+                long maximumFileSizeInMb = NumberUtils.toLong(MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+                request.setAttribute("maximumFileSize", maximumFileSizeInMb * FileUtils.ONE_MB);
+                request.setAttribute("maximumFileSizeInMb", maximumFileSizeInMb);
 
 
                 // Add menubar items
@@ -632,9 +657,9 @@ public class FileBrowserPortlet extends CMSPortlet {
 
             String onlyofficeEditLockUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.TRUE);
             documentDTO.getProperties().put("onlyofficeEditLockUrl", onlyofficeEditLockUrl);
-            
+
             String onlyofficeEditCollabUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, documentDTO.getPath(), nuxeoController, Boolean.FALSE);
-            documentDTO.getProperties().put("onlyofficeEditCollabUrl", onlyofficeEditCollabUrl);            
+            documentDTO.getProperties().put("onlyofficeEditCollabUrl", onlyofficeEditCollabUrl);
         }
         return documentDTO;
     }
@@ -824,7 +849,6 @@ public class FileBrowserPortlet extends CMSPortlet {
         // CMS context
         CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
-
         // Callback URL
         String callbackUrl = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
                 null, null);
@@ -848,6 +872,14 @@ public class FileBrowserPortlet extends CMSPortlet {
         String moveUrl = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
                 moveProperties, PortalUrlType.POPUP);
         request.setAttribute("moveUrl", moveUrl);
+
+        // Rename URL
+        Map<String, String> renameProperties = new HashMap<>(2);
+        renameProperties.put(Constants.WINDOW_PROP_URI, "_PATH_");
+        renameProperties.put(RenamePortlet.DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY, currentDocument.getPath());
+        String renameDocumentUrl = this.getPortalUrlFactory().getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-rename-portlet-instance",
+                renameProperties, PortalUrlType.MODAL);
+        request.setAttribute("renameDocumentUrl", renameDocumentUrl);
     }
 
 }
