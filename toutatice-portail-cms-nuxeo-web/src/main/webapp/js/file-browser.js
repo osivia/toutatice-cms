@@ -387,8 +387,10 @@ $JQry(function() {
 			var $this = $JQry(this),
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
-				$list = $browser.find(".file-upload .file-upload-list");
-			    $overwritteAlert = $browser.find(".file-upload .alert-warning");
+				$list = $browser.find(".file-upload .file-upload-list"),
+			    $overwriteAlert = $browser.find(".file-upload .alert-warning"),
+			    $fileSizeAlert = $browser.find(".file-upload .alert-danger"),
+				maxFileSize = $browser.data('max-file-size');    
 			
 			var $cancelGlyph = $JQry(document.createElement("i")).addClass("halflings halflings-ban-circle");
 			var $cancelText = $JQry(document.createElement("span")).text($panel.find(".cancel").first().text());
@@ -397,8 +399,8 @@ $JQry(function() {
 			$panel.removeClass("hidden");
 			
 			// Context
-			data.context = $JQry(document.createElement("li"))
-			data.context.addClass("template-upload list-group-item")
+			data.context = $JQry(document.createElement("li"));
+			data.context.addClass("template-upload list-group-item");
 			data.context.appendTo($list);
 			
 			// List item
@@ -421,28 +423,45 @@ $JQry(function() {
 			$cancelButton.append($cancelText);
 			$cancelButton.appendTo($listItem);
 			
-			
 			var nameConflicts = [];
+			var sizeTooLarge = [];
 			$JQry.each(data.files, function(index, file) {
 				// Item content
 				$content = $JQry(document.createElement("p"));
 				$content.text(file.name);
 				$content.appendTo($listItem);
 				
-				$browser.find("li").each(function(index, li) {
-					if($JQry(this).find("a").text() === file.name){
-						$JQry(this).addClass("bg-warning");
-						nameConflicts.push(file.name);
-					}
-				});
-				
+				// remove files too large
+				if(file.size>maxFileSize){
+					$listItem.parents("li").addClass("list-group-item-danger");
+					sizeTooLarge.push(file.name);
+				}else{
+					$browser.find("li").each(function(index, li) {
+						if($JQry(this).find("a").text() === file.name){
+							$listItem.parents("li").addClass("list-group-item-warning");
+							$JQry(this).addClass("bg-warning");
+							nameConflicts.push(file.name);
+						}
+					});
+				}
 			});
-			if(nameConflicts.length > 0){
-				var $nameList = $overwritteAlert.children("ul");
+			
+			if(sizeTooLarge.length > 0){
+				var $nameList = $fileSizeAlert.children("ul");
+				for (i = 0; i < sizeTooLarge.length; i++) {
+					$nameList.append("<li>"+sizeTooLarge[i]+"</li>");
+				}
+				$fileSizeAlert.removeClass("hidden");
+				
+				var $button = $panel.find(".fileupload-buttonbar button.start");
+				$button.addClass("disabled");
+				$button.attr("disabled", "disabled");
+			}else if(nameConflicts.length > 0){
+				var $nameList = $overwriteAlert.children("ul");
 				for (i = 0; i < nameConflicts.length; i++) {
 					$nameList.append("<li>"+nameConflicts[i]+"</li>");
 				}
-				$overwritteAlert.removeClass("hidden");
+				$overwriteAlert.removeClass("hidden");
 			}
 		},
 		
@@ -464,26 +483,50 @@ $JQry(function() {
 				$browser = $this.closest(".file-browser"),
 				$panel = $browser.find(".file-upload .panel"),
 				$list = $browser.find(".file-upload .file-upload-list"),
-				$overwritteAlert = $browser.find(".file-upload .alert-warning");
+				$overwriteAlert = $browser.find(".file-upload .alert-warning"),
+				$fileSizeAlert = $browser.find(".file-upload .alert-danger"),
+				$submitButton = $panel.find(".fileupload-buttonbar button.start");
 			
 			$browser.find("li").removeClass("bg-warning");
-			$overwritteAlert.addClass("hidden");
 			
 			var $paragraphs = $list.find("p");
 			if($paragraphs.length){
-				var alert = false;
+				
+				var savedLi = [];
+				var $overwriteLi = $overwriteAlert.find("li");
+				var $fileSizeLi = $fileSizeAlert.find("li");
+				
 				$paragraphs.each(function(index, paragraph) {
-					var fileName = $JQry(paragraph).text();
+					var fileName = paragraph.innerText;
 					
-					$browser.find("li").each(function(index, li) {
-						if($JQry(this).find("a").text() === fileName){
-							$JQry(this).addClass("bg-warning");
-							alert = true;
+					// save replaced files
+					$overwriteLi.each(function(index, li) {
+						if(li.innerText == fileName){
+							savedLi.push(li);
+						}
+					});
+					
+					// save too large files
+					$fileSizeLi.each(function(index, li) {
+						if(li.innerText == fileName){
+							savedLi.push(li);
 						}
 					});
 				});
-				if(alert){
-					$overwritteAlert.removeClass("hidden");
+				
+				// remove warnings
+				$overwriteLi.not(savedLi).remove();
+				$fileSizeLi.not(savedLi).remove();
+				$overwriteLi = $overwriteAlert.find("li");
+				$fileSizeLi = $fileSizeAlert.find("li");
+				
+				if($overwriteLi.size() == 0){
+					$overwriteAlert.addClass("hidden");
+				}
+				if($fileSizeLi.size() == 0){
+					$fileSizeAlert.addClass("hidden");
+					$submitButton.removeClass("disabled");
+					$submitButton.removeAttr("disabled", "disabled");
 				}
 			}else{
 				$panel.addClass("hidden");
