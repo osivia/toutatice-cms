@@ -6,10 +6,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.cms.DocumentState;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -156,6 +158,18 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         }
 
         return documentContext;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PortalControllerContext getPortalControllerContext() {
+        // Controller context
+        ControllerContext controllerContext = this.cmsContext.getControllerContext();
+
+        return new PortalControllerContext(controllerContext);
     }
 
 
