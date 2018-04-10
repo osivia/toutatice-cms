@@ -2367,6 +2367,7 @@ public class NuxeoController {
                 scope = null;
             }
             cmsContext.setScope(scope);
+            cmsContext.setForcePublicationInfosScope(scope);
         }
 
         // Document context
