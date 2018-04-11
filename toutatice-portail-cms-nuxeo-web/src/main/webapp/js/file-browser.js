@@ -489,12 +489,12 @@ $JQry(function() {
 			
 			$browser.find("li").removeClass("bg-warning");
 			
+			var savedLi = [];
+			var $overwriteLi = $overwriteAlert.find("li");
+			var $fileSizeLi = $fileSizeAlert.find("li");
 			var $paragraphs = $list.find("p");
 			if($paragraphs.length){
 				
-				var savedLi = [];
-				var $overwriteLi = $overwriteAlert.find("li");
-				var $fileSizeLi = $fileSizeAlert.find("li");
 				
 				$paragraphs.each(function(index, paragraph) {
 					var fileName = paragraph.innerText;
@@ -529,6 +529,12 @@ $JQry(function() {
 					$submitButton.removeAttr("disabled", "disabled");
 				}
 			}else{
+				// remove warnings
+				$overwriteLi.not(savedLi).remove();
+				$fileSizeLi.not(savedLi).remove();
+				$fileSizeAlert.addClass("hidden");
+				$submitButton.removeClass("disabled");
+				$submitButton.removeAttr("disabled", "disabled");
 				$panel.addClass("hidden");
 			}
 		},
