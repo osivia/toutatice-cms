@@ -59,6 +59,7 @@ public class RenamePortlet extends CMSPortlet {
         request.setAttribute("currentDocTitle", currentDocument.getTitle());
         DocumentDTO currentDocumentDto = DocumentDAO.getInstance().toDTO(currentDocument);
         request.setAttribute("docIcon", currentDocumentDto.getIcon());
+        request.setAttribute("error", request.getParameter("error"));
         response.setContentType("text/html");
 
         PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher(PATH_VIEW);
@@ -84,20 +85,22 @@ public class RenamePortlet extends CMSPortlet {
                 // new title
                 String newDocTitle = request.getParameter("newDocTitle");
 
-                Document updatedDcoument = (Document) nuxeoController.executeNuxeoCommand(new RenameCommand(currentDocument, newDocTitle));
-                addNotification(nuxeoController.getPortalCtx(), "RENAME_DOCUMENT_SUCCESS", NotificationsType.SUCCESS);
-
-                // refresh portlet cache
-                nuxeoController.getDocumentContext(updatedDcoument.getPath(), true);
-
-                // Redirect
-                String redirectPath = window.getProperty(DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY);
-                if (StringUtils.isEmpty(redirectPath)) {
-                    redirectPath = updatedDcoument.getPath();
+                if (StringUtils.isNotBlank(newDocTitle)) {
+                    Document updatedDcoument = (Document) nuxeoController.executeNuxeoCommand(new RenameCommand(currentDocument, newDocTitle));
+                    addNotification(nuxeoController.getPortalCtx(), "RENAME_DOCUMENT_SUCCESS", NotificationsType.SUCCESS);
+                    // refresh portlet cache
+                    nuxeoController.getDocumentContext(updatedDcoument.getPath(), true);
+                    // Redirect
+                    String redirectPath = window.getProperty(DOCUMENT_REDIRECT_PATH_WINDOW_PROPERTY);
+                    if (StringUtils.isEmpty(redirectPath)) {
+                        redirectPath = updatedDcoument.getPath();
+                    }
+                    String redirectionUrl = nuxeoController.getPortalUrlFactory().getCMSUrl(nuxeoController.getPortalCtx(), null, redirectPath, null, null,
+                            IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
+                    response.sendRedirect(redirectionUrl);
+                } else {
+                    response.setRenderParameter("error", getBundleFactory().getBundle(request.getLocale()).getString("RENAME_DOCUMENT_TITLE_REQUIRED"));
                 }
-                String redirectionUrl = nuxeoController.getPortalUrlFactory().getCMSUrl(nuxeoController.getPortalCtx(), null, redirectPath, null,
-                        null, IPortalUrlFactory.DISPLAYCTX_REFRESH, null, null, null, null);
-                response.sendRedirect(redirectionUrl);
             }
         }
     }
