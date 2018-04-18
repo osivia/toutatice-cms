@@ -241,6 +241,7 @@ public class SearchPortlet extends CMSPortlet {
                 windowProperties.put(Constants.WINDOW_PROP_URI, nuxeoController.getComputedPath(path));
                 windowProperties.put("osivia.title", bundle.getString("SEARCH_RESULT"));
                 windowProperties.put("osivia.hideDecorators", "1");
+                windowProperties.put("osivia.navigation.reset", String.valueOf(true));
 
                 // URL parameters
                 Map<String, String> params = new HashMap<String, String>();
