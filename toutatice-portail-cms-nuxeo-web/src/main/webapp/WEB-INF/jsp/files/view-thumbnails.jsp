@@ -77,6 +77,10 @@
                         <ttc:documentLink document="${document}" displayContext="download" var="link" />
                     </c:when>
                     
+                    <c:when test="${'ContextualLink' eq document.type.name}">
+                    	<ttc:documentLink document="${document}" var="link" displayContext="contextualLink"/>
+                    </c:when>
+                    
                     <c:otherwise>
                         <ttc:documentLink document="${document}" var="link" />
                     </c:otherwise>

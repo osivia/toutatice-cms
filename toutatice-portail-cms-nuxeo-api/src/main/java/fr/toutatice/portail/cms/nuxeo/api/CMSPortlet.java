@@ -31,7 +31,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -390,9 +389,10 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
                 // URL
                 String url = document.getString("clink:link");
-                if (!StringUtils.startsWith(url, "http")) {
-                    url = "http://" + url;
-                }
+                // LBI #1609, pas de correction de lien en http a posteriori, TODO introduire des contrôles et assistants côté saisie de lien back office
+//                if (!StringUtils.startsWith(url, "http")) {
+//                    url = "http://" + url;
+//                }
 
                 // Response
                 resourceResponse.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_MOVED_TEMPORARILY));
