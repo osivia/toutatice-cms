@@ -24,9 +24,17 @@
         <attribute>
             <description>Document DTO.</description>
             <name>document</name>
-            <required>true</required>
+            <required>false</required>
             <rtexprvalue>true</rtexprvalue>
             <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+        
+        <attribute>
+            <description>Document CMS path or webId.</description>
+            <name>path</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
         </attribute>
         
         <attribute>
