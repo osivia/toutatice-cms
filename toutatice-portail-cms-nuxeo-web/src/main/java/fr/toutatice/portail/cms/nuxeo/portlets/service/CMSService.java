@@ -2114,7 +2114,7 @@ public class CMSService implements ICMSService {
     	// #1421 - If not specified, use current request url insteaod of nuxeo.url
     	String fqdn = NuxeoConnectionProperties.getPublicDomainUri().toString();
         
-        if(StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getRequest() !=null) {
+        if(StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getServletRequest() !=null) {
         	
         	String vhost = null; 
         	
