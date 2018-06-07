@@ -637,6 +637,12 @@ public class ViewListPortlet extends ViewList {
                         }
                     }
                 }
+                
+                //TODO : for tests only
+                if(nuxeoRequest.contains("noeud2"))	{
+                	nuxeoController.setSatelliteName("noeud2");
+                }
+                	
             }
 
             //Sets

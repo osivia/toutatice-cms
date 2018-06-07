@@ -30,6 +30,14 @@ import org.osivia.portal.core.profils.ProfilBean;
 /**
  * The Class NuxeoCommandContext.
  */
+/**
+ * @author Jean-Sébastien
+ *
+ */
+/**
+ * @author Jean-Sébastien
+ *
+ */
 public class NuxeoCommandContext {
 
 	/** The auth type anonymous. */
@@ -55,7 +63,25 @@ public class NuxeoCommandContext {
 
     /** Asynchronous command execution indicator. */
     private boolean asynchronousCommand;
+    
+    /** Nuxeo Satellite Name **/
+    private String satelliteName;
 
+
+	/**
+	 * @return
+	 */
+	public String getSatelliteName() {
+		return satelliteName;
+	}
+
+	/**
+	 * @param satelliteName
+	 */
+	
+	public void setSatelliteName(String satelliteName) {
+		this.satelliteName = satelliteName;
+	}
 
 	/**
 	 * Gets the server invocation.

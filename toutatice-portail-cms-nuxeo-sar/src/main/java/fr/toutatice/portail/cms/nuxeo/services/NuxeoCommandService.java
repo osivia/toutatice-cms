@@ -53,6 +53,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 
 /**
  * Gestionnaire de commandes Nuxeo
@@ -340,7 +341,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	protected boolean checkStatus(NuxeoCommandContext ctx) throws Exception {
 
-		if (this.getServiceStatut(ctx).isReady(NuxeoConnectionProperties.getPrivateBaseUri().toString())) {
+		if (this.getServiceStatut(ctx).isReady(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatelliteName()).getPrivateBaseUri().toString())) {
             return true;
         } else {
             return false;
@@ -370,7 +371,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				// On ne notifie pas le statut sur les erreurs 500
 
 			} else {
-				this.getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
+				this.getServiceStatut(ctx).notifyError(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatelliteName()).getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
 
 			}
@@ -380,7 +381,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			Throwable cause = e.getCause();
 
 			if( (cause instanceof HttpHostConnectException) || (cause instanceof SocketTimeoutException)) {
-                this.getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
+                this.getServiceStatut(ctx).notifyError(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatelliteName()).getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
             }
 

@@ -159,6 +159,10 @@ public class NuxeoController {
     String domainPath;
 
     HttpServletRequest servletRequest;
+    
+    /** Nuxeo satellite name **/
+    String satelliteName;
+    
 
     public HttpServletRequest getServletRequest() {
         return this.servletRequest;
@@ -172,7 +176,22 @@ public class NuxeoController {
     /** Directory service */
     private IDirectoryServiceLocator directoryServiceLocator;
 
-    private IDirectoryService directoryService;
+    /**
+	 * @return the satelliteName
+	 */
+	public String getSatelliteName() {
+		return satelliteName;
+	}
+
+
+	/**
+	 * @param satelliteName the satelliteName to set
+	 */
+	public void setSatelliteName(String satelliteName) {
+		this.satelliteName = satelliteName;
+	}
+
+	private IDirectoryService directoryService;
 
     private IDirectoryService getDirectoryService() {
         if (this.directoryService == null) {
@@ -631,17 +650,7 @@ public class NuxeoController {
         this.authType = authType;
     }
 
-    /**
-     * Gets the nuxeo connection props.
-     *
-     * @return the nuxeo connection props
-     */
-    public NuxeoConnectionProperties getNuxeoConnectionProps() {
-        if (this.nuxeoConnection == null) {
-            this.nuxeoConnection = new NuxeoConnectionProperties();
-        }
-        return this.nuxeoConnection;
-    }
+
 
     /**
      * Gets the portal ctx.
@@ -1563,6 +1572,7 @@ public class NuxeoController {
         ctx.setCacheType(this.cacheType);
         ctx.setAsynchronousUpdates(this.asynchronousUpdates);
         ctx.setAsynchronousCommand(this.asynchronousCommand);
+        ctx.setSatelliteName(this.satelliteName);
 
         try {
 
