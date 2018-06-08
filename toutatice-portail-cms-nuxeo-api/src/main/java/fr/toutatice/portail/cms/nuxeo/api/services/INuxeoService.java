@@ -35,15 +35,15 @@ public interface INuxeoService extends ICMSIntegration {
 	String MBEAN_NAME = "osivia:service=NuxeoService";
 
 
+
 	/**
-	 * Creates the user session.
+	 * Creates the user session for a satellite
 	 *
 	 * @param userId the user id
 	 * @return the session
 	 * @throws Exception the exception
 	 */
-    Session createUserSession(String userId) throws Exception;
-
+    Session createUserSession(String satelliteName, String userId) throws Exception;
 
     /**
      * Start nuxeo command service.
