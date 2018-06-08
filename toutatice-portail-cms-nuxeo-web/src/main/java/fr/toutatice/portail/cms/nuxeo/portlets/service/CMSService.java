@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -103,6 +105,7 @@ import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.NavigationItem;
 import org.osivia.portal.core.cms.RegionInheritance;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.page.PageProperties;
@@ -228,6 +231,25 @@ public class CMSService implements ICMSService {
     public void setCustomizer(DefaultCMSCustomizer customizer) {
         this.customizer = customizer;
     }
+    
+    /**
+     * @param cmsCtx
+     * @param path
+     * @return
+     */
+    private String setCtxSatellite( CMSServiceCtx cmsCtx, String path) {
+      	String satelliteName=cmsCtx.getSatelliteName();
+    	
+    	if( path.contains("noeud2"))
+    		cmsCtx.setSatelliteName("noeud2");
+    	
+    	return satelliteName;
+    }
+    
+    
+    
+
+
 
     /**
      * Create CMS item.
@@ -435,7 +457,11 @@ public class CMSService implements ICMSService {
                     }
                 }
             }
+            
+        
         }
+        
+        commandCtx.setSatelliteName(cmsCtx.getSatelliteName());
 
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 
@@ -523,7 +549,10 @@ public class CMSService implements ICMSService {
      */
     @Override
     public CMSItem getContent(CMSServiceCtx cmsContext, String path) throws CMSException {
-        // Content
+    	
+    	String satelliteName=setCtxSatellite(cmsContext, path);
+    	
+        // Content1
         CMSItem content = null;
 
         try {
@@ -543,6 +572,9 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
 
+        
+        cmsContext.setSatelliteName(satelliteName);
+        
         return content;
     }
 
@@ -1126,6 +1158,8 @@ public class CMSService implements ICMSService {
     public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
         /* Instanciation pour que la méthode soit techniquement "null safe" */
         CMSPublicationInfos pubInfos = new CMSPublicationInfos();
+        
+    	String satelliteName=setCtxSatellite(ctx, path);
 
         try {
 
@@ -1179,6 +1213,9 @@ public class CMSService implements ICMSService {
             throw e;
         } catch (Exception e) {
             throw new CMSException(e);
+        }
+        finally {
+        	ctx.setSatelliteName(satelliteName);
         }
 
         return pubInfos;
@@ -1312,16 +1349,22 @@ public class CMSService implements ICMSService {
         // Request attribute name
         String attributeName = EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX + StringEscapeUtils.escapeHtml(path);
 
+        
+        
         // Get extended document informations in request
         ExtendedDocumentInfos infos = (ExtendedDocumentInfos) request.getAttribute(attributeName);
         
         if (infos == null) {
             infos = new ExtendedDocumentInfos();
+            
+        	String satelliteName=setCtxSatellite(cmsContext, path);
 
             try {
                 if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
                     // Nuxeo command
                     INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
+                    
+                      // Noeud2
 
                     infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
                 }
@@ -1331,6 +1374,8 @@ public class CMSService implements ICMSService {
                 throw e;
             } catch (Exception e) {
                 throw new CMSException(e);
+            } finally	{
+            	cmsContext.setSatelliteName(satelliteName);
             }
 
             request.setAttribute(attributeName, infos);
@@ -3274,6 +3319,33 @@ public class CMSService implements ICMSService {
             }
         }
         return false;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<Satellite> getSatellites() throws CMSException {
+        String[] ids = StringUtils.split(System.getProperty("nuxeo.satellites"), ",");
+
+        Set<Satellite> satellites;
+        if (ArrayUtils.isEmpty(ids)) {
+            satellites = null;
+        } else {
+            satellites = new LinkedHashSet<>(ids.length);
+            for (String id : ids) {
+                Satellite satellite = new Satellite(id);
+                satellite.setLabel(StringUtils.defaultIfBlank(System.getProperty("nuxeo.satellite." + id + ".label"), id));
+                satellite.setPublicHost(System.getProperty("nuxeo.satellite." + id + ".publicHost"));
+                satellite.setPublicPort(System.getProperty("nuxeo.satellite." + id + ".publicPort"));
+                satellite.setPrivateHost(System.getProperty("nuxeo.satellite." + id + ".privateHost"));
+                satellite.setPrivatePort(System.getProperty("nuxeo.satellite." + id + ".privatePort"));
+                satellites.add(satellite);
+            }
+        }
+
+        return satellites;
     }
 
 }
