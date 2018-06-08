@@ -16,9 +16,11 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletContext;
@@ -66,6 +68,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
@@ -160,8 +163,6 @@ public class NuxeoController {
 
     HttpServletRequest servletRequest;
     
-    /** Nuxeo satellite name **/
-    String satelliteName;
     
 
     public HttpServletRequest getServletRequest() {
@@ -176,20 +177,6 @@ public class NuxeoController {
     /** Directory service */
     private IDirectoryServiceLocator directoryServiceLocator;
 
-    /**
-	 * @return the satelliteName
-	 */
-	public String getSatelliteName() {
-		return satelliteName;
-	}
-
-
-	/**
-	 * @param satelliteName the satelliteName to set
-	 */
-	public void setSatelliteName(String satelliteName) {
-		this.satelliteName = satelliteName;
-	}
 
 	private IDirectoryService directoryService;
 
@@ -279,6 +266,10 @@ public class NuxeoController {
     boolean streamingSupport = false;
 
     String forcedLivePath = null;
+
+
+    /** Satellite. */
+    private Satellite satellite;
 
 
     public String getForcedLivePath() {
@@ -838,6 +829,22 @@ public class NuxeoController {
                         this.forcedLivePath = editionState.getDocPath();
                     }
                 }
+            }
+
+
+            // Satellite
+            String satelliteName = window.getProperty("osivia.satellite");
+            if (StringUtils.isNotEmpty(satelliteName)) {
+                Set<Satellite> satellites = getCMSService().getSatellites();
+                Satellite satellite = null;
+                Iterator<Satellite> iterator = satellites.iterator();
+                while ((satellite == null) && iterator.hasNext()) {
+                    Satellite next = iterator.next();
+                    if (StringUtils.equals(satelliteName, next.getId())) {
+                        satellite = next;
+                    }
+                }
+                this.satellite = satellite;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1572,7 +1579,9 @@ public class NuxeoController {
         ctx.setCacheType(this.cacheType);
         ctx.setAsynchronousUpdates(this.asynchronousUpdates);
         ctx.setAsynchronousCommand(this.asynchronousCommand);
-        ctx.setSatelliteName(this.satelliteName);
+        if (this.satellite != null) {
+            ctx.setSatelliteName(this.satellite.getId());
+        }
 
         try {
 
@@ -2266,6 +2275,8 @@ public class NuxeoController {
 
             }
             this.cmsCtx.setStreamingSupport(this.streamingSupport);
+
+            this.cmsCtx.setSatellite(this.satellite);
 
 
             return this.cmsCtx;

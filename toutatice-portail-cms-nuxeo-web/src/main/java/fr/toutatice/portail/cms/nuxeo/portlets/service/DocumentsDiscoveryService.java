@@ -14,12 +14,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.cms.Satellite;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.IDocumentsDiscoveryService;
@@ -36,22 +34,22 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
     private Map<String, Satellite> satellites;
 
 
+    /** CMS service. */
+    private final CMSService cmsService;
+
     /** Cache. */
     private final Map<String, Satellite> cache;
-
-    /** CMS service locator. */
-    private final ICMSServiceLocator cmsServiceLocator;
 
 
     /**
      * Constructor.
+     * 
+     * @param cmsService CMS service
      */
-    public DocumentsDiscoveryService() {
+    public DocumentsDiscoveryService(CMSService cmsService) {
         super();
+        this.cmsService = cmsService;
         this.cache = new ConcurrentHashMap<>();
-
-        // CMS service locator
-        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
     }
 
 
@@ -62,9 +60,6 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
      */
     private synchronized void initSatellites() throws CMSException {
         if (this.satellites == null) {
-            // CMS service
-            ICMSService cmsService = this.cmsServiceLocator.getCMSService();
-
             Set<Satellite> satellites = cmsService.getSatellites();
 
             if (CollectionUtils.isEmpty(satellites)) {
@@ -91,9 +86,6 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
         Satellite result = this.cache.get(path);
 
         if (result == null) {
-            // CMS service
-            ICMSService cmsService = this.cmsServiceLocator.getCMSService();
-
             // Saved publication infos scope
             String savedScope = cmsContext.getForcePublicationInfosScope();
 
@@ -129,7 +121,7 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
                     try {
                         DiscoveryResult discoveryResult = future.get();
 
-                        if (discoveryResult.error == 0) {
+                        if ((discoveryResult.error == 0) && StringUtils.isNotEmpty(discoveryResult.path)) {
                             discoveryResults.add(discoveryResult);
                         }
                     } catch (InterruptedException | ExecutionException e) {
@@ -168,8 +160,6 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
      */
     private class DiscoveryCallable implements Callable<DiscoveryResult> {
 
-        /** CMS service. */
-        private final ICMSService cmsService;
         /** CMS context. */
         private final CMSServiceCtx cmsContext;
         /** Satellite. */
@@ -188,7 +178,6 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
          */
         public DiscoveryCallable(ICMSService cmsService, CMSServiceCtx cmsContext, Satellite satellite, String path) {
             super();
-            this.cmsService = cmsService;
             this.cmsContext = cmsContext;
             this.satellite = satellite;
             this.path = path;
@@ -202,11 +191,21 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
         public DiscoveryResult call() throws Exception {
             DiscoveryResult result = new DiscoveryResult(this.satellite);
 
+            // Saved satellite
+            Satellite savedSatellite = this.cmsContext.getSatellite();
             try {
-                CMSPublicationInfos publicationInfos = this.cmsService.getPublicationInfos(this.cmsContext, this.path);
-                result.path = publicationInfos.getDocumentPath();
+                this.cmsContext.setSatellite(this.satellite);
+
+                PublishInfosCommand command = new PublishInfosCommand(this.path);
+                CMSPublicationInfos publicationInfos = (CMSPublicationInfos) cmsService.executeNuxeoCommand(this.cmsContext, command);
+
+                if (publicationInfos != null) {
+                    result.path = publicationInfos.getDocumentPath();
+                }
             } catch (CMSException e) {
                 result.error = e.getErrorCode();
+            } finally {
+                this.cmsContext.setSatellite(savedSatellite);
             }
 
             return result;

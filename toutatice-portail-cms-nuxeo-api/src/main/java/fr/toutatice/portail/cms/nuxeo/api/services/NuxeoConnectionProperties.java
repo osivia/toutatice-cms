@@ -23,17 +23,16 @@ import java.net.URI;
  */
 public class NuxeoConnectionProperties {
 
-
-
 	private static NuxeoSatelliteConnectionProperties defaultProperties=null;
+
 
     /**
      * Getter for Nuxeo context.
      * 
      * @return Nuxeo context
      */
-    public static final String getNuxeoContext()	{
-        return NuxeoSatelliteConnectionProperties.getNuxeoContext();
+    public static final String getNuxeoContext() {
+        return NuxeoSatelliteConnectionProperties.NUXEO_CONTEXT;
     }
 
     
@@ -43,6 +42,7 @@ public class NuxeoConnectionProperties {
     	return defaultProperties;
 
     }
+
 
     /**
      * Getter for Nuxeo public domain URI (without context).

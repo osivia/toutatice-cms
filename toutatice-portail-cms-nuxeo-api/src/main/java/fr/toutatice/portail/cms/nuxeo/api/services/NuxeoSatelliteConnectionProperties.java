@@ -17,9 +17,17 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import java.net.URI;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.core.cms.CMSException;
+import org.osivia.portal.core.cms.ICMSService;
+import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.cms.Satellite;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,43 +35,77 @@ import org.springframework.util.StringUtils;
  */
 public class NuxeoSatelliteConnectionProperties {
 
-	/** Nuxeo public host. */
-	private final String NUXEO_PUBLIC_HOST;
-	/** Nuxeo public port. */
-	private final String NUXEO_PUBLIC_PORT;
-	/** Nuxeo private host. */
-	private final String NUXEO_PRIVATE_HOST;
-	/** Nuxeo private port. */
-	private final String NUXEO_PRIVATE_PORT;
-	/** Nuxeo context. */
-	private static String NUXEO_CONTEXT = "/nuxeo";
+    /** Nuxeo context. */
+    public static final String NUXEO_CONTEXT = "/nuxeo";
 
-	private static Map<String, NuxeoSatelliteConnectionProperties> connections = new ConcurrentHashMap<String, NuxeoSatelliteConnectionProperties>();
+    /** Connections. */
+    private static Map<String, NuxeoSatelliteConnectionProperties> connections = new ConcurrentHashMap<>();
 
+
+    /** Satellite. */
+    private final Satellite satellite;
+
+
+    /**
+     * Constructor.
+     * 
+     * @param satelliteName satellite name
+     */
 	public NuxeoSatelliteConnectionProperties(String satelliteName) {
 		super();
-		String propertyPrefix = "";
-		if (!StringUtils.isEmpty(satelliteName))
-			propertyPrefix = ".satellite." + satelliteName ;
 
-		NUXEO_PUBLIC_HOST = System.getProperty("nuxeo" + propertyPrefix + ".publicHost");
+        if (StringUtils.isEmpty(satelliteName)) {
+            this.satellite = Satellite.MAIN;
+            this.satellite.setPublicHost("nuxeo.publicHost");
+            this.satellite.setPublicPort(System.getProperty("nuxeo.publicPort"));
+            this.satellite.setPrivateHost(System.getProperty("nuxeo.privateHost"));
+            this.satellite.setPrivatePort(System.getProperty("nuxeo.privatePort"));
+        } else {
+            // CMS service
+            ICMSServiceLocator cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+            ICMSService cmsService = cmsServiceLocator.getCMSService();
 
-		NUXEO_PUBLIC_PORT = System.getProperty("nuxeo" + propertyPrefix + ".publicPort");
+            Set<Satellite> satellites;
+            try {
+                satellites = cmsService.getSatellites();
+            } catch (CMSException e) {
+                satellites = null;
+            }
 
-		NUXEO_PRIVATE_HOST = System.getProperty("nuxeo" + propertyPrefix + ".privateHost");
-
-		NUXEO_PRIVATE_PORT = System.getProperty("nuxeo" + propertyPrefix + ".privatePort");
-
+            Satellite findedSatellite = null;
+            if (CollectionUtils.isNotEmpty(satellites)) {
+                Iterator<Satellite> iterator = satellites.iterator();
+                while ((findedSatellite == null) && iterator.hasNext()) {
+                    Satellite satellite = iterator.next();
+                    if (StringUtils.pathEquals(satelliteName, satellite.getId())) {
+                        findedSatellite = satellite;
+                    }
+                }
+            }
+            this.satellite = findedSatellite;
+        }
 	}
 
-	/**
-	 * Getter for Nuxeo context.
-	 * 
-	 * @return Nuxeo context
-	 */
-	public static final String getNuxeoContext() {
-		return NUXEO_CONTEXT;
-	}
+
+    /**
+     * Get connection properties.
+     * 
+     * @param satelliteName satellite name
+     * @return connection properties
+     */
+    public static NuxeoSatelliteConnectionProperties getConnectionProperties(String satelliteName) {
+        String searchName = satelliteName;
+        if (StringUtils.isEmpty(searchName)) {
+            searchName = "MAIN";
+        }
+        NuxeoSatelliteConnectionProperties conn = connections.get(searchName);
+        if (conn == null) {
+            conn = new NuxeoSatelliteConnectionProperties(satelliteName);
+            connections.put(searchName, conn);
+        }
+        return conn;
+    }
+
 
 	/**
 	 * Getter for Nuxeo public domain URI (without context).
@@ -71,8 +113,12 @@ public class NuxeoSatelliteConnectionProperties {
 	 * @return Nuxeo public domain URI
 	 */
 	public final URI getPublicDomainUri() {
+        String publicHost = this.getPublicHost();
+        String publicPort = this.getPublicPort();
+	    
+	    
 		String scheme = "http";
-		if ("443".equals(NUXEO_PUBLIC_PORT)) {
+		if ("443".equals(publicPort)) {
 			scheme = "https";
 		}
 
@@ -80,20 +126,21 @@ public class NuxeoSatelliteConnectionProperties {
 			URI uri;
 
 			// #1421 If not specified, use current fqdn
-			if (NUXEO_PUBLIC_HOST == null && NUXEO_PUBLIC_PORT == null) {
+            if (publicHost == null && publicPort == null) {
 				uri = new URI("");
 			}
 
-			else if ("80".equals(NUXEO_PUBLIC_PORT) || "443".equals(NUXEO_PUBLIC_PORT)) {
-				uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST);
+            else if ("80".equals(publicPort) || "443".equals(publicPort)) {
+                uri = new URI(scheme + "://" + publicHost);
 			} else {
-				uri = new URI(scheme + "://" + NUXEO_PUBLIC_HOST + ":" + NUXEO_PUBLIC_PORT);
+                uri = new URI(scheme + "://" + publicHost + ":" + publicPort);
 			}
 			return uri;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
+
 
 	/**
 	 * Getter for Nuxeo public base URI (with context).
@@ -109,31 +156,85 @@ public class NuxeoSatelliteConnectionProperties {
 		}
 	}
 
+
 	/**
 	 * Getter for Nuxeo private base URI (with context).
 	 * 
 	 * @return Nuxeo private base URI
 	 */
 	public final URI getPrivateBaseUri() {
+        String privateHost = this.getPrivateHost();
+        String privatePort = this.getPrivatePort();
+
 		try {
-			return new URI("http://" + NUXEO_PRIVATE_HOST + ":" + NUXEO_PRIVATE_PORT + NUXEO_CONTEXT);
+            return new URI("http://" + privateHost + ":" + privatePort + NUXEO_CONTEXT);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static NuxeoSatelliteConnectionProperties getConnectionProperties(String satelliteName) {
-		String searchName = satelliteName;
-		if (StringUtils.isEmpty(searchName)) {
-			searchName = "MAIN";
-		}
-		NuxeoSatelliteConnectionProperties conn = connections.get(searchName);
-		if (conn == null) {
-			conn = new NuxeoSatelliteConnectionProperties(satelliteName);
-			connections.put(searchName, conn);
-		}
-		return conn;
 
+    /**
+     * Get public host.
+     * 
+     * @return host
+     */
+    private String getPublicHost() {
+	    String publicHost;
+	    if (this.satellite == null) {
+	        publicHost = null;
+	    } else {
+	        publicHost = this.satellite.getPublicHost();
+	    }
+	    return publicHost;
 	}
+
+
+    /**
+     * Get public port.
+     * 
+     * @return port
+     */
+    private String getPublicPort() {
+        String publicPort;
+        if (this.satellite == null) {
+            publicPort = null;
+        } else {
+            publicPort = this.satellite.getPublicPort();
+        }
+        return publicPort;
+    }
+
+
+    /**
+     * Get private host.
+     * 
+     * @return host
+     */
+    private String getPrivateHost() {
+        String privateHost;
+        if (this.satellite == null) {
+            privateHost = null;
+        } else {
+            privateHost = this.satellite.getPrivateHost();
+        }
+        return privateHost;
+    }
+
+
+    /**
+     * Get private port.
+     * 
+     * @return port
+     */
+    private String getPrivatePort() {
+        String privateHost;
+        if (this.satellite == null) {
+            privateHost = null;
+        } else {
+            privateHost = this.satellite.getPrivatePort();
+        }
+        return privateHost;
+    }
 
 }

@@ -124,6 +124,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.IDocumentsDiscoveryService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -203,6 +204,8 @@ public class CMSService implements ICMSService {
     private final PersonService personService;
     /** Directory group service. */
     private final GroupService groupService;
+    /** Documents discovery service. */
+    private final IDocumentsDiscoveryService documentsDiscoveryService;
 
 
     /**
@@ -221,6 +224,7 @@ public class CMSService implements ICMSService {
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
+        this.documentsDiscoveryService = new DocumentsDiscoveryService(this);
     }
 
 
@@ -231,24 +235,6 @@ public class CMSService implements ICMSService {
     public void setCustomizer(DefaultCMSCustomizer customizer) {
         this.customizer = customizer;
     }
-    
-    /**
-     * @param cmsCtx
-     * @param path
-     * @return
-     */
-    private String setCtxSatellite( CMSServiceCtx cmsCtx, String path) {
-      	String satelliteName=cmsCtx.getSatelliteName();
-    	
-    	if( path.contains("noeud2"))
-    		cmsCtx.setSatelliteName("noeud2");
-    	
-    	return satelliteName;
-    }
-    
-    
-    
-
 
 
     /**
@@ -461,7 +447,9 @@ public class CMSService implements ICMSService {
         
         }
         
-        commandCtx.setSatelliteName(cmsCtx.getSatelliteName());
+        if (cmsCtx.getSatellite() != null) {
+            commandCtx.setSatelliteName(cmsCtx.getSatellite().getId());
+        }
 
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 
@@ -549,11 +537,18 @@ public class CMSService implements ICMSService {
      */
     @Override
     public CMSItem getContent(CMSServiceCtx cmsContext, String path) throws CMSException {
-    	
-    	String satelliteName=setCtxSatellite(cmsContext, path);
-    	
-        // Content1
+        // Content
         CMSItem content = null;
+
+        // Saved satellite
+        Satellite savedSatellite = cmsContext.getSatellite();
+        if (savedSatellite == null) {
+            Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
+            if (satellite == null) {
+                throw new CMSException(CMSException.ERROR_NOTFOUND);
+            }
+            cmsContext.setSatellite(satellite);
+        }
 
         try {
             // Fetch content
@@ -570,11 +565,10 @@ public class CMSService implements ICMSService {
             throw e;
         } catch (Exception e) {
             throw new CMSException(e);
+        } finally {
+            cmsContext.setSatellite(savedSatellite);
         }
 
-        
-        cmsContext.setSatelliteName(satelliteName);
-        
         return content;
     }
 
@@ -1158,21 +1152,29 @@ public class CMSService implements ICMSService {
     public CMSPublicationInfos getPublicationInfos(CMSServiceCtx ctx, String path) throws CMSException {
         /* Instanciation pour que la méthode soit techniquement "null safe" */
         CMSPublicationInfos pubInfos = new CMSPublicationInfos();
-        
-    	String satelliteName=setCtxSatellite(ctx, path);
 
         try {
-
             String savedScope = ctx.getScope();
+            Satellite savedSatellite = ctx.getSatellite();
 
-            try {/*
-                  * getPublicationInfos est toujours utilisé avec les droits de
-                  * l'utilisateur (il remplit en ce sens un testeur de droits car
-                  * les informations retournées sont faites selon ces derniers).
-                  * Cependant, il est possible de forcer son exécution avec
-                  * un autre mode par l'intermédiaire d'une vairiable du CMS Service
-                  * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
-                  */
+            if (savedSatellite == null) {
+                Satellite satellite = this.documentsDiscoveryService.discoverLocation(ctx, path);
+                if (satellite == null) {
+                    throw new CMSException(CMSException.ERROR_NOTFOUND);
+                }
+                ctx.setSatellite(satellite);
+            }
+
+
+            try {
+                /*
+                 * getPublicationInfos est toujours utilisé avec les droits de
+                 * l'utilisateur (il remplit en ce sens un testeur de droits car
+                 * les informations retournées sont faites selon ces derniers).
+                 * Cependant, il est possible de forcer son exécution avec
+                 * un autre mode par l'intermédiaire d'une vairiable du CMS Service
+                 * Context (cas des méthodes getAnonymousContent(), getAttachedPicture()).
+                 */
                 if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
@@ -1206,6 +1208,7 @@ public class CMSService implements ICMSService {
                 }
             } finally {
                 ctx.setScope(savedScope);
+                ctx.setSatellite(savedSatellite);
             }
         } catch (NuxeoException e) {
             e.rethrowCMSException();
@@ -1214,12 +1217,8 @@ public class CMSService implements ICMSService {
         } catch (Exception e) {
             throw new CMSException(e);
         }
-        finally {
-        	ctx.setSatelliteName(satelliteName);
-        }
 
         return pubInfos;
-
     }
 
 
@@ -1357,7 +1356,15 @@ public class CMSService implements ICMSService {
         if (infos == null) {
             infos = new ExtendedDocumentInfos();
             
-        	String satelliteName=setCtxSatellite(cmsContext, path);
+            // Saved satellite
+            Satellite savedSatellite = cmsContext.getSatellite();
+            if (savedSatellite == null) {
+                Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
+                if (satellite == null) {
+                    throw new CMSException(CMSException.ERROR_NOTFOUND);
+                }
+                cmsContext.setSatellite(satellite);
+            }
 
             try {
                 if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
@@ -1375,7 +1382,7 @@ public class CMSService implements ICMSService {
             } catch (Exception e) {
                 throw new CMSException(e);
             } finally	{
-            	cmsContext.setSatelliteName(satelliteName);
+                cmsContext.setSatellite(savedSatellite);
             }
 
             request.setAttribute(attributeName, infos);
