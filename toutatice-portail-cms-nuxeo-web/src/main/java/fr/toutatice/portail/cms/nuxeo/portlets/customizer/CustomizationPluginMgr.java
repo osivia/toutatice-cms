@@ -650,6 +650,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         templateAdaptersCache = null;
         formFiltersCache = null;
         this.setTypesCache = null;
+        this.setTypesCache = null;
 
         // Clear caches
         customizationAttributesCache.clear();

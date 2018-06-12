@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -17,21 +24,20 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This is a copy of OperationDocumentation from automation-core - must be keep
- * in sync
+ * This is a copy of OperationDocumentation from automation-core - must be keep in sync
  *
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
-public class OperationDocumentation implements
-        Comparable<OperationDocumentation>, Serializable {
+public class OperationDocumentation implements Comparable<OperationDocumentation>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public String id;
 
+    public String[] aliases;
+
     /**
-     * An array of size multiple of 2. Each pair in the array is the input and
-     * output type of a method.
+     * An array of size multiple of 2. Each pair in the array is the input and output type of a method.
      */
     public String[] signature;
 
@@ -103,10 +109,13 @@ public class OperationDocumentation implements
         return params;
     }
 
+    public String[] getAliases() {
+        return aliases;
+    }
+
     @Override
     public String toString() {
-        return category + " > " + label + " [" + id + ": "
-                + Arrays.asList(signature) + "] (" + params + ")\n"
+        return category + " > " + label + " [" + id + ": " + Arrays.asList(signature) + "] (" + params + ")\n"
                 + description;
     }
 
@@ -114,6 +123,8 @@ public class OperationDocumentation implements
         private static final long serialVersionUID = 1L;
 
         public String name;
+
+        public String description;
 
         public String type; // the data type
 
@@ -125,6 +136,13 @@ public class OperationDocumentation implements
 
         public String getName() {
             return name;
+        }
+
+        /**
+         * @since 5.7.3
+         */
+        public String getDescription() {
+            return description;
         }
 
         public String getType() {
@@ -145,8 +163,7 @@ public class OperationDocumentation implements
 
         @Override
         public String toString() {
-            return name + " [" + type + "] "
-                    + (isRequired ? "required" : "optional");
+            return name + " [" + type + "] " + (isRequired ? "required" : "optional");
         }
 
         public int compareTo(Param o) {

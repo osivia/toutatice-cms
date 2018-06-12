@@ -151,6 +151,7 @@ import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessComm
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
+import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
