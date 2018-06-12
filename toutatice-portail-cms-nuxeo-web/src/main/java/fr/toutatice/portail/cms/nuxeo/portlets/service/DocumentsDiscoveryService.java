@@ -196,7 +196,7 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
             try {
                 this.cmsContext.setSatellite(this.satellite);
 
-                PublishInfosCommand command = new PublishInfosCommand(this.path);
+                PublishInfosCommand command = new PublishInfosCommand(this.satellite, this.path );
                 CMSPublicationInfos publicationInfos = (CMSPublicationInfos) cmsService.executeNuxeoCommand(this.cmsContext, command);
 
                 if (publicationInfos != null) {

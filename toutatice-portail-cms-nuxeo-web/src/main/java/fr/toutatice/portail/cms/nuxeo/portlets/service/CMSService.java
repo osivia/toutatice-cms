@@ -1190,7 +1190,7 @@ public class CMSService implements ICMSService {
                     }
                 }
 
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(path)));
+                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();

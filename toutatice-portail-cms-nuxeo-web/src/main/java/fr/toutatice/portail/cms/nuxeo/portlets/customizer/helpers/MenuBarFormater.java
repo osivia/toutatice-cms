@@ -210,6 +210,9 @@ public class MenuBarFormater {
                 }
             }
 
+            if( !pubInfos.getSatellite().isMain())
+            	return;
+            
 
             // Check if current user is a global administrator
             boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));

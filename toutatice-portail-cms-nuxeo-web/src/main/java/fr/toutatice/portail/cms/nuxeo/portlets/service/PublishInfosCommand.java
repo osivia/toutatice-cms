@@ -44,6 +44,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -53,9 +54,11 @@ public class PublishInfosCommand implements INuxeoCommand {
 	protected static Log logger = LogFactory.getLog(PublishInfosCommand.class);
 	
 	private final String path;
+	private final Satellite satellite;
 
-    public PublishInfosCommand(String path) {
-		this.path = path;
+    public PublishInfosCommand(Satellite satellite, String path) {
+		this.satellite = satellite;
+    	this.path = path;
 	}
 
 	@Override
@@ -75,6 +78,8 @@ public class PublishInfosCommand implements INuxeoCommand {
 
         if (binariesInfos != null) {
             publiInfos = new CMSPublicationInfos();
+            
+            publiInfos.setSatellite(this.satellite);
 
             String pubInfosContent = IOUtils.toString(binariesInfos.getStream(), "UTF-8");
 
@@ -186,7 +191,7 @@ public class PublishInfosCommand implements INuxeoCommand {
     @Override
     public String getId() {
         StringBuilder id = new StringBuilder();
-        id.append("PublishInfosCommand/").append(StringUtils.removeEnd(this.path, ".proxy"));
+        id.append("PublishInfosCommand/").append(StringUtils.defaultIfEmpty(this.satellite.getId(),"MAIN")).append("/").append(StringUtils.removeEnd(this.path, ".proxy"));
         return id.toString();
     }
 
