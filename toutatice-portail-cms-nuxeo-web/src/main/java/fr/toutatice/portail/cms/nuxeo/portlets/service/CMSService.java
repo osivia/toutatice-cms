@@ -474,63 +474,71 @@ public class CMSService implements ICMSService {
      * @return CMS item
      * @throws Exception
      */
-    private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
-        // CMS item
-        CMSItem cmsItem;
+	private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
+		// CMS item
+		CMSItem cmsItem;
 
-        // Saved scope
-        String savedScope = cmsContext.getScope();
-        try {
-            boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
+		// Saved scope
+		String savedScope = cmsContext.getScope();
+		try {
+			boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
 
-            cmsContext.setAsyncCacheRefreshing(false);
+			cmsContext.setAsyncCacheRefreshing(false);
 
-            // Publication infos
-            CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
-            path = publicationInfos.getDocumentPath();
+			// Publication infos
+			CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+			path = publicationInfos.getDocumentPath();
 
-            cmsContext.setAsyncCacheRefreshing(saveAsync);
+			cmsContext.setAsyncCacheRefreshing(saveAsync);
 
-            boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
+			Satellite savedSatellite = cmsContext.getSatellite();
+			try {
 
-            if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath()) || publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
-                haveToGetLive = true;
-            }
+				Satellite satellite = publicationInfos.getSatellite();
+				cmsContext.setSatellite(satellite);
 
-            // Document non publié et rattaché à un workspace
-            if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath()) && publicationInfos.isLiveSpace())) {
-                haveToGetLive = true;
-            }
+				boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
 
-            // Ajout JSS 20130122
-            // Document non publié et non rattaché à un espace : usage collaboratif
-            if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
-                haveToGetLive = true;
-            }
+				if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath())
+						|| publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
+					haveToGetLive = true;
+				}
 
+				// Document non publié et rattaché à un workspace
+				if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath())
+						&& publicationInfos.isLiveSpace())) {
+					haveToGetLive = true;
+				}
 
-            cmsContext.setScope("superuser_context");
+				// Ajout JSS 20130122
+				// Document non publié et non rattaché à un espace : usage collaboratif
+				if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
+					haveToGetLive = true;
+				}
 
+				cmsContext.setScope("superuser_context");
 
-            // Nuxeo command
-            INuxeoCommand nuxeoCommand;
-            if (haveToGetLive) {
-                nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
-            } else {
-                nuxeoCommand = new DocumentFetchPublishedCommand(path);
-            }
+				// Nuxeo command
+				INuxeoCommand nuxeoCommand;
+				if (haveToGetLive) {
+					nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
+				} else {
+					nuxeoCommand = new DocumentFetchPublishedCommand(path);
+				}
 
-            // Document
-            Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
-            // CMS item
-            cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
-        } finally {
-            cmsContext.setScope(savedScope);
-        }
+				// Document
+				Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+				// CMS item
+				cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
+			} finally {
+				cmsContext.setSatellite(savedSatellite);
+			}
+		} finally {
+			cmsContext.setScope(savedScope);
+		}
 
-        return cmsItem;
-    }
-
+		return cmsItem;
+	}
 
     /**
      * {@inheritDoc}
@@ -540,16 +548,7 @@ public class CMSService implements ICMSService {
         // Content
         CMSItem content = null;
 
-        // Saved satellite
-        Satellite savedSatellite = cmsContext.getSatellite();
-        if (savedSatellite == null) {
-            Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
-            if (satellite == null) {
-                throw new CMSException(CMSException.ERROR_NOTFOUND);
-            }
-            cmsContext.setSatellite(satellite);
-        }
-
+ 
         try {
             // Fetch content
             content = this.fetchContent(cmsContext, path);
@@ -565,9 +564,7 @@ public class CMSService implements ICMSService {
             throw e;
         } catch (Exception e) {
             throw new CMSException(e);
-        } finally {
-            cmsContext.setSatellite(savedSatellite);
-        }
+        } 
 
         return content;
     }
