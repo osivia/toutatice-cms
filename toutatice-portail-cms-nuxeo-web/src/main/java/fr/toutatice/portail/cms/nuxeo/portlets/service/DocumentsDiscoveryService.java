@@ -104,8 +104,13 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
                 // Tasks
                 List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
+                
+                CMSServiceCtx discoveryCtx = new CMSServiceCtx();
+                discoveryCtx.setScope("superuser_context");
+                
                 for (Satellite satellite : this.satellites.values()) {
-                    DiscoveryCallable task = new DiscoveryCallable(cmsService, cmsContext, satellite, path);
+        
+                    DiscoveryCallable task = new DiscoveryCallable(cmsService, discoveryCtx, satellite, path);
                     tasks.add(task);
                 }
 

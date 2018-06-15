@@ -61,6 +61,7 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.PublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -612,10 +613,18 @@ public class CMSService implements ICMSService {
             CMSItem containerDoc = this.fetchContent(cmsCtx, docPath);
 
             if (containerDoc != null) {
+            	
+            	Satellite savedSatellite = setSatelliteInContext(cmsCtx, docPath);
+            	
+            	try	{
+            	
                 cmsCtx.setScope("superuser_context");
 
                 pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand((Document) containerDoc.getNativeItem(),
                         pictureIndex)));
+            	} finally {
+            		restoreSatelliteInContext(cmsCtx, savedSatellite);
+            	}
             }
 
         } finally {
@@ -750,6 +759,11 @@ public class CMSService implements ICMSService {
 
             // File content
             if (nuxeoDocument != null) {
+            	
+            	Satellite savedSatellite = setSatelliteInContext(cmsContext, path);
+
+            	try	{
+            	
                 // Command
                 FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
 
@@ -767,8 +781,12 @@ public class CMSService implements ICMSService {
                         }
                     }
                 }
+            	
 
                 content = (CMSBinaryContent) this.executeNuxeoCommand(cmsContext, command);
+            	} finally	{
+            		restoreSatelliteInContext(cmsContext, savedSatellite);
+            	}
             } else {
                 content = null;
             }
@@ -778,6 +796,40 @@ public class CMSService implements ICMSService {
 
         return content;
     }
+
+
+	/**
+	 * Computes the current satellite and save it into context
+	 * 
+	 * @param cmsContext
+	 * @param path
+	 * @return
+	 * @throws CMSException
+	 */
+    
+	private Satellite setSatelliteInContext(CMSServiceCtx cmsContext, String path) throws CMSException {
+		CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+		
+		Satellite savedSatellite = cmsContext.getSatellite();
+		
+		Satellite satellite = publicationInfos.getSatellite();
+		cmsContext.setSatellite(satellite);
+		return savedSatellite;
+	}
+
+	/**
+	 * Resotore previous satellite into context
+	 * 
+	 * @param cmsContext
+	 * @param path
+	 * @return
+	 * @throws CMSException
+	 */
+    
+	
+	private void restoreSatelliteInContext(CMSServiceCtx cmsContext, Satellite oldSatellite)  {
+		cmsContext.setSatellite(oldSatellite);
+	}
 
 
 
