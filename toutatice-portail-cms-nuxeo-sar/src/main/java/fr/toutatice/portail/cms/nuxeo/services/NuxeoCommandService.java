@@ -174,7 +174,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
 				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
 		}
-
+		
+		cacheId = ((ctx.getSatelliteName() == null)? "_MAIN_SAT_": ctx.getSatelliteName()) + "/" + cacheId;
+		
 		return cacheId;
 
 	}
@@ -211,7 +213,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL) {
             requestKey += ctx.getAuthProfil().getName();
         }
-		requestKey += "/" + command.getId();
+		requestKey +=  ((ctx.getSatelliteName() == null)? "_MAIN_SAT_": ctx.getSatelliteName()) + "/" + command.getId();
 
 		if (serverInvoc != null) {
 			portalRequest = serverInvoc.getServerContext()
