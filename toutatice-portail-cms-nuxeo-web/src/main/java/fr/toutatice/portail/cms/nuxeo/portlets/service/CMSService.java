@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.naming.Name;
 import javax.portlet.PortletContext;
@@ -61,6 +62,7 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.PublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -124,7 +126,6 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.Symlink;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.IDocumentsDiscoveryService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -205,7 +206,7 @@ public class CMSService implements ICMSService {
     /** Directory group service. */
     private final GroupService groupService;
     /** Documents discovery service. */
-    private final IDocumentsDiscoveryService documentsDiscoveryService;
+    private final DocumentsDiscoveryService documentsDiscoveryService;
 
 
     /**
@@ -224,7 +225,7 @@ public class CMSService implements ICMSService {
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
-        this.documentsDiscoveryService = new DocumentsDiscoveryService(this);
+        this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
     }
 
 
@@ -474,64 +475,71 @@ public class CMSService implements ICMSService {
      * @return CMS item
      * @throws Exception
      */
-    private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
-        // CMS item
-        CMSItem cmsItem;
+	private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
+		// CMS item
+		CMSItem cmsItem;
 
-        // Saved scope
-        String savedScope = cmsContext.getScope();
-        try {
-            boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
+		// Saved scope
+		String savedScope = cmsContext.getScope();
+		try {
+			boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
 
-            cmsContext.setAsyncCacheRefreshing(false);
+			cmsContext.setAsyncCacheRefreshing(false);
 
-            // Publication infos
-            CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
-            path = publicationInfos.getDocumentPath();
+			// Publication infos
+			CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+			path = publicationInfos.getDocumentPath();
 
-            cmsContext.setAsyncCacheRefreshing(saveAsync);
+			cmsContext.setAsyncCacheRefreshing(saveAsync);
 
-            boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
+			Satellite savedSatellite = cmsContext.getSatellite();
+			try {
 
-            if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath()) || publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
-                haveToGetLive = true;
-            }
+				Satellite satellite = publicationInfos.getSatellite();
+				cmsContext.setSatellite(satellite);
 
-            // Document non publié et rattaché à un workspace
-            if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath()) && publicationInfos.isLiveSpace())) {
-                haveToGetLive = true;
-            }
+				boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
 
-            // Ajout JSS 20130122
-            // Document non publié et non rattaché à un espace : usage collaboratif
-            if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
-                haveToGetLive = true;
-            }
+				if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath())
+						|| publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
+					haveToGetLive = true;
+				}
 
+				// Document non publié et rattaché à un workspace
+				if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath())
+						&& publicationInfos.isLiveSpace())) {
+					haveToGetLive = true;
+				}
 
-            cmsContext.setScope("superuser_context");
+				// Ajout JSS 20130122
+				// Document non publié et non rattaché à un espace : usage collaboratif
+				if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
+					haveToGetLive = true;
+				}
 
+				cmsContext.setScope("superuser_context");
 
-            // Nuxeo command
-            INuxeoCommand nuxeoCommand;
-            if (haveToGetLive) {
-                nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
-            } else {
-                nuxeoCommand = new DocumentFetchPublishedCommand(path);
-            }
+				// Nuxeo command
+				INuxeoCommand nuxeoCommand;
+				if (haveToGetLive) {
+					nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
+				} else {
+					nuxeoCommand = new DocumentFetchPublishedCommand(path);
+				}
 
-            // Document
-            Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
-            // CMS item
-            cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
-        } finally {
-            cmsContext.setScope(savedScope);
-        }
+				// Document
+				Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+				// CMS item
+				cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
+			} finally {
+				cmsContext.setSatellite(savedSatellite);
+			}
+		} finally {
+			cmsContext.setScope(savedScope);
+		}
 
-        return cmsItem;
-    }
-
-
+		return cmsItem;
+	}
     /**
      * {@inheritDoc}
      */
@@ -539,16 +547,6 @@ public class CMSService implements ICMSService {
     public CMSItem getContent(CMSServiceCtx cmsContext, String path) throws CMSException {
         // Content
         CMSItem content = null;
-
-        // Saved satellite
-        Satellite savedSatellite = cmsContext.getSatellite();
-        if (savedSatellite == null) {
-            Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
-            if (satellite == null) {
-                throw new CMSException(CMSException.ERROR_NOTFOUND);
-            }
-            cmsContext.setSatellite(satellite);
-        }
 
         try {
             // Fetch content
@@ -565,9 +563,7 @@ public class CMSService implements ICMSService {
             throw e;
         } catch (Exception e) {
             throw new CMSException(e);
-        } finally {
-            cmsContext.setSatellite(savedSatellite);
-        }
+        } 
 
         return content;
     }
@@ -615,10 +611,18 @@ public class CMSService implements ICMSService {
             CMSItem containerDoc = this.fetchContent(cmsCtx, docPath);
 
             if (containerDoc != null) {
+            	
+            	Satellite savedSatellite = setSatelliteInContext(cmsCtx, docPath);
+            	
+            	try	{
+            	
                 cmsCtx.setScope("superuser_context");
 
                 pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand((Document) containerDoc.getNativeItem(),
                         pictureIndex)));
+            	} finally {
+            		restoreSatelliteInContext(cmsCtx, savedSatellite);
+            	}
             }
 
         } finally {
@@ -753,6 +757,11 @@ public class CMSService implements ICMSService {
 
             // File content
             if (nuxeoDocument != null) {
+            	
+            	Satellite savedSatellite = setSatelliteInContext(cmsContext, path);
+
+            	try	{
+            	
                 // Command
                 FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
 
@@ -770,8 +779,12 @@ public class CMSService implements ICMSService {
                         }
                     }
                 }
+            	
 
                 content = (CMSBinaryContent) this.executeNuxeoCommand(cmsContext, command);
+            	} finally	{
+            		restoreSatelliteInContext(cmsContext, savedSatellite);
+            	}
             } else {
                 content = null;
             }
@@ -781,6 +794,40 @@ public class CMSService implements ICMSService {
 
         return content;
     }
+
+
+	/**
+	 * Computes the current satellite and save it into context
+	 * 
+	 * @param cmsContext
+	 * @param path
+	 * @return
+	 * @throws CMSException
+	 */
+    
+	private Satellite setSatelliteInContext(CMSServiceCtx cmsContext, String path) throws CMSException {
+		CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+		
+		Satellite savedSatellite = cmsContext.getSatellite();
+		
+		Satellite satellite = publicationInfos.getSatellite();
+		cmsContext.setSatellite(satellite);
+		return savedSatellite;
+	}
+
+	/**
+	 * Resotore previous satellite into context
+	 * 
+	 * @param cmsContext
+	 * @param path
+	 * @return
+	 * @throws CMSException
+	 */
+    
+	
+	private void restoreSatelliteInContext(CMSServiceCtx cmsContext, Satellite oldSatellite)  {
+		cmsContext.setSatellite(oldSatellite);
+	}
 
 
 
@@ -1159,9 +1206,6 @@ public class CMSService implements ICMSService {
 
             if (savedSatellite == null) {
                 Satellite satellite = this.documentsDiscoveryService.discoverLocation(ctx, path);
-                if (satellite == null) {
-                    throw new CMSException(CMSException.ERROR_NOTFOUND);
-                }
                 ctx.setSatellite(satellite);
             }
 
@@ -1348,8 +1392,6 @@ public class CMSService implements ICMSService {
         // Request attribute name
         String attributeName = EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX + StringEscapeUtils.escapeHtml(path);
 
-        
-        
         // Get extended document informations in request
         ExtendedDocumentInfos infos = (ExtendedDocumentInfos) request.getAttribute(attributeName);
         
@@ -1360,9 +1402,6 @@ public class CMSService implements ICMSService {
             Satellite savedSatellite = cmsContext.getSatellite();
             if (savedSatellite == null) {
                 Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
-                if (satellite == null) {
-                    throw new CMSException(CMSException.ERROR_NOTFOUND);
-                }
                 cmsContext.setSatellite(satellite);
             }
 
@@ -1371,8 +1410,6 @@ public class CMSService implements ICMSService {
                     // Nuxeo command
                     INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
                     
-                      // Noeud2
-
                     infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
                 }
             } catch (NuxeoException e) {
@@ -3348,6 +3385,17 @@ public class CMSService implements ICMSService {
                 satellite.setPublicPort(System.getProperty("nuxeo.satellite." + id + ".publicPort"));
                 satellite.setPrivateHost(System.getProperty("nuxeo.satellite." + id + ".privateHost"));
                 satellite.setPrivatePort(System.getProperty("nuxeo.satellite." + id + ".privatePort"));
+
+                // Paths
+                String[] paths = StringUtils.split(System.getProperty("nuxeo.satellite." + id + ".paths"), ",");
+                if (ArrayUtils.isNotEmpty(paths)) {
+                    List<Pattern> patterns = new ArrayList<>(paths.length);
+                    for (String path : paths) {
+                        Pattern pattern = Pattern.compile(path);
+                        patterns.add(pattern);
+                    }
+                }
+
                 satellites.add(satellite);
             }
         }

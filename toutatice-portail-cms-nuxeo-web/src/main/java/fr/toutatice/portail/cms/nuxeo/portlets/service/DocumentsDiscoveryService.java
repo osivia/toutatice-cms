@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -20,15 +24,16 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.Satellite;
 
-import fr.toutatice.portail.cms.nuxeo.api.services.IDocumentsDiscoveryService;
-
 /**
  * Documents discovery service implementation.
- * 
+ *
  * @author ckrommenhoek
- * @see IDocumentsDiscoveryService
  */
-public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
+public class DocumentsDiscoveryService {
+
+    /** Singleton instance. */
+    private static DocumentsDiscoveryService instance;
+
 
     /** Satellites. */
     private Map<String, Satellite> satellites;
@@ -43,10 +48,10 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
     /**
      * Constructor.
-     * 
+     *
      * @param cmsService CMS service
      */
-    public DocumentsDiscoveryService(CMSService cmsService) {
+    private DocumentsDiscoveryService(CMSService cmsService) {
         super();
         this.cmsService = cmsService;
         this.cache = new ConcurrentHashMap<>();
@@ -54,13 +59,39 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
 
     /**
-     * Satellites initialization.
+     * Get singleton instance.
      * 
+     * @param cmsService CMS service
+     * @return singleton instance
+     */
+    public static DocumentsDiscoveryService getInstance(CMSService cmsService) {
+        if (instance == null) {
+            initInstance(cmsService);
+        }
+        return instance;
+    }
+
+
+    /**
+     * Singleton instance initialization.
+     * 
+     * @param cmsService CMS service
+     */
+    private synchronized static void initInstance(CMSService cmsService) {
+        if (instance == null) {
+            instance = new DocumentsDiscoveryService(cmsService);
+        }
+    }
+
+
+    /**
+     * Satellites initialization.
+     *
      * @throws CMSException
      */
     private synchronized void initSatellites() throws CMSException {
         if (this.satellites == null) {
-            Set<Satellite> satellites = cmsService.getSatellites();
+            Set<Satellite> satellites = this.cmsService.getSatellites();
 
             if (CollectionUtils.isEmpty(satellites)) {
                 this.satellites = new ConcurrentHashMap<>(1);
@@ -79,72 +110,85 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
 
     /**
-     * {@inheritDoc}
+     * Discover document location.
+     * 
+     * @param cmsContext CMS context
+     * @param path document path
+     * @return location
+     * @throws CMSException
      */
-    @Override
     public Satellite discoverLocation(CMSServiceCtx cmsContext, String path) throws CMSException {
-        Satellite result = this.cache.get(path);
+        Satellite result;
 
-        if (result == null) {
-            // Saved publication infos scope
-            String savedScope = cmsContext.getForcePublicationInfosScope();
-
-            if (this.satellites == null) {
-                this.initSatellites();
-            }
-
-            int threadPoolSize = this.satellites.size();
-            ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
-
-            // Results
-            List<DiscoveryResult> discoveryResults = new ArrayList<>(threadPoolSize);
-
-            try {
-                cmsContext.setForcePublicationInfosScope("superuser_context");
-
-                // Tasks
-                List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
-                for (Satellite satellite : this.satellites.values()) {
-                    DiscoveryCallable task = new DiscoveryCallable(cmsService, cmsContext, satellite, path);
-                    tasks.add(task);
+        if (StringUtils.isEmpty(path)) {
+            result = null;
+        } else {
+            result = this.cache.get(path);
+            
+            if (result == null) {
+                if (this.satellites == null) {
+                    this.initSatellites();
                 }
 
-                // Futures
-                List<Future<DiscoveryResult>> futures;
-                try {
-                    futures = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    throw new CMSException(e);
-                }
-
-                for (Future<DiscoveryResult> future : futures) {
-                    try {
-                        DiscoveryResult discoveryResult = future.get();
-
-                        if ((discoveryResult.error == 0) && StringUtils.isNotEmpty(discoveryResult.path)) {
-                            discoveryResults.add(discoveryResult);
+                // Path regex matching
+                Iterator<Satellite> satelliteIterator = this.satellites.values().iterator();
+                while ((result == null) && satelliteIterator.hasNext()) {
+                    Satellite satellite = satelliteIterator.next();
+                    if (CollectionUtils.isNotEmpty(satellite.getPaths())) {
+                        Iterator<Pattern> pathsIterator = satellite.getPaths().iterator();
+                        while ((result == null) && pathsIterator.hasNext()) {
+                            Pattern pattern = pathsIterator.next();
+                            Matcher matcher = pattern.matcher(path);
+                            if (matcher.matches()) {
+                                result = satellite;
+                            }
                         }
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new CMSException(e);
                     }
                 }
-            } finally {
-                cmsContext.setForcePublicationInfosScope(savedScope);
-            }
 
-            if (discoveryResults.size() == 1) {
-                DiscoveryResult discoveryResult = discoveryResults.get(0);
-                result = discoveryResult.satellite;
+                DiscoveryResult discoveryResult;
+                if (result == null) {
+                    // Search on main satellite
+                    List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
+
+                    // Invocation
+                    List<DiscoveryResult> discoveryResults = this.invoke(cmsContext, path, main);
+
+                    if (discoveryResults.size() == 1) {
+                        discoveryResult = discoveryResults.get(0);
+                    } else {
+                        // Search on all satellites, but main
+                        List<Satellite> others = new ArrayList<>(this.satellites.values());
+                        others.remove(Satellite.MAIN);
+
+                        CMSServiceCtx discoveryCtx = new CMSServiceCtx();
+                        discoveryCtx.setScope("superuser_context");
+                        discoveryCtx.setForcePublicationInfosScope("superuser_context");
+                        
+                        discoveryResults = this.invoke(discoveryCtx, path, others);
+
+                        if (discoveryResults.size() == 0) {
+                            throw new CMSException(CMSException.ERROR_NOTFOUND);
+                        } else if (discoveryResults.size() == 1) {
+                            discoveryResult = discoveryResults.get(0);
+                        } else {
+                            throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
+                        }
+                    }
+
+                    if (discoveryResult != null) {
+                        result = discoveryResult.satellite;
+                    }
+                } else {
+                    discoveryResult = null;
+                }
 
                 // Update cache
                 this.cache.put(path, result);
-                if (StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
+                if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
                     this.cache.put(discoveryResult.path, result);
                 }
-            } else {
-                // TODO
             }
-
         }
 
         return result;
@@ -152,8 +196,55 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
 
     /**
-     * Discovery callable.
+     * Invoke discovery.
      * 
+     * @param cmsContext CMS context
+     * @param path path
+     * @param satellites satellites
+     * @return discovery results
+     * @throws CMSException
+     */
+    private List<DiscoveryResult> invoke(CMSServiceCtx cmsContext, String path, List<Satellite> satellites) throws CMSException {
+        int threadPoolSize = satellites.size();
+        ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
+
+        // Results
+        List<DiscoveryResult> discoveryResults = new ArrayList<>(threadPoolSize);
+
+        // Tasks
+        List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
+        for (Satellite satellite : satellites) {
+            DiscoveryCallable task = new DiscoveryCallable(this.cmsService, cmsContext, satellite, path);
+            tasks.add(task);
+        }
+
+        // Futures
+        List<Future<DiscoveryResult>> futures;
+        try {
+            futures = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new CMSException(e);
+        }
+
+        for (Future<DiscoveryResult> future : futures) {
+            try {
+                DiscoveryResult discoveryResult = future.get();
+
+                if ((discoveryResult.error == 0) && StringUtils.isNotEmpty(discoveryResult.path)) {
+                    discoveryResults.add(discoveryResult);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                throw new CMSException(e);
+            }
+        }
+
+        return discoveryResults;
+    }
+
+
+    /**
+     * Discovery callable.
+     *
      * @author ckrommenhoek
      * @see Callable
      * @see DiscoveryResult
@@ -170,7 +261,7 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
         /**
          * Constructor.
-         * 
+         *
          * @param cmsService CMS service
          * @param cmsContext CMS context
          * @param satellite satellite
@@ -196,8 +287,9 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
             try {
                 this.cmsContext.setSatellite(this.satellite);
 
-                PublishInfosCommand command = new PublishInfosCommand(this.satellite, this.path );
-                CMSPublicationInfos publicationInfos = (CMSPublicationInfos) cmsService.executeNuxeoCommand(this.cmsContext, command);
+                PublishInfosCommand command = new PublishInfosCommand(this.satellite, this.path);
+                CMSPublicationInfos publicationInfos = (CMSPublicationInfos) DocumentsDiscoveryService.this.cmsService.executeNuxeoCommand(this.cmsContext,
+                        command);
 
                 if (publicationInfos != null) {
                     result.path = publicationInfos.getDocumentPath();
@@ -216,7 +308,7 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
     /**
      * Discovery result.
-     * 
+     *
      * @author ckrommenhoek
      */
     private class DiscoveryResult {
@@ -233,7 +325,7 @@ public class DocumentsDiscoveryService implements IDocumentsDiscoveryService {
 
         /**
          * Constructor.
-         * 
+         *
          * @param satellite satellite
          */
         public DiscoveryResult(Satellite satellite) {
