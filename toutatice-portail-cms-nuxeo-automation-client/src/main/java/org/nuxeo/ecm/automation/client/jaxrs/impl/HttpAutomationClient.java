@@ -48,15 +48,14 @@ public class HttpAutomationClient extends AbstractAutomationClient {
 
     /** Shared registry. */
     private static final Map<String, OperationRegistry> SHARED_REGISTRY = new ConcurrentHashMap<>();
+    /** Shared registry cache timestamps. */
+    private static final Map<String, Long> SHARED_REGISTRY_TIMESTAMPS = new ConcurrentHashMap<>();
     /** Shared registry expiration delay. */
     private static final long SHARED_REGISTRY_EXPIRATION_DELAY = 60000L;
 
 
     /** Shared registry synchronizer. */
     public static Object sharedRegistrySynchronizer = new Object();
-
-    /** Shared registry update timestamp. */
-    private static long sharedRegistryUpdateTimestamp;
 
 
     /** Default HTTP client. */
@@ -106,18 +105,26 @@ public class HttpAutomationClient extends AbstractAutomationClient {
             connector = new ConnectorHandler(connector, this.requestInterceptor);
         }
         if (this.registry == null) {
-            if ((System.currentTimeMillis() - sharedRegistryUpdateTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
+            // Cache timestamp
+            Long cacheTimestamp = SHARED_REGISTRY_TIMESTAMPS.get(this.satelliteName);
+            if (cacheTimestamp == null) {
+                cacheTimestamp = 0L;
+            }
+            // Current timestamp
+            long currentTimestamp = System.currentTimeMillis();
+
+            if ((currentTimestamp - cacheTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
                 this.registry = SHARED_REGISTRY.get(this.satelliteName);
             } else {
                 synchronized (sharedRegistrySynchronizer) {
                     // Duplicate the test to avoid reentrance
-                    if ((System.currentTimeMillis() - sharedRegistryUpdateTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
+                    if ((currentTimestamp - cacheTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
                         this.registry = SHARED_REGISTRY.get(this.satelliteName);
                     } else {
                         // Retrieve the registry
                         this.registry = this.connect(connector);
                         SHARED_REGISTRY.put(this.satelliteName, this.registry);
-                        sharedRegistryUpdateTimestamp = System.currentTimeMillis();
+                        SHARED_REGISTRY_TIMESTAMPS.put(this.satelliteName, currentTimestamp);
                     }
                 }
             }
