@@ -112,12 +112,11 @@ public class DocumentsDiscoveryService {
     /**
      * Discover document location.
      * 
-     * @param cmsContext CMS context
      * @param path document path
      * @return location
      * @throws CMSException
      */
-    public Satellite discoverLocation(CMSServiceCtx cmsContext, String path) throws CMSException {
+    public Satellite discoverLocation(String path) throws CMSException {
         Satellite result;
 
         if (StringUtils.isEmpty(path)) {
@@ -148,6 +147,11 @@ public class DocumentsDiscoveryService {
 
                 DiscoveryResult discoveryResult;
                 if (result == null) {
+                    // CMS context
+                    CMSServiceCtx cmsContext = new CMSServiceCtx();
+                    cmsContext.setScope("superuser_context");
+                    cmsContext.setForcePublicationInfosScope("superuser_context");
+
                     // Search on main satellite
                     List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
 
@@ -160,12 +164,8 @@ public class DocumentsDiscoveryService {
                         // Search on all satellites, but main
                         List<Satellite> others = new ArrayList<>(this.satellites.values());
                         others.remove(Satellite.MAIN);
-
-                        CMSServiceCtx discoveryCtx = new CMSServiceCtx();
-                        discoveryCtx.setScope("superuser_context");
-                        discoveryCtx.setForcePublicationInfosScope("superuser_context");
                         
-                        discoveryResults = this.invoke(discoveryCtx, path, others);
+                        discoveryResults = this.invoke(cmsContext, path, others);
 
                         if (discoveryResults.size() == 0) {
                             throw new CMSException(CMSException.ERROR_NOTFOUND);

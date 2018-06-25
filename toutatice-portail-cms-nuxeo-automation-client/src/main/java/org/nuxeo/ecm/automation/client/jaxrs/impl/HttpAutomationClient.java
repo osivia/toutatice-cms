@@ -1,16 +1,20 @@
 /*
  * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  * bstefanescu
  */
 package org.nuxeo.ecm.automation.client.jaxrs.impl;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.params.ConnRoutePNames;
@@ -27,75 +31,102 @@ import org.nuxeo.ecm.automation.client.model.OperationRegistry;
 
 /**
  * TOUTATICE update
- * 
+ *
  * This class directly extends AbstractAutomationClient instead of
  * AsyncAutomationClient (performance issue during shutdown ( delay of 2 s. with
  * java synchronization)
- * 
+ *
  * redefines getSession() in order to share the registry between
  * clients (perf. issues)
- * 
+ *
  * introduces a StreamedSession for large files
- * 
- * 
+ *
+ *
  * @author jssteux@cap2j.org
  */
 public class HttpAutomationClient extends AbstractAutomationClient {
 
-    protected DefaultHttpClient http;
+    /** Shared registry. */
+    private static final Map<String, OperationRegistry> SHARED_REGISTRY = new ConcurrentHashMap<>();
+    /** Shared registry expiration delay. */
+    private static final long SHARED_REGISTRY_EXPIRATION_DELAY = 60000L;
 
 
-    public static OperationRegistry sharedRegistry = null;
+    /** Shared registry synchronizer. */
     public static Object sharedRegistrySynchronizer = new Object();
-    public static long sharedRegistryUpdateTimestamp = 0L;
-    private static long SHARED_REGISTRY_EXPIRATION_DELAY = 60000L;
 
-    public HttpAutomationClient(String url) {
+    /** Shared registry update timestamp. */
+    private static long sharedRegistryUpdateTimestamp;
+
+
+    /** Default HTTP client. */
+    private DefaultHttpClient http;
+    /** Satellite name. */
+    private String satelliteName;
+
+
+    /**
+     * Constructor.
+     *
+     * @param url URL
+     * @param satelliteName satellite name
+     */
+    public HttpAutomationClient(String url, String satelliteName) {
         super(url);
-        http = new DefaultHttpClient();
+        this.http = new DefaultHttpClient();
+        this.satelliteName = StringUtils.trimToEmpty(satelliteName);
         // http.setCookieSpecs(null);
         // http.setCookieStore(null);
-        registerAdapter(new DocumentServiceFactory());
-        registerAdapter(new DocumentSecurityServiceFactory());
+        this.registerAdapter(new DocumentServiceFactory());
+        this.registerAdapter(new DocumentSecurityServiceFactory());
     }
+
 
     public void setProxy(String host, int port) {
         // httpclient.getCredentialsProvider().setCredentials(
         // new AuthScope(PROXY, PROXY_PORT),
         // new UsernamePasswordCredentials("username", "password"));
 
-        http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(host, port));
+        this.http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(host, port));
     }
+
 
     public HttpClient http() {
-        return http;
+        return this.http;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Session getSession() {
-        Connector connector = newConnector();
-        if (requestInterceptor != null) {
-            connector = new ConnectorHandler(connector, requestInterceptor);
+        Connector connector = this.newConnector();
+        if (this.requestInterceptor != null) {
+            connector = new ConnectorHandler(connector, this.requestInterceptor);
         }
-        if (registry == null) {
-            if (System.currentTimeMillis() - sharedRegistryUpdateTimestamp < SHARED_REGISTRY_EXPIRATION_DELAY) {
-                registry = sharedRegistry;
+        if (this.registry == null) {
+            if ((System.currentTimeMillis() - sharedRegistryUpdateTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
+                this.registry = SHARED_REGISTRY.get(this.satelliteName);
             } else {
                 synchronized (sharedRegistrySynchronizer) {
                     // Duplicate the test to avoid reentrance
-                    if (System.currentTimeMillis() - sharedRegistryUpdateTimestamp < SHARED_REGISTRY_EXPIRATION_DELAY) {
-                        registry = sharedRegistry;
+                    if ((System.currentTimeMillis() - sharedRegistryUpdateTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
+                        this.registry = SHARED_REGISTRY.get(this.satelliteName);
                     } else {
                         // Retrieve the registry
-                        registry = connect(connector);
-                        sharedRegistry = registry;
+                        this.registry = this.connect(connector);
+                        SHARED_REGISTRY.put(this.satelliteName, this.registry);
                         sharedRegistryUpdateTimestamp = System.currentTimeMillis();
                     }
                 }
             }
         }
-        return login(connector);
+        return this.login(connector);
     }
 
+
+    @Override
     protected Session createSession(final Connector connector, final LoginInfo login) {
         return new StreamedSession(this, connector, login == null ? LoginInfo.ANONYNMOUS : login);
     }
@@ -104,15 +135,18 @@ public class HttpAutomationClient extends AbstractAutomationClient {
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        if( http != null)   {
-            if( http.getConnectionManager() != null)
-                http.getConnectionManager().shutdown();
+        if (this.http != null) {
+            if (this.http.getConnectionManager() != null) {
+                this.http.getConnectionManager().shutdown();
+            }
         }
-        http = null;
+        this.http = null;
     }
+
 
     @Override
     protected Connector newConnector() {
-        return new HttpConnector(http);
+        return new HttpConnector(this.http);
     }
+
 }

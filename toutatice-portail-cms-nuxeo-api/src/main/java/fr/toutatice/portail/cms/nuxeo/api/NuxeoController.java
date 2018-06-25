@@ -330,6 +330,10 @@ public class NuxeoController {
      */
     public void setCurrentDoc(Document currentDoc) {
         this.currentDoc = currentDoc;
+
+        if (currentDoc != null) {
+
+        }
     }
 
 

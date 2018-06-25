@@ -1205,7 +1205,7 @@ public class CMSService implements ICMSService {
             Satellite savedSatellite = ctx.getSatellite();
 
             if (savedSatellite == null) {
-                Satellite satellite = this.documentsDiscoveryService.discoverLocation(ctx, path);
+                Satellite satellite = this.documentsDiscoveryService.discoverLocation(path);
                 ctx.setSatellite(satellite);
             }
 
@@ -1401,7 +1401,7 @@ public class CMSService implements ICMSService {
             // Saved satellite
             Satellite savedSatellite = cmsContext.getSatellite();
             if (savedSatellite == null) {
-                Satellite satellite = this.documentsDiscoveryService.discoverLocation(cmsContext, path);
+                Satellite satellite = this.documentsDiscoveryService.discoverLocation(path);
                 cmsContext.setSatellite(satellite);
             }
 

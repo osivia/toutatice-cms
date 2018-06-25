@@ -32,7 +32,6 @@ import org.osivia.portal.api.profiler.IProfilerService;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceInvocationHandler;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
@@ -140,7 +139,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
             URI uri = NuxeoSatelliteConnectionProperties.getConnectionProperties(satelliteName).getPrivateBaseUri();
 
-            HttpAutomationClient client = new HttpAutomationClient(uri.toString() + "/site/automation");
+            String url = uri.toString() + "/site/automation";
+            HttpAutomationClient client = new HttpAutomationClient(url, satelliteName);
 
             if (userId != null) {
                 client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
