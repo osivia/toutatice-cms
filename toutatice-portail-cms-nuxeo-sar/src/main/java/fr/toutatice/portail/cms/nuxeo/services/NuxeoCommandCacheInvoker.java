@@ -38,6 +38,7 @@ import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
 import org.osivia.portal.core.cms.IContentStreamingSupport;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.error.IPortalLogger;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -45,7 +46,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
-	
 	
 
     private static final long serialVersionUID = 1L;
@@ -85,29 +85,27 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
     	
     }
     
-    private  static String getSessionPrefix( String satelliteName)	{
-    	if( !StringUtils.isNotEmpty(satelliteName))
-    		return satelliteName+".";
-    	else
-        	return "";
+    private  static String getSessionPostName( Satellite satellite)	{
+    	return "."+Satellite.getAsKey(satellite);
+    }
+    
+     private  String getSessionKey()	{
+    	return Satellite.getAsKey(ctx.getSatellite());
     }
     
     private  String getSessionPrefix()	{
-    	if( StringUtils.isNotEmpty(ctx.getSatelliteName()))
-    		return ctx.getSatelliteName()+".";
-    	else
-        	return "";
+    	return getSessionKey()+".";
     }
     
 
-    private static synchronized Object getSessionCreationSynchronizer(PortletContext ctx, String virtualUser, String satelliteName) {
+    private static synchronized Object getSessionCreationSynchronizer(PortletContext ctx, String virtualUser, Satellite satellite) {
 
         String key = "SYNC_" +  ctx.hashCode();
 
         if (virtualUser != null)
             key += "_" + virtualUser;
         
-        key += getSessionPrefix( satelliteName) ;
+        key += getSessionPostName( satellite) ;
 
         if (sessionCreationSynchronizers.get(key) == null)
             sessionCreationSynchronizers.put(key, key);
@@ -190,7 +188,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         // On regarde s'il existe déjà une session pour cet utilisateur
                         try {
                         	
-                        	nuxeoSession = getUserSessions( userSession ).get(getSessionPrefix());
+                        	nuxeoSession = getUserSessions( userSession ).get(getSessionKey());
                         	
 
                         } catch (ClassCastException e) {
@@ -202,13 +200,14 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         	if(long1 != null && System.currentTimeMillis() - long1 >= maxIdleTime) {
     	                		String name = "shutdown";
 
-    	                        profiler.logEvent("NUXEO", name, System.currentTimeMillis() - long1, error);
+    	                		String nuxeoSrc = "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+    	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 
                         		nuxeoSession.getClient().shutdown();
                         		sessionsIdle.remove(nuxeoSession.hashCode());
                         		nuxeoSession = null;
                         		
-                            	nuxeoSession = getUserSessions( userSession ).remove(getSessionPrefix());
+                            	nuxeoSession = getUserSessions( userSession ).remove(getSessionKey());
 
                         	}
                         }
@@ -231,7 +230,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                                 // On refait les controles pour la synchronisation
 
-                                nuxeoSession = getUserSessions( userSession ).get(getSessionPrefix());
+                                nuxeoSession = getUserSessions( userSession ).get(getSessionKey());
 
                                 sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser"+getSessionPrefix());
                                 
@@ -241,12 +240,12 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                                     INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-                                    nuxeoSession = nuxeoService.createUserSession(ctx.getSatelliteName(), userName);
+                                    nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), userName);
                                     
                                     long start = System.currentTimeMillis();
                                     sessionsIdle.put(nuxeoSession.hashCode(), start);
 
-                                    getUserSessions( userSession ).put(getSessionPrefix(), nuxeoSession);
+                                    getUserSessions( userSession ).put(getSessionKey(), nuxeoSession);
                                      userSession.setAttribute("osivia.nuxeoProfilerUserSessionTs"+getSessionPrefix(), System.currentTimeMillis());
 
                                     if (userName != null)
@@ -288,7 +287,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                     // Profils session list creation
-                    synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey, ctx.getSatelliteName())) {
+                    synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey, ctx.getSatellite())) {
 
                         sessionsProfils = (List<Session>) portletCtx.getAttribute(sessionKey);
 
@@ -309,7 +308,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 	                		
 	                		String name = "shutdown";
 
-	                        profiler.logEvent("NUXEO", name, System.currentTimeMillis() - long1, error);
+	                		String nuxeoSrc = "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+	                		
+	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 	                		
 	                		nuxeoSession.getClient().shutdown();
 	                		sessionsIdle.remove(nuxeoSession.hashCode());
@@ -322,7 +323,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         // logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
                         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-                        nuxeoSession = nuxeoService.createUserSession(ctx.getSatelliteName(), virtualUser);
+                        nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), virtualUser);
                         
                         long start = System.currentTimeMillis();
                         sessionsIdle.put(nuxeoSession.hashCode(), start);                        
@@ -377,7 +378,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                     // Moyenne flottante sur les publishInfosCommands
-					if (ctx.getSatelliteName() == null) {
+					if (ctx.getSatellite() == null) {
 
 						String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
 
@@ -431,19 +432,20 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					}
 
 
-                    profiler.logEvent("NUXEO", name, elapsedTime, error);
-                    
-                     
+					String nuxeoSrc =   "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+                    profiler.logEvent(nuxeoSrc, name, elapsedTime, error);
+                      
                     
                     if( IPortalLogger.logger.isDebugEnabled()){
                         String commandName = "";
                         if(this.command.getId() != null)
                             commandName = this.command.getId().replaceAll("\"", "'");
+                         
 
                         if( error == false)
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to "+ nuxeoSrc +" \""+commandName +"\" " + elapsedTime));
                         else
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to "+ nuxeoSrc +" \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
                            
                     }
 
@@ -463,7 +465,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     sessionsProfils.add(nuxeoSession);
 
                 if (userSession != null && recyclableSession == false)	{
-                	getUserSessions( userSession ).remove(getSessionPrefix());
+                	getUserSessions( userSession ).remove(getSessionKey());
                 }
 
 

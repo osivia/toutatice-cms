@@ -19,6 +19,7 @@ package fr.toutatice.portail.cms.nuxeo.api.services;
 import javax.portlet.PortletContext;
 
 import org.nuxeo.ecm.automation.client.Session;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.cms.spi.ICMSIntegration;
 
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
@@ -43,7 +44,7 @@ public interface INuxeoService extends ICMSIntegration {
 	 * @return the session
 	 * @throws Exception the exception
 	 */
-    Session createUserSession(String satelliteName, String userId) throws Exception;
+    Session createUserSession(Satellite satellite, String userId) throws Exception;
 
     /**
      * Start nuxeo command service.

@@ -447,9 +447,8 @@ public class CMSService implements ICMSService {
         
         }
         
-        if (cmsCtx.getSatellite() != null) {
-            commandCtx.setSatelliteName(cmsCtx.getSatellite().getId());
-        }
+        commandCtx.setSatellite(cmsCtx.getSatellite());
+
 
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 

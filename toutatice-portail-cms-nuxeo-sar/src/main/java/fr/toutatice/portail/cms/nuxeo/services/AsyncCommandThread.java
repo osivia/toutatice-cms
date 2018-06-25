@@ -119,7 +119,7 @@ public class AsyncCommandThread implements Runnable {
 							// asynchrone est supprimée
 							this.commandService.removeAsyncronousCommand(command);
 
-							this.commandService.handleError(command.getCtx(), e);
+							this.commandService.handleError(command.getCtx(), command.getCommand().getId(), e);
 
 							throw e;
 

@@ -51,10 +51,10 @@ public class NuxeoSatelliteConnectionProperties {
      * 
      * @param satelliteName satellite name
      */
-	public NuxeoSatelliteConnectionProperties(String satelliteName) {
+	public NuxeoSatelliteConnectionProperties(Satellite satellite) {
 		super();
 
-        if (StringUtils.isEmpty(satelliteName)) {
+        if (satellite == null || satellite.isMain()) {
             this.satellite = Satellite.MAIN;
             this.satellite.setPublicHost("nuxeo.publicHost");
             this.satellite.setPublicPort(System.getProperty("nuxeo.publicPort"));
@@ -76,9 +76,9 @@ public class NuxeoSatelliteConnectionProperties {
             if (CollectionUtils.isNotEmpty(satellites)) {
                 Iterator<Satellite> iterator = satellites.iterator();
                 while ((findedSatellite == null) && iterator.hasNext()) {
-                    Satellite satellite = iterator.next();
-                    if (StringUtils.pathEquals(satelliteName, satellite.getId())) {
-                        findedSatellite = satellite;
+                    Satellite iSatellite = iterator.next();
+                    if (StringUtils.pathEquals(iSatellite.getId(), satellite.getId())) {
+                        findedSatellite = iSatellite;
                     }
                 }
             }
@@ -93,14 +93,12 @@ public class NuxeoSatelliteConnectionProperties {
      * @param satelliteName satellite name
      * @return connection properties
      */
-    public static NuxeoSatelliteConnectionProperties getConnectionProperties(String satelliteName) {
-        String searchName = satelliteName;
-        if (StringUtils.isEmpty(searchName)) {
-            searchName = "MAIN";
-        }
+    public static NuxeoSatelliteConnectionProperties getConnectionProperties(Satellite satellite) {
+        String searchName = Satellite.getAsKey(satellite);
+
         NuxeoSatelliteConnectionProperties conn = connections.get(searchName);
         if (conn == null) {
-            conn = new NuxeoSatelliteConnectionProperties(satelliteName);
+            conn = new NuxeoSatelliteConnectionProperties(satellite);
             connections.put(searchName, conn);
         }
         return conn;

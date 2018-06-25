@@ -881,7 +881,7 @@ public class NuxeoController {
             if (cmsExc.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
                 return new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
             }
-            return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
+            return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc);
         } else if (e instanceof PortletException) {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof CMSException) {
@@ -1583,9 +1583,8 @@ public class NuxeoController {
         ctx.setCacheType(this.cacheType);
         ctx.setAsynchronousUpdates(this.asynchronousUpdates);
         ctx.setAsynchronousCommand(this.asynchronousCommand);
-        if (this.satellite != null) {
-            ctx.setSatelliteName(this.satellite.getId());
-        }
+        ctx.setSatellite(this.satellite);
+        
 
         try {
 
