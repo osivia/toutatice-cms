@@ -540,6 +540,10 @@ public class CMSService implements ICMSService {
 
 		return cmsItem;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
     /**
      * {@inheritDoc}
      */
@@ -548,6 +552,10 @@ public class CMSService implements ICMSService {
         // Content
         CMSItem content = null;
 
+<<<<<<< HEAD
+=======
+ 
+>>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
         try {
             // Fetch content
             content = this.fetchContent(cmsContext, path);

@@ -116,6 +116,7 @@ public class DocumentsDiscoveryService {
      * @return location
      * @throws CMSException
      */
+<<<<<<< HEAD
     public Satellite discoverLocation(String path) throws CMSException {
         Satellite result;
 
@@ -127,6 +128,39 @@ public class DocumentsDiscoveryService {
             if (result == null) {
                 if (this.satellites == null) {
                     this.initSatellites();
+=======
+    @Override
+    public Satellite discoverLocation(CMSServiceCtx cmsContext, String path) throws CMSException {
+        Satellite result = this.cache.get(path);
+
+        if (result == null) {
+            // Saved publication infos scope
+            String savedScope = cmsContext.getForcePublicationInfosScope();
+
+            if (this.satellites == null) {
+                this.initSatellites();
+            }
+
+            int threadPoolSize = this.satellites.size();
+            ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
+
+            // Results
+            List<DiscoveryResult> discoveryResults = new ArrayList<>(threadPoolSize);
+
+            try {
+                cmsContext.setForcePublicationInfosScope("superuser_context");
+
+                // Tasks
+                List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
+                
+                CMSServiceCtx discoveryCtx = new CMSServiceCtx();
+                discoveryCtx.setScope("superuser_context");
+                
+                for (Satellite satellite : this.satellites.values()) {
+        
+                    DiscoveryCallable task = new DiscoveryCallable(cmsService, discoveryCtx, satellite, path);
+                    tasks.add(task);
+>>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
                 }
 
                 // Path regex matching
