@@ -62,7 +62,6 @@ import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentContext;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
-import org.osivia.portal.api.cms.PublicationInfos;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -540,10 +539,8 @@ public class CMSService implements ICMSService {
 
 		return cmsItem;
 	}
-<<<<<<< HEAD
-=======
 
->>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
+
     /**
      * {@inheritDoc}
      */
@@ -552,10 +549,6 @@ public class CMSService implements ICMSService {
         // Content
         CMSItem content = null;
 
-<<<<<<< HEAD
-=======
- 
->>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
         try {
             // Fetch content
             content = this.fetchContent(cmsContext, path);

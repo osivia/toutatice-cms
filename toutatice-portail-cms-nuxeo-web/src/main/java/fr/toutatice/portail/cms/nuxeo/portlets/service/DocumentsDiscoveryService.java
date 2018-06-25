@@ -116,112 +116,72 @@ public class DocumentsDiscoveryService {
      * @return location
      * @throws CMSException
      */
-<<<<<<< HEAD
     public Satellite discoverLocation(String path) throws CMSException {
-        Satellite result;
-
-        if (StringUtils.isEmpty(path)) {
-            result = null;
-        } else {
-            result = this.cache.get(path);
-            
-            if (result == null) {
-                if (this.satellites == null) {
-                    this.initSatellites();
-=======
-    @Override
-    public Satellite discoverLocation(CMSServiceCtx cmsContext, String path) throws CMSException {
         Satellite result = this.cache.get(path);
 
         if (result == null) {
-            // Saved publication infos scope
-            String savedScope = cmsContext.getForcePublicationInfosScope();
-
             if (this.satellites == null) {
                 this.initSatellites();
             }
 
-            int threadPoolSize = this.satellites.size();
-            ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
+            // Path regex matching
+            Iterator<Satellite> satelliteIterator = this.satellites.values().iterator();
+            while ((result == null) && satelliteIterator.hasNext()) {
+                Satellite satellite = satelliteIterator.next();
+                if (CollectionUtils.isNotEmpty(satellite.getPaths())) {
+                    Iterator<Pattern> pathsIterator = satellite.getPaths().iterator();
+                    while ((result == null) && pathsIterator.hasNext()) {
+                        Pattern pattern = pathsIterator.next();
+                        Matcher matcher = pattern.matcher(path);
+                        if (matcher.matches()) {
+                            result = satellite;
+                        }
+                    }
+                }
+            }
 
-            // Results
-            List<DiscoveryResult> discoveryResults = new ArrayList<>(threadPoolSize);
-
-            try {
+            DiscoveryResult discoveryResult;
+            if (result == null) {
+                // CMS context
+                CMSServiceCtx cmsContext = new CMSServiceCtx();
+                cmsContext.setScope("superuser_context");
                 cmsContext.setForcePublicationInfosScope("superuser_context");
 
-                // Tasks
-                List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
-                
-                CMSServiceCtx discoveryCtx = new CMSServiceCtx();
-                discoveryCtx.setScope("superuser_context");
-                
-                for (Satellite satellite : this.satellites.values()) {
-        
-                    DiscoveryCallable task = new DiscoveryCallable(cmsService, discoveryCtx, satellite, path);
-                    tasks.add(task);
->>>>>>> 573d88a699ac649687a92b1bb1c234cffc41f135
-                }
+                // Search on main satellite
+                List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
 
-                // Path regex matching
-                Iterator<Satellite> satelliteIterator = this.satellites.values().iterator();
-                while ((result == null) && satelliteIterator.hasNext()) {
-                    Satellite satellite = satelliteIterator.next();
-                    if (CollectionUtils.isNotEmpty(satellite.getPaths())) {
-                        Iterator<Pattern> pathsIterator = satellite.getPaths().iterator();
-                        while ((result == null) && pathsIterator.hasNext()) {
-                            Pattern pattern = pathsIterator.next();
-                            Matcher matcher = pattern.matcher(path);
-                            if (matcher.matches()) {
-                                result = satellite;
-                            }
-                        }
-                    }
-                }
+                // Invocation
+                List<DiscoveryResult> discoveryResults = this.invoke(cmsContext, path, main);
 
-                DiscoveryResult discoveryResult;
-                if (result == null) {
-                    // CMS context
-                    CMSServiceCtx cmsContext = new CMSServiceCtx();
-                    cmsContext.setScope("superuser_context");
-                    cmsContext.setForcePublicationInfosScope("superuser_context");
+                if (discoveryResults.size() == 1) {
+                    discoveryResult = discoveryResults.get(0);
+                } else {
+                    // Search on all satellites, but main
+                    List<Satellite> others = new ArrayList<>(this.satellites.values());
+                    others.remove(Satellite.MAIN);
+                    
+                    discoveryResults = this.invoke(cmsContext, path, others);
 
-                    // Search on main satellite
-                    List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
-
-                    // Invocation
-                    List<DiscoveryResult> discoveryResults = this.invoke(cmsContext, path, main);
-
-                    if (discoveryResults.size() == 1) {
+                    if (discoveryResults.size() == 0) {
+                        throw new CMSException(CMSException.ERROR_NOTFOUND);
+                    } else if (discoveryResults.size() == 1) {
                         discoveryResult = discoveryResults.get(0);
                     } else {
-                        // Search on all satellites, but main
-                        List<Satellite> others = new ArrayList<>(this.satellites.values());
-                        others.remove(Satellite.MAIN);
-                        
-                        discoveryResults = this.invoke(cmsContext, path, others);
-
-                        if (discoveryResults.size() == 0) {
-                            throw new CMSException(CMSException.ERROR_NOTFOUND);
-                        } else if (discoveryResults.size() == 1) {
-                            discoveryResult = discoveryResults.get(0);
-                        } else {
-                            throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
-                        }
+                        throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
                     }
-
-                    if (discoveryResult != null) {
-                        result = discoveryResult.satellite;
-                    }
-                } else {
-                    discoveryResult = null;
                 }
 
-                // Update cache
-                this.cache.put(path, result);
-                if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
-                    this.cache.put(discoveryResult.path, result);
+                if (discoveryResult != null) {
+                    result = discoveryResult.satellite;
                 }
+            } else {
+                discoveryResult = null;
+            }
+
+            // Update cache
+            this.cache.put(path, result);
+            if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
+                this.cache.put(discoveryResult.path, result);
             }
         }
 
