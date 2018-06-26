@@ -14,7 +14,6 @@ package org.nuxeo.ecm.automation.client.jaxrs.impl;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.params.ConnRoutePNames;
@@ -28,6 +27,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.spi.Connector;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.ConnectorHandler;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
 import org.nuxeo.ecm.automation.client.model.OperationRegistry;
+import org.osivia.portal.core.cms.Satellite;
 
 /**
  * TOUTATICE update
@@ -47,9 +47,9 @@ import org.nuxeo.ecm.automation.client.model.OperationRegistry;
 public class HttpAutomationClient extends AbstractAutomationClient {
 
     /** Shared registry. */
-    private static final Map<String, OperationRegistry> SHARED_REGISTRY = new ConcurrentHashMap<>();
+    private static final Map<Satellite, OperationRegistry> SHARED_REGISTRY = new ConcurrentHashMap<>();
     /** Shared registry cache timestamps. */
-    private static final Map<String, Long> SHARED_REGISTRY_TIMESTAMPS = new ConcurrentHashMap<>();
+    private static final Map<Satellite, Long> SHARED_REGISTRY_TIMESTAMPS = new ConcurrentHashMap<>();
     /** Shared registry expiration delay. */
     private static final long SHARED_REGISTRY_EXPIRATION_DELAY = 60000L;
 
@@ -60,8 +60,8 @@ public class HttpAutomationClient extends AbstractAutomationClient {
 
     /** Default HTTP client. */
     private DefaultHttpClient http;
-    /** Satellite name. */
-    private String satelliteName;
+    /** Satellite. */
+    private Satellite satellite;
 
 
     /**
@@ -70,10 +70,15 @@ public class HttpAutomationClient extends AbstractAutomationClient {
      * @param url URL
      * @param satelliteName satellite name
      */
-    public HttpAutomationClient(String url, String satelliteName) {
+    public HttpAutomationClient(String url, Satellite satellite) {
         super(url);
         this.http = new DefaultHttpClient();
-        this.satelliteName = StringUtils.trimToEmpty(satelliteName);
+        if (satellite == null) {
+            this.satellite = Satellite.MAIN;
+        } else {
+            this.satellite = satellite;
+        }
+        
         // http.setCookieSpecs(null);
         // http.setCookieStore(null);
         this.registerAdapter(new DocumentServiceFactory());
@@ -106,7 +111,7 @@ public class HttpAutomationClient extends AbstractAutomationClient {
         }
         if (this.registry == null) {
             // Cache timestamp
-            Long cacheTimestamp = SHARED_REGISTRY_TIMESTAMPS.get(this.satelliteName);
+            Long cacheTimestamp = SHARED_REGISTRY_TIMESTAMPS.get(this.satellite);
             if (cacheTimestamp == null) {
                 cacheTimestamp = 0L;
             }
@@ -114,17 +119,17 @@ public class HttpAutomationClient extends AbstractAutomationClient {
             long currentTimestamp = System.currentTimeMillis();
 
             if ((currentTimestamp - cacheTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
-                this.registry = SHARED_REGISTRY.get(this.satelliteName);
+                this.registry = SHARED_REGISTRY.get(this.satellite);
             } else {
                 synchronized (sharedRegistrySynchronizer) {
                     // Duplicate the test to avoid reentrance
                     if ((currentTimestamp - cacheTimestamp) < SHARED_REGISTRY_EXPIRATION_DELAY) {
-                        this.registry = SHARED_REGISTRY.get(this.satelliteName);
+                        this.registry = SHARED_REGISTRY.get(this.satellite);
                     } else {
                         // Retrieve the registry
                         this.registry = this.connect(connector);
-                        SHARED_REGISTRY.put(this.satelliteName, this.registry);
-                        SHARED_REGISTRY_TIMESTAMPS.put(this.satelliteName, currentTimestamp);
+                        SHARED_REGISTRY.put(this.satellite, this.registry);
+                        SHARED_REGISTRY_TIMESTAMPS.put(this.satellite, currentTimestamp);
                     }
                 }
             }

@@ -46,14 +46,12 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.NavigationItem;
-import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 
 /**
@@ -176,7 +174,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
 		}
 		
-		cacheId = Satellite.getAsKey(ctx.getSatellite()) +"/" + cacheId;
+        cacheId = ctx.getSatellite().getId() + "/" + cacheId;
 		
 		return cacheId;
 
@@ -214,7 +212,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL) {
             requestKey += ctx.getAuthProfil().getName();
         }
-		requestKey +=  Satellite.getAsKey(ctx.getSatellite()) + "/" + command.getId();
+        requestKey += ctx.getSatellite().getId() + "/" + command.getId();
 
 		if (serverInvoc != null) {
 			portalRequest = serverInvoc.getServerContext()

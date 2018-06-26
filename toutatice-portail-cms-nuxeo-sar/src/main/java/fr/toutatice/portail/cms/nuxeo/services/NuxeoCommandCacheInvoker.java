@@ -85,12 +85,16 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
     	
     }
     
-    private  static String getSessionPostName( Satellite satellite)	{
-    	return "."+Satellite.getAsKey(satellite);
+    private static String getSessionPostName(Satellite satellite) {
+        if (satellite == null) {
+            satellite = Satellite.MAIN;
+        }
+
+        return "." + satellite.getId();
     }
     
-     private  String getSessionKey()	{
-    	return Satellite.getAsKey(ctx.getSatellite());
+    private String getSessionKey() {
+        return ctx.getSatellite().getId();
     }
     
     private  String getSessionPrefix()	{
@@ -200,7 +204,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         	if(long1 != null && System.currentTimeMillis() - long1 >= maxIdleTime) {
     	                		String name = "shutdown";
 
-    	                		String nuxeoSrc = "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+                                String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
     	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 
                         		nuxeoSession.getClient().shutdown();
@@ -308,7 +312,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 	                		
 	                		String name = "shutdown";
 
-	                		String nuxeoSrc = "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+                            String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
 	                		
 	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 	                		
@@ -432,7 +436,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 					}
 
 
-					String nuxeoSrc =   "NUXEO/"+Satellite.getAsKey(ctx.getSatellite());
+                    String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
                     profiler.logEvent(nuxeoSrc, name, elapsedTime, error);
                       
                     

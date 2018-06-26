@@ -56,7 +56,7 @@ public class NuxeoSatelliteConnectionProperties {
 
         if (satellite == null || satellite.isMain()) {
             this.satellite = Satellite.MAIN;
-            this.satellite.setPublicHost("nuxeo.publicHost");
+            this.satellite.setPublicHost(System.getProperty("nuxeo.publicHost"));
             this.satellite.setPublicPort(System.getProperty("nuxeo.publicPort"));
             this.satellite.setPrivateHost(System.getProperty("nuxeo.privateHost"));
             this.satellite.setPrivatePort(System.getProperty("nuxeo.privatePort"));
@@ -90,16 +90,18 @@ public class NuxeoSatelliteConnectionProperties {
     /**
      * Get connection properties.
      * 
-     * @param satelliteName satellite name
+     * @param satellite satellite
      * @return connection properties
      */
     public static NuxeoSatelliteConnectionProperties getConnectionProperties(Satellite satellite) {
-        String searchName = Satellite.getAsKey(satellite);
+        if (satellite == null) {
+            satellite = Satellite.MAIN;
+        }
 
-        NuxeoSatelliteConnectionProperties conn = connections.get(searchName);
+        NuxeoSatelliteConnectionProperties conn = connections.get(satellite.getId());
         if (conn == null) {
             conn = new NuxeoSatelliteConnectionProperties(satellite);
-            connections.put(searchName, conn);
+            connections.put(satellite.getId(), conn);
         }
         return conn;
     }

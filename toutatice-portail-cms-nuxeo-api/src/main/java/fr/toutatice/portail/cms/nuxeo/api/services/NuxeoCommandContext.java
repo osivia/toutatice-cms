@@ -73,7 +73,10 @@ public class NuxeoCommandContext {
 	 * @return
 	 */
 	public Satellite getSatellite() {
-		return satellite;
+        if (this.satellite == null) {
+            this.satellite = Satellite.MAIN;
+        }
+        return this.satellite;
 	}
 
 	/**

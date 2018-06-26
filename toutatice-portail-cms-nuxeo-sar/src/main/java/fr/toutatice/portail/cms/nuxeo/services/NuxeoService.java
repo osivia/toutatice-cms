@@ -136,12 +136,17 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
         Session session = null;
 
         try {
+            if (satellite == null) {
+                satellite = Satellite.MAIN;
+            }
+
+
             String secretKey = System.getProperty("nuxeo.secretKey");
 
             URI uri = NuxeoSatelliteConnectionProperties.getConnectionProperties(satellite).getPrivateBaseUri();
 
             String url = uri.toString() + "/site/automation";
-            HttpAutomationClient client = new HttpAutomationClient(url, (satellite != null) ? satellite.getId() : null);
+            HttpAutomationClient client = new HttpAutomationClient(url, satellite);
 
             if (userId != null) {
                 client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
@@ -166,7 +171,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
             	name += ", nuxeoSession=" + session.hashCode();
             }
 
-            this.profiler.logEvent("NUXEO/"+Satellite.getAsKey(satellite), name, elapsedTime, error);
+            this.profiler.logEvent("NUXEO/" + satellite.getId(), name, elapsedTime, error);
         }
 
         return session;

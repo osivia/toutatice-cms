@@ -131,6 +131,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.TaskDirective;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
@@ -2175,8 +2176,16 @@ public class CMSService implements ICMSService {
 
     @Override
     public String getEcmUrl(CMSServiceCtx cmsCtx, EcmViews command, String path, Map<String, String> requestParameters) throws CMSException {
+        // Satellite
+        Satellite satellite = cmsCtx.getSatellite();
+        if (satellite == null) {
+            satellite = Satellite.MAIN;
+        }
+
+        NuxeoSatelliteConnectionProperties connectionProperties = NuxeoSatelliteConnectionProperties.getConnectionProperties(satellite);
+
         // get the default domain and app name
-        String uri = NuxeoConnectionProperties.getPublicBaseUri().toString();
+        String uri = connectionProperties.getPublicBaseUri().toString();
 
         if (requestParameters == null) {
             requestParameters = new HashMap<String, String>();

@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.osivia.portal.api.cache.services.ICacheService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -35,15 +37,19 @@ public class DocumentsDiscoveryService {
     private static DocumentsDiscoveryService instance;
 
 
-    /** Satellites. */
-    private Map<String, Satellite> satellites;
+    /** Cache timestamp. */
+    private long cacheTimestamp;
 
 
     /** CMS service. */
     private final CMSService cmsService;
+    /** Cache service. */
+    private final ICacheService cacheService;
 
     /** Cache. */
     private final Map<String, Satellite> cache;
+    /** Satellites. */
+    private final Map<String, Satellite> satellites;
 
 
     /**
@@ -54,13 +60,35 @@ public class DocumentsDiscoveryService {
     private DocumentsDiscoveryService(CMSService cmsService) {
         super();
         this.cmsService = cmsService;
+        this.cacheService = Locator.findMBean(ICacheService.class, ICacheService.MBEAN_NAME);
         this.cache = new ConcurrentHashMap<>();
+
+        // Satellites initialization
+        Set<Satellite> satellites;
+        try {
+            satellites = this.cmsService.getSatellites();
+        } catch (CMSException e) {
+            satellites = null;
+        }
+
+        if (CollectionUtils.isEmpty(satellites)) {
+            this.satellites = new ConcurrentHashMap<>(1);
+        } else {
+            this.satellites = new ConcurrentHashMap<>(satellites.size() + 1);
+            for (Satellite satellite : satellites) {
+                this.satellites.put(satellite.getId(), satellite);
+            }
+        }
+
+        // Add main satellite
+        Satellite main = Satellite.MAIN;
+        this.satellites.put(main.getId(), main);
     }
 
 
     /**
      * Get singleton instance.
-     * 
+     *
      * @param cmsService CMS service
      * @return singleton instance
      */
@@ -74,7 +102,7 @@ public class DocumentsDiscoveryService {
 
     /**
      * Singleton instance initialization.
-     * 
+     *
      * @param cmsService CMS service
      */
     private synchronized static void initInstance(CMSService cmsService) {
@@ -85,91 +113,26 @@ public class DocumentsDiscoveryService {
 
 
     /**
-     * Satellites initialization.
-     *
-     * @throws CMSException
-     */
-    private synchronized void initSatellites() throws CMSException {
-        if (this.satellites == null) {
-            Set<Satellite> satellites = this.cmsService.getSatellites();
-
-            if (CollectionUtils.isEmpty(satellites)) {
-                this.satellites = new ConcurrentHashMap<>(1);
-            } else {
-                this.satellites = new ConcurrentHashMap<>(satellites.size() + 1);
-                for (Satellite satellite : satellites) {
-                    this.satellites.put(satellite.getId(), satellite);
-                }
-            }
-
-            // Add main satellite
-            Satellite main = Satellite.MAIN;
-            this.satellites.put(main.getId(), main);
-        }
-    }
-
-
-    /**
      * Discover document location.
-     * 
+     *
      * @param path document path
      * @return location
      * @throws CMSException
      */
     public Satellite discoverLocation(String path) throws CMSException {
+        // Handle cache reinitialization
+        this.handleCacheReinitialization();
+
+        // Get result in cache
         Satellite result = this.cache.get(path);
 
         if (result == null) {
-            if (this.satellites == null) {
-                this.initSatellites();
-            }
-
             // Path regex matching
-            Iterator<Satellite> satelliteIterator = this.satellites.values().iterator();
-            while ((result == null) && satelliteIterator.hasNext()) {
-                Satellite satellite = satelliteIterator.next();
-                if (CollectionUtils.isNotEmpty(satellite.getPaths())) {
-                    Iterator<Pattern> pathsIterator = satellite.getPaths().iterator();
-                    while ((result == null) && pathsIterator.hasNext()) {
-                        Pattern pattern = pathsIterator.next();
-                        Matcher matcher = pattern.matcher(path);
-                        if (matcher.matches()) {
-                            result = satellite;
-                        }
-                    }
-                }
-            }
+            result = this.pathRegexSearch(path);
 
             DiscoveryResult discoveryResult;
             if (result == null) {
-                // CMS context
-                CMSServiceCtx cmsContext = new CMSServiceCtx();
-                cmsContext.setScope("superuser_context");
-                cmsContext.setForcePublicationInfosScope("superuser_context");
-
-                // Search on main satellite
-                List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
-
-                // Invocation
-                List<DiscoveryResult> discoveryResults = this.invoke(cmsContext, path, main);
-
-                if (discoveryResults.size() == 1) {
-                    discoveryResult = discoveryResults.get(0);
-                } else {
-                    // Search on all satellites, but main
-                    List<Satellite> others = new ArrayList<>(this.satellites.values());
-                    others.remove(Satellite.MAIN);
-                    
-                    discoveryResults = this.invoke(cmsContext, path, others);
-
-                    if (discoveryResults.size() == 0) {
-                        throw new CMSException(CMSException.ERROR_NOTFOUND);
-                    } else if (discoveryResults.size() == 1) {
-                        discoveryResult = discoveryResults.get(0);
-                    } else {
-                        throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
-                    }
-                }
+                discoveryResult = satellitesDiscovery(path);
 
                 if (discoveryResult != null) {
                     result = discoveryResult.satellite;
@@ -190,8 +153,94 @@ public class DocumentsDiscoveryService {
 
 
     /**
-     * Invoke discovery.
+     * Handle portal cache reinitialization.
+     */
+    private void handleCacheReinitialization() {
+        boolean reinitialized = !this.cacheService.checkIfPortalParametersReloaded(this.cacheTimestamp);
+        if (reinitialized) {
+            this.cache.clear();
+            this.cacheTimestamp = System.currentTimeMillis();
+        }
+    }
+
+
+    /**
+     * Path RegEx search.
+     *
+     * @param path path
+     * @return result
+     */
+    public Satellite pathRegexSearch(String path) {
+        Satellite result = null;
+
+        if (StringUtils.isNotEmpty(path)) {
+            Iterator<Satellite> satelliteIterator = this.satellites.values().iterator();
+            while ((result == null) && satelliteIterator.hasNext()) {
+                Satellite satellite = satelliteIterator.next();
+                if (CollectionUtils.isNotEmpty(satellite.getPaths())) {
+                    Iterator<Pattern> pathsIterator = satellite.getPaths().iterator();
+                    while ((result == null) && pathsIterator.hasNext()) {
+                        Pattern pattern = pathsIterator.next();
+                        Matcher matcher = pattern.matcher(path);
+                        if (matcher.find()) {
+                            result = satellite;
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Satellites discovery.
      * 
+     * @param path path
+     * @return discovery result
+     * @throws CMSException
+     */
+    public DiscoveryResult satellitesDiscovery(String path) throws CMSException {
+        // CMS context
+        CMSServiceCtx cmsContext = new CMSServiceCtx();
+        cmsContext.setScope("superuser_context");
+        cmsContext.setForcePublicationInfosScope("superuser_context");
+
+        // Search on main satellite
+        List<Satellite> main = Arrays.asList(new Satellite[]{Satellite.MAIN});
+
+        // Invocation
+        List<DiscoveryResult> discoveryResults = this.invoke(cmsContext, path, main);
+
+        // Discovery result
+        DiscoveryResult discoveryResult;
+
+        if (discoveryResults.size() == 1) {
+            discoveryResult = discoveryResults.get(0);
+        } else {
+            // Search on all satellites, but main
+            List<Satellite> others = new ArrayList<>(this.satellites.values());
+            others.remove(Satellite.MAIN);
+
+            discoveryResults = this.invoke(cmsContext, path, others);
+
+            if (discoveryResults.size() == 0) {
+                throw new CMSException(CMSException.ERROR_NOTFOUND);
+            } else if (discoveryResults.size() == 1) {
+                discoveryResult = discoveryResults.get(0);
+            } else {
+                throw new CMSException(CMSException.ERROR_UNAVAILAIBLE);
+            }
+        }
+
+        return discoveryResult;
+    }
+
+
+    /**
+     * Invoke discovery.
+     *
      * @param cmsContext CMS context
      * @param path path
      * @param satellites satellites

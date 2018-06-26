@@ -33,6 +33,7 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -840,15 +841,17 @@ public class NuxeoController {
             String satelliteName = window.getProperty("osivia.satellite");
             if (StringUtils.isNotEmpty(satelliteName)) {
                 Set<Satellite> satellites = getCMSService().getSatellites();
-                Satellite satellite = null;
-                Iterator<Satellite> iterator = satellites.iterator();
-                while ((satellite == null) && iterator.hasNext()) {
-                    Satellite next = iterator.next();
-                    if (StringUtils.equals(satelliteName, next.getId())) {
-                        satellite = next;
+                if (CollectionUtils.isNotEmpty(satellites)) {
+                    Satellite satellite = null;
+                    Iterator<Satellite> iterator = satellites.iterator();
+                    while ((satellite == null) && iterator.hasNext()) {
+                        Satellite next = iterator.next();
+                        if (StringUtils.equals(satelliteName, next.getId())) {
+                            satellite = next;
+                        }
                     }
+                    this.satellite = satellite;
                 }
-                this.satellite = satellite;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
