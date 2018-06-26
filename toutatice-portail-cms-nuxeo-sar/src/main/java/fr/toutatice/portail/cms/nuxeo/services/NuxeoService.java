@@ -28,6 +28,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.auth.PortalSSOAuthInterceptor;
 import org.osivia.portal.api.profiler.IProfilerService;
+import org.osivia.portal.core.cms.Satellite;
 
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
@@ -128,7 +129,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
      * {@inheritDoc}
      */
     @Override
-    public Session createUserSession(String satelliteName, String userId) throws Exception {
+    public Session createUserSession(Satellite satellite, String userId) throws Exception {
         long begin = System.currentTimeMillis();
         boolean error = false;
 
@@ -137,10 +138,10 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
         try {
             String secretKey = System.getProperty("nuxeo.secretKey");
 
-            URI uri = NuxeoSatelliteConnectionProperties.getConnectionProperties(satelliteName).getPrivateBaseUri();
+            URI uri = NuxeoSatelliteConnectionProperties.getConnectionProperties(satellite).getPrivateBaseUri();
 
             String url = uri.toString() + "/site/automation";
-            HttpAutomationClient client = new HttpAutomationClient(url, satelliteName);
+            HttpAutomationClient client = new HttpAutomationClient(url, (satellite != null) ? satellite.getId() : null);
 
             if (userId != null) {
                 client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
@@ -165,7 +166,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
             	name += ", nuxeoSession=" + session.hashCode();
             }
 
-            this.profiler.logEvent("NUXEO", name, elapsedTime, error);
+            this.profiler.logEvent("NUXEO/"+Satellite.getAsKey(satellite), name, elapsedTime, error);
         }
 
         return session;
@@ -215,12 +216,12 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 		Map<String, Session> sessions = NuxeoCommandCacheInvoker.getUserSessions(sessionEvent.getSession());
 		if (sessions != null) {
-			for (Session session : sessions.values()) {
+			for (String sessionName : sessions.keySet()) {
 				long begin = System.currentTimeMillis();
 				boolean error = false;
 
 				try {
-					session.getClient().shutdown();
+					sessions.get(sessionName).getClient().shutdown();
 				} finally {
 					// log into profiler
 					long end = System.currentTimeMillis();
@@ -228,7 +229,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
 					String name = "shutdown";
 
-					this.profiler.logEvent("NUXEO", name, elapsedTime, error);
+					this.profiler.logEvent("NUXEO/"+sessionName, name, elapsedTime, error);
 				}
 			}
 		}
