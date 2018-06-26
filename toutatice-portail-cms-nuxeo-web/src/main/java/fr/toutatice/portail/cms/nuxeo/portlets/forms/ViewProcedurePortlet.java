@@ -11,6 +11,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -58,6 +59,9 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
         try {
+        	// Version is computed dynamically
+        	request.setAttribute(Constants.REQUEST_ATTR_VERSION, "1");
+        	
             super.doView(request, response);
         } catch (PortletException e) {
             String rootCauseMessage = null;
@@ -120,8 +124,7 @@ public class ViewProcedurePortlet extends ViewListPortlet {
         configuration.setNuxeoRequest(requestSb.toString());
         configuration.setBeanShell(true);
         
-        configuration.setVersion("1");
-        window.setProperty(VERSION_WINDOW_PROPERTY, "1");
+
         configuration.setContentFilter(String.valueOf(NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED));
 
         configuration.setProcedureModelId(window.getProperty(PROCEDURE_MODEL_ID_WINDOW_PROPERTY));

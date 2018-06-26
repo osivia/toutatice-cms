@@ -188,8 +188,6 @@ public class NuxeoController {
     private final ITaskbarService taskbarService;
 
 
-
-
     /**
      * Gets the domain path.
      *
@@ -763,6 +761,13 @@ public class NuxeoController {
                 displayLiveVersion = displayLiveVersionParam;
             }
 
+            
+            String displayLiveVersionAttr = (String) request.getAttribute(Constants.REQUEST_ATTR_VERSION);
+            if( displayLiveVersionAttr != null) {
+                displayLiveVersion = displayLiveVersionAttr;
+            }
+            
+
 
             this.setScope(scope);
             this.setDisplayLiveVersion(displayLiveVersion);
@@ -893,7 +898,7 @@ public class NuxeoController {
      * @deprecated use DocumentContext
      */
     @Deprecated
-	public CMSItem getNavigationItem() {
+    public CMSItem getNavigationItem() {
         try {
             if (this.navItem == null) {
                 if (this.getNavigationPath() != null) {
@@ -1107,10 +1112,10 @@ public class NuxeoController {
             if (computedPath.contains("${taskPath}")) {
                 // Window
                 PortalWindow window = WindowFactory.getWindow(this.request);
-                
+
                 // Linked taskbar item identifier
                 String taskId = window.getProperty(ITaskbarService.LINKED_TASK_ID_WINDOW_PROPERTY);
-                
+
                 // Task path
                 String path;
                 if (StringUtils.isEmpty(taskId)) {
@@ -1183,7 +1188,7 @@ public class NuxeoController {
             throw this.wrapNuxeoException(e);
         }
     }
-    
+
 
     /**
      * Format scope list (for user interface)
@@ -1232,7 +1237,7 @@ public class NuxeoController {
      * @return the string
      * @throws Exception the exception
      */
-	public String formatDisplayLiveVersionList(String selectedVersion) {
+    public String formatDisplayLiveVersionList(String selectedVersion) {
         try {
 
             Window window = (Window) this.request.getAttribute("osivia.window");
@@ -1268,7 +1273,7 @@ public class NuxeoController {
      * @deprecated use DocumentContext
      */
     @Deprecated
-	public boolean isIdOrPathInLiveState(String originalPath) {
+    public boolean isIdOrPathInLiveState(String originalPath) {
 
         if (this.isDisplayingLiveVersion()) {
             return true;
@@ -1316,7 +1321,6 @@ public class NuxeoController {
     }
 
 
-
     /**
      * Checks if current path is in page edition state (web page edition mode)
      *
@@ -1339,7 +1343,7 @@ public class NuxeoController {
         if (this.getRequest() != null) {
             EditionState editionState = (EditionState) this.getRequest().getAttribute("osivia.editionState");
             if ((editionState != null) && EditionState.CONTRIBUTION_MODE_EDITION.equals(editionState.getContributionMode())) {
-                if( editionState.getDocPath().equals(path)) {
+                if (editionState.getDocPath().equals(path)) {
                     return true;
                 }
             }
@@ -1673,7 +1677,7 @@ public class NuxeoController {
         Map<String, String> parameters = new HashMap<String, String>(0);
 
         String url = this.getPortalUrlFactory().getCMSUrl(this.portalCtx, page.getId().toString(PortalObjectPath.CANONICAL_FORMAT), path, parameters, null,
-                    displayContext, null, null, null, null);
+                displayContext, null, null, null, null);
 
         if (url != null) {
 
@@ -1813,7 +1817,7 @@ public class NuxeoController {
      * @deprecated unused ?
      */
     @Deprecated
-	public String getCommentsHTMLContent() throws CMSException {
+    public String getCommentsHTMLContent() throws CMSException {
         try {
             CMSServiceCtx cmsContext = this.getCMSCtx();
             INuxeoService nuxeoService = this.getNuxeoCMSService();
@@ -1842,10 +1846,10 @@ public class NuxeoController {
      * @param reload force reloading of the document (no cache)
      * @return the document
      * @throws Exception the exception
-     * @deprecated use DocumentContext      *
+     * @deprecated use DocumentContext *
      */
     @Deprecated
-	public Document fetchDocument(String path, boolean reload) {
+    public Document fetchDocument(String path, boolean reload) {
 
 
         try {
@@ -1880,7 +1884,7 @@ public class NuxeoController {
      * @deprecated use DocumentContext
      */
     @Deprecated
-	public Document fetchDocument(String path) {
+    public Document fetchDocument(String path) {
         return this.fetchDocument(path, false);
     }
 
@@ -1894,7 +1898,7 @@ public class NuxeoController {
      * @deprecated use DocumentContext
      */
     @Deprecated
-	public String fetchLiveId(String path) {
+    public String fetchLiveId(String path) {
 
         try {
             CMSPublicationInfos pubInfos = getCMSService().getPublicationInfos(this.getCMSCtx(), path);
@@ -1993,7 +1997,9 @@ public class NuxeoController {
      */
     public CMSBinaryContent fetchPicture(String docPath, String content) {
         try {
-
+            if (StringUtils.equals("Original", content) || StringUtils.isEmpty(content)) {
+                return this.fetchFileContent(docPath, "file:content");
+            }
 
             return getCMSService().getBinaryContent(this.getCMSCtx(), "picture", docPath, content);
 
@@ -2266,7 +2272,7 @@ public class NuxeoController {
      * @deprecated unused ?
      */
     @Deprecated
-	public String getDebugInfos() {
+    public String getDebugInfos() {
         String output = "";
 
         if ("1".equals(System.getProperty("nuxeo.debugHtml"))) {
@@ -2295,8 +2301,8 @@ public class NuxeoController {
      * @throws CMSException
      */
     public Link getUserAvatar(String username) throws CMSException {
-    	
-    	return getNuxeoCMSService().getCMSCustomizer().getUserAvatar(username);
+
+        return getNuxeoCMSService().getCMSCustomizer().getUserAvatar(username);
 
     }
 
@@ -2319,7 +2325,7 @@ public class NuxeoController {
      * @deprecated use the PortalGenericPortlet
      */
     @Deprecated
-	public DirectoryPerson getPerson(String uid) {
+    public DirectoryPerson getPerson(String uid) {
         IDirectoryService service = this.getDirectoryService();
         DirectoryPerson p = null;
         if (service != null) {
