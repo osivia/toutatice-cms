@@ -763,6 +763,12 @@ public class NuxeoController {
                 displayLiveVersion = displayLiveVersionParam;
             }
 
+            
+            String displayLiveVersionAttr = (String) request.getAttribute(Constants.REQUEST_ATTR_VERSION);
+            if( displayLiveVersionAttr != null) {
+                displayLiveVersion = displayLiveVersionAttr;
+            }
+            
 
             this.setScope(scope);
             this.setDisplayLiveVersion(displayLiveVersion);
