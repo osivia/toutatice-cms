@@ -71,6 +71,7 @@ public class HttpAutomationClient extends AbstractAutomationClient {
         return http;
     }
 
+    @Override
     public Session getSession() {
         Connector connector = newConnector();
         if (requestInterceptor != null) {
@@ -96,6 +97,7 @@ public class HttpAutomationClient extends AbstractAutomationClient {
         return login(connector);
     }
 
+    @Override
     protected Session createSession(final Connector connector, final LoginInfo login) {
         return new StreamedSession(this, connector, login == null ? LoginInfo.ANONYNMOUS : login);
     }
@@ -104,8 +106,8 @@ public class HttpAutomationClient extends AbstractAutomationClient {
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        if( http != null)   {
-            if( http.getConnectionManager() != null)
+        if (http != null) {
+            if (http.getConnectionManager() != null)
                 http.getConnectionManager().shutdown();
         }
         http = null;

@@ -4,13 +4,13 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>4.7-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
 
     <properties>
-        <osivia-portal.version>4.7-SNAPSHOT</osivia-portal.version>
+        <osivia-portal.version>5.0-SNAPSHOT</osivia-portal.version>
         
         <jboss.portal.version>2.7.2</jboss.portal.version>
         <jboss.modules.identity.version>1.1.3</jboss.modules.identity.version>
@@ -221,6 +221,17 @@
         <module>toutatice-portail-cms-nuxeo-distribution</module>
     </modules>
 
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<properties>
+				<javadoc.opts>-Xdoclint:none</javadoc.opts>
+			</properties>
+		</profile>
+	</profiles>
 
     <build>
         <pluginManagement>
@@ -234,6 +245,23 @@
                 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.9</version>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<additionalparam>${javadoc.opts}</additionalparam>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>2.7</version>
                 </plugin>
@@ -346,11 +374,12 @@
         </plugins>
     </build>
 
-
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/trunk</developerConnection>
-    </scm>
-
+        <url>https://github.com/osivia/toutatice-cms.git</url>
+        <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>     
+        <tag>HEAD</tag>
+	</scm>
 
     <distributionManagement>
         <repository>
@@ -362,20 +391,5 @@
             <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    
-    <profiles>
-    	<profile>
-    		<id>ci</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<distributionManagement>
-    			<snapshotRepository>
-            		<id>galactica-ci-snapshots</id>
-            		<url>http://nexus:8081/repository/ci-snapshots</url>
-        		</snapshotRepository>
-    		</distributionManagement>
-    	</profile>
-    </profiles>    
 
 </project>

@@ -354,3 +354,4 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Collection<SetType> getSetTypes();
 
 }
+

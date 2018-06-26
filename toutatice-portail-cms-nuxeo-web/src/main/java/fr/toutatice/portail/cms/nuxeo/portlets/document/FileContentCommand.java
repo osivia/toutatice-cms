@@ -40,7 +40,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
  * @see INuxeoCommand
  */
 public class FileContentCommand implements INuxeoCommand {
-    
+
 
     /** PDF content flag (used in preview). */
     public static final String PDF_CONTENT = "pdf:content";
@@ -73,13 +73,13 @@ public class FileContentCommand implements INuxeoCommand {
         this.streamingSupport = streamingSupport;
     }
 
-    public static PropertyMap getFileMap(Document nuxeoDocument, String fieldName)  {
-        
+    public static PropertyMap getFileMap(Document nuxeoDocument, String fieldName) {
+
         PropertyMap map = null;
-        
-        if( fieldName.contains("/")){
-            //files:files/1/file
-            
+
+        if (fieldName.contains("/")) {
+            // files:files/1/file
+
             String tokens[] = fieldName.split("/");
             int index = Integer.parseInt(tokens[1]);
 
@@ -94,8 +94,7 @@ public class FileContentCommand implements INuxeoCommand {
                 }
             }
 
-        }
-        else
+        } else
             map = nuxeoDocument.getProperties().getMap(fieldName);
 
         return map;
@@ -111,6 +110,7 @@ public class FileContentCommand implements INuxeoCommand {
         }
 
         FileBlob fileBlob;
+        String fileName = null;
 
         if (StringUtils.equals(fieldName, PDF_CONTENT)) {
             // download the file from its remote location
@@ -118,6 +118,7 @@ public class FileContentCommand implements INuxeoCommand {
         } else {
             PropertyMap map = getFileMap(document, fieldName);
 
+            fileName = map.getString("name");
             String pathFile = map.getString("data");
 
             if (this.streamingSupport) {
@@ -133,10 +134,6 @@ public class FileContentCommand implements INuxeoCommand {
 
                 CMSBinaryContent content = new CMSBinaryContent();
 
-                String fileName = blob.getFileName();
-                if ("file".equals(fileName)) {
-                    fileName = map.getString("filename");
-                }
                 if ((fileName == null) || "null".equals(fileName)) {
                     // Pb. sur l'upload, on prend le nom du document
                     fileName = this.document.getTitle();
@@ -157,7 +154,7 @@ public class FileContentCommand implements INuxeoCommand {
             // download the file from its remote location
             fileBlob = (FileBlob) session.getFile(pathFile);
         }
-        
+
         /* Construction résultat */
 
         InputStream in = new FileInputStream(fileBlob.getFile());
@@ -186,9 +183,7 @@ public class FileContentCommand implements INuxeoCommand {
 
         // JSS v 1.0.10 : traitement nom fichier à null
 
-        String fileName = fileBlob.getFileName();
         if ((fileName == null) || "null".equals(fileName)) {
-
             // Pb. sur l'upload, on prend le nom du document
             fileName = this.document.getTitle();
         }
