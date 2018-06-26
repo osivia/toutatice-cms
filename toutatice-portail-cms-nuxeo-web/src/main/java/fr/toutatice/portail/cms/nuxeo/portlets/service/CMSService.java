@@ -447,9 +447,8 @@ public class CMSService implements ICMSService {
         
         }
         
-        if (cmsCtx.getSatellite() != null) {
-            commandCtx.setSatelliteName(cmsCtx.getSatellite().getId());
-        }
+        commandCtx.setSatellite(cmsCtx.getSatellite());
+
 
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
 
@@ -3392,9 +3391,10 @@ public class CMSService implements ICMSService {
                 if (ArrayUtils.isNotEmpty(paths)) {
                     List<Pattern> patterns = new ArrayList<>(paths.length);
                     for (String path : paths) {
-                        Pattern pattern = Pattern.compile(path);
+                        Pattern pattern = Pattern.compile(path, Pattern.CASE_INSENSITIVE);
                         patterns.add(pattern);
                     }
+                    satellite.setPaths(patterns);
                 }
 
                 satellites.add(satellite);
