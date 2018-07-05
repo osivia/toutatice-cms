@@ -295,13 +295,24 @@ public class FormsServiceImpl implements IFormsService {
             
             // Nuxeo command
             INuxeoCommand command = new StartProcedureCommand(title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(), properties);
+            
+            
+            // Save current scope
+            String savedScope = cmsContext.getScope();
+
+            
             try {
-            	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+             	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+            	cmsContext.setScope("superuser_no_cache");
                 INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
                 this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
             } catch (CMSException e) {
                 throw new PortalException(e);
             }
+            finally {
+                cmsContext.setScope(savedScope);
+            }
+            
 
             // Email notification
             try {
@@ -494,14 +505,27 @@ public class FormsServiceImpl implements IFormsService {
         // Nuxeo command
         INuxeoCommand command = new UpdateProcedureCommand(instancePath, title, filterContext.getActors(), filterContext.getAdditionalAuthorizations(),
                 properties);
+        
+         
+        // Save current scope
+        String savedContextScope = cmsContext.getScope();
+       
+        
         try {
+        	
         	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
+        	
+        	cmsContext.setScope("superuser_no_cache");
             INuxeoCommand blobCmd = new BlobsProcedureCommand(uploadedFiles, docRef);
             this.cmsCustomizer.executeNuxeoCommand(cmsContext, blobCmd);
         } catch (CMSException e) {
             throw new PortalException(e);
         }
         
+        finally {
+            cmsContext.setScope(savedContextScope);
+        }
+
         
         
 
