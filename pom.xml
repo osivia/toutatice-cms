@@ -350,14 +350,14 @@
 
     <distributionManagement>
         <repository>
-            <id>toutatice-releases</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-releases</url>
+            <id>osivia-releases</id>
+            <url>http://www.osivia.org/nexus/content/repositories/osivia-releases</url>
         </repository>
         <snapshotRepository>
-            <id>toutatice-snapshots</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-snapshots</url>
+            <id>osivia-snapshots</id>
+            <url>http://www.osivia.org/nexus/content/repositories/osivia-snapshots</url>
         </snapshotRepository>
-    </distributionManagement>
+	</distributionManagement>
     
     <profiles>
     	<profile>
