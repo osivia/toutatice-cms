@@ -2017,7 +2017,15 @@ public class MenuBarFormater {
                 if (pubInfos.getPublishSpacePath() != null) {
                     final CMSItem pubConfig = cmsService.getSpaceConfig(cmsContext, pubInfos.getPublishSpacePath());
                     if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents"))) {
-                        spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
+                        
+                        try {
+                            // Check if user can read the space
+                            cmsService.getPublicationInfos(cmsContext, pubInfos.getPublishSpacePath());
+                            spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
+                        } catch( CMSException e) {
+                            // No logs
+                        }
+                        
                     }
 
                 }
