@@ -1197,14 +1197,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public String transformLink(CMSServiceCtx ctx, String link) {
         XSLFunctions xslFunctions = new XSLFunctions(this, ctx);
 
-        String nxPublicDomainUri = NuxeoConnectionProperties.getPublicDomainUri().toString();
-
-        // #1421 - If not specified, use current request url insteaod of nuxeo.url
-        if (StringUtils.isBlank(nxPublicDomainUri) && ctx != null && ctx.getRequest() != null) {
-            nxPublicDomainUri = ctx.getRequest().getScheme() + "://" + ctx.getRequest().getServerName();
-        }
-
-        return xslFunctions.link(nxPublicDomainUri + link);
+        return xslFunctions.link(link);
+        
     }
 
     /**
