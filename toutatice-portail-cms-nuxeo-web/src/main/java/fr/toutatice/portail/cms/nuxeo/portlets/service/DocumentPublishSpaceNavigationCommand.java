@@ -16,9 +16,9 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -173,7 +173,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
         Documents children = (Documents) operationRequest.execute();
 
         // Navigation items
-        Map<String, NavigationItem> navigationItems = new HashMap<>(children.size());
+        Map<String, NavigationItem> navigationItems = new LinkedHashMap<>(children.size());
 
         for (Document child : children) {
             // Path
