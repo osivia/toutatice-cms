@@ -41,6 +41,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
 import fr.toutatice.portail.cms.nuxeo.portlets.files.MoveDocumentCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 
 /**
  * Move document portlet.
@@ -99,6 +100,7 @@ public class MoveDocumentPortlet extends CMSPortlet {
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        nuxeoController.setDisplayLiveVersion(RequestPublishStatus.live.getStatus());
 
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = (DefaultCMSCustomizer) this.nuxeoService.getCMSCustomizer();
@@ -157,13 +159,13 @@ public class MoveDocumentPortlet extends CMSPortlet {
 
         // Navigation path
         if (navigationItem != null) {
-            String navigationPath = navigationItem.getPath();
+            String navigationPath = navigationItem.getNavigationPath();
             request.setAttribute("cmsNavigationPath", navigationPath);
         }
 
         // CMS item
         CMSItem cmsItem;
-        if ((navigationItem != null) && StringUtils.equals(documentPath, navigationItem.getPath())) {
+        if ((navigationItem != null) && StringUtils.equals(documentPath, navigationItem.getNavigationPath())) {
             cmsItem = navigationItem;
         } else if (StringUtils.isNotEmpty(documentPath)) {
             try {

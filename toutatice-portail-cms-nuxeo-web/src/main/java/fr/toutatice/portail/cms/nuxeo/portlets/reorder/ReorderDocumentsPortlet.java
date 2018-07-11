@@ -82,6 +82,7 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
         // Nuxeo controller
         NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+        nuxeoController.setDisplayLiveVersion(RequestPublishStatus.live.getStatus());
 
         // CMS service
         ICMSService cmsService = NuxeoController.getCMSService();
