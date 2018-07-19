@@ -258,7 +258,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      */
     @Override
     public String getWebId(String webPath) {
-        if (StringUtils.EMPTY.equals(webPath)) {
+        if (StringUtils.EMPTY.equals(webPath) || StringUtils.equals("/", webPath)) {
             PathValues pathValues = this.paths.get(this.basePath);
             String webId = null;
             if (pathValues != null) {
