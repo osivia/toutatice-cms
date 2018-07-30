@@ -168,7 +168,7 @@
 
                     <!-- Delete -->
                     <c:set var="title"><op:translate key="DELETE" /></c:set>
-                    <a href="#${namespace}-delete" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancybox_inline no-ajax-link delete">
+					<a href="javascript:;" title="${title}" data-fancybox data-src="#${namespace}-delete" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn delete">                    
                         <i class="halflings halflings-trash"></i>
                         <span class="sr-only">${title}</span>
                     </a>
