@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
@@ -33,6 +31,8 @@ import org.nuxeo.ecm.automation.client.model.Blob;
 import org.osivia.portal.api.cache.services.CacheInfo;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -206,9 +206,11 @@ public class VocabularyHelper {
                     if (label.startsWith("label.directories")) {
                         label = key;
                     }
-                    String DecodedLabel = URLDecoder.decode(label, "UTF-8");
 
-                    entry = new VocabularyEntry(key, DecodedLabel);
+                    String decodedKey = URLDecoder.decode(key, CharEncoding.UTF_8);
+                    String decodedLabel = URLDecoder.decode(label, CharEncoding.UTF_8);
+
+                    entry = new VocabularyEntry(decodedKey, decodedLabel);
 
 
                     JSONArray children = null;
