@@ -1964,6 +1964,80 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
+    public Map<String, CMSConfigurationItem> getCmsRegionsInheritedLayout(CMSServiceCtx cmsContext, String basePath, String path,
+            Set<CMSConfigurationItem> configuredLayouts)
+            throws CMSException {
+        // Inherited layouts
+        Map<String, CMSConfigurationItem> inheritedLayouts;
+
+        if (StringUtils.isEmpty(basePath) || StringUtils.isEmpty(path) || CollectionUtils.isEmpty(configuredLayouts)) {
+            inheritedLayouts = new HashMap<>(0);
+        } else {
+            inheritedLayouts = new HashMap<>();
+
+            // Propagated regions
+            Set<String> propagatedRegions = new HashSet<>();
+
+            // Navigation path
+            String navigationPath = path;
+
+            while (StringUtils.startsWith(navigationPath, basePath)) {
+                // Navigation item
+                CMSItem navigationItem = this.getPortalNavigationItem(cmsContext, basePath, navigationPath);
+
+                if (navigationItem != null) {
+                    Document document = (Document) navigationItem.getNativeItem();
+
+                    // Document regions loop
+                    PropertyList regions = document.getProperties().getList(EditableWindowHelper.SCHEMA_REGIONS);
+                    if (regions != null) {
+                        for (int i = 0; i < regions.size(); i++) {
+                            // Region properties
+                            PropertyMap region = regions.getMap(i);
+                            // Region identifier
+                            String regionId = region.getString(EditableWindowHelper.REGION_IDENTIFIER);
+
+                            if (!propagatedRegions.contains(regionId)) {
+                                // Layout code
+                                String layoutCode = region.getString(EditableWindowHelper.REGION_LAYOUT);
+                                // Layout
+                                CMSConfigurationItem layout = null;
+
+                                if (StringUtils.isNotEmpty(layoutCode)) {
+                                    Iterator<CMSConfigurationItem> iterator = configuredLayouts.iterator();
+                                    while ((layout == null) && iterator.hasNext()) {
+                                        CMSConfigurationItem configuredLayout = iterator.next();
+
+                                        if (StringUtils.equals(layoutCode, configuredLayout.getCode())) {
+                                            layout = configuredLayout;
+                                        }
+                                    }
+                                }
+
+                                if (layout != null) {
+                                    inheritedLayouts.put(regionId, layout);
+                                }
+
+                                propagatedRegions.add(regionId);
+                            }
+                        }
+                    }
+                }
+
+                // Loop on parent path
+                navigationPath = CMSObjectPath.parse(navigationPath).getParent().toString();
+            }
+        }
+
+        return inheritedLayouts;
+    }
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Map<String, CMSConfigurationItem> getCMSRegionsSelectedLayout(CMSItem item, Set<CMSConfigurationItem> regionLayouts) throws CMSException {
         Map<String, CMSConfigurationItem> regionsLayout = new HashMap<String, CMSConfigurationItem>();
 
