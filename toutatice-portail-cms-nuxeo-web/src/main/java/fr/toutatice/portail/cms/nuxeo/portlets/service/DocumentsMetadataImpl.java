@@ -113,7 +113,9 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                 this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
             }
 
-            this.timestamp = Math.max(this.timestamp, modified.getTime());
+            if (modified != null) {
+                this.timestamp = Math.max(this.timestamp, modified.getTime());
+            }
         }
 
 
