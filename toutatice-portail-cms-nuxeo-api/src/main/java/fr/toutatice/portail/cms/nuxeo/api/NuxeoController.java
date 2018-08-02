@@ -1744,16 +1744,15 @@ public class NuxeoController {
             String path = doc.getPath();
 
             if (PortalObjectUtils.isSpaceSite(page.getPortal())) {
-                // Forcage des vues détaillée pour certains contenus
+                // Forcage de l'affichage en mode portlet (pas de contextualisation) pour certains contenus
                 // (pour pallier à l'absence de navigation virtuelle)
-                if( displayContext == null) {
-                    String detailedPaths = page.getProperty("osivia.cms.detailedView.paths");
-                    if( StringUtils.isNotEmpty(detailedPaths))   {
-                        String paths[] = detailedPaths.split(",");
-                        for(String detailedPath: paths) {
-                            if( path.startsWith(detailedPath)){
-                                displayContext = "detailedView";
-                            }
+
+                String detailedPaths = page.getProperty("osivia.cms.contextualization.portlet.paths");
+                if (StringUtils.isNotEmpty(detailedPaths)) {
+                    String paths[] = detailedPaths.split(",");
+                    for (String detailedPath : paths) {
+                        if (path.startsWith(detailedPath)) {
+                            localContextualization = IPortalUrlFactory.CONTEXTUALIZATION_PORTLET;
                         }
                     }
                 }
