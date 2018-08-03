@@ -2356,7 +2356,27 @@ public class NuxeoController {
      * @return document context
      */
     public NuxeoDocumentContext getCurrentDocumentContext() {
-        return this.getDocumentContext(this.contentPath);
+        // Window
+        PortalWindow window;
+        if (this.request == null) {
+            window = null;
+        } else {
+            window = WindowFactory.getWindow(this.request);
+        }
+
+        // Current path
+        String currentPath;
+        if (window == null) {
+            currentPath = null;
+        } else {
+            currentPath = window.getProperty(Constants.WINDOW_PROP_URI);
+        }
+
+        if (StringUtils.isEmpty(currentPath)) {
+            currentPath = this.contentPath;
+        }
+
+        return this.getDocumentContext(currentPath);
     }
 
 
