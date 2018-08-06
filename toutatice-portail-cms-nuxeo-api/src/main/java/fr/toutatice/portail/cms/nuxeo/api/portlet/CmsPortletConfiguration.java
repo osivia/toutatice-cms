@@ -5,11 +5,13 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 
+import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.portlet.PortletAppUtils;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +28,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
  * @see CMSPortlet
  * @see PortletContextAware
  */
-public abstract class CmsPortletConfiguration extends CMSPortlet implements PortletContextAware {
+public abstract class CmsPortletConfiguration extends CMSPortlet {
 
     /** Application context. */
     @Autowired
@@ -53,17 +55,11 @@ public abstract class CmsPortletConfiguration extends CMSPortlet implements Port
     @PostConstruct
     public void postConstruct() throws PortletException {
         super.init(this.portletConfig);
+        PortletAppUtils.registerApplication(portletConfig, applicationContext);        
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setPortletContext(PortletContext portletContext) {
-        portletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.applicationContext);
-    }
-
+  
 
     /**
      * Get portal URL factory.
