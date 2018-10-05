@@ -6,7 +6,7 @@
 
 
 <!-- Link -->
-<ttc:documentLink document="${document}" var="link" />
+<ttc:documentLink document="${document}" var="link" displayContext="contextualLink"/>
 
 <!-- Target -->
 <c:set var="target" value="${link.external ? '_blank' : ''}" />
