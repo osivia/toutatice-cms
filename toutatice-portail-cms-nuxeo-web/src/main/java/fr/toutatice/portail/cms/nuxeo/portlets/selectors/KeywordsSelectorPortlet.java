@@ -129,7 +129,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 if (selectorId != null) {
                     String keyword = null;
                     if (!clear) {
-                        keyword = StringEscapeUtils.escapeHtml(request.getParameter("keyword"));
+                    	keyword = request.getParameter("keyword");
                     }
 
                     Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
@@ -247,13 +247,18 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> selector = selectors.get(selectorId);
                 if (selector != null) {
                     String[] keywords = new String[selector.size()];
-                    request.setAttribute("keywords", selector.toArray(keywords));
+                    
+                    for(int i = 0; i < selector.size(); i++) {
+                    	keywords[i] = StringEscapeUtils.escapeHtml(selector.get(i));
+                    }
+                    
+                    request.setAttribute("keywords", keywords);
                 } else {
                     request.setAttribute("keywords", ArrayUtils.EMPTY_STRING_ARRAY);
                 }
 
                 // Keyword
-                String keyword = request.getParameter("keyword");
+                String keyword = StringEscapeUtils.escapeHtml(request.getParameter("keyword"));
                 request.setAttribute("keyword", keyword);
 
                 this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/view.jsp").include(request, response);
