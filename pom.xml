@@ -120,7 +120,7 @@
                 </exclusions>
             </dependency>
 
-			<!-- Dependencies for automation client -->
+            <!-- Dependencies for automation client -->
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
@@ -359,7 +359,7 @@
         <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>     
         <tag>HEAD</tag>
-	</scm>
+    </scm>
 
     <distributionManagement>
         <repository>
