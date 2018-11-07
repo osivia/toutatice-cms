@@ -2552,7 +2552,8 @@ public class CMSService implements ICMSService {
             // Taskbar item
             TaskbarItem taskbarItem = null;
             for (TaskbarItem item : taskbarItems.getAll()) {
-                if (TaskbarItemType.STAPLED.equals(item.getType()) || document.getType().equals(item.getDocumentType())) {
+                if (TaskbarItemType.STAPLED.equals(item.getType()) || StringUtils.isEmpty(item.getDocumentType())
+                        || document.getType().equals(item.getDocumentType())) {
                     String expectedWebId = webIdPrefix + StringUtils.lowerCase(item.getId());
                     if (expectedWebId.equals(webId)) {
                         taskbarItem = item;
