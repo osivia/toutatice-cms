@@ -2592,7 +2592,7 @@ public class CMSService implements ICMSService {
                 }
 
                 if (granted) {
-                    task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+                    task = factory.createTaskbarTask(taskbarItem, document.getTitle(), document.getPath(), disabled);
                 } else {
                     task = null;
                 }
