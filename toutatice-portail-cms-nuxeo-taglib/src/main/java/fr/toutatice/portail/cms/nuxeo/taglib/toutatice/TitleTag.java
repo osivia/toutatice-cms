@@ -13,6 +13,9 @@ import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 
 /**
@@ -23,12 +26,20 @@ import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
  */
 public class TitleTag extends ToutaticeSimpleTag {
 
-    /** Document linkable indicator. */
+
+    
+    
+	/** Document linkable indicator. */
     private boolean linkable;
     /** Document link display context. */
     private String displayContext;
     /** Document type icon indicator. */
     private boolean icon;
+    /** Link shoud be targetted in Tab named with the spaceId */
+    private boolean openInSpaceTabs;
+
+
+	private INuxeoCustomizer cmsCustomizer;    
 
 
     /**
@@ -38,6 +49,11 @@ public class TitleTag extends ToutaticeSimpleTag {
         super();
         this.linkable = true;
         this.icon = false;
+        this.openInSpaceTabs = false;
+        
+        INuxeoService nuxeoService = NuxeoServiceFactory.getNuxeoService();
+        cmsCustomizer = nuxeoService.getCMSCustomizer();
+        
     }
 
 
@@ -63,15 +79,21 @@ public class TitleTag extends ToutaticeSimpleTag {
         if (this.linkable) {
             // Link
             Link link = this.getTagService().getDocumentLink(nuxeoController, document, null, this.displayContext, false, false);
-            // Target
-            String target;
-            if (link.isExternal()) {
-                target = "_blank";
-            } else {
-                target = null;
+            
+            String target = null;
+            
+            String url = link.getUrl();
+            
+            if(openInSpaceTabs) {
+            	target = cmsCustomizer.getTarget(document);            	
             }
+        	
+        	if(target == null && link.isExternal()) {
+        		target = "_blank";
+        	}
+            
 
-            Element content = DOM4JUtils.generateLinkElement(link.getUrl(), target, null, "no-ajax-link", title, icon);
+            Element content = DOM4JUtils.generateLinkElement(url, target, null, "no-ajax-link", title, icon);
             container.add(content);
 
             if (link.isExternal()) {
@@ -117,5 +139,13 @@ public class TitleTag extends ToutaticeSimpleTag {
     public void setIcon(boolean icon) {
         this.icon = icon;
     }
+
+    /**
+     * Setter for open in space tabs
+     * @param boolean true if enabled
+     */
+	public void setOpenInSpaceTabs(boolean openInSpaceTabs) {
+		this.openInSpaceTabs = openInSpaceTabs;
+	}
 
 }

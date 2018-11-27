@@ -103,6 +103,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -163,6 +164,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
     /** Binary servlet URL. */
     private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
+    
+    private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";    
 
 
     /** Log. */
@@ -343,7 +346,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual links
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
         // Search results
-        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), null));
         
         return templates;
     }
@@ -654,6 +657,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             cmsContext.setDisplayLiveVersion("1");
             return this.getCMSFileBrowser(docCtx);
         }
+        
+        if ("UserProfile".equals(document.getType())) {
+            return this.getUserProfilePlayer(docCtx);
+        }
 
 
         if ("Folder".equals(document.getType()) || "OrderedFolder".equals(document.getType()) || "Section".equals(document.getType())) {
@@ -733,6 +740,30 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
     /**
+	 * @param docCtx
+	 * @return
+	 */
+	public Player getUserProfilePlayer(DocumentContext<Document> docCtx) {
+
+        Document doc = (Document) docCtx.getDoc();
+
+        Map<String, String> windowProperties = new HashMap<>();
+
+		windowProperties.put("osivia.ajaxLink", "1");
+		windowProperties.put("theme.dyna.partial_refresh_enabled", "true");
+		windowProperties.put("osivia.title", doc.getTitle());
+		windowProperties.put("osivia.hideTitle", "1");
+		windowProperties.put("uidFichePersonne", doc.getProperties().getString("ttc_userprofile:login"));
+
+        Player linkProps = new Player();
+        linkProps.setWindowProperties(windowProperties);
+        linkProps.setPortletInstance("directory-person-card-instance");
+
+        return linkProps;
+	}
+
+
+	/**
      * Get default external viewer.
      *
      * @param ctx CMS context
@@ -928,19 +959,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
         /* Filtre pour sélectionner uniquement les version publiées */
         String requestFilter = StringUtils.EMPTY;
+        
+        String hiddenOrUserProfileAndNotDeleted = "((ecm:mixinType != 'HiddenInNavigation' AND ecm:primaryType != 'UserProfile') OR (ecm:primaryType = 'UserProfile'))"
+        		+ " AND ecm:currentLifeCycleState <> 'deleted' ";
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 "
-                    + "AND ecm:currentLifeCycleState <> 'deleted'";
-
+            requestFilter = hiddenOrUserProfileAndNotDeleted +" AND ecm:isProxy = 0 ";
+                    
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
-            requestFilter = " ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
+            requestFilter = hiddenOrUserProfileAndNotDeleted +" AND ecm:isCheckedInVersion = 0"
                     + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-            requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
+            requestFilter = hiddenOrUserProfileAndNotDeleted + " AND ecm:isProxy = 1 AND ecm:isCheckedInVersion = 0";
         }
 
         return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
@@ -1037,10 +1070,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         String finalRequest = beforeOrderBy;
 
-        if (finalRequest.length() > 0) {
-            finalRequest += " AND ";
+        if(StringUtils.isNotBlank(requestFilter)) {
+            if (finalRequest.length() > 0) {
+                finalRequest += " AND ";
+            }
+            finalRequest += "(" + requestFilter + ") ";
         }
-        finalRequest += "(" + requestFilter + ") ";
 
         finalRequest += " " + orderBy;
         editedNuxeoRequest = finalRequest;
@@ -1311,7 +1346,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 "glyphicons glyphicons-cube-black"));
         // Staple
         defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
-
+        // UserProfile
+        defaultTypes.add(new DocumentType("UserProfile", false, false, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-user"));
+        
         return defaultTypes;
     }
 
@@ -1805,6 +1842,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         } catch (IOException e) {
             throw new CMSException(e);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getTarget(fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO)
+     */
+    @Override
+    public String getTarget(DocumentDTO document) {
+    	if(System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
+			Object spaceUuid = document.getProperties().get("ottc:spaceUuid");
+			if(spaceUuid != null)
+				return spaceUuid.toString();
+			else return null;
+		}
+		else return null;
     }
 
 

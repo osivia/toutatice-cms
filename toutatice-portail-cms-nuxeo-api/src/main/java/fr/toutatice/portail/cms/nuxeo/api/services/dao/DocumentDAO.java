@@ -121,7 +121,17 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
         // Original Nuxeo document
         dto.setDocument(document);
-
+        
+        // Space type icon
+        String spaceTypeStr = document.getProperties().getString("ottc:spaceType");
+        if(spaceTypeStr != null ) {
+	        DocumentType spaceType = this.getType(spaceTypeStr);
+	        // Icon
+	        if (spaceType != null) {
+	            String icon = spaceType.getGlyph();
+	            dto.setSpaceIcon(icon);
+	        }
+        }
         return dto;
     }
 

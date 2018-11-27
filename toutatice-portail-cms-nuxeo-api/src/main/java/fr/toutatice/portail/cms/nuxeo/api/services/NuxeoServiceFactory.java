@@ -47,7 +47,7 @@ public class NuxeoServiceFactory {
      * 
      * @return Nuxeo service
      */
-    private static INuxeoService getNuxeoService() {
+    public static INuxeoService getNuxeoService() {
         return Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
     }
 
