@@ -346,7 +346,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual links
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
         // Search results
-        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), null));
+        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), DEFAULT_SCHEMAS));
         
         return templates;
     }
@@ -1850,7 +1850,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public String getTarget(DocumentDTO document) {
     	if(System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
-			Object spaceUuid = document.getProperties().get("ottc:spaceUuid");
+			Object spaceUuid = document.getProperties().get("ttc:spaceUuid");
 			if(spaceUuid != null)
 				return spaceUuid.toString();
 			else return null;

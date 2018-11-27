@@ -123,7 +123,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         dto.setDocument(document);
         
         // Space type icon
-        String spaceTypeStr = document.getProperties().getString("ottc:spaceType");
+        String spaceTypeStr = document.getProperties().getString("ttc:spaceType");
         if(spaceTypeStr != null ) {
 	        DocumentType spaceType = this.getType(spaceTypeStr);
 	        // Icon

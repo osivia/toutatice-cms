@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.constants.InternalConstants;
@@ -61,7 +62,7 @@ public class GetDocumentCommand implements INuxeoCommand {
 
         // Operation request
         OperationRequest operationRequest = session.newRequest("Document.QueryES");
-        //operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined, ottc, clink");
+        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, clink");
         operationRequest.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
 
         return operationRequest.execute();

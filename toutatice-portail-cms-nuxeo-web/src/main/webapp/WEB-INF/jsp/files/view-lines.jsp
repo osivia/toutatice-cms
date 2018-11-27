@@ -202,7 +202,7 @@
                                                     </div>
                                                     
                                                     <!-- Lock -->
-                                                    <c:set var="lockOwner" value="${document.properties['ottc:lockOwner']}" /> 
+                                                    <c:set var="lockOwner" value="${document.properties['ttc:lockOwner']}" /> 
                                                     <c:if test="${not empty lockOwner}">
                                                         <div class="document-lock">
                                                             <c:choose>
