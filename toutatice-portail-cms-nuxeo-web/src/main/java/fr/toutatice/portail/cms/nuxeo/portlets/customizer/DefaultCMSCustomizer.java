@@ -961,19 +961,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         String requestFilter = StringUtils.EMPTY;
         
         String hiddenOrUserProfileAndNotDeleted = "((ecm:mixinType != 'HiddenInNavigation' AND ecm:primaryType != 'UserProfile') OR (ecm:primaryType = 'UserProfile'))"
-        		+ " AND ecm:currentLifeCycleState <> 'deleted' ";
+        		+ " AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0 ";
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
             requestFilter = hiddenOrUserProfileAndNotDeleted +" AND ecm:isProxy = 0 ";
-                    
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
-            requestFilter = hiddenOrUserProfileAndNotDeleted +" AND ecm:isCheckedInVersion = 0"
-                    + " AND ecm:mixinType <> 'isLocalPublishLive'";
+            requestFilter = hiddenOrUserProfileAndNotDeleted + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-            requestFilter = hiddenOrUserProfileAndNotDeleted + " AND ecm:isProxy = 1 AND ecm:isCheckedInVersion = 0";
+            requestFilter = hiddenOrUserProfileAndNotDeleted + " AND ecm:isProxy = 1";
         }
 
         return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
