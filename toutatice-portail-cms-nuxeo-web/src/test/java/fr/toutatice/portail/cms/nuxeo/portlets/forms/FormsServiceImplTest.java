@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
@@ -36,8 +37,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 
@@ -48,7 +52,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
  */
 @RunWith(PowerMockRunner.class)
 @PowerMockListener(AnnotationEnabler.class)
-@PrepareForTest({TransformationFunctions.class, Locator.class, DirServiceFactory.class, NuxeoServiceFactory.class})
+@PrepareForTest({DocumentDAO.class, TransformationFunctions.class, Locator.class, DirServiceFactory.class, NuxeoServiceFactory.class})
 public class FormsServiceImplTest {
 
     /** User identifier. */
@@ -66,6 +70,9 @@ public class FormsServiceImplTest {
     private static final String DOCUMENT_TITLE = "Article";
     /** Document URL. */
     private static final String DOCUMENT_URL = "http://host/portal/cms/article";
+
+    /** Workspace identifier. */
+    private static final String WORKSPACE_ID = "workspace-id";
 
 
     /** Forms service. */
@@ -97,9 +104,28 @@ public class FormsServiceImplTest {
         EasyMock.expect(document.getTitle()).andReturn(DOCUMENT_TITLE).anyTimes();
         EasyMock.expect(document.getPath()).andReturn(DOCUMENT_PATH).anyTimes();
 
+        // Document DTO
+        DocumentDTO dto = EasyMock.createMock(DocumentDTO.class);
+
+        // Document DAO
+        DocumentDAO dao = EasyMock.createMock(DocumentDAO.class);
+        EasyMock.expect(dao.toDTO(document)).andStubReturn(dto);
+        PowerMock.mockStatic(DocumentDAO.class);
+        EasyMock.expect(DocumentDAO.getInstance()).andStubReturn(dao);
+
+        // Documents
+        Documents documents = EasyMock.createMock(Documents.class);
+        EasyMock.expect(documents.size()).andReturn(1).anyTimes();
+        EasyMock.expect(documents.get(0)).andStubReturn(document);
+
         // Document context
         NuxeoDocumentContext documentContext = EasyMock.createMock(NuxeoDocumentContext.class);
         EasyMock.expect(documentContext.getDoc()).andStubReturn(document);
+
+        // Transformation functions
+        PowerMock.mockStaticPartial(TransformationFunctions.class, "getDocument");
+        PowerMock.expectPrivate(TransformationFunctions.class, "getDocument", EasyMock.anyObject(PortalControllerContext.class),
+                EasyMock.anyObject(String.class)).andStubReturn(document);
 
         // Nuxeo controller
         NuxeoController nuxeoController = EasyMock.createMock(NuxeoController.class);
@@ -112,6 +138,9 @@ public class FormsServiceImplTest {
 
         // CMS customizer
         DefaultCMSCustomizer cmsCustomizer = EasyMock.createMock(DefaultCMSCustomizer.class);
+        EasyMock.expect(cmsCustomizer.executeNuxeoCommand(EasyMock.anyObject(CMSServiceCtx.class), EasyMock.anyObject(GetDocumentCommand.class)))
+                .andStubReturn(documents);
+        EasyMock.expect(cmsCustomizer.getTarget(dto)).andReturn(WORKSPACE_ID).anyTimes();
 
         // CMS context
         CMSServiceCtx cmsContext = EasyMock.createMock(CMSServiceCtx.class);
@@ -124,6 +153,10 @@ public class FormsServiceImplTest {
         // CMS service
         ICMSService cmsService = EasyMock.createMock(ICMSService.class);
         EasyMock.expect(cmsService.getContent(cmsContext, DOCUMENT_PATH)).andStubReturn(cmsItem);
+
+        // Nuxeo service
+        INuxeoService nuxeoService = EasyMock.createMock(INuxeoService.class);
+        EasyMock.expect(nuxeoService.getCMSCustomizer()).andStubReturn(cmsCustomizer);
 
         // Empty person
         Person emptyPerson = EasyMock.createNiceMock(Person.class);
@@ -153,6 +186,7 @@ public class FormsServiceImplTest {
 
         // Nuxeo service factory
         PowerMock.mockStatic(NuxeoServiceFactory.class);
+        EasyMock.expect(NuxeoServiceFactory.getNuxeoService()).andStubReturn(nuxeoService);
         EasyMock.expect(NuxeoServiceFactory.getTagService()).andStubReturn(tagService);
 
         // Portal URL factory
@@ -180,6 +214,7 @@ public class FormsServiceImplTest {
 
         // Locator
         PowerMock.mockStatic(Locator.class);
+        EasyMock.expect(Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME)).andStubReturn(nuxeoService);
         EasyMock.expect(Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME)).andStubReturn(portalUrlFactory);
         EasyMock.expect(Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME)).andStubReturn(cmsServiceLocator);
         EasyMock.expect(Locator.findMBean(ITasksService.class, ITasksService.MBEAN_NAME)).andStubReturn(tasksService);
@@ -188,8 +223,9 @@ public class FormsServiceImplTest {
 
 
         // Replay
-        PowerMock.replayAll(document, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, emptyPerson, person, personService,
-                groupService, tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory, internationalizationService);
+        PowerMock.replayAll(document, dto, dao, documents, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, nuxeoService,
+                emptyPerson, person, personService, groupService, tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory,
+                internationalizationService);
 
 
         // Forms service
@@ -249,7 +285,7 @@ public class FormsServiceImplTest {
         // #9 : document:link function
         expression = "document = ${document:link(documentPath)}";
         transformedExpression = this.formsService.transform(portalControllerContext, expression, variables);
-        Assert.assertEquals("document = <a class=\"no-ajax-link\" href=\"" + DOCUMENT_URL + "\">" + DOCUMENT_TITLE + "</a>",
+        Assert.assertEquals("document = <a class=\"no-ajax-link\" target=\"" + WORKSPACE_ID + "\" href=\"" + DOCUMENT_URL + "\">" + DOCUMENT_TITLE + "</a>",
                 StringUtils.remove(transformedExpression, System.lineSeparator()));
     }
 
