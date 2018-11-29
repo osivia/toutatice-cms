@@ -11,18 +11,20 @@
 
 <c:choose>
     <c:when test="${not empty fragmentType}">
-        <!-- Message -->
-        <c:if test="${not empty messageKey}">
-            <p class="text-danger">
-	            <i class="halflings halflings-exclamation-sign"></i>
-	            <span><op:translate key="${messageKey}" /></span>
-	        </p>
-        </c:if>
-    
-        <!-- Fragment -->
-        <c:if test="${not empty fragmentType.module.viewJSPName}">
-            <ttc:include page="view-${fragmentType.module.viewJSPName}.jsp" />
-        </c:if>
+        <div class="fragment" data-fragment-type="${fragmentType.key}">
+            <!-- Message -->
+            <c:if test="${not empty messageKey}">
+                <p class="text-danger">
+    	            <i class="halflings halflings-exclamation-sign"></i>
+    	            <span><op:translate key="${messageKey}" /></span>
+    	        </p>
+            </c:if>
+        
+            <!-- Fragment -->
+            <c:if test="${not empty fragmentType.module.viewJSPName}">
+                <ttc:include page="view-${fragmentType.module.viewJSPName}.jsp" />
+            </c:if>
+        </div>
     </c:when>
     
     <c:otherwise>
