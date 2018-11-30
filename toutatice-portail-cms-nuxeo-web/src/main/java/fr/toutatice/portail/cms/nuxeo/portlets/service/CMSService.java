@@ -83,6 +83,7 @@ import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.urls.PortalUrlType;
+import org.osivia.portal.api.user.UserPreferences;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -156,6 +157,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
+import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
 
 /**
  * CMS service Toutatice implementation.
@@ -200,6 +202,8 @@ public class CMSService implements ICMSService {
     /** Statistics CMS service delegation. */
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
 
+    /** Statistics CMS service delegation. */
+    private final UserPreferencesDelegation prefsDelegation;
 
     /**
      * Constructor.
@@ -219,6 +223,7 @@ public class CMSService implements ICMSService {
         this.groupService = DirServiceFactory.getService(GroupService.class);
 
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
+        this.prefsDelegation = new UserPreferencesDelegation();
     }
 
 
@@ -3157,5 +3162,29 @@ public class CMSService implements ICMSService {
 
         this.statisticsServiceDelegation.updateStatistics(cmsContext, httpSession, spaceStatistics);
     }
+
+
+
+	/* (non-Javadoc)
+	 * @see org.osivia.portal.core.cms.ICMSService#getFoldersDisplay(javax.servlet.http.HttpSession)
+	 */
+	@Override
+	public UserPreferences getUserPreferences(PortalControllerContext context) throws PortalException {
+
+        return this.prefsDelegation.getPreferences(context);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.osivia.portal.core.cms.ICMSService#updateUserPreferences(javax.servlet.http.HttpSession)
+	 */
+	@Override
+	public void updateUserPreferences(CMSServiceCtx cmsContext, HttpSession httpSession) {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+        
+		this.prefsDelegation.updateUserPreferences(cmsContext, httpSession);
+	}
 
 }

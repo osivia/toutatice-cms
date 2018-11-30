@@ -66,6 +66,7 @@ import org.osivia.portal.api.panels.Panel;
 import org.osivia.portal.api.portlet.IPortletStatusService;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.urls.PortalUrlType;
+import org.osivia.portal.api.user.UserPreferences;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -242,7 +243,15 @@ public class FileBrowserPortlet extends CMSPortlet {
                 }
                 status.getViews().put(type, view);
                 this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), status);
-
+                
+                // #1936 - Memorize view
+				try {
+					UserPreferences userPreferences = cmsService.getUserPreferences(portalControllerContext);
+					userPreferences.updateFolderDisplayMode(document.getString("ttc:webid"), view.getName());
+				} catch (PortalException e) {
+					// Do nothing
+				}
+                
             } else if ("copy".equals(action)) {
                 // Copy action
 
@@ -584,9 +593,8 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Current view
-                FileBrowserView currentView = this.getCurrentView(portalControllerContext, window, currentDocument.getType());
+                FileBrowserView currentView = this.getCurrentView(portalControllerContext, window, currentDocument);
                 request.setAttribute("view", currentView.getName());
-
 
                 // Sort criteria
                 FileBrowserSortCriteria criteria = this.getSortCriteria(portalControllerContext, ordered, currentView);
@@ -689,7 +697,8 @@ public class FileBrowserPortlet extends CMSPortlet {
      * @return view
      * @throws PortletException
      */
-    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, PortalWindow window, String type) throws PortletException {
+    private FileBrowserView getCurrentView(PortalControllerContext portalControllerContext, PortalWindow window, Document currentDocument) throws PortletException {
+    	
         // Portlet status
         FileBrowserStatus status = this.portletStatusService.getStatus(portalControllerContext, this.getPortletName(), FileBrowserStatus.class);
 
@@ -703,15 +712,36 @@ public class FileBrowserPortlet extends CMSPortlet {
 
         // Current view
         FileBrowserView currentView = null;
+        
+		// #1936 - UserPreferencesService substitute the portletStatusService
 
-        if (status != null) {
-            if (StringUtils.equals(taskId, status.getTaskId())) {
-                currentView = status.getViews().get(type);
-            } else {
-                // Status reinitialization
-                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), null);
-            }
-        }
+    	ICMSService cmsService = this.getCMSService();
+    	
+    	String folderDisplayMode = null;
+		try {
+			UserPreferences userPreferences = cmsService.getUserPreferences(portalControllerContext);
+			folderDisplayMode = userPreferences.getFolderDisplayMode(currentDocument.getString("ttc:webid"));
+
+		} catch (PortalException e1) {
+
+		}
+		
+		if(folderDisplayMode != null) {
+           
+            currentView = FileBrowserView.fromName((folderDisplayMode));
+		}
+		
+//		else if (status != null) {
+//  
+//            if (StringUtils.equals(taskId, status.getTaskId())) {
+//                currentView = status.getViews().get(currentDocument.getType());
+//                
+//            } else {
+//                // Status reinitialization
+//                this.portletStatusService.setStatus(portalControllerContext, this.getPortletName(), null);
+//            }
+//        }
+
 
         if (currentView == null) {
             currentView = FileBrowserView.fromName(window.getProperty(InternalConstants.DEFAULT_VIEW_WINDOW_PROPERTY));
