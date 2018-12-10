@@ -2546,6 +2546,7 @@ public class NuxeoController {
 		perms.setDeletableByUser(pub.isDeletableByUser());
 		perms.setEditableByUser(pub.isEditableByUser());
 		perms.setManageableByUser(pub.isManageableByUser());
+        perms.setCopiable(pub.isCopiable());
 
 		DocumentState version = DocumentState.parse(cmsCtx.getDisplayLiveVersion());
 		publicationInfos.setContentPath(path);
