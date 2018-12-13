@@ -1340,7 +1340,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes
         .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
         // Room
-        defaultTypes.add(new DocumentType("Room", true, false, true, true, false, false, Arrays.asList("Folder", "Note", "Room"), "/default/templates/room",
+        defaultTypes.add(new DocumentType("Room", true, false, true, true, false, false, Arrays.asList("Folder", "Note"), "/default/templates/room",
                 "glyphicons glyphicons-cube-black"));
         // Staple
         defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
