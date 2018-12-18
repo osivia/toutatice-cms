@@ -229,6 +229,7 @@ public class MenuBarFormater {
                 DocumentType documentType = this.customizer.getCMSItemTypes().get(document.getType());
 
                 // Dropdown menus
+                this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
                 this.addShareDropdown(portalControllerContext, documentType, bundle);
                 this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
 
@@ -238,9 +239,6 @@ public class MenuBarFormater {
                 }
 
                 if (!webPageFragment) {
-                    // Edition dropdown menu
-                    this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
-
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
