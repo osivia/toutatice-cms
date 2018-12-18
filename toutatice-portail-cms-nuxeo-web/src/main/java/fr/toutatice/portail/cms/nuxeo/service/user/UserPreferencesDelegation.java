@@ -66,21 +66,23 @@ public class UserPreferencesDelegation {
         if ((attribute == null) || !(attribute instanceof UserPreferences)) {
         	
         	// If not loaded, get it in nuxeo
-        	String user = (String) httpSession.getAttribute("PRINCIPAL_TOKEN");
-
-        	Person person = personService.getPerson(user);
-        	
-        	if(person != null) {
-        	
-        		Object ecmProfile = personService.getEcmProfile(context, person);
-        		
-        		if(ecmProfile instanceof Document) {
-        			Document profile = (Document) ecmProfile;
-        			
-        			userPreferences = toPreferencesDto(profile);
-        		}
-                httpSession.setAttribute(PREFS_SESSION_ATTRIBUTE, userPreferences);
-
+        	if(httpSession.getAttribute("PRINCIPAL_TOKEN") != null) {
+	        	String user = (String) httpSession.getAttribute("PRINCIPAL_TOKEN");
+	
+	        	Person person = personService.getPerson(user);
+	        	
+	        	if(person != null) {
+	        	
+	        		Object ecmProfile = personService.getEcmProfile(context, person);
+	        		
+	        		if(ecmProfile instanceof Document) {
+	        			Document profile = (Document) ecmProfile;
+	        			
+	        			userPreferences = toPreferencesDto(profile);
+	        		}
+	                httpSession.setAttribute(PREFS_SESSION_ATTRIBUTE, userPreferences);
+	
+	        	}
         	}
         	
         } else {
