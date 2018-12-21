@@ -346,7 +346,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual links
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
         // Search results
-        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), "*"));
         
         return templates;
     }
