@@ -346,7 +346,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Contextual links
         templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_CONTEXTUAL_LINKS, bundle.getString("LIST_TEMPLATE_CONTEXTUAL_LINKS"), DEFAULT_SCHEMAS));
         // Search results
-        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), DEFAULT_SCHEMAS));
+        templates.add(new ListTemplate(ViewList.LIST_TEMPLATE_SEARCH_RESULTS, bundle.getString("LIST_TEMPLATE_SEARCH_RESULTS"), "*"));
         
         return templates;
     }
@@ -1341,7 +1341,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         .add(new DocumentType("ContextualLink", false, false, false, false, false, true, new ArrayList<String>(0), null, "glyphicons glyphicons-link"));
         // Room
         defaultTypes.add(new DocumentType("Room", true, false, true, true, false, false, Arrays.asList("Folder", "Note"), "/default/templates/room",
-                "glyphicons glyphicons-cube-black"));
+                "glyphicons glyphicons-cube-black", false, false));
         // Staple
         defaultTypes.add(new DocumentType("Staple", false, true, false, false, false, false, new ArrayList<String>(0), null, "glyphicons glyphicons-nails"));
         // UserProfile
