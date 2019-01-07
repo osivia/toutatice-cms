@@ -31,6 +31,8 @@ public class UserTag extends ToutaticeSimpleTag {
     private String name;
     /** Linkable indicator. */
     private boolean linkable;
+    /** Linkable indicator. */
+    private boolean showAvatar;    
 
 
     /**
@@ -39,6 +41,8 @@ public class UserTag extends ToutaticeSimpleTag {
     public UserTag() {
         super();
         this.linkable = true;
+        this.showAvatar = true;
+
     }
 
 
@@ -52,21 +56,23 @@ public class UserTag extends ToutaticeSimpleTag {
             Element container = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null);
 
             // Avatar
-            Element avatar = null;
-            try {
-                Link avatarLink = nuxeoController.getUserAvatar(this.name);
-                if (avatarLink != null) {
-                    avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
-                    DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, avatarLink.getUrl());
-                    DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
-                }
-            } catch (CMSException e) {
-                // Do nothing
+            if(this.showAvatar) {
+	            Element avatar = null;
+	            try {
+	                Link avatarLink = nuxeoController.getUserAvatar(this.name);
+	                if (avatarLink != null) {
+	                    avatar = DOM4JUtils.generateElement(HTMLConstants.IMG, "avatar", null);
+	                    DOM4JUtils.addAttribute(avatar, HTMLConstants.SRC, avatarLink.getUrl());
+	                    DOM4JUtils.addAttribute(avatar, HTMLConstants.ALT, StringUtils.EMPTY);
+	                }
+	            } catch (CMSException e) {
+	                // Do nothing
+	            }
+	            if (avatar == null) {
+	                avatar = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null, "glyphicons glyphicons-user", null);
+	            }
+	            container.add(avatar);
             }
-            if (avatar == null) {
-                avatar = DOM4JUtils.generateElement(HTMLConstants.SPAN, null, null, "glyphicons glyphicons-user", null);
-            }
-            container.add(avatar);
 
             // Directory person
             PersonService personService = DirServiceFactory.getService(PersonService.class);
@@ -123,5 +129,12 @@ public class UserTag extends ToutaticeSimpleTag {
     public void setLinkable(boolean linkable) {
         this.linkable = linkable;
     }
+
+
+	public void setShowAvatar(boolean showAvatar) {
+		this.showAvatar = showAvatar;
+	}
+    
+    
 
 }
