@@ -13,35 +13,35 @@
         <c:when test="${not empty document}">
             <c:choose>
                 <c:when test="${onlyRemoteSections}">
-                    <jsp:include page="only-remote-sections.jsp" />
+                    <ttc:include page="only-remote-sections.jsp" />
                 </c:when>
                 
                 <c:otherwise>
         
 		            <c:choose>
 		                <c:when test="${onlyDescription}">
-		                    <jsp:include page="only-description.jsp" />
+		                    <ttc:include page="only-description.jsp" />
 		                </c:when>
 		                
 		                <c:otherwise>
                             <div class="row">
-                                <div class="col-md-8 col-lg-9">
+                                <div class="col-md-9 col-lg-10">
                                     <!-- Document view -->
                                     <ttc:include page="view-${dispatchJsp}.jsp" />
                                 </div>
                                 
-                                <div class="col-md-4 col-lg-3">
+                                <div class="col-md-3 col-lg-2">
                                     <!-- Document extra view -->
                                     <ttc:include page="view-${dispatchExtraJsp}-extra.jsp" />
                                 
                                     <!-- Document attachments view -->
                                     <c:if test="${attachments}">
-                                        <jsp:include page="attachments.jsp" />
+                                        <ttc:include page="attachments.jsp" />
                                     </c:if>
                                     
                                     <!-- Metadata -->
                                     <c:if test="${metadata}">
-                                        <jsp:include page="metadata.jsp" />
+                                        <ttc:include page="metadata.jsp" />
                                     </c:if>
                                 </div>
                             </div>
