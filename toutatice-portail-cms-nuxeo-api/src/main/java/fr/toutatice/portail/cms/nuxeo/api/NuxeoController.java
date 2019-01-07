@@ -75,6 +75,7 @@ import org.osivia.portal.core.formatters.IFormatter;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
+import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -104,6 +105,9 @@ public class NuxeoController {
     private static final String FETCH_PATH_PREFIX = "webId:";
     /** Prefix for CMS path. */
     private static final String CMS_PATH_PREFIX = "/_id";
+    /** Host joker. */
+    private static final String HOST_JOKER = "__HOST__";
+
 
     /** The request. */
     PortletRequest request;
@@ -2563,6 +2567,34 @@ public class NuxeoController {
 		if(cmsCtx.getContextualizationBasePath()!=null) {
 			publicationInfos.setContextualized(Boolean.TRUE);
 		}
+
+        // Nuxeo drive
+        publicationInfos.setDriveEnabled(pub.isDriveEnabled());
+        String driveUrl = pub.getDriveEditURL();
+        // No host in nxdrive URL (get the current portal request host), refs #1421
+        if (StringUtils.contains(driveUrl, HOST_JOKER)) {
+            HttpServletRequest servletRequest = cmsCtx.getServletRequest();
+            if (servletRequest == null) {
+                driveUrl = null;
+            } else {
+                // Try to get official host (in header)
+                String vhost = servletRequest.getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
+
+                if (StringUtils.isBlank(vhost)) {
+                    // if blank, try to get the host by the request
+                    vhost = servletRequest.getScheme() + "/" + servletRequest.getServerName();
+                } else {
+                    vhost = vhost.replace("://", "/"); // Ndrive protocol
+                }
+
+                StringBuilder builder = new StringBuilder();
+                builder.append(vhost);
+                builder.append("/nuxeo");
+                driveUrl = StringUtils.replace(driveUrl, HOST_JOKER, builder.toString());
+            }
+        }
+        publicationInfos.setDriveUrl(driveUrl);
+
 
 		CMSItem content = cmsService.getContent(cmsCtx, publicationInfos.getContentPath());
 		Document nativeItem = (Document) content.getNativeItem();
