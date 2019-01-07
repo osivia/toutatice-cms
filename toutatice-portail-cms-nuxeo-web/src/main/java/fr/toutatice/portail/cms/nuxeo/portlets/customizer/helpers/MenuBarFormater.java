@@ -262,10 +262,8 @@ public class MenuBarFormater {
                 }
 
 
-                if (!isTaskbarItem) {
-                    // Move
-                    this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                }
+                // Move
+                this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
 
 
                 // === other tools
@@ -1451,7 +1449,6 @@ public class MenuBarFormater {
                     String title = bundle.getString("EDIT");
                     item = new MenubarItem(id, title, icon, parent, order, "#", null, null, null);
                     item.setDisabled(true);
-                    menubar.add(item);
                 } else if (type != null && type.isSupportsPortalForms()) {
                     // Callback URL
                     String callbackURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, "_NEWID_", null, null, "_LIVE_", null, null, null,
@@ -1519,10 +1516,11 @@ public class MenuBarFormater {
      * @param cmsContext CMS context
      * @param menubar menubar
      * @param bundle internationalization bundle
+     * @param isTaskbarItem is taskbar item indicator
      * @throws CMSException
      */
     protected void getMoveLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1555,32 +1553,41 @@ public class MenuBarFormater {
 
                 if (isMovable) {
                     // Move document popup URL
-                    String moveDocumentURL;
-                    try {
-                        final Map<String, String> properties = new HashMap<>();
-                        properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
-                        properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
-                        properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
+                    String url;
+                    if (isTaskbarItem) {
+                        url = null;
+                    } else {
+                        try {
+                            final Map<String, String> properties = new HashMap<>();
+                            properties.put(MoveDocumentPortlet.DOCUMENT_PATH_WINDOW_PROPERTY, document.getPath());
+                            properties.put(MoveDocumentPortlet.CMS_BASE_PATH_WINDOW_PROPERTY, nuxeoController.getBasePath());
+                            properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
-                        moveDocumentURL = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
-                                properties, PortalUrlType.POPUP);
-                    } catch (final PortalException e) {
-                        moveDocumentURL = null;
+                            url = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance",
+                                    properties, PortalUrlType.POPUP);
+                        } catch (final PortalException e) {
+                            url = null;
+                        }
                     }
 
-                    if (moveDocumentURL != null) {
-                        final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
+                    MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
-                        final MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), "glyphicons glyphicons-move", parent, 2, moveDocumentURL,
-                                null, null, "fancyframe_refresh");
+                    MenubarItem item = new MenubarItem("Move", bundle.getString("MOVE"), parent, 2, null);
+                    item.setGlyphicon("glyphicons glyphicons-move");
+
+                    if (StringUtils.isEmpty(url)) {
+                        item.setUrl("#");
+                        item.setDisabled(true);
+                    } else {
+                        item.setUrl(url);
+                        item.setHtmlClasses("fancyframe_refresh");
                         item.setAjaxDisabled(true);
-
-                        menubar.add(item);
                     }
+
+                    menubar.add(item);
                 }
             }
         }
-
     }
 
 
