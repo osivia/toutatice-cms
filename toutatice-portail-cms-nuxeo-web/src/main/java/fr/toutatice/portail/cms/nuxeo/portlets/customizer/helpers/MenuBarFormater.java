@@ -241,13 +241,13 @@ public class MenuBarFormater {
                     // Edition dropdown menu
                     this.addCMSEditionDropdown(portalControllerContext, documentType, bundle);
 
-
-                    // Permalink
-                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
-
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
+                    if (!insideUserWorkspace) {
+                        // Permalink
+                        this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+                    }
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Draft options
