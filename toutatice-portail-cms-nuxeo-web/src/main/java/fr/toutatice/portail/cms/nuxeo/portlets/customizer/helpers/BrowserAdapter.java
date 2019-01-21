@@ -42,7 +42,7 @@ public class BrowserAdapter {
      *
      * @param cmsService CMS service
      */
-    private BrowserAdapter(CMSService cmsService) {
+    protected BrowserAdapter(CMSService cmsService) {
         super();
         this.cmsService = cmsService;
     }
@@ -209,6 +209,16 @@ public class BrowserAdapter {
      */
     protected String getWorkspacesSchemas() {
         return "dublincore";
+    }
+
+
+    /**
+     * Getter for cmsService.
+     * 
+     * @return the cmsService
+     */
+    public CMSService getCmsService() {
+        return cmsService;
     }
 
 }
