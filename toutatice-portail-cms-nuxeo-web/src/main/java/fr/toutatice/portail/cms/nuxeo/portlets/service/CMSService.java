@@ -155,6 +155,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.sharing.link.ResolveSharingLinkCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
@@ -3411,6 +3412,56 @@ public class CMSService implements ICMSService {
         }
 
         return satellites;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String resolveLinkSharing(CMSServiceCtx cmsContext, String linkId) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
+        // HTTP servlet request
+        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        // Current user
+        String user = servletRequest.getRemoteUser();
+
+        // Sharing link target document path
+        String path;
+
+        if (StringUtils.isBlank(linkId) || StringUtils.isEmpty(user)) {
+            path = null;
+        } else {
+            // Nuxeo command
+            INuxeoCommand command = new ResolveSharingLinkCommand(linkId, user);
+
+            // Saved CMS context scope
+            String savedScope = cmsContext.getScope();
+
+            // Sharing link target document
+            Document document;
+            try {
+                // Super-user context
+                cmsContext.setScope("superuser_context");
+
+                document = (Document) this.executeNuxeoCommand(cmsContext, command);
+            } catch (CMSException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CMSException(e);
+            } finally {
+                cmsContext.setScope(savedScope);
+            }
+
+            if (document == null) {
+                path = null;
+            } else {
+                path = document.getPath();
+            }
+        }
+
+        return path;
     }
 
 }
