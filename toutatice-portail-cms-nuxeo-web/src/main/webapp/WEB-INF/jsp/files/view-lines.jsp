@@ -100,7 +100,7 @@
                 
                 <div class="col-sm-7 col-md-6 col-lg-5">
                     <div class="row">                    
-                        <div class="col-xs-9">
+                        <div class="col-xs-6">
                             <div class="text-overflow">
                                 <a href="${sortDateUrl}">
                                     <span><op:translate key="FILE_BROWSER_LAST_CONTRIBUTION" /></span>
@@ -163,6 +163,7 @@
                                     <c:otherwise><c:remove var="downloadUrl" /></c:otherwise>
                                 </c:choose>
                                 <c:set var="lockOwner" value="${document.properties['ttc:lockOwner']}" />
+                                <c:set var="share" value="${document.properties['rshr:linkId']}" />
                             
                             
                                 <li>
@@ -233,7 +234,7 @@
                                                     
                                                     <div class="col-sm-7 col-md-6 col-lg-5">
                                                         <div class="row">
-                                                            <div class="col-xs-9">
+                                                            <div class="col-xs-6">
                                                                 <!-- Last contribution -->
                                                                 <div class="row">
                                                                     <div class="col-sm-6">
@@ -241,15 +242,9 @@
                                                                             <span><fmt:formatDate value="${date}" type="date" dateStyle="medium" /></span>
                                                                         </div>
                                                                     </div>
-                                                                    
-                                                                    <div class="col-sm-6 hidden-xs">
-                                                                        <div class="text-overflow">
-                                                                            <small class="text-muted"><ttc:user name="${document.properties['dc:lastContributor']}" linkable="false" /></small>    
-                                                                        </div>
-                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            
+                                                             
                                                             <div class="col-xs-3">
                                                                 <!-- Size -->
                                                                 <div class="text-overflow">
@@ -264,6 +259,15 @@
                                                                     </c:choose>
                                                                 </div>
                                                             </div>
+                                                            <div class="col-xs-3">
+                                                                <!-- PRONOTE -->
+                                                                	<c:choose>
+                                              							<c:when test="${not empty share}">
+                                                                            <span class="label label-info">Pronote</span>
+                                                                        </c:when>
+
+                                                                    </c:choose>                                                                        
+                                                            </div>                                                                 
                                                         </div>
                                                     </div>
                                                 </div>

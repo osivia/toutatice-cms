@@ -35,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.model.Documents;
+import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.log.LoggerMessage;
@@ -123,10 +125,7 @@ public class BinaryServlet extends HttpServlet {
             String index = request.getParameter("index");
             String pictureContent = request.getParameter("content");
             String fieldName = request.getParameter("fieldName");
-
-            // Document path
-            String path = request.getParameter("path");
-            path = URLDecoder.decode(path, "UTF-8");
+            
 
             // Live state indicator
             boolean liveState = BooleanUtils.toBoolean(request.getParameter("liveState"));
@@ -145,7 +144,37 @@ public class BinaryServlet extends HttpServlet {
             if (forcedScope != null) {
                 nuxeoController.setForcePublicationInfosScope(forcedScope);
             }
-
+            
+            // Binary type
+            Type binaryType = null;   
+            // Path
+            String path = null;
+            
+            // Shared link
+            String share = request.getParameter("linkId");
+            if (share != null) {
+                nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+                nuxeoController.setForcePublicationInfosScope("superuser_context");
+                
+                // Control if instance exists
+                Documents docs = (Documents) nuxeoController.executeNuxeoCommand(new FetchByShareLinkCommand(share));
+                if( docs.size() != 1)   {
+                    throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+                }
+                
+                path = docs.get(0).getPath();
+                binaryType = Type.FILE;
+                fieldName = "file:content";      
+            }   else    {
+                // Document path
+                 path = request.getParameter("path");
+                 path = URLDecoder.decode(path, "UTF-8");
+                 
+                 String type = request.getParameter("type");                 
+                 binaryType = BinaryDescription.Type.valueOf(type);  
+              }           
+            
+            
             // Binary delegation
             BinaryDelegation delegation = cmsService.validateBinaryDelegation(cmsContext, path);
             if (delegation != null) {
@@ -161,9 +190,7 @@ public class BinaryServlet extends HttpServlet {
                 PageProperties.getProperties().setBinarySubject(delegation.getSubject());
             }
 
-            // Binary type
-            String type = request.getParameter("type");
-            Type binaryType = BinaryDescription.Type.valueOf(type);
+
 
             // Force portal cache refresh
             if (BooleanUtils.toBoolean(request.getParameter("reload"))) {
