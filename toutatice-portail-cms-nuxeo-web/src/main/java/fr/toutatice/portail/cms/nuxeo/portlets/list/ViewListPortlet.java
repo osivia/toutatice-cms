@@ -122,11 +122,12 @@ public class ViewListPortlet extends ViewList {
     private IBundleFactory bundleFactory;
     /** Document DAO. */
     private DocumentDAO documentDAO;
-    /** CMS customizer. */
-    protected INuxeoCustomizer customizer;
     /** Portlet sequencing service. */
     private IPortletSequencingService portletSequencingService;
 
+
+    /** Nuxeo service. */
+    private final INuxeoService nuxeoService;
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
 
@@ -137,6 +138,8 @@ public class ViewListPortlet extends ViewList {
     public ViewListPortlet() {
         super();
 
+        // Nuxeo service
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
@@ -157,11 +160,6 @@ public class ViewListPortlet extends ViewList {
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
 
-        // Nuxeo service
-        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        // CMS customizer
-        this.customizer = nuxeoService.getCMSCustomizer();
-
         // Portlet sequencing service
         this.portletSequencingService = Locator.findMBean(IPortletSequencingService.class, IPortletSequencingService.MBEAN_NAME);
     }
@@ -175,6 +173,9 @@ public class ViewListPortlet extends ViewList {
      * @return current template
      */
     public ListTemplate getCurrentTemplate(Locale locale, ListConfiguration configuration) {
+        // Customizer
+        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
+
         String currentTemplateName = configuration.getTemplate();
         if (currentTemplateName == null) {
             currentTemplateName = LIST_TEMPLATE_NORMAL;
@@ -183,7 +184,7 @@ public class ViewListPortlet extends ViewList {
         // Search template
         ListTemplate currentTemplate = null;
         ListTemplate defaultTemplate = null;
-        List<ListTemplate> templates = this.customizer.getListTemplates(locale);
+        List<ListTemplate> templates = customizer.getListTemplates(locale);
         for (ListTemplate template : templates) {
             if (currentTemplateName.equals(template.getKey())) {
                 // Current template
@@ -504,6 +505,9 @@ public class ViewListPortlet extends ViewList {
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
+            // Customizer
+            INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
+
 
             // Configuration
             ListConfiguration configuration = this.getConfiguration(window);
@@ -519,10 +523,10 @@ public class ViewListPortlet extends ViewList {
             request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
 
             // Templates
-            request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
             
             //Set types
-            request.setAttribute("setTypes", this.customizer.getSetTypes());
+            request.setAttribute("setTypes", customizer.getSetTypes());
 
 
             response.setContentType("text/html");
@@ -556,6 +560,9 @@ public class ViewListPortlet extends ViewList {
             ListConfiguration configuration = this.getConfiguration(window);
             // Bundle
             Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+            // Customizer
+            INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
 
             // Template
             ListTemplate template = this.getCurrentTemplate(request.getLocale(), configuration);
@@ -755,7 +762,7 @@ public class ViewListPortlet extends ViewList {
 
 
                 // Templates
-                request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+                request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
 
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
@@ -1029,7 +1036,7 @@ public class ViewListPortlet extends ViewList {
 
             try {
                 // Tasks
-                List<TaskbarTask> tasks = this.taskbarService.getTasks(nuxeoController.getPortalCtx(), nuxeoController.getSpacePath(), true);
+                List<TaskbarTask> tasks = this.taskbarService.getTasks(nuxeoController.getPortalCtx(), nuxeoController.getSpacePath());
                 for (TaskbarTask task : tasks) {
                     if (taskId.equals(task.getId())) {
                         linkedTask = task;

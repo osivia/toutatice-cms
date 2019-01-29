@@ -12,11 +12,14 @@ import javax.portlet.RenderResponse;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ListConfiguration;
 import fr.toutatice.portail.cms.nuxeo.portlets.list.ViewListPortlet;
 
@@ -49,12 +52,21 @@ public class ViewProcedurePortlet extends ViewListPortlet {
 
     public static final String DEFAULT_FIELD_TITLE = DEFAULT_FIELD_PREFIX_RECORD + "_title";
 
+
+    /** Nuxeo service. */
+    private final INuxeoService nuxeoService;
+
+
     /**
      * Constructor.
      */
     public ViewProcedurePortlet() {
         super();
+
+        // Nuxeo service
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
     }
+
 
     @Override
     protected void doView(RenderRequest request, RenderResponse response) throws PortletException, PortletSecurityException, IOException {
@@ -139,10 +151,12 @@ public class ViewProcedurePortlet extends ViewListPortlet {
     }
 
     public ListTemplate getCurrentTemplate(Locale locale, ListConfiguration configuration) {
+        // Customizer
+        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
 
         // Search template
         ListTemplate currentTemplate = null;
-        List<ListTemplate> templates = this.customizer.getListTemplates(locale);
+        List<ListTemplate> templates = customizer.getListTemplates(locale);
         for (ListTemplate template : templates) {
             if (LIST_TEMPLATE_PROCEDURE.equals(template.getKey())) {
                 return template;
