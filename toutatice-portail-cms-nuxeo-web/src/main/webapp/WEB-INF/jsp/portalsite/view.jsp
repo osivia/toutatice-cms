@@ -26,8 +26,8 @@
 <%@page import="fr.toutatice.portail.cms.nuxeo.portlets.portalsite.ServiceDisplayItem"%><portlet:defineObjects />
 
 <%
-List<ServiceDisplayItem> servicesItems = (List<ServiceDisplayItem>)  renderRequest.getAttribute("serviceItems")	;
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+List<ServiceDisplayItem> servicesItems = (List<ServiceDisplayItem>)  request.getAttribute("serviceItems")	;
+NuxeoController ctx = (NuxeoController) request.getAttribute("ctx")	;
 %>
 
 
