@@ -211,9 +211,10 @@ public class MenuBarFormater {
                 }
             }
 
-            if( !pubInfos.getSatellite().isMain())
-            	return;
-            
+            if (!pubInfos.getSatellite().isMain()) {
+                return;
+            }
+
 
             // Check if current user is a global administrator
             boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
@@ -293,12 +294,15 @@ public class MenuBarFormater {
                             // Follow
                             this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
-                            //QuickAccess link
-                            if (!isWorkspace) this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
-                            
                             // QuickAccess link
-                            if (!isWorkspaceOrRoom)
+                            if (!isWorkspaceOrRoom) {
                                 this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                            }
+
+                            // QuickAccess link
+                            if (!isWorkspaceOrRoom) {
+                                this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                            }
 
                             if (!isWorkspaceOrRoom && !isTaskbarItem) {
                                 // Lock
@@ -364,7 +368,7 @@ public class MenuBarFormater {
             Iterator<CMSItem> iterator = userWorkspaces.iterator();
             while (iterator.hasNext() && !userWorkspace) {
                 CMSItem cmsItem = iterator.next();
-                userWorkspace = StringUtils.startsWith(path, cmsItem.getPath() + "/");
+                userWorkspace = StringUtils.startsWith(path, cmsItem.getNavigationPath() + "/");
             }
         }
 
@@ -831,21 +835,13 @@ public class MenuBarFormater {
                             final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
                                     1, null, null, null, null);
                             liveItem.setAjaxDisabled(true);
-                        	
-                        	if(!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
-	                            // Go to live version
-	                            final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
-	                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
-	
-	                            liveItem.setUrl(liveURL);
 
-                            if (!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
+                            if (!pubInfos.isLiveDeleted() && (pubInfos.getLiveId() != null)) {
                                 // Go to live version
                                 final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
                                         IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
 
                                 liveItem.setUrl(liveURL);
-
                             } else {
                                 // LBI #1782 - live is deleted
                                 liveItem.setUrl("#");
@@ -868,16 +864,15 @@ public class MenuBarFormater {
                     }
                 }
             } else {
-            	// LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
-            	
-            	if (pubInfos.isUserCanUnpublishRemoteProxy()) {
+                // LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
+
+                if (pubInfos.isUserCanUnpublishRemoteProxy()) {
                     // user can not unpublish root documents like portalsite, blogsite, website, ...
                     final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
                     unpublishItem.setAjaxDisabled(true);
 
                     // Unpublish menubar item
-                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
-                            pubInfos.getDocumentPath());
+                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
 
                     unpublishItem.setUrl(unpublishURL);
 
@@ -2031,15 +2026,15 @@ public class MenuBarFormater {
                 if (pubInfos.getPublishSpacePath() != null) {
                     final CMSItem pubConfig = cmsService.getSpaceConfig(cmsContext, pubInfos.getPublishSpacePath());
                     if ("1".equals(pubConfig.getProperties().get("contextualizeInternalContents"))) {
-                        
+
                         try {
                             // Check if user can read the space
                             cmsService.getPublicationInfos(cmsContext, pubInfos.getPublishSpacePath());
                             spaceDisplayName = pubInfos.getPublishSpaceDisplayName();
-                        } catch( CMSException e) {
+                        } catch (CMSException e) {
                             // No logs
                         }
-                        
+
                     }
 
                 }

@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -157,6 +158,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.sharing.link.ResolveSharingLinkCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
@@ -210,7 +212,6 @@ public class CMSService implements ICMSService {
     private final GroupService groupService;
     /** Documents discovery service. */
     private final DocumentsDiscoveryService documentsDiscoveryService;
-
     /** Statistics CMS service delegation. */
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
 
@@ -231,7 +232,7 @@ public class CMSService implements ICMSService {
         this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
-
+        this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
     }
 
