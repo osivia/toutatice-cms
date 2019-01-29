@@ -612,7 +612,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         return customizationService.isPluginRegistered(pluginName);
 
     }
-
     /**
      * Customize set types.
      * 
@@ -649,6 +648,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         menubarModulesCache = null;
         templateAdaptersCache = null;
         formFiltersCache = null;
+        this.setTypesCache = null;
         this.setTypesCache = null;
 
         // Clear caches

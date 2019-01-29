@@ -52,7 +52,7 @@ import org.osivia.portal.core.profils.IProfilManager;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 
 /**
  * Gestionnaire de commandes Nuxeo
@@ -173,7 +173,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if( ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL)	{
 				cacheId =  ctx.getAuthProfil().getName() + "/"+ command.getId();
 		}
-
+		
+        cacheId = ctx.getSatellite().getId() + "/" + cacheId;
+		
 		return cacheId;
 
 	}
@@ -210,7 +212,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		if (ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_PROFIL) {
             requestKey += ctx.getAuthProfil().getName();
         }
-		requestKey += "/" + command.getId();
+        requestKey += ctx.getSatellite().getId() + "/" + command.getId();
 
 		if (serverInvoc != null) {
 			portalRequest = serverInvoc.getServerContext()
@@ -340,7 +342,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 	protected boolean checkStatus(NuxeoCommandContext ctx) throws Exception {
 
-		if (this.getServiceStatut(ctx).isReady(NuxeoConnectionProperties.getPrivateBaseUri().toString())) {
+		if (this.getServiceStatut(ctx).isReady(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatellite()).getPrivateBaseUri().toString())) {
             return true;
         } else {
             return false;
@@ -351,7 +353,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 
 
-	protected void handleError(NuxeoCommandContext ctx, Exception e) throws CMSException {
+	protected void handleError(NuxeoCommandContext ctx, String commandId, Exception e) throws CMSException {
 
 		try	{
 
@@ -371,7 +373,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				this.getServiceStatut(ctx).markServiceToCheck(NuxeoConnectionProperties.getPrivateBaseUri().toString());
 				
 			} else {
-				this.getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
+				this.getServiceStatut(ctx).notifyError(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatellite()).getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
 
 			}
@@ -381,7 +383,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 			Throwable cause = e.getCause();
 
 			if( (cause instanceof HttpHostConnectException) || (cause instanceof SocketTimeoutException)) {
-                this.getServiceStatut(ctx).notifyError(NuxeoConnectionProperties.getPrivateBaseUri().toString(),
+                this.getServiceStatut(ctx).notifyError(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatellite()).getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
             }
 
@@ -390,13 +392,20 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		throw e;
 		}
 		catch( Exception e2)	{
-
+			
+			CMSException exc = null;
+			
 			// On retourne toujours une NuxeoException
 			if (!(e2 instanceof CMSException)) {
-                throw new CMSException(e2);
+				exc =  new CMSException(e2);
             } else {
-                throw (CMSException) e2;
+            	exc =  (CMSException) e2;
             }
+			
+			exc.setSatellite(ctx.getSatellite());
+			exc.setCommandId(commandId);
+			
+			throw exc;
 		}
 
 
@@ -437,7 +446,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		} catch (Exception e) {
 
-			this.handleError(ctx, e);
+			this.handleError(ctx, command.getId(), e);
 
 		} finally {
 

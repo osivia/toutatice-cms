@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
 import org.osivia.portal.core.cms.IContentStreamingSupport;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.error.IPortalLogger;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -44,7 +46,6 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 public class NuxeoCommandCacheInvoker implements IServiceInvoker {
-	
 	
 
     private static final long serialVersionUID = 1L;
@@ -71,13 +72,44 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
     }
 
     private static Map<String, Object> sessionCreationSynchronizers = new HashMap<String, Object>();
+    
+    
+    public static  Map<String, Session> getUserSessions( HttpSession session){
+    	@SuppressWarnings("unchecked")
+		Map<String, Session> sessions =  (Map<String, Session>) session.getAttribute("nuxeo.sessions");
+    	if (sessions == null)	{
+    		sessions =  new ConcurrentHashMap<String, Session>();
+    		session.setAttribute("nuxeo.sessions", sessions);
+    	}
+    	return sessions;
+    	
+    }
+    
+    private static String getSessionPostName(Satellite satellite) {
+        if (satellite == null) {
+            satellite = Satellite.MAIN;
+        }
 
-    private static synchronized Object getSessionCreationSynchronizer(PortletContext ctx, String virtualUser) {
+        return "." + satellite.getId();
+    }
+    
+    private String getSessionKey() {
+        return ctx.getSatellite().getId();
+    }
+    
+    private  String getSessionPrefix()	{
+    	return getSessionKey()+".";
+    }
+    
 
-        String key = "SYNC_" + ctx.hashCode();
+    private static synchronized Object getSessionCreationSynchronizer(PortletContext ctx, String virtualUser, Satellite satellite) {
+
+        String key = "SYNC_" +  ctx.hashCode();
 
         if (virtualUser != null)
             key += "_" + virtualUser;
+        
+        key += getSessionPostName( satellite) ;
 
         if (sessionCreationSynchronizers.get(key) == null)
             sessionCreationSynchronizers.put(key, key);
@@ -159,7 +191,10 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                         // On regarde s'il existe déjà une session pour cet utilisateur
                         try {
-                            nuxeoSession = (Session) userSession.getAttribute("osivia.nuxeoSession");
+                        	
+                        	nuxeoSession = getUserSessions( userSession ).get(getSessionKey());
+                        	
+
                         } catch (ClassCastException e) {
                             // Peut arriver si rechargement des classes de Nuxeo
                         }
@@ -169,24 +204,26 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         	if(long1 != null && System.currentTimeMillis() - long1 >= maxIdleTime) {
     	                		String name = "shutdown";
 
-    	                        profiler.logEvent("NUXEO", name, System.currentTimeMillis() - long1, error);
+                                String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
+    	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 
                         		nuxeoSession.getClient().shutdown();
                         		sessionsIdle.remove(nuxeoSession.hashCode());
                         		nuxeoSession = null;
                         		
-                        		userSession.removeAttribute("osivia.nuxeoSession");
+                            	nuxeoSession = getUserSessions( userSession ).remove(getSessionKey());
+
                         	}
                         }
                         
 
-                        String sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
+                        String sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser"+getSessionPrefix());
 
                         String sessionCreationSynchronizer = (String) userSession.getAttribute("osivia.sessionCreationSynchronizer");
 
                         if (sessionCreationSynchronizer == null) {
-                            sessionCreationSynchronizer = "sessionCreationSynchronizer";
-                            userSession.setAttribute("osivia.sessionCreationSynchronizer", sessionCreationSynchronizer);
+                            sessionCreationSynchronizer = "sessionCreationSynchronizer"+getSessionPrefix();
+                            userSession.setAttribute("osivia.sessionCreationSynchronizer"+getSessionPrefix(), sessionCreationSynchronizer);
                         }
                         
                         
@@ -197,9 +234,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                                 // On refait les controles pour la synchronisation
 
-                                nuxeoSession = (Session) userSession.getAttribute("osivia.nuxeoSession");
+                                nuxeoSession = getUserSessions( userSession ).get(getSessionKey());
 
-                                sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser");
+                                sessionUserName = (String) userSession.getAttribute("osivia.nuxeoSessionUser"+getSessionPrefix());
                                 
                                 
 
@@ -207,17 +244,16 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                                     INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-                                    nuxeoSession = nuxeoService.createUserSession(userName);
+                                    nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), userName);
                                     
                                     long start = System.currentTimeMillis();
                                     sessionsIdle.put(nuxeoSession.hashCode(), start);
 
-                                    userSession.setAttribute("osivia.nuxeoSession", nuxeoSession);
-
-                                    userSession.setAttribute("osivia.nuxeoProfilerUserSessionTs", System.currentTimeMillis());
+                                    getUserSessions( userSession ).put(getSessionKey(), nuxeoSession);
+                                     userSession.setAttribute("osivia.nuxeoProfilerUserSessionTs"+getSessionPrefix(), System.currentTimeMillis());
 
                                     if (userName != null)
-                                        userSession.setAttribute("osivia.nuxeoSessionUser", userName);
+                                        userSession.setAttribute("osivia.nuxeoSessionUser"+getSessionPrefix(), userName);
                                 }
 
 
@@ -236,7 +272,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                     PortletContext portletCtx = this.ctx.getPortletContext();
 
                     // Valeurs par défaut
-                    String sessionKey = "osivia.nuxeoSession_virtualuser.";
+                    String sessionKey = "osivia.nuxeoSession_virtualuser."+getSessionPrefix();
                     String virtualUser = null;
 
                     if (this.ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_ANONYMOUS) {
@@ -255,7 +291,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                     // Profils session list creation
-                    synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey)) {
+                    synchronized (getSessionCreationSynchronizer(portletCtx, sessionKey, ctx.getSatellite())) {
 
                         sessionsProfils = (List<Session>) portletCtx.getAttribute(sessionKey);
 
@@ -276,7 +312,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 	                		
 	                		String name = "shutdown";
 
-	                        profiler.logEvent("NUXEO", name, System.currentTimeMillis() - long1, error);
+                            String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
+	                		
+	                        profiler.logEvent(nuxeoSrc, name, System.currentTimeMillis() - long1, error);
 	                		
 	                		nuxeoSession.getClient().shutdown();
 	                		sessionsIdle.remove(nuxeoSession.hashCode());
@@ -289,7 +327,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         // logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
                         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-                        nuxeoSession = nuxeoService.createUserSession(virtualUser);
+                        nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), virtualUser);
                         
                         long start = System.currentTimeMillis();
                         sessionsIdle.put(nuxeoSession.hashCode(), start);                        
@@ -344,71 +382,74 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
 
                     // Moyenne flottante sur les publishInfosCommands
+					if (ctx.getSatellite() == null) {
+
+						String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
+
+						if (maxAverageDelay != null) {
+							long maxDelay = Long.parseLong(maxAverageDelay);
+
+							if (!error && StringUtils.startsWith(this.command.getId(), "PublishInfosCommand")) {
+								synchronized (AVERAGE_LIST) {
+
+									while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
+										AVERAGE_LIST.remove(0);
+									}
+
+									// On ignore les timeout genre 60000 car il n'illustre pas un comportement
+									// progressif
+									// Le but est de determiner des mini-pics
+
+									if (elapsedTime < 1000)
+										AVERAGE_LIST.add((int) elapsedTime);
+
+									if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
+
+										long total = 0l;
+										for (int i = 0; i < AVERAGE_LIST.size(); i++) {
+											total += AVERAGE_LIST.get(i);
+										}
+
+										long moyenne = total / AVERAGE_LIST.size();
+
+										if (moyenne > maxDelay) {
+											String statusMsg = "Floating average time : " + moyenne + "ms";
+
+											if (this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD")) {
+												this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD",
+														new UnavailableServer("[DOWN]" + statusMsg));
+											}
+
+											AVERAGE_LIST.clear();
+
+										} else {
+											if (!this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD")) {
+												String statusMsg = "Floating average time : " + moyenne + "ms";
+												this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD",
+														new UnavailableServer("[UP] " + statusMsg));
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 
 
-                    String maxAverageDelay = System.getProperty("nuxeo.maxAverageDelayMs");
-
-                    if (maxAverageDelay != null) {
-                        long maxDelay = Long.parseLong(maxAverageDelay);
-
-                        if (!error && StringUtils.startsWith(this.command.getId(), "PublishInfosCommand")) {
-                            synchronized (AVERAGE_LIST) {
-
-                                while (AVERAGE_LIST.size() >= AVERAGE_SIZE) {
-                                    AVERAGE_LIST.remove(0);
-                                }
-
-                                // On ignore les timeout genre 60000 car il n'illustre pas un comportement progressif
-                                // Le but est de determiner des mini-pics
-
-                                if (elapsedTime < 1000)
-                                    AVERAGE_LIST.add((int) elapsedTime);
-
-                                if (AVERAGE_LIST.size() == AVERAGE_SIZE) {
-
-                                    long total = 0l;
-                                    for (int i = 0; i < AVERAGE_LIST.size(); i++) {
-                                        total += AVERAGE_LIST.get(i);
-                                    }
-
-                                    long moyenne = total / AVERAGE_LIST.size();
-
-                                    if (moyenne > maxDelay) {
-                                        String statusMsg = "Floating average time : " + moyenne + "ms";
-                                        
-                                        
-                                        if( this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD"))    {
-                                            this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD", new UnavailableServer("[DOWN]" + statusMsg));   
-                                        }
- 
-                                        AVERAGE_LIST.clear();
-                                        
-                                    }   else    {
-                                        if( !this.getServiceStatut(this.ctx).isReady("NX-OVERLOAD"))    {
-                                            String statusMsg = "Floating average time : " + moyenne + "ms";                                            
-                                            this.getServiceStatut(this.ctx).notifyError("NX-OVERLOAD",
-                                                    new UnavailableServer("[UP] " + statusMsg));                
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-
-                    profiler.logEvent("NUXEO", name, elapsedTime, error);
-                    
-                     
+                    String nuxeoSrc = "NUXEO/" + ctx.getSatellite().getId();
+                    profiler.logEvent(nuxeoSrc, name, elapsedTime, error);
+                      
                     
                     if( IPortalLogger.logger.isDebugEnabled()){
                         String commandName = "";
                         if(this.command.getId() != null)
                             commandName = this.command.getId().replaceAll("\"", "'");
+                         
 
                         if( error == false)
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to "+ nuxeoSrc +" \""+commandName +"\" " + elapsedTime));
                         else
-                            IPortalLogger.logger.debug(new LoggerMessage("call to nuxeo \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
+                            IPortalLogger.logger.debug(new LoggerMessage("call to "+ nuxeoSrc +" \""+commandName +"\" " + elapsedTime + " \"an error as occured\""));
                            
                     }
 
@@ -427,8 +468,9 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                 if (sessionsProfils != null && recyclableSession == true)
                     sessionsProfils.add(nuxeoSession);
 
-                if (userSession != null && recyclableSession == false)
-                    userSession.removeAttribute("osivia.nuxeoSession");
+                if (userSession != null && recyclableSession == false)	{
+                	getUserSessions( userSession ).remove(getSessionKey());
+                }
 
 
             }

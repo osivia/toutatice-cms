@@ -5,7 +5,11 @@
     <parent>
         <groupId>toutatice-portail.cms</groupId>
         <artifactId>cms-parent</artifactId>
+<<<<<<< HEAD
         <version>4.7-SNAPSHOT</version>
+=======
+        <version>4.6-SNAPSHOT</version>
+>>>>>>> refs/remotes/origin/svn/branches/4.6-maintenance
     </parent>
 
     <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>

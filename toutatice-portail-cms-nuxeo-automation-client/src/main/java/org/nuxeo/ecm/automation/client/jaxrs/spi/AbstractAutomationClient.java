@@ -184,8 +184,9 @@ public abstract class AbstractAutomationClient implements AutomationClient {
     }
 
     protected Session login(Connector connector) {
-        Request request = new Request(Request.POST, url
-                + getRegistry().getPath("login"));
+        OperationRegistry registry = getRegistry();
+        String path = registry.getPath("login");
+        Request request = new Request(Request.POST, url + path);
         request.put("Accept", CTYPE_ENTITY);
         LoginInfo login = (LoginInfo) connector.execute(request);
         return createSession(connector, login);

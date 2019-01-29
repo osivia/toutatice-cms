@@ -135,6 +135,9 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             clonedCmsContext.setServerInvocation(cmsContext.getServerInvocation());
         }
         clonedCmsContext.setServletRequest(cmsContext.getServletRequest());
+        clonedCmsContext.setSatellite(cmsContext.getSatellite());
+               
+        
 
         // Document context
         NuxeoDocumentContextImpl documentContext;

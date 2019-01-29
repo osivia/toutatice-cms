@@ -331,6 +331,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Player getCMSFileBrowser(NuxeoDocumentContext documentContext);
     
     /**
+<<<<<<< HEAD
      * Get workspaces of user
      * @param controller
      * @param userName
@@ -348,6 +349,8 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     
     
     /**
+=======
+>>>>>>> refs/remotes/origin/svn/branches/4.6-maintenance
      * Gets set types list
      * @return the set types map
      */

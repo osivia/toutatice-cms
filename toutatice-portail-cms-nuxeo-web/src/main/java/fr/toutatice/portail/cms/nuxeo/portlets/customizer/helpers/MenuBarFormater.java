@@ -211,6 +211,9 @@ public class MenuBarFormater {
                 }
             }
 
+            if( !pubInfos.getSatellite().isMain())
+            	return;
+            
 
             // Check if current user is a global administrator
             boolean isGlobalAdministrator = BooleanUtils.isTrue((Boolean) request.getAttribute(InternalConstants.ADMINISTRATOR_INDICATOR_ATTRIBUTE_NAME));
@@ -242,8 +245,10 @@ public class MenuBarFormater {
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                    // Permalink
-                    this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+                    if (!insideUserWorkspace) {
+                        // Permalink
+                        this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+                    }
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Draft options
@@ -288,6 +293,9 @@ public class MenuBarFormater {
                             // Follow
                             this.getSubscribeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
+                            //QuickAccess link
+                            if (!isWorkspace) this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
+                            
                             // QuickAccess link
                             if (!isWorkspaceOrRoom)
                                 this.getQuickAccesLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
@@ -823,6 +831,13 @@ public class MenuBarFormater {
                             final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
                                     1, null, null, null, null);
                             liveItem.setAjaxDisabled(true);
+                        	
+                        	if(!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
+	                            // Go to live version
+	                            final String liveURL = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, pubInfos.getLiveId(), null, "1",
+	                                    IPortalUrlFactory.DISPLAYCTX_PREVIEW_LIVE_VERSION, null, null, null, null);
+	
+	                            liveItem.setUrl(liveURL);
 
                             if (!pubInfos.isLiveDeleted() && pubInfos.getLiveId() != null) {
                                 // Go to live version
@@ -853,15 +868,16 @@ public class MenuBarFormater {
                     }
                 }
             } else {
-                // LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
-
-                if (pubInfos.isUserCanUnpublishRemoteProxy()) {
+            	// LBI #1782 Specific case : user has no write permission but can unpublish an orphan remote poxy
+            	
+            	if (pubInfos.isUserCanUnpublishRemoteProxy()) {
                     // user can not unpublish root documents like portalsite, blogsite, website, ...
                     final MenubarItem unpublishItem = new MenubarItem("UNPUBLISH", bundle.getString("UNPUBLISH"), parent, 12, null);
                     unpublishItem.setAjaxDisabled(true);
 
                     // Unpublish menubar item
-                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
+                    final String unpublishURL = this.contributionService.getUnpublishContributionURL(portalControllerContext,
+                            pubInfos.getDocumentPath());
 
                     unpublishItem.setUrl(unpublishURL);
 
