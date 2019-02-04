@@ -551,6 +551,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     boolean subscription = subscriptions.contains(document.getId());
                     fileBrowserItem.setSubscription(subscription);
 
+                    // Sharing indicator
+                    boolean sharing = (document.getFacets() != null) && document.getFacets().list().contains("Sharing");
+                    fileBrowserItem.setSharing(sharing);
+
                     fileBrowserItems.add(fileBrowserItem);
                 }
 
