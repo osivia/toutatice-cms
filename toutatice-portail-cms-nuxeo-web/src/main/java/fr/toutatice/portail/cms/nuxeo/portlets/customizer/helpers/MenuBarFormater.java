@@ -226,6 +226,8 @@ public class MenuBarFormater {
             boolean isTaskbarItem = !isWorkspaceOrRoom && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
             // Check if current document is inside a workspace and current user is an administrator of this workspace
             boolean isWorkspaceAdmin = (isWorkspaceOrRoom || isTaskbarItem) && this.isWorkspaceAdmin(cmsContext, documentContext);
+            // Sharing root Nuxeo document, may be null
+            Document sharingRoot = this.getSharingRoot(cmsContext);
 
 
             try {
@@ -246,7 +248,7 @@ public class MenuBarFormater {
                     // Contextualization
                     this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
 
-                    if (!insideUserWorkspace) {
+                    if (!insideUserWorkspace && (sharingRoot == null)) {
                         // Permalink
                         this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
                     }
@@ -467,6 +469,33 @@ public class MenuBarFormater {
         NuxeoPermissions permissions = workspaceDocumentContext.getPermissions();
 
         return permissions.isManageable();
+    }
+
+
+    /**
+     * Get sharing root Nuxeo document, or null if there is no sharing.
+     * 
+     * @param cmsContext CMS context
+     * @return Nuxeo document
+     * @throws CMSException
+     */
+    protected Document getSharingRoot(CMSServiceCtx cmsContext) throws CMSException {
+        // CMS service
+        ICMSService cmsService = this.cmsServiceLocator.getCMSService();
+
+        // Sharing root CMS item
+        CMSItem cmsItem = cmsService.getSharingRoot(cmsContext);
+
+        // Sharing root Nuxeo document
+        Document document;
+
+        if ((cmsItem != null) && (cmsItem.getNativeItem() != null) && (cmsItem.getNativeItem() instanceof Document)) {
+            document = (Document) cmsItem.getNativeItem();
+        } else {
+            document = null;
+        }
+
+        return document;
     }
 
 

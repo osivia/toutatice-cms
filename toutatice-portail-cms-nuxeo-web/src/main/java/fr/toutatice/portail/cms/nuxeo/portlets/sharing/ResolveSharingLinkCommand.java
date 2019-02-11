@@ -1,4 +1,4 @@
-package fr.toutatice.portail.cms.nuxeo.portlets.sharing.link;
+package fr.toutatice.portail.cms.nuxeo.portlets.sharing;
 
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
@@ -22,8 +22,8 @@ public class ResolveSharingLinkCommand implements INuxeoCommand {
     /** Operation identifier. */
     private static final String OPERATION_ID = "Document.UpdateSharingPermissions";
 
-    /** Document creator property. */
-    private static final String CREATOR_PROPERTY = "dc:creator";
+    /** Sharing author property. */
+    private static final String AUTHOR_PROPERTY = "sharing:author";
 
 
     /** Link identifier. */
@@ -53,7 +53,7 @@ public class ResolveSharingLinkCommand implements INuxeoCommand {
         // Target document
         Document document = this.getTargetDocument(nuxeoSession);
 
-        if ((document != null) && !StringUtils.equals(this.user, document.getString(CREATOR_PROPERTY))) {
+        if ((document != null) && !StringUtils.equals(this.user, document.getString(AUTHOR_PROPERTY))) {
             // Update permissions
             this.updatePermissions(nuxeoSession, document);
         }

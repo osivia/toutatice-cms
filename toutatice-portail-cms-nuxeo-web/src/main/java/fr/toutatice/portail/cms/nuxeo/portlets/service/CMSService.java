@@ -72,11 +72,10 @@ import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
-import org.osivia.portal.api.ecm.IEcmCommandervice;
+import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
-import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
@@ -158,7 +157,7 @@ import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
 import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.sharing.link.ResolveSharingLinkCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.sharing.ResolveSharingLinkCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
@@ -197,15 +196,10 @@ public class CMSService implements ICMSService {
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
-    private final INotificationsService notifsService;
-    private final IInternationalizationService internationalizationService;
-    
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
     /** Forms service. */
     private final IFormsService formsService;
-    /** Command service. */
-    private final IEcmCommandervice ecmCmdService;
     /** Person service. */
     private final PersonService personService;
     /** Directory group service. */
@@ -214,6 +208,8 @@ public class CMSService implements ICMSService {
     private final DocumentsDiscoveryService documentsDiscoveryService;
     /** Statistics CMS service delegation. */
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
+    /** Internationalization bundle factory. */
+    private final IBundleFactory bundleFactory;
 
 
     /**
@@ -226,14 +222,16 @@ public class CMSService implements ICMSService {
         this.portletCtx = portletCtx;
 
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-        this.notifsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
-        this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
         this.formsService = NuxeoServiceFactory.getFormsService();
-        this.ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
         this.personService = DirServiceFactory.getService(PersonService.class);
         this.groupService = DirServiceFactory.getService(GroupService.class);
         this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
+
+        // Internationalization bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -874,28 +872,79 @@ public class CMSService implements ICMSService {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Player getItemHandler(CMSServiceCtx ctx) throws CMSException {
-        // Document doc = ctx.g
-        try {
-            if (!"detailedView".equals(ctx.getDisplayContext())) {
-                return this.getNuxeoService().getCMSCustomizer().getCMSPlayer(ctx);
-            } else {
+    public Player getItemHandler(CMSServiceCtx cmsContext) throws CMSException {
+        // Document
+        Document document = (Document) cmsContext.getDoc();
 
-                return ((DefaultCMSCustomizer) this.getNuxeoService().getCMSCustomizer()).getCMSDefaultPlayer(ctx);
-            }
-        } catch (NuxeoException e) {
-            e.rethrowCMSException();
-        } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
+        // Player
+        Player player;
+        try {
+            if (!"detailedView".equals(cmsContext.getDisplayContext())) {
+                player = this.customizer.getCMSPlayer(cmsContext);
             } else {
-                throw (CMSException) e;
+                player = this.customizer.getCMSDefaultPlayer(cmsContext);
             }
+
+
+            // // Add title suffix to shared documents
+            // if (player != null) {
+            // // Facets
+            // PropertyList facets = document.getFacets();
+            //
+            // // Sharing indicator
+            // boolean sharing = false;
+            // if (facets != null) {
+            // int i = 0;
+            // while (!sharing && (i < facets.size())) {
+            // String facet = facets.getString(i);
+            // sharing = "Sharing".equals(facet);
+            // i++;
+            // }
+            // }
+            //
+            // if (sharing) {
+            // // Document owner
+            // // FIXME
+            // String owner = document.getString("ttc:spaceID");
+            //
+            // if (StringUtils.isNotBlank(owner) && !StringUtils.equals(owner, cmsContext.getServletRequest().getRemoteUser())) {
+            // // Internationalization bundle
+            // Bundle bundle = this.bundleFactory.getBundle(cmsContext.getServletRequest().getLocale());
+            //
+            // // Creator display name
+            // String displayName;
+            // PersonService personService = DirServiceFactory.getService(PersonService.class);
+            // Person person = personService.getPerson(owner);
+            // if (person == null) {
+            // displayName = owner;
+            // } else {
+            // displayName = StringUtils.defaultIfBlank(person.getDisplayName(), owner);
+            // }
+            //
+            // // Window properties
+            // Map<String, String> properties = player.getWindowProperties();
+            // String title = properties.get("osivia.title");
+            //
+            // // Updated title
+            // String updatedTitle = StringUtils.trimToEmpty(title) + " " + bundle.getString("SHARED_BY_PAGE_TITLE_SUFFIX", displayName);
+            // properties.put("osivia.title", updatedTitle);
+            // }
+            // }
+            // }
+        } catch (NuxeoException e) {
+            player = null;
+            e.rethrowCMSException();
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
         }
 
-        // Not possible
-        return null;
+        return player;
     }
 
 
@@ -3601,6 +3650,91 @@ public class CMSService implements ICMSService {
         }
 
         return satellites;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CMSItem getSharingRoot(CMSServiceCtx cmsContext) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
+        // HTTP servlet request
+        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        // Current user
+        String user = servletRequest.getRemoteUser();
+
+        // Native item
+        Object nativeItem = cmsContext.getDoc();
+
+        // Sharing root
+        CMSItem root;
+
+        if (StringUtils.isNotEmpty(user) && (nativeItem != null) && (nativeItem instanceof Document)) {
+            Document document = (Document) nativeItem;
+            String path = document.getPath();
+
+            // Nuxeo command
+            INuxeoCommand command = new GetAncestorsCommand(path);
+
+            // Ancestors
+            Documents ancestors;
+            try {
+                ancestors = (Documents) this.executeNuxeoCommand(cmsContext, command);
+
+                if ((ancestors == null) || ancestors.isEmpty()) {
+                    root = null;
+                } else {
+                    // Ancestors sorted by path
+                    Map<String, Document> map = new HashMap<>(ancestors.size());
+                    for (Document ancestor : ancestors) {
+                        map.put(ancestor.getPath(), ancestor);
+                    }
+
+                    String rootPath = null;
+
+                    // Loop on ancestors
+                    Document ancestor = map.get(path);
+                    while ((ancestor != null) && (StringUtils.countMatches(path, "/") > 1)) {
+                        // Enabled sharing indicator
+                        boolean enabled = false;
+                        PropertyList facets = ancestor.getFacets();
+                        if (facets != null) {
+                            int i = 0;
+                            while (!enabled && (i < facets.size())) {
+                                String facet = facets.getString(i);
+                                enabled = "Sharing".equals(facet);
+                                i++;
+                            }
+                        }
+
+                        if (enabled) {
+                            // Update sharing root path
+                            rootPath = ancestor.getPath();
+                        }
+
+                        // Parent
+                        path = StringUtils.substringBeforeLast(path, "/");
+                        ancestor = map.get(path);
+                    }
+
+                    if (rootPath == null) {
+                        root = null;
+                    } else {
+                        root = new CMSItem(rootPath, null, null, null, map.get(rootPath));
+                    }
+                }
+            } catch (CMSException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CMSException(e);
+            }
+        } else {
+            root = null;
+        }
+
+        return root;
     }
 
 
