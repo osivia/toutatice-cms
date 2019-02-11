@@ -151,7 +151,6 @@ import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessComm
 import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
@@ -679,34 +678,28 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
         if ("Folder".equals(document.getType()) || "OrderedFolder".equals(document.getType()) || "Section".equals(document.getType())) {
-            if (workspace) {
-                // File browser
-                cmsContext.setDisplayLiveVersion("1");
+            // File browser
+            cmsContext.setDisplayLiveVersion("1");
 
-                // Player
-                Player player = this.getCMSFileBrowser(docCtx);
-                // Window properties
-                Map<String, String> properties = player.getWindowProperties();
-                properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
-                properties.put(InternalConstants.PROP_WINDOW_TITLE_METADATA, String.valueOf(true));
-                properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
+            // Player
+            Player player = this.getCMSFileBrowser(docCtx);
+            // Window properties
+            Map<String, String> properties = player.getWindowProperties();
+            properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
+            properties.put(InternalConstants.PROP_WINDOW_TITLE_METADATA, String.valueOf(true));
+            properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
 
-                // Vignette
-                PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
-                if (vignetteProperties != null && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
-                    BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
-                    binary.setFieldName("ttc:vignette");
-                    binary.setDocument(document);
-                    Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
-                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
-                }
-
-                return player;
-            } else if ("Folder".equals(document.getType())) {
-                return this.getCMSFolderPlayer(docCtx);
-            } else {
-                return this.getCMSOrderedFolderPlayer(docCtx);
+            // Vignette
+            PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
+            if (vignetteProperties != null && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
+                BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
+                binary.setFieldName("ttc:vignette");
+                binary.setDocument(document);
+                Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
+                properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
             }
+
+            return player;
         }
 
 
