@@ -123,32 +123,41 @@ public class DocumentsDiscoveryService {
         // Handle cache reinitialization
         this.handleCacheReinitialization();
 
-        // Get result in cache
-        Satellite result = this.cache.get(path);
+        // Satellite
+        Satellite satellite;
 
-        if (result == null) {
-            // Path regex matching
-            result = this.pathRegexSearch(path);
+        if (StringUtils.isEmpty(path)) {
+            satellite = null;
+        } else {
+            // Get result in cache
+            Satellite cachedResult = this.cache.get(path);
 
-            DiscoveryResult discoveryResult;
-            if (result == null) {
-                discoveryResult = satellitesDiscovery(path);
+            if (cachedResult == null) {
+                // Path regex matching
+                satellite = this.pathRegexSearch(path);
 
-                if (discoveryResult != null) {
-                    result = discoveryResult.satellite;
+                DiscoveryResult discoveryResult;
+                if (satellite == null) {
+                    discoveryResult = satellitesDiscovery(path);
+
+                    if (discoveryResult != null) {
+                        satellite = discoveryResult.satellite;
+                    }
+                } else {
+                    discoveryResult = null;
+                }
+
+                // Update cache
+                this.cache.put(path, satellite);
+                if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
+                    this.cache.put(discoveryResult.path, satellite);
                 }
             } else {
-                discoveryResult = null;
-            }
-
-            // Update cache
-            this.cache.put(path, result);
-            if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
-                this.cache.put(discoveryResult.path, result);
+                satellite = cachedResult;
             }
         }
 
-        return result;
+        return satellite;
     }
 
 
