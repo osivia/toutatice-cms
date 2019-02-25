@@ -49,6 +49,7 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.error.IPortalLogger;
 import org.osivia.portal.core.page.PageProperties;
 
+import bsh.StringUtil;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
@@ -164,7 +165,10 @@ public class BinaryServlet extends HttpServlet {
                 
                 path = docs.get(0).getPath();
                 binaryType = Type.FILE;
-                fieldName = "file:content";      
+                fieldName = "pdf:content";   
+                String format =  docs.get(0).getString("rshr:format");
+                if( "native".equals(format))
+                    fieldName = "file:content";   
             }   else    {
                 // Document path
                  path = request.getParameter("path");
