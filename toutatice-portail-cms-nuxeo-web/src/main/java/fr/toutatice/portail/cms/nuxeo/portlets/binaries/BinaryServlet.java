@@ -40,6 +40,7 @@ import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.log.LoggerMessage;
+import org.osivia.portal.api.tokens.TokenUtils;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
@@ -151,12 +152,24 @@ public class BinaryServlet extends HttpServlet {
             // Path
             String path = null;
             
+            
+         
+            
+            /* PROTOTYPE Intégration visionneuse */
+              
+            if( "true".equals(request.getParameter("viewer"))) {
+                BinaryServletViewer.generateViewer(portletContext, request, response);
+                return;
+            }
+            
+            
             // Shared link
             String share = request.getParameter("linkId");
             if (share != null) {
                 nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                 nuxeoController.setForcePublicationInfosScope("superuser_context");
                 
+
                 // Control if instance exists
                 Documents docs = (Documents) nuxeoController.executeNuxeoCommand(new FetchByShareLinkCommand(share));
                 if( docs.size() != 1)   {
@@ -192,6 +205,14 @@ public class BinaryServlet extends HttpServlet {
                 request.setAttribute("osivia.isAdmin", delegation.isAdmin());
 
                 PageProperties.getProperties().setBinarySubject(delegation.getSubject());
+            }
+
+            
+            // web token 
+            String webToken = request.getParameter("webToken");  
+            if (webToken != null) {
+                String uid= TokenUtils.validateToken(webToken);
+                request.setAttribute("osivia.delegation.userName", uid);
             }
 
 
