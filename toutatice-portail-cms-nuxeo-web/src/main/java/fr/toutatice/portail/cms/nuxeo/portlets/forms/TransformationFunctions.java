@@ -483,7 +483,16 @@ public class TransformationFunctions {
                 redirectionUrl = null;
             } else {
                 try {
-                    redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                	
+                	// Customized host property
+                	// #1960 - the link is generated relative, the host is setted by a custom property.
+                    String host = System.getProperty(ITasksService.HOST_PROPERTY);
+                    
+                    if (StringUtils.isEmpty(host)) {
+                    	redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                    } else {
+                        redirectionUrl = host + portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_TASK);
+                    }
                 } catch (PortalException e) {
                     redirectionUrl = null;
                 }
