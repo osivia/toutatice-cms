@@ -211,7 +211,7 @@ public class BinaryServlet extends HttpServlet {
             // web token 
             String webToken = request.getParameter("webToken");  
             if (webToken != null) {
-                String uid= TokenUtils.validateToken(webToken);
+                String uid= TokenUtils.validateToken(webToken).get("uid");
                 request.setAttribute("osivia.delegation.userName", uid);
             }
 
