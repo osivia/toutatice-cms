@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1155,7 +1156,18 @@ public class FormsServiceImpl implements IFormsService {
                 variables = new HashMap<String, String>();
             }
             Map<String, UploadedFile> uploadedFiles = new HashMap<>(0);
-            String procedureInitiator = portalControllerContext.getHttpServletRequest().getUserPrincipal().getName();
+            Principal userPrincipal = portalControllerContext.getHttpServletRequest().getUserPrincipal();
+            
+            // #1964 - User initiator may be anonymous
+            String procedureInitiator = null;
+            if(userPrincipal != null) {
+            	procedureInitiator = userPrincipal.getName();
+            }
+            else {
+            	// TODO null value for anonymous users
+            	procedureInitiator = "anonymous";
+            }
+            
             Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
             Bundle bundle = this.bundleFactory.getBundle(locale);
             PropertyMap initActionProperties = null;

@@ -36,11 +36,11 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Documents;
-import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.log.LoggerMessage;
-import org.osivia.portal.api.tokens.TokenUtils;
+import org.osivia.portal.api.tokens.ITokenService;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.BinaryDescription.Type;
@@ -50,7 +50,6 @@ import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.error.IPortalLogger;
 import org.osivia.portal.core.page.PageProperties;
 
-import bsh.StringUtil;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
@@ -211,7 +210,9 @@ public class BinaryServlet extends HttpServlet {
             // web token 
             String webToken = request.getParameter("webToken");  
             if (webToken != null) {
-                String uid= TokenUtils.validateToken(webToken).get("uid");
+            	
+            	ITokenService tokenService = Locator.findMBean(ITokenService.class, ITokenService.MBEAN_NAME);
+                String uid = tokenService.validateToken(webToken).get("uid");
                 request.setAttribute("osivia.delegation.userName", uid);
             }
 
