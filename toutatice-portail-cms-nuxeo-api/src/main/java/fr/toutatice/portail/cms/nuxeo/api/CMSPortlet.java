@@ -15,8 +15,19 @@ package fr.toutatice.portail.cms.nuxeo.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -29,12 +40,18 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONObject;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.OperationRequest;
+import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -53,6 +70,9 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 /**
@@ -418,6 +438,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 // Get editor properties
                 String editorId = request.getParameter("editorId");
                 this.serveResourceEditor(request, response, editorId);
+            } else if ("select2-vocabulary".equals(request.getResourceID())) {
+                // Select2 vocabulary
+                this.serveResourceSelect2Vocabulary(request, response);
             } else {
                 // Tous les autres cas sont dépréciés
                 response.setProperty(ResourceResponse.HTTP_STATUS_CODE, String.valueOf(HttpServletResponse.SC_NOT_FOUND));
@@ -527,6 +550,205 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
 
     /**
+     * Serve resource for Select2 vocabulary.
+     * 
+     * @param request resource request
+     * @param response resource response
+     * @throws PortletException
+     * @throws IOException
+     */
+    protected void serveResourceSelect2Vocabulary(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
+        nuxeoController.setCacheTimeOut(TimeUnit.HOURS.toMillis(1));
+        nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
+        nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+
+        // Vocabulary
+        String vocabulary = request.getParameter("vocabulary");
+        // Vocabulary tree indicator
+        boolean tree = BooleanUtils.toBoolean(request.getParameter("tree"));
+        // Filter
+        String filter = request.getParameter("filter");
+
+        // Result
+        JSONArray results = null;
+        if (StringUtils.isNotEmpty(vocabulary)) {
+            INuxeoCommand command = new LoadVocabularyCommand(vocabulary);
+            Object object = nuxeoController.executeNuxeoCommand(command);
+            if (object instanceof Blob) {
+                Blob blob = (Blob) object;
+                String content = IOUtils.toString(blob.getStream(), "UTF-8");
+                JSONArray array = JSONArray.fromObject(content);
+                results = this.parseVocabulary(array, tree, filter);
+            }
+        }
+        if (results == null) {
+            results = new JSONArray();
+        }
+
+        // Content type
+        response.setContentType("application/json");
+
+        // Content
+        PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
+        printWriter.write(results.toString());
+        printWriter.close();
+    }
+
+
+    /**
+     * Parse vocabulary JSON array with filter.
+     *
+     * @param array JSON array
+     * @param tree vocabulary tree indicator
+     * @param filter filter, may be null
+     * @return results
+     * @throws IOException
+     */
+    private JSONArray parseVocabulary(JSONArray array, boolean tree, String filter) throws IOException {
+        Map<String, VocabularyItem> items = new HashMap<String, VocabularyItem>(array.size());
+        Set<String> rootItems = new LinkedHashSet<String>();
+
+        boolean multilevel = false;
+
+        Iterator<?> iterator = array.iterator();
+        while (iterator.hasNext()) {
+            JSONObject object = (JSONObject) iterator.next();
+            String key = object.getString("key");
+            String value = object.getString("value");
+            String parent = null;
+            if (object.containsKey("parent")) {
+                parent = object.getString("parent");
+            }
+            boolean matches = this.matchesVocabularyItem(value, filter);
+
+            VocabularyItem item = items.get(key);
+            if (item == null) {
+                item = new VocabularyItem(key);
+                items.put(key, item);
+            }
+            item.value = value;
+            item.parent = parent;
+            if (matches) {
+                item.matches = true;
+                item.displayed = true;
+            }
+
+            if (StringUtils.isEmpty(parent)) {
+                rootItems.add(key);
+            } else {
+                multilevel = true;
+
+                VocabularyItem parentItem = items.get(parent);
+                if (parentItem == null) {
+                    parentItem = new VocabularyItem(parent);
+                    items.put(parent, parentItem);
+                }
+                parentItem.children.add(key);
+
+                if (item.displayed) {
+                    while (parentItem != null) {
+                        parentItem.displayed = true;
+
+                        if (StringUtils.isEmpty(parentItem.parent)) {
+                            parentItem = null;
+                        } else {
+                            parentItem = items.get(parentItem.parent);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        JSONArray results = new JSONArray();
+        this.generateVocabularyChildren(items, results, rootItems, multilevel, 1, null, tree);
+
+        return results;
+    }
+
+
+    /**
+     * Check if value matches filter.
+     *
+     * @param value vocabulary item value
+     * @param filter filter
+     * @return true if value matches filter
+     * @throws UnsupportedEncodingException
+     */
+    private boolean matchesVocabularyItem(String value, String filter) throws UnsupportedEncodingException {
+        boolean matches = true;
+
+        if (filter != null) {
+            // Decoded value
+            String decodedValue = URLDecoder.decode(value, CharEncoding.UTF_8);
+            // Diacritical value
+            String diacriticalValue = Normalizer.normalize(decodedValue, Normalizer.Form.NFD).replaceAll("\\p{IsM}+", StringUtils.EMPTY);
+
+            // Filter
+            String[] splittedFilters = StringUtils.split(filter, "*");
+            for (String splittedFilter : splittedFilters) {
+                // Diacritical filter
+                String diacriticalFilter = Normalizer.normalize(splittedFilter, Normalizer.Form.NFD).replaceAll("\\p{IsM}+", StringUtils.EMPTY);
+
+                if (!StringUtils.containsIgnoreCase(diacriticalValue, diacriticalFilter)) {
+                    matches = false;
+                    break;
+                }
+            }
+        }
+
+        return matches;
+    }
+
+
+    /**
+     * Generate vocabulary children.
+     *
+     * @param items vocabulary items
+     * @param array results JSON array
+     * @param children children
+     * @param optgroup options group presentation indicator
+     * @param level depth level
+     * @param parentId parent identifier
+     * @param tree vocabulary tree indicator
+     * @throws UnsupportedEncodingException
+     */
+    private void generateVocabularyChildren(Map<String, VocabularyItem> items, JSONArray array, Set<String> children, boolean optgroup, int level,
+            String parentId, boolean tree) throws UnsupportedEncodingException {
+        for (String child : children) {
+            VocabularyItem item = items.get(child);
+            if ((item != null) && item.displayed) {
+                // Identifier
+                String id;
+                if (!tree || StringUtils.isEmpty(parentId)) {
+                    id = item.key;
+                } else {
+                    id = parentId + "/" + item.key;
+                }
+
+                JSONObject object = new JSONObject();
+                object.put("id", id);
+                object.put("text", URLDecoder.decode(item.value, "UTF-8"));
+                object.put("optgroup", optgroup);
+                object.put("level", level);
+
+                if (!item.matches) {
+                    object.put("disabled", true);
+                }
+
+                array.add(object);
+
+                if (!item.children.isEmpty()) {
+                    this.generateVocabularyChildren(items, array, item.children, false, level + 1, id, tree);
+                }
+            }
+        }
+    }
+
+
+    /**
      * Creates Nuxeo controller.
      *
      * @param portletRequest portlet request
@@ -535,6 +757,90 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     protected NuxeoController createNuxeoController(PortletRequest portletRequest, PortletResponse portletResponse) {
         return new NuxeoController(portletRequest, portletResponse, this.getPortletContext());
+    }
+
+
+    /**
+     * Vocabulary item java-bean.
+     *
+     * @author Cédric Krommenhoek
+     */
+    private class VocabularyItem {
+
+        /** Vocabulary key. */
+        private final String key;
+        /** Vocabulary children. */
+        private final Set<String> children;
+
+        /** Vocabulary value. */
+        private String value;
+        /** Vocabulary parent. */
+        private String parent;
+        /** Displayed item indicator. */
+        private boolean displayed;
+        /** Filter matches indicator. */
+        private boolean matches;
+
+
+        /**
+         * Constructor.
+         *
+         * @param key vocabulary key
+         */
+        public VocabularyItem(String key) {
+            super();
+            this.key = key;
+            this.children = new LinkedHashSet<String>();
+        }
+
+    }
+
+
+    /**
+     * Load vocabulary command.
+     *
+     * @author Cédric Krommenhoek
+     * @see INuxeoCommand
+     */
+    private class LoadVocabularyCommand implements INuxeoCommand {
+
+        /** Vocabulary name. */
+        private final String name;
+
+
+        /**
+         * Constructor.
+         */
+        public LoadVocabularyCommand(String name) {
+            super();
+            this.name = name;
+        }
+
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Object execute(Session nuxeoSession) throws Exception {
+            OperationRequest request = nuxeoSession.newRequest("Document.GetVocabularies");
+            request.setHeader(org.nuxeo.ecm.automation.client.Constants.HEADER_NX_SCHEMAS, "*");
+            request.set("vocabularies", name);
+            return request.execute();
+        }
+
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getId() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(this.getClass().getName());
+            builder.append("/");
+            builder.append(this.name);
+            return builder.toString();
+        }
+
     }
 
 }

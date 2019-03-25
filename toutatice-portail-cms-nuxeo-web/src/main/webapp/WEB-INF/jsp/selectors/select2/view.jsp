@@ -8,7 +8,10 @@
 <portlet:defineObjects />
 
 <portlet:actionURL name="save" var="saveUrl" />
-<portlet:resourceURL id="load" var="loadUrl" />
+<portlet:resourceURL id="select2-vocabulary" var="select2Url">
+    <portlet:param name="vocabulary" value="${configuration.vocabulary}" />
+    <portlet:param name="tree" value="true" />
+</portlet:resourceURL>
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
@@ -25,7 +28,7 @@
         
         <!-- Selector -->
         <div class="input-group select2-bootstrap-append">
-            <select id="${namespace}-select" name="vocabulary" class="form-control select2 select2-default" data-url="${loadUrl}" data-loading-label="${loadingLabel}" data-onchange="submit"
+            <select id="${namespace}-select" name="vocabulary" class="form-control select2 select2-default" data-url="${select2Url}" data-loading-label="${loadingLabel}" data-onchange="submit"
                 <c:if test="${not empty configuration.label}">data-placeholder="${configuration.label}"</c:if>
                 <c:if test="${not configuration.monoValued}">multiple="multiple"</c:if>
             >

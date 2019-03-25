@@ -52,7 +52,7 @@ public class VocabularyLabelTag extends ToutaticeSimpleTag {
         try {
             StringBuilder sb = new StringBuilder("");
             String[] keys;
-            if (StringUtils.contains(this.key, "[")) {
+            if (StringUtils.containsAny(this.key, "[]")) {
                 String[] substringsBetween = StringUtils.substringsBetween(this.key, "[", "]");
                 keys = StringUtils.split(substringsBetween[0], ",");
             } else {

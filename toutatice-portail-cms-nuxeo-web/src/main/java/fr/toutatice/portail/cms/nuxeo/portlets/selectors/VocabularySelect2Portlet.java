@@ -1,19 +1,10 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -23,30 +14,18 @@ import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.OperationRequest;
-import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Blob;
 import org.osivia.portal.api.Constants;
-import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 
 /**
  * Vocabulary Select2 component portlet.
@@ -216,56 +195,6 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
-        if ("load".equals(request.getResourceID())) {
-            // Nuxeo controller
-            NuxeoController nuxeoController = new NuxeoController(request, response, getPortletContext());
-            nuxeoController.setCacheTimeOut(TimeUnit.HOURS.toMillis(1));
-            nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
-            nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-            // Current window
-            PortalWindow window = WindowFactory.getWindow(request);
-
-            // Configuration
-            Configuration configuration = getConfiguration(window);
-
-            // Filter
-            String filter = request.getParameter("filter");
-
-            // Result
-            JSONArray results = null;
-            if (configuration.getVocabulary() != null) {
-                INuxeoCommand command = new LoadVocabularyCommand(configuration.getVocabulary());
-                Object object = nuxeoController.executeNuxeoCommand(command);
-                if (object instanceof Blob) {
-                    Blob blob = (Blob) object;
-                    String content = IOUtils.toString(blob.getStream(), "UTF-8");
-                    JSONArray array = JSONArray.fromObject(content);
-                    results = this.parse(array, filter);
-                }
-
-            }
-            if (results == null) {
-                results = new JSONArray();
-            }
-
-            // Content type
-            response.setContentType("application/json");
-
-            // Content
-            PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
-            printWriter.write(results.toString());
-            printWriter.close();
-        } else {
-            super.serveResource(request, response);
-        }
-    }
-
-
-    /**
      * Get vocabulary configuration.
      *
      * @param window portal window
@@ -278,155 +207,6 @@ public class VocabularySelect2Portlet extends CMSPortlet {
         configuration.setVocabulary(window.getProperty(VOCABULARY_WINDOW_PROPERTY));
         configuration.setMonoValued(BooleanUtils.isNotFalse(BooleanUtils.toBooleanObject(window.getProperty(MONO_VALUED_WINDOW_PROPERTY))));
         return configuration;
-    }
-
-
-    /**
-     * Parse JSON array with filter.
-     *
-     * @param array JSON array
-     * @param filter filter, may be null
-     * @return results
-     * @throws IOException
-     */
-    private JSONArray parse(JSONArray array, String filter) throws IOException {
-        Map<String, Item> items = new HashMap<String, Item>(array.size());
-        Set<String> rootItems = new LinkedHashSet<String>();
-
-        boolean multilevel = false;
-
-        Iterator<?> iterator = array.iterator();
-        while (iterator.hasNext()) {
-            JSONObject object = (JSONObject) iterator.next();
-            String key = object.getString("key");
-            String value = object.getString("value");
-            String parent = null;
-            if (object.containsKey("parent")) {
-                parent = object.getString("parent");
-            }
-            boolean matches = this.matches(value, filter);
-
-            Item item = items.get(key);
-            if (item == null) {
-                item = new Item(key);
-                items.put(key, item);
-            }
-            item.value = value;
-            item.parent = parent;
-            if (matches) {
-                item.matches = true;
-                item.displayed = true;
-            }
-
-            if (StringUtils.isEmpty(parent)) {
-                rootItems.add(key);
-            } else {
-                multilevel = true;
-
-                Item parentItem = items.get(parent);
-                if (parentItem == null) {
-                    parentItem = new Item(parent);
-                    items.put(parent, parentItem);
-                }
-                parentItem.children.add(key);
-
-                if (item.displayed) {
-                    while (parentItem != null) {
-                        parentItem.displayed = true;
-
-                        if (StringUtils.isEmpty(parentItem.parent)) {
-                            parentItem = null;
-                        } else {
-                            parentItem = items.get(parentItem.parent);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        JSONArray results = new JSONArray();
-        this.generateChildren(items, results, rootItems, multilevel, 1, null);
-
-        return results;
-    }
-
-
-    /**
-     * Check if value matches filter.
-     *
-     * @param value value
-     * @param filter filter
-     * @return true if value matches filter
-     * @throws UnsupportedEncodingException
-     */
-    private boolean matches(String value, String filter) throws UnsupportedEncodingException {
-        boolean matches = true;
-
-        if (filter != null) {
-            // Decoded value
-            String decodedValue = URLDecoder.decode(value, "UTF-8");
-            // Diacritical value
-            String diacriticalValue = Normalizer.normalize(decodedValue, Normalizer.Form.NFD).replaceAll("\\p{IsM}+", StringUtils.EMPTY);
-
-            // Filter
-            String[] splittedFilters = StringUtils.split(filter, "*");
-            for (String splittedFilter : splittedFilters) {
-                // Diacritical filter
-                String diacriticalFilter = Normalizer.normalize(splittedFilter, Normalizer.Form.NFD).replaceAll("\\p{IsM}+", StringUtils.EMPTY);
-
-                if (!StringUtils.containsIgnoreCase(diacriticalValue, diacriticalFilter)) {
-                    matches = false;
-                    break;
-                }
-            }
-        }
-
-        return matches;
-    }
-
-
-    /**
-     * Generate children.
-     *
-     * @param items vocabulary items
-     * @param array results JSON array
-     * @param children children
-     * @param optgroup options group presentation indicator
-     * @param level depth level
-     * @param parentId parent identifier
-     * @throws UnsupportedEncodingException
-     */
-    private void generateChildren(Map<String, Item> items, JSONArray array, Set<String> children, boolean optgroup, int level, String parentId)
-            throws UnsupportedEncodingException {
-        for (String child : children) {
-            Item item = items.get(child);
-            if ((item != null) && item.displayed) {
-                // Identifier
-                String id;
-                if (parentId == null) {
-                    id = item.key;
-                } else {
-                    id = parentId + "/" + item.key;
-                }
-
-                JSONObject object = new JSONObject();
-                object.put("id", id);
-                object.put("text", URLDecoder.decode(item.value, "UTF-8"));
-                object.put("optgroup", optgroup);
-                object.put("level", level);
-
-                if (!item.matches) {
-                    object.put("disabled", true);
-                }
-
-                array.add(object);
-
-                if (!item.children.isEmpty()) {
-                    this.generateChildren(items, array, item.children, false, level + 1, id);
-                }
-            }
-        }
     }
 
 
@@ -525,90 +305,6 @@ public class VocabularySelect2Portlet extends CMSPortlet {
          */
         public void setMonoValued(boolean monoValued) {
             this.monoValued = monoValued;
-        }
-
-    }
-
-
-    /**
-     * Vocabulary item java-bean.
-     *
-     * @author Cédric Krommenhoek
-     */
-    private class Item {
-
-        /** Vocabulary key. */
-        private final String key;
-        /** Vocabulary children. */
-        private final Set<String> children;
-
-        /** Vocabulary value. */
-        private String value;
-        /** Vocabulary parent. */
-        private String parent;
-        /** Displayed item indicator. */
-        private boolean displayed;
-        /** Filter matches indicator. */
-        private boolean matches;
-
-
-        /**
-         * Constructor.
-         *
-         * @param key vocabulary key
-         */
-        public Item(String key) {
-            super();
-            this.key = key;
-            this.children = new LinkedHashSet<String>();
-        }
-
-    }
-
-
-    /**
-     * Load vocabulary command.
-     *
-     * @author Cédric Krommenhoek
-     * @see INuxeoCommand
-     */
-    private class LoadVocabularyCommand implements INuxeoCommand {
-
-        /** Vocabulary name. */
-        private final String name;
-
-
-        /**
-         * Constructor.
-         */
-        public LoadVocabularyCommand(String name) {
-            super();
-            this.name = name;
-        }
-
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Object execute(Session nuxeoSession) throws Exception {
-            OperationRequest request = nuxeoSession.newRequest("Document.GetVocabularies");
-            request.setHeader(org.nuxeo.ecm.automation.client.Constants.HEADER_NX_SCHEMAS, "*");
-            request.set("vocabularies", name);
-            return request.execute();
-        }
-
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getId() {
-            StringBuilder builder = new StringBuilder();
-            builder.append(this.getClass().getName());
-            builder.append("/");
-            builder.append(this.name);
-            return builder.toString();
         }
 
     }

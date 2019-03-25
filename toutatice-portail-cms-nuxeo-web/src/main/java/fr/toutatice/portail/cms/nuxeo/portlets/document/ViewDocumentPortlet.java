@@ -266,7 +266,44 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // View
 
             // Comment action
-            processCommentAction(request, response);
+            this.processCommentAction(request, response);
+
+            // Inline edition action
+            this.processInlineEditionAction(request, response);
+        }
+    }
+
+
+    /**
+     * Process inline edition action.
+     * 
+     * @param request action request
+     * @param response action response
+     * @throws PortletException
+     */
+    private void processInlineEditionAction(ActionRequest request, ActionResponse response) throws PortletException {
+        // Action name
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+
+        if ("inline-edition".equals(action)) {
+            // Inline property
+            String property = request.getParameter("property");
+
+            if (StringUtils.isNotEmpty(property)) {
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+                // Current window
+                PortalWindow window = WindowFactory.getWindow(request);
+                // Current document path
+                String path = nuxeoController.getComputedPath(window.getProperty(PATH_WINDOW_PROPERTY));
+
+                // Inline values
+                String[] values = request.getParameterValues("inline-values");
+
+                // Nuxeo command
+                INuxeoCommand command = new InlineEditionCommand(path, property, values);
+                nuxeoController.executeNuxeoCommand(command);
+            }
         }
     }
 
