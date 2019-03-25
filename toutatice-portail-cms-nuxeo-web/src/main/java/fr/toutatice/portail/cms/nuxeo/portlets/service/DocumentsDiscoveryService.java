@@ -257,36 +257,42 @@ public class DocumentsDiscoveryService {
      * @throws CMSException
      */
     private List<DiscoveryResult> invoke(CMSServiceCtx cmsContext, String path, List<Satellite> satellites) throws CMSException {
-        int threadPoolSize = satellites.size();
-        ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
-
         // Results
-        List<DiscoveryResult> discoveryResults = new ArrayList<>(threadPoolSize);
+        List<DiscoveryResult> discoveryResults;
 
-        // Tasks
-        List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
-        for (Satellite satellite : satellites) {
-            DiscoveryCallable task = new DiscoveryCallable(this.cmsService, cmsContext, satellite, path);
-            tasks.add(task);
-        }
+        if (CollectionUtils.isEmpty(satellites)) {
+            discoveryResults = new ArrayList<>(0);
+        } else {
+            int threadPoolSize = satellites.size();
+            ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 
-        // Futures
-        List<Future<DiscoveryResult>> futures;
-        try {
-            futures = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new CMSException(e);
-        }
+            discoveryResults = new ArrayList<>(threadPoolSize);
 
-        for (Future<DiscoveryResult> future : futures) {
+            // Tasks
+            List<DiscoveryCallable> tasks = new ArrayList<>(threadPoolSize);
+            for (Satellite satellite : satellites) {
+                DiscoveryCallable task = new DiscoveryCallable(this.cmsService, cmsContext, satellite, path);
+                tasks.add(task);
+            }
+
+            // Futures
+            List<Future<DiscoveryResult>> futures;
             try {
-                DiscoveryResult discoveryResult = future.get();
-
-                if ((discoveryResult.error == 0) && StringUtils.isNotEmpty(discoveryResult.path)) {
-                    discoveryResults.add(discoveryResult);
-                }
-            } catch (InterruptedException | ExecutionException e) {
+                futures = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
                 throw new CMSException(e);
+            }
+
+            for (Future<DiscoveryResult> future : futures) {
+                try {
+                    DiscoveryResult discoveryResult = future.get();
+
+                    if ((discoveryResult.error == 0) && StringUtils.isNotEmpty(discoveryResult.path)) {
+                        discoveryResults.add(discoveryResult);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new CMSException(e);
+                }
             }
         }
 
