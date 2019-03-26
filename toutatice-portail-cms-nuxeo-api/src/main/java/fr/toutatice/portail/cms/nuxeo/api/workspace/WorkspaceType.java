@@ -1,5 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.api.workspace;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -10,15 +14,15 @@ import org.apache.commons.lang.StringUtils;
 public enum WorkspaceType {
 
     /** Public workspace. */
-    PUBLIC("glyphicons glyphicons-unlock", "success", true),
+    PUBLIC("glyphicons glyphicons-unlock", "success", true, false),
     /** Invitation only public workspace. */
-    PUBLIC_INVITATION(PUBLIC, false),
+    PUBLIC_INVITATION(PUBLIC, false, false),
     /** Private workspace. */
-    PRIVATE("glyphicons glyphicons-lock", "warning", true),
+    PRIVATE("glyphicons glyphicons-lock", "warning", true, false),
     /** Invitation only private workspace. */
-    INVITATION(PRIVATE, false),
+    INVITATION(PRIVATE, false, false),
     /** Unchangeable workspace. */
-    UNCHANGEABLE("glyphicons glyphicons-government", "default", false);
+    UNCHANGEABLE("glyphicons glyphicons-government", "default", false, true);
 
     
     /** Identifier. */
@@ -31,7 +35,8 @@ public enum WorkspaceType {
     private final String color;
     /** Allowed invitation requests indicator. */
     private final boolean allowedInvitationRequests;
-
+    /** Portal administrator restriction indicator. */
+    private final boolean portalAdministratorRestriction;
 
     /**
      * Constructor.
@@ -40,12 +45,13 @@ public enum WorkspaceType {
      * @param color color
      * @param allowedInvitationRequests allowed invitation requests indicator
      */
-    private WorkspaceType(String icon, String color, boolean allowedInvitationRequests) {
+    private WorkspaceType(String icon, String color, boolean allowedInvitationRequests, boolean portalAdministratorRestriction) {
         this.id = this.name();
         this.key = "WORKSPACE_TYPE_" + StringUtils.upperCase(this.name());
         this.icon = icon;
         this.color = color;
         this.allowedInvitationRequests = allowedInvitationRequests;
+        this.portalAdministratorRestriction = portalAdministratorRestriction;
     }
 
 
@@ -55,12 +61,14 @@ public enum WorkspaceType {
      * @param primaryType primary workspace type
      * @param allowedInvitationRequests allowed invitation requests indicator
      */
-    private WorkspaceType(WorkspaceType primaryType, boolean allowedInvitationRequests) {
+    private WorkspaceType(WorkspaceType primaryType, boolean allowedInvitationRequests, boolean portalAdministratorRestriction) {
         this.id = this.name();
         this.key = primaryType.key;
         this.icon = primaryType.icon;
         this.color = primaryType.color;
         this.allowedInvitationRequests = allowedInvitationRequests;
+        this.portalAdministratorRestriction = portalAdministratorRestriction;
+
     }
 
 
@@ -107,6 +115,42 @@ public enum WorkspaceType {
      */
     public boolean isAllowedInvitationRequests() {
         return allowedInvitationRequests;
+    }
+
+
+    /**
+     * Get workspace types values.
+     * 
+     * @param admin portal administrator indicator
+     * @return workspace types
+     */
+    public static List<WorkspaceType> list(boolean admin) {
+        // Values
+        WorkspaceType[] values = WorkspaceType.values();
+
+        // Results
+        List<WorkspaceType> results;
+        if (admin) {
+            results = new ArrayList<>(Arrays.asList(values));
+        } else {
+            results = new ArrayList<>(values.length);
+            for (WorkspaceType value : values) {
+                if (!value.portalAdministratorRestriction) {
+                    results.add(value);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Getter for portalAdministratorRestriction.
+     * 
+     * @return the portalAdministratorRestriction
+     */
+    public boolean isPortalAdministratorRestriction() {
+        return portalAdministratorRestriction;
     }
 
 }
