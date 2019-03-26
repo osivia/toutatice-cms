@@ -72,8 +72,6 @@ import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
-import org.osivia.portal.api.internationalization.IBundleFactory;
-import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.page.PageParametersEncoder;
@@ -92,6 +90,7 @@ import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.urls.PortalUrlType;
+import org.osivia.portal.api.user.UserPreferences;
 import org.osivia.portal.core.cms.BinaryDelegation;
 import org.osivia.portal.core.cms.BinaryDescription;
 import org.osivia.portal.core.cms.CMSBinaryContent;
@@ -168,6 +167,7 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePrope
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
+import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
 
 /**
  * CMS service Toutatice implementation.
@@ -208,8 +208,8 @@ public class CMSService implements ICMSService {
     private final DocumentsDiscoveryService documentsDiscoveryService;
     /** Statistics CMS service delegation. */
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
-    /** Internationalization bundle factory. */
-    private final IBundleFactory bundleFactory;
+    /** Statistics CMS service delegation. */
+    private final UserPreferencesDelegation prefsDelegation;
 
 
     /**
@@ -227,11 +227,7 @@ public class CMSService implements ICMSService {
         this.groupService = DirServiceFactory.getService(GroupService.class);
         this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
-
-        // Internationalization bundle factory
-        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                IInternationalizationService.MBEAN_NAME);
-        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        this.prefsDelegation = new UserPreferencesDelegation();
     }
 
 
@@ -877,9 +873,6 @@ public class CMSService implements ICMSService {
      */
     @Override
     public Player getItemHandler(CMSServiceCtx cmsContext) throws CMSException {
-        // Document
-        Document document = (Document) cmsContext.getDoc();
-
         // Player
         Player player;
         try {
@@ -888,53 +881,6 @@ public class CMSService implements ICMSService {
             } else {
                 player = this.customizer.getCMSDefaultPlayer(cmsContext);
             }
-
-
-            // // Add title suffix to shared documents
-            // if (player != null) {
-            // // Facets
-            // PropertyList facets = document.getFacets();
-            //
-            // // Sharing indicator
-            // boolean sharing = false;
-            // if (facets != null) {
-            // int i = 0;
-            // while (!sharing && (i < facets.size())) {
-            // String facet = facets.getString(i);
-            // sharing = "Sharing".equals(facet);
-            // i++;
-            // }
-            // }
-            //
-            // if (sharing) {
-            // // Document owner
-            // // FIXME
-            // String owner = document.getString("ttc:spaceID");
-            //
-            // if (StringUtils.isNotBlank(owner) && !StringUtils.equals(owner, cmsContext.getServletRequest().getRemoteUser())) {
-            // // Internationalization bundle
-            // Bundle bundle = this.bundleFactory.getBundle(cmsContext.getServletRequest().getLocale());
-            //
-            // // Creator display name
-            // String displayName;
-            // PersonService personService = DirServiceFactory.getService(PersonService.class);
-            // Person person = personService.getPerson(owner);
-            // if (person == null) {
-            // displayName = owner;
-            // } else {
-            // displayName = StringUtils.defaultIfBlank(person.getDisplayName(), owner);
-            // }
-            //
-            // // Window properties
-            // Map<String, String> properties = player.getWindowProperties();
-            // String title = properties.get("osivia.title");
-            //
-            // // Updated title
-            // String updatedTitle = StringUtils.trimToEmpty(title) + " " + bundle.getString("SHARED_BY_PAGE_TITLE_SUFFIX", displayName);
-            // properties.put("osivia.title", updatedTitle);
-            // }
-            // }
-            // }
         } catch (NuxeoException e) {
             player = null;
             e.rethrowCMSException();
@@ -2885,7 +2831,7 @@ public class CMSService implements ICMSService {
                 }
 
                 if (granted) {
-                    task = factory.createTaskbarTask(taskbarItem, document.getPath(), disabled);
+                    task = factory.createTaskbarTask(taskbarItem, document.getTitle(), document.getPath(), disabled);
                 } else {
                     task = null;
                 }
@@ -3786,5 +3732,28 @@ public class CMSService implements ICMSService {
 
         return path;
     }
+    
+    
+    /* (non-Javadoc)
+	 * @see org.osivia.portal.core.cms.ICMSService#getFoldersDisplay(javax.servlet.http.HttpSession)
+	 */
+	@Override
+	public UserPreferences getUserPreferences(PortalControllerContext context) throws PortalException {
+
+        return this.prefsDelegation.getPreferences(context);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.osivia.portal.core.cms.ICMSService#updateUserPreferences(javax.servlet.http.HttpSession)
+	 */
+	@Override
+	public void updateUserPreferences(CMSServiceCtx cmsContext, HttpSession httpSession) {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+        
+		this.prefsDelegation.updateUserPreferences(cmsContext, httpSession);
+	}
 
 }

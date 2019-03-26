@@ -13,6 +13,9 @@ import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 
 /**
@@ -29,6 +32,11 @@ public class TitleTag extends ToutaticeSimpleTag {
     private String displayContext;
     /** Document type icon indicator. */
     private boolean icon;
+    /** Link shoud be targetted in Tab named with the spaceId */
+    private boolean openInSpaceTabs;
+
+
+	private INuxeoCustomizer cmsCustomizer;    
 
 
     /**
@@ -38,6 +46,11 @@ public class TitleTag extends ToutaticeSimpleTag {
         super();
         this.linkable = true;
         this.icon = false;
+        this.openInSpaceTabs = false;
+        
+        INuxeoService nuxeoService = NuxeoServiceFactory.getNuxeoService();
+        cmsCustomizer = nuxeoService.getCMSCustomizer();
+        
     }
 
 
@@ -68,6 +81,8 @@ public class TitleTag extends ToutaticeSimpleTag {
             boolean isFile = document.getType() != null && "File".equals(document.getType().getName());
             if (link.isExternal() || ("download".equals(this.displayContext) && isFile)) {
                 target = "_blank";
+            } else if (this.openInSpaceTabs) {
+                target = this.cmsCustomizer.getTarget(document);
             } else {
                 target = null;
             }
@@ -118,5 +133,13 @@ public class TitleTag extends ToutaticeSimpleTag {
     public void setIcon(boolean icon) {
         this.icon = icon;
     }
+
+    /**
+     * Setter for open in space tabs
+     * @param boolean true if enabled
+     */
+	public void setOpenInSpaceTabs(boolean openInSpaceTabs) {
+		this.openInSpaceTabs = openInSpaceTabs;
+	}
 
 }

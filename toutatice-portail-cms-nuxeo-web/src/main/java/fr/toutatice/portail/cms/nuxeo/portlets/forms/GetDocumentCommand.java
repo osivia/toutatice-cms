@@ -11,37 +11,37 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package fr.toutatice.portail.cms.nuxeo.portlets.files;
+package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilter;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 
 /**
- * Get folder files command.
+ * Get document command (for portal task).
  *
- * @author Cédric Krommenhoek
+ * @author Loïc Billon
  * @see INuxeoCommand
  */
-public class GetFolderFilesCommand implements INuxeoCommand {
+public class GetDocumentCommand implements INuxeoCommand {
 
-    /** Folder identifier. */
-    private String folderId;
+    /** Document identifier. */
+    private String path;
 
 
     /**
      * Constructor.
      *
-     * @param folderId folder identifier
-     * @param folderPath folder path
+     * @param path identifier
      */
-    public GetFolderFilesCommand(String folderId) {
+    public GetDocumentCommand(String path) {
         super();
-        this.folderId = folderId;
+        this.path = path;
     }
 
 
@@ -52,20 +52,17 @@ public class GetFolderFilesCommand implements INuxeoCommand {
     public Object execute(Session session) throws Exception {
         // Nuxeo request
         StringBuilder nuxeoRequest = new StringBuilder();
-        nuxeoRequest.append("ecm:parentId = '").append(this.folderId).append("' ");
-        nuxeoRequest.append("AND ecm:primaryType != 'Workspace' ");
-        nuxeoRequest.append("AND ecm:primaryType != 'WorkspaceRoot' ");
-        nuxeoRequest.append("AND ecm:primaryType != 'PortalSite' ");
-        nuxeoRequest.append("AND ecm:primaryType != 'Favorites' ");
+        nuxeoRequest.append("ecm:path = '").append(path).append("' ");
         nuxeoRequest.append("ORDER BY ecm:pos ASC");
 
         // Query filter
-        NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);
+        NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE,
+                InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER);
         String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilterContext, nuxeoRequest.toString());
 
         // Operation request
         OperationRequest operationRequest = session.newRequest("Document.QueryES");
-        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined, clink");
+        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, clink");
         operationRequest.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
 
         return operationRequest.execute();
@@ -80,7 +77,7 @@ public class GetFolderFilesCommand implements INuxeoCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName());
         builder.append("/");
-        builder.append(this.folderId);
+        builder.append(this.path);
         return builder.toString();
     };
 

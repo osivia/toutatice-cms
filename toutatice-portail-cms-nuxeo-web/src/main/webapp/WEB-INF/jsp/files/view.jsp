@@ -30,7 +30,7 @@
 </portlet:actionURL>
 
 
-<div class="file-browser" data-refreshurl="${refreshURL}" data-dropurl="${dropURL}" data-sorturl="${sortURL}">
+<div class="file-browser" data-refreshurl="${refreshURL}" data-dropurl="${dropURL}" data-sorturl="${sortURL}" data-max-file-size="${maximumFileSize}">
     <div
         <c:if test="${canUpload}">class="drop-zone"</c:if>
     >
@@ -56,6 +56,9 @@
                         </div>
                         
                         <div class="alert alert-warning hidden"><op:translate key="FILE_BROWSER_DOCUMENTS_OVERWRITTEN" />
+                            <ul></ul>
+                        </div>
+                        <div class="alert alert-danger hidden"><op:translate key="MESSAGE_FILE_UPLOAD_FILE_SIZE_TOO_LARGE" args="${maximumFileSizeInMb}"/>
                             <ul></ul>
                         </div>
                             

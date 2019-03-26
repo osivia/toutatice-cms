@@ -131,8 +131,18 @@ public class NuxeoTagService implements INuxeoTagService {
                     link = new Link("#", false);
                 }
             } else if (StringUtils.isEmpty(property)) {
-                // Document link:
-                link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(displayContext));
+            	
+                // Document Contextual Link: LBI #1609
+            	String url = nuxeoDocument.getString("clink:link");
+				if(url != null && "contextualLink".equals(displayContext)) {
+										
+            		link = new Link(url, true);
+            	}
+            	else {
+            		link = nuxeoController.getLink(nuxeoDocument, StringUtils.trimToNull(displayContext));	
+            	}
+            	
+                
             } else {
                 // Property value
                 String value = String.valueOf(document.getProperties().get(property));
@@ -167,7 +177,7 @@ public class NuxeoTagService implements INuxeoTagService {
 
         if (infos != null) {
             // Is convertible to pdf
-            if (BooleanUtils.isTrue((Boolean) infos.isPdfConvertible())) {
+            if (BooleanUtils.isTrue(infos.isPdfConvertible())) {
                 // File link
                 String createFileLink = nuxeoController.createFileLink(document.getDocument(), "pdf:content");
 

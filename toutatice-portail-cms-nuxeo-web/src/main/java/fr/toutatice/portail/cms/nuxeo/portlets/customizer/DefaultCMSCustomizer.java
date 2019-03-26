@@ -110,6 +110,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -177,6 +178,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
     /** Binary servlet URL. */
     private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
+
+    private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";
 
     /** Query filter pattern. */
     private static final Pattern QUERY_FILTER_PATTERN = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
@@ -2052,6 +2055,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     	return collectionSetType;
     }
     
+
+	/* (non-Javadoc)
+     * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getTarget(fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO)
+     */
+    @Override
+    public String getTarget(DocumentDTO document) {
+    	if(System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
+			Object spaceUuid = document.getProperties().get("ttc:spaceUuid");
+			if(spaceUuid != null)
+				return spaceUuid.toString();
+			else return null;
+		}
+		else return null;
+    }
+
 
     /**
      * Getter for portletContext.

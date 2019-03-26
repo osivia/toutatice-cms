@@ -41,6 +41,7 @@ import org.osivia.portal.core.customization.ICustomizationService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -352,5 +353,13 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the set types map
      */
     Collection<SetType> getSetTypes();
+
+
+	/**
+	 * Getter for html link target on document (#1933).
+	 * 
+	 * @param document
+	 */
+	String getTarget(DocumentDTO document);
 
 }

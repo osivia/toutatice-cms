@@ -12,9 +12,12 @@ import javax.naming.Name;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
 import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
@@ -28,11 +31,16 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
+
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 /**
  * Transformation functions.
@@ -40,6 +48,8 @@ import org.osivia.portal.core.constants.InternalConstants;
  * @author Cédric Krommenhoek
  */
 public class TransformationFunctions {
+	
+	private static Log log = LogFactory.getLog(TransformationFunctions.class);
 
     /** Portal URL factory. */
     private static IPortalUrlFactory portalUrlFactory;
@@ -47,6 +57,11 @@ public class TransformationFunctions {
     private static ICMSServiceLocator cmsServiceLocator;
     /** Tasks service. */
     private static ITasksService tasksService;
+    /** cms customizer */
+	private static INuxeoCustomizer cmsCustomizer;
+	
+	private static DocumentDAO documentDao;
+    
 
 
     /**
@@ -54,6 +69,7 @@ public class TransformationFunctions {
      */
     private TransformationFunctions() {
         super();
+        
     }
 
 
@@ -93,6 +109,21 @@ public class TransformationFunctions {
             tasksService = Locator.findMBean(ITasksService.class, ITasksService.MBEAN_NAME);
         }
         return tasksService;
+    }
+
+    private static DocumentDAO getDocumentDAO() {
+    	if(documentDao == null) {
+    		documentDao = DocumentDAO.getInstance();
+    	}
+    	return documentDao;
+    }
+    
+
+    private static INuxeoCustomizer getNuxeoCustomizer() {
+    	if(cmsCustomizer == null) {
+    		cmsCustomizer = NuxeoServiceFactory.getNuxeoService().getCMSCustomizer();
+    	}
+    	return cmsCustomizer;
     }
 
 
@@ -362,8 +393,13 @@ public class TransformationFunctions {
             }
             // Title
             String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
+            
+            // Target
+            DocumentDTO dto = getDocumentDAO().toDTO(document);
+            String target = getNuxeoCustomizer().getTarget(dto);
+            
             // Link
-            Element link = DOM4JUtils.generateLinkElement(url, null, null, "no-ajax-link", title);
+            Element link = DOM4JUtils.generateLinkElement(url, target, null, "no-ajax-link", title);
 
             result = DOM4JUtils.writeCompact(link);
         }
@@ -393,19 +429,25 @@ public class TransformationFunctions {
      */
     private static Document getDocument(PortalControllerContext portalControllerContext, String path) {
         // CMS service
-        ICMSService cmsService = getCmsService();
+//        ICMSService cmsService = getCmsService();
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
         cmsContext.setForcePublicationInfosScope("superuser_context");
 
+        INuxeoCommand command = new GetDocumentCommand(path);
+        
         // Nuxeo document
-        Document document;
+        Document document = null;
         try {
-            CMSItem cmsItem = cmsService.getContent(cmsContext, path);
-            document = (Document) cmsItem.getNativeItem();
+            
+        	Documents documents = (Documents) getNuxeoCustomizer().executeNuxeoCommand(cmsContext, command);
+        	if(documents.size() == 1) {
+        		document =  documents.get(0);
+        	}
+
         } catch (CMSException e) {
-            document = null;
+        	log.error(e);
         }
 
         return document;
