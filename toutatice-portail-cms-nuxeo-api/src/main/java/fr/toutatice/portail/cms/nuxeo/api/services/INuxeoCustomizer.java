@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +40,6 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICustomizationService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
@@ -331,7 +331,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Player getCMSFileBrowser(NuxeoDocumentContext documentContext);
     
     /**
-<<<<<<< HEAD
      * Get workspaces of user
      * @param controller
      * @param userName
@@ -349,8 +348,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     
     
     /**
-=======
->>>>>>> refs/remotes/origin/svn/branches/4.6-maintenance
      * Gets set types list
      * @return the set types map
      */
