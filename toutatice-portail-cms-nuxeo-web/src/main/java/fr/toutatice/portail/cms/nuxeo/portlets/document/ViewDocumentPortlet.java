@@ -303,6 +303,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // Nuxeo command
                 INuxeoCommand command = new InlineEditionCommand(path, property, values);
                 nuxeoController.executeNuxeoCommand(command);
+
+                request.setAttribute("osivia.ajax.preventRefresh", true);
             }
         }
     }
