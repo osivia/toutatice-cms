@@ -568,6 +568,8 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         String vocabulary = request.getParameter("vocabulary");
         // Vocabulary tree indicator
         boolean tree = BooleanUtils.toBoolean(request.getParameter("tree"));
+        // Vocabulary optgroup disabled indicator
+        boolean optgroupDisabled = BooleanUtils.toBoolean(request.getParameter("optgroupDisabled"));
         // Filter
         String filter = request.getParameter("filter");
 
@@ -578,9 +580,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
             Object object = nuxeoController.executeNuxeoCommand(command);
             if (object instanceof Blob) {
                 Blob blob = (Blob) object;
-                String content = IOUtils.toString(blob.getStream(), "UTF-8");
+                String content = IOUtils.toString(blob.getStream(), CharEncoding.UTF_8);
                 JSONArray array = JSONArray.fromObject(content);
-                results = this.parseVocabulary(array, tree, filter);
+                results = this.parseVocabulary(array, tree, optgroupDisabled, filter);
             }
         }
         if (results == null) {
@@ -602,11 +604,12 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      *
      * @param array JSON array
      * @param tree vocabulary tree indicator
+     * @param optgroupDisabled vocabulary option group disabled indicator
      * @param filter filter, may be null
      * @return results
      * @throws IOException
      */
-    private JSONArray parseVocabulary(JSONArray array, boolean tree, String filter) throws IOException {
+    private JSONArray parseVocabulary(JSONArray array, boolean tree, boolean optgroupDisabled, String filter) throws IOException {
         Map<String, VocabularyItem> items = new HashMap<String, VocabularyItem>(array.size());
         Set<String> rootItems = new LinkedHashSet<String>();
 
@@ -663,7 +666,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
 
         JSONArray results = new JSONArray();
-        this.generateVocabularyChildren(items, results, rootItems, multilevel, 1, null, tree);
+        this.generateVocabularyChildren(items, results, rootItems, multilevel, 1, null, tree, optgroupDisabled);
 
         return results;
     }
@@ -713,10 +716,11 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * @param level depth level
      * @param parentId parent identifier
      * @param tree vocabulary tree indicator
+     * @param optgroupDisabled vocabulary option group disabled indicator
      * @throws UnsupportedEncodingException
      */
     private void generateVocabularyChildren(Map<String, VocabularyItem> items, JSONArray array, Set<String> children, boolean optgroup, int level,
-            String parentId, boolean tree) throws UnsupportedEncodingException {
+            String parentId, boolean tree, boolean optgroupDisabled) throws UnsupportedEncodingException {
         for (String child : children) {
             VocabularyItem item = items.get(child);
             if ((item != null) && item.displayed) {
@@ -734,14 +738,14 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
                 object.put("optgroup", optgroup);
                 object.put("level", level);
 
-                if (!item.matches) {
+                if (!item.matches || (optgroup && optgroupDisabled)) {
                     object.put("disabled", true);
                 }
 
                 array.add(object);
 
                 if (!item.children.isEmpty()) {
-                    this.generateVocabularyChildren(items, array, item.children, false, level + 1, id, tree);
+                    this.generateVocabularyChildren(items, array, item.children, false, level + 1, id, tree, optgroupDisabled);
                 }
             }
         }
