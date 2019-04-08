@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
@@ -98,10 +97,6 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 String selectorType = StringUtils.trimToNull(request.getParameter("selectorType"));
                 window.setProperty("osivia.keywordMonoValued", selectorType);
 
-                // Prevent Ajax refresh indicator
-                boolean preventAjaxRefresh = "2".equals(selectorType);
-                window.setProperty(InternalConstants.ATTR_WINDOW_PREVENT_AJAX_REFRESH, String.valueOf(preventAjaxRefresh));
-
                 // Keywords initialization
                 Map<String, List<String>> selectors = PageSelectors.decodeProperties(request.getParameter("selectors"));
                 if (selectors != null) {
@@ -157,6 +152,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     // Réinitialisation des fenetres en mode NORMAL
                     request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
                 }
+
+                // Prevent Ajax refresh
+                boolean preventAjaxRefresh = "2".equals(window.getProperty("osivia.keywordMonoValued"));
+                request.setAttribute("osivia.ajax.preventRefresh", preventAjaxRefresh);
 
                 response.setPortletMode(PortletMode.VIEW);
                 response.setWindowState(WindowState.NORMAL);
