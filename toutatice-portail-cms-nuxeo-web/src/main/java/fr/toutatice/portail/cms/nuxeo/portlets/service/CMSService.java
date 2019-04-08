@@ -3193,35 +3193,36 @@ public class CMSService implements ICMSService {
         // Updated task indicator
         boolean updated;
 
+        // #1964 - tasks url may be done with anonymous user id
+        Set<String> actors = null;
         if (StringUtils.isNotEmpty(user)) {
             // Task actors
-            Set<String> actors = this.getTaskActors(user);
-
-            // Nuxeo command
-            INuxeoCommand command = new GetTasksCommand(actors, null, uuid);
-
-            try {
-                // Documents
-                Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
-                if (documents.size() == 1) {
-                    Document task = documents.get(0);
-
-                    // Proceed
-                    this.formsService.proceed(portalControllerContext, task, actionId, variables);
-
-                    updated = true;
-                } else {
-                    // 404 not found
-                    updated = false;
-                }
-            } catch (CMSException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new CMSException(e);
-            }
-        } else {
-            throw new CMSException("Unknown user error.");
+             actors = this.getTaskActors(user);
         }
+
+        // Nuxeo command
+        INuxeoCommand command = new GetTasksCommand(actors, null, uuid);
+
+        try {
+            // Documents
+            Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+            if (documents.size() == 1) {
+                Document task = documents.get(0);
+
+                // Proceed
+                this.formsService.proceed(portalControllerContext, task, actionId, variables);
+
+                updated = true;
+            } else {
+                // 404 not found
+                updated = false;
+            }
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
 
         return updated;
     }
