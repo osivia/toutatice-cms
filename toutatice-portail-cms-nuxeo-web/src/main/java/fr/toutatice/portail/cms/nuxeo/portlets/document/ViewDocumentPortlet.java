@@ -30,6 +30,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletSession;
 import javax.portlet.RenderMode;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -39,6 +40,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -53,6 +55,7 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
@@ -107,8 +110,8 @@ import net.sf.json.JSONObject;
 public class ViewDocumentPortlet extends CMSPortlet {
 
     /** Host joker. */
-	private static final String HOST_JOKER = "__HOST__";
-	/** Path window property name. */
+    private static final String HOST_JOKER = "__HOST__";
+    /** Path window property name. */
     public static final String PATH_WINDOW_PROPERTY = Constants.WINDOW_PROP_URI;
     /** Display only description indicator window property name. */
     public static final String ONLY_DESCRIPTION_WINDOW_PROPERTY = "osivia.document.onlyDescription";
@@ -132,6 +135,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     /** Internationalization bundle factory. */
     private final IBundleFactory bundleFactory;
+    /** Notifications service. */
+    private final INotificationsService notificationsService;
 
     /** Document DAO. */
     private final DocumentDAO documentDao;
@@ -147,15 +152,17 @@ public class ViewDocumentPortlet extends CMSPortlet {
     public ViewDocumentPortlet() {
         super();
 
-        // DAO
-        documentDao = DocumentDAO.getInstance();
-        commentDao = CommentDAO.getInstance();
-        publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
-
         // Internationalization bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        // Notifications service
+        this.notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+
+        // DAO
+        this.documentDao = DocumentDAO.getInstance();
+        this.commentDao = CommentDAO.getInstance();
+        this.publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
     }
 
 
@@ -167,32 +174,32 @@ public class ViewDocumentPortlet extends CMSPortlet {
         super.init(config);
 
         // Portlet context
-        PortletContext portletContext = getPortletContext();
+        PortletContext portletContext = this.getPortletContext();
 
         try {
             // Nuxeo service
-            nuxeoService = (INuxeoService) portletContext.getAttribute("NuxeoService");
-            if (nuxeoService == null) {
+            this.nuxeoService = (INuxeoService) portletContext.getAttribute("NuxeoService");
+            if (this.nuxeoService == null) {
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
             }
 
             // CMS service
-            cmsService = new CMSService(portletContext);
+            this.cmsService = new CMSService(portletContext);
             ICMSServiceLocator cmsLocator = Locator.findMBean(ICMSServiceLocator.class, "osivia:service=CmsServiceLocator");
-            cmsLocator.register(cmsService);
+            cmsLocator.register(this.cmsService);
 
             // CMS customizer
-            CMSCustomizer customizer = new CMSCustomizer(portletContext, cmsService);
-            cmsService.setCustomizer(customizer);
-            nuxeoService.registerCMSCustomizer(customizer);
+            CMSCustomizer customizer = new CMSCustomizer(portletContext, this.cmsService);
+            this.cmsService.setCustomizer(customizer);
+            this.nuxeoService.registerCMSCustomizer(customizer);
 
             // Nuxeo tag service
             INuxeoTagService tagService = new NuxeoTagService();
-            registerService(nuxeoService.getTagService(), tagService);
+            this.registerService(this.nuxeoService.getTagService(), tagService);
 
             // Forms service
             FormsServiceImpl formsService = new FormsServiceImpl(customizer);
-            registerService(nuxeoService.getFormsService(), formsService);
+            this.registerService(this.nuxeoService.getFormsService(), formsService);
 
             // ECM command services
             IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
@@ -270,13 +277,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             // Inline edition action
             this.processInlineEditionAction(request, response);
+
+            // Cancel inline edition action
+            this.processCancelInlineEditionAction(request, response);
         }
     }
 
 
     /**
      * Process inline edition action.
-     * 
+     *
      * @param request action request
      * @param response action response
      * @throws PortletException
@@ -286,25 +296,127 @@ public class ViewDocumentPortlet extends CMSPortlet {
         String action = request.getParameter(ActionRequest.ACTION_NAME);
 
         if ("inline-edition".equals(action)) {
-            // Inline property
+            // Inline edition property
             String property = request.getParameter("property");
 
             if (StringUtils.isNotEmpty(property)) {
+                // Portal controller context
+                PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
                 // Nuxeo controller
-                NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+                NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+                
+                // Internationalization bundle
+                Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
                 // Current window
                 PortalWindow window = WindowFactory.getWindow(request);
                 // Current document path
                 String path = nuxeoController.getComputedPath(window.getProperty(PATH_WINDOW_PROPERTY));
 
+                // Nuxeo document context
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                // Nuxeo document
+                Document document = documentContext.getDocument();
+
                 // Inline values
                 String[] values = request.getParameterValues("inline-values");
+
+                // Cancel URL
+                String cancelUrl = request.getParameter("cancel-url");
+
+                // Save previous state in portlet session
+                if (StringUtils.isNotEmpty(cancelUrl)) {
+                    PortletSession session = request.getPortletSession();
+                    session.setAttribute("inline-edition.property", property);
+                    session.setAttribute("inline-edition.previous-values", document.getProperties().get(property));
+                }
 
                 // Nuxeo command
                 INuxeoCommand command = new InlineEditionCommand(path, property, values);
                 nuxeoController.executeNuxeoCommand(command);
 
+                // Reload document
+                documentContext.reload();
+
+                // Prevent Ajax refresh
                 request.setAttribute("osivia.ajax.preventRefresh", true);
+
+                // Notification
+                StringBuilder message = new StringBuilder();
+                message.append(bundle.getString("DOCUMENT_INLINE_EDITION_SUCCESS"));
+                if (StringUtils.isNotEmpty(cancelUrl)) {
+                    message.append("<br>");
+                    message.append(bundle.getString("DOCUMENT_INLINE_EDITION_CANCEL", cancelUrl));
+                }
+                this.notificationsService.addSimpleNotification(portalControllerContext, message.toString(), NotificationsType.SUCCESS);
+            }
+        }
+    }
+
+
+    /**
+     * Process cancel inline edition action.
+     * 
+     * @param request action request
+     * @param response action response
+     * @throws PortletException
+     */
+    private void processCancelInlineEditionAction(ActionRequest request, ActionResponse response) throws PortletException {
+        // Action name
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+
+        if ("cancel-inline-edition".equals(action)) {
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+            // Portlet session
+            PortletSession session = request.getPortletSession();
+
+            // Internationalization bundle
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+            // Inline edition property
+            String property = (String) session.getAttribute("inline-edition.property");
+
+            if (StringUtils.isEmpty(property)) {
+                // Notification
+                String message = bundle.getString("DOCUMENT_INLINE_EDITION_CANCEL_ERROR");
+                this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.ERROR);
+            } else {
+                // Nuxeo controller
+                NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+
+                // Current window
+                PortalWindow window = WindowFactory.getWindow(request);
+                // Current document path
+                String path = nuxeoController.getComputedPath(window.getProperty(PATH_WINDOW_PROPERTY));
+
+                // Inline edition values
+                String[] values;
+                Object object = session.getAttribute("inline-edition.previous-values");
+                if (object == null) {
+                    values = null;
+                } else if (object instanceof PropertyList) {
+                    PropertyList propertyList = (PropertyList) object;
+                    values = new String[propertyList.size()];
+                    for (int i = 0; i < propertyList.size(); i++) {
+                        values[i] = propertyList.getString(i);
+                    }
+                } else {
+                    String value = String.valueOf(object);
+                    values = new String[]{value};
+                }
+
+                // Nuxeo command
+                INuxeoCommand command = new InlineEditionCommand(path, property, values);
+                nuxeoController.executeNuxeoCommand(command);
+
+                // Reload document
+                NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+                documentContext.reload();
+
+                // Notification
+                String message = bundle.getString("DOCUMENT_INLINE_EDITION_CANCEL_SUCCESS");
+                this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.INFO);
             }
         }
     }
@@ -340,7 +452,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
         request.setAttribute("attachments", attachments);
 
         response.setContentType("text/html");
-        getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
+        this.getPortletContext().getRequestDispatcher(PATH_ADMIN).include(request, response);
     }
 
 
@@ -369,8 +481,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // Computed path
             path = nuxeoController.getComputedPath(path);
             // Publication informations
-            CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
-            
+            CMSPublicationInfos publicationInfos = this.cmsService.getPublicationInfos(cmsContext, path);
+
 
             if (StringUtils.isNotBlank(path)) {
                 // Document context
@@ -431,15 +543,15 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 }
 
                 // Extended document informations
-                ExtendedDocumentInfos extendedDocumentInfos = cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
+                ExtendedDocumentInfos extendedDocumentInfos = this.cmsService.getExtendedDocumentInfos(cmsContext, document.getPath());
 
                 if (extendedDocumentInfos.isCurrentlyEdited() || extendedDocumentInfos.isRecentlyEdited()) {
-                    addCurrentlyEditedNotification(nuxeoController, request.getUserPrincipal(), extendedDocumentInfos);
+                    this.addCurrentlyEditedNotification(nuxeoController, request.getUserPrincipal(), extendedDocumentInfos);
                 }
 
                 // handle live edition through onlyofice link
-                if(request.getUserPrincipal() != null) {
-                	handleLiveEdit(request, document.getPath(), documentDto, nuxeoController);
+                if (request.getUserPrincipal() != null) {
+                    this.handleLiveEdit(request, document.getPath(), documentDto, nuxeoController);
                 }
 
                 if (onlyRemoteSections && maximized) {
@@ -466,25 +578,24 @@ public class ViewDocumentPortlet extends CMSPortlet {
                         }
 
                         // Comments
-                        boolean commentsEnabled = areCommentsEnabled(cmsService, publicationInfos, cmsContext);
+                        boolean commentsEnabled = this.areCommentsEnabled(this.cmsService, publicationInfos, cmsContext);
                         if (commentsEnabled && publicationInfos.isCommentableByUser()) {
                             documentDto.setCommentable(true);
 
                             // Comments
-                            generateComments(nuxeoController, document, documentDto);
+                            this.generateComments(nuxeoController, document, documentDto);
                         }
 
                         // Nuxeo Drive
-                        handleDriveEdition(nuxeoController.getPortalCtx(), document, documentDto, publicationInfos);
+                        this.handleDriveEdition(nuxeoController.getPortalCtx(), document, documentDto, publicationInfos);
                     }
                 }
-                
+
                 request.setAttribute("isEditableByUser", publicationInfos.isEditableByUser());
-                
             }
 
             response.setContentType("text/html");
-            getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
+            this.getPortletContext().getRequestDispatcher(PATH_VIEW).include(request, response);
         } catch (NuxeoException e) {
             PortletErrorHandler.handleGenericErrors(response, e);
         } catch (PortletException e) {
@@ -497,11 +608,11 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
     private void handleLiveEdit(RenderRequest request, String path, DocumentDTO documentDto, NuxeoController nuxeoController) throws PortalException {
 
-        boolean isOnlyofficeRegistered = cmsService.getCustomizer().getPluginManager().isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
+        boolean isOnlyofficeRegistered = this.cmsService.getCustomizer().getPluginManager().isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
 
         if (isOnlyofficeRegistered && documentDto.isLiveEditable()) {
 
-            Bundle bundle = bundleFactory.getBundle(request.getLocale());
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
 
             String onlyofficeEditLockUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController, Boolean.TRUE);
             String onlyofficeEditCollabUrl = OnlyofficeLiveEditHelper.getStartOnlyofficePortlerUrl(bundle, path, nuxeoController, Boolean.FALSE);
@@ -524,36 +635,35 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         Set<String> editingNames = new HashSet<>();
         Set<String> recentlyEditedNames = new HashSet<>();
-        
-    	boolean editedByMe = false;
+
+        boolean editedByMe = false;
 
         JSONObject currentlyEditedEntry = extendedDocumentInfos.getCurrentlyEditedEntry();
-        addDisplayNameToSet(principal, personService, editingNames, currentlyEditedEntry);
+        this.addDisplayNameToSet(principal, personService, editingNames, currentlyEditedEntry);
 
         JSONObject recentlyEditedEntry = extendedDocumentInfos.getRecentlyEditedEntry();
-        addDisplayNameToSet(principal, personService, recentlyEditedNames, recentlyEditedEntry);
-        
-        if(isEditedByMe(principal,currentlyEditedEntry)) {
-        	editedByMe = true;	
+        this.addDisplayNameToSet(principal, personService, recentlyEditedNames, recentlyEditedEntry);
+
+        if (this.isEditedByMe(principal, currentlyEditedEntry)) {
+            editedByMe = true;
         }
-        
-        if(editedByMe) {
-        	if(editingNames.size() > 0) {
-        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_OTHERS_AND_I", NotificationsType.WARNING, StringUtils.join(editingNames, ", "));
-        	}
-        	else {
-        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_ME", NotificationsType.WARNING);
-        	}
+
+        if (editedByMe) {
+            if (editingNames.size() > 0) {
+                this.addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_OTHERS_AND_I", NotificationsType.WARNING,
+                        StringUtils.join(editingNames, ", "));
+            } else {
+                this.addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY_ME", NotificationsType.WARNING);
+            }
+        } else {
+            if (editingNames.size() > 0) {
+                this.addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY", NotificationsType.WARNING, StringUtils.join(editingNames, ", "));
+            } else if (recentlyEditedNames.size() > 0) {
+                this.addNotification(nuxeoController.getPortalCtx(), "RECENTLY_EDITED_BY", NotificationsType.WARNING,
+                        StringUtils.join(recentlyEditedNames, ", "));
+            }
         }
-        else {
-        	if(editingNames.size() > 0) {
-        		addNotification(nuxeoController.getPortalCtx(), "CURRENTLY_EDITED_BY", NotificationsType.WARNING, StringUtils.join(editingNames, ", "));
-        	}
-        	else if(recentlyEditedNames.size() > 0) {
-        		addNotification(nuxeoController.getPortalCtx(), "RECENTLY_EDITED_BY", NotificationsType.WARNING, StringUtils.join(recentlyEditedNames, ", "));
-        	}
-        }
-        
+
 
     }
 
@@ -564,7 +674,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 ListIterator userNamesI = usernamesArray.listIterator();
                 while (userNamesI.hasNext()) {
                     String userName = (String) userNamesI.next();
-                    if (principal == null || !(StringUtils.equals(principal.getName(), userName))) {
+                    if ((principal == null) || !(StringUtils.equals(principal.getName(), userName))) {
                         Person person = personService.getPerson(userName);
                         if (person != null) {
                             displayNames.add(person.getDisplayName());
@@ -575,17 +685,17 @@ public class ViewDocumentPortlet extends CMSPortlet {
             }
         }
     }
-    
+
     private boolean isEditedByMe(Principal principal, JSONObject currentlyEditedEntry) {
-    	
+
         if (currentlyEditedEntry != null) {
             JSONArray usernamesArray = currentlyEditedEntry.getJSONArray("username");
             if (usernamesArray != null) {
                 ListIterator userNamesI = usernamesArray.listIterator();
                 while (userNamesI.hasNext()) {
                     String userName = (String) userNamesI.next();
-                    if (principal != null && (StringUtils.equals(principal.getName(), userName))) {
-                    	return true;
+                    if ((principal != null) && (StringUtils.equals(principal.getName(), userName))) {
+                        return true;
                     }
 
                 }
@@ -622,9 +732,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
         }
         path.append(".jsp");
         // JSP name
-        String name = customizer.getJSPName(path.toString(), getPortletContext(), request);
+        String name = customizer.getJSPName(path.toString(), this.getPortletContext(), request);
         // JSP real path
-        String realPath = getPortletContext().getRealPath(name);
+        String realPath = this.getPortletContext().getRealPath(name);
         // JSP file
         File file = new File(realPath);
 
@@ -697,7 +807,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         for (int i = 0; i < jsonComments.size(); i++) {
             JSONObject jsonComment = jsonComments.getJSONObject(i);
-            CommentDTO commentDTO = commentDao.toDTO(jsonComment);
+            CommentDTO commentDTO = this.commentDao.toDTO(jsonComment);
             documentDTO.getComments().add(commentDTO);
         }
     }
@@ -724,7 +834,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
 
             Document space = (Document) spaceConfig.getNativeItem();
-            boolean isPublishSpace = space.getFacets() != null && space.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
+            boolean isPublishSpace = (space.getFacets() != null) && space.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
 
             if (isPublishSpace) {
                 enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
@@ -759,7 +869,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 for (int index = 0; index < jsonPublishedDocumentsInfos.size(); index++) {
                     JSONObject publishedDocumentInfos = jsonPublishedDocumentsInfos.getJSONObject(index);
-                    RemotePublishedDocumentDTO publishedDocumentDTO = publishedDocumentsDao.toDTO(publishedDocumentInfos);
+                    RemotePublishedDocumentDTO publishedDocumentDTO = this.publishedDocumentsDao.toDTO(publishedDocumentInfos);
                     documentDTO.getPublishedDocuments().add(publishedDocumentDTO);
                 }
             } finally {
@@ -785,7 +895,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
         if (publicationInfos.isEditableByUser()) {
             DocumentType documentType = documentDto.getType();
-            if (documentType != null && documentType.isFile()) {
+            if ((documentType != null) && documentType.isFile()) {
                 // Drive edit URL
                 String driveEditUrl = publicationInfos.getDriveEditURL();
 
@@ -811,7 +921,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // Drive enabled indicator
                 boolean driveEnabled = BooleanUtils.isTrue(publicationInfos.isDriveEnabled());
 
-                if (driveEditUrl != null || driveEnabled) {
+                if ((driveEditUrl != null) || driveEnabled) {
                     request.setAttribute("driveEditUrl", driveEditUrl);
                     request.setAttribute("driveEnabled", driveEnabled);
                 }

@@ -49,16 +49,10 @@ public class InlineEditionCommand implements INuxeoCommand {
         
         // Document reference
         DocRef reference = new DocRef(this.path);
-        // JSON array
-//        JSONArray array = new JSONArray();
-//        if (ArrayUtils.isNotEmpty(this.values)) {
-//            for (String value : this.values) {
-//                array.add(value);
-//            }
-//        }
+
         // Properties
         PropertyMap properties = new PropertyMap(1);
-        properties.set(this.property, StringUtils.join(this.values, ","));
+        properties.set(this.property, StringUtils.trimToNull(StringUtils.join(this.values, ",")));
 
         return documentService.update(reference, properties);
     }
