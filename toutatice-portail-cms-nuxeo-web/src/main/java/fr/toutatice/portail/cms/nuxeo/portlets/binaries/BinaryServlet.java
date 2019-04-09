@@ -75,6 +75,8 @@ public class BinaryServlet extends HttpServlet {
     private static final long BINARY_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
     /** Multipart boundary. */
     private static final String MULTIPART_BOUNDARY = "MULTIPART_BYTERANGES";
+    
+    private static String LINK_PATH = "/linkid/";
 
 
     /** Portlet context. */
@@ -151,9 +153,7 @@ public class BinaryServlet extends HttpServlet {
             // Path
             String path = null;
             
-            
-         
-            
+             
             /* PROTOTYPE Intégration visionneuse */
               
             if( "true".equals(request.getParameter("viewer"))) {
@@ -163,14 +163,16 @@ public class BinaryServlet extends HttpServlet {
             
             
             // Shared link
-            String share = request.getParameter("linkId");
-            if (share != null) {
+            int linkIndex = request.getRequestURI().indexOf(LINK_PATH);
+            if (linkIndex != -1) {
+                String shareId = request.getRequestURI().substring(linkIndex + LINK_PATH.length());
+                
                 nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                 nuxeoController.setForcePublicationInfosScope("superuser_context");
                 
 
                 // Control if instance exists
-                Documents docs = (Documents) nuxeoController.executeNuxeoCommand(new FetchByShareLinkCommand(share));
+                Documents docs = (Documents) nuxeoController.executeNuxeoCommand(new FetchByShareLinkCommand(shareId));
                 if( docs.size() != 1)   {
                     throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
                 }
