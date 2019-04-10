@@ -417,12 +417,9 @@ public class TransformationFunctions {
      * 
      * @param title link title
      * @param actionId action identifier
-     * @param redirectionPath redirection path
      * @return link
      */
-    public static String getCommandLink(String title, String actionId, String redirectionPath) {
-        // Portal URL factory
-        IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
+    public static String getCommandLink(String title, String actionId) {
         // Tasks service
         ITasksService tasksService = getTasksService();
 
@@ -440,22 +437,10 @@ public class TransformationFunctions {
             // UUID
             UUID uuid = FormsServiceImpl.getUuid();
 
-            // Redirection URL
-            String redirectionUrl;
-            if (StringUtils.isEmpty(redirectionPath)) {
-                redirectionUrl = null;
-            } else {
-                try {
-                    redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
-                } catch (PortalException e) {
-                    redirectionUrl = null;
-                }
-            }
-
             // URL
             String url;
             try {
-                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl);
+                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId);
             } catch (PortalException e) {
                 url = "#";
             }
@@ -478,7 +463,7 @@ public class TransformationFunctions {
      * @throws SecurityException
      */
     public static Method getCommandLinkMethod() throws NoSuchMethodException, SecurityException {
-        return TransformationFunctions.class.getMethod("getCommandLink", String.class, String.class, String.class);
+        return TransformationFunctions.class.getMethod("getCommandLink", String.class, String.class);
     }
 
     /**

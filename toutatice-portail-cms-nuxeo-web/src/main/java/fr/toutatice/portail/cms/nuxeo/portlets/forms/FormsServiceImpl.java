@@ -977,7 +977,7 @@ public class FormsServiceImpl implements IFormsService {
                                 // Accept
                                 String acceptActionId = variables.getString("actionIdYes");
                                 if (StringUtils.isNotBlank(acceptActionId)) {
-                                    String url = this.tasksService.getCommandUrl(portalControllerContext, uuid, acceptActionId, null);
+                                    String url = this.tasksService.getCommandUrl(portalControllerContext, uuid, acceptActionId);
                                     String title = bundle.getString("ACCEPT");
                                     Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
                                     

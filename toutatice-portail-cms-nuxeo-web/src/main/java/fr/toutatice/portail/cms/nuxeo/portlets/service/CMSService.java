@@ -3182,7 +3182,7 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
+    public Map<String, String> updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
         // Controller context
         ControllerContext controllerContext = cmsContext.getControllerContext();
         // Portal controller context
@@ -3190,8 +3190,8 @@ public class CMSService implements ICMSService {
         // User
         String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
 
-        // Updated task indicator
-        boolean updated;
+        // Updated variables
+        Map<String, String> updatedVariables;
 
         // #1964 - tasks url may be done with anonymous user id
         Set<String> actors = null;
@@ -3210,12 +3210,10 @@ public class CMSService implements ICMSService {
                 Document task = documents.get(0);
 
                 // Proceed
-                this.formsService.proceed(portalControllerContext, task, actionId, variables);
-
-                updated = true;
+                updatedVariables = this.formsService.proceed(portalControllerContext, task, actionId, variables);
             } else {
                 // 404 not found
-                updated = false;
+                updatedVariables = null;
             }
         } catch (CMSException e) {
             throw e;
@@ -3223,8 +3221,7 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
 
-
-        return updated;
+        return updatedVariables;
     }
 
 
