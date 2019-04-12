@@ -77,17 +77,10 @@
         </dependency>
         
         <dependency>
-           <groupId>org.jboss.portal</groupId>
-           <artifactId>portal-security-lib</artifactId>
-           <version>${jboss.portal.version}</version>
-           <scope>provided</scope>
-       </dependency>
-       
-       <!-- Commons CSV -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.2</version>
+            <groupId>org.jboss.portal</groupId>
+            <artifactId>portal-security-lib</artifactId>
+            <version>${jboss.portal.version}</version>
+            <scope>provided</scope>
         </dependency>
 
 	</dependencies>
