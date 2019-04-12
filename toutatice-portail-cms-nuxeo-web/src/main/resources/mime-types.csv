@@ -1,0 +1,57 @@
+mime-type,extension,description,display,icon,icon (version 2)
+application/epub+zip,epub,Fichier EPUB,,glyphicons glyphicons-pen,glyphicons-2 glyphicons-2-filetypes-file
+application/gzip,gzip,Archive GZip,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+application/java-archive,jar,Archive Java,,,glyphicons-2 glyphicons-2-filetypes-file-program
+application/javascript,js,Fichier JavaScript,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-program
+application/json,json,Fichier JSON,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-web
+application/msword,doc,Document Word,W,,glyphicons-2 glyphicons-2-filetypes-file-rich-text
+application/ogg,ogx,Fichier OGG,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-music
+application/pdf,pdf,Fichier PDF,PDF,,glyphicons-2 glyphicons-2-filetypes-file-rich-text
+application/rtf,rtf,Fichier RTF,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-rich-text
+application/vnd.ms-excel,xls,Feuille de calcul Excel,X,,glyphicons-2 glyphicons-2-filetypes-file-spreadsheet
+application/vnd.ms-excel.sheet.macroenabled.12,xls,Feuille de calcul Excel,X,,glyphicons-2 glyphicons-2-filetypes-file-spreadsheet
+application/vnd.ms-fontobject,eot,Police Embedded OpenType,,glyphicons glyphicons-font,glyphicons-2 glyphicons-2-filetypes-file-font
+application/vnd.ms-powerpoint,ppt,Présentation PowerPoint,P,,glyphicons-2 glyphicons-2-filetypes-file-presentation
+application/vnd.oasis.opendocument.presentation,odp,Présentation OpenDocument,P,,glyphicons-2 glyphicons-2-filetypes-file-presentation
+application/vnd.oasis.opendocument.spreadsheet,ods,Feuille de calcul OpenDocument,X,,glyphicons-2 glyphicons-2-filetypes-file-spreadsheet
+application/vnd.oasis.opendocument.text,odt,Document texte OpenDocument,W,,glyphicons-2 glyphicons-2-filetypes-file-rich-text
+application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx,Présentation PowerPoint,P,,glyphicons-2 glyphicons-2-filetypes-file-presentation
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx,Feuille de calcul Excel,X,,glyphicons-2 glyphicons-2-filetypes-file-spreadsheet
+application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx,Document Word,W,,glyphicons-2 glyphicons-2-filetypes-file-rich-text
+application/x-bzip,bz,Archive BZip,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+application/x-bzip2,bz2,Archive BZip2,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+application/x-rar-compressed,rar,Archive RAR,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+application/x-sh,sh,Script Shell,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-terminal
+application/x-shockwave-flash,swf,Fichier Flash,,,glyphicons-2 glyphicons-2-filetypes-file-video
+application/x-tar,tar,Archive TAR,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+application/xhtml+xml,xhtml,Fichier XHTML,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-web
+application/xml,xml,Fichier XML,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-script
+application/zip,zip,Archive ZIP,,glyphicons glyphicons-compressed,glyphicons-2 glyphicons-2-filetypes-file-zip
+audio/3gpp,3gp,Fichier audio 3GPP,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/3gpp2,3g2,Fichier audio 3GPP2,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/aac,aac,Fichier audio AAC,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/midi,midi,Fichier audio MIDI,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/ogg,oga,Fichier audio OGG,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/webm,weba,Fichier audio WEBM,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+audio/x-wav,wav,Fichier audio WAV,,glyphicons glyphicons-music,glyphicons-2 glyphicons-2-filetypes-file-music
+font/otf,otf,Police OpenType,,glyphicons glyphicons-font,glyphicons-2 glyphicons-2-filetypes-file-font
+font/ttf,ttf,Police TrueType,,glyphicons glyphicons-font,glyphicons-2 glyphicons-2-filetypes-file-font
+font/woff,woff,Police WOFF,,glyphicons glyphicons-font,glyphicons-2 glyphicons-2-filetypes-file-font
+font/woff2,woff2,Police WOFF,,glyphicons glyphicons-font,glyphicons-2 glyphicons-2-filetypes-file-font
+image/gif,gif,Image GIF,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/jpeg,jpeg,Image JPEG,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/png,png,Image PNG,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/svg+xml,svg,Image SVG,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/tiff,tiff,Image TIFF,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/webp,webp,Image WEBP,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+image/x-icon,ico,Fichier icône,,glyphicons glyphicons-picture,glyphicons-2 glyphicons-2-filetypes-file-image
+text/css,css,Fichier CSS,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-web
+text/csv,csv,Fichier CSV,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-spreadsheet
+text/html,html,Fichier HTML,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-web
+text/plain,txt,Fichier texte,,glyphicons glyphicons-note,glyphicons-2 glyphicons-2-filetypes-file-text
+video/3gpp,3gp,Vidéo 3GPP,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video
+video/3gpp2,3g2,Vidéo 3GPP2,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video
+video/mpeg,mpeg,Vidéo MPEG,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video
+video/ogg,ogv,Vidéo OGG,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video
+video/webm,webm,Vidéo WEBM,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video
+video/x-msvideo,avi,Vidéo AVI,,glyphicons glyphicons-film,glyphicons-2 glyphicons-2-filetypes-file-video

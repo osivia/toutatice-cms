@@ -54,6 +54,8 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
     private String spaceId;
     /** Parent space identifier. */
     private String parentSpaceId;
+    /** Drive enabled indicator. */
+    private boolean driveEnabled;
     /** Drive edition URL. */
     private String driveEditionUrl;
 
@@ -343,6 +345,19 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
      * {@inheritDoc}
      */
     @Override
+    public boolean isDriveEnabled() {
+        if (!this.initializedCmsPublicationInfos) {
+            this.initCmsPublicationInfos();
+        }
+
+        return this.driveEnabled;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getDriveEditionUrl() {
         if (!this.initializedCmsPublicationInfos) {
             this.initCmsPublicationInfos();
@@ -396,6 +411,8 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
             this.spaceId = cmsPublicationInfos.getSpaceID();
             // Parent space identifier
             this.parentSpaceId = cmsPublicationInfos.getParentSpaceID();
+            // Drive enabled indicator
+            this.driveEnabled = cmsPublicationInfos.isDriveEnabled();
             // Drive edition URL
             this.driveEditionUrl = cmsPublicationInfos.getDriveEditURL();
 

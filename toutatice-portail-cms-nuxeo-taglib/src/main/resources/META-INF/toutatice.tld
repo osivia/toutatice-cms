@@ -554,5 +554,29 @@
     </tag>
     
     
+    <!-- Document icon -->
+    <tag>
+        <description>Nuxeo document icon.</description>
+        <display-name>Document icon</display-name>
+        <name>icon</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.IconTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+        
+        <attribute>
+            <description>Icon style ("inline", "flat" or "flat-inverse")</description>
+            <name>style</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
 
 </taglib>

@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.api.services.tag;
 
 import java.io.IOException;
 
+import org.dom4j.Element;
 import org.osivia.portal.api.urls.Link;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -67,5 +68,17 @@ public interface INuxeoTagService {
      * @return customized JSP
      */
     CustomizedJsp getCustomizedJsp(NuxeoController nuxeoController, String name) throws IOException;
+
+
+    /**
+     * Get document icon DOM element.
+     * 
+     * @param nuxeoController Nuxeo controller
+     * @param document document DTO
+     * @param style icon style
+     * @return DOM element
+     * @throws IOException
+     */
+    Element getDocumentIcon(NuxeoController nuxeoController, DocumentDTO document, String style) throws IOException;
 
 }

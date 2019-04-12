@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.FileDocumentType;
+import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.set.SetType;
@@ -195,11 +195,22 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
 
     /**
-     * Get file document types.
+     * Get file MIME types.
      * 
-     * @return file document types
+     * @return MIME types
+     * @throws IOException
      */
-    List<FileDocumentType> getFileDocumentTypes();
+    Map<String, FileMimeType> getFileMimeTypes() throws IOException;
+
+
+    /**
+     * Get file MIME type.
+     * 
+     * @param mimeType selected MIME type
+     * @return MIME type
+     * @throws IOException
+     */
+    FileMimeType getFileMimeType(String mimeType) throws IOException;
 
 
     /**
