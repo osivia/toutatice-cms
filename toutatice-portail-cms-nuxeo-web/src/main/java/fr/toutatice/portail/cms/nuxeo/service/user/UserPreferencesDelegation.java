@@ -122,30 +122,29 @@ public class UserPreferencesDelegation {
         }
 	}
 
+
 	/**
-	 * Convert from UserProfile document to UserPreferences pojo
-	 * @param profile
-	 * @return
-	 */
+     * Convert from UserProfile document to UserPreferences pojo.
+     * 
+     * @param profile profile Nuxeo document
+     * @return user preferences
+     */
 	private UserPreferences toPreferencesDto(Document profile) {
-		
 		Map<String, String> prefs = new HashMap<>();
 
 		PropertyList list = profile.getProperties().getList(UpdatePreferencesCommand.METADATA_FOLDERS_PREFS);
 
-		for(Object o : list.list()) {
-			PropertyMap map = (PropertyMap) o;
+		if ((list != null) && !list.isEmpty()) {
+            for (int i = 0; i < list.size(); i++) {
+                PropertyMap map = list.getMap(i);
 
-			
-			Object objectValue = map.get(UpdatePreferencesCommand.METADATA_FOLDERS_PREFS_VALUE);
-			Object objectId = map.get(UpdatePreferencesCommand.METADATA_FOLDERS_PREFS_ID);
-			
-			if(objectId != null && objectValue != null) {
-				prefs.put(objectId.toString(), objectValue.toString());
+                Object objectValue = map.get(UpdatePreferencesCommand.METADATA_FOLDERS_PREFS_VALUE);
+                Object objectId = map.get(UpdatePreferencesCommand.METADATA_FOLDERS_PREFS_ID);
 
-			}
-
-
+                if (objectId != null && objectValue != null) {
+                    prefs.put(objectId.toString(), objectValue.toString());
+                }
+            }
 		}
 
 		UserPreferences upf = new UserPreferences(profile.getId());
@@ -153,8 +152,6 @@ public class UserPreferencesDelegation {
 
 		return upf;
 	}
-	
-	
 
 }
 
