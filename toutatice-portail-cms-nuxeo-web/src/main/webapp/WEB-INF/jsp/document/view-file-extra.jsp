@@ -16,7 +16,7 @@
     <div class="panel-body">
         <!-- Title -->
         <h3 class="h4 text-overflow">
-            <i class="${document.icon}"></i>
+            <span><ttc:icon document="${document}" /></span>
             <span>${name}</span>
         </h3>
 

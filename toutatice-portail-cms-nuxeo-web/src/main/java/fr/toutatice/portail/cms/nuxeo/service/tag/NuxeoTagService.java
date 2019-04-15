@@ -249,12 +249,8 @@ public class NuxeoTagService implements INuxeoTagService {
      */
     @Override
     public Element getDocumentIcon(NuxeoController nuxeoController, DocumentDTO documentDto, String style) throws IOException {
-        // Portlet request
-        PortletRequest request = nuxeoController.getRequest();
         // CMS customizer
         INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
-        // Internationalization bundle
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
         
         // Nuxeo document
         Document nuxeoDocument = documentDto.getDocument();
@@ -277,6 +273,37 @@ public class NuxeoTagService implements INuxeoTagService {
             fileMimeType = customizer.getFileMimeType(fileContent.getString("mime-type"));
         }
 
+        return this.getIcon(nuxeoController, fileMimeType, documentType, style);
+    }
+
+
+    @Override
+    public Element getMimeTypeIcon(NuxeoController nuxeoController, String mimeType, String style) throws IOException {
+        // CMS customizer
+        INuxeoCustomizer customizer = nuxeoController.getNuxeoCMSService().getCMSCustomizer();
+
+        // File MIME type
+        FileMimeType fileMimeType = customizer.getFileMimeType(mimeType);
+
+        return this.getIcon(nuxeoController, fileMimeType, null, style);
+    }
+
+
+    /**
+     * Get icon DOM element.
+     * 
+     * @param nuxeoController Nuxeo controller
+     * @param fileMimeType file MIME type, may be null
+     * @param documentType documen type, may be null
+     * @param style icon style
+     * @return DOM element
+     */
+    private Element getIcon(NuxeoController nuxeoController, FileMimeType fileMimeType, DocumentType documentType, String style) {
+        // Portlet request
+        PortletRequest request = nuxeoController.getRequest();
+        // Internationalization bundle
+        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
 
         // Title
         String title;
@@ -287,7 +314,7 @@ public class NuxeoTagService implements INuxeoTagService {
         } else {
             title = null;
         }
-        
+
         // Display
         String display;
         if (fileMimeType != null) {

@@ -81,4 +81,16 @@ public interface INuxeoTagService {
      */
     Element getDocumentIcon(NuxeoController nuxeoController, DocumentDTO document, String style) throws IOException;
 
+
+    /**
+     * Get MIME type icon.
+     * 
+     * @param nuxeoController Nuxeo controller
+     * @param mimeType MIME type
+     * @param style icon style
+     * @return DOM element
+     * @throws IOException
+     */
+    Element getMimeTypeIcon(NuxeoController nuxeoController, String mimeType, String style) throws IOException;
+
 }
