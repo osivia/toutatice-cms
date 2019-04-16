@@ -16,9 +16,11 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletContext;
@@ -31,6 +33,7 @@ import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -66,6 +69,7 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
@@ -159,6 +163,8 @@ public class NuxeoController {
     String domainPath;
 
     HttpServletRequest servletRequest;
+    
+    
 
     public HttpServletRequest getServletRequest() {
         return this.servletRequest;
@@ -172,7 +178,8 @@ public class NuxeoController {
     /** Directory service */
     private IDirectoryServiceLocator directoryServiceLocator;
 
-    private IDirectoryService directoryService;
+
+	private IDirectoryService directoryService;
 
     private IDirectoryService getDirectoryService() {
         if (this.directoryService == null) {
@@ -262,6 +269,10 @@ public class NuxeoController {
     String forcedLivePath = null;
 
 
+    /** Satellite. */
+    private Satellite satellite;
+
+
     public String getForcedLivePath() {
         return this.forcedLivePath;
     }
@@ -320,6 +331,10 @@ public class NuxeoController {
      */
     public void setCurrentDoc(Document currentDoc) {
         this.currentDoc = currentDoc;
+
+        if (currentDoc != null) {
+
+        }
     }
 
 
@@ -631,17 +646,7 @@ public class NuxeoController {
         this.authType = authType;
     }
 
-    /**
-     * Gets the nuxeo connection props.
-     *
-     * @return the nuxeo connection props
-     */
-    public NuxeoConnectionProperties getNuxeoConnectionProps() {
-        if (this.nuxeoConnection == null) {
-            this.nuxeoConnection = new NuxeoConnectionProperties();
-        }
-        return this.nuxeoConnection;
-    }
+
 
     /**
      * Gets the portal ctx.
@@ -836,6 +841,24 @@ public class NuxeoController {
                     }
                 }
             }
+
+
+            // Satellite
+            String satelliteName = window.getProperty("osivia.satellite");
+            if (StringUtils.isNotEmpty(satelliteName)) {
+                Set<Satellite> satellites = getCMSService().getSatellites();
+                if (CollectionUtils.isNotEmpty(satellites)) {
+                    Satellite satellite = null;
+                    Iterator<Satellite> iterator = satellites.iterator();
+                    while ((satellite == null) && iterator.hasNext()) {
+                        Satellite next = iterator.next();
+                        if (StringUtils.equals(satelliteName, next.getId())) {
+                            satellite = next;
+                        }
+                    }
+                    this.satellite = satellite;
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -867,7 +890,7 @@ public class NuxeoController {
             if (cmsExc.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
                 return new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
             }
-            return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
+            return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc);
         } else if (e instanceof PortletException) {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof CMSException) {
@@ -1568,6 +1591,8 @@ public class NuxeoController {
         commandContext.setCacheType(this.cacheType);
         commandContext.setAsynchronousUpdates(this.asynchronousUpdates);
         commandContext.setAsynchronousCommand(this.asynchronousCommand);
+        commandContext.setSatellite(this.satellite);
+        
 
         try {
             return this.getNuxeoCommandService().executeCommand(commandContext, new INuxeoServiceCommand() {
@@ -2270,6 +2295,8 @@ public class NuxeoController {
 
             }
             this.cmsCtx.setStreamingSupport(this.streamingSupport);
+
+            this.cmsCtx.setSatellite(this.satellite);
 
 
             return this.cmsCtx;

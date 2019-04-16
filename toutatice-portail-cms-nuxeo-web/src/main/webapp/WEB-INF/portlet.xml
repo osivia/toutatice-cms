@@ -380,6 +380,27 @@
     </portlet>
     
     
+    <!-- Rename document -->
+    <portlet>
+        <description>Rename document portlet</description>
+        <portlet-name>toutatice-portail-cms-nuxeo-rename</portlet-name>
+        <display-name>Rename document</display-name>
+
+        <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.rename.RenamePortlet</portlet-class>
+
+        <expiration-cache>180</expiration-cache>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>Rename document</title>
+        </portlet-info>
+    </portlet>
+    
+    
     <!-- Reorder documents -->
     <portlet>
         <description>Reorder documents portlet</description>

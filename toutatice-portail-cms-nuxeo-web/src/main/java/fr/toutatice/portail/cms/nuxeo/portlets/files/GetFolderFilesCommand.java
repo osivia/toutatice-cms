@@ -37,7 +37,6 @@ public class GetFolderFilesCommand implements INuxeoCommand {
      * Constructor.
      *
      * @param folderId folder identifier
-     * @param folderPath folder path
      */
     public GetFolderFilesCommand(String folderId) {
         super();
@@ -65,7 +64,7 @@ public class GetFolderFilesCommand implements INuxeoCommand {
 
         // Operation request
         OperationRequest operationRequest = session.newRequest("Document.QueryES");
-        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined, resourceSharing");
+        operationRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "dublincore, common, toutatice, file, ottcCheckined, clink, resourceSharing");
         operationRequest.set("query", "SELECT * FROM Document WHERE " + filteredRequest);
 
         return operationRequest.execute();

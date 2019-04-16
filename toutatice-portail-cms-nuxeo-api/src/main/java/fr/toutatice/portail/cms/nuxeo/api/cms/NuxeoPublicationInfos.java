@@ -54,6 +54,14 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
 
     /**
+     * Check if Nuxeo Drive is enabled.
+     * 
+     * @return true if Nuxeo Drive is enabled
+     */
+    boolean isDriveEnabled();
+
+
+    /**
      * Get Nuxeo Drive edition URL.
      * 
      * @return URL

@@ -13,6 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.FileDocumentType;
+import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 
@@ -289,15 +290,26 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @return icon, may be null
      */
     public String getIcon(String mimeType) {
-        // Mime type
-        MimeType mimeTypeObject;
+        // CMS customizer
+        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
+
+        // File MIME type
+        FileMimeType fileMimeType;
         try {
-            mimeTypeObject = new MimeType(mimeType);
-        } catch (Exception e) {
-            mimeTypeObject = null;
+            fileMimeType = customizer.getFileMimeType(mimeType);
+        } catch (IOException e) {
+            fileMimeType = null;
         }
 
-        return this.getIcon(mimeTypeObject);
+        // Icon
+        String icon;
+        if (fileMimeType == null) {
+            icon = null;
+        } else {
+            icon = fileMimeType.getIcon();
+        }
+
+        return icon;
     }
 
 
@@ -308,29 +320,12 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @return icon, may be null
      */
     public String getIcon(MimeType mimeType) {
-        // CMS customizer
-        INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
-
         // Icon
         String icon;
-
         if (mimeType == null) {
             icon = null;
         } else {
-            // File document types
-            List<FileDocumentType> types = cmsCustomizer.getFileDocumentTypes();
-
-            icon = null;
-            for (FileDocumentType type : types) {
-                if (StringUtils.equals(mimeType.getPrimaryType(), type.getMimePrimaryType())) {
-                    if (type.getMimeSubTypes().isEmpty()) {
-                        icon = type.getIcon();
-                    } else if (type.getMimeSubTypes().contains(mimeType.getSubType())) {
-                        icon = type.getIcon();
-                        break;
-                    }
-                }
-            }
+            icon = this.getIcon(mimeType.getBaseType());
         }
 
         return icon;

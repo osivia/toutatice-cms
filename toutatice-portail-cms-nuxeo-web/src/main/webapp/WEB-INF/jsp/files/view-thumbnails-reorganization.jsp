@@ -64,6 +64,13 @@
                                                 </div>
                                             </div>
                                             
+                                            <!-- Sharing -->
+                                            <c:if test="${document.sharing}">
+                                                <div class="document-indicator">
+                                                    <i class="glyphicons glyphicons-group"></i>
+                                                </div>
+                                            </c:if>
+                                            
                                             <!-- Title -->
                                             <div class="document-title">
                                                 <span class="draggable"><ttc:title document="${document}" displayContext="fileExplorer" /></span>
@@ -142,7 +149,7 @@
                                     
                                     <!-- Lock -->
                                     <c:if test="${not empty lockOwner}">
-                                        <div class="document-lock">
+                                        <div class="document-indicator">
                                             <c:choose>
                                                 <c:when test="${lockOwner eq pageContext.request.remoteUser}"><i class="glyphicons glyphicons-user-lock"></i></c:when>
                                                 <c:otherwise><i class="glyphicons glyphicons-lock"></i></c:otherwise>
@@ -152,8 +159,15 @@
                                     
                                     <!-- Subscription -->
                                     <c:if test="${document.subscription}">
-                                        <div class="document-subscription">
+                                        <div class="document-indicator">
                                             <i class="glyphicons glyphicons-flag"></i>
+                                        </div>
+                                    </c:if>
+                                    
+                                    <!-- Sharing -->
+                                    <c:if test="${document.sharing}">
+                                        <div class="document-indicator">
+                                            <i class="glyphicons glyphicons-group"></i>
                                         </div>
                                     </c:if>
                                     

@@ -20,10 +20,6 @@
         <jackson.version>1.8.1</jackson.version>
         
         <apache.httpcomponents.version>4.1</apache.httpcomponents.version>
-    
-        <deploy.dir>${toutatice-portail-runtime-dir}</deploy.dir>
-        <deploy.socle.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/deploy/socle</deploy.socle.dir>
-        <deploy.socle-libs.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/lib</deploy.socle-libs.dir>
     </properties>
 
 
@@ -120,7 +116,7 @@
                 </exclusions>
             </dependency>
 
-			<!-- Dependencies for automation client -->
+            <!-- Dependencies for automation client -->
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
@@ -206,6 +202,7 @@
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
         </dependency>
+
     </dependencies>
 
 
@@ -294,10 +291,20 @@
                         <suffix>.min</suffix>
                     </configuration>
                 </plugin>
-                
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.1</version>
+                    <configuration>
+                        <useSystemClassLoader>false</useSystemClassLoader>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
     
+
         <plugins>
         
             <plugin>
@@ -305,8 +312,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
 
@@ -337,13 +344,10 @@
                 <version>2.2.1</version>
                 <configuration>
                     <releaseProfiles>unpack,pack</releaseProfiles>
-                    <preparationGoals>clean install</preparationGoals>
-                    <goals>deploy</goals>
-                    <arguments>-Prelease</arguments>
 				</configuration>
             </plugin>
-            
-               <!-- Disable strict javadoc checking since java8 -->
+
+			<!-- Disable strict javadoc checking since java8 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -352,18 +356,17 @@
 						<additionalOption>-Xdoclint:none</additionalOption>
 					</additionalOptions>
 				</configuration>
-			</plugin>               
+			</plugin>
+
         </plugins>
     </build>
-
 
     <scm>
         <url>https://github.com/osivia/toutatice-cms.git</url>
         <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>     
-        <tag>4.7-maintenance</tag>
+        <!--<tag>4.7-maintenance</tag>-->
 	</scm>
-
 
     <distributionManagement>
         <repository>
@@ -389,6 +392,5 @@
         		</snapshotRepository>
     		</distributionManagement>
     	</profile>
-    </profiles>    
-
+    </profiles>
 </project>

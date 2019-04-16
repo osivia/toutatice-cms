@@ -16,7 +16,7 @@
     <div class="panel-body">
         <!-- Title -->
         <h3 class="h4 text-overflow">
-            <i class="${document.icon}"></i>
+            <span><ttc:icon document="${document}" /></span>
             <span>${name}</span>
         </h3>
 
@@ -24,118 +24,53 @@
         <p>
             <span><ttc:fileSize size="${size}" /></span>
         </p>
-		
-		<c:choose>
-	        <c:when test="${driveEnabled and empty driveEditUrl}">
-	            <div class="alert alert-warning">
-	                <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
-	            </div>
-	       </c:when>
-	    </c:choose>
 
-        <div>
+        <!-- OnlyOffice -->
+        <c:if test="${not empty onlyofficeEditCollabUrl}">
             <c:choose>
-            	<c:when test="${not isEditableByUser}">
-            		<!-- readonly -->
-            		<c:choose>
-            			<c:when test="${not empty onlyofficeEditCollabUrl}">
-            			
-		            		<!-- onlyoffice in read mode -->
-		            		<a href="${onlyofficeEditCollabUrl}" class="btn btn-primary btn-block no-ajax-link">
-				            	<span><op:translate key="ONLYOFFICE_VIEW" /></span>
-				            </a>
-				     	</c:when>
-            		</c:choose>
+                <c:when test="${isEditableByUser}">
+                    <!-- Live edition -->
+                    <p>
+                        <a href="${onlyofficeEditCollabUrl}" class="btn btn-primary btn-block no-ajax-link">
+                            <span><op:translate key="ONLYOFFICE_EDIT" /></span>
+                        </a>
+                    </p>
+                </c:when>
+                
+                <c:otherwise>
+                    <!-- Read only -->
+                    <p>
+                        <a href="${onlyofficeEditCollabUrl}" class="btn btn-primary btn-block no-ajax-link">
+                            <span><op:translate key="ONLYOFFICE_VIEW" /></span>
+                        </a>
+                    </p>
+                </c:otherwise>
+            </c:choose>
+        </c:if>
+        
+        <!-- Drive -->
+        <c:if test="${driveEnabled}">
+            <c:choose>
+                <c:when test="${empty driveEditUrl}">
+                    <p>
+                        <a href="${driveEditUrl}" class="btn btn-default btn-block no-ajax-link">
+                            <span><op:translate key="DRIVE_EDIT" /></span>
+                        </a>
+                    </p>
+                </c:when>
+                
+                <c:otherwise>
+                    <div class="alert alert-warning">
+                        <span><op:translate key="MESSAGE_DRIVE_CLIENT_NOT_STARTED" /></span>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </c:if>
 
-            	</c:when> 
-            	<c:otherwise>
-            		<!-- write -->
-            		
-            		<c:choose>
-            			
-            			<c:when test="${not empty onlyofficeEditCollabUrl}">
-            				<!-- onlyoffice in write mode -->
-            				<div class="btn-group flex-display" role="group">
-	            				<a href="${onlyofficeEditLockUrl}" class="btn btn-primary no-ajax-link">
-	            					<i class="halflings halflings-pencil"></i>
-			                        <span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
-			                    </a>
-			                   	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							    	<span class="caret"></span>
-							    </button>
-			                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
-			                    	<li>
-			                    		<!--  onlyoffice in write mode with lock -->
-				                    	<a href="${onlyofficeEditLockUrl}" class="no-ajax-link">
-				                    		<span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
-					                    </a>
-			                    	</li>
-			                    	<li>
-			                    		<!--  onlyoffice in write mode collaborative -->
-				                    	<a href="${onlyofficeEditCollabUrl}" class="no-ajax-link">
-					                        <span><op:translate key="ONLYOFFICE_EDIT_COLLAB" /></span>
-					                    </a>
-			                    	</li>
-			                    	
-			                    	
-			                    	<c:choose>
-			                    		<c:when test="${not empty driveEditUrl}">
-			                    			<!-- Nuxeo drive online -->
-					                    	<li>
-							                    <a href="${driveEditUrl}" class="no-ajax-link">
-							                        <span><op:translate key="DRIVE_EDIT" /></span>
-							                    </a>
-						                    </li>			                    		
-			                    		
-			                    		</c:when>
-			                    		<c:when test="${driveEnabled}">
-			                 				<!-- Nuxeo drive offline -->
-					                 		<li class="disabled" data-toggle="tooltip" title="<op:translate key='MESSAGE_DRIVE_CLIENT_NOT_STARTED' />">
-						                    	<a href="#" class="disabled">
-							                        <span><op:translate key="DRIVE_EDIT" /></span>
-							                    </a>
-					                    	</li>
-			                    		</c:when>
-			                    	</c:choose>
-			                    	<!-- end of nuxeo drive -->
-			                    	
-			                    </ul>
-		                    </div>
-            			
-            				<!-- end of onlyoffice -->
-            			</c:when>
-            			<c:otherwise>
-            			
-            				<!-- nuxeo drive withour onlyoffice -->
-            				<c:choose>
-			            		<c:when test="${not empty driveEditUrl}">
-				                    <a href="${driveEditUrl}" class="btn btn-primary btn-block no-ajax-link">
-				                        <span><op:translate key="DRIVE_EDIT" /></span>
-				                    </a>
-				                </c:when>
-				                <c:when test="${driveEnabled}">		                
-				                    <a href="#" class="btn btn-primary btn-block disabled">
-				                        <span><op:translate key="DRIVE_EDIT" /></span>
-				                    </a>
-				                </c:when>
-            				</c:choose>
-            			
-            			</c:otherwise>
-            			
-            			
-            		</c:choose>
-            		
-            	
-            	</c:otherwise>
-            	
-          	</c:choose>
-            	
-
-            <!-- Download -->
-            <a href="${url}" target="_blank" class="btn btn-default btn-block no-ajax-link">
-                <span><op:translate key="DOWNLOAD" /></span>
-            </a>
-        </div>
+        <!-- Download -->
+        <a href="${url}" target="_blank" class="btn btn-default btn-block no-ajax-link">
+            <span><op:translate key="DOWNLOAD" /></span>
+        </a>
     </div>
 </div>
 

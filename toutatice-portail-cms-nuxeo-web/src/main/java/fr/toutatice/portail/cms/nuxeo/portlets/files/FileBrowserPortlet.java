@@ -33,12 +33,15 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -96,6 +99,12 @@ import net.sf.json.JSONObject;
  * @see CMSPortlet
  */
 public class FileBrowserPortlet extends CMSPortlet {
+
+    /** default maximum size of uploaded file in Mb */
+    private static final long MAX_FILE_SIZE_DEFAULT = 500;
+
+    /** maximum size of uploaded file in Mb */
+    private static final String MAX_FILE_SIZE = System.getProperty("osivia.filebrowser.max.upload.size", String.valueOf(MAX_FILE_SIZE_DEFAULT));
 
     /** Synchronized ES indexation flag. */
     public static final String ES_SYNC_FLAG = "nx_es_sync";
@@ -341,6 +350,16 @@ public class FileBrowserPortlet extends CMSPortlet {
                     PortletFileUpload fileUpload = new PortletFileUpload(fileItemFactory);
                     List<FileItem> fileItems = fileUpload.parseRequest(request);
 
+                    // file size check
+                    if (fileItems != null) {
+                        for (FileItem fileItem : fileItems) {
+                            long maximumFileSizeInMb = NumberUtils.toLong(MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+                            if (fileItem.getSize() > maximumFileSizeInMb * FileUtils.ONE_MB) {
+                                throw new FileSizeLimitExceededException(null, fileItem.getSize(), maximumFileSizeInMb * FileUtils.ONE_MB);
+                            }
+                        }
+                    }
+
                     // Nuxeo command
                     INuxeoCommand command = new UploadFilesCommand(parentId, fileItems, true);
                     nuxeoController.executeNuxeoCommand(command);
@@ -352,6 +371,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     // Notification
                     notifications = new Notifications(NotificationsType.SUCCESS, FILE_UPLOAD_NOTIFICATIONS_DURATION);
                     notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_SUCCESS"));
+                } catch (FileSizeLimitExceededException e) {
+                    // Notification
+                    notifications = new Notifications(NotificationsType.ERROR, FILE_UPLOAD_NOTIFICATIONS_DURATION);
+                    notifications.addMessage(bundle.getString("MESSAGE_FILE_UPLOAD_FILE_SIZE_TOO_LARGE", MAX_FILE_SIZE));
                 } catch (FileUploadException e) {
                     // Notification
                     notifications = new Notifications(NotificationsType.ERROR, FILE_UPLOAD_NOTIFICATIONS_DURATION);
@@ -551,6 +574,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     boolean subscription = subscriptions.contains(document.getId());
                     fileBrowserItem.setSubscription(subscription);
 
+                    // Sharing indicator
+                    boolean sharing = (document.getFacets() != null) && document.getFacets().list().contains("Sharing");
+                    fileBrowserItem.setSharing(sharing);
+
                     fileBrowserItems.add(fileBrowserItem);
                 }
 
@@ -575,6 +602,11 @@ public class FileBrowserPortlet extends CMSPortlet {
                 Comparator<FileBrowserItem> comparator = new FileBrowserComparator(criteria);
                 Collections.sort(fileBrowserItems, comparator);
                 request.setAttribute("documents", fileBrowserItems);
+
+                // max file upload size
+                long maximumFileSizeInMb = NumberUtils.toLong(MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+                request.setAttribute("maximumFileSize", maximumFileSizeInMb * FileUtils.ONE_MB);
+                request.setAttribute("maximumFileSizeInMb", maximumFileSizeInMb);
 
 
                 // Toolbar attributes

@@ -24,11 +24,20 @@ import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.profils.ProfilBean;
 
 
 /**
  * The Class NuxeoCommandContext.
+ */
+/**
+ * @author Jean-Sébastien
+ *
+ */
+/**
+ * @author Jean-Sébastien
+ *
  */
 public class NuxeoCommandContext {
 
@@ -55,7 +64,28 @@ public class NuxeoCommandContext {
 
     /** Asynchronous command execution indicator. */
     private boolean asynchronousCommand;
+    
+    /** Nuxeo Satellite Name **/
+    private Satellite satellite;
 
+
+	/**
+	 * @return
+	 */
+	public Satellite getSatellite() {
+        if (this.satellite == null) {
+            this.satellite = Satellite.MAIN;
+        }
+        return this.satellite;
+	}
+
+	/**
+	 * @param satelliteName
+	 */
+	
+	public void setSatellite(Satellite satellite) {
+		this.satellite = satellite;
+	}
 
 	/**
 	 * Gets the server invocation.

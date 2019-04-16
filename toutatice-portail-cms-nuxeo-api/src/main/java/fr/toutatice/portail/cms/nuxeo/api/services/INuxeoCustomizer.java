@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +30,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.FileDocumentType;
+import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.set.SetType;
@@ -39,8 +40,8 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICustomizationService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -194,11 +195,22 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
 
     /**
-     * Get file document types.
+     * Get file MIME types.
      * 
-     * @return file document types
+     * @return MIME types
+     * @throws IOException
      */
-    List<FileDocumentType> getFileDocumentTypes();
+    Map<String, FileMimeType> getFileMimeTypes() throws IOException;
+
+
+    /**
+     * Get file MIME type.
+     * 
+     * @param mimeType selected MIME type
+     * @return MIME type
+     * @throws IOException
+     */
+    FileMimeType getFileMimeType(String mimeType) throws IOException;
 
 
     /**
@@ -352,5 +364,13 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the set types map
      */
     Collection<SetType> getSetTypes();
+
+
+	/**
+	 * Getter for html link target on document (#1933).
+	 * 
+	 * @param document
+	 */
+	String getTarget(DocumentDTO document);
 
 }

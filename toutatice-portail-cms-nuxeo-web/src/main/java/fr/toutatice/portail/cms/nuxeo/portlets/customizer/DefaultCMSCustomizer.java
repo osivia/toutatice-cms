@@ -15,11 +15,13 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
@@ -48,6 +52,9 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -69,7 +76,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.FileDocumentType;
+import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmCommonCommands;
@@ -110,6 +117,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
@@ -178,8 +186,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /** Binary servlet URL. */
     private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
 
+    private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";
+
     /** Query filter pattern. */
     private static final Pattern QUERY_FILTER_PATTERN = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
+
+
+    /** File MIME types. */
+    private Map<String, FileMimeType> fileMimeTypes;
 
 
     /** Log. */
@@ -678,34 +692,28 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
 
         if ("Folder".equals(document.getType()) || "OrderedFolder".equals(document.getType()) || "Section".equals(document.getType())) {
-            if (workspace) {
-                // File browser
-                cmsContext.setDisplayLiveVersion("1");
+            // File browser
+            cmsContext.setDisplayLiveVersion("1");
 
-                // Player
-                Player player = this.getCMSFileBrowser(docCtx);
-                // Window properties
-                Map<String, String> properties = player.getWindowProperties();
-                properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
-                properties.put(InternalConstants.PROP_WINDOW_TITLE_METADATA, String.valueOf(true));
-                properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
+            // Player
+            Player player = this.getCMSFileBrowser(docCtx);
+            // Window properties
+            Map<String, String> properties = player.getWindowProperties();
+            properties.put(InternalConstants.PROP_WINDOW_TITLE, document.getTitle());
+            properties.put(InternalConstants.PROP_WINDOW_TITLE_METADATA, String.valueOf(true));
+            properties.put(InternalConstants.PROP_WINDOW_SUB_TITLE, document.getString("dc:description"));
 
-                // Vignette
-                PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
-                if (vignetteProperties != null && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
-                    BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
-                    binary.setFieldName("ttc:vignette");
-                    binary.setDocument(document);
-                    Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
-                    properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
-                }
-
-                return player;
-            } else if ("Folder".equals(document.getType())) {
-                return this.getCMSFolderPlayer(docCtx);
-            } else {
-                return this.getCMSOrderedFolderPlayer(docCtx);
+            // Vignette
+            PropertyMap vignetteProperties = document.getProperties().getMap("ttc:vignette");
+            if (vignetteProperties != null && StringUtils.isNotEmpty(vignetteProperties.getString("data"))) {
+                BinaryDescription binary = new BinaryDescription(BinaryDescription.Type.FILE, document.getPath());
+                binary.setFieldName("ttc:vignette");
+                binary.setDocument(document);
+                Link vignetteLink = this.cmsService.getBinaryResourceURL(cmsContext, binary);
+                properties.put(InternalConstants.PROP_WINDOW_VIGNETTE_URL, vignetteLink.getUrl());
             }
+
+            return player;
         }
 
 
@@ -1461,77 +1469,84 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    public List<FileDocumentType> getFileDocumentTypes() {
-        List<FileDocumentType> types = new ArrayList<>();
+    public Map<String, FileMimeType> getFileMimeTypes() throws IOException {
+        if (this.fileMimeTypes == null) {
+            this.loadFileMimeTypes();
+        }
 
-        // Archive
-        FileDocumentType archive = new FileDocumentType("archive", "application", "zip", "gzip");
-        archive.setIcon("flaticon flaticon-archive");
-        types.add(archive);
+        return this.fileMimeTypes;
+    }
 
-        // Audio
-        FileDocumentType audio = new FileDocumentType("audio", "audio");
-        audio.setIcon("glyphicons glyphicons-music");
-        types.add(audio);
 
-        // Excel
-        FileDocumentType excel = new FileDocumentType("excel", "application", "vnd.ms-excel", "vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "vnd.ms-excel.sheet.macroenabled.12");
-        excel.setIcon("flaticon flaticon-excel");
-        types.add(excel);
+    /**
+     * Load MIME types.
+     * 
+     * @throws IOException
+     */
+    private synchronized void loadFileMimeTypes() throws IOException {
+        if (this.fileMimeTypes == null) {
+            InputStream input = this.getClass().getResourceAsStream("/mime-types.csv");
+            CSVParser parser = CSVParser.parse(input, Charset.defaultCharset(), CSVFormat.EXCEL.withHeader());
+            int count = Long.valueOf(parser.getRecordNumber()).intValue();
 
-        // Image
-        FileDocumentType image = new FileDocumentType("image", "image");
-        image.setIcon("glyphicons glyphicons-picture");
-        types.add(image);
+            Map<String, FileMimeType> map = new ConcurrentHashMap<>(count);
+            for (CSVRecord record : parser) {
+                // MIME type object
+                String mimeType = record.get("mime-type");
+                MimeType mimeTypeObject;
+                try {
+                    mimeTypeObject = new MimeType(mimeType);
+                } catch (MimeTypeParseException e) {
+                    mimeTypeObject = null;
+                    this.log.error(e.getMessage(), e.getCause());
+                }
 
-        // OpenDocument - Presentation
-        FileDocumentType odp = new FileDocumentType("odp", "application", "vnd.oasis.opendocument.presentation");
-        odp.setIcon("flaticon flaticon-odp");
-        types.add(odp);
+                if (mimeTypeObject != null) {
+                    FileMimeType fileMimeType = new FileMimeType();
+                    fileMimeType.setMimeType(mimeTypeObject);
+                    fileMimeType.setExtension(record.get("extension"));
+                    fileMimeType.setDescription(record.get("description"));
+                    fileMimeType.setDisplay(record.get("display"));
+                    fileMimeType.setIcon(record.get("icon"));
 
-        // OpenDocument - Spread sheet
-        FileDocumentType ods = new FileDocumentType("ods", "application", "vnd.oasis.opendocument.spreadsheet");
-        ods.setIcon("flaticon flaticon-ods");
-        types.add(ods);
+                    map.put(mimeType, fileMimeType);
+                }
+            }
 
-        // OpenDocument - Text
-        FileDocumentType odt = new FileDocumentType("odt", "application", "vnd.oasis.opendocument.text");
-        odt.setIcon("flaticon flaticon-odt");
-        types.add(odt);
+            this.fileMimeTypes = map;
+        }
+    }
 
-        // PDF
-        FileDocumentType pdf = new FileDocumentType("pdf", "application", "pdf");
-        pdf.setIcon("flaticon flaticon-pdf");
-        types.add(pdf);
 
-        // Powerpoint
-        FileDocumentType powerpoint = new FileDocumentType("powerpoint", "application", "vnd.ms-powerpoint",
-                "vnd.openxmlformats-officedocument.presentationml.presentation");
-        powerpoint.setIcon("flaticon flaticon-powerpoint");
-        types.add(powerpoint);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public FileMimeType getFileMimeType(String mimeType) throws IOException {
+        FileMimeType result;
 
-        // Text
-        FileDocumentType text = new FileDocumentType("text", "text");
-        text.setIcon("flaticon flaticon-text");
-        types.add(text);
+        if (StringUtils.isEmpty(mimeType)) {
+            result = null;
+        } else {
+            // MIME types
+            Map<String, FileMimeType> mimeTypes = this.getFileMimeTypes();
 
-        // Video
-        FileDocumentType video = new FileDocumentType("video", "video");
-        video.setIcon("glyphicons glyphicons-film");
-        types.add(video);
+            result = mimeTypes.get(mimeType);
 
-        // Word
-        FileDocumentType word = new FileDocumentType("word", "application", "msword", "vnd.openxmlformats-officedocument.wordprocessingml.document");
-        word.setIcon("flaticon flaticon-word");
-        types.add(word);
+            if (result == null) {
+                try {
+                    MimeType mimeTypeObject = new MimeType(mimeType);
+                    MimeType genericMimeTypeObject = new MimeType(mimeTypeObject.getPrimaryType(), "*");
+                    String genericMimeType = genericMimeTypeObject.getBaseType();
 
-        // XML
-        FileDocumentType xml = new FileDocumentType("xml", "text", "html", "xml");
-        xml.setIcon("flaticon flaticon-xml");
-        types.add(xml);
+                    result = mimeTypes.get(genericMimeType);
+                } catch (MimeTypeParseException e) {
+                    this.log.error(e.getMessage(), e.getCause());
+                }
+            }
+        }
 
-        return types;
+        return result;
     }
 
 
@@ -2058,6 +2073,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     	return collectionSetType;
     }
     
+
+	/* (non-Javadoc)
+     * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getTarget(fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO)
+     */
+    @Override
+    public String getTarget(DocumentDTO document) {
+    	if(System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
+			Object spaceUuid = document.getProperties().get("ttc:spaceUuid");
+			if(spaceUuid != null)
+				return spaceUuid.toString();
+			else return null;
+		}
+		else return null;
+    }
+
 
     /**
      * Getter for portletContext.

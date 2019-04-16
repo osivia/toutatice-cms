@@ -39,6 +39,8 @@ public class DocumentDTO implements Cloneable {
     private DocumentType type;
     /** Document icon, may be null. */
     private String icon;
+    /** Document icon, may be null. */
+    private String spaceIcon;    
     /** Document properties. */
     private final Map<String, Object> properties;
     /** Document attachments. */
@@ -196,8 +198,28 @@ public class DocumentDTO implements Cloneable {
     public void setIcon(String icon) {
         this.icon = icon;
     }
+    
+    
+    /**
+     * Getter for his space icon.
+     *
+     * @return the space icon
+     */
+    public String getSpaceIcon() {
+		return spaceIcon;
+	}
 
     /**
+     * Setter for  his space icon..
+     *
+     * @param space icon.
+     */
+	public void setSpaceIcon(String spaceIcon) {
+		this.spaceIcon = spaceIcon;
+	}
+
+
+	/**
      * Getter for commentable.
      *
      * @return the commentable
