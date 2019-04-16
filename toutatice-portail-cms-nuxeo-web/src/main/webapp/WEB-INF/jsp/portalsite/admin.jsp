@@ -14,7 +14,7 @@
 
 <portlet:defineObjects/>
 <%
-NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
+NuxeoController ctx = (NuxeoController) request.getAttribute("ctx")	;
 
 %>
 	<div>
@@ -23,7 +23,7 @@ NuxeoController ctx = (NuxeoController) renderRequest.getAttribute("ctx")	;
 			<label>Path</label><br/>
 			<input type="text" name="nuxeoPath" value="${nuxeoPath}" size="40"><br/>
 			<label>Scope</label><br/>
-<%= ctx.formatScopeList( (String) renderRequest.getAttribute("scope")) %><br/>
+<%= ctx.formatScopeList( (String) request.getAttribute("scope")) %><br/>
 
 				
 		
