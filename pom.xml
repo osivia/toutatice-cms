@@ -336,30 +336,40 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.2.1</version>
                 <configuration>
-                    <tagBase>http://projet.toutatice.fr/repos/toutatice-portail/cms/tags</tagBase>
                     <releaseProfiles>unpack,pack</releaseProfiles>
-                    <preparationGoals>clean install</preparationGoals>
-                    <goals>deploy</goals>
-                    <arguments>-Prelease</arguments>
                 </configuration>
             </plugin>
+
+            <!-- Disable strict javadoc checking since java8 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                    </additionalOptions>
+                </configuration>
+            </plugin>
+            
         </plugins>
     </build>
 
 
     <scm>
-        <developerConnection>scm:svn:http://projet.toutatice.fr/repos/toutatice-portail/cms/branches/4.6-maintenance</developerConnection>
+        <url>https://github.com/osivia/toutatice-cms.git</url>
+        <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>
     </scm>
 
 
     <distributionManagement>
         <repository>
-            <id>toutatice-releases</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-releases</url>
+            <id>osivia-releases</id>
+            <url>http://www.osivia.org/nexus/content/repositories/osivia-releases</url>
         </repository>
         <snapshotRepository>
-            <id>toutatice-snapshots</id>
-            <url>http://projet.toutatice.fr/nexus/content/repositories/toutatice-snapshots</url>
+            <id>osivia-snapshots</id>
+            <url>http://www.osivia.org/nexus/content/repositories/osivia-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
