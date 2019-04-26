@@ -31,8 +31,6 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -89,6 +87,7 @@ import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import net.sf.json.JSONObject;
 
 /**
  * File browser portlet.
@@ -542,6 +541,10 @@ public class FileBrowserPortlet extends CMSPortlet {
                     boolean subscription = subscriptions.contains(document.getId());
                     fileBrowserItem.setSubscription(subscription);
                     
+                    // Sharing indicator
+                    boolean sharing = (document.getFacets() != null) && document.getFacets().list().contains("Sharing");
+                    fileBrowserItem.setSharing(sharing);
+
                     fileBrowserItems.add(fileBrowserItem);
                 }
 

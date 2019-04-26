@@ -16,6 +16,8 @@ public class FileBrowserItem extends DocumentDTO {
     private int index;
     /** Subscription indicator. */
     private boolean subscription;
+    /** Sharing indicator. */
+    private boolean sharing;
 
 
     /**
@@ -85,6 +87,24 @@ public class FileBrowserItem extends DocumentDTO {
      */
     public void setSubscription(boolean subscription) {
         this.subscription = subscription;
+    }
+
+    /**
+     * Getter for sharing.
+     * 
+     * @return the sharing
+     */
+    public boolean isSharing() {
+        return sharing;
+    }
+
+    /**
+     * Setter for sharing.
+     * 
+     * @param sharing the sharing to set
+     */
+    public void setSharing(boolean sharing) {
+        this.sharing = sharing;
     }
 
 }
