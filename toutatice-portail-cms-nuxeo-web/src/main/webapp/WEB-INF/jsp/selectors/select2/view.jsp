@@ -39,7 +39,7 @@
             
             <!-- Clear -->
             <span class="input-group-btn">
-                <button type="submit" name="clear" class="btn btn-default" title="${clearLabel}" data-toggle="tooltip" data-placement="bottom">
+                <button type="submit" name="clear" class="btn btn-secondary" title="${clearLabel}" data-toggle="tooltip" data-placement="bottom">
                     <i class="glyphicons glyphicons-delete"></i>
                     <span class="sr-only">${clearLabel}</span>
                 </button>

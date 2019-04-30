@@ -91,7 +91,7 @@
                     
                     <c:if test="${not empty vocab1Id and empty vocab2Id and (selectorMonoValued ne '1')}">
                         <div class="media-right">
-                            <button type="submit" name="add" class="btn btn-default">
+                            <button type="submit" name="add" class="btn btn-secondary">
                                 <i class="halflings halflings-plus"></i>
                                 <span class="sr-only">${title}</span>
                             </button>

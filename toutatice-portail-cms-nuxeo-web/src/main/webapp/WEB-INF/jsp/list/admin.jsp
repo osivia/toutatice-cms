@@ -306,7 +306,7 @@ return nuxeoRequest.toString();
                 <span><op:translate key="SAVE" /></span>
             </button>
             
-            <button type="button" class="btn btn-default navbar-btn" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
+            <button type="button" class="btn btn-secondary navbar-btn" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </div>

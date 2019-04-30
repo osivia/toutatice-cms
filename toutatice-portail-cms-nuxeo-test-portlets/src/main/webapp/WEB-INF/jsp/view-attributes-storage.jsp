@@ -39,7 +39,7 @@
                             <div class="input-group">
                                 <input id="${namespace}-selection-content" type="text" name="content" class="form-control" placeholder="${placeholder}">
                                 <span class="input-group-btn">
-                                    <button type="submit" class="btn btn-default">
+                                    <button type="submit" class="btn btn-secondary">
                                         <i class="glyphicons glyphicons-plus"></i>
                                         <span class="sr-only"><op:translate key="ADD" /></span>
                                     </button>
@@ -102,7 +102,7 @@
                                 <p class="form-control-static">${item.value}</p>
                             </div>
                             <div class="col-xs-2">
-                                <button type="submit" name="remove" value="${item.key}" class="btn btn-default">
+                                <button type="submit" name="remove" value="${item.key}" class="btn btn-secondary">
                                     <i class="glyphicons glyphicons-remove"></i>
                                     <span class="sr-only"><op:translate key="REMOVE" /></span>
                                 </button>
@@ -118,7 +118,7 @@
                             <input type="text" name="attributeValue" class="form-control" placeholder="${valuePlaceholder}">
                         </div>
                         <div class="col-xs-2">
-                            <button type="submit" name="add" class="btn btn-default">
+                            <button type="submit" name="add" class="btn btn-secondary">
                                 <i class="glyphicons glyphicons-plus"></i>
                                 <span class="sr-only"><op:translate key="ADD" /></span>
                             </button>

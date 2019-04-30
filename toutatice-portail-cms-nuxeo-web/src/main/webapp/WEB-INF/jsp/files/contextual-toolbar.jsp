@@ -55,12 +55,12 @@
 
                 <!-- Drive and Live edit -->
                 <div class="btn-group btn-group-sm all-edit" role="group">
-                    <a href="#" class="no-ajax-link btn btn-default navbar-btn onlyoffice-edit-lock">
+                    <a href="#" class="no-ajax-link btn btn-secondary navbar-btn onlyoffice-edit-lock">
                         <i class="halflings halflings-pencil"></i>
                         <span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
                     </a>
                     
-                    <button type="button" class="btn btn-default dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button type="button" class="btn btn-secondary dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="caret"></span>
                     </button>
                     
@@ -87,21 +87,21 @@
 
                 <div class="btn-group btn-group-sm single-edit" role="group">
                     <!-- Edit -->
-                    <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link edit">
+                    <a href="#" data-url="${editUrl}" onclick="setCallbackFromEcmParams('${callbackUrl}', '${ecmBaseUrl}')" class="btn btn-secondary navbar-btn fancyframe_refresh no-ajax-link edit">
                         <span><op:translate key="EDIT" /></span>
                     </a>
 
                     <!-- Drive edit -->
-                    <a href="#" class="btn btn-default navbar-btn drive-edit">
+                    <a href="#" class="btn btn-secondary navbar-btn drive-edit">
                         <span><op:translate key="DRIVE_EDIT" /></span>
                     </a> 
                     
-                    <a href="#" class="no-ajax-link btn btn-default navbar-btn onlyoffice-edit-lock">
+                    <a href="#" class="no-ajax-link btn btn-secondary navbar-btn onlyoffice-edit-lock">
                         <i class="halflings halflings-pencil"></i>
                         <span><op:translate key="ONLYOFFICE_EDIT_LOCK" /></span>
                     </a>
                     
-                    <button type="button" class="btn btn-default dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button type="button" class="btn btn-secondary dropdown-toggle navbar-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="caret"></span>
                     </button>
                     
@@ -123,27 +123,27 @@
 
                 <div class="btn-group btn-group-sm single-selection" role="group">
                     <!-- Read online -->
-                    <a href="#" class="btn btn-default navbar-btn no-ajax-link onlyoffice-read">
+                    <a href="#" class="btn btn-secondary navbar-btn no-ajax-link onlyoffice-read">
                         <span><op:translate key="ONLYOFFICE_VIEW" /></span>
                     </a>
 
                     <!-- Download -->
                     <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
-                    <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link download">
+                    <a href="#" target="_blank" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn no-ajax-link download">
                         <i class="halflings halflings-download-alt"></i>
                         <span class="sr-only">${title}</span>
                     </a>
 
                     <!-- Gallery -->
                     <c:set var="title"><op:translate key="VIEW_PICTURE_GALLERY" /></c:set>
-                    <button type="button" onclick="gallery(this)" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn gallery">
+                    <button type="button" onclick="gallery(this)" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn gallery">
                         <i class="halflings halflings-fullscreen"></i>
                         <span class="sr-only">${title}</span>
                     </button>
 
                     <!-- Copy -->
                     <c:set var="title"><op:translate key="COPY" /></c:set>
-                    <a href="#" data-url="${copyUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn copy">
+                    <a href="#" data-url="${copyUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn copy">
                         <i class="halflings halflings-duplicate"></i>
                         <span class="sr-only">${title}</span>
                     </a>
@@ -152,7 +152,7 @@
                 <div class="btn-group btn-group-sm bulk-download" role="group">
                     <!-- Zip Download -->
                     <c:set var="title"><op:translate key="DOWNLOAD" /></c:set>
-                    <a href="#" data-url="${zipDownloadUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn no-ajax-link force-tooltip download" data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}">
+                    <a href="#" data-url="${zipDownloadUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn no-ajax-link force-tooltip download" data-message-not-file="${messageNotFile}" data-message-too-large="${messageTooLarge}" data-message-ok="${title}">
                         <i class="halflings halflings-download-alt"></i>
                         <span class="sr-only">${title}</span>
                     </a>
@@ -161,14 +161,14 @@
                 <div class="btn-group btn-group-sm multiple-selection" role="group">
                     <!-- Move -->
                     <c:set var="title"><op:translate key="MOVE" /></c:set>
-                    <a href="#" data-url="${moveUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn fancyframe_refresh no-ajax-link move">
+                    <a href="#" data-url="${moveUrl}" title="${title}" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn fancyframe_refresh no-ajax-link move">
                         <i class="halflings halflings-move"></i>
                         <span class="sr-only">${title}</span>
                     </a>
 
                     <!-- Delete -->
                     <c:set var="title"><op:translate key="DELETE" /></c:set>
-					<a href="javascript:;" title="${title}" data-fancybox data-src="#${namespace}-delete" data-toggle="tooltip" data-placement="top" class="btn btn-default navbar-btn delete">                    
+					<a href="javascript:;" title="${title}" data-fancybox data-src="#${namespace}-delete" data-toggle="tooltip" data-placement="top" class="btn btn-secondary navbar-btn delete">
                         <i class="halflings halflings-trash"></i>
                         <span class="sr-only">${title}</span>
                     </a>
@@ -205,11 +205,11 @@
 
             <div class="form-group text-center">
                 <button type="submit" class="btn btn-warning">
-                    <i class="halflings halflings-alert"></i>
+                    <i class="glyphicons glyphicons-basic-triangle-alert"></i>
                     <span><op:translate key="YES" /></span>
                 </button>
 
-                <button type="button" onclick="closeFancybox()" class="btn btn-default">
+                <button type="button" onclick="closeFancybox()" class="btn btn-secondary">
                     <span><op:translate key="NO" /></span>
                 </button>
             </div>

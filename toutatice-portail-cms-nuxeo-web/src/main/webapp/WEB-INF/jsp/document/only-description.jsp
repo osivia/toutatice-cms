@@ -29,7 +29,7 @@
     
     <!-- Continuation button -->
     <div class="text-right">
-        <a href="${documentURL}" class="btn btn-default btn-sm">
+        <a href="${documentURL}" class="btn btn-secondary btn-sm">
             <i class="halflings halflings-zoom-in"></i>
             <span><op:translate key="CONTINUATION" />...</span>
         </a>

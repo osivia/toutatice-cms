@@ -142,7 +142,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         panel.add(panelBody);
 
         // Add comment toggle button
-        Element addToggle = DOM4JUtils.generateLinkElement("#" + namespace + "-add-comment", null, null, "btn btn-default no-ajax-link",
+        Element addToggle = DOM4JUtils.generateLinkElement("#" + namespace + "-add-comment", null, null, "btn btn-secondary no-ajax-link",
                 bundle.getString("COMMENT_ADD"), "glyphicons glyphicons-chat");
         DOM4JUtils.addDataAttribute(addToggle, "toggle", "collapse");
         panelBody.add(addToggle);
@@ -187,7 +187,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         addButtonsFormGroup.add(addSubmit);
 
         // Add comment cancel button
-        Element addCancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CANCEL"));
+        Element addCancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-secondary", bundle.getString("CANCEL"));
         DOM4JUtils.addAttribute(addCancel, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(addCancel, HTMLConstants.ONCLICK, "$JQry('#" + namespace + "-add-comment').collapse('hide')");
         addButtonsFormGroup.add(addCancel);
@@ -249,12 +249,12 @@ public class CommentsTag extends ToutaticeSimpleTag {
         formGroup.add(buttonsContainer);
 
         // Submit
-        Element submit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "halflings halflings-alert", null);
+        Element submit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "glyphicons glyphicons-basic-triangle-alert", null);
         DOM4JUtils.addAttribute(submit, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         buttonsContainer.add(submit);
 
         // Cancel
-        Element cancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        Element cancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-secondary", bundle.getString("NO"));
         DOM4JUtils.addAttribute(cancel, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(cancel, HTMLConstants.ONCLICK, "closeFancybox()");
         buttonsContainer.add(cancel);
@@ -445,7 +445,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         replyUrlBuilder.append(namespace);
         replyUrlBuilder.append("-reply-comment-");
         replyUrlBuilder.append(comment.getId());
-        Element reply = DOM4JUtils.generateLinkElement(replyUrlBuilder.toString(), null, null, "btn btn-default no-ajax-link", bundle.getString("REPLY"),
+        Element reply = DOM4JUtils.generateLinkElement(replyUrlBuilder.toString(), null, null, "btn btn-secondary no-ajax-link", bundle.getString("REPLY"),
                 "glyphicons glyphicons-chat");
         DOM4JUtils.addDataAttribute(reply, "toggle", "collapse");
         group.add(reply);
@@ -456,7 +456,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
             deleteUrlBuilder.append("#");
             deleteUrlBuilder.append(namespace);
             deleteUrlBuilder.append("-delete-comment");
-            Element delete = DOM4JUtils.generateLinkElement("javascript:;", null, null, "btn btn-default",
+            Element delete = DOM4JUtils.generateLinkElement("javascript:;", null, null, "btn btn-secondary",
                     bundle.getString("DELETE"), "halflings halflings-trash");
             DOM4JUtils.addDataAttribute(delete, "fancybox", StringUtils.EMPTY);
             DOM4JUtils.addDataAttribute(delete, "src", deleteUrlBuilder.toString());
@@ -567,7 +567,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         DOM4JUtils.addAttribute(submitButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         group2.add(submitButton);
 
-        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("CANCEL"));
+        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-secondary", bundle.getString("CANCEL"));
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "$JQry(this).closest('.collapse').collapse('hide')");
         group2.add(cancelButton);

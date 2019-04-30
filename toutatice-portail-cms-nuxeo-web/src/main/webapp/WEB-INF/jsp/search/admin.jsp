@@ -22,8 +22,8 @@
         <!-- Buttons -->
         <div class="form-group">
             <div class="col-sm-offset-4 col-sm-8">
-                <button type="submit" class="btn btn-default btn-primary"><op:translate key="SAVE" /></button>
-                <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
+                <button type="submit" class="btn btn-secondary btn-primary"><op:translate key="SAVE" /></button>
+                <button type="button" class="btn btn-secondary" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
             </div>
         </div>
     </form>

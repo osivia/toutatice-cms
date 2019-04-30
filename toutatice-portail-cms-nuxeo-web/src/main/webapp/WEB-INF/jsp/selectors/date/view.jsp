@@ -67,7 +67,7 @@
                 <p class="text-right clearfix">
                     <span class="form-control-static pull-left">${interval[0]} - ${interval[1]}</span>
                     
-                    <a href="${deleteActionURL}" class="btn btn-default">
+                    <a href="${deleteActionURL}" class="btn btn-secondary">
                         <i class="halflings halflings-trash"></i>
                         <span class="sr-only"><op:translate key="DELETE" /></span>
                     </a>
@@ -87,7 +87,7 @@
                 </div>
                 
                 <div class="media-right">
-                    <button type="submit" class="btn btn-default">
+                    <button type="submit" class="btn btn-secondary">
                         <i class="${glyphicon}"></i>
                         <span class="sr-only">${title}</span>
                     </button>

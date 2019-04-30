@@ -22,5 +22,5 @@
 		</div>
 	</div>
 	<button class="btn btn-primary" type="submit"><op:translate key="RENAME_DOCUMENT"/></button>
-	<button class="btn btn-default pull-right" type="button" data-dismiss="modal"><op:translate key="CANCEL"/></button>
+	<button class="btn btn-secondary pull-right" type="button" data-dismiss="modal"><op:translate key="CANCEL"/></button>
 </form>

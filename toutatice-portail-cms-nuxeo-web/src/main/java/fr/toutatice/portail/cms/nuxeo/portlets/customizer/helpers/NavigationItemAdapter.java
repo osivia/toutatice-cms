@@ -77,7 +77,7 @@ public class NavigationItemAdapter {
      */
 	protected boolean isDisplayedAsAPage(Document document)	{
         String type = document.getType();
-        return ("PortalPage".equals(type) || "SimplePage".equals(type) || "Staple".equals(type));
+        return ("PortalPage".equals(type) || "SimplePage".equals(type) || "Staple".equals(type) || "Folder".equals(type));
 	}
 
 

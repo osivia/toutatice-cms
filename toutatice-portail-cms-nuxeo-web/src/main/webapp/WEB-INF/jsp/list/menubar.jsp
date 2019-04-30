@@ -37,7 +37,7 @@
                         <div id="${namespace}-permalink-link" class="col-sm-10"><a href="${permaLinkURL}">${permaLinkURL}</a></div>
                         
                         <div class="col-sm-2">
-                            <button type="button" class="btn btn-default pull-right" data-clipboard-target="#${namespace}-permalink-link">
+                            <button type="button" class="btn btn-secondary pull-right" data-clipboard-target="#${namespace}-permalink-link">
                                 <i class="halflings halflings-copy"></i>
                                 <span><op:translate key="COPY_PERMALINK" /></span>
                             </button>
