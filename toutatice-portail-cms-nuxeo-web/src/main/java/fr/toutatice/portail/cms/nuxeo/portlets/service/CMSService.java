@@ -135,6 +135,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.TaskDirective;
+import fr.toutatice.portail.cms.nuxeo.portlets.binaries.FetchByShareLinkCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
@@ -582,6 +583,42 @@ public class CMSService implements ICMSService {
         return content;
     }
 
+    
+    @Override
+    public CMSItem getByShareId(CMSServiceCtx cmsContext, String shareId) throws CMSException {
+        // Content
+        CMSItem content = null;
+        // Saved scope
+        String savedScope = cmsContext.getScope();
+        try {
+            
+            cmsContext.setScope("superuser_no_cache");
+           
+            // Document
+            Documents docs = (Documents) this.executeNuxeoCommand(cmsContext, new FetchByShareLinkCommand(shareId));
+            
+            if( docs.size() != 1)   {
+                throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+            }
+
+            content = new CMSItem(docs.get(0).getPath(), null, null, null, docs.get(0));
+            
+            
+        } catch (NuxeoException e) {
+            e.rethrowCMSException();
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        } 
+        finally {
+            cmsContext.setScope(savedScope);
+        }        
+
+        return content;   
+    }
+
+    
 
     @Override
     public CMSBinaryContent getBinaryContent(CMSServiceCtx cmsCtx, String type, String docPath, String parameter) throws CMSException {

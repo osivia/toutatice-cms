@@ -1915,6 +1915,30 @@ public class NuxeoController {
         }
     }
 
+    
+    /**
+     * Fetch a document by its sharedID.
+     *
+     * @param path the path
+     * @param reload force reloading of the document (no cache)
+     * @return the document
+     * @throws Exception the exception
+     */
+    public Document fetchSharedDocument(String shareId) {
+
+
+        try {
+            CMSServiceCtx cmsCtx = this.getCMSCtx();
+
+            CMSItem cmsItem = getCMSService().getByShareId(cmsCtx, shareId);
+            return (Document) cmsItem.getNativeItem();
+
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
+    }
+    
+    
 
     /**
      * Fetch a document by its path.

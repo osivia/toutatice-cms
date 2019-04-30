@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -153,6 +154,10 @@ public class BinaryServlet extends HttpServlet {
             // Path
             String path = null;
             
+            // Force download
+            boolean forceDownload = false;
+            long    expirationTimeout =  TimeUnit.MINUTES.toMillis(10);
+       
              
             /* PROTOTYPE Intégration visionneuse */
               
@@ -166,23 +171,25 @@ public class BinaryServlet extends HttpServlet {
             int linkIndex = request.getRequestURI().indexOf(LINK_PATH);
             if (linkIndex != -1) {
                 String shareId = request.getRequestURI().substring(linkIndex + LINK_PATH.length());
+
                 
+                Document doc = nuxeoController.fetchSharedDocument(shareId);
+                path = doc.getPath();
+                
+                binaryType = Type.FILE;
+                fieldName = "pdf:content";   
+                forceDownload = true;
+                String format =  doc.getString("rshr:format");
+                if( "native".equals(format))
+                    fieldName = "file:content";  
+                // This is a permalink : not managed by ts variable
+                expirationTimeout = 1L;
+                
+                //TODO : Add to delegation
                 nuxeoController.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
                 nuxeoController.setForcePublicationInfosScope("superuser_context");
                 
-
-                // Control if instance exists
-                Documents docs = (Documents) nuxeoController.executeNuxeoCommand(new FetchByShareLinkCommand(shareId));
-                if( docs.size() != 1)   {
-                    throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-                }
                 
-                path = docs.get(0).getPath();
-                binaryType = Type.FILE;
-                fieldName = "pdf:content";   
-                String format =  docs.get(0).getString("rshr:format");
-                if( "native".equals(format))
-                    fieldName = "file:content";   
             }   else    {
                 // Document path
                  path = request.getParameter("path");
@@ -227,6 +234,7 @@ public class BinaryServlet extends HttpServlet {
 
             // Binary content
             CMSBinaryContent content = null;
+
             
             String loggerPath = "";
             if (Type.ATTACHED_PICTURE.equals(binaryType)) {
@@ -256,7 +264,7 @@ public class BinaryServlet extends HttpServlet {
                 
                 long begin = System.currentTimeMillis();
                 
-                this.stream(request, response, content, output);
+                this.stream(request, response, content, output, forceDownload);
                 
                 long end = System.currentTimeMillis();
                 
@@ -270,11 +278,11 @@ public class BinaryServlet extends HttpServlet {
                 // Last modified
                 long lastModified = System.currentTimeMillis();
                 // Expires
-                long expires = lastModified + BINARY_TIMEOUT;
+                long expires = lastModified + expirationTimeout;
 
                 response.setContentType(content.getMimeType());
-                response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content));
-                response.setHeader("Cache-Control", "max-age=" + BINARY_TIMEOUT);
+                response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content, forceDownload));
+                response.setHeader("Cache-Control", "max-age=" + expirationTimeout);
                 response.setHeader("Content-Length", String.valueOf(content.getFileSize()));
 
                 String fileName = request.getParameter("fileName");
@@ -324,9 +332,10 @@ public class BinaryServlet extends HttpServlet {
      *
      * @param request HTTP servlet request
      * @param content CMS binary content
+     * @param forceDownload force the download 
      * @return content disposition
      */
-    private String getHeaderContentDisposition(HttpServletRequest request, CMSBinaryContent content) {
+    private String getHeaderContentDisposition(HttpServletRequest request, CMSBinaryContent content, boolean forceDownload) {
         String fileName = request.getParameter("fileName");
         if (fileName == null) {
             fileName = content.getName();
@@ -334,8 +343,14 @@ public class BinaryServlet extends HttpServlet {
 
         StringBuilder builder = new StringBuilder();
         if ("application/pdf".equals(content.getMimeType())) {
+            
+            if( forceDownload) {
+                // Force download
+                builder.append("attachment; ");
+            }   else    {
             // Open inside navigator
             builder.append("inline; ");
+            }
         } else {
             // Force download
             builder.append("attachment; ");
@@ -347,7 +362,7 @@ public class BinaryServlet extends HttpServlet {
     }
 
 
-    private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output) throws IOException {
+    private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output, boolean forceDownload) throws IOException {
         // Length
         long length = content.getFileSize();
         // Last modified
@@ -360,7 +375,7 @@ public class BinaryServlet extends HttpServlet {
             contentType = "application/octet-stream";
         }
         // Content disposition
-        String disposition = this.getHeaderContentDisposition(request, content);
+        String disposition = this.getHeaderContentDisposition(request, content, forceDownload);
 
 
         // Validate request headers for resume : If-Unmodified-Since header should be greater than LastModified.
