@@ -49,7 +49,7 @@
                                 <span><op:translate key="FILE_BROWSER_START_UPLOAD" /></span>
                             </button>
                             
-                            <button type="reset" class="btn btn-default cancel">
+                            <button type="reset" class="btn btn-secondary cancel">
                                 <i class="halflings halflings-ban-circle"></i>
                                 <span><op:translate key="CANCEL" /></span>
                             </button>

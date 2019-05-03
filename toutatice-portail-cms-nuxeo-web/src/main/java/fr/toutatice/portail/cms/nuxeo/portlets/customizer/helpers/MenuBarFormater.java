@@ -540,7 +540,7 @@ public class MenuBarFormater {
      */
     public void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
-                "glyphicons glyphicons-pencil", MenubarGroup.CMS, 6, false, false);
+                "glyphicons glyphicons-basic-pencil", MenubarGroup.CMS, 6, false, false);
         dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
@@ -554,7 +554,7 @@ public class MenuBarFormater {
      * @param bundle internationalization bundle
      */
     public void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
-        MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-share-alt",
+        MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-basic-share",
                 MenubarGroup.GENERIC, 8);
         dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
@@ -570,7 +570,7 @@ public class MenuBarFormater {
      */
     public void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
-                "glyphicons glyphicons-option-vertical", MenubarGroup.GENERIC, 40, false, false);
+                "glyphicons glyphicons-basic-more-vertical", MenubarGroup.GENERIC, 40, false, false);
         dropdown.setBreadcrumb(true);
         this.menubarService.addDropdown(portalControllerContext, dropdown);
     }
@@ -628,7 +628,7 @@ public class MenuBarFormater {
 
             if (pubInfos.isDraft()) {
                 // Draft indicator
-                MenubarItem indicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12, "label label-info");
+                MenubarItem indicator = new MenubarItem("DRAFT", bundle.getString("DRAFT"), MenubarGroup.CMS, -12, "badge badge-info");
                 indicator.setState(true);
                 menubar.add(indicator);
 
@@ -638,7 +638,7 @@ public class MenuBarFormater {
                     String path = NuxeoController.webIdToCmsPath(webId);
                     String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
 
-                    MenubarItem item = new MenubarItem("GO_TO_DRAFT_SOURCE", bundle.getString("GO_TO_DRAFT_SOURCE"), "glyphicons glyphicons-undo", dropdown,
+                    MenubarItem item = new MenubarItem("GO_TO_DRAFT_SOURCE", bundle.getString("GO_TO_DRAFT_SOURCE"), "glyphicons glyphicons-basic-undo", dropdown,
                             order, url, null, null, null);
                     item.setAjaxDisabled(true);
 
@@ -649,7 +649,7 @@ public class MenuBarFormater {
                 String path = pubInfos.getDraftPath();
                 String url = this.portalUrlFactory.getCMSUrl(portalControllerContext, null, path, null, null, null, null, null, null, null);
 
-                MenubarItem item = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-redo", dropdown, order, url, null,
+                MenubarItem item = new MenubarItem("GO_TO_DRAFT", bundle.getString("GO_TO_DRAFT"), "glyphicons glyphicons-basic-redo", dropdown, order, url, null,
                         null, null);
                 item.setAjaxDisabled(true);
 
@@ -672,7 +672,7 @@ public class MenuBarFormater {
 
             String title = bundle.getString("DRAFTS_LIST");
 
-            MenubarItem item = new MenubarItem("DRAFTS_LIST", title, "glyphicons glyphicons-construction-cone", MenubarGroup.CMS, 4, "#", null, null, null);
+            MenubarItem item = new MenubarItem("DRAFTS_LIST", title, "glyphicons glyphicons-basic-construction-cone", MenubarGroup.CMS, 4, "#", null, null, null);
             item.getData().put("target", "#osivia-modal");
             item.getData().put("load-url", url);
             item.getData().put("title", title);
@@ -726,7 +726,7 @@ public class MenuBarFormater {
                     if (!DocumentHelper.isRemoteProxy(cmsContext, pubInfos) && pubInfos.isBeingModified()) {
                         // Current modification indicator
                         MenubarItem modificationIndicator = new MenubarItem("MODIFICATION_MESSAGE", bundle.getString("MODIFICATION_MESSAGE"), MenubarGroup.CMS,
-                                -12, "label label-default");
+                                -12, "badge badge-secondary");
                         modificationIndicator.setState(true);
                         menubar.add(modificationIndicator);
                     }
@@ -736,8 +736,8 @@ public class MenuBarFormater {
 
                         // Live version indicator menubar item
                         final MenubarItem liveIndicator = new MenubarItem("LIVE_VERSION", bundle.getString("LIVE_VERSION"), MenubarGroup.CMS, -12,
-                                "label label-info");
-                        liveIndicator.setGlyphicon("halflings halflings-pencil visible-xs-inline-block");
+                                "badge badge-info");
+                        liveIndicator.setGlyphicon("glyphicons glyphicons-basic-pencil");
                         liveIndicator.setState(true);
 
                         menubar.add(liveIndicator);
@@ -746,8 +746,8 @@ public class MenuBarFormater {
                         if ((extendedInfos != null) && extendedInfos.isOnlineTaskPending()) {
                             // Online workflow pending indicator menubar item
                             final MenubarItem pendingIndicator = new MenubarItem("ON_LINE_WF_PENDING", bundle.getString("ON_LINE_WF_PENDING"), MenubarGroup.CMS,
-                                    -11, "label label-warning");
-                            pendingIndicator.setGlyphicon("glyphicons glyphicons-history");
+                                    -11, "badge badge-warning");
+                            pendingIndicator.setGlyphicon("glyphicons glyphicons-basic-history");
                             pendingIndicator.setState(true);
 
                             menubar.add(pendingIndicator);
@@ -794,7 +794,7 @@ public class MenuBarFormater {
                                     // Erase modifications
                                     String cmsEraseModificationURL = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path,
                                             EcmCommonCommands.eraseModifications);
-                                    MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "halflings halflings-erase", parent, 11,
+                                    MenubarItem eraseItem = new MenubarItem("ERASE", bundle.getString("ERASE"), "glyphicons glyphicons-basic-eraser", parent, 11,
                                             "javascript:;", null, null, null);
                                     eraseItem.getData().put("fancybox", StringUtils.EMPTY);
                                     eraseItem.getData().put("src", "#erase_cms_page");
@@ -806,7 +806,7 @@ public class MenuBarFormater {
                                     final String publishURL = this.contributionService.getPublishContributionURL(portalControllerContext,
                                             pubInfos.getDocumentPath());
 
-                                    final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-ok", parent,
+                                    final MenubarItem publishItem = new MenubarItem("PUBLISH", bundle.getString("PUBLISH"), "glyphicons glyphicons-basic-circle-check", parent,
                                             12, publishURL, null, null, null);
                                     publishItem.setAjaxDisabled(true);
                                     publishItem.setDivider(true);
@@ -830,7 +830,7 @@ public class MenuBarFormater {
                         if (pubInfos.isPublished()) {
                             final String proxyURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
 
-                            final MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), "halflings halflings-eye-close",
+                            final MenubarItem proxyItem = new MenubarItem("PROXY_RETURN", bundle.getString("PROXY_RETURN"), "glyphicons glyphicons-basic-eye-off",
                                     parent, 1, proxyURL, null, null, null);
                             proxyItem.setAjaxDisabled(true);
 
@@ -861,7 +861,7 @@ public class MenuBarFormater {
 
                         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
 
-                            final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "halflings halflings-eye-open", parent,
+                            final MenubarItem liveItem = new MenubarItem("GO_TO_LIVE", bundle.getString("GO_TO_LIVE"), "glyphicons glyphicons-basic-eye", parent,
                                     1, null, null, null, null);
                             liveItem.setAjaxDisabled(true);
 
@@ -884,7 +884,7 @@ public class MenuBarFormater {
                             // Go to preview menubar item
                             final String previewURL = this.contributionService.getChangeEditionStateUrl(portalControllerContext, editionState);
 
-                            final MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), "halflings halflings-eye-open",
+                            final MenubarItem previewItem = new MenubarItem("LIVE_PREVIEW", bundle.getString("LIVE_PREVIEW"), "glyphicons glyphicons-basic-eye",
                                     parent, 1, previewURL, null, null, null);
                             previewItem.setAjaxDisabled(true);
 
@@ -926,14 +926,14 @@ public class MenuBarFormater {
             List<MenubarItem> menubar, MenubarContainer parent, Bundle bundle) throws CMSException {
         // Validate
         final String validateURL = this.contributionService.getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        final MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-ok", parent, 13,
+        final MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-basic-circle-check", parent, 13,
                 validateURL, null, null, null);
         validateItem.setAjaxDisabled(true);
         menubar.add(validateItem);
 
         // Reject
         final String rejectURL = this.contributionService.getRejectPublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
-        final MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "glyphicons glyphicons-remove", parent, 14,
+        final MenubarItem rejectItem = new MenubarItem("ONLINE_WF_REJECT", bundle.getString("REJECT_PUBLISH"), "glyphicons glyphicons-basic-circle-remove", parent, 14,
                 rejectURL, null, null, null);
         rejectItem.setAjaxDisabled(true);
         menubar.add(rejectItem);
@@ -1004,7 +1004,7 @@ public class MenuBarFormater {
 
             final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
-            final MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-book-open",
+            final MenubarItem browserItem = new MenubarItem("BROWSE_LIVE_CONTENT", bundle.getString("BROWSE_LIVE_CONTENT"), "glyphicons glyphicons-basic-book-open",
                     parent, 50, browserURL, null, null, "fancyframe_refresh");
             browserItem.setAjaxDisabled(true);
             browserItem.setDivider(true);
@@ -1046,8 +1046,8 @@ public class MenuBarFormater {
             ecmAction = EcmCommonCommands.unsynchronizeFolder;
 
             // Synchronized indicator menubar item
-            final MenubarItem synchronizedIndicator = new MenubarItem("SYNCHRONIZED", null, MenubarGroup.CMS, -2, "label label-success");
-            synchronizedIndicator.setGlyphicon("halflings halflings-refresh");
+            final MenubarItem synchronizedIndicator = new MenubarItem("SYNCHRONIZED", null, MenubarGroup.CMS, -2, "badge badge-success");
+            synchronizedIndicator.setGlyphicon("glyphicons glyphicons-basic-sync");
             synchronizedIndicator.setTooltip(bundle.getString("SYNCHRONIZED"));
             synchronizedIndicator.setState(true);
             menubar.add(synchronizedIndicator);
@@ -1112,24 +1112,24 @@ public class MenuBarFormater {
                             url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.subscribe);
 
                             subscribeItem.setUrl(url);
-                            subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-basic-flag");
                             subscribeItem.setTitle(bundle.getString("SUBSCRIBE_ACTION"));
                         } else if (subscriptionStatus == SubscriptionStatus.CAN_UNSUBSCRIBE) {
                             url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unsubscribe);
 
                             subscribeItem.setUrl(url);
-                            subscribeItem.setGlyphicon("glyphicons glyphicons-ban-circle");
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-basic-no-symbol");
                             subscribeItem.setTitle(bundle.getString("UNSUBSCRIBE_ACTION"));
 
                             // Subscribed indicator menubar item
-                            final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "label label-success");
-                            subscribedIndicator.setGlyphicon("halflings halflings-flag");
+                            final MenubarItem subscribedIndicator = new MenubarItem("SUBSCRIBED", null, MenubarGroup.CMS, -3, "badge badge-success");
+                            subscribedIndicator.setGlyphicon("glyphicons glyphicons-basic-flag");
                             subscribedIndicator.setTooltip(bundle.getString("SUBSCRIBED"));
                             subscribedIndicator.setState(true);
                             menubar.add(subscribedIndicator);
                         } else if (subscriptionStatus == SubscriptionStatus.HAS_INHERITED_SUBSCRIPTIONS) {
                             subscribeItem.setUrl("#");
-                            subscribeItem.setGlyphicon("glyphicons glyphicons-flag");
+                            subscribeItem.setGlyphicon("glyphicons glyphicons-basic-flag");
                             subscribeItem.setTitle(bundle.getString("INHERITED_SUBSCRIPTION"));
                             subscribeItem.setDisabled(true);
                         }
@@ -1218,20 +1218,20 @@ public class MenuBarFormater {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.lock);
 
                     lockItem.setUrl(url);
-                    lockItem.setGlyphicon("glyphicons glyphicons-lock");
+                    lockItem.setGlyphicon("glyphicons glyphicons-basic-lock");
                     lockItem.setTitle(bundle.getString("LOCK_ACTION"));
                 } else if (lockStatus == LockStatus.CAN_UNLOCK) {
                     url = this.portalUrlFactory.getEcmCommandUrl(portalControllerContext, path, EcmCommonCommands.unlock);
 
                     lockItem.setUrl(url);
-                    lockItem.setGlyphicon("glyphicons glyphicons-unlock");
+                    lockItem.setGlyphicon("glyphicons glyphicons-basic-lock-open");
                     lockItem.setTitle(bundle.getString("UNLOCK_ACTION"));
 
                     menubar.add(this.makeLockedIndicator(cmsContext, bundle, extendedInfos));
 
                 } else if (lockStatus == LockStatus.LOCKED) {
                     lockItem.setUrl("#");
-                    lockItem.setGlyphicon("glyphicons glyphicons-lock");
+                    lockItem.setGlyphicon("glyphicons glyphicons-basic-lock");
                     lockItem.setTitle(bundle.getString("INHERITED_LOCK"));
                     lockItem.setDisabled(true);
 
@@ -1254,13 +1254,11 @@ public class MenuBarFormater {
      * @param cmsContext
      * @param bundle
      * @param extendedInfos
-     * @param lockedIndicator
-     *
      */
     protected MenubarItem makeLockedIndicator(CMSServiceCtx cmsContext, Bundle bundle, ExtendedDocumentInfos extendedInfos) {
         // Locked indicator menubar item
-        final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "label label-warning");
-        lockedIndicator.setGlyphicon("halflings halflings-lock");
+        final MenubarItem lockedIndicator = new MenubarItem("LOCKED", null, MenubarGroup.CMS, -1, "badge badge-warning");
+        lockedIndicator.setGlyphicon("glyphicons glyphicons-basic-lock");
 
         // Display name of lock owner
         String displayName = this.getUserDisplayName(extendedInfos);
@@ -1273,7 +1271,7 @@ public class MenuBarFormater {
         String currentUser = cmsContext.getRequest().getRemoteUser();
         boolean currentUserIsOwner = StringUtils.equals(currentUser, extendedInfos.getLockOwner());
         if (currentUserIsOwner) {
-            lockedIndicator.setGlyphicon("glyphicons glyphicons-user-lock");
+            lockedIndicator.setGlyphicon("glyphicons glyphicons-basic-user-lock");
             lockedIndicator.setTooltip(bundle.getString("LOCKED"));
         }
         return lockedIndicator;
@@ -1450,7 +1448,7 @@ public class MenuBarFormater {
                 // Edition dropdown
                 MenubarDropdown editionDropdown = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
                 // Rename menu item
-                MenubarItem renameMenubarItem = new MenubarItem("RENAME", bundle.getString("RENAME"), "glyphicons glyphicons-edit", editionDropdown,
+                MenubarItem renameMenubarItem = new MenubarItem("RENAME", bundle.getString("RENAME"), "glyphicons glyphicons-basic-square-edit", editionDropdown,
                         0, HTMLConstants.A_HREF_DEFAULT, null, null, null);
                 renameMenubarItem.getData().put("target", "#osivia-modal");
                 renameMenubarItem.getData().put("load-url", renameDocumentUrl);
@@ -1490,7 +1488,7 @@ public class MenuBarFormater {
         // Identifier
         String id = "EDIT";
         // Icon
-        String icon = "glyphicons glyphicons-pencil";
+        String icon = "glyphicons glyphicons-basic-pencil";
         // Parent
         MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
@@ -1621,7 +1619,7 @@ public class MenuBarFormater {
                     MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
                     MenubarItem item = new MenubarItem("Move", bundle.getString("MOVE"), parent, 2, null);
-                    item.setGlyphicon("glyphicons glyphicons-move");
+                    item.setGlyphicon("glyphicons glyphicons-basic-block-move");
 
                     if (StringUtils.isEmpty(url)) {
                         item.setUrl("#");
@@ -1685,7 +1683,7 @@ public class MenuBarFormater {
                 if (reorderDocumentsURL != null) {
                     final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
-                    final MenubarItem item = new MenubarItem("REORDER", bundle.getString("REORDER"), "glyphicons glyphicons-sorting", parent, 3,
+                    final MenubarItem item = new MenubarItem("REORDER", bundle.getString("REORDER"), "glyphicons glyphicons-basic-sort", parent, 3,
                             reorderDocumentsURL, null, null, "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
@@ -1797,14 +1795,14 @@ public class MenuBarFormater {
                     String url = entry.getValue();
 
                     // Menubar item
-                    MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.ADD, 0, url, null, onclick,
+                    MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), "glyphicons glyphicons-basic-plus", MenubarGroup.ADD, 0, url, null, onclick,
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
 
                     menubar.add(item);
                 } else if (size > 0) {
                     // Dropdown menu
-                    MenubarDropdown dropdown = new MenubarDropdown("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.ADD, 0);
+                    MenubarDropdown dropdown = new MenubarDropdown("ADD", bundle.getString("ADD"), "glyphicons glyphicons-basic-plus", MenubarGroup.ADD, 0);
                     this.menubarService.addDropdown(portalControllerContext, dropdown);
 
                     int order = 1;
@@ -1886,7 +1884,7 @@ public class MenuBarFormater {
                 if (pubInfos.isDraft()) {
                     itemLabel = bundle.getString("DELETE_DRAFT");
                 }
-                final MenubarItem item = new MenubarItem("DELETE", itemLabel, "glyphicons glyphicons-bin", parent, 20, null, null, null, null);
+                final MenubarItem item = new MenubarItem("DELETE", itemLabel, "glyphicons glyphicons-basic-bin", parent, 20, null, null, null, null);
                 item.setAjaxDisabled(true);
                 item.setDivider(true);
 
@@ -1942,13 +1940,13 @@ public class MenuBarFormater {
      * Generate erase confirmation fancybox.
      *
      * @param bundle bundle
-     * @param urlDelete the command for delete
+     * @param urlErase the command for delete
      * @return fancybox DOM element
      * @throws UnsupportedEncodingException
      */
     private String generateEraseFancyBox(Bundle bundle, String urlErase) {
         // Root
-        Element root = DOM4JUtils.generateDivElement("hidden");
+        Element root = DOM4JUtils.generateDivElement("d-none");
 
         // Container
         Element container = DOM4JUtils.generateDivElement("container-fluid text-center");
@@ -1960,12 +1958,12 @@ public class MenuBarFormater {
         container.add(message);
 
         // OK button
-        Element okButton = DOM4JUtils.generateLinkElement(urlErase, null, null, "btn btn-default btn-warning", bundle.getString("YES"),
-                "halflings halflings-alert");
+        Element okButton = DOM4JUtils.generateLinkElement(urlErase, null, null, "btn btn-warning", bundle.getString("YES"),
+                "glyphicons glyphicons-basic-triangle-alert");
         container.add(okButton);
 
         // Cancel button
-        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-secondary", bundle.getString("NO"));
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "closeFancybox()");
         container.add(cancelButton);
@@ -1985,7 +1983,7 @@ public class MenuBarFormater {
      */
     private String generateDeleteConfirmationFancybox(Map<String, String> properties, Bundle bundle, String fancyboxId, String actionURL) {
         // Fancybox container
-        final Element fancyboxContainer = DOM4JUtils.generateDivElement("hidden");
+        final Element fancyboxContainer = DOM4JUtils.generateDivElement("d-none");
 
         // Container
         final Element container = DOM4JUtils.generateDivElement(null);
@@ -2012,13 +2010,13 @@ public class MenuBarFormater {
         }
 
         // OK button
-        final Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "halflings halflings-alert",
+        final Element okButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "glyphicons glyphicons-basic-triangle-alert",
                 null);
         DOM4JUtils.addAttribute(okButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         form.add(okButton);
 
         // Cancel button
-        final Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        final Element cancelButton = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-secondary", bundle.getString("NO"));
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(cancelButton, HTMLConstants.ONCLICK, "closeFancybox()");
         form.add(cancelButton);
@@ -2040,7 +2038,7 @@ public class MenuBarFormater {
      */
     protected void addContextualizationLinkItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar,
             Bundle bundle, String displayName, String url) throws CMSException {
-        final MenubarItem item = new MenubarItem("CONTEXTUALIZE", bundle.getString("CONTEXTUALIZE_SPACE", displayName), "halflings halflings-level-up",
+        final MenubarItem item = new MenubarItem("CONTEXTUALIZE", bundle.getString("CONTEXTUALIZE_SPACE", displayName), "glyphicons glyphicons-basic-step-forward",
                 MenubarGroup.SPECIFIC, 1, url, null, null, null);
         item.setAjaxDisabled(true);
 
@@ -2148,7 +2146,7 @@ public class MenuBarFormater {
         MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.SHARE_DROPDOWN_MENU_ID);
 
         // Menubar item
-        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-link", parent, 1, "#", null, null, null);
+        MenubarItem item = new MenubarItem("PERMALINK", bundle.getString("PERMALINK"), "glyphicons glyphicons-basic-link", parent, 1, "#", null, null, null);
         item.getData().put("toggle", "modal");
         item.getData().put("target", "#" + id);
         item.setAjaxDisabled(true);
@@ -2191,7 +2189,7 @@ public class MenuBarFormater {
 
             final MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.SHARE_DROPDOWN_MENU_ID);
 
-            final MenubarItem item = new MenubarItem("SHARE_BY_EMAIL", bundle.getString("SHARE_EMAIL"), "social social-e-mail", parent, 2, url, null,
+            final MenubarItem item = new MenubarItem("SHARE_BY_EMAIL", bundle.getString("SHARE_EMAIL"), "glyphicons glyphicons-basic-email", parent, 2, url, null,
                     onClick.toString(), "fancyframe_refresh");
             item.setAjaxDisabled(true);
 
@@ -2386,7 +2384,7 @@ public class MenuBarFormater {
         media.add(mediaRight);
 
         // Button
-        Element button = DOM4JUtils.generateElement("button", "btn btn-default", " " + bundle.getString("COPY_PERMALINK"), "halflings halflings-copy", null);
+        Element button = DOM4JUtils.generateElement("button", "btn btn-secondary", " " + bundle.getString("COPY_PERMALINK"), "glyphicons glyphicons-basic-copy", null);
         DOM4JUtils.addAttribute(button, "type", "button");
         DOM4JUtils.addDataAttribute(button, "clipboard-target", "#" + linkId);
         mediaRight.add(button);

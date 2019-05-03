@@ -25,7 +25,7 @@
             <div class="input-group">
                 <input id="${namespace}-search-input" type="text" name="keywords" value="${keywords}" class="form-control" placeholder="${searchPlaceholder}">
                 <span class="input-group-btn">
-                    <button type="submit" class="btn btn-default" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
+                    <button type="submit" class="btn btn-secondary" title="${searchTitle}" data-toggle="tooltip" data-placement="bottom">
                         <span class="halflings halflings-search"></span>
                     </button>
                 </span>

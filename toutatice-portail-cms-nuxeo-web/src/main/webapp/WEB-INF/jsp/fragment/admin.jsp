@@ -44,7 +44,7 @@
 	        <!-- Select button -->
             <div class="form-group hidden-script">
                 <div class="col-sm-offset-3 col-sm-9">
-                    <button type="submit" class="btn btn-default btn-primary"><op:translate key="SELECT" /></button>
+                    <button type="submit" class="btn btn-secondary btn-primary"><op:translate key="SELECT" /></button>
                 </div>
             </div>
         </fieldset>
@@ -76,7 +76,7 @@
                         <span><op:translate key="SAVE" /></span>
                     </button>
                     
-	                <button type="button" class="btn btn-default" onclick="closeFancybox()">
+	                <button type="button" class="btn btn-secondary" onclick="closeFancybox()">
                         <span><op:translate key="CANCEL" /></span>
                     </button>
 	            </div>

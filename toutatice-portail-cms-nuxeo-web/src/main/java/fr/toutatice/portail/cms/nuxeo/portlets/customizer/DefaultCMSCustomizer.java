@@ -1386,7 +1386,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Workspace
         DocumentType workspace = DocumentType.createRoot("Workspace");
         workspace.addSubtypes("Folder", "Note", "Room");
-        workspace.setIcon("glyphicons glyphicons-wallet");
+        workspace.setIcon("glyphicons glyphicons-filetypes-folder-users");
         workspace.setPreventedCreation(true);
         workspace.setTemplate("/default/templates/workspace");
         defaultTypes.add(workspace);
@@ -1394,14 +1394,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Portal site
         DocumentType portalSite = DocumentType.createRoot("PortalSite");
         portalSite.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
-        portalSite.setIcon("glyphicons glyphicons-global");
+        portalSite.setIcon("glyphicons glyphicons-basic-globe");
         portalSite.setEditable(true);
         defaultTypes.add(portalSite);
 
         // Portal page
         DocumentType portalPage = DocumentType.createNode("PortalPage");
         portalPage.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
-        portalPage.setIcon("glyphicons glyphicons-more-items");
+        portalPage.setIcon("glyphicons glyphicons-basic-passport");
         portalPage.setEditable(true);
         portalPage.setMovable(true);
         portalPage.setOrdered(true);
@@ -1411,15 +1411,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Folder
         DocumentType folder = DocumentType.createNode("Folder");
         folder.addSubtypes("File", "Folder", "Note");
-        folder.setIcon("glyphicons glyphicons-folder-closed");
+        folder.setIcon("glyphicons glyphicons-basic-folder");
         folder.setEditable(true);
         folder.setMovable(true);
+        folder.setTemplate("/default/templates/folder");
         defaultTypes.add(folder);
 
         // Ordered folder
         DocumentType orderedFolder = DocumentType.createNode("OrderedFolder");
         orderedFolder.addSubtypes("File", "Folder", "Note");
-        orderedFolder.setIcon("glyphicons glyphicons-folder-closed");
+        orderedFolder.setIcon("glyphicons glyphicons-basic-folder");
         orderedFolder.setEditable(true);
         orderedFolder.setMovable(true);
         orderedFolder.setOrdered(true);
@@ -1427,21 +1428,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // File
         DocumentType file = DocumentType.createFile("File");
-        file.setIcon("glyphicons glyphicons-file");
+        file.setIcon("glyphicons glyphicons-basic-file");
         file.setEditable(true);
         file.setMovable(true);
         defaultTypes.add(file);
 
         // Note
         DocumentType note = DocumentType.createLeaf("Note");
-        note.setIcon("glyphicons glyphicons-note");
+        note.setIcon("glyphicons glyphicons-basic-notes");
         note.setEditable(true);
         note.setMovable(true);
         defaultTypes.add(note);
 
         // Contextual link
         DocumentType contextualLink = DocumentType.createLeaf("ContextualLink") ;
-        contextualLink.setIcon("glyphicons glyphicons-link");
+        contextualLink.setIcon("glyphicons glyphicons-basic-link");
         contextualLink.setEditable(true);
         contextualLink.setMovable(true);
         defaultTypes.add(contextualLink);
@@ -1449,7 +1450,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Room
         DocumentType room = DocumentType.createNode("Room");
         room.addSubtypes("Folder", "Note", "Room");
-        room.setIcon("glyphicons glyphicons-cube-black");
+        room.setIcon("glyphicons glyphicons-basic-three-dimensional-full");
         room.setOrdered(true);
         room.setPreventedCreation(true);
         room.setTemplate("/default/templates/room");
@@ -1457,7 +1458,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Staple
         DocumentType staple = DocumentType.createLeaf("Staple");
-        staple.setIcon("glyphicons glyphicons-nails");
+        staple.setIcon("glyphicons glyphicons-filetypes-file-settings");
         staple.setNavigable(true);
         defaultTypes.add(staple);
 

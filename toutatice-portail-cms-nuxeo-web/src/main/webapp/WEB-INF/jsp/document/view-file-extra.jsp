@@ -53,7 +53,7 @@
             <c:choose>
                 <c:when test="${empty driveEditUrl}">
                     <p>
-                        <a href="${driveEditUrl}" class="btn btn-default btn-block no-ajax-link">
+                        <a href="${driveEditUrl}" class="btn btn-secondary btn-block no-ajax-link">
                             <span><op:translate key="DRIVE_EDIT" /></span>
                         </a>
                     </p>
@@ -68,7 +68,7 @@
         </c:if>
 
         <!-- Download -->
-        <a href="${url}" target="_blank" class="btn btn-default btn-block no-ajax-link">
+        <a href="${url}" target="_blank" class="btn btn-secondary btn-block no-ajax-link">
             <span><op:translate key="DOWNLOAD" /></span>
         </a>
     </div>

@@ -70,7 +70,7 @@
                 <span><op:translate key="SAVE" /></span>
             </button>
             
-            <button type="button" class="btn btn-default" onclick="closeFancybox()">
+            <button type="button" class="btn btn-secondary" onclick="closeFancybox()">
                 <span><op:translate key="CANCEL" /></span>
             </button>
         </div>

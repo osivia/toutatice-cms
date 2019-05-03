@@ -415,7 +415,7 @@ $JQry(function() {
 			
 			// Cancel button
 			$cancelButton = $JQry(document.createElement("button"));
-			$cancelButton.addClass("cancel btn btn-default pull-right");
+			$cancelButton.addClass("cancel btn btn-secondary pull-right");
 			$cancelButton.append($cancelGlyph);
 			$cancelButton.append($cancelText);
 			$cancelButton.appendTo($listItem);

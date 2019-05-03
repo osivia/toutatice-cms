@@ -23,7 +23,7 @@
     <div class="form-group">
         <div class="col-sm-offset-3 col-sm-9">
             <button type="submit" class="btn btn-primary"><op:translate key="SAVE" /></button>
-            <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
+            <button type="button" class="btn btn-secondary" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </form>
