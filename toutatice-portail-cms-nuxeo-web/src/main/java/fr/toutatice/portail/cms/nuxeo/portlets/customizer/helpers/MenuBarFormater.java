@@ -240,9 +240,9 @@ public class MenuBarFormater {
                 this.addOtherOptionsDropdown(portalControllerContext, documentType, bundle);
 
                 // Creation
-                if (!isWorkspaceOrRoom) {
-                    this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
-                }
+
+                this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, !isWorkspaceOrRoom);
+
 
                 if (!webPageFragment) {
                     // Contextualization
@@ -334,6 +334,8 @@ public class MenuBarFormater {
             module.customizeDocument(portalControllerContext, menubar, documentContext);
         }
     }
+
+
 
 
     /**
@@ -1705,7 +1707,7 @@ public class MenuBarFormater {
      * @param bundle internationalization bundle
      */
     protected void getCreateLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+            List<MenubarItem> menubar, Bundle bundle, boolean visible) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1735,6 +1737,7 @@ public class MenuBarFormater {
             DocumentType documentType = documentTypes.get(document.getType());
 
             if ((documentType != null) && !documentType.isPreventedCreation()) {
+                
                 // Callback URL
                 String callbackURL = this.portalUrlFactory.getRefreshPageUrl(portalControllerContext, true);
 
@@ -1800,6 +1803,7 @@ public class MenuBarFormater {
                     MenubarItem item = new MenubarItem("ADD", bundle.getString("ADD"), "halflings halflings-plus", MenubarGroup.ADD, 0, url, null, onclick,
                             "fancyframe_refresh");
                     item.setAjaxDisabled(true);
+                    item.setVisible(visible);
 
                     menubar.add(item);
                 } else if (size > 0) {
@@ -1822,6 +1826,7 @@ public class MenuBarFormater {
                         MenubarItem item = new MenubarItem("ADD_" + typeName, displayName, cmsItemType.getIcon(), dropdown, order, url, null, onclick,
                                 "fancyframe_refresh");
                         item.setAjaxDisabled(true);
+                        item.setVisible(visible);
 
                         menubar.add(item);
 
@@ -1842,6 +1847,7 @@ public class MenuBarFormater {
                                 "fancyframe_refresh");
                         item.setAjaxDisabled(true);
                         item.setDivider(divider);
+                        item.setVisible(visible);
 
                         menubar.add(item);
 
