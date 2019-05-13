@@ -2,9 +2,7 @@ function downloadPreview(){
 	var $iframeWindow = $JQry(".pdf-preview-iframe");
 	var $previewErr = $JQry(".file-preview-unavailable");
 	
-	var $progress = $JQry(".file .progress");
-	var $loadBar = $JQry(".file .loadBar");
-	var $downloadBar = $JQry(".file .downloadBar");
+	var $progress = $JQry(".document-file .progress");
 	
 	var iframeContext = $iframeWindow[0].contentWindow;
 	
@@ -18,39 +16,37 @@ function downloadPreview(){
 			xhr.onreadystatechange = function() {
 				if (this.readyState == 4) {
 					if(this.status == 200){
-						$progress.remove();
+						$progress.parent().remove();
 						iframeContext.PDFViewerApplication.open(new Uint8Array(xhr.response));
 						var header = this.getResponseHeader('Content-Disposition');
 						var fileName = header.match(/filename="(.+)"/)[1];
 						iframeContext.PDFViewerApplication.setTitleUsingUrl(fileName);
-						$iframeWindow.removeClass("hidden");
+						$iframeWindow.removeClass("d-none");
 					}else{
-						$progress.remove();
+						$progress.parent().remove();
 						$iframeWindow.remove();
-						$previewErr.removeClass("hidden");
+						$previewErr.removeClass("d-none");
 					}
 				}
 			};
 			xhr.onprogress = function (event) {
 				var loaded = (event.loaded / event.total) * 100 ;
-				$downloadBar.width(loaded+"%");
-				$downloadBar.attr("aria-valuenow", loaded);
-				$downloadBar.find(".sr-only").first().text(loaded+"%");
-				
+				$progress.children(".progress-bar").width(loaded+"%");
+				$progress.children(".progress-bar").attr("aria-valuenow", loaded);
 			};
 			try {
 				xhr.open('GET', previewUrl);
 				xhr.responseType = 'arraybuffer';
 				xhr.send();
 			} catch (e) {
-				$progress.remove();
+				$progress.parent().remove();
 				$iframeWindow.remove();
-				$previewErr.removeClass("hidden");
+				$previewErr.removeClass("d-none");
 			}
 		}
 	}else{
-		$progress.remove();
-		$previewErr.removeClass("hidden");
+		$progress.parent().remove();
+		$previewErr.removeClass("d-none");
 	}
 };
 
