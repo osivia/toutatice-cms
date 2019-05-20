@@ -64,7 +64,7 @@
         <div class="form-group">
             <div class="${selectorType eq '2' ? '' : 'input-group'}">
                 <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
-                <span class="${selectorType eq '2' ? 'hidden' : 'input-group-btn'}">
+                <span class="${selectorType eq '2' ? 'd-none' : 'input-group-btn'}">
                     <button type="submit" name="${name}" class="btn btn-secondary">
                         <i class="${glyphicon}"></i>
                         <span class="sr-only">${title}</span>
