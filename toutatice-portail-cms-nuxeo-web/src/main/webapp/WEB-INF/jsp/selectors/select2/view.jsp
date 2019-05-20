@@ -27,7 +27,7 @@
         </c:if>
         
         <!-- Selector -->
-        <div class="input-group select2-bootstrap-append">
+        <div class="input-group">
             <select id="${namespace}-select" name="vocabulary" class="form-control select2 select2-default" data-url="${select2Url}" data-loading-label="${loadingLabel}" data-onchange="submit"
                 <c:if test="${not empty configuration.label}">data-placeholder="${configuration.label}"</c:if>
                 <c:if test="${not configuration.monoValued}">multiple="multiple"</c:if>
@@ -38,16 +38,16 @@
             </select>
             
             <!-- Clear -->
-            <span class="input-group-btn">
-                <button type="submit" name="clear" class="btn btn-secondary" title="${clearLabel}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="glyphicons glyphicons-delete"></i>
+            <span class="input-group-append">
+                <button type="submit" name="clear" class="btn btn-outline-secondary" title="${clearLabel}" data-toggle="tooltip" data-placement="bottom">
+                    <i class="glyphicons glyphicons-basic-eraser"></i>
                     <span class="sr-only">${clearLabel}</span>
                 </button>
             </span>
         </div>
     </div>
     
-    <div class="form-group hidden-script">
+    <div class="form-group d-none">
         <!-- Submit button -->
         <button type="submit" name="save" class="btn btn-primary">
             <i class="glyphicons glyphicons-floppy-disk"></i>
