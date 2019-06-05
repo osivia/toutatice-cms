@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>toutatice-portail.cms</groupId>
@@ -10,20 +11,16 @@
 
 
     <properties>
-        <osivia-portal.version>4.7.14-RC3</osivia-portal.version>
-        
+        <osivia-portal.version>4.7-SNAPSHOT</osivia-portal.version>
+
         <jboss.portal.version>2.7.2</jboss.portal.version>
         <jboss.modules.identity.version>1.1.3</jboss.modules.identity.version>
         <jboss.version>4.2.3.GA</jboss.version>
 
         <json.version>2.4</json.version>
         <jackson.version>1.8.1</jackson.version>
-        
+
         <apache.httpcomponents.version>4.1</apache.httpcomponents.version>
-    
-        <deploy.dir>${toutatice-portail-runtime-dir}</deploy.dir>
-        <deploy.socle.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/deploy/socle</deploy.socle.dir>
-        <deploy.socle-libs.dir>${toutatice-portail-runtime-dir}/jbossas/server/production/lib</deploy.socle-libs.dir>
     </properties>
 
 
@@ -56,7 +53,7 @@
                 <artifactId>jboss-j2ee</artifactId>
                 <version>${jboss.version}</version>
                 <scope>provided</scope>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>jboss</groupId>
                 <artifactId>jboss-system</artifactId>
@@ -152,7 +149,7 @@
 
 
     <dependencies>
-    
+
         <!-- OSIVIA portal -->
         <dependency>
             <groupId>org.osivia.portal</groupId>
@@ -162,7 +159,7 @@
             <groupId>org.osivia.portal</groupId>
             <artifactId>osivia-portal-dependencies-test</artifactId>
         </dependency>
-        
+
         <!-- JBoss -->
         <dependency>
             <groupId>jboss</groupId>
@@ -200,19 +197,19 @@
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-server-lib</artifactId>
         </dependency>
-        
+
         <!-- JSON -->
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
         </dependency>
-        
+
     </dependencies>
 
 
     <modules>
         <module>toutatice-portail-cms-nuxeo-api</module>
-        <module>toutatice-portail-cms-nuxeo-taglib</module>        
+        <module>toutatice-portail-cms-nuxeo-taglib</module>
         <module>toutatice-portail-cms-nuxeo-web</module>
         <module>toutatice-portail-cms-nuxeo-sar</module>
         <module>toutatice-portail-cms-nuxeo-automation-client</module>
@@ -226,19 +223,19 @@
     <build>
         <pluginManagement>
             <plugins>
-            
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.3</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>2.7</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
@@ -251,7 +248,7 @@
                         </archive>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.lesscss</groupId>
                     <artifactId>lesscss-maven-plugin</artifactId>
@@ -273,7 +270,7 @@
                         </execution>
                     </executions>
                 </plugin>
-            
+
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>yuicompressor-maven-plugin</artifactId>
@@ -295,7 +292,7 @@
                         <suffix>.min</suffix>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -304,13 +301,13 @@
                         <useSystemClassLoader>false</useSystemClassLoader>
                     </configuration>
                 </plugin>
-                
+
             </plugins>
         </pluginManagement>
-    
-    
+
+
         <plugins>
-        
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -348,29 +345,58 @@
                 <version>2.2.1</version>
                 <configuration>
                     <releaseProfiles>unpack,pack</releaseProfiles>
-				</configuration>
+                </configuration>
             </plugin>
-            
-			<!-- Disable strict javadoc checking since java8 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<additionalOptions>
-						<additionalOption>-Xdoclint:none</additionalOption>
-					</additionalOptions>
-				</configuration>
-			</plugin>              
-            
+
+            <!-- Disable strict javadoc checking since java8 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                    </additionalOptions>
+                </configuration>
+            </plugin>
+
+            <!-- Javadocs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Sources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
 
     <scm>
         <url>https://github.com/osivia/toutatice-cms.git</url>
         <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>     
+        <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>
         <tag>4.7-maintenance</tag>
-	</scm>
+    </scm>
 
     <distributionManagement>
         <repository>
@@ -381,20 +407,20 @@
             <id>osivia-snapshots</id>
             <url>http://www.osivia.org/nexus/content/repositories/osivia-snapshots</url>
         </snapshotRepository>
-	</distributionManagement>
-    
+    </distributionManagement>
+
     <profiles>
-    	<profile>
-    		<id>ci</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<distributionManagement>
-    			<snapshotRepository>
-            		<id>galactica-ci-snapshots</id>
-            		<url>http://nexus:8081/repository/ci-snapshots</url>
-        		</snapshotRepository>
-    		</distributionManagement>
-    	</profile>
-    </profiles>    
+        <profile>
+            <id>ci</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>galactica-ci-snapshots</id>
+                    <url>http://nexus:8081/repository/ci-snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
