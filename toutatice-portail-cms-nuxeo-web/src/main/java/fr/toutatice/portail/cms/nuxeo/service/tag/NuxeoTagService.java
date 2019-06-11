@@ -331,7 +331,7 @@ public class NuxeoTagService implements INuxeoTagService {
             icon = documentType.getIcon();
         } else {
             // Unknown
-            icon = "glyphicons-2 glyphicons-2-filetypes-file-question";
+            icon = null;
         }
 
         // Size
