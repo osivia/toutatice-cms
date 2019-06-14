@@ -211,7 +211,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         		sessionsIdle.remove(nuxeoSession.hashCode());
                         		nuxeoSession = null;
                         		
-                            	nuxeoSession = getUserSessions( userSession ).remove(getSessionKey());
+                            	getUserSessions( userSession ).remove(getSessionKey());
 
                         	}
                         }
