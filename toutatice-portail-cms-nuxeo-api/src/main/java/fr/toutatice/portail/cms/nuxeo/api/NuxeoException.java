@@ -16,6 +16,13 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
+import java.util.Map;
+
+import org.codehaus.jackson.JsonNode;
+import org.nuxeo.ecm.automation.client.jaxrs.spi.JsonMarshalling.RemoteThrowable;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 
 /**
@@ -28,6 +35,8 @@ import org.osivia.portal.core.cms.CMSException;
 public class NuxeoException extends RuntimeException {
 	
 
+    private static IInternationalizationService itlzService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
+	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	
@@ -51,8 +60,9 @@ public class NuxeoException extends RuntimeException {
 	
 	/** The error notfound. */
 	public static int ERROR_NOTFOUND = 3;
-	
 
+
+	
 	/**
 	 * Instantiates a new nuxeo exception.
 	 *
@@ -100,6 +110,42 @@ public class NuxeoException extends RuntimeException {
 		
 		throw new RuntimeException( this);
 		
+	}
+	
+	/**
+	 * Gets the user applicative message.
+	 *
+	 * @param portalCtx the portal ctx
+	 * @return the user applicative message
+	 */
+	
+	public String getUserMessage(PortalControllerContext portalCtx)	{
+		
+		String message = null;
+		// Get low-level exception
+		Throwable curException = this;
+		while (curException.getCause() != null)	{
+			curException = curException.getCause();
+		}
+		
+		boolean quotaExceeded = false;
+		
+		if( curException instanceof RemoteThrowable)	{
+			Map<String, JsonNode> otherNodes = ((RemoteThrowable) curException).getOtherNodes();
+			JsonNode className = otherNodes.get("className");
+			if (className != null) {
+				String sClass = className.toString();
+				if ("\"org.opentoutatice.addon.quota.check.exception.QuotaExceededException\"".equals(sClass)) {
+					quotaExceeded = true;
+				}
+			}
+		}
+		
+		if( quotaExceeded) {
+    
+			message = itlzService.getString("ERROR_MESSAGE_QUOTA_EXCEEDED", portalCtx.getHttpServletRequest().getLocale());      
+		}
+		return message;
 	}
 
 }

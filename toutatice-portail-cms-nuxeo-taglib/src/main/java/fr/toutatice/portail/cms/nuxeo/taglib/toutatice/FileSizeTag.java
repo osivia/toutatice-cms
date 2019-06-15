@@ -9,6 +9,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 
+import org.osivia.portal.api.html.HtmlFormatter;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -68,25 +69,9 @@ public class FileSizeTag extends ToutaticeSimpleTag {
 
         JspWriter out = pageContext.getOut();
 
-        if (this.size > 0) {
-            // Factor
-            int factor = Double.valueOf(Math.log10(this.size) / Math.log10(UNIT_FACTOR)).intValue();
-            // Factorized size
-            double factorizedSize = this.size / Math.pow(UNIT_FACTOR, factor);
-            // Unit
-            String unit = bundle.getString(UNITS[factor]);
-            // Number format
-            NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-            numberFormat.setMaximumFractionDigits(1);
 
-            out.write(numberFormat.format(factorizedSize));
-            out.write("&nbsp;");
-            out.write(unit);
-        } else {
-            out.write("0&nbsp;");
-            out.write(bundle.getString(UNITS[0]));
-        }
-    }
+        out.write(HtmlFormatter.formatSize(locale, bundle, size));
+     }
 
 
     /**
