@@ -44,6 +44,7 @@ import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import org.osivia.portal.core.page.PageProperties;
 
 
 /**
@@ -149,6 +150,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     }  
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
+                    // Refresh other portlet model attributes
+                    PageProperties.getProperties().setRefreshingPage(true);
+
                     // Réinitialisation des fenetres en mode NORMAL
                     request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
                 }
@@ -173,6 +177,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     }  
                     
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+
+                    // Refresh other portlet model attributes
+                    PageProperties.getProperties().setRefreshingPage(true);
 
                     // Réinitialisation des fenetres en mode NORMAL
                     request.setAttribute("osivia.unsetMaxMode", "true");
