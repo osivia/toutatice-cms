@@ -1509,6 +1509,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     fileMimeType.setDescription(record.get("description"));
                     fileMimeType.setDisplay(record.get("display"));
                     fileMimeType.setIcon(record.get("icon"));
+                    fileMimeType.setPdfConvertible(Boolean.parseBoolean(record.get("pdfConvertible")));
 
                     map.put(mimeType, fileMimeType);
                 }

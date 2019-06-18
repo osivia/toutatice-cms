@@ -127,8 +127,19 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
             }
             dto.setIcon(icon);
         }
-        // liveEdit
+         // liveEdit
         dto.setLiveEditable(isLiveEditable(document));
+        
+        // Pdf convertible
+        if (type != null) {
+            boolean pdfConvertible ;
+            if (type.isFile()) {
+                pdfConvertible = this.isPdfConvertible(document);
+            } else
+                pdfConvertible = false;
+            dto.setPdfConvertible(pdfConvertible);
+        }
+        
         // Properties
         Map<String, Object> properties = dto.getProperties();
         properties.putAll(this.toMap(document.getProperties()));
@@ -257,6 +268,34 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
 
     /**
+     * Get pef convertible
+     *
+     * @param document document
+     * @return icon, may be null
+     */
+    
+    private boolean isPdfConvertible(Document document) {
+        // Document properties
+        PropertyMap properties = document.getProperties();
+        // File content
+        PropertyMap fileContent = properties.getMap("file:content");
+        
+        // Pdf convertible
+        boolean pdfConvertible;
+        
+        if (fileContent == null) {
+            pdfConvertible = false;
+        } else {
+            // Mime type
+            String mimeType = fileContent.getString("mime-type");
+
+            pdfConvertible = this.isPdfConvertible(mimeType);
+        }
+
+        return pdfConvertible;
+    }
+    
+    /**
      * Get document icon.
      *
      * @param document document
@@ -283,6 +322,37 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
     }
 
 
+  
+
+    /**
+     * Get icon from mime type representation.
+     *
+     * @param mimeType mime type representation
+     * @return icon, may be null
+     */
+    public boolean isPdfConvertible(String mimeType) {
+        // CMS customizer
+        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
+
+        // File MIME type
+        FileMimeType fileMimeType;
+        try {
+            fileMimeType = customizer.getFileMimeType(mimeType);
+        } catch (IOException e) {
+            fileMimeType = null;
+        }
+
+        // pdf
+        boolean pdfConvertible;
+        if (fileMimeType == null) {
+            pdfConvertible = false;
+        } else {
+            pdfConvertible = fileMimeType.isPdfConvertible();
+        }
+
+        return pdfConvertible;
+    }
+    
     /**
      * Get icon from mime type representation.
      *

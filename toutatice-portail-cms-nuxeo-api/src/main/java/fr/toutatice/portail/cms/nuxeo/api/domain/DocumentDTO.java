@@ -53,6 +53,10 @@ public class DocumentDTO implements Cloneable {
     private final List<RemotePublishedDocumentDTO> publishedDocuments;
     /** isLiveEditable */
     private boolean liveEditable;
+    /** isPdfConvertible */
+    private boolean pdfConvertible;    
+
+
 
     /** Original Nuxeo document. */
     private Document document;
@@ -83,6 +87,7 @@ public class DocumentDTO implements Cloneable {
         this.type = documentDTO.type;
         this.icon = documentDTO.icon;
         this.liveEditable = documentDTO.liveEditable;
+        this.pdfConvertible = documentDTO.pdfConvertible;
         this.properties.putAll(documentDTO.properties);
         this.attachments.addAll(documentDTO.attachments);
         this.commentable = documentDTO.commentable;
@@ -309,6 +314,25 @@ public class DocumentDTO implements Cloneable {
      */
     public void setLiveEditable(boolean liveEditable) {
         this.liveEditable = liveEditable;
+    }
+
+    
+    /**
+     * Getter for pdfConvertible.
+     * @return the pdfConvertible
+     */
+    public boolean isPdfConvertible() {
+        return pdfConvertible;
+    }
+
+
+    
+    /**
+     * Setter for pdfConvertible.
+     * @param pdfConvertible the pdfConvertible to set
+     */
+    public void setPdfConvertible(boolean pdfConvertible) {
+        this.pdfConvertible = pdfConvertible;
     }
 
 

@@ -323,6 +323,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 // Cancel URL
                 String cancelUrl = request.getParameter("cancel-url");
+                
+                // Custom message
+                String warnMessage = request.getParameter("warn-message");
 
                 // Save previous state in portlet session
                 if (StringUtils.isNotEmpty(cancelUrl)) {
@@ -343,12 +346,26 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
                 // Notification
                 StringBuilder message = new StringBuilder();
-                message.append(bundle.getString("DOCUMENT_INLINE_EDITION_SUCCESS"));
+                message.append(bundle.getString("DOCUMENT_INLINE_EDITION_SUCCESS"));  
+                if( StringUtils.isNotEmpty(warnMessage))     {
+                    message.append("<br>");
+                    message.append(warnMessage);
+                }
+                                  
+                
                 if (StringUtils.isNotEmpty(cancelUrl)) {
                     message.append("<br>");
                     message.append(bundle.getString("DOCUMENT_INLINE_EDITION_CANCEL", cancelUrl));
                 }
-                this.notificationsService.addSimpleNotification(portalControllerContext, message.toString(), NotificationsType.SUCCESS);
+                
+                NotificationsType notificationType;
+                if( StringUtils.isNotEmpty(warnMessage))
+                    notificationType = NotificationsType.WARNING;
+                else
+                    notificationType = NotificationsType.SUCCESS;                  
+                
+                
+                this.notificationsService.addSimpleNotification(portalControllerContext, message.toString(), notificationType);
             }
         }
     }
