@@ -268,7 +268,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
 
     /**
-     * Get pef convertible
+     * Get pdf convertible
      *
      * @param document document
      * @return icon, may be null
@@ -325,11 +325,12 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
   
 
     /**
-     * Get icon from mime type representation.
+     * Get pdf convertible
      *
      * @param mimeType mime type representation
      * @return icon, may be null
      */
+    
     public boolean isPdfConvertible(String mimeType) {
         // CMS customizer
         INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();

@@ -33,6 +33,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.api.cms.Symlinks;
+import org.osivia.portal.api.cms.VirtualNavigationUtils;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -202,7 +203,12 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
                     // FIXME
                     navigationPath = basePath + "/_" + StringUtils.substringAfterLast(path, "/");
                 } else {
-                    navigationPath = symlink.getNavigationPath() + "/_" + StringUtils.substringAfterLast(path, "/");
+                    if( "Staple".equals(child.getType()))   
+                        // This is a virtual staple
+                        // The link must be a cms link that integrates navigation + webId
+                        navigationPath = VirtualNavigationUtils.adaptPath(symlink.getNavigationPath(), (String) child.getProperties().get(DocumentsMetadataImpl.WEB_ID_PROPERTY));
+                     else    
+                        navigationPath = symlink.getNavigationPath() + "/_" + StringUtils.substringAfterLast(path, "/");                        
                 }
             }
             navigationPath = DocumentHelper.computeNavPath(navigationPath);

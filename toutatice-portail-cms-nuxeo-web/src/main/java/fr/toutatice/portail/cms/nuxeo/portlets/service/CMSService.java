@@ -65,6 +65,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.api.cms.Symlinks;
+import org.osivia.portal.api.cms.VirtualNavigationUtils;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -2837,11 +2838,22 @@ public class CMSService implements ICMSService {
                     }
                 }
             }
+            
+
 
             // Task
             TaskbarTask task;
             if ((taskbarItem == null) && (type != null)) {
-                task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getIcon(), document.getPath(), type.getName(), disabled);
+                String taskPath = document.getPath();
+                // Virtual Staple need a virtual CMS link
+                if( navigation) {
+                    if( StringUtils.isNotEmpty(cmsItem.getNavigationPath()))    {
+                        if( VirtualNavigationUtils.getWebId(cmsItem.getNavigationPath()) != null)
+                            taskPath = cmsItem.getNavigationPath();
+                    }
+                }
+                
+                task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getIcon(), taskPath, type.getName(), disabled);
             } else if (taskbarItem != null) {
                 // Restriction
                 TaskbarItemRestriction restriction = taskbarItem.getRestriction();

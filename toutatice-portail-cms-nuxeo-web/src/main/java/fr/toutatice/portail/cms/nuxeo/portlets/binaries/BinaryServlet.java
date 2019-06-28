@@ -54,7 +54,9 @@ import org.osivia.portal.core.page.PageProperties;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
 
 /**
@@ -176,12 +178,24 @@ public class BinaryServlet extends HttpServlet {
                 Document doc = nuxeoController.fetchSharedDocument(shareId);
                 path = doc.getPath();
                 
+
+                
                 binaryType = Type.FILE;
-                fieldName = "pdf:content";   
+                
+                DocumentDTO dto = DocumentDAO.getInstance().toDTO(doc);
+                 
                 forceDownload = true;
-                String format =  doc.getString("rshr:format");
-                if( "native".equals(format))
-                    fieldName = "file:content";  
+                String format = doc.getString("rshr:format");
+                if ("native".equals(format)) {
+                    fieldName = "file:content";
+                } else if ("pdf".equals(format)) {
+                    fieldName = "pdf:content";
+                } else if( dto.isPdfConvertible()) {
+                    fieldName = "pdf:content";
+                }   else
+                    fieldName = "file:content";
+
+                
                 // This is a permalink : not managed by ts variable
                 expirationTimeout = 1L;
                 
