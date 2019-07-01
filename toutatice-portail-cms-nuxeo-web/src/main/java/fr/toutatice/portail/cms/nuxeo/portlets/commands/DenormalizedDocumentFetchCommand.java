@@ -54,7 +54,8 @@ public class DenormalizedDocumentFetchCommand implements INuxeoCommand {
         clause.append("ecm:path = '").append(this.path).append("' ");
 
         // NXQL filtered request
-        String filteredRequest = NuxeoQueryFilter.addPublicationFilter(NuxeoQueryFilterContext.CONTEXT_LIVE_N_PUBLISHED, clause.toString());
+        NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(this.state);
+        String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilterContext, clause.toString());
 
         // Operation request
         OperationRequest operationRequest = nuxeoSession.newRequest(OPERATION_ID);

@@ -1,26 +1,5 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.cms;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.jboss.portal.core.controller.ControllerContext;
-import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.PropertyList;
-import org.osivia.portal.api.cms.DocumentState;
-import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.ICMSServiceLocator;
-import org.osivia.portal.core.web.IWebIdService;
-
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -31,6 +10,20 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DenormalizedDocumentFetchCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.jboss.portal.core.controller.ControllerContext;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyList;
+import org.osivia.portal.api.cms.DocumentState;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.core.cms.*;
+import org.osivia.portal.core.web.IWebIdService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * Nuxeo document context implementation.
@@ -40,49 +33,82 @@ import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
  */
 public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
 
-    /** Document. */
-    private Document document;
-    /** Denormalized document. */
-    private Document denormalizedDocument;
-    /** Document type. */
-    private DocumentType documentType;
-    /** CMS publication informations. */
-    private CMSPublicationInfos cmsPublicationInfos;
-    /** Extended document informations. */
-    private ExtendedDocumentInfos extendedInfos;
-    /** CMS path. */
-    private String cmsPath;
-    /** WebId. */
-    private String webId;
-
-    /** Initialized document indicator. */
-    private boolean initializedDocument;
-    /** Initialized denormalized document indicator. */
-    private boolean initializedDenormalizedDocument;
-    /** Initialized document type indicator. */
-    private boolean initializedDocumentType;
-    /** Initialized CMS publications informations indicator. */
-    private boolean initializedCmsPublicationInfos;
-    /** Initialized CMS extended informations indicator. */
-    private boolean initializedExtendedInfos;
-
-
-    /** Publication infos. */
+    /**
+     * Publication infos.
+     */
     private final NuxeoPublicationInfosImpl publicationInfos;
-    /** Permissions. */
+    /**
+     * Permissions.
+     */
     private final NuxeoPermissionsImpl permissions;
-
-    /** CMS context. */
+    /**
+     * CMS context.
+     */
     private final CMSServiceCtx cmsContext;
-    /** CMS path or webId. */
+    /**
+     * CMS path or webId.
+     */
     private final String path;
-
-    /** CMS service locator. */
+    /**
+     * CMS service locator.
+     */
     private final ICMSServiceLocator cmsServiceLocator;
-    /** Nuxeo service. */
+    /**
+     * Nuxeo service.
+     */
     private final INuxeoService nuxeoService;
-    /** WebId service. */
+    /**
+     * WebId service.
+     */
     private final IWebIdService webIdService;
+    /**
+     * Document.
+     */
+    private Document document;
+    /**
+     * Denormalized document.
+     */
+    private Document denormalizedDocument;
+    /**
+     * Document type.
+     */
+    private DocumentType documentType;
+    /**
+     * CMS publication informations.
+     */
+    private CMSPublicationInfos cmsPublicationInfos;
+    /**
+     * Extended document informations.
+     */
+    private ExtendedDocumentInfos extendedInfos;
+    /**
+     * CMS path.
+     */
+    private String cmsPath;
+    /**
+     * WebId.
+     */
+    private String webId;
+    /**
+     * Initialized document indicator.
+     */
+    private boolean initializedDocument;
+    /**
+     * Initialized denormalized document indicator.
+     */
+    private boolean initializedDenormalizedDocument;
+    /**
+     * Initialized document type indicator.
+     */
+    private boolean initializedDocumentType;
+    /**
+     * Initialized CMS publications informations indicator.
+     */
+    private boolean initializedCmsPublicationInfos;
+    /**
+     * Initialized CMS extended informations indicator.
+     */
+    private boolean initializedExtendedInfos;
 
 
     /**
@@ -106,11 +132,10 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
 
     /**
      * Get document context.
-     * 
+     *
      * @param cmsContext CMS context
-     * @param path CMS path or webId
+     * @param path       CMS path or webId
      * @return document context
-     * @throws CMSException
      */
     public static NuxeoDocumentContextImpl getDocumentContext(CMSServiceCtx cmsContext, String path) throws CMSException {
         if (StringUtils.isEmpty(path)) {
@@ -136,8 +161,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         }
         clonedCmsContext.setServletRequest(cmsContext.getServletRequest());
         clonedCmsContext.setSatellite(cmsContext.getSatellite());
-               
-        
+
 
         // Document context
         NuxeoDocumentContextImpl documentContext;
@@ -153,7 +177,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             }
 
             documentContext = cache.get(clonedCmsContext, path);
-            
+
             if (documentContext == null) {
                 documentContext = new NuxeoDocumentContextImpl(clonedCmsContext, path);
                 cache.put(clonedCmsContext, path, documentContext);
@@ -178,7 +202,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
 
     /**
      * Get CMS path.
-     * 
+     *
      * @return CMS path
      */
     public String getCmsPath() {
@@ -306,13 +330,8 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             try {
                 content = cmsService.getContent(this.cmsContext, cmsPath);
             } catch (CMSException e) {
-                if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                    throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-                } else if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                    throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-                } else {
-                    throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
-                }
+                throwNuxeoException(e);
+                return;
             }
 
             // Native item
@@ -357,25 +376,19 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         if (!this.initializedDenormalizedDocument) {
             // CMS customizer
             INuxeoCustomizer cmsCustomizer = this.nuxeoService.getCMSCustomizer();
-            
+
             // CMS path
             String cmsPath = this.getCmsPath();
             // State
-            int state = NumberUtils.toInt(this.cmsContext.getDisplayLiveVersion());
-            
+            int state = NumberUtils.toInt(this.cmsContext.getDisplayLiveVersion(), 2);
+
             // Nuxeo command
             INuxeoCommand command = new DenormalizedDocumentFetchCommand(cmsPath, state);
-            
+
             try {
                 this.denormalizedDocument = (Document) cmsCustomizer.executeNuxeoCommand(this.cmsContext, command);
             } catch (CMSException e) {
-                if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                    throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-                } else if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                    throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-                } else {
-                    throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
-                }
+                throwNuxeoException(e);
             }
 
             this.initializedDenormalizedDocument = true;
@@ -434,7 +447,6 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             this.cmsContext.setForceReload(true);
             this.reset();
             this.initDocument();
-            this.initDenormalizedDocument();
         } finally {
             this.cmsContext.setForceReload(savedForceReload);
         }
@@ -478,13 +490,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
             try {
                 this.cmsPublicationInfos = cmsService.getPublicationInfos(this.cmsContext, fetchPath);
             } catch (CMSException e) {
-                if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                    throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-                } else if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                    throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-                } else {
-                    throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
-                }
+                throwNuxeoException(e);
             }
 
             // CMS path
@@ -526,13 +532,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
                 try {
                     this.extendedInfos = cmsServiceImpl.getExtendedDocumentInfos(this.cmsContext, cmsPath);
                 } catch (CMSException e) {
-                    if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                        throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
-                    } else if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                        throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
-                    } else {
-                        throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
-                    }
+                    throwNuxeoException(e);
                 }
             }
 
@@ -554,6 +554,22 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         this.initializedDocumentType = false;
         this.initializedCmsPublicationInfos = false;
         this.initializedExtendedInfos = false;
+    }
+
+
+    /**
+     * Throw Nuxeo exception.
+     *
+     * @param e CMS exception
+     */
+    private void throwNuxeoException(CMSException e) {
+        if (e.getErrorCode() == CMSException.ERROR_NOTFOUND) {
+            throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+        } else if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+            throw new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
+        } else {
+            throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, e.getCause());
+        }
     }
 
 }
