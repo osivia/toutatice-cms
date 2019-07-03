@@ -67,9 +67,7 @@ import org.osivia.portal.api.taskbar.TaskbarTask;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import bsh.EvalError;
@@ -999,6 +997,14 @@ public class ViewListPortlet extends ViewList {
         // Window
         PortalWindow window = WindowFactory.getWindow(request);
 
+        // CMS service
+        ICMSService cmsService = NuxeoController.getCMSService();
+        // CMS context
+        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
+
+        // User workspace
+        CMSItem userWorkspace = cmsService.getUserWorkspace(cmsContext);
+
         // BeanShell
         Interpreter interpreter = new Interpreter();
         interpreter.set("params", PageSelectors.decodeProperties(request.getParameter("selectors")));
@@ -1006,6 +1012,9 @@ public class ViewListPortlet extends ViewList {
         interpreter.set("domainPath", nuxeoController.getDomainPath());
         interpreter.set("spacePath", nuxeoController.getSpacePath());
         interpreter.set("navigationPath", nuxeoController.getNavigationPath());
+        if (userWorkspace != null) {
+            interpreter.set("userWorkspacePath", userWorkspace.getCmsPath());
+        }
 
         // Initialization to avoid undefined errors when request building with with var
         interpreter.set("navigationPubInfos", null);

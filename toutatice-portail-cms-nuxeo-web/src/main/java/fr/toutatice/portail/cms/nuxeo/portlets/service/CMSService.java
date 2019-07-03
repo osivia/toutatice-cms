@@ -13,28 +13,37 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.naming.Name;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.binaries.FetchByShareLinkCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.sharing.ResolveSharingLinkCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.*;
+import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -60,12 +69,7 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
-import org.osivia.portal.api.cms.DocumentContext;
-import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.EcmDocument;
-import org.osivia.portal.api.cms.Symlink;
-import org.osivia.portal.api.cms.Symlinks;
-import org.osivia.portal.api.cms.VirtualNavigationUtils;
+import org.osivia.portal.api.cms.*;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -79,37 +83,14 @@ import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.statistics.SpaceStatistics;
-import org.osivia.portal.api.taskbar.ITaskbarService;
-import org.osivia.portal.api.taskbar.TaskbarFactory;
-import org.osivia.portal.api.taskbar.TaskbarItem;
-import org.osivia.portal.api.taskbar.TaskbarItemRestriction;
-import org.osivia.portal.api.taskbar.TaskbarItemType;
-import org.osivia.portal.api.taskbar.TaskbarItems;
-import org.osivia.portal.api.taskbar.TaskbarTask;
+import org.osivia.portal.api.taskbar.*;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.user.UserPreferences;
-import org.osivia.portal.core.cms.BinaryDelegation;
-import org.osivia.portal.core.cms.BinaryDescription;
-import org.osivia.portal.core.cms.CMSBinaryContent;
-import org.osivia.portal.core.cms.CMSConfigurationItem;
-import org.osivia.portal.core.cms.CMSEditableWindow;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSObjectPath;
-import org.osivia.portal.core.cms.CMSPage;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.DocumentMetadata;
-import org.osivia.portal.core.cms.DocumentsMetadata;
-import org.osivia.portal.core.cms.DomainContextualization;
-import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.NavigationItem;
-import org.osivia.portal.core.cms.RegionInheritance;
-import org.osivia.portal.core.cms.Satellite;
+import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.page.PageProperties;
@@ -118,58 +99,14 @@ import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
-import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.api.services.TaskDirective;
-import fr.toutatice.portail.cms.nuxeo.portlets.binaries.FetchByShareLinkCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.FetchDocumentByUUIDCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
-import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.sharing.ResolveSharingLinkCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
-import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
+import javax.naming.Name;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * CMS service Toutatice implementation.
@@ -1344,6 +1281,23 @@ public class CMSService implements ICMSService {
             workspaces = browserAdapter.getWorkspaces(cmsContext, administrator);
         }
         return workspaces;
+    }
+
+
+    @Override
+    public CMSItem getUserWorkspace(CMSServiceCtx cmsContext) throws CMSException {
+        // User workspaces
+        List<CMSItem> userWorkspaces = this.getWorkspaces(cmsContext, true, false);
+
+        // User workspace
+        CMSItem userWorkspace;
+        if ((userWorkspaces != null) && (userWorkspaces.size() == 1)) {
+            userWorkspace = userWorkspaces.get(0);
+        } else {
+            userWorkspace = null;
+        }
+
+        return userWorkspace;
     }
 
 
@@ -2846,11 +2800,8 @@ public class CMSService implements ICMSService {
             if ((taskbarItem == null) && (type != null)) {
                 String taskPath = document.getPath();
                 // Virtual Staple need a virtual CMS link
-                if( navigation) {
-                    if( StringUtils.isNotEmpty(cmsItem.getNavigationPath()))    {
-                        if( VirtualNavigationUtils.getWebId(cmsItem.getNavigationPath()) != null)
-                            taskPath = cmsItem.getNavigationPath();
-                    }
+                if (navigation && StringUtils.isNotEmpty(cmsItem.getNavigationPath()) && StringUtils.isNotEmpty(VirtualNavigationUtils.getWebId(cmsItem.getNavigationPath()))) {
+                    taskPath = cmsItem.getNavigationPath();
                 }
                 
                 task = factory.createTaskbarTask(document.getId(), document.getTitle(), type.getIcon(), taskPath, type.getName(), disabled);
