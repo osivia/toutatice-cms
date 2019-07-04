@@ -65,25 +65,12 @@ public class VocabularyLabelTag extends ToutaticeSimpleTag {
                     sb.append(", ");
                 }
 
-                keys[i] = StringUtils.trim(keys[i]);
-
-                if (StringUtils.contains(keys[i], "/")) {
-                    String[] subKeys = StringUtils.split(keys[i], "/");
-
-                    VocabularyEntry vocabularyEntryRoot = VocabularyHelper.getVocabularyEntry(nuxeoController, this.name, true);
-
-                    VocabularyEntry parent = vocabularyEntryRoot.getChild(subKeys[0]);
-                    if (parent != null) {
-                        sb.append(StringUtils.trimToEmpty(parent.getLabel()));
-                        VocabularyEntry child = parent.getChild(subKeys[1]);
-                        if (child != null) {
-                            sb.append(" / ");
-                            sb.append(StringUtils.trimToEmpty(child.getLabel()));
-                        }
-                    }
-                } else {
-                    sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, keys[i])));
+                String key = StringUtils.trim(keys[i]);
+                if (StringUtils.contains(key, "/")) {
+                    key = StringUtils.substringAfterLast(key, "/");
                 }
+
+                sb.append(StringUtils.trimToEmpty(VocabularyHelper.getVocabularyLabel(nuxeoController, this.name, key)));
             }
 
             String label = sb.toString();
