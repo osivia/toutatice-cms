@@ -2014,9 +2014,29 @@ public class NuxeoController {
     /**
      * Fetch a document by its sharedID.
      *
-     * @param path   the path
-     * @param reload force reloading of the document (no cache)
+     * @param String shareId   the shared identifier
+     * @param boolean enabledLinkOnly     
      * @return the document
+     * @throws Exception the exception
+     */
+    public Document fetchSharedDocument(String shareId, boolean enabledLinkOnly) {
+
+
+        try {
+            CMSServiceCtx cmsCtx = this.getCMSCtx();
+
+            CMSItem cmsItem = getCMSService().getByShareId(cmsCtx, shareId, enabledLinkOnly);
+            return (Document) cmsItem.getNativeItem();
+
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
+    }
+    
+    /**
+     * Fetch a document by its sharedID.
+     * @param String shareId   the shared identifier
+      * @return the document
      * @throws Exception the exception
      */
     public Document fetchSharedDocument(String shareId) {
@@ -2025,7 +2045,7 @@ public class NuxeoController {
         try {
             CMSServiceCtx cmsCtx = this.getCMSCtx();
 
-            CMSItem cmsItem = getCMSService().getByShareId(cmsCtx, shareId);
+            CMSItem cmsItem = getCMSService().getByShareId(cmsCtx, shareId, true);
             return (Document) cmsItem.getNativeItem();
 
         } catch (Exception e) {

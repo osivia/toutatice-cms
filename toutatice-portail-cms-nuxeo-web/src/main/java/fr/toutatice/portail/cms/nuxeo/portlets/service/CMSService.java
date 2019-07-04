@@ -523,7 +523,7 @@ public class CMSService implements ICMSService {
 
     
     @Override
-    public CMSItem getByShareId(CMSServiceCtx cmsContext, String shareId) throws CMSException {
+    public CMSItem getByShareId(CMSServiceCtx cmsContext, String shareId, boolean enabledLinkOnly) throws CMSException {
         // Content
         CMSItem content = null;
         // Saved scope
@@ -533,7 +533,7 @@ public class CMSService implements ICMSService {
             cmsContext.setScope("superuser_no_cache");
            
             // Document
-            Documents docs = (Documents) this.executeNuxeoCommand(cmsContext, new FetchByShareLinkCommand(shareId));
+            Documents docs = (Documents) this.executeNuxeoCommand(cmsContext, new FetchByShareLinkCommand(shareId, enabledLinkOnly));
             
             if( docs.size() != 1)   {
                 throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);

@@ -39,8 +39,10 @@ import javax.portlet.WindowState;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.theme.ThemeConstants;
+import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -280,7 +282,70 @@ public class ViewDocumentPortlet extends CMSPortlet {
 
             // Cancel inline edition action
             this.processCancelInlineEditionAction(request, response);
+            
+            // Cancel inline edition action
+            this.processLinkActivationAction(request, response);
         }
+    }
+
+    /**
+     * Process link activation action.
+     *
+     * @param request action request
+     * @param response action response
+     * @throws PortletException
+     */
+
+    private void processLinkActivationAction(ActionRequest request, ActionResponse response) {
+        // Action name
+        String action = request.getParameter(ActionRequest.ACTION_NAME);
+        if ("link-activation".equals(action)) {
+            boolean activation = BooleanUtils.toBoolean(request.getParameter("activate"));
+
+            // Portal controller context
+            PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+            // Nuxeo controller
+            NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
+
+            // Internationalization bundle
+            Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+            // Current window
+            PortalWindow window = WindowFactory.getWindow(request);
+            // Current document path
+            String path = nuxeoController.getComputedPath(window.getProperty(PATH_WINDOW_PROPERTY));
+
+            // Nuxeo document context
+            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(path);
+            // Nuxeo document
+            Document document = documentContext.getDocument();
+
+
+            // Nuxeo command
+            INuxeoCommand command = new ShareLinkActivationCommand(document, activation);
+            nuxeoController.executeNuxeoCommand(command);
+
+            // Reload document
+            documentContext.reload();
+
+
+            // Notification
+            StringBuilder message = new StringBuilder();
+            if( activation)
+                message.append(bundle.getString("DOCUMENT_SHARE_ACTIVATION_SUCCESS"));
+            else
+                message.append(bundle.getString("DOCUMENT_SHARE_DEACTIVATION_SUCCESS"));
+
+
+
+            NotificationsType notificationType = NotificationsType.SUCCESS;
+
+
+            this.notificationsService.addSimpleNotification(portalControllerContext, message.toString(), notificationType);
+
+
+        }
+        
     }
 
 

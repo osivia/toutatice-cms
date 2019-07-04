@@ -18,6 +18,9 @@ public class FetchByShareLinkCommand implements INuxeoCommand {
 
     /** link ID  */
     private final String linkId;
+    
+    /** The enabled link only. */
+    private boolean enabledLinkOnly;
 
 
 
@@ -27,9 +30,10 @@ public class FetchByShareLinkCommand implements INuxeoCommand {
      * @param parentId parent Nuxeo document identifier
      * @param state Nuxeo query filter context state
      */
-    public FetchByShareLinkCommand(String linkId) {
+    public FetchByShareLinkCommand(String linkId, boolean enabledLinkOnly) {
         super();
         this.linkId = linkId;
+        this.enabledLinkOnly = enabledLinkOnly;
    }
 
 
@@ -42,7 +46,12 @@ public class FetchByShareLinkCommand implements INuxeoCommand {
         StringBuilder clause = new StringBuilder();
         clause.append("rshr:linkId = '");
         clause.append(this.linkId);
-        clause.append("' AND rshr:enabledLink = 1 ORDER BY ecm:pos ASC");
+        clause.append("' ");        
+
+        if( enabledLinkOnly)
+            clause.append(" AND rshr:enabledLink = 1");
+            
+        clause.append(" ORDER BY ecm:pos ASC");
 
         // Nuxeo query filter context
         NuxeoQueryFilterContext filterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE_N_PUBLISHED);
