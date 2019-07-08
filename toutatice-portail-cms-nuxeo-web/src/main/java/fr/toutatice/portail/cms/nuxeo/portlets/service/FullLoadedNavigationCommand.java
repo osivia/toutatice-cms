@@ -54,7 +54,7 @@ public class FullLoadedNavigationCommand implements INuxeoCommand {
         StringBuilder clause = new StringBuilder();
         clause.append("(ecm:path = '").append(this.basePath).append("' OR ecm:path STARTSWITH '").append(this.basePath).append("') ");
         clause.append("AND (ecm:mixinType = 'Folderish' OR ttc:showInMenu = 1) ");
-        clause.append("ORDER BY ecm:pos");
+        clause.append("ORDER BY ecm:pos, dc:title");
 
         // Filter context
         int filterState;
