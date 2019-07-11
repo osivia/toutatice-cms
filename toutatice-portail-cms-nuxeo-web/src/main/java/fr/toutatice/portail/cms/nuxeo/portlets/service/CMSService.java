@@ -3279,11 +3279,45 @@ public class CMSService implements ICMSService {
         ControllerContext controllerContext = cmsContext.getControllerContext();
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
-        // User
-        String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+
 
         // Updated variables
         Map<String, String> updatedVariables;
+ 
+        try {
+            
+            CMSItem task = getTask(cmsContext, uuid);
+            if( task != null) {
+                // Proceed
+                updatedVariables = this.formsService.proceed(portalControllerContext, (Document) task.getNativeItem(), actionId, variables);                
+            }   else
+                updatedVariables = null;
+            
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        return updatedVariables;
+    }
+
+
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CMSItem getTask(CMSServiceCtx cmsContext, UUID uuid) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+        // User
+        String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+
+
 
         // #1964 - tasks url may be done with anonymous user id
         Set<String> actors = null;
@@ -3300,12 +3334,10 @@ public class CMSService implements ICMSService {
             Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
             if (documents.size() == 1) {
                 Document task = documents.get(0);
-
-                // Proceed
-                updatedVariables = this.formsService.proceed(portalControllerContext, task, actionId, variables);
+        
+                return  this.createItem(cmsContext, task.getPath(), task.getTitle(), task, null);
             } else {
-                // 404 not found
-                updatedVariables = null;
+                return null;
             }
         } catch (CMSException e) {
             throw e;
@@ -3313,10 +3345,11 @@ public class CMSService implements ICMSService {
             throw new CMSException(e);
         }
 
-        return updatedVariables;
+        
     }
 
 
+    
     /**
      * Get task actors.
      * 

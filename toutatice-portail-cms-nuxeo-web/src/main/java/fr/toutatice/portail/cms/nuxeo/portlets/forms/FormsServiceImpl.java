@@ -1117,6 +1117,7 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("group", "emails", TransformationFunctions.getGroupEmailsMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
+            context.setFunction("task", "link", TransformationFunctions.getViewTaskLinkMethod());            
             context.setFunction("document", "linkWithText", TransformationFunctions.getDocumentLinkWithTextMethod());
             context.setFunction("portal", "link", TransformationFunctions.getPortalLinkMethod());
             if (disabledLinks) {

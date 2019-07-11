@@ -957,26 +957,33 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception {
+    public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, boolean ignoreNavigationElements) throws Exception {
         /* Filtre pour sélectionner uniquement les version publiées */
         String requestFilter = StringUtils.EMPTY;
+        
+        String hiddenInNavigation = "";
+        if( ignoreNavigationElements) {
+            hiddenInNavigation = "ecm:mixinType != 'HiddenInNavigation' AND ";
+        }
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = "ecm:mixinType != 'HiddenInNavigation' AND ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
+            requestFilter = hiddenInNavigation+"ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
 
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
-            requestFilter = " ecm:mixinType <> 'HiddenInNavigation' AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
+            requestFilter = hiddenInNavigation+ "ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
                     + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-            requestFilter = "ecm:isProxy = 1 AND ecm:mixinType != 'HiddenInNavigation'  AND ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
+            requestFilter = "ecm:isProxy = 1 AND "+hiddenInNavigation+"ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
         }
 
         return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
 
     }
+    
+
 
     /**
      * @param ctx

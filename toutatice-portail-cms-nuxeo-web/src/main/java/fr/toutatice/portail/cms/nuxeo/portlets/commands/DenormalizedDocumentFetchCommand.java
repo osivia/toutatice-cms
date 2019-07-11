@@ -55,7 +55,8 @@ public class DenormalizedDocumentFetchCommand implements INuxeoCommand {
 
         // NXQL filtered request
         NuxeoQueryFilterContext queryFilterContext = new NuxeoQueryFilterContext(this.state);
-        String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilterContext, clause.toString());
+        String filteredRequest = NuxeoQueryFilter.addPublicationFilter(queryFilterContext, clause.toString(), false);
+
 
         // Operation request
         OperationRequest operationRequest = nuxeoSession.newRequest(OPERATION_ID);

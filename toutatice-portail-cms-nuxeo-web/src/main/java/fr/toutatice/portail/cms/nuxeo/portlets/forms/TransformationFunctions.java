@@ -507,6 +507,69 @@ public class TransformationFunctions {
     public static Method getCommandLinkMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getCommandLink", String.class, String.class);
     }
+    
+    
+    
+    
+    
+    /**
+     * Get update task command link.
+     * 
+     * @param title link title
+     * @param actionId action identifier
+     * @return link
+     */
+    public static String getViewTaskLink(String title) {
+        // Tasks service
+        ITasksService tasksService = getTasksService();
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+        // Disabled links indicator
+        boolean disabledLinks = FormsServiceImpl.areLinksDisabled();
+
+        // Result
+        String result;
+
+        if (disabledLinks) {
+            result = StringUtils.EMPTY;
+        } else {
+            // UUID
+            UUID uuid = FormsServiceImpl.getUuid();
+
+            // URL
+            String url;
+            try {
+                url = tasksService.getViewTaskUrl(portalControllerContext, uuid);
+            } catch (PortalException e) {
+                url = "#";
+            }
+
+            // Link
+            Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
+
+            result = DOM4JUtils.writeCompact(link);
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Get command:link method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getViewTaskLinkMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getViewTaskLink", String.class);
+    }
+    
+    
+    
+    
+    
 
     /**
      * Get document link.

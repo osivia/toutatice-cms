@@ -111,10 +111,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param ctx CMS context
      * @param nuxeoRequest Nuxeo request
      * @param requestFilteringPolicy request filtering policy
+     * @param denormalized the denormalized
+     * @param boolean ignoreNavigation      * 
      * @return edited Nuxeo request
      * @throws Exception the exception
      */
-    String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy) throws Exception;
+    String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, boolean ignoreNavigation) throws Exception;
+
+    
 
     /**
      * Add search filter.

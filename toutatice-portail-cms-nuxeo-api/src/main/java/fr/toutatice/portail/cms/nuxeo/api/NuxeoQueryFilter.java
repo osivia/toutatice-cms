@@ -59,9 +59,10 @@ public class NuxeoQueryFilter {
 	 *
 	 * @param queryCtx the query ctx
 	 * @param nuxeoRequest the nuxeo request
+	 * @param boolean ignoreNavigationElement
 	 * @return the string
 	 */
-	public static String addPublicationFilter(NuxeoQueryFilterContext queryCtx,String nuxeoRequest) {
+	public static String addPublicationFilter(NuxeoQueryFilterContext queryCtx,String nuxeoRequest, boolean ignoreNavigationElement) {
 
 		// adapt thanks to CMSCustomizer
 		
@@ -73,12 +74,27 @@ public class NuxeoQueryFilter {
 		ctx.setDisplayLiveVersion(state);
 		
 		try {
-			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, queryCtx.getPolicy());
+			return nuxeoService.getCMSCustomizer().addPublicationFilter(ctx, nuxeoRequest, queryCtx.getPolicy(), ignoreNavigationElement);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
 	}
+	
+	
+	   /**
+     * Adds the publication filter.
+     *
+     * @param queryCtx the query ctx
+     * @param nuxeoRequest the nuxeo request
+     * @return the string
+     */
+    public static String addPublicationFilter(NuxeoQueryFilterContext queryCtx,String nuxeoRequest) {
+
+      return addPublicationFilter(queryCtx, nuxeoRequest, true);
+
+    }
+	
 	
 	/**
      * Adds the search filter.

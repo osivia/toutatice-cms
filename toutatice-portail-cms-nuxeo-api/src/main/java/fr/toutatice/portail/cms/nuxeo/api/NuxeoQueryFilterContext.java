@@ -37,6 +37,29 @@ public class NuxeoQueryFilterContext {
     public static final NuxeoQueryFilterContext CONTEXT_LIVE_N_PUBLISHED = new NuxeoQueryFilterContext(STATE_LIVE_N_PUBLISHED);
 
 
+    
+    /** Ignore navigation Element. */
+    boolean ignoreNavigation = true;
+    
+  
+    
+    /**
+     * Getter for ignoreNavigation.
+     * @return the ignoreNavigation
+     */
+    public boolean isIgnoreNavigation() {
+        return ignoreNavigation;
+    }
+
+    
+    /**
+     * Setter for ignoreNavigation.
+     * @param ignoreNavigation the ignoreNavigation to set
+     */
+    public void setIgnoreNavigation(boolean ignoreNavigation) {
+        this.ignoreNavigation = ignoreNavigation;
+    }
+
     public NuxeoQueryFilterContext() {
         super();
     }
@@ -77,6 +100,9 @@ public class NuxeoQueryFilterContext {
         this.policy = policy;
     }
 
+    
+
+    
     /** The state. */
     private int state = STATE_DEFAULT;
 
@@ -95,5 +121,13 @@ public class NuxeoQueryFilterContext {
         this.state = state;
         this.policy = policy;
     }
+    
+    public NuxeoQueryFilterContext(int state, String policy, boolean ignoreNavigation) {
+        super();
+        this.state = state;
+        this.policy = policy;
+        this.ignoreNavigation = ignoreNavigation;
+    }
+
 
 }
