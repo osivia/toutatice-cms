@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.locator.Locator;
@@ -72,17 +73,17 @@ public class DocumentsDiscoveryService {
         }
 
         if (CollectionUtils.isEmpty(satellites)) {
-            this.satellites = new ConcurrentHashMap<>(1);
+            this.satellites = new ConcurrentHashMap<>(0);
         } else {
             this.satellites = new ConcurrentHashMap<>(satellites.size() + 1);
             for (Satellite satellite : satellites) {
                 this.satellites.put(satellite.getId(), satellite);
             }
-        }
 
-        // Add main satellite
-        Satellite main = Satellite.MAIN;
-        this.satellites.put(main.getId(), main);
+            // Add main satellite
+            Satellite main = Satellite.MAIN;
+            this.satellites.put(main.getId(), main);
+        }
     }
 
 
@@ -120,40 +121,44 @@ public class DocumentsDiscoveryService {
      * @throws CMSException
      */
     public Satellite discoverLocation(String path) throws CMSException {
-        // Handle cache reinitialization
-        this.handleCacheReinitialization();
-
         // Satellite
         Satellite satellite;
 
-        if (StringUtils.isEmpty(path)) {
-            satellite = null;
+        if (MapUtils.isEmpty(this.satellites)) {
+            satellite = Satellite.MAIN;
         } else {
-            // Get result in cache
-            Satellite cachedResult = this.cache.get(path);
+            // Handle cache reinitialization
+            this.handleCacheReinitialization();
 
-            if (cachedResult == null) {
-                // Path regex matching
-                satellite = this.pathRegexSearch(path);
+            if (StringUtils.isEmpty(path)) {
+                satellite = null;
+            } else {
+                // Get result in cache
+                Satellite cachedResult = this.cache.get(path);
 
-                DiscoveryResult discoveryResult;
-                if (satellite == null) {
-                    discoveryResult = satellitesDiscovery(path);
+                if (cachedResult == null) {
+                    // Path regex matching
+                    satellite = this.pathRegexSearch(path);
 
-                    if (discoveryResult != null) {
-                        satellite = discoveryResult.satellite;
+                    DiscoveryResult discoveryResult;
+                    if (satellite == null) {
+                        discoveryResult = satellitesDiscovery(path);
+
+                        if (discoveryResult != null) {
+                            satellite = discoveryResult.satellite;
+                        }
+                    } else {
+                        discoveryResult = null;
+                    }
+
+                    // Update cache
+                    this.cache.put(path, satellite);
+                    if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
+                        this.cache.put(discoveryResult.path, satellite);
                     }
                 } else {
-                    discoveryResult = null;
+                    satellite = cachedResult;
                 }
-
-                // Update cache
-                this.cache.put(path, satellite);
-                if ((discoveryResult != null) && StringUtils.isNotEmpty(discoveryResult.path) && !StringUtils.equals(path, discoveryResult.path)) {
-                    this.cache.put(discoveryResult.path, satellite);
-                }
-            } else {
-                satellite = cachedResult;
             }
         }
 
@@ -281,6 +286,8 @@ public class DocumentsDiscoveryService {
                 futures = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new CMSException(e);
+            } finally {
+                executor.shutdown();
             }
 
             for (Future<DiscoveryResult> future : futures) {
