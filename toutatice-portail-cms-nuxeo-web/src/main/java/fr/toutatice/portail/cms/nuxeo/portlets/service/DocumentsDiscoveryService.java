@@ -120,6 +120,11 @@ public class DocumentsDiscoveryService {
      * @throws CMSException
      */
     public Satellite discoverLocation(String path) throws CMSException {
+        
+        //TODO: voir avec CKR comment les satellites ont été désactivés en 4.7
+        if(true)
+            return Satellite.MAIN;
+        
         // Handle cache reinitialization
         this.handleCacheReinitialization();
 
