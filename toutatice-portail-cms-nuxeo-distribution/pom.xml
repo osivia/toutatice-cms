@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,13 +12,10 @@
     <artifactId>toutatice-portail-cms-nuxeo-distribution</artifactId>
     <name>Toutatice Portal - Distribution</name>
 
+
     <properties>
         <ehcache.version>2.7.2</ehcache.version>
     </properties>
-
-    <prerequisites>
-        <maven>2.1.0</maven>
-    </prerequisites>
 
 
     <dependencies>
@@ -56,11 +54,11 @@
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
         </dependency>
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-log4j12</artifactId>
-		    <version>1.6.6</version>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.6</version>
+        </dependency>
 
     </dependencies>
 
@@ -68,10 +66,13 @@
     <build>
         <pluginManagement>
             <plugins>
+
+                <!-- Assembly -->
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2.1</version>
+                    <version>3.1.1</version>
                 </plugin>
+
             </plugins>
         </pluginManagement>
     </build>
@@ -103,7 +104,8 @@
                                             <version>${osivia-portal.version}</version>
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
-                                            <outputDirectory>${project.build.directory}/osivia-distribution</outputDirectory>
+                                            <outputDirectory>${project.build.directory}/osivia-distribution
+                                            </outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>

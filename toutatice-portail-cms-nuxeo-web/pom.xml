@@ -1,81 +1,82 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>toutatice-portail.cms</groupId>
-		<artifactId>cms-parent</artifactId>
-		<version>4.9-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>toutatice-portail.cms</groupId>
+        <artifactId>cms-parent</artifactId>
+        <version>4.9-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
-	<packaging>war</packaging>
-	<name>Toutatice Portal - Nuxeo CMS portlets</name>
+    <artifactId>toutatice-portail-cms-nuxeo-web</artifactId>
+    <packaging>war</packaging>
+    <name>Toutatice Portal - Nuxeo CMS portlets</name>
 
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-        
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>toutatice-portail-cms-nuxeo-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-taglib</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-		
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>toutatice-portail-cms-nuxeo-automation-client</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>         
+            <scope>provided</scope>
         </dependency>
 
-		<dependency>
-    			<groupId>org.beanshell</groupId>
-    			<artifactId>bsh</artifactId>
-    			<version>1.3.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>nekohtml</groupId>
-			<artifactId>nekohtml</artifactId>
-			<version>0.9.5</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-        
+        <dependency>
+            <groupId>org.beanshell</groupId>
+            <artifactId>bsh</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>nekohtml</groupId>
+            <artifactId>nekohtml</artifactId>
+            <version>0.9.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.3.1</version>
         </dependency>
-        
+
         <!-- JUEL -->
         <dependency>
             <groupId>de.odysseus.juel</groupId>
             <artifactId>juel-impl</artifactId>
             <version>2.2.7</version>
         </dependency>
-        
-        
-         <dependency>
+
+
+        <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-web-lib</artifactId>
             <version>${jboss.portal.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-security-lib</artifactId>
@@ -83,7 +84,7 @@
             <scope>provided</scope>
         </dependency>
 
-	</dependencies>
+    </dependencies>
 
 
     <build>
@@ -92,7 +93,7 @@
                 <groupId>org.lesscss</groupId>
                 <artifactId>lesscss-maven-plugin</artifactId>
             </plugin>
-            
+
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>yuicompressor-maven-plugin</artifactId>
@@ -115,7 +116,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
@@ -133,7 +134,7 @@
                     <includes>
                         <include>**/*.jsp</include>
                     </includes>
-                    
+
                     <token>&gt;\s+&lt;</token>
                     <value>&gt; &lt;</value>
                     <regexFlags>
