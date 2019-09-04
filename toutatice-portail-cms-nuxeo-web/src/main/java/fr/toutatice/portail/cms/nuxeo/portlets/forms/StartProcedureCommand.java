@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -94,7 +95,15 @@ public class StartProcedureCommand implements INuxeoCommand {
      */
     @Override
     public String getId() {
-        return null;
+    	
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getSimpleName());
+        builder.append("/");
+        builder.append(new Date().getTime());
+        builder.append("/");
+        builder.append(properties.getString("pi:procedureModelWebId"));
+            	
+        return builder.toString();
     }
 
 }

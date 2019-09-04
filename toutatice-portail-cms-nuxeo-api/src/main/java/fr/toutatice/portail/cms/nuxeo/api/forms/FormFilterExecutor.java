@@ -4,12 +4,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * @author dorian
  */
 public class FormFilterExecutor {
 
+	
+	private final static Log procLogger = LogFactory.getLog("procedures");
+	
     /** filtersByParentPathMap */
     private Map<String, List<FormFilterInstance>> filtersByParentPathMap;
 
@@ -39,6 +45,9 @@ public class FormFilterExecutor {
         if (filters != null) {
             Collections.sort(filters);
             for (FormFilterInstance formFilterI : filters) {
+            	
+            	procLogger.info("* call filter "+formFilterI.getId()+" ("+formFilterI.getName()+") for "+filterContext.getProcedureInstanceUuid());
+            	
                 formFilterI.getFormFilter().execute(filterContext, new FormFilterExecutor(filtersByParentPathMap, formFilterI.getPath(), formFilterI.getId()));
             }
         }
