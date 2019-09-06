@@ -1330,7 +1330,7 @@ public class CMSService implements ICMSService {
                     // Documents
                     Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
 
-                    navigationItems = new HashMap<>(documents.size());
+                    navigationItems = new LinkedHashMap<>(documents.size());
 
                     for (Document document : documents.list()) {
                         String path = StringUtils.removeEnd(document.getPath(), ".proxy");
