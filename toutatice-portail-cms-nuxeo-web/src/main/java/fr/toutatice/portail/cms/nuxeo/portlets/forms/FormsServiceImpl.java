@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -282,7 +283,7 @@ public class FormsServiceImpl implements IFormsService {
         String startDate = DATE_FORMAT.format(new Date());
         
     	procLogger.info("Start procedure "+uuid+ " ("+modelWebId+") by "+procedureInitiator);
-    	procLogger.info("  variables "+this.generateVariablesJSON(variables));
+    	procLogger.info("  variables "+Collections.singletonList(variables));
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, uploadedFiles,
@@ -499,7 +500,7 @@ public class FormsServiceImpl implements IFormsService {
 
 
     	procLogger.info("Proceed "+procedureInstanceUuid+ " ("+modelWebId+") to step "+actionProperties.getString("stepReference")+", actors "+actors);
-    	procLogger.info("  global variables "+this.generateVariablesJSON(globalVariableValues));
+    	procLogger.info("  global variables "+Collections.singletonList(variables));
         
         
         // Construction du contexte et appel des filtres

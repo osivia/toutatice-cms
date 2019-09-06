@@ -13,28 +13,22 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-=======
-import java.util.*;
->>>>>>> refs/remotes/origin/4.4.16-branch
 import java.util.Map.Entry;
-<<<<<<< HEAD
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
-=======
->>>>>>> refs/remotes/origin/4.4.16-branch
 
 import javax.naming.Name;
 import javax.portlet.PortletContext;

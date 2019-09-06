@@ -70,6 +70,15 @@ public class UpdateProcedureCommand extends AbstractProcedureCommand {
      * {@inheritDoc}
      */
     @Override
+    protected String getOperationId() {
+        return OPERATION_ID;
+    }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getId() {
 
         StringBuilder builder = new StringBuilder();
