@@ -1619,7 +1619,7 @@ public class MenuBarFormater {
 
                     MenubarDropdown parent = this.menubarService.getDropdown(portalControllerContext, MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID);
 
-                    MenubarItem item = new MenubarItem("Move", bundle.getString("MOVE"), parent, 2, null);
+                    MenubarItem item = new MenubarItem("MOVE", bundle.getString("MOVE"), parent, 2, null);
                     item.setGlyphicon("glyphicons glyphicons-basic-block-move");
 
                     if (StringUtils.isEmpty(url)) {
