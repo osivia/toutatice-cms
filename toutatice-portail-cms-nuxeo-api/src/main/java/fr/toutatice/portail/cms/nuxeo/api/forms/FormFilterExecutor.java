@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.internationalization.Bundle;
 
@@ -13,6 +16,9 @@ import org.osivia.portal.api.internationalization.Bundle;
  */
 public class FormFilterExecutor {
 
+	
+	private final static Log procLogger = LogFactory.getLog("procedures");
+	
     /** filtersByParentPathMap */
     private Map<String, List<FormFilterInstance>> filtersByParentPathMap;
 
@@ -46,6 +52,9 @@ public class FormFilterExecutor {
         if (filters != null) {
             Collections.sort(filters);
             for (FormFilterInstance formFilterI : filters) {
+            	
+            	procLogger.info("* call filter "+formFilterI.getId()+" ("+formFilterI.getName()+") for "+filterContext.getProcedureInstanceUuid());
+            	
                 FormFilter formFilter = formFilterI.getFormFilter();
                 if(formFilter!=null){
                     try {

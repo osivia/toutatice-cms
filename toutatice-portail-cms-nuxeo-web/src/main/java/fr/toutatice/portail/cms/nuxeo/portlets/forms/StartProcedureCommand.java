@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,8 +60,16 @@ public class StartProcedureCommand extends AbstractProcedureCommand {
      * {@inheritDoc}
      */
     @Override
-    protected String getOperationId() {
-        return OPERATION_ID;
+    public String getId() {
+    	
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getSimpleName());
+        builder.append("/");
+        builder.append(new Date().getTime());
+        builder.append("/");
+        builder.append(properties.getString("pi:procedureModelWebId"));
+            	
+        return builder.toString();
     }
 
 }
