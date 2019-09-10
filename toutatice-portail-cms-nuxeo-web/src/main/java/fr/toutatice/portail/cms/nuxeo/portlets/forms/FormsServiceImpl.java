@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,6 +98,9 @@ import net.sf.json.JSONObject;
  */
 public class FormsServiceImpl implements IFormsService {
 
+	
+	private final static Log procLogger = LogFactory.getLog("procedures");
+	
     /** Thread local. */
     private static ThreadLocal<ThreadLocalContainer> threadLocal = new ThreadLocal<ThreadLocalContainer>();
 
@@ -278,6 +282,9 @@ public class FormsServiceImpl implements IFormsService {
 
         // Start date
         String startDate = DATE_FORMAT.format(new Date());
+        
+    	procLogger.info("Start procedure "+uuid+ " ("+modelWebId+") by "+procedureInitiator);
+    	procLogger.info("  variables "+Collections.singletonList(variables));
 
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, uuid, actionId, variables, actionProperties, actors, null, uploadedFiles,
@@ -322,6 +329,7 @@ public class FormsServiceImpl implements IFormsService {
                 throw new PortalException(e);
             }
         }
+    	procLogger.info(" Procedure started "+uuid);
 
         return filterContext.getVariables();
     }
@@ -491,6 +499,11 @@ public class FormsServiceImpl implements IFormsService {
         // Required fields validation
         this.requiredFieldsValidation(portalControllerContext, previousStepProperties, variables, uploadedFiles);
 
+
+    	procLogger.info("Proceed "+procedureInstanceUuid+ " ("+modelWebId+") to step "+actionProperties.getString("stepReference")+", actors "+actors);
+    	procLogger.info("  global variables "+Collections.singletonList(variables));
+        
+        
         // Construction du contexte et appel des filtres
         FormFilterContext filterContext = this.callFilters(modelWebId, procedureInstanceUuid, actionId, variables, actionProperties, actors,
                 globalVariableValues, uploadedFiles, portalControllerContext, procedureInitiator, startDate, lastModified, previousTaskInitiator, nextStep,
@@ -568,6 +581,9 @@ public class FormsServiceImpl implements IFormsService {
                 cmsContext.setForcePublicationInfosScope(savedForcedScope);
             }
         }
+        
+    	procLogger.info(" Procedure proceeded "+globalVariableValues.get("uuid"));
+
 
         return updatedVariables;
     }
@@ -994,11 +1010,17 @@ public class FormsServiceImpl implements IFormsService {
                             multipart.addBodyPart(htmlPart);
                             message.setContent(multipart);
 
+                        	procLogger.info("  About to send mail on "+uuid+ " from "+emailSender+ " to "+StringUtils.join(emailRecipients, ",")+ " subject "+subject);
+
+                            
                             // SMTP transport
                             SMTPTransport transport = (SMTPTransport) mailSession.getTransport();
                             transport.connect();
                             transport.sendMessage(message, message.getAllRecipients());
                             transport.close();
+                            
+                        	procLogger.info("  Mail sentl on "+uuid);
+
                         } catch (MessagingException e) {
                             this.log.warn("Email sending error", e.getCause());
                         }

@@ -42,7 +42,7 @@ public abstract class AbstractProcedureCommand implements INuxeoCommand {
     /** Task additional authorizations. */
     private final String additionalAuthorizations;
     /** Task properties */
-    private final PropertyMap properties;
+    protected final PropertyMap properties;
 
 
 
