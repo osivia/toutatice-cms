@@ -13,24 +13,9 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-
+import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.domain.*;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +27,7 @@ import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.TaskbarItems;
+import org.osivia.portal.api.tasks.TaskModule;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.core.cms.CMSException;
@@ -49,13 +35,14 @@ import org.osivia.portal.core.cms.DomainContextualization;
 import org.osivia.portal.core.customization.ICMSCustomizationObserver;
 import org.osivia.portal.core.customization.ICustomizationService;
 
-import fr.toutatice.portail.cms.nuxeo.api.Customizable;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -65,58 +52,104 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
  */
 public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
-    /** Custom JSP extension. */
-    private static final String CUSTOM_JSP_EXTENTION = "-custom-";
-    /** JSP directory. */
+    /**
+     * Custom JSP extension.
+     */
+    private static final String CUSTOM_JSP_EXTENSION = "-custom-";
+    /**
+     * JSP directory.
+     */
     private static final String WEB_INF_JSP = "/WEB-INF/jsp";
 
-    /** customizeJSPLockTable */
-    private static final Hashtable<String, ReentrantLock> customizeJSPLockTable = new Hashtable<String, ReentrantLock>();
+    /**
+     * customizeJSPLockTable
+     */
+    private static final Hashtable<String, ReentrantLock> customizeJSPLockTable = new Hashtable<>();
 
-    /** CMS customizer. */
+    /**
+     * CMS customizer.
+     */
     private final DefaultCMSCustomizer customizer;
-    /** Customization service. */
+    /**
+     * Customization service.
+     */
     private final ICustomizationService customizationService;
 
-    /** Customization attributes cache. */
+    /**
+     * Customization attributes cache.
+     */
     private final Map<Locale, Map<String, Object>> customizationAttributesCache;
-    /** Customized JavaServer pages cache. */
+    /**
+     * Customized JavaServer pages cache.
+     */
     private final Map<String, CustomizedJsp> customizedJavaServerPagesCache;
-    /** Fragments cache. */
+    /**
+     * Fragments cache.
+     */
     private final Map<Locale, Map<String, FragmentType>> fragmentsCache;
-    /** Editable window cache. */
+    /**
+     * Editable window cache.
+     */
     private final Map<Locale, Map<String, EditableWindow>> ewCache;
-    /** List templates cache. */
+    /**
+     * List templates cache.
+     */
     private final Map<Locale, List<ListTemplate>> templatesCache;
-    /** Menu templates cache. */
+    /**
+     * Menu templates cache.
+     */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
 
-    /** JSP reentrant locks. */
-    private final Map<String, ReentrantLock> jspLocks;
 
-
-    /** Dynamic modules that defines players . */
+    /**
+     * Dynamic modules that defines players .
+     */
     private List<IPlayerModule> dynamicModules;
-    /** Types cache. */
+    /**
+     * Types cache.
+     */
     private Map<String, DocumentType> typesCache;
-    /** Navigation adapters cache. */
+    /**
+     * Navigation adapters cache.
+     */
     private List<INavigationAdapterModule> navigationAdaptersCache;
-    /** Domain contextualization cache. */
+    /**
+     * Domain contextualization cache.
+     */
     private List<DomainContextualization> domainContextualizationCache;
-    /** Tab groups cache. */
+    /**
+     * Tab groups cache.
+     */
     private Map<String, TabGroup> tabGroupsCache;
-    /** Taskbar items cache. */
+    /**
+     * Taskbar items cache.
+     */
     private TaskbarItems taskbarItemsCache;
-    /** Menubar modules cache. */
+    /**
+     * Menubar modules cache.
+     */
     private List<MenubarModule> menubarModulesCache;
-    /** Template adapters cache. */
+    /**
+     * Template adapters cache.
+     */
     private List<TemplateAdapter> templateAdaptersCache;
-    /** Navigation adapters cache. */
+    /**
+     * Navigation adapters cache.
+     */
     private Map<String, FormFilter> formFiltersCache;
-    /** Set types cache. */
+    /**
+     * Set types cache.
+     */
     private Map<String, SetType> setTypesCache;
+    /**
+     * Task modules cache.
+     */
+    private List<TaskModule> taskModulesCache;
 
-    /** Customization deployement ts. */
+
+    /**
+     * Customization deployement ts.
+     */
     private long customizationDeployementTS;
 
 
@@ -139,9 +172,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.ewCache = new ConcurrentHashMap<>();
         this.templatesCache = new ConcurrentHashMap<>();
         this.menuTemplatesCache = new ConcurrentHashMap<>();
-
-        // JSP locks
-        this.jspLocks = new ConcurrentHashMap<>();
 
         this.customizationDeployementTS = System.currentTimeMillis();
     }
@@ -188,9 +218,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize JavaServer page.
      *
-     * @param name JSP name
+     * @param name           JSP name
      * @param portletContext portlet context
-     * @param request portlet request
+     * @param request        portlet request
      * @return customized JavaServer page
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -227,7 +257,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                             // Destination
                             StringBuilder destination = new StringBuilder();
                             destination.append(StringUtils.substringBeforeLast(name, "."));
-                            destination.append(CUSTOM_JSP_EXTENTION);
+                            destination.append(CUSTOM_JSP_EXTENSION);
                             destination.append(this.customizationDeployementTS);
                             destination.append(".");
                             destination.append(StringUtils.substringAfterLast(name, "."));
@@ -258,7 +288,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize list templates.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -290,7 +319,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize fragments.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -325,7 +353,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize editable window.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -359,7 +386,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize cms item types.
      *
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -375,8 +401,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize list templates.
      *
-     * @param locale the locale
-     * @param customizer the customizer
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -397,7 +421,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize modules.
      *
-     * @param ctx the ctx
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -594,23 +617,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         return this.formFiltersCache;
     }
 
-    /**
-     * lists the names of registered plugins
-     *
-     */
-    public List<String> getRegisteredPluginNames() {
-        return this.customizationService.getRegisteredPluginNames();
-    }
-
-    /**
-     * Checks if a plugin with the provided name is registered
-     *
-     * @param pluginName
-     */
-    public boolean isPluginRegistered(String pluginName) {
-        return this.customizationService.isPluginRegistered(pluginName);
-
-    }
 
     /**
      * Customize set types.
@@ -629,6 +635,44 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         }
         return this.setTypesCache;
     }
+
+
+    /**
+     * Get task modules.
+     *
+     * @return task modules
+     */
+    public List<TaskModule> getTaskModules() {
+        if (this.taskModulesCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            this.taskModulesCache = (List<TaskModule>) attributes.get(Customizable.TASK_MODULES.toString());
+            if (this.taskModulesCache == null) {
+                this.taskModulesCache = new ArrayList<>(0);
+            }
+        }
+        return this.taskModulesCache;
+    }
+
+
+    /**
+     * lists the names of registered plugins
+     */
+    public List<String> getRegisteredPluginNames() {
+        return this.customizationService.getRegisteredPluginNames();
+    }
+
+    /**
+     * Checks if a plugin with the provided name is registered
+     *
+     * @param pluginName
+     */
+    public boolean isPluginRegistered(String pluginName) {
+        return this.customizationService.isPluginRegistered(pluginName);
+
+    }
+
 
     /**
      * {@inheritDoc}
@@ -649,7 +693,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.templateAdaptersCache = null;
         this.formFiltersCache = null;
         this.setTypesCache = null;
-        this.setTypesCache = null;
+        this.taskModulesCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

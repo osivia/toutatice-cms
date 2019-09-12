@@ -49,7 +49,9 @@ public enum Customizable {
     /** Template adapters. */
     TEMPLATE_ADAPTERS("osivia.customizer.cms.templateAdapters"),
 	/** Set types. */
-	SET_TYPES("osivia.customizer.cms.setTypes");
+	SET_TYPES("osivia.customizer.cms.setTypes"),
+    /** Task modules. */
+    TASK_MODULES("osivia.customizer.cms.taskModules");
 
 
     /** Property name. */

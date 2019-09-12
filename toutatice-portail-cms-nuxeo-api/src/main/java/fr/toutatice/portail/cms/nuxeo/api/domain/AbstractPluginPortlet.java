@@ -13,17 +13,8 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.portlet.PortletException;
-
+import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
@@ -38,12 +29,15 @@ import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItems;
+import org.osivia.portal.api.tasks.TaskModule;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.core.cms.DomainContextualization;
 
-import fr.toutatice.portail.cms.nuxeo.api.Customizable;
-import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import javax.portlet.PortletException;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Plugin portlet abstract super-class.
@@ -53,23 +47,30 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
  */
 public abstract class AbstractPluginPortlet extends PortalGenericPortlet implements ICustomizationModule {
 
-    /** Customization modules repository attribute name. */
-    private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
-    /** Customization modules repository attribute name. */
+    /**
+     * Customization modules repository attribute name.
+     */
     public static final int DEFAULT_DEPLOYMENT_ORDER = 100;
-
-
-    /** Customization module metadatas. */
-    private CustomizationModuleMetadatas metadatas;
-    /** Customization modules repository. */
-    private ICustomizationModulesRepository repository;
-
-
-    /** Class loader. */
+    /**
+     * Customization modules repository attribute name.
+     */
+    private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
+    /**
+     * Class loader.
+     */
     private final ClassLoader classLoader;
-
-    /** Taskbar service. */
+    /**
+     * Taskbar service.
+     */
     private final ITaskbarService taskbarService;
+    /**
+     * Customization module metadatas.
+     */
+    private CustomizationModuleMetadatas metadatas;
+    /**
+     * Customization modules repository.
+     */
+    private ICustomizationModulesRepository repository;
 
 
     /**
@@ -86,7 +87,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /**
      * Get deployment order.
-     * 
+     *
      * @return order
      */
     public int getOrder() {
@@ -135,8 +136,8 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     /**
      * Parse and register customized JavaServer pages.
      *
-     * @param directoryPath directory path
-     * @param directory directory
+     * @param directoryPath   directory path
+     * @param directory       directory
      * @param customizedPages customized JavaServer pages
      */
     public void parseJavaServerPages(String directoryPath, File directory, Map<String, CustomizedJsp> customizedPages) {
@@ -260,9 +261,9 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
     /**
      * Add document subtype.
      *
-     * @param context customization context
+     * @param context           customization context
      * @param parentDocTypeName parent document type name
-     * @param childDocTypeName child document type name
+     * @param childDocTypeName  child document type name
      */
     protected void addSubtype(CustomizationContext context, String parentDocTypeName, String childDocTypeName) {
         Map<String, DocumentType> docTypes = this.getDocTypes(context);
@@ -481,22 +482,44 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
 
     /**
      * Get Set types
+     *
      * @param context customization context
      * @return set types
      */
     @SuppressWarnings("unchecked")
-	protected Map<String, SetType> getSetTypes(CustomizationContext context) {
-    	// Customization context attributes
+    protected Map<String, SetType> getSetTypes(CustomizationContext context) {
+        // Customization context attributes
         Map<String, Object> attributes = context.getAttributes();
-        
+
         Map<String, SetType> setTypes = (Map<String, SetType>) attributes.get(Customizable.SET_TYPES.toString());
-        if (setTypes == null)
-        {
-        	setTypes = new ConcurrentHashMap<>();
-        	attributes.put(Customizable.SET_TYPES.toString(), setTypes);
+        if (setTypes == null) {
+            setTypes = new ConcurrentHashMap<>();
+            attributes.put(Customizable.SET_TYPES.toString(), setTypes);
         }
         return setTypes;
     }
+
+
+    /**
+     * Get task modules.
+     *
+     * @param customizationContext customization context
+     * @return task modules
+     */
+    protected List<TaskModule> getTaskModules(CustomizationContext customizationContext) {
+        // Customization context attributes
+        Map<String, Object> attributes = customizationContext.getAttributes();
+
+        // Task modules
+        List<TaskModule> taskModules = (List<TaskModule>) attributes.get(Customizable.TASK_MODULES.toString());
+        if (taskModules == null) {
+            taskModules = new ArrayList<>();
+            attributes.put(Customizable.TASK_MODULES.toString(), taskModules);
+        }
+
+        return taskModules;
+    }
+
 
     /**
      * Getter for taskbarService.
