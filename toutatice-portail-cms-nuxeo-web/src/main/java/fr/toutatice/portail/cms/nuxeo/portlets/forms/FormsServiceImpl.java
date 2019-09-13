@@ -415,7 +415,11 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
 
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Locale locale = null;
+        
+        if(portalControllerContext.getHttpServletRequest() != null && portalControllerContext.getHttpServletRequest().getLocale() != null) {
+        	locale = portalControllerContext.getHttpServletRequest().getLocale();
+        }
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         // Procedure instance properties
@@ -525,7 +529,12 @@ public class FormsServiceImpl implements IFormsService {
         String savedContextScope = cmsContext.getScope();
        
         
+        
+        
         try {
+        	if(portalControllerContext.getHttpServletRequest() == null) {
+            	cmsContext.setScope("superuser_no_cache");
+        	}
         	
         	DocRef docRef = (DocRef) this.cmsCustomizer.executeNuxeoCommand(cmsContext, command);
         	
@@ -550,7 +559,15 @@ public class FormsServiceImpl implements IFormsService {
         // Email notification
         if (!endStep) {
             String uuid = globalVariableValues.get("uuid");
-            String initiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+            String initiator = "";
+            if(portalControllerContext.getHttpServletRequest() != null) {
+            	initiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+            }
+            else {
+            	// TODO get default administrator
+            	initiator = "admin";
+            }
+            
             try {
                 this.sendEmailNotification(portalControllerContext, uuid, initiator);
             } catch (CMSException e) {
@@ -624,7 +641,12 @@ public class FormsServiceImpl implements IFormsService {
             Map<String, UploadedFile> uploadedFiles)
             throws FormFilterException {
         // Internationalization bundle
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Locale locale = null;
+        
+        if(portalControllerContext.getHttpServletRequest() != null && portalControllerContext.getHttpServletRequest().getLocale() != null) {
+        	locale = portalControllerContext.getHttpServletRequest().getLocale();
+        }
+        
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         // Step fields
