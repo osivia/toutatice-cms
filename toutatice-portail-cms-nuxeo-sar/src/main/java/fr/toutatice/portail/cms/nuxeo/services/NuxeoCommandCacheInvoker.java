@@ -176,7 +176,11 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                             }
                             else    {
                                 userRequest = (HttpServletRequest) ctx.getRequest();
+                                
                                 userName = (String) userRequest.getAttribute("osivia.delegation.userName");
+                                
+                                if( userName == null)
+                                    userName = userRequest.getRemoteUser();
                             }
                         }
 
