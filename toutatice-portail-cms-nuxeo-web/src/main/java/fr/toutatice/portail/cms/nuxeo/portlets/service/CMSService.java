@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -1338,7 +1339,7 @@ public class CMSService implements ICMSService {
                     // Documents
                     Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
 
-                    navigationItems = new HashMap<>(documents.size());
+                    navigationItems = new LinkedHashMap<>(documents.size());
 
                     for (Document document : documents.list()) {
                         String path = StringUtils.removeEnd(document.getPath(), ".proxy");

@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.forms;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,5 +73,24 @@ public class UpdateProcedureCommand extends AbstractProcedureCommand {
     protected String getOperationId() {
         return OPERATION_ID;
     }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getId() {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getSimpleName());
+        builder.append("/");
+        builder.append(new Date().getTime());
+        builder.append("/");
+        builder.append(properties.getString("pi:procedureModelWebId"));
+        builder.append("/");
+        builder.append(properties.getString("pi:currentStep"));
+            	
+        return builder.toString();    
+   }
 
 }
