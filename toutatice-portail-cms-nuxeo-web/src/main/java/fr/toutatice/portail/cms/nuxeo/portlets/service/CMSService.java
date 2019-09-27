@@ -160,6 +160,8 @@ public class CMSService implements ICMSService {
 
     /** Extended document informations request attribute prefix. */
     private static final String EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX = "osivia.cms.extendedDocumentInfos.";
+    
+	private final static Log procLogger = LogFactory.getLog("procedures");
 
 
     /** Logger. */
@@ -2981,6 +2983,7 @@ public class CMSService implements ICMSService {
             task = documents.get(0);
         } else {
             task = null;
+            procLogger.error("Found "+documents.size()+ " task(s) for "+user+" path="+path+" uuid="+uuid);
         }
 
         return task;
