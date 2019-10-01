@@ -190,6 +190,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /** Query filter pattern. */
     private static final Pattern QUERY_FILTER_PATTERN = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
+    
+    /** Customized search template */
+    private static final String SEARCH_TEMPLATE = "osivia.collaboration.search.template";
 
 
     /** File MIME types. */
@@ -2015,8 +2018,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         taskbarItems.add(home);
 
         // Search
+        String searchTemplate = "/default/templates/workspace/search";
+        if(StringUtils.isNotBlank(System.getProperty(SEARCH_TEMPLATE))) {
+            searchTemplate = System.getProperty(SEARCH_TEMPLATE);
+        }
+        
         TaskbarItem search = factory.createStapledTaskbarItem(ITaskbarService.SEARCH_TASK_ID, "SEARCH_TASK", "glyphicons glyphicons-search",
-                "/default/templates/workspace/search");
+                searchTemplate);
+        
         factory.hide(search, true);
         taskbarItems.add(search);
 
