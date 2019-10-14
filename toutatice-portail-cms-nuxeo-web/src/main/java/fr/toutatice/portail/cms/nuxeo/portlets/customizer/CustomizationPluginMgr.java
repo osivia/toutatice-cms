@@ -65,58 +65,99 @@ import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
  */
 public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
-    /** Custom JSP extension. */
+    /**
+     * Custom JSP extension.
+     */
     private static final String CUSTOM_JSP_EXTENTION = "-custom-";
-    /** JSP directory. */
+    /**
+     * JSP directory.
+     */
     private static final String WEB_INF_JSP = "/WEB-INF/jsp";
 
-    /** customizeJSPLockTable */
-    private static final Hashtable<String, ReentrantLock> customizeJSPLockTable = new Hashtable<String, ReentrantLock>();
-
-    /** CMS customizer. */
+    /**
+     * CMS customizer.
+     */
     private final DefaultCMSCustomizer customizer;
-    /** Customization service. */
+    /**
+     * Customization service.
+     */
     private final ICustomizationService customizationService;
 
-    /** Customization attributes cache. */
+    /**
+     * Customization attributes cache.
+     */
     private final Map<Locale, Map<String, Object>> customizationAttributesCache;
-    /** Customized JavaServer pages cache. */
+    /**
+     * Customized JavaServer pages cache.
+     */
     private final Map<String, CustomizedJsp> customizedJavaServerPagesCache;
-    /** Fragments cache. */
+    /**
+     * Fragments cache.
+     */
     private final Map<Locale, Map<String, FragmentType>> fragmentsCache;
-    /** Editable window cache. */
+    /**
+     * Editable window cache.
+     */
     private final Map<Locale, Map<String, EditableWindow>> ewCache;
-    /** List templates cache. */
+    /**
+     * List templates cache.
+     */
     private final Map<Locale, List<ListTemplate>> templatesCache;
-    /** Menu templates cache. */
+    /**
+     * Menu templates cache.
+     */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
 
-    /** JSP reentrant locks. */
+    /**
+     * JSP reentrant locks.
+     */
     private final Map<String, ReentrantLock> jspLocks;
 
 
-    /** Dynamic modules that defines players . */
+    /**
+     * Dynamic modules that defines players .
+     */
     private List<IPlayerModule> dynamicModules;
-    /** Types cache. */
+    /**
+     * Types cache.
+     */
     private Map<String, DocumentType> typesCache;
-    /** Navigation adapters cache. */
+    /**
+     * Navigation adapters cache.
+     */
     private List<INavigationAdapterModule> navigationAdaptersCache;
-    /** Domain contextualization cache. */
+    /**
+     * Domain contextualization cache.
+     */
     private List<DomainContextualization> domainContextualizationCache;
-    /** Tab groups cache. */
+    /**
+     * Tab groups cache.
+     */
     private Map<String, TabGroup> tabGroupsCache;
-    /** Taskbar items cache. */
+    /**
+     * Taskbar items cache.
+     */
     private TaskbarItems taskbarItemsCache;
-    /** Menubar modules cache. */
+    /**
+     * Menubar modules cache.
+     */
     private List<MenubarModule> menubarModulesCache;
-    /** Template adapters cache. */
+    /**
+     * Template adapters cache.
+     */
     private List<TemplateAdapter> templateAdaptersCache;
-    /** Navigation adapters cache. */
+    /**
+     * Navigation adapters cache.
+     */
     private Map<String, FormFilter> formFiltersCache;
-    /** Set types cache. */
+    /**
+     * Set types cache.
+     */
     private Map<String, SetType> setTypesCache;
 
-    /** Customization deployement ts. */
+    /**
+     * Customization deployement ts.
+     */
     private long customizationDeployementTS;
 
 
@@ -161,7 +202,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             /* Inject default types */
             List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
-            Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<String, DocumentType>(defaultTypes.size()));
+            Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<>(defaultTypes.size()));
 
             for (DocumentType defaultType : defaultTypes) {
                 types.put(defaultType.getName(), defaultType.clone());
@@ -188,9 +229,9 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize JavaServer page.
      *
-     * @param name JSP name
+     * @param name           JSP name
      * @param portletContext portlet context
-     * @param request portlet request
+     * @param request        portlet request
      * @return customized JavaServer page
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -200,13 +241,14 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         CustomizedJsp customizedPage = this.customizedJavaServerPagesCache.get(name);
 
         if ((customizedPage == null) && (name != null)) {
-
-            ReentrantLock customizeJSPLock = customizeJSPLockTable.get(name);
-            if (customizeJSPLock == null) {
-                customizeJSPLock = new ReentrantLock();
-                customizeJSPLockTable.put(name, customizeJSPLock);
+            // JSP lock
+            ReentrantLock jspLock = jspLocks.get(name);
+            if (jspLock == null) {
+                jspLock = new ReentrantLock();
+                jspLocks.put(name, jspLock);
             }
-            customizeJSPLock.lock();
+            jspLock.lock();
+
             try {
                 customizedPage = this.customizedJavaServerPagesCache.get(name);
                 if (customizedPage == null) {
@@ -219,7 +261,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
                     // Customized JavaServer pages
                     Map<String, CustomizedJsp> customizedPages = (Map<String, CustomizedJsp>) customizationAttributes.get(Customizable.JSP.toString());
-                    if ((name != null) && (customizedPages != null)) {
+                    if (customizedPages != null) {
                         String relativePath = StringUtils.removeStart(name, WEB_INF_JSP);
                         CustomizedJsp page = customizedPages.get(relativePath);
 
@@ -240,14 +282,13 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
                             File sourceFile = new File(page.getName());
                             FileUtils.copyFile(sourceFile, destinationFile);
 
-
                             customizedPage = new CustomizedJsp(destination.toString(), page.getClassLoader());
                         }
                     }
                     this.customizedJavaServerPagesCache.put(name, customizedPage);
                 }
             } finally {
-                customizeJSPLock.unlock();
+                jspLock.unlock();
             }
         }
         return customizedPage;
@@ -258,7 +299,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize list templates.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -290,7 +330,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize fragments.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -325,7 +364,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize editable window.
      *
      * @param locale the locale
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -359,7 +397,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize cms item types.
      *
-     * @param customizer the customizer
      * @return the map
      */
     @SuppressWarnings("unchecked")
@@ -375,8 +412,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize list templates.
      *
-     * @param locale the locale
-     * @param customizer the customizer
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -397,7 +432,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
     /**
      * Customize modules.
      *
-     * @param ctx the ctx
      * @return the list
      */
     @SuppressWarnings("unchecked")
@@ -406,7 +440,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
             Map<String, Object> customizationAttributes = this.getCustomizationAttributes(Locale.getDefault());
             List<IPlayerModule> players = (List<IPlayerModule>) customizationAttributes.get(Customizable.PLAYER.toString());
 
-            this.dynamicModules = new ArrayList<IPlayerModule>();
+            this.dynamicModules = new ArrayList<>();
             if (players != null) {
                 this.dynamicModules.addAll(players);
             }
@@ -528,7 +562,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Customize taskbar items.
      *
      * @return taskbar items
-     * @throws CMSException
      */
     public TaskbarItems customizeTaskbarItems() throws CMSException {
         if (this.taskbarItemsCache == null) {
@@ -596,7 +629,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
     /**
      * lists the names of registered plugins
-     *
      */
     public List<String> getRegisteredPluginNames() {
         return this.customizationService.getRegisteredPluginNames();
@@ -648,7 +680,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.menubarModulesCache = null;
         this.templateAdaptersCache = null;
         this.formFiltersCache = null;
-        this.setTypesCache = null;
         this.setTypesCache = null;
 
         // Clear caches
