@@ -105,7 +105,7 @@ public class ListCommand implements INuxeoCommand {
 
 
     protected OperationRequest generateVCSRequest(Session session) throws Exception {
-        OperationRequest request = session.newRequest("Document.PageProvider");
+        OperationRequest request = session.newRequest("Document.Query");
         request.setHeader(VCS_FORCE_FLAG, "true");
         request.set("pageSize", this.pageSize);
         request.set("page", this.pageNumber);

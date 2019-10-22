@@ -24,12 +24,15 @@ import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.server.ServerInvocation;
+import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
 import org.osivia.portal.api.locator.Locator;
@@ -37,6 +40,7 @@ import org.osivia.portal.api.log.LoggerMessage;
 import org.osivia.portal.api.profiler.IProfilerService;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
+import org.osivia.portal.api.transaction.ITransactionService;
 import org.osivia.portal.core.cms.IContentStreamingSupport;
 import org.osivia.portal.core.cms.Satellite;
 import org.osivia.portal.core.error.IPortalLogger;
@@ -351,8 +355,29 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         // v1.0.16 : déplacement création de session
 
                         begin = System.currentTimeMillis();
+                        
+                        ITransactionService transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
+                        
+                        if (transactionService.isStarted() && (transactionService.getResource("NUXEO") == null)) {
 
+                            // Start Tx
+                            Object object = nuxeoSession.newRequest("Repository.StartTransaction").execute();
+                            if (object instanceof FileBlob) {
+                                FileBlob txIdAsBlob = (FileBlob) object;
+                                String txId = IOUtils.toString(txIdAsBlob.getStream(), "UTF-8");
+                                
+                                // and register
+                                 transactionService.register("NUXEO", new TransactionResource(this.ctx, txId));
+                             }
+                        }
+                        
+
+                        
                         res = this.command.execute(nuxeoSession);
+                        
+                        
+                        
+                        
                     }
                 } catch (Exception e) {
 

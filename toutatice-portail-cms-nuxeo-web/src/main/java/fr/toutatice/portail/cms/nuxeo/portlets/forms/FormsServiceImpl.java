@@ -320,7 +320,9 @@ public class FormsServiceImpl implements IFormsService {
             finally {
                 cmsContext.setScope(savedScope);
             }
-            
+            if( "debug".equals(System.getProperty("osivia.transactionMode")))   {
+                // need es   
+               } else   {
 
             // Email notification
             try {
@@ -328,6 +330,7 @@ public class FormsServiceImpl implements IFormsService {
             } catch (CMSException e) {
                 throw new PortalException(e);
             }
+               }
         }
     	procLogger.info(" Procedure started "+uuid);
 
@@ -568,10 +571,15 @@ public class FormsServiceImpl implements IFormsService {
             	initiator = "admin";
             }
             
+            if( "debug".equals(System.getProperty("osivia.transactionMode")))   {
+             // need es   
+            }   else    {
+            
             try {
                 this.sendEmailNotification(portalControllerContext, uuid, initiator);
             } catch (CMSException e) {
                 throw new PortalException(e);
+            }
             }
         }
 
