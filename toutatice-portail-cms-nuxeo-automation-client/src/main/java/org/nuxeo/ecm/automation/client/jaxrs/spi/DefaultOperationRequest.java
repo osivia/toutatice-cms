@@ -17,11 +17,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.AsyncCallback;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.model.DateUtils;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.OperationDocumentation;
 import org.nuxeo.ecm.automation.client.model.OperationInput;
+import org.nuxeo.ecm.automation.client.model.PathRef;
+import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.transaction.ITransactionResource;
+import org.osivia.portal.api.transaction.ITransactionService;
 import org.nuxeo.ecm.automation.client.model.OperationDocumentation.Param;
 
 /**
@@ -57,6 +63,13 @@ public class DefaultOperationRequest implements OperationRequest {
         // #1495 - Set Osivia portal in header x-application-name
         headers.put(APP_HEADER, APP_HEADER_VALUE);
         
+        
+        ITransactionService transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
+        if (transactionService.isStarted()) {
+            ITransactionResource resource =  (ITransactionResource) transactionService.getResource("NUXEO");
+            if( resource != null)
+                headers.put("Tx-conversation-id", (String) resource.getInternalTransaction());
+        }
         this.ctx = ctx;
     }
 
