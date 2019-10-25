@@ -51,7 +51,9 @@ public enum Customizable {
 	/** Set types. */
 	SET_TYPES("osivia.customizer.cms.setTypes"),
     /** Task modules. */
-    TASK_MODULES("osivia.customizer.cms.taskModules");
+    TASK_MODULES("osivia.customizer.cms.taskModules"),
+    /** Document modules. */
+    DOCUMENT_MODULES("osivia.customizer.cms.documentModules");
 
 
     /** Property name. */

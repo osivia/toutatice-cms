@@ -16,7 +16,9 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.domain.*;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cms.DocumentType;
@@ -99,6 +101,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Menu templates cache.
      */
     private final Map<Locale, SortedMap<String, String>> menuTemplatesCache;
+    /**
+     * Document modules cache.
+     */
+    private final Map<String, List<IPortletModule>> documentModulesCache;
 
 
     /**
@@ -172,6 +178,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.ewCache = new ConcurrentHashMap<>();
         this.templatesCache = new ConcurrentHashMap<>();
         this.menuTemplatesCache = new ConcurrentHashMap<>();
+        this.documentModulesCache = new ConcurrentHashMap<>();
 
         this.customizationDeployementTS = System.currentTimeMillis();
     }
@@ -657,6 +664,38 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Get document modules.
+     *
+     * @param type document type
+     * @return document modules
+     */
+    public List<IPortletModule> getDocumentModules(String type) {
+        List<IPortletModule> modules = this.documentModulesCache.get(type);
+
+        if (modules == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            // Attribute value
+            Map<String, List<IPortletModule>> value = (Map<String, List<IPortletModule>>) attributes.get(Customizable.DOCUMENT_MODULES.toString());
+
+            if (MapUtils.isNotEmpty(value)) {
+                modules = value.get(type);
+            }
+
+            if (modules == null) {
+                modules = new ArrayList<>();
+            }
+
+            // Update cache
+            this.documentModulesCache.put(type, modules);
+        }
+
+        return modules;
+    }
+
+
+    /**
      * lists the names of registered plugins
      */
     public List<String> getRegisteredPluginNames() {
@@ -702,6 +741,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.ewCache.clear();
         this.templatesCache.clear();
         this.menuTemplatesCache.clear();
+        this.documentModulesCache.clear();
     }
 
 }

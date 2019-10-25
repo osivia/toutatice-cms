@@ -17,17 +17,14 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-import javax.servlet.http.HttpSessionListener;
-
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
+import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
@@ -39,13 +36,11 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICustomizationService;
 
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpSessionListener;
+import java.io.IOException;
+import java.util.*;
 
 
 /**
@@ -65,17 +60,17 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Create custom link.
-     *
+     * <p>
      * custom links are useful during the cms link generation when the cms controller phase
      * is not adapted
-     *
-     *  Use cases :
+     * <p>
+     * Use cases :
      * - the action for the link is powered directly by the portlet (for example, the download of an attached file)
      * - the link opens an external application
-     *
+     * <p>
      * if this method returns null, then the standard cms pattern will be applied
-     *
-     *
+     * <p>
+     * <p>
      * displayContext : menu, download, fileExplorer, permlink ...
      *
      * @param ctx CMS context
@@ -98,7 +93,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * Get Nuxeo document comments HTML formatted content.
      *
      * @param cmsContext CMS context
-     * @param document Nuxeo document
+     * @param document   Nuxeo document
      * @return comments HTML formatted content
      * @throws CMSException the CMS exception
      */
@@ -108,23 +103,22 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Add publication filter.
      *
-     * @param ctx CMS context
-     * @param nuxeoRequest Nuxeo request
+     * @param ctx                    CMS context
+     * @param nuxeoRequest           Nuxeo request
      * @param requestFilteringPolicy request filtering policy
-     * @param denormalized the denormalized
-     * @param boolean ignoreNavigation      * 
+     * @param denormalized           the denormalized
+     * @param boolean                ignoreNavigation      *
      * @return edited Nuxeo request
      * @throws Exception the exception
      */
     String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, boolean ignoreNavigation) throws Exception;
 
-    
 
     /**
      * Add search filter.
      *
-     * @param ctx CMS context
-     * @param nuxeoRequest Nuxeo request
+     * @param ctx                    CMS context
+     * @param nuxeoRequest           Nuxeo request
      * @param requestFilteringPolicy request filtering policy
      * @return edited Nuxeo request
      * @throws Exception the exception
@@ -134,7 +128,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Transform HTML content.
      *
-     * @param ctx CMS context
+     * @param ctx         CMS context
      * @param htmlContent HTML content
      * @return transformed HTML content
      * @throws Exception the exception
@@ -145,7 +139,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Transform link URL.
      *
-     * @param ctx CMS context
+     * @param ctx  CMS context
      * @param link link URL
      * @return transformed link URL
      */
@@ -156,14 +150,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * Get portal link from Nuxeo or absolute URL.
      *
      * @param cmsContext CMS context
-     * @param url Nuxeo or absolute URL
+     * @param url        Nuxeo or absolute URL
      * @return link
      */
     Link getLinkFromNuxeoURL(CMSServiceCtx cmsContext, String url);
 
     /**
      * Get portal link from Nuxeo or absolute URL.
-     * 
+     *
      * @param cmsContext
      * @param url
      * @param displayContext
@@ -178,12 +172,12 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param ctx CMS context
      * @return the content web id path
      */
-    String getContentWebIdPath(CMSServiceCtx ctx) ;
+    String getContentWebIdPath(CMSServiceCtx ctx);
 
 
     /**
      * Get CMS item types.
-     * 
+     *
      * @return CMS item types
      * @deprecated use getDocumentTypes instead
      */
@@ -192,7 +186,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Get document types.
-     * 
+     *
      * @return document types
      */
     Map<String, DocumentType> getDocumentTypes();
@@ -200,7 +194,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Get file MIME types.
-     * 
+     *
      * @return MIME types
      * @throws IOException
      */
@@ -209,7 +203,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
 
     /**
      * Get file MIME type.
-     * 
+     *
      * @param mimeType selected MIME type
      * @return MIME type
      * @throws IOException
@@ -236,7 +230,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Get the user avatar.
      *
-     * @param cmsCtx cms context
+     * @param cmsCtx   cms context
      * @param username username
      * @return the user avatar
      * @throws CMSException the CMS exception
@@ -248,7 +242,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Refresh the user avatar.
      *
-     * @param cmsCtx cms context
+     * @param cmsCtx   cms context
      * @param username username
      * @return the timestamp associated with the refresh event
      */
@@ -257,7 +251,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Refresh the user avatar.
      *
-     * @param cmsCtx cms context
+     * @param cmsCtx   cms context
      * @param username username
      * @return the timestamp associated with the refresh event
      * @deprecated use refreshUserAvatar(String username);
@@ -297,7 +291,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @param locale the locale
      * @return editable winsow list
      */
-    Map<String,EditableWindow> getEditableWindows(Locale locale);
+    Map<String, EditableWindow> getEditableWindows(Locale locale);
 
     /**
      * Get menu templates.
@@ -311,20 +305,20 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     /**
      * Customize jsp new.
      *
-     * @param name the name
+     * @param name           the name
      * @param portletContext the portlet context
-     * @param request the request
+     * @param request        the request
      * @return the string
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException ;
+    String getJSPName(String name, PortletContext portletContext, PortletRequest request) throws CMSException;
 
 
     /**
      * Execute Nuxeo command.
      *
      * @param cmsContext CMS context
-     * @param command Nuxeo command
+     * @param command    Nuxeo command
      * @return Nuxeo command result
      * @throws CMSException the CMS exception
      */
@@ -345,36 +339,47 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the CMS file browser
      */
     Player getCMSFileBrowser(NuxeoDocumentContext documentContext);
-    
+
     /**
      * Get workspaces of user
+     *
      * @param controller
      * @param userName
      * @return
      */
     List<Document> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException;
-    
-    
+
+
     /**
      * Getter for customizationService.
      *
      * @return the customizationService
      */
     ICustomizationService getCustomizationService();
-    
-    
+
+
     /**
      * Gets set types list
+     *
      * @return the set types map
      */
     Collection<SetType> getSetTypes();
 
 
-	/**
-	 * Getter for html link target on document (#1933).
-	 * 
-	 * @param document
-	 */
-	String getTarget(DocumentDTO document);
+    /**
+     * Getter for html link target on document (#1933).
+     *
+     * @param document
+     */
+    String getTarget(DocumentDTO document);
+
+
+    /**
+     * Get document modules.
+     *
+     * @param type document type
+     * @return document modules
+     */
+    List<IPortletModule> getDocumentModules(String type);
 
 }

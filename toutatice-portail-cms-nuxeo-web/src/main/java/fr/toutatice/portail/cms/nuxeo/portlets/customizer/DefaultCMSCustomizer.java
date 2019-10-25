@@ -13,44 +13,30 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
-import javax.portlet.PortletRequest;
-import javax.portlet.ResourceURL;
-import javax.portlet.WindowState;
-import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
-import javax.servlet.http.HttpSessionEvent;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.*;
+import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
+import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
+import fr.toutatice.portail.cms.nuxeo.portlets.fragment.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
+import fr.toutatice.portail.cms.nuxeo.service.commands.*;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -62,12 +48,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
-import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.PortalObject;
-import org.jboss.portal.core.model.portal.PortalObjectContainer;
-import org.jboss.portal.core.model.portal.PortalObjectId;
-import org.jboss.portal.core.model.portal.PortalObjectPath;
-import org.jboss.portal.core.model.portal.Window;
+import org.jboss.portal.core.model.portal.*;
 import org.jboss.portal.server.ServerInvocation;
 import org.jboss.portal.server.ServerInvocationContext;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -95,13 +76,7 @@ import org.osivia.portal.api.taskbar.TaskbarItem;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
-import org.osivia.portal.core.cms.BinaryDelegation;
-import org.osivia.portal.core.cms.BinaryDescription;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSPage;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.customization.ICustomizationService;
@@ -111,61 +86,24 @@ import org.osivia.portal.core.web.IWebUrlService;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CustomizedJsp;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
-import fr.toutatice.portail.cms.nuxeo.api.player.INuxeoPlayerModule;
-import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
-import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.DefaultPlayer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.MenuBarFormater;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.NavigationItemAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.UserPagesLoader;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WysiwygParser;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.XSLFunctions;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.AttachmentsFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.DocumentPictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.LinkFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.NavigationPictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.PropertyFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SitePictureFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.fragment.SpaceMenubarFragmentModule;
-import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.cms.nuxeo.service.commands.AddToQuickAccessCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.DeleteDocumentCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.EraseModificationsCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.LockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.RemoveFromQuickAccessCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.SubscribeCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.SynchronizeCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.UnlockCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.UnsubscribeCommand;
-import fr.toutatice.portail.cms.nuxeo.service.commands.UnsynchronizeCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.FragmentEditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.HTMLEditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ListEditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PictureEditableWindow;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWindow;
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import javax.portlet.*;
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpSessionEvent;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Default CMS customizer.
@@ -174,90 +112,146 @@ import fr.toutatice.portail.cms.nuxeo.service.editablewindow.PortletEditableWind
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
-    /** Default schemas. */
+    /**
+     * Default schemas.
+     */
     public static final String DEFAULT_SCHEMAS = "dublincore, common, toutatice, file";
-    /** PROCEDURE_SCHEMAS */
+    /**
+     * PROCEDURE_SCHEMAS
+     */
     public static final String PROCEDURE_SCHEMAS = "dublincore, common, toutatice, files, procedureInstance, record";
-    /** Template "download". */
+    /**
+     * Template "download".
+     */
     public static final String TEMPLATE_DOWNLOAD = "download";
 
-    /** Servlet URL for avatars */
+    /**
+     * Servlet URL for avatars
+     */
     private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
-    /** Binary servlet URL. */
+    /**
+     * Binary servlet URL.
+     */
     private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
 
     private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";
 
-    /** Query filter pattern. */
+    /**
+     * Query filter pattern.
+     */
     private static final Pattern QUERY_FILTER_PATTERN = Pattern.compile("(.*)ORDER([ ]*)BY(.*)");
-
-
-    /** File MIME types. */
-    private Map<String, FileMimeType> fileMimeTypes;
-
-
-    /** Log. */
+    /**
+     * Log.
+     */
     private final Log log;
-    /** Portlet context. */
+    /**
+     * Portlet context.
+     */
     private final PortletContext portletContext;
-    /** CMS service. */
+    /**
+     * CMS service.
+     */
     private final CMSService cmsService;
-
-    /** Binary delegations. */
+    /**
+     * Binary delegations.
+     */
     private final Map<String, Map<String, BinaryDelegation>> delegations;
-    /** Players. */
+    /**
+     * Players.
+     */
     private final Map<String, INuxeoPlayerModule> players;
-    /** Navigation panel players. */
+    /**
+     * Navigation panel players.
+     */
     private final Map<String, PanelPlayer> navigationPanelPlayers;
-    /** Avatar map. */
+    /**
+     * Avatar map.
+     */
     private final Map<String, String> avatarMap;
-    /** Binary timestamps. */
+    /**
+     * Binary timestamps.
+     */
     private final Map<String, BinaryTimestamp> binaryTimestamps;
-
-    /** Plugin manager. */
+    /**
+     * Plugin manager.
+     */
     private final CustomizationPluginMgr pluginManager;
-    /** Nuxeo connection properties. */
+    /**
+     * Nuxeo connection properties.
+     */
     private final NuxeoConnectionProperties nuxeoConnection;
-    /** User pages loader. */
+    /**
+     * User pages loader.
+     */
     private final UserPagesLoader userPagesLoader;
-    /** Menubar formatter. */
+    /**
+     * Menubar formatter.
+     */
     private final MenuBarFormater menubarFormater;
-    /** Browser adapter. */
+    /**
+     * Browser adapter.
+     */
     private final BrowserAdapter browserAdapter;
-    /** Navigation item adapter. */
+    /**
+     * Navigation item adapter.
+     */
     @Deprecated
     private final NavigationItemAdapter navigationItemAdapter;
-
-    /** Class loader. */
+    /**
+     * Class loader.
+     */
     private final ClassLoader classLoader;
-    /** XML parser. */
+    /**
+     * XML parser.
+     */
     private final XMLReader parser;
-
-    /** Portal URL factory. */
+    /**
+     * Portal URL factory.
+     */
     private final IPortalUrlFactory portalUrlFactory;
-    /** WebId service. */
+    /**
+     * WebId service.
+     */
     private final IWebIdService webIdService;
-    /** Web URL service. */
+    /**
+     * Web URL service.
+     */
     private final IWebUrlService webUrlService;
-    /** Taskbar service. */
+    /**
+     * Taskbar service.
+     */
     private final ITaskbarService taskbarService;
-    /** Customization service. */
+    /**
+     * Customization service.
+     */
     private final ICustomizationService customizationService;
-    /** Nuxeo comments service. */
+    /**
+     * Nuxeo comments service.
+     */
     private final INuxeoCommentsService nuxeoCommentsService;
-    /** Internationalization service */
+    /**
+     * Internationalization service
+     */
     private final IInternationalizationService internationalizationService;
-    /** Internationalization bundle factory. */
+    /**
+     * Internationalization bundle factory.
+     */
     private final IBundleFactory bundleFactory;
-    /** Notification service */
+    /**
+     * Notification service
+     */
     private final INotificationsService notificationsService;
+    /**
+     * File MIME types.
+     */
+    private Map<String, FileMimeType> fileMimeTypes;
 
 
     /**
      * Constructor.
      *
      * @param portletContext portlet context
-     * @param cmsService CMS service
+     * @param cmsService     CMS service
      */
     public DefaultCMSCustomizer(PortletContext portletContext, CMSService cmsService) {
         super();
@@ -320,6 +314,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
     }
 
+    /**
+     * Get search schema.
+     *
+     * @return search schema
+     */
+    public static String getSearchSchema() {
+        return "dublincore,common,file,toutatice";
+    }
 
     /**
      * {@inheritDoc}
@@ -328,7 +330,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public final Map<String, EditableWindow> getEditableWindows(Locale locale) {
         return this.pluginManager.customizeEditableWindows(locale);
     }
-
 
     /**
      * Init editable windows.
@@ -347,7 +348,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return map;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -355,7 +355,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public final List<ListTemplate> getListTemplates(Locale locale) {
         return this.pluginManager.customizeListTemplates(locale);
     }
-
 
     public List<ListTemplate> initListTemplates(Locale locale) {
         List<ListTemplate> templates = new ArrayList<>();
@@ -383,7 +382,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return templates;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -392,7 +390,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.pluginManager.getFragments(locale);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -400,7 +397,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public Map<String, FormFilter> getFormsFilters() {
         return this.pluginManager.getFormFilters();
     }
-
 
     /**
      * Inits the list fragments.
@@ -442,7 +438,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return fragmentTypes;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -450,7 +445,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public SortedMap<String, String> getMenuTemplates(Locale locale) {
         return this.pluginManager.customizeMenuTemplates(locale);
     }
-
 
     /**
      * Menu templates initialization.
@@ -477,17 +471,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return templates;
     }
-
-
-    /**
-     * Get search schema.
-     *
-     * @return search schema
-     */
-    public static String getSearchSchema() {
-        return "dublincore,common,file,toutatice";
-    }
-
 
     /**
      * Get CMS default player.
@@ -639,9 +622,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Create portlet link.
      *
-     * @param ctx CMS context
+     * @param ctx             CMS context
      * @param portletInstance portlet instance
-     * @param uid UID
+     * @param uid             UID
      * @return portlet link
      */
     public Player createPortletLink(CMSServiceCtx ctx, String portletInstance, String uid) {
@@ -948,8 +931,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Parse specified CMS URL.
      *
-     * @param cmsCtx CMS context
-     * @param requestPath request path
+     * @param cmsCtx            CMS context
+     * @param requestPath       request path
      * @param requestParameters request parameters
      * @return CMS URL
      * @throws Exception
@@ -966,29 +949,28 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public String addPublicationFilter(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, boolean ignoreNavigationElements) throws Exception {
         /* Filtre pour sélectionner uniquement les version publiées */
         String requestFilter = StringUtils.EMPTY;
-        
+
         String hiddenInNavigation = "";
-        if( ignoreNavigationElements) {
+        if (ignoreNavigationElements) {
             hiddenInNavigation = "ecm:mixinType != 'HiddenInNavigation' AND ";
         }
 
         if ("1".equals(ctx.getDisplayLiveVersion())) {
             // selection des versions lives : il faut exclure les proxys
-            requestFilter = hiddenInNavigation+"ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
+            requestFilter = hiddenInNavigation + "ecm:isProxy = 0  AND ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0 ";
 
         } else if ("2".equals(ctx.getDisplayLiveVersion())) {
             // All except lives of publish spaces
-            requestFilter = hiddenInNavigation+ "ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
+            requestFilter = hiddenInNavigation + "ecm:currentLifeCycleState <> 'deleted'  AND ecm:isCheckedInVersion = 0"
                     + " AND ecm:mixinType <> 'isLocalPublishLive'";
         } else {
             // sélection des folders et des documents publiés
-            requestFilter = "ecm:isProxy = 1 AND "+hiddenInNavigation+"ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
+            requestFilter = "ecm:isProxy = 1 AND " + hiddenInNavigation + "ecm:currentLifeCycleState <> 'deleted' AND ecm:isCheckedInVersion = 0";
         }
 
         return this.addExtraNxQueryFilters(ctx, nuxeoRequest, requestFilteringPolicy, requestFilter);
 
     }
-    
 
 
     /**
@@ -1071,7 +1053,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                         // Path filter builder
                         StringBuilder builder = new StringBuilder();
                         builder.append(" AND (");
-                        
+
                         boolean first = true;
                         for (String path : paths) {
                             if (first) {
@@ -1144,7 +1126,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Etendre la recherche à d'autres path.
      *
-     * @param ctx cms context
+     * @param ctx                    cms context
      * @param requestFilteringPolicy policy de filtrage
      * @return code NXQL
      * @throws Exception
@@ -1219,7 +1201,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         XSLFunctions xslFunctions = new XSLFunctions(this, ctx);
 
         return xslFunctions.link(link);
-        
+
     }
 
     /**
@@ -1330,7 +1312,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Transform Nuxeo URL into CMS path.
      *
      * @param cmsContext CMS
-     * @param url Nuxeo URL
+     * @param url        Nuxeo URL
      * @return CMS path
      */
     private String transformNuxeoURL(CMSServiceCtx cmsContext, String url) {
@@ -1454,7 +1436,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         defaultTypes.add(note);
 
         // Contextual link
-        DocumentType contextualLink = DocumentType.createLeaf("ContextualLink") ;
+        DocumentType contextualLink = DocumentType.createLeaf("ContextualLink");
         contextualLink.setIcon("glyphicons glyphicons-basic-link");
         contextualLink.setEditable(true);
         contextualLink.setMovable(true);
@@ -1494,7 +1476,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Load MIME types.
-     * 
+     *
      * @throws IOException
      */
     private synchronized void loadFileMimeTypes() throws IOException {
@@ -1587,7 +1569,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
     /**
      * Gets webId according to context.
-     * 
+     *
      * @param cmsCtx
      * @param pubInfos
      * @return webId
@@ -1709,7 +1691,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Validate binary delegation.
      *
      * @param cmsCtx the cms ctx
-     * @param path the path
+     * @param path   the path
      * @return the binary delegation
      */
     public BinaryDelegation validateBinaryDelegation(CMSServiceCtx cmsCtx, String path) {
@@ -1990,7 +1972,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.notificationsService, this.internationalizationService));
-        
+
         commands.put(EcmCommonCommands.addToQuickAccess.name(), new AddToQuickAccessCommand(this.notificationsService, this.internationalizationService));
         commands.put(EcmCommonCommands.removeFromQuickAccess.name(), new RemoveFromQuickAccessCommand(this.notificationsService, this.internationalizationService));
 
@@ -2076,31 +2058,30 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             throw new CMSException(e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Collection<SetType> getSetTypes() {
-    	Map<String, SetType> mapSetTypes = this.pluginManager.getSetTypes();
-    	Collection<SetType> collectionSetType = new ArrayList<>();
-    	if (mapSetTypes != null) collectionSetType = mapSetTypes.values();
-    	return collectionSetType;
+        Map<String, SetType> mapSetTypes = this.pluginManager.getSetTypes();
+        Collection<SetType> collectionSetType = new ArrayList<>();
+        if (mapSetTypes != null) collectionSetType = mapSetTypes.values();
+        return collectionSetType;
     }
-    
 
-	/* (non-Javadoc)
+
+    /* (non-Javadoc)
      * @see fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer#getTarget(fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO)
      */
     @Override
     public String getTarget(DocumentDTO document) {
-    	if(System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
-			Object spaceUuid = document.getProperties().get("ttc:spaceUuid");
-			if(spaceUuid != null)
-				return spaceUuid.toString();
-			else return null;
-		}
-		else return null;
+        if (System.getProperty(TABS_PROPERTY) != null && "true".equals(System.getProperty(TABS_PROPERTY))) {
+            Object spaceUuid = document.getProperties().get("ttc:spaceUuid");
+            if (spaceUuid != null)
+                return spaceUuid.toString();
+            else return null;
+        } else return null;
     }
 
 
@@ -2314,19 +2295,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
-	@Override
-	public List<Document> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException {
-		
-		List<CMSItem> listItem = this.browserAdapter.getUserWorkspaces(cmsContext, userName);
-		List<Document> listDocument = new ArrayList<>();
-		for(CMSItem item : listItem)
-		{
-			if (item.getNativeItem() instanceof Document) 
-			{
-				listDocument.add((Document) item.getNativeItem());
-			}
-		}
-		return listDocument;
-	}
+    @Override
+    public List<Document> getUserWorkspaces(CMSServiceCtx cmsContext, String userName) throws CMSException {
+
+        List<CMSItem> listItem = this.browserAdapter.getUserWorkspaces(cmsContext, userName);
+        List<Document> listDocument = new ArrayList<>();
+        for (CMSItem item : listItem) {
+            if (item.getNativeItem() instanceof Document) {
+                listDocument.add((Document) item.getNativeItem());
+            }
+        }
+        return listDocument;
+    }
+
+
+    @Override
+    public List<IPortletModule> getDocumentModules(String type) {
+        return this.pluginManager.getDocumentModules(type);
+    }
 
 }

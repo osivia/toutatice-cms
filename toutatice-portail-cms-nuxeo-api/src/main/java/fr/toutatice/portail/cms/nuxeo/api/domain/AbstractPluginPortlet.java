@@ -15,6 +15,7 @@ package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
@@ -518,6 +519,35 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         }
 
         return taskModules;
+    }
+
+
+    /**
+     * Get document modules.
+     *
+     * @param customizationContext customization context
+     * @param type                 document type
+     * @return document modules
+     */
+    protected List<IPortletModule> getDocumentModules(CustomizationContext customizationContext, String type) {
+        // Customization context attributes
+        Map<String, Object> attributes = customizationContext.getAttributes();
+
+        // Attribute value
+        Map<String, List<IPortletModule>> value = (Map<String, List<IPortletModule>>) attributes.get(Customizable.DOCUMENT_MODULES.toString());
+        if (value == null) {
+            value = new ConcurrentHashMap<>();
+            attributes.put(Customizable.DOCUMENT_MODULES.toString(), value);
+        }
+
+        // Document modules
+        List<IPortletModule> modules = value.get(type);
+        if (modules == null) {
+            modules = new ArrayList<>();
+            value.put(type, modules);
+        }
+
+        return modules;
     }
 
 
