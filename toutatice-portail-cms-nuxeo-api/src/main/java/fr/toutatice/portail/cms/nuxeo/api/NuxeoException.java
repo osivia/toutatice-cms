@@ -142,9 +142,17 @@ public class NuxeoException extends RuntimeException {
 		}
 		
 		if( quotaExceeded) {
-    
-			message = itlzService.getString("ERROR_MESSAGE_QUOTA_EXCEEDED", portalCtx.getHttpServletRequest().getLocale());      
+ 			message = itlzService.getString("ERROR_MESSAGE_QUOTA_EXCEEDED", portalCtx.getHttpServletRequest().getLocale());      
 		}
+		
+		
+		
+        
+        if( "Virus found".equals(curException.getMessage())){
+            message = itlzService.getString("ERROR_MESSAGE_VIRUS_FOUND", portalCtx.getHttpServletRequest().getLocale());  
+        }
+		
+		
 		return message;
 	}
 
