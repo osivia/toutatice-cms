@@ -23,6 +23,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -159,8 +160,18 @@ public class FormsServiceImpl implements IFormsService {
         Document model = this.getModel(portalControllerContext, modelWebId);
 
         // Procedure initiator
-        String procedureInitiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+        String procedureInitiator = "";
+        HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
+        if(httpServletRequest != null) {
+            procedureInitiator = httpServletRequest.getRemoteUser();
+        }
+        else {
+            // #1569 - Specific parameters for procedures in batch mode
+            procedureInitiator = System.getProperty("nuxeo.superUserId");
+            cmsContext.setScope("superuser_no_cache");
+        }
 
+        
         // Starting step
         String startingStep = model.getString("pcd:startingStep");
         // Starting step properties
@@ -238,7 +249,7 @@ public class FormsServiceImpl implements IFormsService {
             }
         }
 
-    	procLogger.info(" Procedure started "+uuid);
+    	procLogger.info(" Procedure started "+uuid+ " : "+filterContext.getVariables());
 
         return filterContext.getVariables();
     }
@@ -292,6 +303,11 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
 
+        // For batch mode, set the superuser mode
+        HttpServletRequest httpServletRequest = portalControllerContext.getHttpServletRequest();
+        if(httpServletRequest == null) {
+            cmsContext.setScope("superuser_no_cache");
+        }
 
         // Procedure instance properties
         PropertyMap instanceProperties = taskProperties.getMap("nt:pi");
@@ -385,7 +401,10 @@ public class FormsServiceImpl implements IFormsService {
         // Email notification
         if (!endStep) {
             String uuid = globalVariableValues.get("uuid");
-            String initiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+            String initiator = System.getProperty("nuxeo.superUserId");
+            if(portalControllerContext.getHttpServletRequest() != null) {
+            	initiator = portalControllerContext.getHttpServletRequest().getRemoteUser();
+            }
             try {
                 this.sendEmailNotification(portalControllerContext, uuid, initiator);
             } catch (CMSException e) {
@@ -432,7 +451,11 @@ public class FormsServiceImpl implements IFormsService {
     private void requiredFieldsValidation(PortalControllerContext portalControllerContext, PropertyMap step, Map<String, String> variables)
             throws FormFilterException {
         // Internationalization bundle
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+    	Locale locale = null;
+    	if(portalControllerContext.getHttpServletRequest() != null) {
+    		locale = portalControllerContext.getHttpServletRequest().getLocale();
+    	}
+    	
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         // Step fields
@@ -665,7 +688,12 @@ public class FormsServiceImpl implements IFormsService {
         nuxeoController.setCacheType(CacheInfo.CACHE_SCOPE_NONE);
 
         // Internationalization bundle
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        Locale locale = null;
+        if(portalControllerContext.getHttpServletRequest() != null) {
+
+        	locale = portalControllerContext.getHttpServletRequest().getLocale();
+        }
+        
         Bundle bundle = this.bundleFactory.getBundle(locale);
 
         if (StringUtils.isNotEmpty(procedureInstanceId)) {
