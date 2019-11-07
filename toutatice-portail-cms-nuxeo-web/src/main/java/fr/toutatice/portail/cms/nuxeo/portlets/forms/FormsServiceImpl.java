@@ -187,8 +187,15 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
         
-        Locale locale = portalControllerContext.getHttpServletRequest().getLocale();
+        
+        Locale locale = null;
+        
+        if(portalControllerContext.getHttpServletRequest() != null && portalControllerContext.getHttpServletRequest().getLocale() != null) {
+            locale = portalControllerContext.getHttpServletRequest().getLocale();
+        }
         Bundle bundle = this.bundleFactory.getBundle(locale);
+        
+
 
         if (variables == null) {
             variables = new HashMap<String, String>();
