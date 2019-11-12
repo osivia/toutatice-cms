@@ -18,15 +18,13 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
@@ -114,7 +112,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      * @throws UnsupportedEncodingException
      */
     private List<CMSItem> convertPublishingInfos(JSONArray publishingInfos) throws CMSException, UnsupportedEncodingException{
-        List<CMSItem> cmsItems = new ArrayList<CMSItem>(publishingInfos.size());
+        List<CMSItem> cmsItems = new ArrayList<>(publishingInfos.size());
         Iterator<?> documentsIterator = publishingInfos.iterator();
         while (documentsIterator.hasNext()) {
             JSONObject documentWithPublishingStatus = (JSONObject) documentsIterator.next();
@@ -142,6 +140,11 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
 
             cmsItems.add(cmsItem);
         }
+
+        // Sort
+        Comparator<CMSItem> comparator = new CmsItemComparator();
+        Collections.sort(cmsItems, comparator);
+
         return cmsItems;
     }
 
@@ -185,6 +188,42 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
      */
     private String getSchemas() {
         return "dublincore, common, toutatice";
+    }
+
+
+    /**
+     * CMS item comparator.
+     * @see Comparator
+     * @see CMSItem
+     */
+    private class CmsItemComparator implements Comparator<CMSItem> {
+
+        /**
+         * Constructor.
+         */
+        public CmsItemComparator() {
+            super();
+        }
+
+
+        @Override
+        public int compare(CMSItem item1, CMSItem item2) {
+            int result;
+
+            if (item1 == null) {
+                result = -1;
+            } else if (item2 == null) {
+                result = 1;
+            } else {
+                String title1 = StringUtils.trimToEmpty(item1.getProperties().get("displayName"));
+                String title2 = StringUtils.trimToEmpty(item2.getProperties().get("displayName"));
+
+                result = title1.compareToIgnoreCase(title2);
+            }
+
+            return result;
+        }
+
     }
 
 }
