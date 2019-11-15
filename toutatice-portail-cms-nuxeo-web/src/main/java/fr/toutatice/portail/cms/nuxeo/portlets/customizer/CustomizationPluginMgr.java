@@ -202,7 +202,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
             /* Inject default types */
             List<DocumentType> defaultTypes = this.customizer.getDefaultCMSItemTypes();
-            Map<String, DocumentType> types = Collections.synchronizedMap(new LinkedHashMap<>(defaultTypes.size()));
+            Map<Object, Object> types = Collections.synchronizedMap(new LinkedHashMap<>(defaultTypes.size()));
 
             for (DocumentType defaultType : defaultTypes) {
                 types.put(defaultType.getName(), defaultType.clone());
