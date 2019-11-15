@@ -42,7 +42,7 @@ public class UserTag extends ToutaticeSimpleTag {
      */
     public UserTag() {
         super();
-        this.linkable = true;
+        this.linkable = false;
         this.hideAvatar = false;
         this.hideDisplayName = false;
     }
