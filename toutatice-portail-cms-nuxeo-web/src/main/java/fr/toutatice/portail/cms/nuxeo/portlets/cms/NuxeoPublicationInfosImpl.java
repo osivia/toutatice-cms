@@ -1,104 +1,175 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.cms;
 
-import java.util.Date;
-import java.util.Set;
-
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-
 import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
 import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
+import org.osivia.portal.core.cms.CMSPublicationInfos;
+
+import java.util.Date;
+import java.util.Set;
 
 /**
  * Nuxeo publication informations implementation.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see NuxeoPublicationInfos
  */
 public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
 
-    /** Path. */
-    private String path;
-    /** Live identifier. */
-    private String liveId;
-    /** Published indicator. */
-    private boolean published;
-    /** Being modified indicator. */
-    private boolean beingModified;
-    /** Live space indicator. */
-    private boolean liveSpace;
-    /** Space path. */
-    private String spacePath;
-    /** Space display name. */
-    private String spaceDisplayName;
-    /** Space type. */
-    private String spaceType;
-    /** Has draft indicator. */
-    private boolean hasDraft;
-    /** Draft indicator. */
-    private boolean draft;
-    /** Orphan draft indicator. */
-    private boolean orphanDraft;
-    /** Draft path. */
-    private String draftPath;
-    /** Draft contextualization path. */
-    private String draftContextualizationPath;
-    /** Remote publishable indicator. */
-    private boolean remotePublishable;
-    /** Remote published indicator. */
-    private boolean remotePublished;
-    /** Subtypes. */
-    private Set<String> subtypes;
-    /** Space identifier. */
-    private String spaceId;
-    /** Parent space identifier. */
-    private String parentSpaceId;
-    /** Drive enabled indicator. */
-    private boolean driveEnabled;
-    /** Drive edition URL. */
-    private String driveEditionUrl;
-
-    /** Task name. */
-    private String taskName;
-    /** Online task pending indicator. */
-    private boolean onlineTaskPending;
-    /** Online task initiator indicator. */
-    private boolean onlineTaskInitiator;
-    /** Validation workflow running indicator. */
-    private boolean validationWorkflowRunning;
-    /** Draft count. */
-    private int draftCount;
-    /** Subscription status. */
-    private SubscriptionStatus subscriptionStatus;
-    /** Lock status. */
-    private LockStatus lockStatus;
-    /** Lock owner. */
-    private String lockOwner;
-    /** Lock date. */
-    private Date lockDate;
-    /** Synchronization root path. */
-    private String synchronizationRootPath;
-    /** PDF convertible indicator. */
-    private boolean pdfConvertible;
-    /** Error on PDF conversion indicator. */
-    private boolean errorOnPdfConversion;
-
-    /** Initialized CMS publication informations indicator. */
-    private boolean initializedCmsPublicationInfos;
-    /** Initialized extended document informations indicator. */
-    private boolean initializedExtendedInfos;
-    /** Facet Sets */
-    private boolean facetSets;
-
-
-    /** Document context. */
+    /**
+     * Document context.
+     */
     private final NuxeoDocumentContextImpl documentContext;
+    /**
+     * Path.
+     */
+    private String path;
+    /**
+     * Live identifier.
+     */
+    private String liveId;
+    /**
+     * Published indicator.
+     */
+    private boolean published;
+    /**
+     * Being modified indicator.
+     */
+    private boolean beingModified;
+    /**
+     * Live space indicator.
+     */
+    private boolean liveSpace;
+    /**
+     * Space path.
+     */
+    private String spacePath;
+    /**
+     * Space display name.
+     */
+    private String spaceDisplayName;
+    /**
+     * Space type.
+     */
+    private String spaceType;
+    /**
+     * Live version label.
+     */
+    private String liveVersion;
+    /**
+     * Has draft indicator.
+     */
+    private boolean hasDraft;
+    /**
+     * Draft indicator.
+     */
+    private boolean draft;
+    /**
+     * Orphan draft indicator.
+     */
+    private boolean orphanDraft;
+    /**
+     * Draft path.
+     */
+    private String draftPath;
+    /**
+     * Draft contextualization path.
+     */
+    private String draftContextualizationPath;
+    /**
+     * Remote publishable indicator.
+     */
+    private boolean remotePublishable;
+    /**
+     * Remote published indicator.
+     */
+    private boolean remotePublished;
+    /**
+     * Subtypes.
+     */
+    private Set<String> subtypes;
+    /**
+     * Space identifier.
+     */
+    private String spaceId;
+    /**
+     * Parent space identifier.
+     */
+    private String parentSpaceId;
+    /**
+     * Drive enabled indicator.
+     */
+    private boolean driveEnabled;
+    /**
+     * Drive edition URL.
+     */
+    private String driveEditionUrl;
+    /**
+     * Task name.
+     */
+    private String taskName;
+    /**
+     * Online task pending indicator.
+     */
+    private boolean onlineTaskPending;
+    /**
+     * Online task initiator indicator.
+     */
+    private boolean onlineTaskInitiator;
+    /**
+     * Validation workflow running indicator.
+     */
+    private boolean validationWorkflowRunning;
+    /**
+     * Draft count.
+     */
+    private int draftCount;
+    /**
+     * Subscription status.
+     */
+    private SubscriptionStatus subscriptionStatus;
+    /**
+     * Lock status.
+     */
+    private LockStatus lockStatus;
+    /**
+     * Lock owner.
+     */
+    private String lockOwner;
+    /**
+     * Lock date.
+     */
+    private Date lockDate;
+    /**
+     * Synchronization root path.
+     */
+    private String synchronizationRootPath;
+    /**
+     * PDF convertible indicator.
+     */
+    private boolean pdfConvertible;
+    /**
+     * Error on PDF conversion indicator.
+     */
+    private boolean errorOnPdfConversion;
+    /**
+     * Initialized CMS publication informations indicator.
+     */
+    private boolean initializedCmsPublicationInfos;
+    /**
+     * Initialized extended document informations indicator.
+     */
+    private boolean initializedExtendedInfos;
+    /**
+     * Facet Sets
+     */
+    private boolean facetSets;
 
 
     /**
      * Constructor.
-     * 
+     *
      * @param documentContext document context
      */
     public NuxeoPublicationInfosImpl(NuxeoDocumentContextImpl documentContext) {
@@ -208,6 +279,16 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
         }
 
         return this.spaceType;
+    }
+
+
+    @Override
+    public String getLiveVersion() {
+        if (!this.initializedCmsPublicationInfos) {
+            this.initCmsPublicationInfos();
+        }
+
+        return this.liveVersion;
     }
 
 
@@ -391,6 +472,8 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
             this.spaceDisplayName = cmsPublicationInfos.getPublishSpaceDisplayName();
             // Space type
             this.spaceType = cmsPublicationInfos.getPublishSpaceType();
+            // Live version label
+            this.liveVersion = cmsPublicationInfos.getLiveVersion();
             // Has draft indicator
             this.hasDraft = cmsPublicationInfos.hasDraft();
             // Draft indicator
@@ -625,10 +708,10 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
             this.pdfConvertible = extendedInfos.isPdfConvertible();
             // Error on PDF conversion indicator
             this.errorOnPdfConversion = extendedInfos.isErrorOnPdfConversion();
-
-            this.initializedExtendedInfos = true;
             // Facet Sets
             this.facetSets = QuickAccessStatus.CANNOT_ADD_TO_QUICKACCESS != extendedInfos.getQuickAccessStatus();
+
+            this.initializedExtendedInfos = true;
         }
     }
 

@@ -1,21 +1,29 @@
 package fr.toutatice.portail.cms.nuxeo.api.cms;
 
+import org.osivia.portal.api.cms.PublicationInfos;
+
 import java.util.Date;
 import java.util.Set;
 
-import org.osivia.portal.api.cms.PublicationInfos;
-
 /**
  * Nuxeo document publication informations.
- * 
+ *
  * @author Cédric Krommenhoek
  * @see PublicationInfos
  */
 public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
+     * Get live version label.
+     *
+     * @return label
+     */
+    String getLiveVersion();
+
+
+    /**
      * Check if the document is publishable remotely.
-     * 
+     *
      * @return true if the document is publishable remotely
      */
     boolean isRemotePublishable();
@@ -23,7 +31,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if the document is published remotely.
-     * 
+     *
      * @return true if the document is published remotely
      */
     boolean isRemotePublished();
@@ -31,7 +39,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get subtype names of the document.
-     * 
+     *
      * @return names
      */
     Set<String> getSubtypes();
@@ -39,7 +47,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get space document identifier.
-     * 
+     *
      * @return document identifier
      */
     String getSpaceId();
@@ -47,7 +55,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get parent space document identifier.
-     * 
+     *
      * @return document identifier
      */
     String getParentSpaceId();
@@ -55,7 +63,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if Nuxeo Drive is enabled.
-     * 
+     *
      * @return true if Nuxeo Drive is enabled
      */
     boolean isDriveEnabled();
@@ -63,7 +71,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get Nuxeo Drive edition URL.
-     * 
+     *
      * @return URL
      */
     String getDriveEditionUrl();
@@ -71,7 +79,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get task name.
-     * 
+     *
      * @return task name
      */
     String getTaskName();
@@ -79,7 +87,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if they are online task pending.
-     * 
+     *
      * @return true if they are online task pending
      */
     boolean isOnlineTaskPending();
@@ -87,7 +95,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if the current user is the online task initiator.
-     * 
+     *
      * @return true if the current user is the online task initiator
      */
     boolean isOnlineTaskInitiator();
@@ -95,7 +103,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if the document has a running validation workflow.
-     * 
+     *
      * @return true if the document has a running validation workflow
      */
     boolean isValidationWorkflowRunning();
@@ -103,7 +111,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get draft count.
-     * 
+     *
      * @return count
      */
     int getDraftCount();
@@ -111,7 +119,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get subscription status.
-     * 
+     *
      * @return subscription status
      */
     SubscriptionStatus getSubscriptionStatus();
@@ -119,7 +127,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get lock status.
-     * 
+     *
      * @return lock status
      */
     LockStatus getLockStatus();
@@ -127,7 +135,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get lock owner.
-     * 
+     *
      * @return owner
      */
     String getLockOwner();
@@ -135,7 +143,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get lock date.
-     * 
+     *
      * @return date
      */
     Date getLockDate();
@@ -143,7 +151,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Get synchronisation root path.
-     * 
+     *
      * @return path
      */
     String getSynchronizationRootPath();
@@ -151,6 +159,7 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if the document is PDF convertible.
+     *
      * @return true if the document is PDF convertible
      */
     boolean isPdfConvertible();
@@ -158,15 +167,16 @@ public interface NuxeoPublicationInfos extends PublicationInfos {
 
     /**
      * Check if an error occurs on PDF conversion.
-     * 
+     *
      * @return true if an error occurs on PDF conversion
      */
     boolean isErrorOnPdfConversion();
 
     /**
      * Check if the workspace has the Sets facet
+     *
      * @return
      */
     boolean isFacetSets();
-    
+
 }

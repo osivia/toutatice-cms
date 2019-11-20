@@ -126,7 +126,11 @@ public class PublishInfosCommand implements INuxeoCommand {
                 publiInfos.setRemotePublished(adaptBoolean(infos.get("isRemotePublished")));
                 publiInfos.setDeletableByUser(adaptBoolean(infos.get("isDeletableByUser")));
                 publiInfos.setUserCanValidate(adaptBoolean(infos.get("canUserValidate")));
-                
+
+                // Live version
+				if (infos.containsKey("liveVersion")) {
+					publiInfos.setLiveVersion(infos.getString("liveVersion"));
+				}
                 
                 publiInfos.setPublished(adaptBoolean(infos.get("published")));
                 
