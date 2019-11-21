@@ -1591,7 +1591,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Case of permlink of remote proxy
                 if (DocumentHelper.isRemoteProxy(cmsCtx, pubInfos) && StringUtils.equals("permLinkCtx", cmsCtx.getDisplayContext())) {
                     // Document must be contextualized
-                    if (extendedInfos != null) {
+                    if ((extendedInfos != null) && StringUtils.isNotEmpty(extendedInfos.getParentWebId())) {
                         webId = webId.concat(IWebIdService.RPXY_WID_MARKER).concat(extendedInfos.getParentWebId());
                     } else {
                         forceCmsPath = true;
