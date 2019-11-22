@@ -1829,6 +1829,29 @@ public class CMSService implements ICMSService {
     }
 
 
+
+	@Override
+	public void duplicateFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {
+		
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+
+            this.executeNuxeoCommand(cmsCtx, new DuplicateFragmentCommand(doc, refURI));
+
+            // On force le rechargement du cache
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+	}
+
     /**
      * {@inheritDoc}
      */
