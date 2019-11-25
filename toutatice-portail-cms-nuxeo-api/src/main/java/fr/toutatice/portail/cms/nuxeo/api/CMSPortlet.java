@@ -13,33 +13,13 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.text.Normalizer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
-import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
-import javax.servlet.http.HttpServletResponse;
-
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -66,13 +46,16 @@ import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.CommentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import javax.portlet.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.Normalizer;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -588,6 +571,18 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         if (results == null) {
             results = new JSONArray();
         }
+
+        // All
+        String allLabel = request.getParameter("allLabel");
+        if (StringUtils.isNotEmpty(allLabel)) {
+            JSONObject object = new JSONObject();
+            object.put("id", StringUtils.EMPTY);
+            object.put("text", allLabel);
+            object.put("optgroup", false);
+            object.put("level", 1);
+            results.add(0, object);
+        }
+
 
         // Content type
         response.setContentType("application/json");

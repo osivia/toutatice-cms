@@ -1,31 +1,22 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.RenderMode;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.WindowState;
-
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
+import javax.portlet.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Vocabulary Select2 component portlet.
@@ -35,18 +26,34 @@ import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
  */
 public class VocabularySelect2Portlet extends CMSPortlet {
 
-    /** Selector label window property name. */
+    /**
+     * Selector label window property name.
+     */
     private static final String LABEL_WINDOW_PROPERTY = "osivia.selector.label";
-    /** Selector identifier window property name. */
+    /**
+     * Selector "all" label window property name.
+     */
+    private static final String ALL_LABEL_WINDOW_PROPERTY = "osivia.selector.allLabel";
+    /**
+     * Selector identifier window property name.
+     */
     private static final String ID_WINDOW_PROPERTY = "osivia.selector.id";
-    /** Vocabulary name window property name. */
+    /**
+     * Vocabulary name window property name.
+     */
     private static final String VOCABULARY_WINDOW_PROPERTY = "osivia.selector.vocabulary";
-    /** Mono-valued selector window property name. */
+    /**
+     * Mono-valued selector window property name.
+     */
     private static final String MONO_VALUED_WINDOW_PROPERTY = "osivia.selector.monoValued";
 
-    /** View path. */
+    /**
+     * View path.
+     */
     private static final String VIEW_PATH = "/WEB-INF/jsp/selectors/select2/view.jsp";
-    /** Admin path. */
+    /**
+     * Admin path.
+     */
     private static final String ADMIN_PATH = "/WEB-INF/jsp/selectors/select2/admin.jsp";
 
 
@@ -106,7 +113,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
     /**
      * Admin render mapping.
      *
-     * @param request render request
+     * @param request  render request
      * @param response render response
      * @throws PortletException
      * @throws IOException
@@ -155,7 +162,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 // Current selector
                 List<String> selector = selectors.get(configuration.getId());
                 if (selector == null) {
-                    selector = new ArrayList<String>();
+                    selector = new ArrayList<>();
                     selectors.put(configuration.getId(), selector);
                 } else {
                     selector.clear();
@@ -163,7 +170,9 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
                 if (request.getParameter("clear") == null) {
                     String[] values = request.getParameterValues("vocabulary");
-                    if (values != null) {
+                    if (ArrayUtils.isEmpty(values) || ((values.length == 1) && StringUtils.isEmpty(values[0]))) {
+                        selectors.remove(configuration.getId());
+                    } else {
                         for (String value : values) {
                             selector.add(value);
                         }
@@ -183,6 +192,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
             if ("save".equals(action)) {
                 // Save
                 window.setProperty(LABEL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("label")));
+                window.setProperty(ALL_LABEL_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("allLabel")));
                 window.setProperty(ID_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("id")));
                 window.setProperty(VOCABULARY_WINDOW_PROPERTY, StringUtils.trimToNull(request.getParameter("vocabulary")));
                 window.setProperty(MONO_VALUED_WINDOW_PROPERTY, String.valueOf(BooleanUtils.toBoolean(request.getParameter("monoValued"))));
@@ -203,6 +213,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
     private Configuration getConfiguration(PortalWindow window) {
         Configuration configuration = new Configuration();
         configuration.setLabel(window.getProperty(LABEL_WINDOW_PROPERTY));
+        configuration.setAllLabel(window.getProperty(ALL_LABEL_WINDOW_PROPERTY));
         configuration.setId(window.getProperty(ID_WINDOW_PROPERTY));
         configuration.setVocabulary(window.getProperty(VOCABULARY_WINDOW_PROPERTY));
         configuration.setMonoValued(BooleanUtils.isNotFalse(BooleanUtils.toBooleanObject(window.getProperty(MONO_VALUED_WINDOW_PROPERTY))));
@@ -217,13 +228,25 @@ public class VocabularySelect2Portlet extends CMSPortlet {
      */
     public class Configuration {
 
-        /** Selector label. */
+        /**
+         * Selector label.
+         */
         private String label;
-        /** Selector identifier. */
+        /**
+         * Selector "all" label.
+         */
+        private String allLabel;
+        /**
+         * Selector identifier.
+         */
         private String id;
-        /** Vocabulary name. */
+        /**
+         * Vocabulary name.
+         */
         private String vocabulary;
-        /** Mono-valued selector indicator. */
+        /**
+         * Mono-valued selector indicator.
+         */
         private boolean monoValued;
 
 
@@ -251,6 +274,14 @@ public class VocabularySelect2Portlet extends CMSPortlet {
          */
         public void setLabel(String label) {
             this.label = label;
+        }
+
+        public String getAllLabel() {
+            return allLabel;
+        }
+
+        public void setAllLabel(String allLabel) {
+            this.allLabel = allLabel;
         }
 
         /**
