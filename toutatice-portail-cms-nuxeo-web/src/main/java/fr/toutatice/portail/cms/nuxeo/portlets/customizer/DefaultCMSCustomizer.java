@@ -837,7 +837,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (!"detailedView".equals(displayContext)) {
             // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-            if ("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType())) {
+            if ("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType()) || "Picture".equals(document.getType())) {
                 // Check context
                 if ("download".equals(displayContext) || "downloadVersion".equals(displayContext)) {
                     url = createFileDownloadLink(cmsContext, document, displayContext);
