@@ -13,19 +13,18 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.WindowState;
-
+import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.cms.*;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,53 +53,30 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
-import org.osivia.portal.api.menubar.IMenubarService;
-import org.osivia.portal.api.menubar.MenubarContainer;
-import org.osivia.portal.api.menubar.MenubarDropdown;
-import org.osivia.portal.api.menubar.MenubarGroup;
-import org.osivia.portal.api.menubar.MenubarItem;
-import org.osivia.portal.api.menubar.MenubarModule;
+import org.osivia.portal.api.menubar.*;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarItem;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.PortalUrlType;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSItemTypeComparator;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.ICMSServiceLocator;
+import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.cms.LockStatus;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
-import fr.toutatice.portail.cms.nuxeo.api.cms.QuickAccessStatus;
-import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstants;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import javax.portlet.PortletRequest;
+import javax.portlet.WindowState;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Menubar associée aux contenus.
- *
+ * <p>
  * Techniquement cette classe est intéressante car elle montre comment on peut déployer à chaud des fonctionnalités partagées entre les portlets.
- *
+ * <p>
  * Les fonctions du NuxeoController pourront donc etre basculées petit à petit dans le CMSCustomizer.
- *
+ * <p>
  * A PACKAGER pour la suite
  *
  * @author Jean-Sébastien Steux
@@ -108,22 +84,38 @@ import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
  */
 public class MenuBarFormater {
 
-    /** Log. */
+    /**
+     * Log.
+     */
     private final Log log;
 
-    /** Menubar service. */
+    /**
+     * Menubar service.
+     */
     private final IMenubarService menubarService;
-    /** CMS service locator. */
+    /**
+     * CMS service locator.
+     */
     private final ICMSServiceLocator cmsServiceLocator;
-    /** Portal URL factory. */
+    /**
+     * Portal URL factory.
+     */
     private final IPortalUrlFactory portalUrlFactory;
-    /** CMS customizer. */
+    /**
+     * CMS customizer.
+     */
     private final DefaultCMSCustomizer customizer;
-    /** Contribution service. */
+    /**
+     * Contribution service.
+     */
     private final IContributionService contributionService;
-    /** Taskbar service. */
+    /**
+     * Taskbar service.
+     */
     private final ITaskbarService taskbarService;
-    /** Internationalization bundle factory. */
+    /**
+     * Internationalization bundle factory.
+     */
     private final IBundleFactory bundleFactory;
 
 
@@ -158,13 +150,13 @@ public class MenuBarFormater {
     /**
      * Format content menubar.
      *
-     * @param cmsContext CMS context
-     * @param extendedDocumentInfos
-     * @param publicationInfos
+     * @param cmsContext       CMS context
+     * @param publicationInfos publication infos
+     * @param extendedInfos    extended infos
      * @throws PortalException
      */
     @SuppressWarnings("unchecked")
-    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos, ExtendedDocumentInfos extendedInfos)
+    public void formatDefaultContentMenuBar(CMSServiceCtx cmsContext, CMSPublicationInfos publicationInfos, ExtendedDocumentInfos extendedInfos)
             throws CMSException, PortalException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
@@ -211,7 +203,7 @@ public class MenuBarFormater {
                 }
             }
 
-            if (!pubInfos.getSatellite().isMain()) {
+            if (!publicationInfos.getSatellite().isMain()) {
                 return;
             }
 
@@ -221,7 +213,7 @@ public class MenuBarFormater {
             // Check if current is a workspace or a room
             boolean isWorkspaceOrRoom = this.isWorkspaceOrRoom(document);
             // Check if current item is located inside a user workspace
-            boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document);
+            boolean insideUserWorkspace = this.isInUserWorkspace(cmsContext, document, request.getRemoteUser());
             // Check if current item is a taskbar item
             boolean isTaskbarItem = !isWorkspaceOrRoom && this.isTaskbarItem(portalControllerContext, cmsContext, documentContext);
             // Check if current document is inside a workspace and current user is an administrator of this workspace
@@ -241,55 +233,55 @@ public class MenuBarFormater {
 
                 // Creation
 
-                this.getCreateLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, !isWorkspaceOrRoom);
+                this.getCreateLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, !isWorkspaceOrRoom);
 
 
                 if (!webPageFragment) {
                     // Contextualization
-                    this.getContextualizationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                    this.getContextualizationLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle);
 
                     if (!insideUserWorkspace && (sharingRoot == null)) {
                         // Permalink
-                        this.getPermaLinkLink(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+                        this.getPermaLinkLink(portalControllerContext, cmsContext, publicationInfos, extendedInfos, menubar, bundle);
                     }
 
                     if (ContextualizationHelper.isCurrentDocContextualized(cmsContext)) {
                         // Draft options
-                        this.addDraftLinks(portalControllerContext, cmsContext, pubInfos, extendedInfos, menubar, bundle);
+                        this.addDraftLinks(portalControllerContext, cmsContext, publicationInfos, extendedInfos, menubar, bundle);
 
                         if (!isWorkspaceOrRoom) {
                             if (!isTaskbarItem || isWorkspaceAdmin) {
                                 // Reorder
-                                this.getReorderLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                                this.getReorderLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle);
                                 // Edition
-                                this.getEditLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                                this.getEditLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle);
                                 // Delete
-                                this.getDeleteLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                                this.getDeleteLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle);
                             }
 
                             if (!isTaskbarItem) {
                                 // Change edition mode
-                                this.getChangeModeLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                                this.getChangeModeLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, extendedInfos);
                             }
                         }
 
 
                         if (!isTaskbarItem) {
                             // Move
-                            this.getMoveLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isTaskbarItem);
+                            this.getMoveLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, isTaskbarItem);
                         }
 
 
                         // === other tools
                         // Live version browser
-                        this.getLiveContentBrowserLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle);
+                        this.getLiveContentBrowserLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle);
 
 
                         // Nuxeo synchronize
                         this.getSynchronizeLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
                         // Nuxeo administration
-                        this.getAdministrationLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, isGlobalAdministrator);
+                        this.getAdministrationLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, isGlobalAdministrator);
 
 
                         if (!insideUserWorkspace) {
@@ -311,9 +303,9 @@ public class MenuBarFormater {
                                 this.getLockLink(portalControllerContext, cmsContext, menubar, bundle, extendedInfos);
 
                                 // Validation workflow(s)
-                                this.getValidationWfLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                                this.getValidationWfLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, extendedInfos);
                                 // Remote publishing
-                                this.getRemotePublishingLink(portalControllerContext, cmsContext, pubInfos, menubar, bundle, extendedInfos);
+                                this.getRemotePublishingLink(portalControllerContext, cmsContext, publicationInfos, menubar, bundle, extendedInfos);
                             }
                         }
                     }
@@ -336,8 +328,6 @@ public class MenuBarFormater {
     }
 
 
-
-
     /**
      * Check if current document is a workspace or a room.
      *
@@ -354,11 +344,11 @@ public class MenuBarFormater {
      * Check if current document is located in a user workspace.
      *
      * @param cmsContext CMS context
-     * @param document current Nuxeo document
+     * @param document   current Nuxeo document
+     * @param userName   user name
      * @return true if current document is located in a user workspace
-     * @throws CMSException
      */
-    protected boolean isInUserWorkspace(CMSServiceCtx cmsContext, Document document) throws CMSException {
+    protected boolean isInUserWorkspace(CMSServiceCtx cmsContext, Document document, String userName) throws CMSException {
         // Browser adapter
         BrowserAdapter browserAdapter = this.customizer.getBrowserAdapter();
 
@@ -367,7 +357,7 @@ public class MenuBarFormater {
             String path = document.getPath() + "/";
 
             // User workspaces
-            List<CMSItem> userWorkspaces = browserAdapter.getAllUserWorkspaces(cmsContext);
+            List<CMSItem> userWorkspaces = browserAdapter.getUserWorkspaces(cmsContext, userName);
 
             Iterator<CMSItem> iterator = userWorkspaces.iterator();
             while (iterator.hasNext() && !userWorkspace) {
@@ -384,8 +374,8 @@ public class MenuBarFormater {
      * Check if current document is a taskbar item.
      *
      * @param portalControllerContext portal controller controller
-     * @param cmsContext CMS context
-     * @param documentContext current Nuxeo document context
+     * @param cmsContext              CMS context
+     * @param documentContext         current Nuxeo document context
      * @return true if current document is a taskbar item
      * @throws CMSException
      * @throws PortalException
@@ -443,7 +433,7 @@ public class MenuBarFormater {
     /**
      * Check if current document is inside a workspace and if current user is an administrator of this workspace.
      *
-     * @param cmsContext CMS context
+     * @param cmsContext      CMS context
      * @param documentContext current document context
      * @return true if current document is inside a workspace and if current user is an administrator of this workspace.
      * @throws CMSException
@@ -476,7 +466,7 @@ public class MenuBarFormater {
 
     /**
      * Get sharing root Nuxeo document, or null if there is no sharing.
-     * 
+     *
      * @param cmsContext CMS context
      * @return Nuxeo document
      * @throws CMSException
@@ -537,8 +527,8 @@ public class MenuBarFormater {
      * Get menubar CMS edition dropdown menu.
      *
      * @param portalControllerContext portal controller context
-     * @param type document type
-     * @param bundle internationalization bundle
+     * @param type                    document type
+     * @param bundle                  internationalization bundle
      */
     public void addCMSEditionDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.CMS_EDITION_DROPDOWN_MENU_ID, bundle.getString("CMS_EDITION"),
@@ -552,8 +542,8 @@ public class MenuBarFormater {
      * Add menubar share dropdown menu.
      *
      * @param portalControllerContext portal controller context
-     * @param type document type
-     * @param bundle internationalization bundle
+     * @param type                    document type
+     * @param bundle                  internationalization bundle
      */
     public void addShareDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.SHARE_DROPDOWN_MENU_ID, bundle.getString("SHARE"), "glyphicons glyphicons-share-alt",
@@ -567,8 +557,8 @@ public class MenuBarFormater {
      * Add menubar other options dropdown menu.
      *
      * @param portalControllerContext portal controller context
-     * @param type document type
-     * @param bundle internationalization bundle
+     * @param type                    document type
+     * @param bundle                  internationalization bundle
      */
     public void addOtherOptionsDropdown(PortalControllerContext portalControllerContext, DocumentType type, Bundle bundle) {
         MenubarDropdown dropdown = new MenubarDropdown(MenubarDropdown.OTHER_OPTIONS_DROPDOWN_MENU_ID, bundle.getString("OTHER_OPTIONS"),
@@ -582,13 +572,13 @@ public class MenuBarFormater {
      * Get optional Nuxeo administration link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param menubar                 menubar items
+     * @param bundle                  internationalization bundle
      * @param isGlobalAdministrator
      */
     protected void getAdministrationLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, boolean isGlobalAdministrator) throws CMSException {
+                                         List<MenubarItem> menubar, Bundle bundle, boolean isGlobalAdministrator) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -618,7 +608,7 @@ public class MenuBarFormater {
 
 
     protected void addDraftLinks(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) {
+                                 ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) {
         // Document
         Document document = (Document) cmsContext.getDoc();
 
@@ -692,13 +682,13 @@ public class MenuBarFormater {
      * Get change mode link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param menubar                 menubar items
+     * @param bundle                  internationalization bundle
      * @param extendedInfos
      */
     protected void getChangeModeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException, PortalException {
+                                     List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException, PortalException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -918,14 +908,14 @@ public class MenuBarFormater {
      * Generate validate or recject OnLine workflow items..
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS context
-     * @param pubInfos publication infos
-     * @param menubar menubar items
-     * @param parent menubar item parent
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS context
+     * @param pubInfos                publication infos
+     * @param menubar                 menubar items
+     * @param parent                  menubar item parent
+     * @param bundle                  internationalization bundle
      */
     protected void addValidatePublishingItems(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, MenubarContainer parent, Bundle bundle) throws CMSException {
+                                              List<MenubarItem> menubar, MenubarContainer parent, Bundle bundle) throws CMSException {
         // Validate
         final String validateURL = this.contributionService.getValidatePublishContributionURL(portalControllerContext, pubInfos.getDocumentPath());
         final MenubarItem validateItem = new MenubarItem("ONLINE_WF_VALIDATE", bundle.getString("VALIDATE_PUBLISH"), "glyphicons glyphicons-ok", parent, 13,
@@ -946,11 +936,11 @@ public class MenuBarFormater {
      * Get live content browser link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      */
     protected void getLiveContentBrowserLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                                             List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1020,12 +1010,12 @@ public class MenuBarFormater {
      * Get synchronize link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      * @throws PortalException
      */
     protected void getSynchronizeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            ExtendedDocumentInfos extendedInfos) throws CMSException {
+                                      ExtendedDocumentInfos extendedInfos) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1087,12 +1077,12 @@ public class MenuBarFormater {
      * Get subscribe link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      * @throws PortalException
      */
     protected void getSubscribeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            ExtendedDocumentInfos extendedInfos) throws CMSException {
+                                    ExtendedDocumentInfos extendedInfos) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() != null) {
             // Current document
             final Document document = (Document) cmsContext.getDoc();
@@ -1150,12 +1140,12 @@ public class MenuBarFormater {
      * Get quick access link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      * @throws PortalException
      */
     protected void getQuickAccesLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            ExtendedDocumentInfos extendedInfos) throws CMSException {
+                                     ExtendedDocumentInfos extendedInfos) throws CMSException {
         // Current document
         final Document document = (Document) cmsContext.getDoc();
         final String path = document.getPath();
@@ -1199,7 +1189,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     private void getLockLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            ExtendedDocumentInfos extendedInfos) {
+                             ExtendedDocumentInfos extendedInfos) {
 
         // Current document
         final Document document = (Document) cmsContext.getDoc();
@@ -1256,8 +1246,6 @@ public class MenuBarFormater {
      * @param cmsContext
      * @param bundle
      * @param extendedInfos
-     * @param lockedIndicator
-     *
      */
     protected MenubarItem makeLockedIndicator(CMSServiceCtx cmsContext, Bundle bundle, ExtendedDocumentInfos extendedInfos) {
         // Locked indicator menubar item
@@ -1311,7 +1299,7 @@ public class MenuBarFormater {
      * @param extendedInfos
      */
     protected void getValidationWfLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
+                                       List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1385,7 +1373,7 @@ public class MenuBarFormater {
      * @throws CMSException
      */
     protected void getRemotePublishingLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
+                                           List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1427,7 +1415,7 @@ public class MenuBarFormater {
     }
 
     protected void getRenameLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) {
+                                 List<MenubarItem> menubar, Bundle bundle) {
 
         if (DocumentHelper.isRemoteProxy(cmsContext, pubInfos)) {
             return;
@@ -1467,14 +1455,14 @@ public class MenuBarFormater {
      * Get edit CMS content link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS context
-     * @param pubInfos publication infos
-     * @param menubar menubar
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS context
+     * @param pubInfos                publication infos
+     * @param menubar                 menubar
+     * @param bundle                  internationalization bundle
      * @throws CMSException
      */
     protected void getEditLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                               List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1561,14 +1549,14 @@ public class MenuBarFormater {
      * Get move link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS context
-     * @param menubar menubar
-     * @param bundle internationalization bundle
-     * @param isTaskbarItem is taskbar item indicator
+     * @param cmsContext              CMS context
+     * @param menubar                 menubar
+     * @param bundle                  internationalization bundle
+     * @param isTaskbarItem           is taskbar item indicator
      * @throws CMSException
      */
     protected void getMoveLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
+                               List<MenubarItem> menubar, Bundle bundle, boolean isTaskbarItem) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1645,13 +1633,13 @@ public class MenuBarFormater {
      * Get reorder link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS context
-     * @param menubar menubar
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS context
+     * @param menubar                 menubar
+     * @param bundle                  internationalization bundle
      * @throws CMSException
      */
     protected void getReorderLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                                  List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1703,11 +1691,11 @@ public class MenuBarFormater {
      * Get create CMS content link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      */
     protected void getCreateLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle, boolean visible) throws CMSException {
+                                 List<MenubarItem> menubar, Bundle bundle, boolean visible) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -1737,7 +1725,7 @@ public class MenuBarFormater {
             DocumentType documentType = documentTypes.get(document.getType());
 
             if ((documentType != null) && !documentType.isPreventedCreation()) {
-                
+
                 // Callback URL
                 String callbackURL = this.portalUrlFactory.getRefreshPageUrl(portalControllerContext, true);
 
@@ -1864,11 +1852,11 @@ public class MenuBarFormater {
      * Get delete link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      */
     protected void getDeleteLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException, PortalException {
+                                 List<MenubarItem> menubar, Bundle bundle) throws CMSException, PortalException {
         if (cmsContext.getRequest().getRemoteUser() == null) {
             return;
         }
@@ -1947,8 +1935,8 @@ public class MenuBarFormater {
     /**
      * Generate erase confirmation fancybox.
      *
-     * @param bundle bundle
-     * @param urlDelete the command for delete
+     * @param bundle   bundle
+     * @param urlErase the command for delete
      * @return fancybox DOM element
      * @throws UnsupportedEncodingException
      */
@@ -1984,9 +1972,9 @@ public class MenuBarFormater {
      * Generate delete confirmation fancybox HTML data.
      *
      * @param properties fancybox properties
-     * @param bundle internationalization bundle
+     * @param bundle     internationalization bundle
      * @param fancyboxId fancybox identifier
-     * @param actionURL delete action URL
+     * @param actionURL  delete action URL
      * @return fancybox HTML data
      */
     private String generateDeleteConfirmationFancybox(Map<String, String> properties, Bundle bundle, String fancyboxId, String actionURL) {
@@ -2037,15 +2025,15 @@ public class MenuBarFormater {
      * Add contextualization link item.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
-     * @param displayName space display name
-     * @param url contextualization link URL
+     * @param cmsContext              CMS service context
+     * @param menubar                 menubar items
+     * @param bundle                  internationalization bundle
+     * @param displayName             space display name
+     * @param url                     contextualization link URL
      * @throws Exception
      */
     protected void addContextualizationLinkItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar,
-            Bundle bundle, String displayName, String url) throws CMSException {
+                                                Bundle bundle, String displayName, String url) throws CMSException {
         final MenubarItem item = new MenubarItem("CONTEXTUALIZE", bundle.getString("CONTEXTUALIZE_SPACE", displayName), "halflings halflings-level-up",
                 MenubarGroup.SPECIFIC, 1, url, null, null, null);
         item.setAjaxDisabled(true);
@@ -2058,11 +2046,11 @@ public class MenuBarFormater {
      * Affiche un lien de recontextualisation explicite (dans une page existante ou une nouvelle page).
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      */
     protected void getContextualizationLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                                            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -2136,13 +2124,13 @@ public class MenuBarFormater {
      * Add permalink item.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
-     * @param url permalink URL
+     * @param cmsContext              CMS service context
+     * @param menubar                 menubar items
+     * @param bundle                  internationalization bundle
+     * @param url                     permalink URL
      */
     protected void addPermaLinkItem(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle,
-            String url) throws CMSException {
+                                    String url) throws CMSException {
         // Fancybox identifier
         String id = cmsContext.getResponse().getNamespace() + "PermalinkModal";
 
@@ -2167,13 +2155,13 @@ public class MenuBarFormater {
      * Add e-mail link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS context
-     * @param menubar menubar items
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS context
+     * @param menubar                 menubar items
+     * @param bundle                  internationalization bundle
      * @throws CMSException
      */
     private void addEmailLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                              List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 
@@ -2210,12 +2198,12 @@ public class MenuBarFormater {
      * Compute permalink URL.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      * @return permalink URL
      */
     protected String computePermaLinkUrl(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                                         ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         // Request
         final PortletRequest request = cmsContext.getRequest();
 
@@ -2261,8 +2249,8 @@ public class MenuBarFormater {
      * Get permalink display indicator.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      * @return true if permalink must be displayed
      */
     protected boolean mustDisplayPermalink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, List<MenubarItem> menubar, Bundle bundle)
@@ -2295,11 +2283,11 @@ public class MenuBarFormater {
      * Get permalink link.
      *
      * @param portalControllerContext portal controller context
-     * @param cmsContext CMS service context
-     * @param bundle internationalization bundle
+     * @param cmsContext              CMS service context
+     * @param bundle                  internationalization bundle
      */
     protected void getPermaLinkLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
-            ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
+                                    ExtendedDocumentInfos extendedInfos, List<MenubarItem> menubar, Bundle bundle) throws CMSException {
         if (!this.mustDisplayPermalink(portalControllerContext, cmsContext, menubar, bundle)) {
             return;
         }
@@ -2317,8 +2305,8 @@ public class MenuBarFormater {
      * Generate permalink modal HTML content.
      *
      * @param bundle internationalization bundle
-     * @param id modal identifier
-     * @param url permalink URL
+     * @param id     modal identifier
+     * @param url    permalink URL
      * @return HTML content
      */
     private String generatePermalinkModal(Bundle bundle, String id, String url) {
