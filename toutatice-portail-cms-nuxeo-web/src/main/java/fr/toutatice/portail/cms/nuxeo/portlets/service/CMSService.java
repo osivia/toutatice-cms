@@ -97,7 +97,6 @@ import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
-import org.springframework.scheduling.config.Task;
 
 import javax.naming.Name;
 import javax.portlet.PortletContext;
@@ -3205,13 +3204,14 @@ public class CMSService implements ICMSService {
 
     /**
      * {@inheritDoc}
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     private Documents getInternalTasks(CMSServiceCtx cmsContext, String user) throws Exception {
         // Task actors
         Set<String> actors = null;
-        
-        if( user != null)
+
+        if (user != null)
             actors = getTaskActors(user);
 
         // Task directives
@@ -3228,11 +3228,10 @@ public class CMSService implements ICMSService {
         return documents;
     }
 
-    
 
     /**
      * Get discussions documents
-     * 
+     *
      * @param cmsContext
      * @param user
      * @return
@@ -3247,8 +3246,8 @@ public class CMSService implements ICMSService {
         // Documents
         Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
         return documents;
-    }    
-    
+    }
+
 
     /**
      * {@inheritDoc}
@@ -3269,7 +3268,7 @@ public class CMSService implements ICMSService {
             Documents discussions = (Documents) getInternalDiscussions(cmsContext, null);
 
             for (Document discussion : discussions) {
-                    documents.add(discussion);
+                documents.add(discussion);
             }
         } catch (CMSException e) {
             throw e;
@@ -3282,13 +3281,13 @@ public class CMSService implements ICMSService {
 
         return new ArrayList<EcmDocument>(documents.list());
     }
-    
-    
+
+
     public EcmDocument getInternalTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws Exception {
         // Task actors
         Set<String> actors = null;
-        
-        if( user != null)
+
+        if (user != null)
             actors = getTaskActors(user);
 
         // Nuxeo command
@@ -3310,15 +3309,13 @@ public class CMSService implements ICMSService {
         return task;
     }
 
-    
-    
 
     /**
      * {@inheritDoc}
      */
     @Override
     public EcmDocument getTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws CMSException {
-        
+
         String savedScope = cmsContext.getScope();
         Documents documents;
         Document task;
@@ -3662,6 +3659,16 @@ public class CMSService implements ICMSService {
         }
 
         return this.statisticsServiceDelegation.getSpaceStatistics(cmsContext, paths);
+    }
+
+
+    @Override
+    public void incrementsStatistics(CMSServiceCtx cmsContext, HttpSession httpSession, String path) throws CMSException {
+        if (cmsContext.getPortletCtx() == null) {
+            cmsContext.setPortletCtx(this.portletCtx);
+        }
+
+        this.statisticsServiceDelegation.increments(cmsContext, path);
     }
 
 

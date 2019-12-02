@@ -27,6 +27,7 @@ import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.portlet.PortalGenericPortlet;
 import org.osivia.portal.api.set.SetType;
+import org.osivia.portal.api.statistics.StatisticsModule;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
 import org.osivia.portal.api.taskbar.TaskbarItems;
@@ -545,6 +546,27 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         if (modules == null) {
             modules = new ArrayList<>();
             value.put(type, modules);
+        }
+
+        return modules;
+    }
+
+
+    /**
+     * Get statistics modules.
+     *
+     * @param customizationContext customization context
+     * @return modules
+     */
+    protected List<StatisticsModule> getStatisticsModules(CustomizationContext customizationContext) {
+        // Customization context attributes
+        Map<String, Object> attributes = customizationContext.getAttributes();
+
+        // Task modules
+        List<StatisticsModule> modules = (List<StatisticsModule>) attributes.get(Customizable.STATISTICS_MODULES.toString());
+        if (modules == null) {
+            modules = new ArrayList<>();
+            attributes.put(Customizable.STATISTICS_MODULES.toString(), modules);
         }
 
         return modules;

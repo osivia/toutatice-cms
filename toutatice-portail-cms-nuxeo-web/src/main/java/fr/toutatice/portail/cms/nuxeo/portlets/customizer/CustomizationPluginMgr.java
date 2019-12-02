@@ -28,6 +28,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.set.SetType;
+import org.osivia.portal.api.statistics.StatisticsModule;
 import org.osivia.portal.api.taskbar.TaskbarItems;
 import org.osivia.portal.api.tasks.TaskModule;
 import org.osivia.portal.api.theming.TabGroup;
@@ -151,6 +152,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Task modules cache.
      */
     private List<TaskModule> taskModulesCache;
+    /**
+     * Statistics modules cache.
+     */
+    private List<StatisticsModule> statisticsModulesCache;
 
 
     /**
@@ -696,6 +701,25 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Get statistics modules.
+     *
+     * @return statistics modules
+     */
+    public List<StatisticsModule> getStatisticsModules() {
+        if (this.statisticsModulesCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            this.statisticsModulesCache = (List<StatisticsModule>) attributes.get(Customizable.STATISTICS_MODULES.toString());
+            if (this.statisticsModulesCache == null) {
+                this.statisticsModulesCache = new ArrayList<>();
+            }
+        }
+        return this.statisticsModulesCache;
+    }
+
+
+    /**
      * lists the names of registered plugins
      */
     public List<String> getRegisteredPluginNames() {
@@ -733,6 +757,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.formFiltersCache = null;
         this.setTypesCache = null;
         this.taskModulesCache = null;
+        this.statisticsModulesCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

@@ -53,7 +53,9 @@ public enum Customizable {
     /** Task modules. */
     TASK_MODULES("osivia.customizer.cms.taskModules"),
     /** Document modules. */
-    DOCUMENT_MODULES("osivia.customizer.cms.documentModules");
+    DOCUMENT_MODULES("osivia.customizer.cms.documentModules"),
+    /** Statistics modules. */
+    STATISTICS_MODULES("osivia.customizer.cms.statisticsModules");
 
 
     /** Property name. */
