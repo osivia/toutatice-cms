@@ -736,11 +736,18 @@ public class ViewDocumentPortlet extends CMSPortlet {
             CMSItem spaceConfig = cmsService.getSpaceConfig(cmsContext, publishSpacePath);
 
             Document space = (Document) spaceConfig.getNativeItem();
+            
+            // For publishSpaces
             boolean isPublishSpace = space.getFacets() != null && space.getFacets().list().contains(CommandConstants.PUBLISH_SPACE_CHARACTERISTIC);
 
             if (isPublishSpace) {
                 enable = BooleanUtils.toBoolean(spaceConfig.getProperties().get(CommandConstants.COMMENTS_ENABLED_INDICATOR));
             }
+            else {
+                // For other spaces
+                enable = space.getProperties().getBoolean("ttcs:spaceCommentable");
+            }
+            
         }
 
         return enable;
