@@ -239,6 +239,27 @@
     </tag>
     
     
+    
+    <!-- Discussion -->
+    <tag>
+        <description>Display discussion.</description>
+        <display-name>Discussion</display-name>
+        <name>discussion</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.DiscussionTag</tag-class>
+        <body-content>empty</body-content>
+        
+        <attribute>
+            <description>Participant</description>
+            <name>participant</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+
+    </tag>
+    
+    
     <!-- Transform HTML content -->
     <tag>
         <description>Transform Nuxeo document HTML content.</description>

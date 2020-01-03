@@ -38,13 +38,18 @@ public class GetDiscussionsCommand implements INuxeoCommand {
         StringBuilder query = new StringBuilder();
         query.append("SELECT * FROM Document ");
         query.append("WHERE ");
+ 
+
         
         query.append("( disc:type = 'LOCAL_COPY' AND disc:target = 'ID1' ) ");
 
+        if( user != null)
+            query.append("OR (disc:participants/* = '"+user+"') ");
+        
 
         // Operation request
         OperationRequest request = nuxeoSession.newRequest("Document.QueryES");
-        request.set(Constants.HEADER_NX_SCHEMAS, "dublincore, discussion");
+        request.set(Constants.HEADER_NX_SCHEMAS, "dublincore, toutatice, discussion");
         request.set("query", query.toString());
 
         return request.execute();

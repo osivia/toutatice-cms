@@ -3265,7 +3265,7 @@ public class CMSService implements ICMSService {
             cmsContext.setScope("superuser_no_cache");
 
             // add shared tasks
-            Documents discussions = (Documents) getInternalDiscussions(cmsContext, null);
+            Documents discussions = (Documents) getInternalDiscussions(cmsContext, user);
 
             for (Document discussion : discussions) {
                 documents.add(discussion);
