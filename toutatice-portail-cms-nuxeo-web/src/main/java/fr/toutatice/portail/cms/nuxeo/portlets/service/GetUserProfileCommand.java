@@ -34,7 +34,7 @@ public class GetUserProfileCommand  implements INuxeoCommand{
     }
 
 	/**
-	 * execution d'une requete nuxéo permettant de créér un document contenant la participation au projet refondons l'école
+	 * execution d'une requete nuxéo 
 	 * @return 
 	 */
 	public Object execute(Session automationSession) throws Exception {

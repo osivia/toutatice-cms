@@ -247,10 +247,26 @@
         <name>discussion</name>
         <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.DiscussionTag</tag-class>
         <body-content>empty</body-content>
+       
+        <attribute>
+            <description>Id</description>
+            <name>id</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
         
         <attribute>
             <description>Participant</description>
             <name>participant</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        
+        <attribute>
+            <description>Publication</description>
+            <name>publicationId</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
             <type>java.lang.String</type>

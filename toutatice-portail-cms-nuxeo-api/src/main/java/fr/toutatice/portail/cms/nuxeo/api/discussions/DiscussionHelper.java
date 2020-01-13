@@ -1,8 +1,25 @@
 package fr.toutatice.portail.cms.nuxeo.api.discussions;
-
+/*
+ * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ *
+ *    
+ */
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpSession;
 
 import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.osivia.portal.api.PortalException;
@@ -19,6 +36,8 @@ import org.osivia.portal.core.constants.InternalConstants;
  */
 public class DiscussionHelper {
 
+    
+    public static String ATTR_LOCAL_PUBLICATION_CACHE = "osivia.cms.discussions.publication.infos";
 
     /** The portal url factory. */
     private static IPortalUrlFactory portalUrlFactory;
@@ -40,40 +59,30 @@ public class DiscussionHelper {
     }
 
 
+
     /**
-     * Get bundle factory.
+     * Gets the discussion url.
      *
-     * @return bundle factory
+     * @param portalControllerContext the portal controller context
+     * @param participant the participant
+     * @param publicationId the publication id
+     * @return the discussion url
      */
-
-    private static IBundleFactory getBundleFactory() {
-        if (bundleFactory == null) {
-            IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                    IInternationalizationService.MBEAN_NAME);
-            bundleFactory = internationalizationService.getBundleFactory(DiscussionHelper.class.getClassLoader());
-        }
-
-        return bundleFactory;
-    }
-
-
-    public static String getDiscussionUrlByParticipant(PortalControllerContext portalControllerContext, String participant)  {
-
-
-        // Internationalization bundle
-        Bundle bundle = getBundleFactory().getBundle(portalControllerContext.getRequest().getLocale());
-
+    public static String getDiscussionUrl(PortalControllerContext portalControllerContext, String id, String participant, String publicationId)  {
 
         Map<String, String> properties = new HashMap<>();
 
-        // TODO : bundle
-        properties.put(InternalConstants.PROP_WINDOW_TITLE, "Discussion");
         properties.put("osivia.ajaxLink", "1");
         properties.put("osivia.hideTitle", "1");
         properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
         Map<String, String> params = new HashMap<>();
         params.put("view", "detail");
-        params.put("participant", participant);
+        if( id != null)
+            params.put("id", id);        
+        if( participant != null)
+            params.put("participant", participant);
+        if( publicationId != null)
+            params.put("publicationId", publicationId);        
         params.put("anchor", "newMessage");
 
 
@@ -89,4 +98,55 @@ public class DiscussionHelper {
         return url;
     }
 
+    
+
+    
+    /**
+     * Gets the discussion url by participant.
+     *
+     * @param portalControllerContext the portal controller context
+     * @param participant the participant
+     * @return the discussion url by participant
+     */
+    public static String getDiscussionUrlByParticipant(PortalControllerContext portalControllerContext, String participant)  {
+        return getDiscussionUrl(portalControllerContext, null, participant, null); 
+    }
+
+    /**
+     * Gets the discussion url by publication.
+     *
+     * @param portalControllerContext the portal controller context
+     * @param publicationId the publication id
+     * @return the discussion url by publication
+     */
+    public static String getDiscussionUrlByPublication(PortalControllerContext portalControllerContext, String publicationId)  {
+        return getDiscussionUrl(portalControllerContext,null, null, publicationId); 
+    }
+    
+    
+    /**
+     * Gets the discussion url by id.
+     *
+     * @param portalControllerContext the portal controller context
+     * @param id the id
+     * @return the discussion url by id
+     */
+    public static String getDiscussionUrlById(PortalControllerContext portalControllerContext, String id)  {
+        return getDiscussionUrl(portalControllerContext,id, null, null); 
+    }
+    
+    
+    /**
+     * Gets the discussion url by id.
+     *
+     * @param portalControllerContext the portal controller context
+     * @param id the id
+     * @return the discussion url by id
+     */
+    public static void resetLocalPublications(PortalControllerContext portalControllerContext)  {
+        HttpSession session = portalControllerContext.getHttpServletRequest().getSession();
+        session.removeAttribute(ATTR_LOCAL_PUBLICATION_CACHE);
+
+    }
+    
 }

@@ -33,13 +33,19 @@ import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 public class DiscussionTag extends ToutaticeSimpleTag {
 
 
-    /**
-     * Discussion type
-     * 
-     *
-     */
-    private String participant;
+    /** The id. */
+    private String id;
+    
 
+
+    /** The participant. */
+    private String participant;
+    
+    /** The publication id. */
+    private String publicationId;
+    
+    
+    
 
     /**
      * Constructor.
@@ -55,22 +61,29 @@ public class DiscussionTag extends ToutaticeSimpleTag {
      */
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
-        if (StringUtils.isNotBlank(this.participant)) {
-           // URL
-            String url = null;
 
-            if (StringUtils.isNotEmpty(participant)) {
-                 url = DiscussionHelper.getDiscussionUrlByParticipant(nuxeoController.getPortalCtx(), participant);
-            }
+        // URL
+        String url = null;
 
-
-            // HTML writer
-            if (url != null) {
-                HTMLWriter htmlWriter = new HTMLWriter(this.getJspContext().getOut());
-                htmlWriter.setEscapeText(false);
-                htmlWriter.write(url);
-            }
+        if (StringUtils.isNotEmpty(id)) {
+            url = DiscussionHelper.getDiscussionUrlById(nuxeoController.getPortalCtx(), id);
         }
+
+        if (StringUtils.isNotEmpty(participant)) {
+            url = DiscussionHelper.getDiscussionUrlByParticipant(nuxeoController.getPortalCtx(), participant);
+        }
+
+        if (StringUtils.isNotEmpty(publicationId)) {
+            url = DiscussionHelper.getDiscussionUrlByPublication(nuxeoController.getPortalCtx(), publicationId);
+        }
+
+        // HTML writer
+        if (url != null) {
+            HTMLWriter htmlWriter = new HTMLWriter(this.getJspContext().getOut());
+            htmlWriter.setEscapeText(false);
+            htmlWriter.write(url);
+        }
+
 
     }
 
@@ -85,5 +98,21 @@ public class DiscussionTag extends ToutaticeSimpleTag {
     }
 
 
+    /**
+     * Setter for publicationId.
+     * @param publicationId the publicationId to set
+     */
+    public void setPublicationId(String publicationId) {
+        this.publicationId = publicationId;
+    }
+
+    
+    /**
+     * Setter for id.
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
 
 }

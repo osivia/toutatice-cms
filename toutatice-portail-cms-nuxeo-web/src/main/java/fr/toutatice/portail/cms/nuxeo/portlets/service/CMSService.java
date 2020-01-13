@@ -3204,15 +3204,11 @@ public class CMSService implements ICMSService {
 
     /**
      * {@inheritDoc}
-     *
-     * @throws Exception
      */
-    private Documents getInternalTasks(CMSServiceCtx cmsContext, String user) throws Exception {
+    @Override
+    public List<EcmDocument> getTasks(CMSServiceCtx cmsContext, String user) throws CMSException {
         // Task actors
-        Set<String> actors = null;
-
-        if (user != null)
-            actors = getTaskActors(user);
+        Set<String> actors = this.getTaskActors(user);
 
         // Task directives
         Set<String> directives = new HashSet<>(TaskDirective.values().length);
@@ -3224,28 +3220,16 @@ public class CMSService implements ICMSService {
         INuxeoCommand command = new GetTasksCommand(actors, true, directives);
 
         // Documents
-        Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
-        return documents;
-    }
+        Documents documents;
+        try {
+            documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
 
-
-    /**
-     * Get discussions documents
-     *
-     * @param cmsContext
-     * @param user
-     * @return
-     * @throws Exception
-     */
-    private Documents getInternalDiscussions(CMSServiceCtx cmsContext, String user) throws Exception {
-
-
-        // Nuxeo command
-        INuxeoCommand command = new GetDiscussionsCommand(user);
-
-        // Documents
-        Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
-        return documents;
+        return new ArrayList<EcmDocument>(documents.list());
     }
 
 
@@ -3253,49 +3237,22 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public List<EcmDocument> getTasks(CMSServiceCtx cmsContext, String user) throws CMSException {
-
-        String savedScope = cmsContext.getScope();
-        Documents documents;
-
-        try {
-            documents = (Documents) getInternalTasks(cmsContext, user);
-
-            // Super-user scope
-            cmsContext.setScope("superuser_no_cache");
-
-            // add shared tasks
-            Documents discussions = (Documents) getInternalDiscussions(cmsContext, user);
-
-            for (Document discussion : discussions) {
-                documents.add(discussion);
-            }
-        } catch (CMSException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CMSException(e);
-        } finally {
-            cmsContext.setScope(savedScope);
-        }
-
-
-        return new ArrayList<EcmDocument>(documents.list());
-    }
-
-
-    public EcmDocument getInternalTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws Exception {
+    public EcmDocument getTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws CMSException {
         // Task actors
-        Set<String> actors = null;
-
-        if (user != null)
-            actors = getTaskActors(user);
+        Set<String> actors = this.getTaskActors(user);
 
         // Nuxeo command
         INuxeoCommand command = new GetTasksCommand(actors, path, uuid);
 
         // Documents
         Documents documents;
-        documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        try {
+            documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+        } catch (CMSException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
 
         // Task
         Document task;
@@ -3308,41 +3265,6 @@ public class CMSService implements ICMSService {
 
         return task;
     }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public EcmDocument getTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws CMSException {
-
-        String savedScope = cmsContext.getScope();
-        Documents documents;
-        Document task;
-
-        try {
-            task = (Document) getInternalTask(cmsContext, user, path, uuid);
-
-            if (task == null) {
-
-                // Super-user scope
-                cmsContext.setScope("superuser_no_cache");
-
-                // add shared tasks
-                task = (Document) getInternalTask(cmsContext, null, path, uuid);
-            }
-        } catch (CMSException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CMSException(e);
-        } finally {
-            cmsContext.setScope(savedScope);
-        }
-
-
-        return task;
-    }
-
 
     /**
      * {@inheritDoc}
