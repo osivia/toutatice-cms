@@ -3386,6 +3386,16 @@ public class CMSService implements ICMSService {
                 actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
             }
         }
+        
+        String anonymousUser=System.getProperty("user.anonymous");
+        if( StringUtils.isNotEmpty(anonymousUser))
+            actors.add("user:"+anonymousUser);
+        
+        String groupMembers=System.getProperty("group.members");
+        if( StringUtils.isNotEmpty(groupMembers))
+            actors.add("group:"+groupMembers);        
+        
+
 
         return actors;
     }
