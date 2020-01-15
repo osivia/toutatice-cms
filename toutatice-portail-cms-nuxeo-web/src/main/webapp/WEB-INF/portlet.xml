@@ -356,6 +356,7 @@
         </portlet-info>
         
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>         
     </portlet>
     
     

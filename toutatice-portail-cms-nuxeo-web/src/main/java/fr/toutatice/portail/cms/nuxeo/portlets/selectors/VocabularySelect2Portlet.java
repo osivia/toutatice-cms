@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.osivia.portal.core.page.PageProperties;
 
 import javax.portlet.*;
 import java.io.IOException;
@@ -181,6 +182,8 @@ public class VocabularySelect2Portlet extends CMSPortlet {
 
                 response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
 
+                // Refresh other portlet model attributes
+                PageProperties.getProperties().setRefreshingPage(true);
 
                 request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, String.valueOf(true));
             }
