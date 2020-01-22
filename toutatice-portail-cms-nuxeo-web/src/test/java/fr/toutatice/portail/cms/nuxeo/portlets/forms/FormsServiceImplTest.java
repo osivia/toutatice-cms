@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.omg.IOP.TransactionService;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
@@ -23,6 +24,7 @@ import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.tasks.ITasksService;
+import org.osivia.portal.api.transaction.ITransactionService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSItem;
@@ -214,6 +216,7 @@ public class FormsServiceImplTest {
         EasyMock.expect(internationalizationService.getBundleFactory(EasyMock.anyObject(ClassLoader.class))).andStubReturn(bundleFactory);
 
 
+        ITransactionService transactionService = EasyMock.createMock(ITransactionService.class);
         // Locator
         PowerMock.mockStatic(Locator.class);
         EasyMock.expect(Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME)).andStubReturn(nuxeoService);
@@ -222,12 +225,13 @@ public class FormsServiceImplTest {
         EasyMock.expect(Locator.findMBean(ITasksService.class, ITasksService.MBEAN_NAME)).andStubReturn(tasksService);
         EasyMock.expect(Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME))
                 .andStubReturn(internationalizationService);
-
+        EasyMock.expect(Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME))
+        .andStubReturn(transactionService);
 
         // Replay
         PowerMock.replayAll(document, dto, dao, documents, documentContext, nuxeoController, cmsItem, cmsCustomizer, cmsContext, cmsService, nuxeoService,
                 emptyPerson, person, personService, groupService, tagService, portalUrlFactory, cmsServiceLocator, tasksService, bundleFactory,
-                internationalizationService);
+                internationalizationService, transactionService);
 
 
         // Forms service

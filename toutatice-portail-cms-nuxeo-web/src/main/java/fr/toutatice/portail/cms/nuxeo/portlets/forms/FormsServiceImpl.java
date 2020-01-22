@@ -66,6 +66,8 @@ import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.portlet.model.UploadedFile;
 import org.osivia.portal.api.tasks.ITasksService;
+import org.osivia.portal.api.transaction.IPostcommitResource;
+import org.osivia.portal.api.transaction.ITransactionService;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -124,8 +126,8 @@ public class FormsServiceImpl implements IFormsService {
     private final PersonService personService;
     /** Group service. */
     private final GroupService groupService;
-
-
+    /** Transaction service. */
+    private final ITransactionService transactionService;
     /**
      * Constructor.
      *
@@ -152,6 +154,7 @@ public class FormsServiceImpl implements IFormsService {
         this.personService = DirServiceFactory.getService(PersonService.class);
         // Group service
         this.groupService = DirServiceFactory.getService(GroupService.class);
+        this.transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
     }
 
 
@@ -327,17 +330,10 @@ public class FormsServiceImpl implements IFormsService {
             finally {
                 cmsContext.setScope(savedScope);
             }
-            if( "debug".equals(System.getProperty("osivia.transactionMode")))   {
-                // need es   
-               } else   {
+            
+            IPostcommitResource sendModule = new ProcedureSendMailModule(portalControllerContext, this.cmsCustomizer.getPortletContext(), this, uuid, procedureInitiator);
+            transactionService.registerPostcommit(sendModule);
 
-            // Email notification
-            try {
-                this.sendEmailNotification(portalControllerContext, uuid, procedureInitiator);
-            } catch (CMSException e) {
-                throw new PortalException(e);
-            }
-               }
         }
     	procLogger.info(" Procedure started "+uuid);
 
@@ -578,16 +574,10 @@ public class FormsServiceImpl implements IFormsService {
             	initiator = "admin";
             }
             
-            if( "debug".equals(System.getProperty("osivia.transactionMode")))   {
-             // need es   
-            }   else    {
             
-            try {
-                this.sendEmailNotification(portalControllerContext, uuid, initiator);
-            } catch (CMSException e) {
-                throw new PortalException(e);
-            }
-            }
+            IPostcommitResource sendModule = new ProcedureSendMailModule(portalControllerContext, this.cmsCustomizer.getPortletContext(), this, uuid, initiator);
+            transactionService.registerPostcommit(sendModule);
+
         }
 
 
@@ -1087,7 +1077,7 @@ public class FormsServiceImpl implements IFormsService {
      * @return transformed expression
      * @throws PortalException
      */
-    private String transform(PortalControllerContext portalControllerContext, String expression, Document task, boolean disabledLinks) throws PortalException {
+    protected String transform(PortalControllerContext portalControllerContext, String expression, Document task, boolean disabledLinks) throws PortalException {
         // Procedure instance properties
         PropertyMap instanceProperties = task.getProperties().getMap("nt:pi");
         if (instanceProperties == null) {
