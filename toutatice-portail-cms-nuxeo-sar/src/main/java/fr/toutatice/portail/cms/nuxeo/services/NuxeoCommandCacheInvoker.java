@@ -356,19 +356,23 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                         begin = System.currentTimeMillis();
                         
-                        ITransactionService transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
+                        // TODO : transaction for other scopes
+                        if (this.ctx.getAuthType() == NuxeoCommandContext.AUTH_TYPE_USER) {
                         
-                        if (transactionService.isStarted() && (transactionService.getResource("NUXEO") == null)) {
-
-                            // Start Tx
-                            Object object = nuxeoSession.newRequest("Repository.StartTransaction").execute();
-                            if (object instanceof FileBlob) {
-                                FileBlob txIdAsBlob = (FileBlob) object;
-                                String txId = IOUtils.toString(txIdAsBlob.getStream(), "UTF-8");
-                                
-                                // and register
-                                 transactionService.register("NUXEO", new TransactionResource(this.ctx, txId));
-                             }
+                            ITransactionService transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
+                             
+                            if (transactionService.isStarted() && (transactionService.getResource("NUXEO") == null)) {
+    
+                                // Start Tx
+                                Object object = nuxeoSession.newRequest("Repository.StartTransaction").execute();
+                                if (object instanceof FileBlob) {
+                                    FileBlob txIdAsBlob = (FileBlob) object;
+                                    String txId = IOUtils.toString(txIdAsBlob.getStream(), "UTF-8");
+                                    
+                                    // and register
+                                     transactionService.register("NUXEO", new TransactionResource(this.ctx, txId));
+                                 }
+                            }
                         }
                         
 

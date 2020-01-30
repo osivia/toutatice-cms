@@ -48,6 +48,7 @@ public class TransactionResource implements ITransactionResource {
     private NuxeoController getNuxeoController() {
         NuxeoController nuxeoController = new NuxeoController(nuxeoCtx.getPortletContext());
         
+        
         ServerInvocation invocation = this.nuxeoCtx.getServerInvocation();
 
 
@@ -55,6 +56,9 @@ public class TransactionResource implements ITransactionResource {
             ControllerContext controllerCtx = this.nuxeoCtx.getControlerContext();
             if( controllerCtx != null)
                 invocation = controllerCtx.getServerInvocation();
+            else    {
+                nuxeoController.setServletRequest((HttpServletRequest) this.nuxeoCtx.getRequest());
+            }
         }
 
 

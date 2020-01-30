@@ -42,6 +42,6 @@ public class EndTransactionCommand implements INuxeoCommand {
 
     @Override
     public String getId() {
-        return "transaction " + transactionId + " " + commit;
+        return "Endtransaction/" + transactionId + "/commit/" + commit;
     }
 }
