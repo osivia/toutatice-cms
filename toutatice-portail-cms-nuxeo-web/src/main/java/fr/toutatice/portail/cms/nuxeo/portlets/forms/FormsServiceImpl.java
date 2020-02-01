@@ -575,9 +575,12 @@ public class FormsServiceImpl implements IFormsService {
             }
             
             
-            IPostcommitResource sendModule = new ProcedureSendMailModule(portalControllerContext, this.cmsCustomizer.getPortletContext(), this, uuid, initiator);
-            transactionService.registerPostcommit(sendModule);
-
+            ProcedureSendMailModule sendModule = new ProcedureSendMailModule(portalControllerContext, this.cmsCustomizer.getPortletContext(), this, uuid, initiator);
+            if (transactionService.isStarted()) {
+                transactionService.registerPostcommit(sendModule);
+            }   else    {
+                sendModule.run();
+            }
         }
 
 
@@ -587,22 +590,14 @@ public class FormsServiceImpl implements IFormsService {
         // Check if workflow must be deleted
         boolean deleteOnEnding = BooleanUtils.toBoolean(updatedVariables.get(DELETE_ON_ENDING_PARAMETER));
         if (deleteOnEnding && endStep) {
-            // Save current scope
-            String savedScope = cmsContext.getScope();
-            String savedForcedScope = cmsContext.getForcePublicationInfosScope();
-
-            try {
-                cmsContext.setScope("superuser_no_cache");
-                cmsContext.setForcePublicationInfosScope("superuser_no_cache");
-
-                cmsService.deleteDocument(cmsContext, instancePath);
-            } catch (CMSException e) {
-                throw new PortalException(e);
-            } finally {
-                cmsContext.setScope(savedScope);
-                cmsContext.setForcePublicationInfosScope(savedForcedScope);
+            
+            ProcedureRemoveInstanceModule removeInstanceModule = new ProcedureRemoveInstanceModule(cmsContext, cmsService, instancePath);
+            if (transactionService.isStarted()) {
+                transactionService.registerPostcommit(removeInstanceModule);
+            }   else    {
+                removeInstanceModule.run();
             }
-        }
+          }
         
     	procLogger.info(" Procedure proceeded "+globalVariableValues.get("uuid"));
 
