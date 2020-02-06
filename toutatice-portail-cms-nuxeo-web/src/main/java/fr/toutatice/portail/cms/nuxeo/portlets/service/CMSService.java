@@ -3208,7 +3208,7 @@ public class CMSService implements ICMSService {
     @Override
     public List<EcmDocument> getTasks(CMSServiceCtx cmsContext, String user) throws CMSException {
         // Task actors
-        Set<String> actors = this.getTaskActors(user);
+        Set<String> actors = this.getTaskActors(user, false);
 
         // Task directives
         Set<String> directives = new HashSet<>(TaskDirective.values().length);
@@ -3239,7 +3239,7 @@ public class CMSService implements ICMSService {
     @Override
     public EcmDocument getTask(CMSServiceCtx cmsContext, String user, String path, UUID uuid) throws CMSException {
         // Task actors
-        Set<String> actors = this.getTaskActors(user);
+        Set<String> actors = this.getTaskActors(user, true);
 
         // Nuxeo command
         INuxeoCommand command = new GetTasksCommand(actors, path, uuid);
@@ -3319,7 +3319,7 @@ public class CMSService implements ICMSService {
         Set<String> actors = null;
         if (StringUtils.isNotEmpty(user)) {
             // Task actors
-            actors = this.getTaskActors(user);
+            actors = this.getTaskActors(user, true);
         }
 
         // Nuxeo command
@@ -3362,7 +3362,7 @@ public class CMSService implements ICMSService {
      * @param user user
      * @return actors
      */
-    private Set<String> getTaskActors(String user) {
+    private Set<String> getTaskActors(String user, boolean includeAnonymous) {
         // User DN
         Name dn = this.personService.getEmptyPerson().buildDn(user);
 
@@ -3387,14 +3387,12 @@ public class CMSService implements ICMSService {
             }
         }
         
-        String anonymousUser=System.getProperty("user.anonymous");
-        if( StringUtils.isNotEmpty(anonymousUser))
-            actors.add("user:"+anonymousUser);
-        
-        String groupMembers=System.getProperty("group.members");
-        if( StringUtils.isNotEmpty(groupMembers))
-            actors.add("group:"+groupMembers);        
-        
+        if( includeAnonymous) {
+
+            String anonymousUser=System.getProperty("user.anonymous");
+            if( StringUtils.isNotEmpty(anonymousUser))
+                actors.add("user:"+anonymousUser);
+        }
 
 
         return actors;
