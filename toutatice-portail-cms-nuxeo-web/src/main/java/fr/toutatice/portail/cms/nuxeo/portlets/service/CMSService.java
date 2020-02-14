@@ -711,11 +711,17 @@ public class CMSService implements ICMSService {
                     cmsContext.setScope("superuser_context");
                     nuxeoDocument = (Document) this.executeNuxeoCommand(cmsContext, fetchVersion);
                 }
+            } catch (CMSException e) {
+
+            	User u = (User) cmsContext.getServerInvocation().getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
+            	
+                LOG.warn("Unable to fetch content on "+path+" for "+u.getUserName());
+                throw e;
+
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 throw e;
             }
-
 
             // File content
             if (nuxeoDocument != null) {

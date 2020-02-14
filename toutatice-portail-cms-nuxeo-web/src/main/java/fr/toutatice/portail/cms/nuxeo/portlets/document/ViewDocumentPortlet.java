@@ -41,6 +41,8 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -111,6 +113,10 @@ import fr.toutatice.portail.cms.nuxeo.service.tag.NuxeoTagService;
  */
 public class ViewDocumentPortlet extends CMSPortlet {
 
+
+    /** Log. */
+    private final Log logger = LogFactory.getLog(ViewDocumentPortlet.class);
+	
     /**
      *
      */
@@ -745,7 +751,14 @@ public class ViewDocumentPortlet extends CMSPortlet {
             }
             else {
                 // For other spaces
-                enable = space.getProperties().getBoolean("ttcs:spaceCommentable");
+            	
+            	if(space.getProperties() != null) {
+                    enable = space.getProperties().getBoolean("ttcs:spaceCommentable");
+            	}
+            	else {
+            		logger.warn("Can't get spaceCommentable property for "+publicationInfos.getDocumentPath());
+            	}
+            	
             }
             
         }

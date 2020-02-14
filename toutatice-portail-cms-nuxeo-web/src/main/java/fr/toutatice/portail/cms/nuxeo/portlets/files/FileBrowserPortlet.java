@@ -42,6 +42,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -100,6 +102,9 @@ import net.sf.json.JSONObject;
  */
 public class FileBrowserPortlet extends CMSPortlet {
 
+    /** Log. */
+    private final Log logger = LogFactory.getLog(FileBrowserPortlet.class);;
+	
     /** default maximum size of uploaded file in Mb */
     private static final long MAX_FILE_SIZE_DEFAULT = 500;
 
@@ -720,8 +725,17 @@ public class FileBrowserPortlet extends CMSPortlet {
     	String folderDisplayMode = null;
 		try {
 			UserPreferences userPreferences = cmsService.getUserPreferences(portalControllerContext);
-			folderDisplayMode = userPreferences.getFolderDisplayMode(currentDocument.getString("ttc:webid"));
-
+			
+			if(userPreferences != null) {
+				folderDisplayMode = userPreferences.getFolderDisplayMode(currentDocument.getString("ttc:webid"));	
+			}
+			else {
+				
+				String remoteUser = portalControllerContext.getRequest().getRemoteUser();
+				
+				logger.warn("Unable to get userPreferences for "+remoteUser+" on "+currentDocument.getPath());
+			}
+			
 		} catch (PortalException e1) {
 
 		}

@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 
 
 /**
@@ -60,6 +62,9 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
  * @see HttpServlet
  */
 public class BinaryServlet extends HttpServlet {
+	
+    /** Log. */
+    private final Log logger = LogFactory.getLog(BinaryServlet.class);;
 
     /** Default serial version ID. */
     private static final long serialVersionUID = 1L;
@@ -116,6 +121,9 @@ public class BinaryServlet extends HttpServlet {
 
         // Output
         OutputStream output = response.getOutputStream();
+        
+        String path = "";
+        
         try {
             // Request parameters
             String index = request.getParameter("index");
@@ -123,7 +131,7 @@ public class BinaryServlet extends HttpServlet {
             String fieldName = request.getParameter("fieldName");
 
             // Document path
-            String path = request.getParameter("path");
+            path = request.getParameter("path");
             path = URLDecoder.decode(path, "UTF-8");
 
             // Live state indicator
@@ -161,7 +169,14 @@ public class BinaryServlet extends HttpServlet {
 
             // Binary type
             String type = request.getParameter("type");
-            Type binaryType = BinaryDescription.Type.valueOf(type);
+            Type binaryType = null;
+            try {
+            	binaryType = BinaryDescription.Type.valueOf(type);
+            }
+            catch(IllegalArgumentException e) {
+            	log.warn(type + " is not a valid binaryType on "+path+" for "+request.getRemoteUser());
+            	throw new ServletException(e);
+            }
 
             // Force portal cache refresh
             if (BooleanUtils.toBoolean(request.getParameter("reload"))) {
@@ -225,6 +240,11 @@ public class BinaryServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 request.setAttribute("osivia.no_redirection", "1");
             }
+        } catch (SocketException e) {
+        	
+        	logger.warn("Socket is broken on "+path+" for "+request.getRemoteUser());
+        	
+        	
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
@@ -415,7 +435,8 @@ public class BinaryServlet extends HttpServlet {
     }
 
 
-    private void copy(CMSBinaryContent content, OutputStream output, long start, long length) throws IOException {
+    private void copy(CMSBinaryContent content, OutputStream output, long start, long length) 
+    		throws IOException, SocketException {
         InputStream input = content.getStream();
         try {
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];

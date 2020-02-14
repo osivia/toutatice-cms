@@ -41,6 +41,7 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
@@ -123,11 +124,15 @@ public class AvatarServlet extends HttpServlet {
                 Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(userId));
 
                 if (userProfile != null) {
+                	Document fetchedUserProfile = null;
+                	try {
+                		fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
+                	}
+                	catch(NuxeoException e) {
+                		logger.warn("Unable to fetch user profile for "+userId+ " in "+userProfile.getPath());
+                	}
 
-                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
-
-
-                    if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
+                    if (fetchedUserProfile != null && fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
                         FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
                         command.setTimestamp(theRequest.getParameter("t"));
 
