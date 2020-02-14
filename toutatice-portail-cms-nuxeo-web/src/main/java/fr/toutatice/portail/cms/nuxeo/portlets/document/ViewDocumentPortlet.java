@@ -752,7 +752,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             else {
                 // For other spaces
             	
-            	if(space.getProperties() != null) {
+            	if(space != null && space.getProperties() != null) {
                     enable = space.getProperties().getBoolean("ttcs:spaceCommentable");
             	}
             	else {
