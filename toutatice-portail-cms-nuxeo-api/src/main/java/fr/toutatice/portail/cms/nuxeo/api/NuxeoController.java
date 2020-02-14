@@ -862,7 +862,7 @@ public class NuxeoController {
     }
 
     public NuxeoException wrapNuxeoException(Exception e) {
-    	return wrapNuxeoException(e);
+    	return wrapNuxeoException(e, "");
     }
     
     public NuxeoException wrapNuxeoException(Exception e, String contextMsg) {
@@ -886,7 +886,7 @@ public class NuxeoController {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof CMSException) {
                 CMSException cmsException = (CMSException) cause;
-                nxe = this.wrapNuxeoException(cmsException);
+                nxe = this.wrapNuxeoException(cmsException, contextMsg) ;
             } else {
             	nxe = new NuxeoException(e);
             }
