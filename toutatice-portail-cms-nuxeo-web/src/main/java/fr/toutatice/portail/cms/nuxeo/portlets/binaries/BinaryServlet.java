@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,6 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
 
 
 /**
@@ -62,9 +60,10 @@ import fr.toutatice.portail.cms.nuxeo.portlets.files.FileBrowserPortlet;
  * @see HttpServlet
  */
 public class BinaryServlet extends HttpServlet {
-	
-    /** Log. */
-    private final Log logger = LogFactory.getLog(BinaryServlet.class);;
+
+    /** Log for streaming problems. */
+    private final Log netLogger = LogFactory.getLog("network.errors");
+    
 
     /** Default serial version ID. */
     private static final long serialVersionUID = 1L;
@@ -245,8 +244,7 @@ public class BinaryServlet extends HttpServlet {
             }
         } catch (IOException e) {
         	
-        	
-			logger.warn("stream is broken on "+ path + (username != null ? " for "+username : " "));
+        	netLogger.warn("stream is broken on "+ path + (username != null ? " for "+username : " "));
         	
         } 
         catch (Exception e) {

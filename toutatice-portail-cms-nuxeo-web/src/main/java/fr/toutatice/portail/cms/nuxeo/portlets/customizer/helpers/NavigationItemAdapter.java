@@ -126,7 +126,7 @@ public class NavigationItemAdapter {
 			if ((cmsItemType != null) && StringUtils.isNotBlank(cmsItemType.getDefaultTemplate())) {
 				pageTemplate = cmsItemType.getDefaultTemplate();
 				properties.put("defaultTemplate", "1");
-			} else if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
+			} else if (publishSpaceItem != null && publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 				pageTemplate = this.getDefaultPageTemplate(doc);
 				properties.put("defaultTemplate", "1");
             } else if ("Staple".equals(doc.getType())) {
@@ -139,7 +139,7 @@ public class NavigationItemAdapter {
 		}
 
 
-		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
+		if (publishSpaceItem != null && publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath())) {
 			properties.put("navigationElement", "1");
 
             properties.put("pageDisplayMode", "1");
@@ -220,7 +220,7 @@ public class NavigationItemAdapter {
 		 * Contextualisation
 		 *
 		 */
-		if (publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath()) && !"PortalSite".equals(doc.getType())) {
+		if (publishSpaceItem != null && publishSpaceNavigationItem.getPath().equals(publishSpaceItem.getPath()) && !"PortalSite".equals(doc.getType())) {
 			properties.put("contextualizeInternalContents", "1");
 			properties.put("contextualizeExternalContents", "1");
 		} else {
@@ -239,7 +239,7 @@ public class NavigationItemAdapter {
 		 * Use of ElasticSearch on PublishSpaces
 		 * and possibility to comment inside
 		 */
-		if (this.isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
+		if (publishSpaceItem != null && this.isCurrentDocPublishSpace(publishSpaceNavigationItem, publishSpaceItem, doc)) {
 		    Boolean useES = doc.getProperties().getBoolean("ttc:useES");
 		    properties.put("useES", String.valueOf(useES));
 

@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.core.model.portal.Page;
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
@@ -97,6 +99,10 @@ import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
  */
 public class NuxeoController {
 
+
+    /** Log. */
+    private final Log logger = LogFactory.getLog(NuxeoController.class);;
+	
     /** Slash separator. */
     private static final String SLASH = "/";
     /** Dot separator. */
@@ -855,30 +861,42 @@ public class NuxeoController {
         this(portalControllerContext.getRequest(), portalControllerContext.getResponse(), portalControllerContext.getPortletCtx());
     }
 
-
     public NuxeoException wrapNuxeoException(Exception e) {
+    	return wrapNuxeoException(e);
+    }
+    
+    public NuxeoException wrapNuxeoException(Exception e, String contextMsg) {
 
+    	NuxeoException nxe = null;
+    	
+    	
         if (e instanceof CMSException) {
             CMSException cmsExc = (CMSException) e;
 
             if (cmsExc.getErrorCode() == CMSException.ERROR_NOTFOUND) {
-                return new NuxeoException(NuxeoException.ERROR_NOTFOUND);
+            	nxe = new NuxeoException(NuxeoException.ERROR_NOTFOUND);
             }
-            if (cmsExc.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
-                return new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
+            else if (cmsExc.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
+            	nxe = new NuxeoException(NuxeoException.ERROR_FORBIDDEN);
             }
-            return new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
+            else {
+            	nxe = new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE, cmsExc.getCause());
+            }
         } else if (e instanceof PortletException) {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof CMSException) {
                 CMSException cmsException = (CMSException) cause;
-                return this.wrapNuxeoException(cmsException);
+                nxe = this.wrapNuxeoException(cmsException);
             } else {
-                return new NuxeoException(e);
+            	nxe = new NuxeoException(e);
             }
         } else {
-            return new NuxeoException(e);
+        	nxe = new NuxeoException(e);
         }
+        
+        logger.error(nxe + (contextMsg != null ? contextMsg : ""));
+        
+        return nxe;
     }
 
 
@@ -2346,7 +2364,7 @@ public class NuxeoController {
         try {
             return getDocumentContext(this.request, this.response, this.portletCtx, path);
         } catch (PortletException e) {
-            throw this.wrapNuxeoException(e);
+            throw this.wrapNuxeoException(e, "get document context for "+path);
         }
     }
 
@@ -2362,7 +2380,7 @@ public class NuxeoController {
         try {
             return getDocumentContext(this.request, this.response, this.portletCtx, path, reload);
         } catch (PortletException e) {
-            throw this.wrapNuxeoException(e);
+            throw this.wrapNuxeoException(e, "get document context for "+path);
         }
     }
 
