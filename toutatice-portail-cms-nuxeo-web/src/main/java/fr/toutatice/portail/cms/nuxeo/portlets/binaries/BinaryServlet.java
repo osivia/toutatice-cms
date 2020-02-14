@@ -123,6 +123,7 @@ public class BinaryServlet extends HttpServlet {
         OutputStream output = response.getOutputStream();
         
         String path = "";
+        String username = null;
         
         try {
             // Request parameters
@@ -165,6 +166,8 @@ public class BinaryServlet extends HttpServlet {
                 request.setAttribute("osivia.isAdmin", delegation.isAdmin());
 
                 PageProperties.getProperties().setBinarySubject(delegation.getSubject());
+                
+                username = delegation.getUserName();
             }
 
             // Binary type
@@ -242,7 +245,8 @@ public class BinaryServlet extends HttpServlet {
             }
         } catch (IOException e) {
         	
-        	logger.warn("Socket is broken on "+path+" for "+request.getRemoteUser());
+        	
+			logger.warn("stream is broken on "+ path + (username != null ? " for "+username : " "));
         	
         } 
         catch (Exception e) {
