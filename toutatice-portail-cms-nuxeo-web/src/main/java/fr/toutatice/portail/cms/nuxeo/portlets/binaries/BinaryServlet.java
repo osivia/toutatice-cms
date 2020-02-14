@@ -240,14 +240,15 @@ public class BinaryServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 request.setAttribute("osivia.no_redirection", "1");
             }
-        } catch (SocketException e) {
+        } catch (IOException e) {
         	
         	logger.warn("Socket is broken on "+path+" for "+request.getRemoteUser());
         	
-        	
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             throw new ServletException(e);
-        } finally {
+        } 
+        finally {
             IOUtils.closeQuietly(output);
         }
     }
@@ -436,7 +437,7 @@ public class BinaryServlet extends HttpServlet {
 
 
     private void copy(CMSBinaryContent content, OutputStream output, long start, long length) 
-    		throws IOException, SocketException {
+    		throws IOException {
         InputStream input = content.getStream();
         try {
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
