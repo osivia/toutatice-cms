@@ -101,7 +101,7 @@ public class NuxeoController {
 
 
     /** Log. */
-    private final Log logger = LogFactory.getLog(NuxeoController.class);;
+    private static final Log logger = LogFactory.getLog(NuxeoController.class);;
 	
     /** Slash separator. */
     private static final String SLASH = "/";
@@ -867,6 +867,8 @@ public class NuxeoController {
     
     public NuxeoException wrapNuxeoException(Exception e, String contextMsg) {
 
+    	// LBI add more infos about nuxeo errors
+    	
     	NuxeoException nxe = null;
     	
     	
@@ -894,7 +896,17 @@ public class NuxeoController {
         	nxe = new NuxeoException(e);
         }
         
-        logger.error(nxe + (contextMsg != null ? contextMsg : ""));
+        
+        if(request != null) {
+            String contextPath = request.getParameter(BasicPublicationInfos.CONTENT_PATH);
+            logger.error(nxe + (contextMsg != null ? contextMsg : "" + " / contextPath : "+contextPath));
+
+        }
+        else {
+            logger.error(nxe + (contextMsg != null ? contextMsg : ""));
+
+        }
+        
         
         return nxe;
     }
@@ -2446,6 +2458,12 @@ public class NuxeoController {
         if(path == null) {
             publicationInfos.setContentPath(request.getParameter(BasicPublicationInfos.CONTENT_PATH));
         } else {
+        	
+        	// LBI : may happend ?
+        	if(StringUtils.isBlank(path)) {
+        		logger.warn("Try to get an empty path content !" );
+        	}
+        	
             publicationInfos.setContentPath(path);
         }
 
