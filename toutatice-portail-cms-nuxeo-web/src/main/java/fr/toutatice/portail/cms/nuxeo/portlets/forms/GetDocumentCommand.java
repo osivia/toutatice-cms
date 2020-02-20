@@ -30,8 +30,9 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
  */
 public class GetDocumentCommand implements INuxeoCommand {
 
+	
     /** Document identifier. */
-    private String path;
+    private String docref;
 
 
     /**
@@ -39,9 +40,9 @@ public class GetDocumentCommand implements INuxeoCommand {
      *
      * @param path identifier
      */
-    public GetDocumentCommand(String path) {
+    public GetDocumentCommand(String docref) {
         super();
-        this.path = path;
+        this.docref = docref;
     }
 
 
@@ -52,7 +53,15 @@ public class GetDocumentCommand implements INuxeoCommand {
     public Object execute(Session session) throws Exception {
         // Nuxeo request
         StringBuilder nuxeoRequest = new StringBuilder();
-        nuxeoRequest.append("ecm:path = '").append(path).append("' ");
+        
+        if(docref.startsWith("/")) {
+            nuxeoRequest.append("ecm:path = '").append(docref).append("' ");
+        }
+        else {
+            nuxeoRequest.append("ecm:uuid = '").append(docref).append("' ");
+
+        }
+        
         nuxeoRequest.append("ORDER BY ecm:pos ASC");
 
         // Query filter
@@ -77,7 +86,7 @@ public class GetDocumentCommand implements INuxeoCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName());
         builder.append("/");
-        builder.append(this.path);
+        builder.append(this.docref);
         return builder.toString();
     };
 
