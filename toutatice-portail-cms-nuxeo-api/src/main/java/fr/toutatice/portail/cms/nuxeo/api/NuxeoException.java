@@ -148,27 +148,27 @@ public class NuxeoException extends RuntimeException {
 		return message;
 	}
 	
-	@Override
-	public String toString() {
-
-		String str = "NuxeoException ";
-		
-		if(errorCode == ERROR_FORBIDDEN) {
-			str = str + "(forbidden)";
-		}
-		else if(errorCode == ERROR_NOTFOUND) {
-			str = str + "(not found)";
-		}
-		else if(errorCode == ERROR_UNAVAILAIBLE) {
-			str = str + "(unavaliable)";
-
-		}
-		if(getCause() != null) {
-			str = str + " " + getCause().getMessage();
-		}
-
-		return str;
-		
-	}
+//	@Override
+//	public String toString() {
+//
+//		String str = "NuxeoException ";
+//		
+//		if(errorCode == ERROR_FORBIDDEN) {
+//			str = str + "(forbidden)";
+//		}
+//		else if(errorCode == ERROR_NOTFOUND) {
+//			str = str + "(not found)";
+//		}
+//		else if(errorCode == ERROR_UNAVAILAIBLE) {
+//			str = str + "(unavaliable)";
+//
+//		}
+//		if(getCause() != null) {
+//			str = str + " " + getCause().getMessage();
+//		}
+//
+//		return str;
+//		
+//	}
 
 }
