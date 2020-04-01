@@ -553,6 +553,8 @@ public class CMSService implements ICMSService {
             // Document
             Documents docs = (Documents) this.executeNuxeoCommand(cmsContext, new FetchByShareLinkCommand(shareId, enabledLinkOnly));
 
+            if( docs.size() > 1)
+                LOG.error("More than one document whith share Id : "+ shareId);
             if (docs.size() != 1) {
                 throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
             }
