@@ -1,9 +1,11 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.document;
 
 import org.apache.commons.lang.StringUtils;
+import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.model.DocRef;
+import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -44,8 +46,7 @@ public class InlineEditionCommand implements INuxeoCommand {
      */
     @Override
     public Object execute(Session nuxeoSession) throws Exception {
-        // Document service
-        DocumentService documentService = nuxeoSession.getAdapter(DocumentService.class);
+
         
         // Document reference
         DocRef reference = new DocRef(this.path);
@@ -53,8 +54,17 @@ public class InlineEditionCommand implements INuxeoCommand {
         // Properties
         PropertyMap properties = new PropertyMap(1);
         properties.set(this.property, StringUtils.trimToNull(StringUtils.join(this.values, ",")));
+        
+        
+        // Operation request
+        OperationRequest request = nuxeoSession.newRequest("Index.UpdateMetadata");
+        request.setInput(reference);
+        request.set("properties", properties);     
+            
+        Document updatedDocument = (Document) request.execute();   
 
-        return documentService.update(reference, properties);
+        return updatedDocument;
+
     }
 
 
