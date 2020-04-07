@@ -51,7 +51,7 @@ public class FetchByShareLinkCommand implements INuxeoCommand {
         if( enabledLinkOnly)
             clause.append(" AND rshr:enabledLink = 1");
             
-        clause.append(" ORDER BY ecm:pos ASC");
+        clause.append(" ORDER BY dc:modified ASC");
 
         // Nuxeo query filter context
         NuxeoQueryFilterContext filterContext = new NuxeoQueryFilterContext(NuxeoQueryFilterContext.STATE_LIVE);

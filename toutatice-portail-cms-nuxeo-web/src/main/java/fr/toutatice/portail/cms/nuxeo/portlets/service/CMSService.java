@@ -546,6 +546,8 @@ public class CMSService implements ICMSService {
         CMSItem content = null;
         // Saved scope
         String savedScope = cmsContext.getScope();
+        
+        boolean ignoreError = false;
         try {
 
             cmsContext.setScope("superuser_no_cache");
@@ -553,9 +555,29 @@ public class CMSService implements ICMSService {
             // Document
             Documents docs = (Documents) this.executeNuxeoCommand(cmsContext, new FetchByShareLinkCommand(shareId, enabledLinkOnly));
 
-            if( docs.size() > 1)
-                LOG.error("More than one document whith share Id : "+ shareId);
-            if (docs.size() != 1) {
+            if (docs.size() > 1) {
+
+                LOG.error(docs.size() + " documents whith share Id : " + shareId);
+
+                if (docs.size() == 2) {
+                    // A bad manipulation from the administrator who has duplicated the linkId
+                    // We delete the link in the newer document ...
+                    try {
+                        LOG.info("deactivate link for " + docs.get(1).getPath());
+
+                        List<String> propertiesToRemove = new ArrayList<>();
+                        propertiesToRemove.add("rshr:linkId");
+                        propertiesToRemove.add("rshr:enabledLink");
+                        this.executeNuxeoCommand(cmsContext, (new DocumentRemovePropertyCommand(docs.get(1), propertiesToRemove)));
+
+                        ignoreError = true;
+                    } catch (Exception e) {
+                        throw new CMSException(e);
+                    }
+                }
+            }
+            
+            if (docs.size() != 1 && !ignoreError) {
                 throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
             }
 
