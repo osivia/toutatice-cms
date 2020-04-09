@@ -1164,6 +1164,9 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("task", "link", TransformationFunctions.getViewTaskLinkMethod());            
             context.setFunction("document", "linkWithText", TransformationFunctions.getDocumentLinkWithTextMethod());
             context.setFunction("portal", "link", TransformationFunctions.getPortalLinkMethod());
+            context.setFunction("portal", "translate", TransformationFunctions.getPortalTranslateMethod());            
+            context.setFunction("portal", "prop", TransformationFunctions.getPortalPropertyMethod());            
+
             if (disabledLinks) {
                 context.setFunction("user", "link", TransformationFunctions.getUserDisplayNameMethod());
                 context.setFunction("document", "link", TransformationFunctions.getDocumentTitleMethod());

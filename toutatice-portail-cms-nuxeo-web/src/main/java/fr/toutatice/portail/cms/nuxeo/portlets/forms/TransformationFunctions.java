@@ -27,6 +27,9 @@ import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
@@ -62,7 +65,8 @@ public class TransformationFunctions {
 	
 	private static DocumentDAO documentDao;
     
-
+	/** The internationalization service. */
+	private static  IInternationalizationService internationalizationService;
 
     /**
      * Constructor.
@@ -124,6 +128,17 @@ public class TransformationFunctions {
     		cmsCustomizer = NuxeoServiceFactory.getNuxeoService().getCMSCustomizer();
     	}
     	return cmsCustomizer;
+    }
+
+    
+    private static IInternationalizationService getInternationalizationService() {
+
+        if( internationalizationService == null) {
+            internationalizationService = Locator.findMBean(IInternationalizationService.class,
+                IInternationalizationService.MBEAN_NAME);
+        }
+        return internationalizationService;
+
     }
 
 
@@ -648,5 +663,68 @@ public class TransformationFunctions {
     public static Method getPortalLinkMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getPortalLink", String.class);
     }
+    
+    
+    
+    /**
+     * Get portal translation.
+     * 
+     * @param text link text
+     * @return link
+     */
+    public static String getPortalTranslate(String key) {
+        // Portal URL factory
+        IInternationalizationService internationalizationService = getInternationalizationService();
 
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+
+   
+          IBundleFactory bundleFactory = internationalizationService.getBundleFactory(TransformationFunctions.class.getClassLoader());
+        Bundle bundle = bundleFactory.getBundle(portalControllerContext.getHttpServletRequest().getLocale());
+        
+        return bundle.getString(key);
+    }
+    
+
+    /**
+     * Get portal:link method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getPortalTranslateMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getPortalTranslate", String.class);
+    }
+
+    
+    
+    /**
+     * Get portal property.
+     * 
+     * @param text propertyName
+     * @return property value
+     */
+    public static String getPortalProperty(String propertyName) {
+
+        String result = System.getProperty(propertyName);
+        if( result == null)
+            result = "";
+        return result;
+    }
+    
+
+    /**
+     * Get portal:link method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getPortalPropertyMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getPortalProperty", String.class);
+    }
+
+    
 }
