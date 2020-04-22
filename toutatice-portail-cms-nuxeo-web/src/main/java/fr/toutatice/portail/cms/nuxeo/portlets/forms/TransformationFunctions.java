@@ -491,7 +491,9 @@ public class TransformationFunctions {
                     if (StringUtils.isEmpty(host)) {
                     	redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
                     } else {
-                        redirectionUrl = host + portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_TASK);
+                        //redirectionUrl = host + portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_TASK);
+                    	redirectionUrl = host + "/portal/auth/cms/" + redirectionPath; 
+                    	
                     }
                 } catch (PortalException e) {
                     redirectionUrl = null;
