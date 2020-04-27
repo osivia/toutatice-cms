@@ -20,45 +20,87 @@ package fr.toutatice.portail.cms.nuxeo.api;
  */
 public enum Customizable {
 
-    /** JSP. */
+    /**
+     * JSP.
+     */
     JSP("osivia.customizer.cms.jsp"),
-    /** List template. */
+    /**
+     * List template.
+     */
     LIST_TEMPLATE("osivia.customizer.cms.template."),
-    /** Fragment. */
+    /**
+     * Fragment.
+     */
     FRAGMENT("osivia.customizer.cms.fragments."),
-    /** Editable window. */
+    /**
+     * Editable window.
+     */
     EDITABLE_WINDOW("osivia.customizer.cms.ew."),
-    /** Document type. */
+    /**
+     * Document type.
+     */
     DOC_TYPE("osivia.customizer.cms.doctype"),
-    /** Document player. */
+    /**
+     * Document player.
+     */
     PLAYER("osivia.customizer.cms.modules"),
-    /** Menubar. */
+    /**
+     * Menubar.
+     */
     MENUBAR("osivia.customizer.cms.menubar"),
-    /** Menu template. */
+    /**
+     * Menu template.
+     */
     MENU_TEMPLATE("osivia.customizer.cms.menuTemplate"),
-    /** Navigation adapters. */
+    /**
+     * Navigation adapters.
+     */
     NAVIGATION_ADAPTERS("osivia.customizer.cms.navigationAdapters"),
-    /** Navigation adapters. */
-    FORM_FILTERS("osivia.customizer.cms.formFilters"),    
-    /** Domain contextualization. */
+    /**
+     * Navigation adapters.
+     */
+    FORM_FILTERS("osivia.customizer.cms.formFilters"),
+    /**
+     * Domain contextualization.
+     */
     DOMAIN_CONTEXTUALIZATION("osivia.customizer.cms.domainContextualization"),
-    /** Tab groups. */
+    /**
+     * Tab groups.
+     */
     TAB_GROUPS("osivia.customizer.cms.tabGroups"),
-    /** Taskbar items. */
+    /**
+     * Taskbar items.
+     */
     TASKBAR_ITEMS("osivia.customizer.cms.taskbarItems"),
-    /** Template adapters. */
+    /**
+     * Template adapters.
+     */
     TEMPLATE_ADAPTERS("osivia.customizer.cms.templateAdapters"),
-	/** Set types. */
-	SET_TYPES("osivia.customizer.cms.setTypes"),
-    /** Task modules. */
+    /**
+     * Set types.
+     */
+    SET_TYPES("osivia.customizer.cms.setTypes"),
+    /**
+     * Task modules.
+     */
     TASK_MODULES("osivia.customizer.cms.taskModules"),
-    /** Document modules. */
+    /**
+     * Document modules.
+     */
     DOCUMENT_MODULES("osivia.customizer.cms.documentModules"),
-    /** Statistics modules. */
-    STATISTICS_MODULES("osivia.customizer.cms.statisticsModules");
+    /**
+     * Statistics modules.
+     */
+    STATISTICS_MODULES("osivia.customizer.cms.statisticsModules"),
+    /**
+     * Editor modules.
+     */
+    EDITOR_MODULES("osivia.customizer.cms.editorModules");
 
 
-    /** Property name. */
+    /**
+     * Property name.
+     */
     private String property;
 
 

@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.ICustomizationModule;
+import org.osivia.portal.api.editor.EditorModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
@@ -156,6 +157,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Statistics modules cache.
      */
     private List<StatisticsModule> statisticsModulesCache;
+    /**
+     * Editor modules cache.
+     */
+    private List<EditorModule> editorModulesCache;
 
 
     /**
@@ -720,6 +725,26 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Get editor modules.
+     *
+     * @return editor modules
+     */
+    public List<EditorModule> getEditorModules() {
+        if (this.editorModulesCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            this.editorModulesCache = (List<EditorModule>) attributes.get(Customizable.EDITOR_MODULES.toString());
+            if (this.editorModulesCache == null) {
+                this.editorModulesCache = new ArrayList<>();
+            }
+        }
+
+        return this.editorModulesCache;
+    }
+
+
+    /**
      * lists the names of registered plugins
      */
     public List<String> getRegisteredPluginNames() {
@@ -758,6 +783,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.setTypesCache = null;
         this.taskModulesCache = null;
         this.statisticsModulesCache = null;
+        this.editorModulesCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

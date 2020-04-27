@@ -33,6 +33,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -65,19 +66,35 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class CMSPortlet extends PortalGenericPortlet {
 
-    /** Log. */
+    /**
+     * Log.
+     */
     private final Log logger;
 
-    /** The nuxeo navigation service. */
+    /**
+     * The nuxeo navigation service.
+     */
     private final INuxeoService nuxeoService;
-    /** CMS service locator. */
+    /**
+     * CMS service locator.
+     */
     private final ICMSServiceLocator cmsServiceLocator;
-    /** Documents browser service. */
+    /**
+     * Documents browser service.
+     */
     private final IBrowserService browserService;
-    /** Portal URL factory. */
+    /**
+     * Portal URL factory.
+     */
     private final IPortalUrlFactory portalUrlFactory;
-    /** Internationalization bundle factory. */
+    /**
+     * Internationalization bundle factory.
+     */
     private final IBundleFactory bundleFactory;
+    /**
+     * Editor service.
+     */
+    private final EditorService editorService;
 
 
     /**
@@ -100,6 +117,8 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         // Internationalization bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        // Editor service
+        this.editorService = Locator.findMBean(EditorService.class, EditorService.MBEAN_NAME);
     }
 
 
@@ -127,9 +146,8 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      * Gets the nuxeo navigation service.
      *
      * @return the nuxeo navigation service
+     * @throws Exception the exception
      * @deprecated see getNuxeoService
-     * @throws Exception
-     *             the exception
      */
     @Deprecated
     public INuxeoService getNuxeoNavigationService() throws Exception {
@@ -189,7 +207,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Checks if resource has expired.
      *
-     * @param sOriginalDate the original date
+     * @param sOriginalDate    the original date
      * @param resourceResponse the resource response
      * @return true, if is resource expired
      */
@@ -219,7 +237,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Process comment action.
      *
-     * @param request action request
+     * @param request  action request
      * @param response action response
      * @throws PortletException
      * @throws IOException
@@ -252,9 +270,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Add or reply comment action.
      *
-     * @param request action request
+     * @param request  action request
      * @param response action response
-     * @param content comment content
+     * @param content  comment content
      * @param parentId parent comment identifier, may be null
      * @throws PortletException
      */
@@ -285,9 +303,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Delete comment action.
      *
-     * @param request action request
+     * @param request  action request
      * @param response action response
-     * @param id comment identifier
+     * @param id       comment identifier
      * @throws PortletException
      */
     protected void deleteCommentAction(ActionRequest request, ActionResponse response, String id) throws PortletException {
@@ -313,11 +331,11 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Serve resource by cache.
      *
-     * @param resourceRequest the resource request
+     * @param resourceRequest  the resource request
      * @param resourceResponse the resource response
      * @return true, if successful
      * @throws PortletException the portlet exception
-     * @throws IOException Signals that an I/O exception has occurred.
+     * @throws IOException      Signals that an I/O exception has occurred.
      */
     public boolean serveResourceByCache(ResourceRequest resourceRequest, ResourceResponse resourceResponse) throws PortletException, IOException {
         String sOriginalDate = resourceRequest.getProperty("if-modified-since");
@@ -343,11 +361,11 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Serve ressource exception.
      *
-     * @param resourceRequest resource request
+     * @param resourceRequest  resource request
      * @param resourceResponse resource response
-     * @param e Nuxeo exception
+     * @param e                Nuxeo exception
      * @throws PortletException the portlet exception
-     * @throws IOException Signals that an I/O exception has occurred.
+     * @throws IOException      Signals that an I/O exception has occurred.
      */
     protected void serveResourceException(ResourceRequest resourceRequest, ResourceResponse resourceResponse, NuxeoException e) throws PortletException,
             IOException {
@@ -377,15 +395,15 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /**
      * Serve CMS Resource.
-     *
+     * <p>
      * IMPORTANT !!!
-     *
+     * <p>
      * For web page mode, live mode MUST BE computed by the portlet when generating resource URL (displayLiveVersion=1)
      *
-     * @param request resource request
+     * @param request  resource request
      * @param response resource response
      * @throws PortletException the portlet exception
-     * @throws IOException Signals that an I/O exception has occurred.
+     * @throws IOException      Signals that an I/O exception has occurred.
      */
     @Override
     public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
@@ -440,7 +458,8 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /**
      * Serve resource for fancytree lazy loading.
-     * @param request resource request
+     *
+     * @param request  resource request
      * @param response resource response
      * @throws PortletException
      * @throws IOException
@@ -467,75 +486,25 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /**
      * Serve resource for editor properties.
-     * @param request resource request
+     *
+     * @param request  resource request
      * @param response resource response
      * @param editorId editor identifier
-     * @throws PortletException
-     * @throws IOException
+     * @deprecated use editor service directly instead
      */
+    @Deprecated
     protected void serveResourceEditor(ResourceRequest request, ResourceResponse response, String editorId) throws PortletException, IOException {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-        // Internationalization bundle
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
 
-        // Editor title
-        String title;
-        if ("link".equals(editorId)) {
-            title = bundle.getString("EDITOR_LINK_TITLE");
-        } else {
-            title = null;
-        }
-
-        // Editor instance
-        String instance;
-        if ("link".equals(editorId)) {
-            instance = "osivia-services-editor-link-instance";
-        } else {
-            instance = null;
-        }
-
-        // Editor properties
-        Map<String, String> properties = new HashMap<>();
-        if ("link".equals(editorId)) {
-            properties.put("osivia.editor.url", request.getParameter("url"));
-            properties.put("osivia.editor.text", request.getParameter("text"));
-            properties.put("osivia.editor.title", request.getParameter("title"));
-            properties.put("osivia.editor.onlyText", request.getParameter("onlyText"));
-            properties.put("osivia.editor.basePath", nuxeoController.getBasePath());
-        }
-
-        // URL
-        String url;
-        try {
-            url = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, instance, properties, PortalUrlType.MODAL);
-        } catch (PortalException e) {
-            throw new PortletException(e);
-        }
-
-
-        // JSON
-        JSONObject object = new JSONObject();
-        object.put("title", title);
-        object.put("url", url);
-
-
-        // Content type
-        response.setContentType("application/json");
-
-        // Content
-        PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
-        printWriter.write(object.toString());
-        printWriter.close();
+        this.editorService.serveResource(portalControllerContext, editorId);
     }
 
 
     /**
      * Serve resource for Select2 vocabulary.
-     * 
-     * @param request resource request
+     *
+     * @param request  resource request
      * @param response resource response
      * @throws PortletException
      * @throws IOException
@@ -597,10 +566,10 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Parse vocabulary JSON array with filter.
      *
-     * @param array JSON array
-     * @param tree vocabulary tree indicator
+     * @param array            JSON array
+     * @param tree             vocabulary tree indicator
      * @param optgroupDisabled vocabulary option group disabled indicator
-     * @param filter filter, may be null
+     * @param filter           filter, may be null
      * @return results
      * @throws IOException
      */
@@ -670,7 +639,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Check if value matches filter.
      *
-     * @param value vocabulary item value
+     * @param value  vocabulary item value
      * @param filter filter
      * @return true if value matches filter
      * @throws UnsupportedEncodingException
@@ -704,18 +673,18 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Generate vocabulary children.
      *
-     * @param items vocabulary items
-     * @param array results JSON array
-     * @param children children
-     * @param optgroup options group presentation indicator
-     * @param level depth level
-     * @param parentId parent identifier
-     * @param tree vocabulary tree indicator
+     * @param items            vocabulary items
+     * @param array            results JSON array
+     * @param children         children
+     * @param optgroup         options group presentation indicator
+     * @param level            depth level
+     * @param parentId         parent identifier
+     * @param tree             vocabulary tree indicator
      * @param optgroupDisabled vocabulary option group disabled indicator
      * @throws UnsupportedEncodingException
      */
     private void generateVocabularyChildren(Map<String, VocabularyItem> items, JSONArray array, Set<String> children, boolean optgroup, int level,
-            String parentId, boolean tree, boolean optgroupDisabled) throws UnsupportedEncodingException {
+                                            String parentId, boolean tree, boolean optgroupDisabled) throws UnsupportedEncodingException {
         for (String child : children) {
             VocabularyItem item = items.get(child);
             if ((item != null) && item.displayed) {
@@ -750,7 +719,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     /**
      * Creates Nuxeo controller.
      *
-     * @param portletRequest portlet request
+     * @param portletRequest  portlet request
      * @param portletResponse portlet response
      * @return Nuxeo controller
      */
@@ -766,18 +735,30 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     private class VocabularyItem {
 
-        /** Vocabulary key. */
+        /**
+         * Vocabulary key.
+         */
         private final String key;
-        /** Vocabulary children. */
+        /**
+         * Vocabulary children.
+         */
         private final Set<String> children;
 
-        /** Vocabulary value. */
+        /**
+         * Vocabulary value.
+         */
         private String value;
-        /** Vocabulary parent. */
+        /**
+         * Vocabulary parent.
+         */
         private String parent;
-        /** Displayed item indicator. */
+        /**
+         * Displayed item indicator.
+         */
         private boolean displayed;
-        /** Filter matches indicator. */
+        /**
+         * Filter matches indicator.
+         */
         private boolean matches;
 
 
@@ -803,7 +784,9 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     private class LoadVocabularyCommand implements INuxeoCommand {
 
-        /** Vocabulary name. */
+        /**
+         * Vocabulary name.
+         */
         private final String name;
 
 

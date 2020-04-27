@@ -13,10 +13,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
+import fr.toutatice.portail.cms.nuxeo.api.*;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
@@ -76,6 +73,8 @@ import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.editor.EditorModule;
+import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.page.PageParametersEncoder;
@@ -101,6 +100,8 @@ import org.osivia.portal.core.web.IWebIdService;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+import javax.portlet.ResourceRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.*;
@@ -546,7 +547,7 @@ public class CMSService implements ICMSService {
         CMSItem content = null;
         // Saved scope
         String savedScope = cmsContext.getScope();
-        
+
         boolean ignoreError = false;
         try {
 
@@ -576,7 +577,7 @@ public class CMSService implements ICMSService {
                     }
                 }
             }
-            
+
             if (docs.size() != 1 && !ignoreError) {
                 throw new NuxeoException(NuxeoException.ERROR_NOTFOUND);
             }
@@ -3410,12 +3411,12 @@ public class CMSService implements ICMSService {
                 actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
             }
         }
-        
-        if( includeAnonymous) {
 
-            String anonymousUser=System.getProperty("user.anonymous");
-            if( StringUtils.isNotEmpty(anonymousUser))
-                actors.add("user:"+anonymousUser);
+        if (includeAnonymous) {
+
+            String anonymousUser = System.getProperty("user.anonymous");
+            if (StringUtils.isNotEmpty(anonymousUser))
+                actors.add("user:" + anonymousUser);
         }
 
 
@@ -3810,6 +3811,38 @@ public class CMSService implements ICMSService {
         }
 
         return path;
+    }
+
+
+    @Override
+    public List<EditorModule> getEditorModules(CMSServiceCtx cmsContext) {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+
+        return pluginManager.getEditorModules();
+    }
+
+
+    @Override
+    public Map<String, String> getEditorWindowBaseProperties(CMSServiceCtx cmsContext) {
+        // Portlet request
+        PortletRequest request = cmsContext.getRequest();
+        // Portlet response
+        PortletResponse response = cmsContext.getResponse();
+        // Portlet context
+        PortletContext portletContext = cmsContext.getPortletCtx();
+
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
+
+        // Window properties
+        Map<String, String> properties = new HashMap<>();
+        // Base path
+        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "basePath", nuxeoController.getBasePath());
+        // Current document path
+        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "path", nuxeoController.getContentPath());
+
+        return properties;
     }
 
 }
