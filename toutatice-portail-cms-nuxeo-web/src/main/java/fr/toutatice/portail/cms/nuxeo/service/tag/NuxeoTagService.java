@@ -96,6 +96,14 @@ public class NuxeoTagService implements INuxeoTagService {
 
         if (nuxeoDocument != null) {
             if (picture) {
+                // Handle files which contains an image
+                if ("File".equals(nuxeoDocument.getType()) && StringUtils.isEmpty(property)) {
+                    PropertyMap fileContent = nuxeoDocument.getProperties().getMap("file:content");
+                    if ((fileContent != null) && StringUtils.startsWith(fileContent.getString("mime-type"), "image/")) {
+                        property = "file:content";
+                    }
+                }
+
                 // Picture
                 String url;
                 if (StringUtils.isEmpty(property)) {
