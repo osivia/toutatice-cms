@@ -12,18 +12,14 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.batch.AbstractBatch;
 import org.osivia.portal.api.cache.services.CacheInfo;
-import org.osivia.portal.api.cms.DocumentContext;
-import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
-import org.springframework.cglib.core.Local;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilterException;
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
@@ -39,6 +35,15 @@ public abstract class NuxeoBatch extends AbstractBatch {
 	private NuxeoController nuxeoController;
 	
 	private ICMSServiceLocator locator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+
+	public NuxeoBatch() {
+		super();
+	}
+	
+	public NuxeoBatch(String batchId) {
+		super(batchId);
+	}
+
 
 	protected NuxeoController getNuxeoController() {
 		
