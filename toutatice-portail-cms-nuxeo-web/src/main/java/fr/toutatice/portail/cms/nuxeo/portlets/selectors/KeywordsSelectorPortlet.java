@@ -16,35 +16,29 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.selectors;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.RenderMode;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.WindowState;
-
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
+import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
+import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.Constants;
+import org.osivia.portal.api.internationalization.Bundle;
+import org.osivia.portal.api.internationalization.IBundleFactory;
+import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.constants.InternalConstants;
 
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
+import javax.portlet.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -54,17 +48,29 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
  */
 public class KeywordsSelectorPortlet extends CMSPortlet {
 
-    /** Logger. */
-    private static final Log logger = LogFactory.getLog(KeywordsSelectorPortlet.class);
-    /** Delete prefix. */
+    /**
+     * Delete prefix.
+     */
     public static final String DELETE_PREFIX = "delete_";
+    /**
+     * Logger.
+     */
+    private static final Log logger = LogFactory.getLog(KeywordsSelectorPortlet.class);
+    /**
+     * Internationalization bundle factory.
+     */
+    private final IBundleFactory bundleFactory;
 
 
     /**
-     * Default constructor.
+     * Constructor.
      */
     public KeywordsSelectorPortlet() {
         super();
+
+        // Internationalization bundle factory
+        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
+        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
     }
 
 
@@ -93,6 +99,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 // Selector label
                 String selectorLabel = StringUtils.trimToNull(request.getParameter("selectorLabel"));
                 window.setProperty("osivia.libelle", selectorLabel);
+
+                // Selector placeholder
+                String selectorPlaceholder = StringUtils.trimToNull(request.getParameter("selectorPlaceholder"));
+                window.setProperty("osivia.placeholder", selectorPlaceholder);
 
                 // Selector type
                 String selectorType = StringUtils.trimToNull(request.getParameter("selectorType"));
@@ -204,11 +214,15 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         String selectorLabel = StringUtils.trimToEmpty(window.getProperty("osivia.libelle"));
         request.setAttribute("selectorLabel", selectorLabel);
 
+        // Selector placeholder
+        String selectorPlaceholder = StringUtils.trimToEmpty(window.getProperty("osivia.placeholder"));
+        request.setAttribute("selectorPlaceholder", selectorPlaceholder);
+
         // Selector type
         String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
         request.setAttribute("selectorType", selectorType);
 
-        
+
         // Request dispatcher
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
         response.setContentType("text/html");
@@ -240,6 +254,19 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
             String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
             request.setAttribute("selectorType", selectorType);
 
+            // Selector placeholder
+            String selectorPlaceholder = window.getProperty("osivia.placeholder");
+            if (StringUtils.isEmpty(selectorLabel) && StringUtils.isEmpty(selectorPlaceholder)) {
+                // Internationalization bundle
+                Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
+
+                if (StringUtils.equals("0", selectorType)) {
+                    selectorPlaceholder = bundle.getString("SELECTOR_KEYWORD_PLACEHOLDER");
+                } else {
+                    selectorPlaceholder = bundle.getString("SELECTOR_KEYWORDS_PLACEHOLDER");
+                }
+            }
+            request.setAttribute("selectorPlaceholder", selectorPlaceholder);
 
             if (selectorId != null) {
                 // Get public parameter
@@ -247,9 +274,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 List<String> selector = selectors.get(selectorId);
                 if (selector != null) {
                     String[] keywords = new String[selector.size()];
-                    
-                    for(int i = 0; i < selector.size(); i++) {
-                    	keywords[i] = StringEscapeUtils.escapeHtml(selector.get(i));
+
+                    for (int i = 0; i < selector.size(); i++) {
+                        keywords[i] = StringEscapeUtils.escapeHtml(selector.get(i));
                     }
                     
                     request.setAttribute("keywords", keywords);

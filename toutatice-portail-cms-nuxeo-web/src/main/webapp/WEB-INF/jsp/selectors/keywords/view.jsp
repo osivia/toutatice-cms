@@ -19,7 +19,6 @@
         <c:set var="name" value="add" />
         <c:set var="glyphicon" value="halflings halflings-plus" />
         <c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
-        <c:set var="placeholder"><op:translate key="SELECTOR_KEYWORD_PLACEHOLDER" /></c:set>
     </c:when>
     
     <c:otherwise>
@@ -27,7 +26,6 @@
         <c:set var="name" value="monoAdd" />
         <c:set var="glyphicon" value="halflings halflings-ok" />
         <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
-        <c:set var="placeholder"><op:translate key="SELECTOR_KEYWORDS_PLACEHOLDER" /></c:set>
     </c:otherwise>
 </c:choose>
 
@@ -63,7 +61,7 @@
         <!-- Input -->
         <div class="form-group">
             <div class="${selectorType eq '2' ? '' : 'input-group'}">
-                <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
+                <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${selectorPlaceholder}">
                 <span class="${selectorType eq '2' ? 'hidden' : 'input-group-btn'}">
                     <button type="submit" name="${name}" class="btn btn-default">
                         <i class="${glyphicon}"></i>

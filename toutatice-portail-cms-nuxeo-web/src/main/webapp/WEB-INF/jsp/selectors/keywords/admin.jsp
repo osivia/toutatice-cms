@@ -18,6 +18,14 @@
             <input id="selector-label" type="text" name="selectorLabel" value="${selectorLabel}" class="form-control">
         </div>
     </div>
+
+    <%--Placeholder--%>
+    <div class="form-group">
+        <label for="placeholder" class="control-label col-sm-3"><op:translate key="SELECTOR_PLACEHOLDER"/></label>
+        <div class="col-sm-9">
+            <input id="placeholder" type="text" name="selectorPlaceholder" value="${selectorPlaceholder}" class="form-control">
+        </div>
+    </div>
     
     <!-- Identifier -->
     <div class="form-group">
