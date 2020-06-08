@@ -96,6 +96,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 String selectorId = StringUtils.trimToNull(request.getParameter("selectorId"));
                 window.setProperty("osivia.selectorId", selectorId);
 
+                // Selector type
+                String selectorType = StringUtils.trimToNull(request.getParameter("selectorType"));
+                window.setProperty("osivia.keywordMonoValued", selectorType);
+
                 // Selector label
                 String selectorLabel = StringUtils.trimToNull(request.getParameter("selectorLabel"));
                 window.setProperty("osivia.libelle", selectorLabel);
@@ -104,9 +108,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 String selectorPlaceholder = StringUtils.trimToNull(request.getParameter("selectorPlaceholder"));
                 window.setProperty("osivia.placeholder", selectorPlaceholder);
 
-                // Selector type
-                String selectorType = StringUtils.trimToNull(request.getParameter("selectorType"));
-                window.setProperty("osivia.keywordMonoValued", selectorType);
+                // Selector HTML identifier
+                String selectorHtmlIdentifier = StringUtils.trimToNull(request.getParameter("selectorHtmlIdentifier"));
+                window.setProperty("osivia.htmlIdentifier", selectorHtmlIdentifier);
 
                 // Prevent Ajax refresh indicator
                 boolean preventAjaxRefresh = "2".equals(selectorType);
@@ -210,6 +214,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         String selectorId = StringUtils.trimToEmpty(window.getProperty("osivia.selectorId"));
         request.setAttribute("selectorId", selectorId);
 
+        // Selector type
+        String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
+        request.setAttribute("selectorType", selectorType);
+
         // Selector label
         String selectorLabel = StringUtils.trimToEmpty(window.getProperty("osivia.libelle"));
         request.setAttribute("selectorLabel", selectorLabel);
@@ -218,10 +226,9 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         String selectorPlaceholder = StringUtils.trimToEmpty(window.getProperty("osivia.placeholder"));
         request.setAttribute("selectorPlaceholder", selectorPlaceholder);
 
-        // Selector type
-        String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
-        request.setAttribute("selectorType", selectorType);
-
+        // Selector HTML identifier
+        String selectorHtmlIdentifier = StringUtils.trimToEmpty(window.getProperty("osivia.htmlIdentifier"));
+        request.setAttribute("selectorHtmlIdentifier", selectorHtmlIdentifier);
 
         // Request dispatcher
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
@@ -246,13 +253,13 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
             // Selector identifier
             String selectorId = window.getProperty("osivia.selectorId");
 
-            // Selector label
-            String selectorLabel = window.getProperty("osivia.libelle");
-            request.setAttribute("selectorLabel", selectorLabel);
-
             // Selector type
             String selectorType = StringUtils.defaultIfBlank(window.getProperty("osivia.keywordMonoValued"), "0");
             request.setAttribute("selectorType", selectorType);
+
+            // Selector label
+            String selectorLabel = window.getProperty("osivia.libelle");
+            request.setAttribute("selectorLabel", selectorLabel);
 
             // Selector placeholder
             String selectorPlaceholder = window.getProperty("osivia.placeholder");
@@ -267,6 +274,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 }
             }
             request.setAttribute("selectorPlaceholder", selectorPlaceholder);
+
+            // Selector HTML identifier
+            String selectorHtmlIdentifier = window.getProperty("osivia.htmlIdentifier");
+            request.setAttribute("selectorHtmlIdentifier", selectorHtmlIdentifier);
 
             if (selectorId != null) {
                 // Get public parameter
