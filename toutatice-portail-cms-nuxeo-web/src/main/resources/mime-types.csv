@@ -1,6 +1,7 @@
 mime-type,extension,description,display,icon,pdfConvertible
 application/epub+zip,epub,Fichier EPUB,,glyphicons glyphicons-filetypes-file,false
 application/gzip,gzip,Archive GZip,,glyphicons glyphicons-filetypes-file-zip,false
+application/index-qcm+xml,xml,QCM,,glyphicons  glyphicons-list,false
 application/java-archive,jar,Archive Java,,glyphicons glyphicons-filetypes-file-program,false
 application/javascript,js,Fichier JavaScript,,glyphicons glyphicons-filetypes-file-program,false
 application/json,json,Fichier JSON,,glyphicons glyphicons-filetypes-file-web,false
