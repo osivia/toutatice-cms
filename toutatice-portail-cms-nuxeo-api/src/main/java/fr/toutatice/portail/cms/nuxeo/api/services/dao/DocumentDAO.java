@@ -33,6 +33,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentAttachmentDTO;
@@ -130,15 +131,20 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
          // liveEdit
         dto.setLiveEditable(isLiveEditable(document));
         
+        FileMimeType mimeType = this.getMimeType(document);
+        
         // Pdf convertible
         if (type != null) {
             boolean pdfConvertible ;
             if (type.isFile()) {
-                pdfConvertible = this.isPdfConvertible(document);
+                pdfConvertible = this.isPdfConvertible(document, mimeType);
             } else
                 pdfConvertible = false;
             dto.setPdfConvertible(pdfConvertible);
         }
+        
+        // Display title
+        dto.setDisplayTitle(( getDisplayTitle(document, mimeType)));
         
         // Properties
         Map<String, Object> properties = dto.getProperties();
@@ -246,6 +252,58 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         Map<String, DocumentType> types = cmsCustomizer.getDocumentTypes();
         return types.get(type);
     }
+    
+    
+    /**
+     * Get display title (remove extension if needed)
+     *
+     * @param type document type name
+     * @return CMS item type
+     */
+    private String getDisplayTitle(Document document, FileMimeType fileMimeType) {
+
+        // Title
+        String title = document.getTitle();
+        
+        if( title != null)  {
+           if (fileMimeType != null && fileMimeType.isHideExtension()) {
+                int iExtension = title.lastIndexOf(".");
+                if (iExtension != -1) {
+                    title = title.substring(0, iExtension);
+                }
+            }
+        }
+
+        return title;
+    }
+
+    private FileMimeType getMimeType( Document document) {
+    
+        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
+
+
+        // Document properties
+        PropertyMap properties = document.getProperties();
+        // File content
+        PropertyMap fileContent = properties.getMap("file:content");
+
+
+        // File MIME type
+        FileMimeType fileMimeType;
+
+        if (fileContent != null) {
+            try {
+                fileMimeType = customizer.getFileMimeType(fileContent.getString("mime-type"));
+            } catch (IOException e) {
+                fileMimeType = null;
+            }
+        } else {
+            fileMimeType = null;
+        }
+
+        return fileMimeType;
+    }
+    
 
     private boolean isLiveEditable(Document document) {
         // Document properties
@@ -274,7 +332,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
      * @return icon, may be null
      */
     
-    private boolean isPdfConvertible(Document document) {
+    private boolean isPdfConvertible(Document document, FileMimeType fileMimeType) {
         // Document properties
         PropertyMap properties = document.getProperties();
         // File content
@@ -283,14 +341,11 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
         // Pdf convertible
         boolean pdfConvertible;
         
-        if (fileContent == null) {
+        if (fileMimeType == null) {
             pdfConvertible = false;
         } else {
-            // Mime type
-            String mimeType = fileContent.getString("mime-type");
-
-            pdfConvertible = this.isPdfConvertible(mimeType);
-        }
+            pdfConvertible = fileMimeType.isPdfConvertible();
+         }
 
         return pdfConvertible;
     }
@@ -324,35 +379,6 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
   
 
-    /**
-     * Get pdf convertible
-     *
-     * @param mimeType mime type representation
-     * @return icon, may be null
-     */
-    
-    public boolean isPdfConvertible(String mimeType) {
-        // CMS customizer
-        INuxeoCustomizer customizer = this.nuxeoService.getCMSCustomizer();
-
-        // File MIME type
-        FileMimeType fileMimeType;
-        try {
-            fileMimeType = customizer.getFileMimeType(mimeType);
-        } catch (IOException e) {
-            fileMimeType = null;
-        }
-
-        // pdf
-        boolean pdfConvertible;
-        if (fileMimeType == null) {
-            pdfConvertible = false;
-        } else {
-            pdfConvertible = fileMimeType.isPdfConvertible();
-        }
-
-        return pdfConvertible;
-    }
     
     /**
      * Get icon from mime type representation.

@@ -55,6 +55,28 @@ public class DocumentDTO implements Cloneable {
     private boolean liveEditable;
     /** isPdfConvertible */
     private boolean pdfConvertible;    
+    /** Document display title. */
+    private String displayTitle;
+
+
+    
+    /**
+     * Getter for displayTitle.
+     * @return the displayTitle
+     */
+    public String getDisplayTitle() {
+        return displayTitle;
+    }
+
+
+    
+    /**
+     * Setter for displayTitle.
+     * @param displayTitle the displayTitle to set
+     */
+    public void setDisplayTitle(String displayTitle) {
+        this.displayTitle = displayTitle;
+    }
 
 
 

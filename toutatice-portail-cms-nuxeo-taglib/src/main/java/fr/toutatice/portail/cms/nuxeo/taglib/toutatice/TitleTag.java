@@ -7,9 +7,14 @@ import javax.servlet.jsp.JspException;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
+import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.urls.Link;
+import org.osivia.portal.core.cms.CMSException;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -59,8 +64,14 @@ public class TitleTag extends ToutaticeSimpleTag {
      */
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
-        // Title
-        String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
+        
+         
+        String title;
+        if( StringUtils.isNotEmpty(document.getTitle()))
+            title = document.getDisplayTitle();
+        else
+            title = document.getId();
+         
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {

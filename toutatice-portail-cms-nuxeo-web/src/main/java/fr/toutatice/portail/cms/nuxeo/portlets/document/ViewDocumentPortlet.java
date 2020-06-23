@@ -650,7 +650,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 // Title
                 String title = document.getTitle();
                 if (StringUtils.isNotBlank(title)) {
-                    response.setTitle(title);
+                    response.setTitle(documentDto.getDisplayTitle());
                 }
 
                 // Extended document informations

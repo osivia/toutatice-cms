@@ -1,58 +1,58 @@
-mime-type,extension,description,display,icon,pdfConvertible
-application/epub+zip,epub,Fichier EPUB,,glyphicons glyphicons-filetypes-file,false
-application/gzip,gzip,Archive GZip,,glyphicons glyphicons-filetypes-file-zip,false
-application/index-qcm+xml,xml,QCM,,glyphicons  glyphicons-list,false
-application/java-archive,jar,Archive Java,,glyphicons glyphicons-filetypes-file-program,false
-application/javascript,js,Fichier JavaScript,,glyphicons glyphicons-filetypes-file-program,false
-application/json,json,Fichier JSON,,glyphicons glyphicons-filetypes-file-web,false
-application/msword,doc,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,false
-application/ogg,ogx,Fichier OGG,,glyphicons glyphicons-basic-music,false
-application/pdf,pdf,Fichier PDF,PDF,glyphicons glyphicons-filetypes-file-rich-text,false
-application/rtf,rtf,Fichier RTF,,glyphicons glyphicons-filetypes-file-rich-text,false
-application/vnd.ms-excel,xls,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true
-application/vnd.ms-excel.sheet.macroenabled.12,xls,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true
-application/vnd.ms-fontobject,eot,Police Embedded OpenType,,glyphicons glyphicons-filetypes-file-font,true
-application/vnd.ms-powerpoint,ppt,Présentation PowerPoint,P,glyphicons glyphicons-filetypes-file-presentation,true
-application/vnd.oasis.opendocument.presentation,odp,Présentation OpenDocument,P,glyphicons glyphicons-filetypes-file-presentation,true
-application/vnd.oasis.opendocument.spreadsheet,ods,Feuille de calcul OpenDocument,X,glyphicons glyphicons-filetypes-file-spreadsheet,true
-application/vnd.oasis.opendocument.text,odt,Document texte OpenDocument,W,glyphicons glyphicons-filetypes-file-rich-text,true
-application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx,Présentation PowerPoint,P,glyphicons glyphicons-filetypes-file-presentation,true
-application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true
-application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,true
-application/x-bzip,bz,Archive BZip,,glyphicons glyphicons-filetypes-file-zip,false
-application/x-bzip2,bz2,Archive BZip2,,glyphicons glyphicons-filetypes-file-zip,false
-application/x-rar-compressed,rar,Archive RAR,,glyphicons glyphicons-filetypes-file-zip,false
-application/x-sh,sh,Script Shell,,glyphicons glyphicons-filetypes-file-terminal,false
-application/x-shockwave-flash,swf,Fichier Flash,,glyphicons glyphicons-basic-film,false
-application/x-tar,tar,Archive TAR,,glyphicons glyphicons-filetypes-file-zip,false
-application/xhtml+xml,xhtml,Fichier XHTML,,glyphicons glyphicons-filetypes-file-web,false
-application/xml,xml,Fichier XML,,glyphicons glyphicons-filetypes-file-script,false
-application/zip,zip,Archive ZIP,,glyphicons glyphicons-filetypes-file-zip,false
-audio/3gpp,3gp,Fichier audio 3GPP,,glyphicons glyphicons-basic-music,false
-audio/3gpp2,3g2,Fichier audio 3GPP2,,glyphicons glyphicons-basic-music,false
-audio/aac,aac,Fichier audio AAC,,glyphicons glyphicons-basic-music,false
-audio/midi,midi,Fichier audio MIDI,,glyphicons glyphicons-basic-music,false
-audio/ogg,oga,Fichier audio OGG,,glyphicons glyphicons-basic-music,false
-audio/webm,weba,Fichier audio WEBM,,glyphicons glyphicons-basic-music,false
-audio/x-wav,wav,Fichier audio WAV,,glyphicons glyphicons-basic-music,false
-font/otf,otf,Police OpenType,,glyphicons glyphicons-filetypes-file-font,false
-font/ttf,ttf,Police TrueType,,glyphicons glyphicons-filetypes-file-font,false
-font/woff,woff,Police WOFF,,glyphicons glyphicons-filetypes-file-font,false
-font/woff2,woff2,Police WOFF,,glyphicons glyphicons-filetypes-file-font,false
-image/gif,gif,Image GIF,,glyphicons glyphicons-basic-picture,false
-image/jpeg,jpeg,Image JPEG,,glyphicons glyphicons-basic-picture,false
-image/png,png,Image PNG,,glyphicons glyphicons-basic-picture,false
-image/svg+xml,svg,Image SVG,,glyphicons glyphicons-basic-picture,false
-image/tiff,tiff,Image TIFF,,glyphicons glyphicons-basic-picture,false
-image/webp,webp,Image WEBP,,glyphicons glyphicons-basic-picture,false
-image/x-icon,ico,Fichier icône,,glyphicons glyphicons-basic-picture,false
-text/css,css,Fichier CSS,,glyphicons glyphicons-filetypes-file-web,false
-text/csv,csv,Fichier CSV,,glyphicons glyphicons-filetypes-file-spreadsheet,false
-text/html,html,Fichier HTML,,glyphicons glyphicons-filetypes-file-web,false
-text/plain,txt,Fichier texte,,glyphicons glyphicons-filetypes-file-text,false
-video/3gpp,3gp,Vidéo 3GPP,,glyphicons glyphicons-basic-film,false
-video/3gpp2,3g2,Vidéo 3GPP2,,glyphicons glyphicons-basic-film,false
-video/mpeg,mpeg,Vidéo MPEG,,glyphicons glyphicons-basic-film,false
-video/ogg,ogv,Vidéo OGG,,glyphicons glyphicons-basic-film,false
-video/webm,webm,Vidéo WEBM,,glyphicons glyphicons-basic-film,false
-video/x-msvideo,avi,Vidéo AVI,,glyphicons glyphicons-basic-film,false
+mime-type,extension,description,display,icon,pdfConvertible,hideExtension
+application/epub+zip,epub,Fichier EPUB,,glyphicons glyphicons-filetypes-file,false,false
+application/gzip,gzip,Archive GZip,,glyphicons glyphicons-filetypes-file-zip,false,false
+application/index-qcm+xml,xml,QCM,,glyphicons  glyphicons-list,false,true
+application/java-archive,jar,Archive Java,,glyphicons glyphicons-filetypes-file-program,false,false
+application/javascript,js,Fichier JavaScript,,glyphicons glyphicons-filetypes-file-program,false,false
+application/json,json,Fichier JSON,,glyphicons glyphicons-filetypes-file-web,false,false
+application/msword,doc,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,false,false
+application/ogg,ogx,Fichier OGG,,glyphicons glyphicons-basic-music,false,false
+application/pdf,pdf,Fichier PDF,PDF,glyphicons glyphicons-filetypes-file-rich-text,false,false
+application/rtf,rtf,Fichier RTF,,glyphicons glyphicons-filetypes-file-rich-text,false,false
+application/vnd.ms-excel,xls,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true,false
+application/vnd.ms-excel.sheet.macroenabled.12,xls,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true,false
+application/vnd.ms-fontobject,eot,Police Embedded OpenType,,glyphicons glyphicons-filetypes-file-font,true,false
+application/vnd.ms-powerpoint,ppt,Présentation PowerPoint,P,glyphicons glyphicons-filetypes-file-presentation,true,false
+application/vnd.oasis.opendocument.presentation,odp,Présentation OpenDocument,P,glyphicons glyphicons-filetypes-file-presentation,true,false
+application/vnd.oasis.opendocument.spreadsheet,ods,Feuille de calcul OpenDocument,X,glyphicons glyphicons-filetypes-file-spreadsheet,true,false
+application/vnd.oasis.opendocument.text,odt,Document texte OpenDocument,W,glyphicons glyphicons-filetypes-file-rich-text,true,false
+application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx,Présentation PowerPoint,P,glyphicons glyphicons-filetypes-file-presentation,true,false
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx,Feuille de calcul Excel,X,glyphicons glyphicons-filetypes-file-spreadsheet,true,false
+application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,true,false
+application/x-bzip,bz,Archive BZip,,glyphicons glyphicons-filetypes-file-zip,false,false
+application/x-bzip2,bz2,Archive BZip2,,glyphicons glyphicons-filetypes-file-zip,false,false
+application/x-rar-compressed,rar,Archive RAR,,glyphicons glyphicons-filetypes-file-zip,false,false
+application/x-sh,sh,Script Shell,,glyphicons glyphicons-filetypes-file-terminal,false,false
+application/x-shockwave-flash,swf,Fichier Flash,,glyphicons glyphicons-basic-film,false,false
+application/x-tar,tar,Archive TAR,,glyphicons glyphicons-filetypes-file-zip,false,false
+application/xhtml+xml,xhtml,Fichier XHTML,,glyphicons glyphicons-filetypes-file-web,false,false
+application/xml,xml,Fichier XML,,glyphicons glyphicons-filetypes-file-script,false,false
+application/zip,zip,Archive ZIP,,glyphicons glyphicons-filetypes-file-zip,false,false
+audio/3gpp,3gp,Fichier audio 3GPP,,glyphicons glyphicons-basic-music,false,false
+audio/3gpp2,3g2,Fichier audio 3GPP2,,glyphicons glyphicons-basic-music,false,false
+audio/aac,aac,Fichier audio AAC,,glyphicons glyphicons-basic-music,false,false
+audio/midi,midi,Fichier audio MIDI,,glyphicons glyphicons-basic-music,false,false
+audio/ogg,oga,Fichier audio OGG,,glyphicons glyphicons-basic-music,false,false
+audio/webm,weba,Fichier audio WEBM,,glyphicons glyphicons-basic-music,false,false
+audio/x-wav,wav,Fichier audio WAV,,glyphicons glyphicons-basic-music,false,false
+font/otf,otf,Police OpenType,,glyphicons glyphicons-filetypes-file-font,false,false
+font/ttf,ttf,Police TrueType,,glyphicons glyphicons-filetypes-file-font,false,false
+font/woff,woff,Police WOFF,,glyphicons glyphicons-filetypes-file-font,false,false
+font/woff2,woff2,Police WOFF,,glyphicons glyphicons-filetypes-file-font,false,false
+image/gif,gif,Image GIF,,glyphicons glyphicons-basic-picture,false,false
+image/jpeg,jpeg,Image JPEG,,glyphicons glyphicons-basic-picture,false,false
+image/png,png,Image PNG,,glyphicons glyphicons-basic-picture,false,false
+image/svg+xml,svg,Image SVG,,glyphicons glyphicons-basic-picture,false,false
+image/tiff,tiff,Image TIFF,,glyphicons glyphicons-basic-picture,false,false
+image/webp,webp,Image WEBP,,glyphicons glyphicons-basic-picture,false,false
+image/x-icon,ico,Fichier icône,,glyphicons glyphicons-basic-picture,false,false
+text/css,css,Fichier CSS,,glyphicons glyphicons-filetypes-file-web,false,false
+text/csv,csv,Fichier CSV,,glyphicons glyphicons-filetypes-file-spreadsheet,false,false
+text/html,html,Fichier HTML,,glyphicons glyphicons-filetypes-file-web,false,false
+text/plain,txt,Fichier texte,,glyphicons glyphicons-filetypes-file-text,false,false
+video/3gpp,3gp,Vidéo 3GPP,,glyphicons glyphicons-basic-film,false,false
+video/3gpp2,3g2,Vidéo 3GPP2,,glyphicons glyphicons-basic-film,false,false
+video/mpeg,mpeg,Vidéo MPEG,,glyphicons glyphicons-basic-film,false,false
+video/ogg,ogv,Vidéo OGG,,glyphicons glyphicons-basic-film,false,false
+video/webm,webm,Vidéo WEBM,,glyphicons glyphicons-basic-film,false,false
+video/x-msvideo,avi,Vidéo AVI,,glyphicons glyphicons-basic-film,false,false

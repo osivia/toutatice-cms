@@ -1505,6 +1505,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                     fileMimeType.setDisplay(record.get("display"));
                     fileMimeType.setIcon(record.get("icon"));
                     fileMimeType.setPdfConvertible(Boolean.parseBoolean(record.get("pdfConvertible")));
+                    fileMimeType.setHideExtension(Boolean.parseBoolean(record.get("hideExtension")));
 
                     map.put(mimeType, fileMimeType);
                 }
@@ -2314,4 +2315,5 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.pluginManager.getDocumentModules(type);
     }
 
+    
 }
