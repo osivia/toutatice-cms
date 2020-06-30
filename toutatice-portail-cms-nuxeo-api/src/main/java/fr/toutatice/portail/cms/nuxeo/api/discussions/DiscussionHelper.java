@@ -68,7 +68,7 @@ public class DiscussionHelper {
      * @param publicationId the publication id
      * @return the discussion url
      */
-    public static String getDiscussionUrl(PortalControllerContext portalControllerContext, String id, String participant, String publicationId)  {
+    private static String getDiscussionUrl(PortalControllerContext portalControllerContext, String id, String participant, String publicationId, String messageId, String mode)  {
 
         Map<String, String> properties = new HashMap<>();
 
@@ -82,9 +82,11 @@ public class DiscussionHelper {
         if( participant != null)
             params.put("participant", participant);
         if( publicationId != null)
-            params.put("publicationId", publicationId);        
-        params.put("anchor", "newMessage");
-
+            params.put("publicationId", publicationId);       
+        if( messageId != null)
+            params.put("messageId", messageId);
+        if( mode != null)
+            params.put("mode", mode);
 
         // URL
         String url;
@@ -108,8 +110,8 @@ public class DiscussionHelper {
      * @param participant the participant
      * @return the discussion url by participant
      */
-    public static String getDiscussionUrlByParticipant(PortalControllerContext portalControllerContext, String participant)  {
-        return getDiscussionUrl(portalControllerContext, null, participant, null); 
+    public static String getDiscussionUrlByParticipant(PortalControllerContext portalControllerContext, String participant, String publicationId)  {
+        return getDiscussionUrl(portalControllerContext, null, participant, publicationId, null, null); 
     }
 
     /**
@@ -120,7 +122,7 @@ public class DiscussionHelper {
      * @return the discussion url by publication
      */
     public static String getDiscussionUrlByPublication(PortalControllerContext portalControllerContext, String publicationId)  {
-        return getDiscussionUrl(portalControllerContext,null, null, publicationId); 
+        return getDiscussionUrl(portalControllerContext,null, null, publicationId, null, null); 
     }
     
     
@@ -132,8 +134,21 @@ public class DiscussionHelper {
      * @return the discussion url by id
      */
     public static String getDiscussionUrlById(PortalControllerContext portalControllerContext, String id)  {
-        return getDiscussionUrl(portalControllerContext,id, null, null); 
+        return getDiscussionUrl(portalControllerContext,id, null, null, null, null); 
     }
+    
+    
+    /**
+     * Gets the discussion url by id.
+     *
+     * @param portalControllerContext the portal controller context
+     * @param id the id
+     * @return the discussion url by id
+     */
+    public static String getDiscussionAdminUrl(PortalControllerContext portalControllerContext, String discussionId, String messageId)  {
+        return getDiscussionUrl(portalControllerContext,discussionId, null, null,  messageId, "admin"); 
+    }
+    
     
     
     /**

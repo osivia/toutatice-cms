@@ -67,13 +67,9 @@ public class DiscussionTag extends ToutaticeSimpleTag {
 
         if (StringUtils.isNotEmpty(id)) {
             url = DiscussionHelper.getDiscussionUrlById(nuxeoController.getPortalCtx(), id);
-        }
-
-        if (StringUtils.isNotEmpty(participant)) {
-            url = DiscussionHelper.getDiscussionUrlByParticipant(nuxeoController.getPortalCtx(), participant);
-        }
-
-        if (StringUtils.isNotEmpty(publicationId)) {
+        }   else  if (StringUtils.isNotEmpty(participant)) {
+            url = DiscussionHelper.getDiscussionUrlByParticipant(nuxeoController.getPortalCtx(), participant, publicationId);
+        } else if (StringUtils.isNotEmpty(publicationId)) {
             url = DiscussionHelper.getDiscussionUrlByPublication(nuxeoController.getPortalCtx(), publicationId);
         }
 

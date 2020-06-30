@@ -1174,6 +1174,9 @@ public class FormsServiceImpl implements IFormsService {
                 context.setFunction("user", "link", TransformationFunctions.getUserLinkMethod());
                 context.setFunction("document", "link", TransformationFunctions.getDocumentLinkMethod());
             }
+            
+            context.setFunction("discussion", "messageLink", TransformationFunctions.getViewMessageLinkMethod());
+            
         } catch (NoSuchMethodException e) {
             throw new PortalException(e);
         } catch (SecurityException e) {

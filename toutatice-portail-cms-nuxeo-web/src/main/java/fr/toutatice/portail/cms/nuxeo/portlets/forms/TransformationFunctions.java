@@ -40,6 +40,7 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.constants.InternalConstants;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import fr.toutatice.portail.cms.nuxeo.api.discussions.DiscussionHelper;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
@@ -726,5 +727,36 @@ public class TransformationFunctions {
         return TransformationFunctions.class.getMethod("getPortalProperty", String.class);
     }
 
+    
+     
+
+    /**
+     * Gets the view message link.
+     *
+     * @param discussionId the discussion id
+     * @param messageId the message id
+     * @return the view message link
+     */
+    public static String getViewMessageLink(String discussionId, String messageId) {
+      
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+        
+        return DiscussionHelper.getDiscussionAdminUrl(portalControllerContext, discussionId, messageId);
+    }
+    
+
+    /**
+     * Gets the view message link method.
+     *
+     * @return the view message link method
+     * @throws NoSuchMethodException the no such method exception
+     * @throws SecurityException the security exception
+     */
+    public static Method getViewMessageLinkMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getViewMessageLink", String.class, String.class);
+    }
+    
+    
     
 }
