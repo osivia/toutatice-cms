@@ -41,8 +41,7 @@
         <c:if test="${selectorType eq '0'}">
             <c:forEach var="item" items="${keywords}" varStatus="status">
                 <!-- Delete URL -->
-                <portlet:actionURL var="deleteActionURL">
-                    <portlet:param name="action" value="delete"/>
+                <portlet:actionURL name="delete" var="deleteActionURL">
                     <portlet:param name="occ" value="${status.count}"/>
                 </portlet:actionURL>
                 
@@ -60,15 +59,27 @@
             
         <!-- Input -->
         <div class="form-group">
-            <div class="${selectorType eq '2' ? '' : 'input-group'}">
+            <div class="${selectorDisplayResetButton or selectorType ne '2' ? 'input-group' : ''}">
                 <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${selectorPlaceholder}">
-                <span class="${selectorType eq '2' ? 'hidden' : 'input-group-btn'}">
-                    <button type="submit" name="${name}" class="btn btn-default">
-                        <i class="${glyphicon}"></i>
-                        <span class="sr-only">${title}</span>
-                    </button>
-                </span>
+                <div class="${selectorDisplayResetButton or selectorType ne '2' ? 'input-group-btn' : ''}">
+                    <c:if test="${selectorDisplayResetButton}">
+                        <c:set var="title"><op:translate key="SELECTOR_KEYWORDS_RESET"/></c:set>
+                        <button type="button" title="${title}" class="btn btn-default" data-action="reset">
+                            <i class="glyphicons glyphicons-remove-sign"></i>
+                            <span class="sr-only">${title}</span>
+                        </button>
+                    </c:if>
+                    <c:if test="${selectorType ne '2'}">
+                        <button type="submit" name="${name}" class="btn btn-default">
+                            <i class="${glyphicon}"></i>
+                            <span class="sr-only">${title}</span>
+                        </button>
+                    </c:if>
+                </div>
             </div>
+            <c:if test="${selectorType eq '2'}">
+                <button type="submit" name="${name}" class="hidden"></button>
+            </c:if>
         </div>
     </form>
 </div>

@@ -71,6 +71,17 @@
             <input id="html-identifier" type="text" name="selectorHtmlIdentifier" value="${selectorHtmlIdentifier}" class="form-control">
             <p class="help-block"><op:translate key="SELECTOR_HTML_IDENTIFIER_HELP"/></p>
         </div>
+
+        <%--Reset button display indicator--%>
+        <div class="form-group">
+            <label class="control-label"><op:translate key="SELECTOR_KEYWORDS_DISPLAY_RESET_BUTTON_LABEL"/></label>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="selectorDisplayResetButton" ${selectorDisplayResetButton ? 'checked' : ''}>
+                    <span><op:translate key="SELECTOR_KEYWORDS_DISPLAY_RESET_BUTTON_CHECKBOX"/></span>
+                </label>
+            </div>
+        </div>
     </fieldset>
 
     <%--Buttons--%>

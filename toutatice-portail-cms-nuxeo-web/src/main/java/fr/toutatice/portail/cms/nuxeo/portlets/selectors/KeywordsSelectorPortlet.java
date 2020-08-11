@@ -21,6 +21,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
 import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -112,6 +113,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                 String selectorHtmlIdentifier = StringUtils.trimToNull(request.getParameter("selectorHtmlIdentifier"));
                 window.setProperty("osivia.htmlIdentifier", selectorHtmlIdentifier);
 
+                // Selector reset button display indicator
+                boolean displayResetButton = BooleanUtils.toBoolean(request.getParameter("selectorDisplayResetButton"));
+                window.setProperty("osivia.displayResetButton", String.valueOf(displayResetButton));
+
                 // Prevent Ajax refresh indicator
                 boolean preventAjaxRefresh = "2".equals(selectorType);
                 window.setProperty(InternalConstants.ATTR_WINDOW_PREVENT_AJAX_REFRESH, String.valueOf(preventAjaxRefresh));
@@ -135,14 +140,14 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         } else if (PortletMode.VIEW.equals(request.getPortletMode())) {
             // View
 
-            boolean clear = (request.getParameter("clear") != null);
-            if ((request.getParameter("add") != null) || (request.getParameter("monoAdd") != null) || clear) {
+            boolean reset = "reset".equals(action);
+            if ((request.getParameter("add") != null) || (request.getParameter("monoAdd") != null) || reset) {
                 // Add or clear
 
                 String selectorId = window.getProperty("osivia.selectorId");
                 if (selectorId != null) {
                     String keyword = null;
-                    if (!clear) {
+                    if (!reset) {
                     	keyword = request.getParameter("keyword");
                     }
 
@@ -150,7 +155,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 
                     List<String> keywords = selectors.get(selectorId);
                     if (keywords == null) {
-                        keywords = new ArrayList<String>();
+                        keywords = new ArrayList<>();
                         selectors.put(selectorId, keywords);
                     }
 
@@ -174,7 +179,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
 
                 response.setPortletMode(PortletMode.VIEW);
                 response.setWindowState(WindowState.NORMAL);
-            } else if ("delete".equals(request.getParameter("action"))) {
+            } else if ("delete".equals(action)) {
                 // Delete
 
                 int occ = new Integer(request.getParameter("occ")) - 1;
@@ -230,6 +235,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
         String selectorHtmlIdentifier = StringUtils.trimToEmpty(window.getProperty("osivia.htmlIdentifier"));
         request.setAttribute("selectorHtmlIdentifier", selectorHtmlIdentifier);
 
+        // Selector reset button display indicator
+        boolean displayResetButton = BooleanUtils.toBoolean(window.getProperty("osivia.displayResetButton"));
+        request.setAttribute("selectorDisplayResetButton", displayResetButton);
+
         // Request dispatcher
         PortletRequestDispatcher dispatcher = this.getPortletContext().getRequestDispatcher("/WEB-INF/jsp/selectors/keywords/admin.jsp");
         response.setContentType("text/html");
@@ -278,6 +287,10 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
             // Selector HTML identifier
             String selectorHtmlIdentifier = window.getProperty("osivia.htmlIdentifier");
             request.setAttribute("selectorHtmlIdentifier", selectorHtmlIdentifier);
+
+            // Selector reset button display indicator
+            boolean displayResetButton = BooleanUtils.toBoolean(window.getProperty("osivia.displayResetButton"));
+            request.setAttribute("selectorDisplayResetButton", displayResetButton);
 
             if (selectorId != null) {
                 // Get public parameter

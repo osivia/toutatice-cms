@@ -12,13 +12,21 @@ $JQry(function() {
 				
 				if (event.which != enterKey) {	
 					timer = setTimeout(function() {
-						var $target = $JQry(event.target),
-							$formGroup = $target.closest(".form-group"),
-							$submit = $formGroup.find("button[type=submit]");
+						var $target = $JQry(event.target);
+						var $formGroup = $target.closest(".form-group");
+						var $submit = $formGroup.find("button[type=submit]");
 						
 						$submit.click();
 					}, 200);
 				}
+			});
+
+			$element.find("button[data-action=reset]").click(function(event) {
+				var $target = $JQry(event.target);
+				var $formGroup = $target.closest(".form-group");
+
+				$formGroup.find("input[name=keyword]").val("");
+				$formGroup.find("button[type=submit]").click();
 			});
 			
 			$element.data("loaded", true);
