@@ -13,40 +13,18 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSecurityException;
-import javax.portlet.RenderMode;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
-import javax.portlet.WindowState;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
+import bsh.EvalError;
+import bsh.Interpreter;
+import fr.toutatice.portail.cms.nuxeo.api.*;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.IPrivilegedModule;
+import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -72,24 +50,18 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 
-import bsh.EvalError;
-import bsh.Interpreter;
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.PageSelectors;
-import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
-import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
-import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
-import fr.toutatice.portail.cms.nuxeo.api.portlet.IPrivilegedModule;
-import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import javax.portlet.*;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * List portlet.
@@ -318,10 +290,13 @@ public class ViewListPortlet extends ViewList {
 
             if ("rss".equals(request.getParameter("type"))) {
                 if (documents != null) {
+                    response.setContentType("application/rss+xml");
+                    response.setProperty("Cache-Control", "max-age=" + response.getCacheControl().getExpirationTime());
+                    response.setProperty("Last-Modified", this.formatResourceLastModified());
+
                     // RSS document
                     org.w3c.dom.Document document = RssGenerator.createDocument(nuxeoController, portalControllerContext, configuration.getRssTitle(),
                             documents, configuration.getRssReference());
-
 
                     // Send RSS content
                     TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -333,12 +308,7 @@ public class ViewListPortlet extends ViewList {
                     String xmlString = stringWriter.toString();
 
                     InputStream in = new ByteArrayInputStream(xmlString.getBytes());
-
                     ResourceUtil.copy(in, response.getPortletOutputStream(), 4096);
-
-                    response.setContentType("application/rss+xml");
-                    response.setProperty("Cache-Control", "max-age=" + response.getCacheControl().getExpirationTime());
-                    response.setProperty("Last-Modified", this.formatResourceLastModified());
                 } else {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
