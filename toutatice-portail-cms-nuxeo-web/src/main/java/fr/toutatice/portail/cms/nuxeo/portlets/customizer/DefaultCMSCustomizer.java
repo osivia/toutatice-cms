@@ -1235,7 +1235,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Link link;
 
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext;
+        if ((cmsContext.getRequest() == null) || (cmsContext.getResponse() == null) || (cmsContext.getPortletCtx() == null)) {
+            portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        } else {
+            portalControllerContext = new PortalControllerContext(cmsContext.getPortletCtx(), cmsContext.getRequest(), cmsContext.getResponse());
+        }
 
         // Current page path
         String currentPagePath = null;
