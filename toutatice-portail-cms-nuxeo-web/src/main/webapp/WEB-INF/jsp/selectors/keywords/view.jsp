@@ -32,7 +32,7 @@
 </c:choose>
 
 
-<div class="keywords-selector ${selectorType eq '2' ? 'auto-submit' : ''}">
+<div class="selector keywords-selector ${selectorType eq '2' ? 'auto-submit' : ''}">
     <form action="${actionURL}" method="post" role="form">
         <!-- Label -->
         <c:if test="${not empty selectorLabel}">
