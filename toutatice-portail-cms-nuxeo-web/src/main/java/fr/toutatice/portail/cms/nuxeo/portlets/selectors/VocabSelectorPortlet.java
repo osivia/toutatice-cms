@@ -207,6 +207,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
                     response.setRenderParameter("lastSelectors", lastSelectors);
                 }
                 response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                response.removePublicRenderParameter("search-filter");
 
                 String vocab1Id = request.getParameter("vocab1Id");
                 if (StringUtils.isNotEmpty(vocab1Id)) {
@@ -247,6 +248,7 @@ public class VocabSelectorPortlet extends CMSPortlet {
                 if (request.getParameter("selectors") != null) {
                     response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
                 }
+                response.removePublicRenderParameter("search-filter");
 
 
                 // Réinitialisation des fenetres en mode NORMAL

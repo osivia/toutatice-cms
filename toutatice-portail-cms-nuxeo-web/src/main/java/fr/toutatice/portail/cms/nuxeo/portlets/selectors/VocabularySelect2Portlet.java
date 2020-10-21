@@ -181,6 +181,7 @@ public class VocabularySelect2Portlet extends CMSPortlet {
                 }
 
                 response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                response.removePublicRenderParameter("search-filter");
 
                 // Refresh other portlet model attributes
                 PageProperties.getProperties().setRefreshingPage(true);

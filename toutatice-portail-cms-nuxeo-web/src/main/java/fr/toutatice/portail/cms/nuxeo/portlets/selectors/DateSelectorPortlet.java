@@ -179,6 +179,7 @@ public class DateSelectorPortlet extends CMSPortlet {
             response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
         }
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+        response.removePublicRenderParameter("search-filter");
 
         // Reset window mode to normal
         request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
@@ -207,6 +208,7 @@ public class DateSelectorPortlet extends CMSPortlet {
             response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
         }
         response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+        response.removePublicRenderParameter("search-filter");
 
         // Reset window mode to normal
         request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);

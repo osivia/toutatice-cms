@@ -149,6 +149,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                         response.setRenderParameter("lastSelectors", request.getParameter("selectors"));
                     }  
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                    response.removePublicRenderParameter("search-filter");
 
                     // Refresh other portlet model attributes
                     PageProperties.getProperties().setRefreshingPage(true);
@@ -177,6 +178,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     }  
                     
                     response.setRenderParameter("selectors", PageSelectors.encodeProperties(selectors));
+                    response.removePublicRenderParameter("search-filter");
 
                     // Refresh other portlet model attributes
                     PageProperties.getProperties().setRefreshingPage(true);

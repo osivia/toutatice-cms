@@ -276,7 +276,8 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>
+        <supported-public-render-parameter>search-filter</supported-public-render-parameter>
     </portlet>
 
 
@@ -305,7 +306,8 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>
+        <supported-public-render-parameter>search-filter</supported-public-render-parameter>
     </portlet>
 
 
@@ -334,7 +336,8 @@
         </portlet-info>
 
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>          
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>
+        <supported-public-render-parameter>search-filter</supported-public-render-parameter>
     </portlet>
     
     
@@ -356,7 +359,8 @@
         </portlet-info>
         
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
-        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>         
+        <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>
+        <supported-public-render-parameter>search-filter</supported-public-render-parameter>
     </portlet>
     
     
@@ -447,6 +451,11 @@
         <identifier>lastSelectors</identifier>
         <name>lastSelectors</name>
 	</public-render-parameter>
+
+    <public-render-parameter>
+        <identifier>search-filter</identifier>
+        <name>search-filter</name>
+    </public-render-parameter>
 	
     <public-render-parameter>
         <identifier>osivia.keywords</identifier>
