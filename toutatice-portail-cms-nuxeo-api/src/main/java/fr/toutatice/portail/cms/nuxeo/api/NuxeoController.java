@@ -1295,6 +1295,33 @@ public class NuxeoController {
         return computedPath;
 
     }
+    
+    /**
+     * Gets the user workspace path.
+     *
+     * @return the user workspace path (null if not connected)
+     */
+    public String getUserWorkspacePath()    {
+
+        
+        String userWorkspacePath;
+        
+        try {
+
+            CMSItem userWorkspace = getCMSService().getUserWorkspace(getCMSCtx());
+            
+            if( userWorkspace != null)
+                userWorkspacePath = userWorkspace.getCmsPath();
+            else
+                userWorkspacePath = null;
+
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
+        
+        return userWorkspacePath;
+        
+    }
 
     /**
      * Transform html content from nuxeo (note:note)
