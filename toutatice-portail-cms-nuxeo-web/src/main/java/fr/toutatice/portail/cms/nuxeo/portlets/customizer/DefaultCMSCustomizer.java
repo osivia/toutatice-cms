@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.avatar.AvatarModule;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.*;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
@@ -1616,24 +1617,44 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Link getUserAvatar(String username) {
-        // Get timestamp defined previously
-        String avatarTime = this.avatarMap.get(username);
-        if (avatarTime == null) {
-            // if not defined, set ie
-            avatarTime = this.refreshUserAvatar(username);
-        }
-
         // URL
         StringBuilder url = new StringBuilder();
-        url.append(AVATAR_SERVLET);
-        try {
-            url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            this.log.error(e);
+
+        // Avatar modules
+        List<AvatarModule> modules = this.pluginManager.getAvatarModules();
+        if (CollectionUtils.isNotEmpty(modules)) {
+            Iterator<AvatarModule> iterator = modules.iterator();
+            while ((url.length() == 0) && iterator.hasNext()) {
+                // Avatar module
+                AvatarModule module = iterator.next();
+
+                // Customized avatar URL
+                String customizedUrl = module.getUrl(username);
+                if (StringUtils.isNotEmpty(customizedUrl)) {
+                    url.append(customizedUrl);
+                }
+            }
         }
-        // timestamp is concated in the url to control the client cache
-        url.append("&t=");
-        url.append(avatarTime);
+
+        if (url.length() == 0) {
+            url.append(AVATAR_SERVLET);
+            try {
+                url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
+            } catch (UnsupportedEncodingException e) {
+                this.log.error(e);
+            }
+
+            // Get timestamp defined previously
+            String avatarTime = this.avatarMap.get(username);
+            if (avatarTime == null) {
+                // if not defined, set ie
+                avatarTime = this.refreshUserAvatar(username);
+            }
+
+            // timestamp is concated in the url to control the client cache
+            url.append("&t=");
+            url.append(avatarTime);
+        }
 
         return new Link(url.toString(), false);
     }

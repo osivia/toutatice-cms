@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.domain;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.avatar.AvatarModule;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.apache.commons.lang.StringUtils;
@@ -589,6 +590,27 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         if (modules == null) {
             modules = new ArrayList<>();
             attributes.put(Customizable.EDITOR_MODULES.toString(), modules);
+        }
+
+        return modules;
+    }
+
+
+    /**
+     * Get avatar modules.
+     *
+     * @param customizationContext customization context
+     * @return avatar modules
+     */
+    protected List<AvatarModule> getAvatarModules(CustomizationContext customizationContext) {
+        // Customization context attributes
+        Map<String, Object> attributes = customizationContext.getAttributes();
+
+        // Editor modules
+        List<AvatarModule> modules = (List<AvatarModule>) attributes.get(Customizable.AVATAR_MODULES.toString());
+        if (modules == null) {
+            modules = new ArrayList<>();
+            attributes.put(Customizable.AVATAR_MODULES.toString(), modules);
         }
 
         return modules;

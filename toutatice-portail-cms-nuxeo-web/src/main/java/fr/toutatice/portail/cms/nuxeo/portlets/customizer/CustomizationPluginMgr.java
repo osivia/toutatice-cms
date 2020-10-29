@@ -14,6 +14,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import fr.toutatice.portail.cms.nuxeo.api.Customizable;
+import fr.toutatice.portail.cms.nuxeo.api.avatar.AvatarModule;
 import fr.toutatice.portail.cms.nuxeo.api.domain.*;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
@@ -161,6 +162,10 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      * Editor modules cache.
      */
     private List<EditorModule> editorModulesCache;
+    /**
+     * Avatar modules cache.
+     */
+    private List<AvatarModule> avatarModulesCache;
 
 
     /**
@@ -745,11 +750,32 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
 
 
     /**
+     * Get avatar modules.
+     *
+     * @return avatar modules
+     */
+    public List<AvatarModule> getAvatarModules() {
+        if (this.avatarModulesCache == null) {
+            // Customization attributes
+            Map<String, Object> attributes = this.getCustomizationAttributes(Locale.getDefault());
+
+            this.avatarModulesCache = (List<AvatarModule>) attributes.get(Customizable.AVATAR_MODULES.toString());
+            if (this.avatarModulesCache == null) {
+                this.avatarModulesCache = new ArrayList<>();
+            }
+        }
+
+        return this.avatarModulesCache;
+    }
+
+
+    /**
      * lists the names of registered plugins
      */
     public List<String> getRegisteredPluginNames() {
         return this.customizationService.getRegisteredPluginNames();
     }
+
 
     /**
      * Checks if a plugin with the provided name is registered
@@ -758,7 +784,6 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
      */
     public boolean isPluginRegistered(String pluginName) {
         return this.customizationService.isPluginRegistered(pluginName);
-
     }
 
 
@@ -784,6 +809,7 @@ public class CustomizationPluginMgr implements ICMSCustomizationObserver {
         this.taskModulesCache = null;
         this.statisticsModulesCache = null;
         this.editorModulesCache = null;
+        this.avatarModulesCache = null;
 
         // Clear caches
         this.customizationAttributesCache.clear();

@@ -95,13 +95,17 @@ public enum Customizable {
     /**
      * Editor modules.
      */
-    EDITOR_MODULES("osivia.customizer.cms.editorModules");
+    EDITOR_MODULES("osivia.customizer.cms.editorModules"),
+    /**
+     * Avatar modules.
+     */
+    AVATAR_MODULES("osivia.customizer.cms.avatarModules");
 
 
     /**
      * Property name.
      */
-    private String property;
+    private final String property;
 
 
     /**
@@ -109,7 +113,7 @@ public enum Customizable {
      *
      * @param property property name.
      */
-    private Customizable(String property) {
+    Customizable(String property) {
         this.property = property;
     }
 
