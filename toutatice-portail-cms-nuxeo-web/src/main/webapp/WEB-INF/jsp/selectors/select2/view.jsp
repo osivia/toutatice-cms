@@ -31,12 +31,19 @@
 
             <!-- Selector -->
             <div class="input-group">
+            
+                <c:if test="${not configuration.monoValued}">
+                    <c:set var="placeholder">${configuration.allLabel}</c:set>
+                </c:if> 
+            
                 <select id="${namespace}-select" name="vocabulary" class="form-control select2 select2-default"
-                        data-url="${select2Url}"
+                        data-url="${select2Url}" data-placeholder="${placeholder}"
                         data-searching="${searching}" data-onchange="submit"
                         <c:if test="${not configuration.monoValued}">multiple="multiple"</c:if>
                 >
-                    <option value="" ${empty selectedItems ? 'selected="selected"' : ''}>${empty configuration.allLabel ? '' : configuration.allLabel}</option>
+                    <c:if test="${configuration.monoValued}">
+                        <option value="" ${empty selectedItems ? 'selected="selected"' : ''}>${empty configuration.allLabel ? '' : configuration.allLabel}</option>
+                    </c:if> 
                     <c:forEach var="selectedItem" items="${selectedItems}">
                         <option value="${selectedItem.key}" selected="selected">${selectedItem.value}</option>
                     </c:forEach>
