@@ -20,6 +20,8 @@
         <jackson.version>1.8.1</jackson.version>
         <apache.httpcomponents.version>4.1</apache.httpcomponents.version>
         <ical4j.version>2.2.6</ical4j.version>
+        
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
 
@@ -156,6 +158,18 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            
+            <dependency>
+            	<groupId>org.slf4j</groupId>
+            	<artifactId>slf4j-api</artifactId>
+            	<version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+            	<groupId>org.slf4j</groupId>
+            	<artifactId>slf4j-log4j12</artifactId>
+            	<version>${slf4j.version}</version>
+            </dependency>            
+    
 
         </dependencies>
     </dependencyManagement>
