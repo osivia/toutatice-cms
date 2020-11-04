@@ -501,6 +501,11 @@ public class CMSService implements ICMSService {
                 Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
                 // CMS item
                 cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
+                
+ 
+           
+                
+                
             } finally {
                 cmsContext.setSatellite(savedSatellite);
             }
@@ -529,6 +534,49 @@ public class CMSService implements ICMSService {
             if ((type != null) && type.isForceContextualization()) {
                 content.getProperties().put("supportsOnlyPortalContextualization", "1");
             }
+            
+            
+            // In many UI (move, more criterias, filebrowser, task, ...)
+            // the /documents folder's document title is supposed to contain "Mes documents"
+            // So we use the navigation adapter ....
+            
+            if (BooleanUtils.toBoolean(System.getProperty("osivia.services.userWorkSpace.adaptDocumentFolder"))) {
+
+                // Not supported yet for web-service
+                if (cmsContext.getControllerContext() != null) {
+                    
+                    if (content != null && content.getNativeItem() instanceof Document) {
+                        Document doc = (Document) content.getNativeItem();
+
+
+                        if ((content.getType() != null && "Folder".equals(content.getType().getName())
+                                && StringUtils.endsWith(content.getCmsPath(), "/documents"))) {
+
+                            if (!BooleanUtils.toBoolean(doc.getProperties().getString("ttc:adaptedContent"))) {
+                                try {
+                                    // Plugin manager
+                                    CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+                                    // Navigation adapters
+                                    List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
+
+                                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+
+                                    // Navigation adapters
+                                    for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
+                                        navigationAdapter.adaptNavigationItem(portalControllerContext, content);
+                                    }
+                                } finally {
+                                    doc.set("ttc:adaptedContent", "true");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+             
+            
+            
         } catch (NuxeoException e) {
             e.rethrowCMSException();
         } catch (CMSException e) {
