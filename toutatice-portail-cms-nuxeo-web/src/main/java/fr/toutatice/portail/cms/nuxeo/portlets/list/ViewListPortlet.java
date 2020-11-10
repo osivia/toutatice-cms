@@ -15,6 +15,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import com.rometools.rome.feed.rss.*;
+import com.rometools.rome.io.WireFeedOutput;
 import fr.toutatice.portail.cms.nuxeo.api.*;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
@@ -25,9 +27,15 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.jboss.portal.core.controller.ControllerContext;
+import org.jboss.portal.core.model.portal.Portal;
+import org.jboss.portal.server.AbstractServerURL;
+import org.jboss.portal.server.ServerURL;
+import org.jboss.portal.server.request.URLFormat;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -48,17 +56,17 @@ import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
+import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import javax.portlet.*;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,25 +89,37 @@ public class ViewListPortlet extends ViewList {
     /** View JSP path. */
     protected static final String PATH_VIEW = "/WEB-INF/jsp/list/view.jsp";
 
-    /** INFINITE_VIEW */
+    /**
+     * INFINITE_VIEW
+     */
     protected static final String INFINITE_VIEW = "/WEB-INF/jsp/list/view-infinite-scroll.jsp";
 
-    
-	private static final String SETS_PROPERTY = "sets:sets";
-	private static final String LIST_WEBID_PROPERTY= "webids";
-	private static final String NAME_PROPERTY = "name";
-	private static final String WEBID_PROPERTY = "ttc:webid";
 
-    /** Bundle factory. */
-    private IBundleFactory bundleFactory;
-    /** Document DAO. */
-    private DocumentDAO documentDAO;
-    /** Portlet sequencing service. */
-    private IPortletSequencingService portletSequencingService;
+    private static final String SETS_PROPERTY = "sets:sets";
+    private static final String LIST_WEBID_PROPERTY = "webids";
+    private static final String NAME_PROPERTY = "name";
+    private static final String WEBID_PROPERTY = "ttc:webid";
 
-
-    /** Nuxeo service. */
+    /**
+     * Feed type.
+     */
+    private static final String FEED_TYPE_RSS_2_0 = "rss_2.0";
+    /**
+     * Nuxeo service.
+     */
     private final INuxeoService nuxeoService;
+    /**
+     * Bundle factory.
+     */
+    private IBundleFactory bundleFactory;
+    /**
+     * Document DAO.
+     */
+    private DocumentDAO documentDAO;
+    /**
+     * Portlet sequencing service.
+     */
+    private IPortletSequencingService portletSequencingService;
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
 
@@ -174,7 +194,6 @@ public class ViewListPortlet extends ViewList {
 
         return currentTemplate;
     }
-
 
     /**
      * {@inheritDoc}
@@ -290,25 +309,99 @@ public class ViewListPortlet extends ViewList {
 
             if ("rss".equals(request.getParameter("type"))) {
                 if (documents != null) {
-                    response.setContentType("application/rss+xml");
-                    response.setProperty("Cache-Control", "max-age=" + response.getCacheControl().getExpirationTime());
-                    response.setProperty("Last-Modified", this.formatResourceLastModified());
+                    // Controller context
+                    ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
+                    // Portal
+                    Portal portal = PortalObjectUtils.getPortal(controllerContext);
+                    // Locale
+                    Locale locale = request.getLocale();
+                    // Internationalization bundle
+                    Bundle bundle = this.getBundleFactory().getBundle(locale);
 
-                    // RSS document
-                    org.w3c.dom.Document document = RssGenerator.createDocument(nuxeoController, portalControllerContext, configuration.getRssTitle(),
-                            documents, configuration.getRssReference());
+                    // Portal URL
+                    String portalUrl = getAbsoluteUrl(controllerContext, StringUtils.EMPTY);
 
-                    // Send RSS content
-                    TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                    Transformer transformer = transformerFactory.newTransformer();
-                    DOMSource source = new DOMSource(document);
-                    StringWriter stringWriter = new StringWriter();
-                    StreamResult streamResult = new StreamResult(stringWriter);
-                    transformer.transform(source, streamResult);
-                    String xmlString = stringWriter.toString();
+                    // Portal title
+                    String portalTitleKey = StringUtils.defaultIfEmpty(portal.getDeclaredProperty("osivia.brand.key"), "BRAND");
+                    String portalTitle = bundle.getString(portalTitleKey);
 
-                    InputStream in = new ByteArrayInputStream(xmlString.getBytes());
-                    ResourceUtil.copy(in, response.getPortletOutputStream(), 4096);
+                    // Window title
+                    String windowTitle = window.getProperty(InternalConstants.PROP_WINDOW_TITLE);
+
+                    // Current date
+                    Date currentDate = new Date();
+
+                    // RSS channel
+                    Channel channel = new Channel();
+                    channel.setFeedType(FEED_TYPE_RSS_2_0);
+                    channel.setTitle(windowTitle);
+                    channel.setLink(portalUrl);
+                    channel.setDescription(portalTitle);
+                    channel.setLastBuildDate(currentDate);
+                    if (locale != null) {
+                        channel.setLanguage(locale.toLanguageTag());
+                    }
+
+                    // RSS items
+                    List<Item> items = new ArrayList<>(documents.size());
+                    channel.setItems(items);
+
+                    for (Document document : documents) {
+                        // RSS item
+                        Item item = new Item();
+
+                        // Feed entry title
+                        String title = StringUtils.defaultIfEmpty(document.getTitle(), document.getId());
+                        item.setTitle(title);
+
+                        // Link
+                        String url = this.getPortalUrlFactory().getPermaLink(portalControllerContext, null, null, document.getPath(), IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                        item.setLink(url);
+
+                        // GUID
+                        Guid guid = new Guid();
+                        guid.setValue(url);
+                        guid.setPermaLink(true);
+                        item.setGuid(guid);
+
+                        // Description
+                        Description description = new Description();
+                        if (StringUtils.isNotEmpty(document.getString("annonce:resume"))) {
+                            description.setType("text/html");
+                            description.setValue(document.getString("annonce:resume"));
+                        } else {
+                            description.setType("text/plain");
+                            description.setValue(document.getString("dc:description", StringUtils.EMPTY));
+                        }
+                        item.setDescription(description);
+
+                        // Enclosures
+                        Enclosure enclosure = this.createEnclosure(controllerContext, nuxeoController, document, "annonce:image");
+                        if (enclosure == null) {
+                            enclosure = this.createEnclosure(controllerContext, nuxeoController, document, "ttc:vignette");
+                        }
+                        if (enclosure != null) {
+                            List<Enclosure> enclosures = new ArrayList<>(1);
+                            enclosures.add(enclosure);
+                            item.setEnclosures(enclosures);
+                        }
+
+                        // Date
+                        item.setPubDate(document.getDate("dc:modified"));
+
+                        items.add(item);
+                    }
+
+                    WireFeedOutput output = new WireFeedOutput();
+                    Writer writer = null;
+                    try {
+                        response.setContentType("application/xml");
+
+                        writer = new OutputStreamWriter(response.getPortletOutputStream());
+                        output.output(channel, writer);
+                    } finally {
+                        IOUtils.closeQuietly(writer);
+                    }
                 } else {
                     throw new IllegalArgumentException("No request defined for RSS");
                 }
@@ -338,8 +431,65 @@ public class ViewListPortlet extends ViewList {
 
 
     /**
+     * Get absolute URL.
+     *
+     * @param controllerContext controller context
+     * @param path              relative URL path
+     * @return absolute URL
+     */
+    private String getAbsoluteUrl(ControllerContext controllerContext, String path) {
+        ServerURL serverUrl = new AbstractServerURL();
+        serverUrl.setPortalRequestPath(path);
+        URLFormat urlFormat = URLFormat.newInstance(false, true);
+        String portalUrl = controllerContext.getServerInvocation().getResponse().renderURL(serverUrl, urlFormat);
+        return portalUrl;
+    }
+
+
+    /**
+     * Create RSS feed enclosure.
+     *
+     * @param controllerContext controller context
+     * @param nuxeoController   Nuxeo controller
+     * @param document          Nuxeo document
+     * @param property          Nuxeo document property
+     * @return RSS feed enclosure
+     */
+    private Enclosure createEnclosure(ControllerContext controllerContext, NuxeoController nuxeoController, Document document, String property) {
+        Enclosure enclosure;
+
+        PropertyMap propertyMap = document.getProperties().getMap(property);
+        if ((propertyMap != null) && (propertyMap.get("length") != null)) {
+            // HTTP servlet request
+            HttpServletRequest httpServletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+
+            // URL
+            String url;
+            try {
+                url = new URL(httpServletRequest.getScheme(), httpServletRequest.getServerName(), nuxeoController.createFileLink(document, property)).toString();
+            } catch (MalformedURLException e) {
+                url = null;
+            }
+
+            if (StringUtils.isEmpty(url)) {
+                enclosure = null;
+            } else {
+                enclosure = new Enclosure();
+                enclosure.setType(propertyMap.getString("mime-type"));
+                enclosure.setLength(propertyMap.getLong("length"));
+                enclosure.setUrl(url);
+            }
+        } else {
+            enclosure = null;
+        }
+
+        return enclosure;
+    }
+
+
+    /**
      * Génère le html renvoyé dans la resource à l'aide de la jsp du style
-     * 
+     *
      * @param request
      * @param response
      * @param template
