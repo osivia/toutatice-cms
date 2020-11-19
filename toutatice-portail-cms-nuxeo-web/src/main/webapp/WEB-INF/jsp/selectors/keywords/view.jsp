@@ -63,7 +63,7 @@
         <!-- Input -->
         <div class="form-group">
             <div class="${selectorType eq '2' ? '' : 'input-group'}">
-                <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}">
+                <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${placeholder}" id="${namespace}-keyword" data-restore-normal-view-on-focus="true" >
                 <span class="${selectorType eq '2' ? 'd-none' : 'input-group-btn'}">
                     <button type="submit" name="${name}" class="btn btn-secondary">
                         <i class="${glyphicon}"></i>
