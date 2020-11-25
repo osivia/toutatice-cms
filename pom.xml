@@ -12,7 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <osivia-portal.version>4.9-SNAPSHOT</osivia-portal.version>
+        <osivia-portal.version>4.9.3-RC14</osivia-portal.version>
 
         <jboss.portal.version>2.7.2</jboss.portal.version>
         <jboss.modules.identity.version>1.1.3</jboss.modules.identity.version>
