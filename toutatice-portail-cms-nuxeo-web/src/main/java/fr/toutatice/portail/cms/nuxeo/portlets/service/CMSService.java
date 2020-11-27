@@ -33,9 +33,11 @@ import java.util.regex.Pattern;
 import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import fr.toutatice.portail.cms.nuxeo.api.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -73,6 +75,8 @@ import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.ecm.EcmViews;
+import org.osivia.portal.api.editor.EditorModule;
+import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.page.PageParametersEncoder;
@@ -118,10 +122,6 @@ import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoCompatibility;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoQueryFilterContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
 import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
@@ -3756,5 +3756,37 @@ public class CMSService implements ICMSService {
         
 		this.prefsDelegation.updateUserPreferences(cmsContext, httpSession);
 	}
+
+
+    @Override
+    public List<EditorModule> getEditorModules(CMSServiceCtx cmsContext) {
+        // Plugin manager
+        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+
+        return pluginManager.getEditorModules();
+    }
+
+
+    @Override
+    public Map<String, String> getEditorWindowBaseProperties(CMSServiceCtx cmsContext) {
+        // Portlet request
+        PortletRequest request = cmsContext.getRequest();
+        // Portlet response
+        PortletResponse response = cmsContext.getResponse();
+        // Portlet context
+        PortletContext portletContext = cmsContext.getPortletCtx();
+
+        // Nuxeo controller
+        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
+
+        // Window properties
+        Map<String, String> properties = new HashMap<>();
+        // Base path
+        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "basePath", nuxeoController.getBasePath());
+        // Current document path
+        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "path", nuxeoController.getContentPath());
+
+        return properties;
+    }
 
 }
