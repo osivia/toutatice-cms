@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,19 +66,33 @@ public class NXQLFormater {
     public String formatTextSearch(String fieldName, List<String> searchValues) {
         StringBuilder request = new StringBuilder();
         request.append("(");
-
+        
         boolean firstItem = true;
         for (String searchWord : searchValues) {
-            if (firstItem) {
-                firstItem = false;
-            } else {
-                request.append(" OR ");
-            }
+        	
+        	// Remove accents in search query
+        	searchWord = Normalizer.normalize(searchWord, Normalizer.Form.NFD);
+        	searchWord = searchWord.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        	// Remove special chars
+        	searchWord = searchWord.replaceAll("[^A-Za-z0-9 ]", " ");
+        	
+        	String[] words = searchWord.split(" ");
+        	
+        	for (String word : words) {
+        		
+                if (firstItem) {
+                    firstItem = false;
+                } else {
+                    request.append(" AND ");
+                }
+        		
+                request.append(fieldName);
+                request.append(" ILIKE '%");
+                request.append(word);
+                request.append("%'");
+        	}
 
-            request.append(fieldName);
-            request.append(" ILIKE '%");
-            request.append(StringUtils.replace(searchWord, "'", "\\'"));
-            request.append("%'");
+
         }
 
         request.append(")");
