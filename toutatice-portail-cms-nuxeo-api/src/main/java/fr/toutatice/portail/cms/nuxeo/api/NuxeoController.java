@@ -232,6 +232,13 @@ public class NuxeoController {
      * The nuxeo command service.
      */
     INuxeoCommandService nuxeoCommandService;
+    
+    /** The default cms nuxeo context name. */
+    private static final String  CMS_NUXEO_DEFAULT_CONTEXT_NAME = "toutatice-portail-cms-nuxeo";
+    
+    /** The cms context name. */
+    private static String cmsContextName = null;
+    
     /**
      * Directory service
      */
@@ -2580,5 +2587,24 @@ public class NuxeoController {
     public void setAsynchronousCommand(boolean asynchronousCommand) {
         this.asynchronousCommand = asynchronousCommand;
     }
+
+    
+    /**
+     * Gets the CMS nuxeo web context name.
+     *
+     * @return the CMS nuxeo web context name
+     */
+    public static String getCMSNuxeoWebContextName() {
+        if (cmsContextName == null) {
+            String customName = System.getProperty("cms.nuxeo.context");
+            if (customName != null)
+                cmsContextName = customName;
+            else
+                cmsContextName = CMS_NUXEO_DEFAULT_CONTEXT_NAME;
+        }
+        return cmsContextName;
+    }
+
+
 
 }

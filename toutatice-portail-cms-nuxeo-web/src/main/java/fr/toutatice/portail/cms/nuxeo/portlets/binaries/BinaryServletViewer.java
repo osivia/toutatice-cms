@@ -57,7 +57,7 @@ public class BinaryServletViewer {
 
         OutputStream output = response.getOutputStream();
 
-        String url = ONLYOFFICE_PORTAL_URL+"/toutatice-portail-cms-nuxeo/binary";
+        String url = ONLYOFFICE_PORTAL_URL+"/"+NuxeoController.getCMSNuxeoWebContextName()+"/binary";
         String params = "";
 
         if (request.getParameter("linkId") != null)

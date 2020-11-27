@@ -129,11 +129,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Servlet URL for avatars
      */
-    private static final String AVATAR_SERVLET = "/toutatice-portail-cms-nuxeo/avatar?username=";
+    private static final String AVATAR_SERVLET = "/"+NuxeoController.getCMSNuxeoWebContextName()+"/avatar?username=";
     /**
      * Binary servlet URL.
      */
-    private static final String BINARY_SERVLET = "/toutatice-portail-cms-nuxeo/binary";
+    private static final String BINARY_SERVLET = "/"+NuxeoController.getCMSNuxeoWebContextName()+"/binary";
 
     private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";
 
