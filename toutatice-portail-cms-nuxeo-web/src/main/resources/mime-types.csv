@@ -5,7 +5,7 @@ application/index-qcm+xml,xml,QCM,,glyphicons  glyphicons-list,false,true
 application/java-archive,jar,Archive Java,,glyphicons glyphicons-filetypes-file-program,false,false
 application/javascript,js,Fichier JavaScript,,glyphicons glyphicons-filetypes-file-program,false,false
 application/json,json,Fichier JSON,,glyphicons glyphicons-filetypes-file-web,false,false
-application/msword,doc,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,false,false
+application/msword,doc,Document Word,W,glyphicons glyphicons-filetypes-file-rich-text,true,false
 application/ogg,ogx,Fichier OGG,,glyphicons glyphicons-basic-music,false,false
 application/pdf,pdf,Fichier PDF,PDF,glyphicons glyphicons-filetypes-file-rich-text,false,false
 application/rtf,rtf,Fichier RTF,,glyphicons glyphicons-filetypes-file-rich-text,false,false
