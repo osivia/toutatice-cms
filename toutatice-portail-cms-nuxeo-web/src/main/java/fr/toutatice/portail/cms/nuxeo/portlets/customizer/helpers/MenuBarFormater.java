@@ -439,7 +439,9 @@ public class MenuBarFormater {
             try {
                 workspaceDocumentContext = NuxeoController.getDocumentContext(cmsContext, basePath);
             } catch (PortletException e) {
-                throw new CMSException(e);
+            	
+            	// May be happen if space id not readable
+                return false;
             }
         }
 
