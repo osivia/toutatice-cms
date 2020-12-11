@@ -53,17 +53,17 @@ public class NXQLFormater {
      * Default constructor.
      */
     public NXQLFormater() {
-		super();
+        super();
     }
 
 
     public NXQLFormater(NuxeoController nuxeoController) {
-    	super();
-    	this.nuxeoController = nuxeoController; 
-	}
+        super();
+        this.nuxeoController = nuxeoController; 
+    }
 
 
-	/**
+    /**
      * Format text search.
      *
      * @param fieldName field name
@@ -82,13 +82,10 @@ public class NXQLFormater {
                 request.append(" OR ");
             }
 
-            request.append("/*+ES: INDEX(");
             request.append(fieldName);
-            request.append(".lowercase) OPERATOR(query_string) */ ");
-            request.append(fieldName);
-            request.append(" = '*");
+            request.append(" ILIKE '%");
             request.append(StringUtils.replace(searchWord, "'", "\\'"));
-            request.append("*'");
+            request.append("%'");
         }
 
         request.append(")");
@@ -255,7 +252,7 @@ public class NXQLFormater {
     }
 
     
-	/**
+    /**
      * Format date search.
      *
      * @param fieldName field name
@@ -345,9 +342,9 @@ public class NXQLFormater {
 
             builder.append("(ecm:fulltext = '");
             builder.append(keyWord);
-            builder.append("' OR /*+ES: INDEX(dc:title.lowercase) OPERATOR(query_string) */ dc:title = '");
+            builder.append("' OR dc:title ILIKE '");
             builder.append(keyWord);
-            builder.append("*')");
+            builder.append("%')");
 
             if (itKeyWords.hasNext()) {
                 builder.append(" AND ");
