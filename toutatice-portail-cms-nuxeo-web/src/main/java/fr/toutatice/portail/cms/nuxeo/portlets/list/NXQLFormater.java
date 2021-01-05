@@ -53,17 +53,17 @@ public class NXQLFormater {
      * Default constructor.
      */
     public NXQLFormater() {
-		super();
+        super();
     }
 
 
     public NXQLFormater(NuxeoController nuxeoController) {
-    	super();
-    	this.nuxeoController = nuxeoController; 
-	}
+        super();
+        this.nuxeoController = nuxeoController; 
+    }
 
 
-	/**
+    /**
      * Format text search.
      *
      * @param fieldName field name
@@ -252,7 +252,7 @@ public class NXQLFormater {
     }
 
     
-	/**
+    /**
      * Format date search.
      *
      * @param fieldName field name
