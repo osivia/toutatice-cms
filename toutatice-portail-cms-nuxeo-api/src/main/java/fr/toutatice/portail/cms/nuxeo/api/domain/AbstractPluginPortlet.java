@@ -30,6 +30,7 @@ import org.osivia.portal.api.customization.CustomizationContext;
 import org.osivia.portal.api.customization.CustomizationModuleMetadatas;
 import org.osivia.portal.api.customization.ICustomizationModule;
 import org.osivia.portal.api.customization.ICustomizationModulesRepository;
+import org.osivia.portal.api.editor.EditorModule;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.player.IPlayerModule;
@@ -497,6 +498,28 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         }
         return setTypes;
     }
+
+
+    /**
+     * Get editor modules.
+     *
+     * @param customizationContext customization context
+     * @return editor modules
+     */
+    protected List<EditorModule> getEditorModules(CustomizationContext customizationContext) {
+        // Customization context attributes
+        Map<String, Object> attributes = customizationContext.getAttributes();
+
+        // Editor modules
+        List<EditorModule> modules = (List<EditorModule>) attributes.get(Customizable.EDITOR_MODULES.toString());
+        if (modules == null) {
+            modules = new ArrayList<>();
+            attributes.put(Customizable.EDITOR_MODULES.toString(), modules);
+        }
+
+        return modules;
+    }
+
 
     /**
      * Getter for taskbarService.
