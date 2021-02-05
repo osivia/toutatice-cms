@@ -19,7 +19,7 @@
         <json.version>2.4</json.version>
         <jackson.version>1.8.1</jackson.version>
         <apache.httpcomponents.version>4.1</apache.httpcomponents.version>
-        <ical4j.version>2.2.6</ical4j.version>
+        <ical4j.version>3.0.21</ical4j.version>
         
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
