@@ -1,6 +1,8 @@
 package fr.toutatice.portail.cms.nuxeo.taglib.toutatice;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
@@ -36,7 +38,12 @@ public class UserTag extends ToutaticeSimpleTag {
     /** Hide display name indicator. Default = false. */
     private boolean hideDisplayName;
 
-
+    /** regex for entries */
+    private static final String ENTRIES_REGEX = "^[a-zA-Z0-9-_.@]+";
+       
+    /** login pattern. */
+    private final Pattern entriesPattern;
+    
     /**
      * Constructor.
      */
@@ -45,6 +52,10 @@ public class UserTag extends ToutaticeSimpleTag {
         this.linkable = false;
         this.hideAvatar = false;
         this.hideDisplayName = false;
+        
+        // Mail pattern
+        this.entriesPattern = Pattern.compile(ENTRIES_REGEX);
+        
     }
 
 
@@ -62,34 +73,48 @@ public class UserTag extends ToutaticeSimpleTag {
             String displayName;
             // URL
             String url;
+            
+            Person person = null;
 
             if (this.linkable || !this.hideDisplayName) {
-                // Directory person
-                PersonService personService = DirServiceFactory.getService(PersonService.class);
-                Person person = personService.getPerson(name);
+            	
+            	Matcher matcher = this.entriesPattern.matcher(name);
+            	if(matcher.matches()) {
 
-                if (person != null) {
-                    displayName = StringUtils.defaultIfBlank(person.getDisplayName(), this.name);
+                    // Directory person
+                    PersonService personService = DirServiceFactory.getService(PersonService.class);
+                    person = personService.getPerson(name);
 
-                    if (this.linkable) {
-                        Link link = this.getTagService().getUserProfileLink(nuxeoController, this.name, displayName);
-                        if (link == null) {
-                            url = null;
+                    if (person != null) {
+                        displayName = StringUtils.defaultIfBlank(person.getDisplayName(), this.name);
+
+                        if (this.linkable) {
+                            Link link = this.getTagService().getUserProfileLink(nuxeoController, this.name, displayName);
+                            if (link == null) {
+                                url = null;
+                            } else {
+                                url = link.getUrl();
+                            }
                         } else {
-                            url = link.getUrl();
+                            url = null;
                         }
                     } else {
+                        displayName = this.name;
                         url = null;
                     }
-                } else {
+            	} else {
                     displayName = this.name;
                     url = null;
-                }
+            	}
+            	
             } else {
                 displayName = null;
                 url = null;
             }
 
+            if(person == null) {
+            	hideAvatar = true; // do not render avatar if author is not a directory user
+            }
 
             if (!this.hideAvatar) {
                 // Avatar container

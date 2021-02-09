@@ -3327,31 +3327,35 @@ public class CMSService implements ICMSService {
      * @return actors
      */
     private Set<String> getTaskActors(String user) {
-        // User DN
-        Name dn = this.personService.getEmptyPerson().buildDn(user);
+    	
+    	Set<String> actors = null;
+    	if(user != null) {
+        // 	User DN
+    		Name dn = this.personService.getEmptyPerson().buildDn(user);
 
-        // Search user groups
-        Group criteria = this.groupService.getEmptyGroup();
-        criteria.setMembers(Arrays.asList(new Name[]{dn}));
-        List<Group> groups = this.groupService.search(criteria);
+            // Search user groups
+            Group criteria = this.groupService.getEmptyGroup();
+            criteria.setMembers(Arrays.asList(new Name[]{dn}));
+            List<Group> groups = this.groupService.search(criteria);
 
-        // Actors
-        Set<String> actors = new HashSet<>((groups.size() + 1) * 2);
-        
-        actors.add(user);
-        actors.add(IFormsService.ACTOR_USER_PREFIX + user);
-        
-        for (Group group : groups) {
-        	if(group != null) {
-	            // Group CN
-	            String cn = group.getCn();
-	
-	            actors.add(cn);
-	            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
-        	}
-        }
-
+            // Actors
+            actors = new HashSet<>((groups.size() + 1) * 2);
+            
+            actors.add(user);
+            actors.add(IFormsService.ACTOR_USER_PREFIX + user);
+            
+            for (Group group : groups) {
+            	if(group != null) {
+    	            // Group CN
+    	            String cn = group.getCn();
+    	
+    	            actors.add(cn);
+    	            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
+            	}
+            }
+    	}
         return actors;
+
     }
 
 
