@@ -3762,35 +3762,35 @@ public class CMSService implements ICMSService {
 	}
 
 
-    @Override
-    public List<EditorModule> getEditorModules(CMSServiceCtx cmsContext) {
-        // Plugin manager
-        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
-
-        return pluginManager.getEditorModules();
-    }
-
-
-    @Override
-    public Map<String, String> getEditorWindowBaseProperties(CMSServiceCtx cmsContext) {
-        // Portlet request
-        PortletRequest request = cmsContext.getRequest();
-        // Portlet response
-        PortletResponse response = cmsContext.getResponse();
-        // Portlet context
-        PortletContext portletContext = cmsContext.getPortletCtx();
-
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
-
-        // Window properties
-        Map<String, String> properties = new HashMap<>();
-        // Base path
-        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "basePath", nuxeoController.getBasePath());
-        // Current document path
-        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "path", nuxeoController.getContentPath());
-
-        return properties;
-    }
+//    @Override
+//    public List<EditorModule> getEditorModules(CMSServiceCtx cmsContext) {
+//        // Plugin manager
+//        CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
+//
+//        return pluginManager.getEditorModules();
+//    }
+//
+//
+//    @Override
+//    public Map<String, String> getEditorWindowBaseProperties(CMSServiceCtx cmsContext) {
+//        // Portlet request
+//        PortletRequest request = cmsContext.getRequest();
+//        // Portlet response
+//        PortletResponse response = cmsContext.getResponse();
+//        // Portlet context
+//        PortletContext portletContext = cmsContext.getPortletCtx();
+//
+//        // Nuxeo controller
+//        NuxeoController nuxeoController = new NuxeoController(request, response, portletContext);
+//
+//        // Window properties
+//        Map<String, String> properties = new HashMap<>();
+//        // Base path
+//        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "basePath", nuxeoController.getBasePath());
+//        // Current document path
+//        properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "path", nuxeoController.getContentPath());
+//
+//        return properties;
+//    }
 
 }
