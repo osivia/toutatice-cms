@@ -109,13 +109,14 @@ public class ViewListPortlet extends ViewList {
     private IBundleFactory bundleFactory;
     /** Document DAO. */
     private DocumentDAO documentDAO;
-    /** CMS customizer. */
-    private INuxeoCustomizer customizer;
     /** Portlet sequencing service. */
     private IPortletSequencingService portletSequencingService;
 
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
+    
+	private INuxeoService nuxeoService;
+	
 
 
     /**
@@ -145,9 +146,7 @@ public class ViewListPortlet extends ViewList {
         this.documentDAO = DocumentDAO.getInstance();
 
         // Nuxeo service
-        INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-        // CMS customizer
-        this.customizer = nuxeoService.getCMSCustomizer();
+        this.nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
         // Portlet sequencing service
         this.portletSequencingService = Locator.findMBean(IPortletSequencingService.class, IPortletSequencingService.MBEAN_NAME);
@@ -166,11 +165,14 @@ public class ViewListPortlet extends ViewList {
         if (currentTemplateName == null) {
             currentTemplateName = LIST_TEMPLATE_NORMAL;
         }
+        
+        // CMS customizer
+        INuxeoCustomizer customizer = nuxeoService.getCMSCustomizer();
 
         // Search template
         ListTemplate currentTemplate = null;
         ListTemplate defaultTemplate = null;
-        List<ListTemplate> templates = this.customizer.getListTemplates(locale);
+        List<ListTemplate> templates = customizer.getListTemplates(locale);
         for (ListTemplate template : templates) {
             if (currentTemplateName.equals(template.getKey())) {
                 // Current template
@@ -454,7 +456,8 @@ public class ViewListPortlet extends ViewList {
             request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
 
             // Templates
-            request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+            INuxeoCustomizer customizer = nuxeoService.getCMSCustomizer();
+            request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
 
 
             response.setContentType("text/html");
@@ -643,7 +646,8 @@ public class ViewListPortlet extends ViewList {
 
 
                 // Templates
-                request.setAttribute("templates", this.customizer.getListTemplates(request.getLocale()));
+                INuxeoCustomizer customizer = nuxeoService.getCMSCustomizer();
+                request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
 
                 request.setAttribute("style", StringUtils.lowerCase(template.getKey()));
                 String schemas = template.getSchemas();
