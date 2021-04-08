@@ -36,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -75,6 +76,10 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     private final IPortalUrlFactory portalUrlFactory;
     /** Internationalization bundle factory. */
     private final IBundleFactory bundleFactory;
+    /**
+     * Editor service.
+     */
+    private final EditorService editorService;
 
 
     /**
@@ -97,6 +102,8 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         // Internationalization bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        // Editor service
+        this.editorService = Locator.findMBean(EditorService.class, EditorService.MBEAN_NAME);
     }
 
 
@@ -461,68 +468,18 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
     /**
      * Serve resource for editor properties.
-     * @param request resource request
+     *
+     * @param request  resource request
      * @param response resource response
      * @param editorId editor identifier
-     * @throws PortletException
-     * @throws IOException
+     * @deprecated use editor service directly instead
      */
+    @Deprecated
     protected void serveResourceEditor(ResourceRequest request, ResourceResponse response, String editorId) throws PortletException, IOException {
         // Portal controller context
         PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
-        // Nuxeo controller
-        NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
-        // Internationalization bundle
-        Bundle bundle = this.bundleFactory.getBundle(request.getLocale());
 
-        // Editor title
-        String title;
-        if ("link".equals(editorId)) {
-            title = bundle.getString("EDITOR_LINK_TITLE");
-        } else {
-            title = null;
-        }
-
-        // Editor instance
-        String instance;
-        if ("link".equals(editorId)) {
-            instance = "osivia-services-editor-link-instance";
-        } else {
-            instance = null;
-        }
-
-        // Editor properties
-        Map<String, String> properties = new HashMap<>();
-        if ("link".equals(editorId)) {
-            properties.put("osivia.editor.url", request.getParameter("url"));
-            properties.put("osivia.editor.text", request.getParameter("text"));
-            properties.put("osivia.editor.title", request.getParameter("title"));
-            properties.put("osivia.editor.onlyText", request.getParameter("onlyText"));
-            properties.put("osivia.editor.basePath", nuxeoController.getBasePath());
-        }
-
-        // URL
-        String url;
-        try {
-            url = this.portalUrlFactory.getStartPortletUrl(portalControllerContext, instance, properties, PortalUrlType.MODAL);
-        } catch (PortalException e) {
-            throw new PortletException(e);
-        }
-
-
-        // JSON
-        JSONObject object = new JSONObject();
-        object.put("title", title);
-        object.put("url", url);
-
-
-        // Content type
-        response.setContentType("application/json");
-
-        // Content
-        PrintWriter printWriter = new PrintWriter(response.getPortletOutputStream());
-        printWriter.write(object.toString());
-        printWriter.close();
+        this.editorService.serveResource(portalControllerContext, editorId);
     }
 
 

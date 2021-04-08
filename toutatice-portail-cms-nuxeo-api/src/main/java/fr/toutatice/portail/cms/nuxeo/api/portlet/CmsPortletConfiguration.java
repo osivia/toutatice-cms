@@ -1,13 +1,9 @@
 package fr.toutatice.portail.cms.nuxeo.api.portlet;
 
-import javax.annotation.PostConstruct;
-import javax.portlet.PortletConfig;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletException;
-
-import org.osivia.portal.api.Constants;
+import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.service.PersonService;
+import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
@@ -16,10 +12,11 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.portlet.context.PortletContextAware;
 
-import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
+import javax.annotation.PostConstruct;
+import javax.portlet.PortletConfig;
+import javax.portlet.PortletException;
 
 /**
  * Spring CMS portlet configuration abstract super-class.
@@ -59,8 +56,6 @@ public abstract class CmsPortletConfiguration extends CMSPortlet {
     }
 
 
-  
-
     /**
      * Get portal URL factory.
      * 
@@ -87,12 +82,23 @@ public abstract class CmsPortletConfiguration extends CMSPortlet {
 
     /**
      * Get person service.
-     * 
+     *
      * @return person service
      */
     @Bean
     public PersonService getPersonService() {
         return DirServiceFactory.getService(PersonService.class);
+    }
+
+
+    /**
+     * Get editor service.
+     *
+     * @return editor service
+     */
+    @Bean
+    public EditorService getEditorService() {
+        return Locator.findMBean(EditorService.class, EditorService.MBEAN_NAME);
     }
 
 }
