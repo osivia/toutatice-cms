@@ -273,6 +273,14 @@
         <body-content>empty</body-content>
 
         <attribute>
+            <description>Document DTO.</description>
+            <name>document</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO</type>
+        </attribute>
+
+        <attribute>
             <description>HTML content.</description>
             <name>content</name>
             <required>true</required>
