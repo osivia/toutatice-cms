@@ -122,11 +122,7 @@
 		<module>toutatice-portail-cms-nuxeo-taglib</module>
 		<module>toutatice-portail-cms-nuxeo-dependencies</module>
         <module>toutatice-portail-cms-nuxeo-dependencies-test</module>
-<!--
-
-        <module>toutatice-portail-cms-nuxeo-test-portlets</module>
         <module>toutatice-portail-cms-nuxeo-distribution</module>
--->		
     </modules>
 
 

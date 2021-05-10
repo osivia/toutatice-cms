@@ -8,75 +8,49 @@
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
 
-    <dependencySets>
+   <dependencySets>
         <dependencySet>
-            <outputDirectory>/jboss-as/server/production/deploy/socle</outputDirectory>
+            <outputDirectory>webapps</outputDirectory>
             <unpack>false</unpack>
             <scope>runtime</scope>
             <includes>
-                <include>${project.groupId}:toutatice-portail-cms-nuxeo-sar:sar:${project.version}</include>
+                <include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-web</include>
             </includes>
             <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
 
         <dependencySet>
-            <outputDirectory>/jboss-as/server/production/lib</outputDirectory>
+            <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
             <scope>runtime</scope>
             <includes>
-                <include>${project.groupId}:toutatice-portail-cms-nuxeo-api:jar:${project.version}</include>
-            </includes>
-            <useProjectArtifact>false</useProjectArtifact>
+                <include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-api</include>
+                <include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-taglib</include>                
+                <include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-repository</include>                
+                <include>commons-lang:commons-lang</include> 
+                <include>commons-io:commons-io</include> 
+                <include>toutatice-portail.cms:toutatice-portail-cms-nuxeo-automation-client</include>
+                <include>org.codehaus.jackson:jackson-core-asl</include>
+                <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                <include>net.sf.ezmorph:ezmorph</include>
+                <include>net.sf.json-lib:json-lib</include>
+                <include>commons-beanutils:commons-beanutils</include>
+            </includes> 
         </dependencySet>
-
-        <dependencySet>
-            <outputDirectory>/jboss-as/server/production/deploy/jboss-web.deployer</outputDirectory>
-            <unpack>false</unpack>
-            <scope>runtime</scope>
-            <includes>
-                <include>${project.groupId}:toutatice-portail-cms-nuxeo-taglib:jar:${project.version}</include>
-            </includes>
-            <outputFileNameMapping>toutatice-taglib.jar</outputFileNameMapping>
-            <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet>
+                            
     </dependencySets>
 
+
     <fileSets>
-
-        <fileSet>
-            <outputDirectory>/jboss-as/server/production/lib</outputDirectory>
-            <directory>target/dependency</directory>
-        </fileSet>
-
+        <!-- Socle -->
         <fileSet>
             <outputDirectory>/</outputDirectory>
             <directory>target/osivia-distribution</directory>
-
             <includes>
-                <include>jboss-as/**</include>
-                <include>custom/**</include>
+                <include>/**</include>
             </includes>
-            <excludes>
+         </fileSet>
 
-                <!-- exclude distribution environment specific files -->
-
-                <exclude>custom/params/environnement_portail.properties.*</exclude>
-                <exclude>jboss-as/server/production/run.conf.*</exclude>
-                <exclude>jboss-as/server/production/deploy/jboss-web.deployer/conf/web.xml</exclude>
-                <exclude>jboss-as/server/portal.properties</exclude>
-
-                <!-- exclude EhCache replaced in the production/lib directory -->
-                <exclude>jboss-as/server/production/deploy/jboss-portal-ha.sar/lib/ehcache.jar</exclude>
-                <exclude>jboss-as/server/production/deploy/jboss-portal-ha.sar/conf/hibernate/workflow/hibernate.cfg.xml</exclude>
-            </excludes>
-        </fileSet>
-
-        <fileSet>
-            <outputDirectory>/</outputDirectory>
-            <directory>src/main/resources</directory>
-        </fileSet>
-    </fileSets>
-
-
+      </fileSets>
 
 </assembly>
