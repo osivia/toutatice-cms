@@ -36,6 +36,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
@@ -127,9 +128,9 @@ public class XSLFunctions {
         this.nuxeoBaseURIs = this.getNuxeoBaseURIs();
 
         // Portal URL factory
-        this.portalURLFactory = (IPortalUrlFactory) this.cmsContext.getPortletCtx().getAttribute("UrlService");
+        this.portalURLFactory = (IPortalUrlFactory) Locator.getService(IPortalUrlFactory.class);
         // Web ID service
-        this.webIdService = (IWebIdService) this.cmsContext.getPortletCtx().getAttribute("webIdService");
+        this.webIdService = (IWebIdService) Locator.getService(IWebIdService.class);
 
         // Portal reference matcher
         this.portalReferenceMatcher = this.getPortalReferenceMatcher(this.portalURLFactory, this.portalControllerContext);

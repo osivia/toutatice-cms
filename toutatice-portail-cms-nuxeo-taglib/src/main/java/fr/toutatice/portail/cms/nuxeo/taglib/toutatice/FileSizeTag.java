@@ -49,7 +49,7 @@ public class FileSizeTag extends ToutaticeSimpleTag {
         // Bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
                 IInternationalizationService.MBEAN_NAME);
-        this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
+        this.bundleFactory = internationalizationService.getBundleFactory(Thread.currentThread().getContextClassLoader());
     }
 
 

@@ -25,6 +25,7 @@
         </instance>
     </deployment>
 
+<!-- 
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -44,7 +45,7 @@
             </security-constraint>
         </instance>
     </deployment>
-
+-->
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -64,7 +65,7 @@
             </security-constraint>
         </instance>
     </deployment>
-    
+ <!--    
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -126,7 +127,7 @@
             </security-constraint>
         </instance>
     </deployment>
-
+-->
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -146,7 +147,7 @@
             </security-constraint>
         </instance>
     </deployment>
-
+<!-- 
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -248,7 +249,7 @@
     </deployment>
     
     
-    <!-- Vocabulary Select2 -->
+
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -270,7 +271,7 @@
     </deployment>
     
     
-    <!-- Move document -->
+
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -294,7 +295,7 @@
     </deployment>
     
     
-    <!-- Rename document -->
+
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -312,7 +313,7 @@
     </deployment>
     
     
-    <!-- Reorder documents -->
+
     <deployment>
         <if-exists>overwrite</if-exists>
         <instance>
@@ -334,5 +335,7 @@
             </preferences>
         </instance>
     </deployment>
+    
+    -->
 
 </deployments>

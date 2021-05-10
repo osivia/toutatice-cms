@@ -21,7 +21,7 @@
             </c:if>
         
             <!-- Documents -->
-            <div class="no-ajax-link">
+            <div>
                 <ttc:include page="view-${style}.jsp" />
             </div>
             

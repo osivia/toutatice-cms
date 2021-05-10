@@ -30,7 +30,7 @@ import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.context.ControllerContextAdapter;
+
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
@@ -82,7 +82,7 @@ public class NavigationPictureFragmentModule extends FragmentModule {
 
         // Navigation context
         CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-        cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(nuxeoController.getPortalCtx()));
+        cmsReadNavContext.setPortalControllerContext(nuxeoController.getPortalCtx());
         cmsReadNavContext.setScope(nuxeoController.getNavigationScope());
 
         String propertyName = window.getProperty(PROPERTY_NAME_WINDOW_PROPERTY);

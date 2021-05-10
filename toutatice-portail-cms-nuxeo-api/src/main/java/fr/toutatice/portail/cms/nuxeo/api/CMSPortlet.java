@@ -107,18 +107,18 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
         this.logger = LogFactory.getLog(CMSPortlet.class);
 
         // Nuxeo service
-        this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
+        this.nuxeoService = Locator.getService(INuxeoService.MBEAN_NAME, INuxeoService.class);
         // CMS service locator
-        this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
+        this.cmsServiceLocator = Locator.getService(ICMSServiceLocator.MBEAN_NAME,ICMSServiceLocator.class );
         // Browser service
-        this.browserService = Locator.findMBean(IBrowserService.class, IBrowserService.MBEAN_NAME);
+        this.browserService = Locator.getService(IBrowserService.MBEAN_NAME, IBrowserService.class );
         // Portal URL factory
-        this.portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
+        this.portalUrlFactory = Locator.getService(IPortalUrlFactory.class);
         // Internationalization bundle factory
-        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
+        IInternationalizationService internationalizationService = Locator.getService(IInternationalizationService.MBEAN_NAME, IInternationalizationService.class);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
         // Editor service
-        this.editorService = Locator.findMBean(EditorService.class, EditorService.MBEAN_NAME);
+        this.editorService = Locator.getService(EditorService.MBEAN_NAME, EditorService.class);
     }
 
 
@@ -166,11 +166,13 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
     public void init(PortletConfig config) throws PortletException {
         super.init(config);
 
+
         try {
             new NuxeoController(this.getPortletContext()).startNuxeoService();
         } catch (Exception e) {
             throw new PortletException(e);
         }
+
     }
 
 
@@ -181,6 +183,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
      */
     @Override
     public void destroy() {
+
         try {
             // Destruction des threads éventuels
             new NuxeoController(this.getPortletContext()).stopNuxeoService();
@@ -424,7 +427,7 @@ public abstract class CMSPortlet extends PortalGenericPortlet {
 
                 // URL
                 String url = document.getString("clink:link");
-                if (!StringUtils.startsWith(url, "http")) {
+                if (url != null && !url.startsWith( "http")) {
                     url = "http://" + url;
                 }
 

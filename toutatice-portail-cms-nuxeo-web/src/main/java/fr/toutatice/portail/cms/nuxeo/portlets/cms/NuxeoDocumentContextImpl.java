@@ -12,7 +12,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentConstant
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.jboss.portal.core.controller.ControllerContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.osivia.portal.api.cms.DocumentState;
@@ -154,11 +153,7 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
         clonedCmsContext.setForcedLivePath(cmsContext.getForcedLivePath());
         clonedCmsContext.setForceReload(cmsContext.isForceReload());
         clonedCmsContext.setContextualizationBasePath(cmsContext.getContextualizationBasePath());
-        if (cmsContext.getControllerContext() != null) {
-            clonedCmsContext.setControllerContext(cmsContext.getControllerContext());
-        } else {
-            clonedCmsContext.setServerInvocation(cmsContext.getServerInvocation());
-        }
+        clonedCmsContext.setPortalControllerContext(cmsContext.getPortalControllerContext());
         clonedCmsContext.setServletRequest(cmsContext.getServletRequest());
         clonedCmsContext.setSatellite(cmsContext.getSatellite());
 
@@ -193,10 +188,8 @@ public class NuxeoDocumentContextImpl implements NuxeoDocumentContext {
      */
     @Override
     public PortalControllerContext getPortalControllerContext() {
-        // Controller context
-        ControllerContext controllerContext = this.cmsContext.getControllerContext();
-
-        return new PortalControllerContext(controllerContext);
+   
+        return this.cmsContext.getPortalControllerContext();
     }
 
 

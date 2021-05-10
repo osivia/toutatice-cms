@@ -40,6 +40,7 @@ public abstract class ContextualizationHelper {
         return result;
     }
 
+  
     /**
      * Check if current document is contextualized.
      * 
@@ -136,5 +137,9 @@ public abstract class ContextualizationHelper {
         return null;
 
     }
+
+   
+
+   
 
 }

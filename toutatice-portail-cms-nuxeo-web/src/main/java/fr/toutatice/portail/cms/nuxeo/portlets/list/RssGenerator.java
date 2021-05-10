@@ -33,7 +33,7 @@ import org.nuxeo.ecm.automation.client.model.PaginableDocuments;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
-import org.osivia.portal.core.context.ControllerContextAdapter;
+
 import org.w3c.dom.Element;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -48,8 +48,7 @@ public class RssGenerator {
 
 		/* Contexts and formaters initialization */
 
-		HttpServletRequest request = ControllerContextAdapter.getControllerContext(portalCtx).getServerInvocation().getServerContext()
-				.getClientRequest();
+		HttpServletRequest request = portalCtx.getHttpServletRequest();
 
 		SimpleDateFormat nuxeoFormater = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'");
 		nuxeoFormater.setTimeZone(TimeZone.getTimeZone("GMT"));

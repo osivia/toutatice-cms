@@ -10,7 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.core.controller.ControllerContext;
+
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -243,10 +243,8 @@ public class StatisticsCmsServiceDelegation {
         List<StatisticsModule> modules = pluginManager.getStatisticsModules();
 
         if (CollectionUtils.isNotEmpty(modules)) {
-            // Controller context
-            ControllerContext controllerContext = cmsContext.getControllerContext();
             // Portal controller context
-            PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+            PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
             for (StatisticsModule module : modules) {
                 try {
@@ -268,10 +266,9 @@ public class StatisticsCmsServiceDelegation {
      * @throws CMSException
      */
     public void updateStatistics(CMSServiceCtx cmsContext, HttpSession httpSession, List<SpaceStatistics> spaceStatistics) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
         // Customizer
         DefaultCMSCustomizer customizer = (DefaultCMSCustomizer) this.nuxeoService.getCMSCustomizer();

@@ -103,7 +103,7 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
             symlinks = new Symlinks();
 
             // Portal controller context
-            PortalControllerContext portalControllerContext = new PortalControllerContext(this.cmsContext.getControllerContext());
+            PortalControllerContext portalControllerContext =this.cmsContext.getPortalControllerContext();
 
             // Navigation adapters
             for (INavigationAdapterModule navigationAdapter : this.navigationAdapters) {

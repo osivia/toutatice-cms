@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.portlet.PortletContext;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -57,6 +58,7 @@ import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 
 
 /**
@@ -84,6 +86,9 @@ public class BinaryServlet extends HttpServlet {
 
     /** Portlet context. */
     private static PortletContext portletContext;
+    
+    /** Web application path. */
+    public static String contextPath;
 
 
     /** Log. */
@@ -93,6 +98,13 @@ public class BinaryServlet extends HttpServlet {
     public BinaryServlet() {
         super();
         this.log = LogFactory.getLog(this.getClass());
+    }
+
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        contextPath = config.getServletContext().getContextPath();
     }
 
 

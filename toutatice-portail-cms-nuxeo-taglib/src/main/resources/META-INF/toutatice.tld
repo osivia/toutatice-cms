@@ -318,6 +318,14 @@
         </attribute>
     </tag>
     
+ 	<tag>
+        <description>Resource context.</description>
+        <display-name>Get the cms resource context name</display-name>
+        <name>resourceContext</name>
+        <tag-class>fr.toutatice.portail.cms.nuxeo.taglib.toutatice.ResourceContextTag</tag-class>
+        <body-content>empty</body-content>
+    </tag>    
+    
     
     <!-- Transform Nuxeo URL -->
     <tag>

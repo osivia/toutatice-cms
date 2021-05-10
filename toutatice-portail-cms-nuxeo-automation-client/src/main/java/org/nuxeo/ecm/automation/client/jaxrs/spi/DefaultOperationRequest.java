@@ -63,13 +63,14 @@ public class DefaultOperationRequest implements OperationRequest {
         // #1495 - Set Osivia portal in header x-application-name
         headers.put(APP_HEADER, APP_HEADER_VALUE);
         
-        
-        ITransactionService transactionService = Locator.findMBean(ITransactionService.class, ITransactionService.MBEAN_NAME);
+    /*    
+        ITransactionService transactionService = Locator.getService( ITransactionService.MBEAN_NAME, ITransactionService.class);
         if (transactionService.isStarted()) {
             ITransactionResource resource =  (ITransactionResource) transactionService.getResource("NUXEO");
             if( resource != null)
                 headers.put("Tx-conversation-id", (String) resource.getInternalTransaction());
         }
+*/        
         this.ctx = ctx;
     }
 

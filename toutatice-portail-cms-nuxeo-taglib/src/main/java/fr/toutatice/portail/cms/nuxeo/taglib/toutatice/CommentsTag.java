@@ -43,7 +43,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
     /** Internationalization bundle factory. */
     private final IBundleFactory bundleFactory;
     /** Person service. */
-    private final PersonService personService;
+    private  PersonService personService;
 
 
     /**
@@ -58,7 +58,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
 
         // Person service
-        this.personService = DirServiceFactory.getService(PersonService.class);
+        //this.personService = DirServiceFactory.getService(PersonService.class);
     }
 
 
@@ -67,6 +67,9 @@ public class CommentsTag extends ToutaticeSimpleTag {
      */
     @Override
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
+        
+        if(true)
+            return;
         if (document.isCommentable()) {
             // Internationalization bundle
             Bundle bundle = this.bundleFactory.getBundle(nuxeoController.getRequest().getLocale());

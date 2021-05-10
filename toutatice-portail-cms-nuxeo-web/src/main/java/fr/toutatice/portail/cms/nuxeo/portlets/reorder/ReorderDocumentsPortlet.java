@@ -182,8 +182,7 @@ public class ReorderDocumentsPortlet extends CMSPortlet {
             // Redirection URL
             String redirectionURL = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, path, null, null, IPortalUrlFactory.DISPLAYCTX_REFRESH,
                     null, null, null, null);
-            redirectionURL = this.getPortalUrlFactory().adaptPortalUrlToPopup(portalControllerContext, redirectionURL,
-                    IPortalUrlFactory.POPUP_URL_ADAPTER_CLOSE);
+
             request.setAttribute(Constants.PORTLET_ATTR_REDIRECTION_URL, redirectionURL);
         }
     }

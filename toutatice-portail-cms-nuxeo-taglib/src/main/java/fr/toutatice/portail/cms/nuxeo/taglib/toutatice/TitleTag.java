@@ -98,7 +98,7 @@ public class TitleTag extends ToutaticeSimpleTag {
                 target = null;
             }
 
-            Element content = DOM4JUtils.generateLinkElement(link.getUrl(), target, null, "no-ajax-link", title, icon);
+            Element content = DOM4JUtils.generateLinkElement(link.getUrl(), target, null, null, title, icon);
             container.add(content);
 
             if (link.isExternal()) {

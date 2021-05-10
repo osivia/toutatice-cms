@@ -54,7 +54,7 @@ public class DiscussionHelper {
      */
     private static IPortalUrlFactory getUrlFactory() {
         if (portalUrlFactory == null)
-            portalUrlFactory = Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
+            portalUrlFactory = Locator.getService(IPortalUrlFactory.class);
         return portalUrlFactory;
     }
 

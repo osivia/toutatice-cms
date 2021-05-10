@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
@@ -117,11 +117,11 @@ public class BrowserAdapter {
      */
     public List<CMSItem> getCurrentUserWorkspaces(CMSServiceCtx cmsContext) throws CMSException {
         // Server invocation
-        ServerInvocation invocation = cmsContext.getServerInvocation();
+
 
         List<CMSItem> workspaces;
 
-        Object attribute = invocation.getAttribute(Scope.PRINCIPAL_SCOPE, CURRENT_USER_WORKSPACES_PRINCIPAL_ATTRIBUTE);
+        Object attribute = PortalObjectUtils.getPortalSessionAttribute(cmsContext.getPortalControllerContext(), CURRENT_USER_WORKSPACES_PRINCIPAL_ATTRIBUTE);
         if ((attribute != null) && (attribute instanceof List<?>)) {
             List<?> list = (List<?>) attribute;
             workspaces = new ArrayList<CMSItem>(list.size());
@@ -135,8 +135,8 @@ public class BrowserAdapter {
         } else {
             // User name
             String userName = null;
-            if (invocation.getServerContext().getClientRequest().getUserPrincipal() != null) {
-                userName = invocation.getServerContext().getClientRequest().getUserPrincipal().getName();
+            if (cmsContext.getServletRequest().getUserPrincipal() != null) {
+                userName = cmsContext.getServletRequest().getUserPrincipal().getName();
             }
 
             if (userName == null) {
@@ -145,7 +145,8 @@ public class BrowserAdapter {
                 workspaces = this.getUserWorkspaces(cmsContext, userName);
             }
 
-            invocation.setAttribute(Scope.PRINCIPAL_SCOPE, CURRENT_USER_WORKSPACES_PRINCIPAL_ATTRIBUTE, workspaces);
+            PortalObjectUtils.setPortalSessionAttribute(cmsContext.getPortalControllerContext(), CURRENT_USER_WORKSPACES_PRINCIPAL_ATTRIBUTE, workspaces);
+
         }
 
         return workspaces;

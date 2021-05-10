@@ -68,7 +68,7 @@ public abstract class CmsPortletConfiguration extends CMSPortlet {
      */
     @Bean
     public IPortalUrlFactory getPortalUrlFactory() {
-        return Locator.findMBean(IPortalUrlFactory.class, IPortalUrlFactory.MBEAN_NAME);
+        return Locator.getService(IPortalUrlFactory.class);
     }
 
 

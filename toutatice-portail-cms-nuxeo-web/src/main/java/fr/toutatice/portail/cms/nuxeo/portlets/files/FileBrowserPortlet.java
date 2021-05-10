@@ -31,6 +31,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.WindowState;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
@@ -43,7 +44,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.controller.ControllerContext;
+
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
@@ -51,7 +52,6 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.ecm.EcmViews;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -65,6 +65,7 @@ import org.osivia.portal.api.notifications.Notifications;
 import org.osivia.portal.api.notifications.NotificationsType;
 import org.osivia.portal.api.panels.IPanelsService;
 import org.osivia.portal.api.panels.Panel;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.portlet.IPortletStatusService;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.urls.PortalUrlType;
@@ -76,7 +77,6 @@ import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.constants.InternalConstants;
-import org.osivia.portal.core.context.ControllerContextAdapter;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.FileBrowserView;
@@ -525,7 +525,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 CMSPublicationInfos publicationInfos = cmsService.getPublicationInfos(cmsContext, path);
                 boolean editable = publicationInfos.isEditableByUser();
                 request.setAttribute("editable", editable);
-                request.setAttribute("canUpload", MapUtils.isNotEmpty(publicationInfos.getSubTypes()));
+                request.setAttribute("canUpload", !publicationInfos.getSubTypes().isEmpty());
                 request.setAttribute("driveEnabled", publicationInfos.isDriveEnabled());
 
                 // Fetch current Nuxeo document
@@ -760,8 +760,7 @@ public class FileBrowserPortlet extends CMSPortlet {
      * @return sort criteria
      */
     private FileBrowserSortCriteria getSortCriteria(PortalControllerContext portalControllerContext, boolean ordered, FileBrowserView currentView) {
-        // Controller context
-        ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
+
         // Request
         PortletRequest request = portalControllerContext.getRequest();
 
@@ -771,10 +770,9 @@ public class FileBrowserPortlet extends CMSPortlet {
         if (currentView.isOrderable()) {
             String sort = request.getParameter(SORT_CRITERIA_REQUEST_PARAMETER);
             if (StringUtils.isEmpty(sort)) {
-                Object attribute = controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
+                Object attribute = PortalObjectUtils.getPortalSessionAttribute(portalControllerContext,  SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
                 if (attribute != null && attribute instanceof FileBrowserSortCriteria) {
-                    criteria = (FileBrowserSortCriteria) controllerContext.getAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE);
-
+                    criteria = (FileBrowserSortCriteria) attribute;
                     if (!ordered && FileBrowserSortCriteria.SORT_BY_INDEX.equals(criteria.getSort())) {
                         criteria.setSort(FileBrowserSortCriteria.SORT_BY_NAME);
                     }
@@ -786,7 +784,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 criteria.setSort(sort);
                 criteria.setAlternative(alternative);
 
-                controllerContext.setAttribute(Scope.PRINCIPAL_SCOPE, SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
+                PortalObjectUtils.setPortalSessionAttribute(portalControllerContext,  SORT_CRITERIA_PRINCIPAL_ATTRIBUTE, criteria);
             }
         }
 
@@ -898,19 +896,7 @@ public class FileBrowserPortlet extends CMSPortlet {
         // CMS context
         CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
 
-
-        // Callback URL
-        String callbackUrl = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null, currentDocument.getPath(), null, null, "_LIVE_", null, null,
-                null, null);
-        request.setAttribute("callbackUrl", callbackUrl);
-
-        // ECM base URL
-        String ecmBaseUrl = this.getCMSService().getEcmDomain(cmsContext);
-        request.setAttribute("ecmBaseUrl", ecmBaseUrl);
-
-        // Edit URL
-        String editUrl = this.getCMSService().getEcmUrl(cmsContext, EcmViews.editDocument, "_PATH_", new HashMap<String, String>(0));
-        request.setAttribute("editUrl", editUrl);
+    
 
         // Move URL
         Map<String, String> moveProperties = new HashMap<>();

@@ -42,10 +42,11 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
+import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
-import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -251,8 +252,7 @@ public class SearchPortlet extends CMSPortlet {
                 params.put("keywords", "__REPLACE_KEYWORDS__");
 
                 // URL
-                String url = this.portalUrlFactory.getStartPortletInRegionUrl(nuxeoController.getPortalCtx(), pageId,
-                        "toutatice-portail-cms-nuxeo-searchPortletInstance", "virtual", "portalServiceWindow", windowProperties, params);
+                String url = this.portalUrlFactory.getStartPortletUrl(nuxeoController.getPortalCtx(), "toutatice-portail-cms-nuxeo-searchPortletInstance",  windowProperties, params, PortalUrlType.DEFAULT);
                 request.setAttribute("searchUrl", url);
 
                 requestDispatcherPath = PATH_VIEW;

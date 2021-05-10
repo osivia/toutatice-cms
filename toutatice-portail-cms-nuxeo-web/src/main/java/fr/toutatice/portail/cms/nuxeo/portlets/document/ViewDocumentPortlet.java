@@ -44,6 +44,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.theme.ThemeConstants;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -55,14 +56,13 @@ import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
 import org.osivia.portal.api.directory.v2.service.PersonService;
-import org.osivia.portal.api.ecm.EcmCommand;
-import org.osivia.portal.api.ecm.IEcmCommandervice;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.notifications.NotificationsType;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.*;
@@ -75,6 +75,7 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.security.Principal;
 import java.util.*;
+
 
 /**
  * View Nuxeo document portlet.
@@ -134,7 +135,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
     /**
      * Document comment DAO.
      */
-    private final CommentDAO commentDao;
+    private  CommentDAO commentDao;
     /**
      * Document published documents DAO.
      */
@@ -149,6 +150,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
     private INuxeoService nuxeoService;
 
 
+
+    
     /**
      * Constructor.
      */
@@ -156,15 +159,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
         super();
 
         // Internationalization bundle factory
-        IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
-                IInternationalizationService.MBEAN_NAME);
+        IInternationalizationService internationalizationService = Locator.getService(IInternationalizationService.class);
         this.bundleFactory = internationalizationService.getBundleFactory(this.getClass().getClassLoader());
         // Notifications service
-        this.notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+        this.notificationsService = Locator.getService(INotificationsService.class);
 
         // DAO
         this.documentDao = DocumentDAO.getInstance();
-        this.commentDao = CommentDAO.getInstance();
+        
+        // TODO refonte
+        //this.commentDao = CommentDAO.getInstance();
         this.publishedDocumentsDao = RemotePublishedDocumentDAO.getInstance();
     }
 
@@ -180,10 +184,16 @@ public class ViewDocumentPortlet extends CMSPortlet {
         PortletContext portletContext = this.getPortletContext();
 
         try {
+          
             // Nuxeo service
             this.nuxeoService = (INuxeoService) portletContext.getAttribute("NuxeoService");
             if (this.nuxeoService == null) {
+                
+                this.nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+                if (this.nuxeoService == null) {
+                
                 throw new PortletException("Cannot start ViewDocumentPortlet portlet due to service unavailability");
+                }
             }
 
             // CMS service
@@ -197,29 +207,24 @@ public class ViewDocumentPortlet extends CMSPortlet {
             this.nuxeoService.registerCMSCustomizer(customizer);
 
             // Nuxeo tag service
+
             INuxeoTagService tagService = new NuxeoTagService();
             this.registerService(this.nuxeoService.getTagService(), tagService);
 
             // Forms service
-            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
-            this.registerService(this.nuxeoService.getFormsService(), formsService);
-
-            // ECM command services
-            IEcmCommandervice ecmCmdService = Locator.findMBean(IEcmCommandervice.class, IEcmCommandervice.MBEAN_NAME);
-
-            for (EcmCommand command : customizer.getEcmCommands().values()) {
-                ecmCmdService.registerCommand(command.getCommandName(), command);
-            }
+          //TODO refonte
+//            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
+//            this.registerService(this.nuxeoService.getFormsService(), formsService);
 
 
             // v1.0.16
             ThumbnailServlet.setPortletContext(portletContext);
             SitePictureServlet.setPortletContext(portletContext);
-            AvatarServlet.setPortletContext(portletContext);
+// TODO integration Idirectory
+//            AvatarServlet.setPortletContext(portletContext);
             BinaryServlet.setPortletContext(portletContext);
-        } catch (PortletException e) {
-            throw e;
-        } catch (Exception e) {
+        }
+         catch (Exception e) {
             throw new PortletException(e);
         }
     }
@@ -575,6 +580,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
         try {
             // Portal controller context
             PortalControllerContext portalControllerContext = new PortalControllerContext(this.getPortletContext(), request, response);
+            
+            
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(portalControllerContext);
             // CMS context

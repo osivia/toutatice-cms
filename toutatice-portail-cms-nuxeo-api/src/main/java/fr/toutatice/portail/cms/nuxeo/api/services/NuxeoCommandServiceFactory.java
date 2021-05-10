@@ -18,6 +18,8 @@ package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import javax.portlet.PortletContext;
 
+import org.osivia.portal.api.locator.Locator;
+
 
 
 /**
@@ -37,7 +39,7 @@ public class NuxeoCommandServiceFactory {
 	 */
 	public static void startNuxeoCommandService(PortletContext ctx) throws Exception	{
     	
-    	INuxeoService nuxeoService = (INuxeoService)ctx.getAttribute("NuxeoService");
+    	INuxeoService nuxeoService = Locator.getService(INuxeoService.MBEAN_NAME, INuxeoService.class);    	
     	INuxeoCommandService nuxeoCommandService =  nuxeoService.startNuxeoCommandService(ctx);
      	ctx.setAttribute("nuxeoCommandService", nuxeoCommandService);
 	}

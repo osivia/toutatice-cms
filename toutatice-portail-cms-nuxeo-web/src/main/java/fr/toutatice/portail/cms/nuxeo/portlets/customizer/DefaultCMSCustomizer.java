@@ -26,17 +26,19 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.*;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.*;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-import fr.toutatice.portail.cms.nuxeo.service.commands.*;
+
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -48,10 +50,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.*;
-import org.jboss.portal.server.ServerInvocation;
-import org.jboss.portal.server.ServerInvocationContext;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -60,8 +59,7 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.context.PortalControllerContext;
-import org.osivia.portal.api.ecm.EcmCommand;
-import org.osivia.portal.api.ecm.EcmCommonCommands;
+
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -70,6 +68,7 @@ import org.osivia.portal.api.notifications.INotificationsService;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.IPlayerModule;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.taskbar.ITaskbarService;
 import org.osivia.portal.api.taskbar.TaskbarFactory;
@@ -79,7 +78,6 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.constants.InternalConstants;
-import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.customization.ICustomizationService;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
@@ -113,6 +111,7 @@ import java.util.regex.Pattern;
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
+
     /**
      * Default schemas.
      */
@@ -129,11 +128,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Servlet URL for avatars
      */
-    private static final String AVATAR_SERVLET = "/"+NuxeoController.getCMSNuxeoWebContextName()+"/avatar?username=";
-    /**
-     * Binary servlet URL.
+    private static final String AVATAR_SERVLET = "/avatar?username=";
+
+    /** 
+     * Sevlet URL for binary resources
      */
-    private static final String BINARY_SERVLET = "/"+NuxeoController.getCMSNuxeoWebContextName()+"/binary";
+    private static final String BINARY_SERVLET = "/binary";
 
     private static final String TABS_PROPERTY = "osivia.navigationInSpaceTabs";
 
@@ -229,7 +229,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Nuxeo comments service.
      */
-    private final INuxeoCommentsService nuxeoCommentsService;
+    private  INuxeoCommentsService nuxeoCommentsService;
     /**
      * Internationalization service
      */
@@ -306,7 +306,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Customization Service
         this.customizationService = Locator.findMBean(ICustomizationService.class, ICustomizationService.MBEAN_NAME);
         // Nuxeo comments service
-        this.nuxeoCommentsService = new NuxeoCommentsServiceImpl(this.cmsService);
+        //TODO Refonte
+        //this.nuxeoCommentsService = new NuxeoCommentsServiceImpl(this.cmsService);
         // Internationalization service
         this.internationalizationService = Locator.findMBean(IInternationalizationService.class, IInternationalizationService.MBEAN_NAME);
         // Internationalization bundle factory
@@ -985,24 +986,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     protected String addExtraNxQueryFilters(CMSServiceCtx ctx, String nuxeoRequest, String requestFilteringPolicy, String requestFilter) throws Exception {
         String policyFilter = null;
 
-        ServerInvocation invocation = ctx.getServerInvocation();
-
         String portalName = null;
 
 
         // Cas des chargement asynchrones : pas de contexte
-        if (invocation != null) {
+        if (ctx.getPortalControllerContext() != null) {
             portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
         }
 
         // Dans certaines cas, le nom du portail n'est pas connu
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
         if (portalName != null) {
-            PortalObjectContainer portalObjectContainer = (PortalObjectContainer) invocation.getAttribute(Scope.REQUEST_SCOPE, "osivia.portalObjectContainer");
-
+  
             // Pour prévenir des window en Timeout.
-            if (portalObjectContainer != null) {
-                PortalObject po = portalObjectContainer.getObject(PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+
+                PortalObject po = PortalObjectUtils.getObject(ctx.getPortalControllerContext(), PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
                 if (requestFilteringPolicy != null) {
                     policyFilter = requestFilteringPolicy;
@@ -1023,7 +1021,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
                 if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
                     // User domains
-                    List<?> domains = (List<?>) invocation.getAttribute(Scope.SESSION_SCOPE, InternalConstants.USER_DOMAINS_ATTRIBUTE);
+                    List<?> domains = PortalObjectUtils.getDomains(ctx.getPortalControllerContext());
 
                     // CMS paths
                     List<String> paths;
@@ -1076,7 +1074,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 if (extraFilter != null) {
                     requestFilter += " OR (" + extraFilter + ")";
                 }
-            }
+            
         }
 
         // Insertion du filtre avant le order
@@ -1222,7 +1220,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         Link link;
 
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
         // Current page path
         String currentPagePath = null;
@@ -1259,18 +1257,17 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             // Anchor
             String anchor = StringUtils.substringAfter(url, "#");
 
-            // Controller context
-            ControllerContext controllerContext = ControllerContextAdapter.getControllerContext(portalControllerContext);
-            // Server context
-            ServerInvocationContext serverContext = controllerContext.getServerInvocation().getServerContext();
+
+
+            
             // Context path
-            String contextPath = serverContext.getPortalContextPath();
+            String contextPath = PortalObjectUtils.getPortalContextPath(portalControllerContext);
 
             if (StringUtils.startsWith(relativeUrl, StringUtils.removeEnd(contextPath, "/auth") + "/")) {
                 // Portal relative URL
 
                 // Portal URL
-                String portalUrl = this.portalUrlFactory.adaptPortalUrlToNavigation(portalControllerContext, relativeUrl);
+                String portalUrl =  relativeUrl;
                 if (StringUtils.isNotBlank(anchor)) {
                     portalUrl += "#" + anchor;
                 }
@@ -1637,7 +1634,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (url.length() == 0) {
-            url.append(AVATAR_SERVLET);
+            url.append(getResourceContextPath()+AVATAR_SERVLET);
             try {
                 url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
             } catch (UnsupportedEncodingException e) {
@@ -1750,12 +1747,12 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         try {
             String portalName = null;
-            ServerInvocation invocation = cmsCtx.getServerInvocation();
+
             Boolean isAdmin = false;
 
-            if (invocation != null) {
-                portalName = PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
-                isAdmin = (Boolean) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, "osivia.isAdmin");
+            if (cmsCtx.getPortalControllerContext() != null) {
+                portalName = PortalObjectUtils.getPortalName(cmsCtx.getPortalControllerContext());
+                isAdmin = PortalObjectUtils.isAdmin(cmsCtx.getPortalControllerContext());
             }
 
 
@@ -1773,8 +1770,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 path = binary.getPath();
             }
 
-            Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-            delegation.setSubject(subject);
+            // Subject not valued in tomcat8
+//            Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+//            delegation.setSubject(subject);
 
             delegation.setAdmin(isAdmin);
 
@@ -1812,7 +1810,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
             // URL builder
             StringBuilder sb = new StringBuilder();
-            sb.append(BINARY_SERVLET);
+            sb.append(getBinaryServlet());
 
             if (StringUtils.isNotBlank(fileName)) {
                 sb.append("/").append(URLEncoder.encode(fileName, "UTF-8"));
@@ -1930,6 +1928,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return new Link(src, false);
     }
 
+    
+    /**
+     * Binary servlet URL.
+     */
+    public String getBinaryServlet()   {
+        return getResourceContextPath()+BINARY_SERVLET;
+    }
+    
+    
+    /**
+     * Binary servlet URL.
+     */
+    @Override
+    public String getResourceContextPath()   {
+        return BinaryServlet.contextPath;
+    }
+    
 
     /**
      * Gets the user delegation.
@@ -1982,31 +1997,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String, EcmCommand> getEcmCommands() {
-        Map<String, EcmCommand> commands = new ConcurrentHashMap<>();
-
-        commands.put(EcmCommonCommands.lock.name(), new LockCommand(this.notificationsService, this.internationalizationService));
-        commands.put(EcmCommonCommands.unlock.name(), new UnlockCommand(this.notificationsService, this.internationalizationService));
-
-        commands.put(EcmCommonCommands.subscribe.name(), new SubscribeCommand(this.notificationsService, this.internationalizationService));
-        commands.put(EcmCommonCommands.unsubscribe.name(), new UnsubscribeCommand(this.notificationsService, this.internationalizationService));
-
-        commands.put(EcmCommonCommands.addToQuickAccess.name(), new AddToQuickAccessCommand(this.notificationsService, this.internationalizationService));
-        commands.put(EcmCommonCommands.removeFromQuickAccess.name(), new RemoveFromQuickAccessCommand(this.notificationsService, this.internationalizationService));
-
-        commands.put(EcmCommonCommands.synchronizeFolder.name(), new SynchronizeCommand(this.notificationsService, this.internationalizationService));
-        commands.put(EcmCommonCommands.unsynchronizeFolder.name(), new UnsynchronizeCommand(this.notificationsService, this.internationalizationService));
-
-        commands.put(EcmCommonCommands.eraseModifications.name(), new EraseModificationsCommand(this.notificationsService, this.internationalizationService));
-
-        commands.put(EcmCommonCommands.deleteDocument.name(), new DeleteDocumentCommand(this.notificationsService, this.internationalizationService));
-
-        return commands;
-    }
 
 
     /**
@@ -2112,6 +2102,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return the portletContext
      */
+    @Override
     public PortletContext getPortletContext() {
         return portletContext;
     }

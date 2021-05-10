@@ -22,13 +22,13 @@ import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -53,7 +53,7 @@ public class NuxeoTagService implements INuxeoTagService {
     /** WebId service. */
     private final IWebIdService webIdService;
     /** Person service */
-    private final PersonService personService;
+    private PersonService personService;
     /** Internationalization bundle factory. */
     private final IBundleFactory bundleFactory;
 
@@ -67,6 +67,7 @@ public class NuxeoTagService implements INuxeoTagService {
         // WebId service
         this.webIdService = Locator.findMBean(IWebIdService.class, IWebIdService.MBEAN_NAME);
         // Person service
+
         this.personService = DirServiceFactory.getService(PersonService.class);
         // Internationalization bundle factory
         IInternationalizationService internationalizationService = Locator.findMBean(IInternationalizationService.class,
@@ -209,6 +210,15 @@ public class NuxeoTagService implements INuxeoTagService {
     }
 
 
+    
+    /**
+     * {@Override}
+     */
+    @Override
+    public String getResourceContext() {
+        return NuxeoController.getCMSNuxeoWebContextName();
+    }
+    
     /**
      * {@inheritDoc}
      */

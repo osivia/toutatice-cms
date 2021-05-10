@@ -5,9 +5,12 @@
 <%@ page isELIgnored="false" %>
 
 
-<script type="text/javascript" src="/toutatice-portail-cms-nuxeo/components/PDFViewer/preview.js"></script>
 
 <c:set var="previewUrl"><ttc:filePreview document="${document}"/></c:set>
+<c:set var="resourceContext"><ttc:resourceContext/></c:set>
+
+
+
 
 <div class="document-file d-flex flex-column flex-grow-1">
     <c:choose>
@@ -32,7 +35,7 @@
             </div>
 
             <!-- Preview in iframe -->
-            <iframe src="/toutatice-portail-cms-nuxeo/components/PDFViewer/web/viewer.html" webkitallowfullscreen=""
+            <iframe src="${resourceContext}/components/PDFViewer/web/viewer.html" webkitallowfullscreen=""
                     allowfullscreen="" class="pdf-preview-iframe d-none flex-grow-1" data-preview-url="${previewUrl}"
                     onload="downloadPreview();"></iframe>
 

@@ -16,9 +16,10 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.server.ServerInvocation;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.locator.Locator;
@@ -61,7 +62,7 @@ public class UserPagesLoader {
 
     public List<CMSPage> computeUserPreloadedPages(CMSServiceCtx cmsCtx) throws Exception {
         // Server invocation
-        ServerInvocation invocation = cmsCtx.getServerInvocation();
+        HttpServletRequest request = cmsCtx.getServletRequest();
 
         // CMS service
         CMSService cmsService = (CMSService) this.cmsServiceLocator.getCMSService();
@@ -70,15 +71,17 @@ public class UserPagesLoader {
         List<CMSPage> pages = new ArrayList<CMSPage>();
 
 
-        if (invocation.getServerContext().getClientRequest().getUserPrincipal() != null) {
-            String userName = invocation.getServerContext().getClientRequest().getUserPrincipal().getName();
+        if (request.getUserPrincipal() != null) {
+            String userName = request.getUserPrincipal().getName();
 
             // Vérifier l'init de l'espace perso avant de calculer des pages
             cmsService.executeNuxeoCommand(cmsCtx, new GetUserProfileCommand(userName));
 
             // User domains
             List<String> domains;
-            List<?> domainsAttribute = (List<?>) invocation.getAttribute(Scope.SESSION_SCOPE, InternalConstants.USER_DOMAINS_ATTRIBUTE);
+           // TODO refonte : invocation
+            //List<?> domainsAttribute = (List<?>) invocation.getAttribute(Scope.SESSION_SCOPE, InternalConstants.USER_DOMAINS_ATTRIBUTE);
+            List<?> domainsAttribute = new ArrayList<>();
             if (CollectionUtils.isEmpty(domainsAttribute)) {
                 domains = null;
             } else {

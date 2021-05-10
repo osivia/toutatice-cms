@@ -55,10 +55,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
      * Customization modules repository attribute name.
      */
     public static final int DEFAULT_DEPLOYMENT_ORDER = 100;
-    /**
-     * Customization modules repository attribute name.
-     */
-    private static final String ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY = "CustomizationModulesRepository";
+ 
     /**
      * Class loader.
      */
@@ -85,7 +82,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         this.classLoader = this.getClass().getClassLoader();
 
         // Taskbar service
-        this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        this.taskbarService = Locator.getService(ITaskbarService.class);
     }
 
 
@@ -114,7 +111,7 @@ public abstract class AbstractPluginPortlet extends PortalGenericPortlet impleme
         this.metadatas.setOrder(this.getOrder());
 
         // Repository
-        this.repository = (ICustomizationModulesRepository) this.getPortletContext().getAttribute(ATTRIBUTE_CUSTOMIZATION_MODULES_REPOSITORY);
+        this.repository = (ICustomizationModulesRepository) Locator.getService(ICustomizationModulesRepository.class);
         this.repository.register(this.metadatas);
     }
 

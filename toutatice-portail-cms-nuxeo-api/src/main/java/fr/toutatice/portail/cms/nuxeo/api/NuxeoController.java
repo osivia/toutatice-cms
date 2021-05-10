@@ -16,13 +16,12 @@ package fr.toutatice.portail.cms.nuxeo.api;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.services.*;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.portal.core.controller.ControllerContext;
 import org.jboss.portal.core.model.portal.Page;
-import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.jboss.portal.core.model.portal.Window;
 import org.nuxeo.ecm.automation.client.Session;
@@ -30,7 +29,12 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cms.CMSContext;
+import org.osivia.portal.api.cms.CMSController;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.UniversalID;
+import org.osivia.portal.api.cms.service.CMSService;
+import org.osivia.portal.api.cms.service.CMSSession;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.directory.IDirectoryService;
@@ -44,10 +48,11 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
 import org.osivia.portal.core.cms.*;
+import org.osivia.portal.core.cms.spi.NuxeoRepository;
+import org.osivia.portal.core.cms.spi.NuxeoRequest;
+import org.osivia.portal.core.cms.spi.NuxeoResult;
 import org.osivia.portal.core.constants.InternalConstants;
-import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.formatters.IFormatter;
-import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.web.IWebIdService;
@@ -67,6 +72,7 @@ import java.util.Map.Entry;
  */
 public class NuxeoController {
 
+    public static final String NUXEO_REPOSITORY_NAME = "nx";
     /**
      * Slash separator.
      */
@@ -127,14 +133,17 @@ public class NuxeoController {
      * The nuxeo connection.
      */
     NuxeoConnectionProperties nuxeoConnection;
-    /**
-     * The profil manager.
-     */
-    IProfilManager profilManager;
+    
     /**
      * The formatter.
      */
     IFormatter formatter;
+    
+    /**
+     * The profil manager.
+     */
+    IProfilManager profilManager;
+
     /**
      * The scope.
      */
@@ -233,8 +242,7 @@ public class NuxeoController {
      */
     INuxeoCommandService nuxeoCommandService;
     
-    /** The default cms nuxeo context name. */
-    private static final String  CMS_NUXEO_DEFAULT_CONTEXT_NAME = "toutatice-portail-cms-nuxeo";
+
     
     /** The cms context name. */
     private static String cmsContextName = null;
@@ -315,7 +323,21 @@ public class NuxeoController {
             this.navigationScope = window.getPageProperty("osivia.cms.navigationScope");
 
 
-            this.spacePath = window.getPageProperty("osivia.cms.basePath");
+            
+            String spaceId = window.getPageProperty("osivia.spaceId");
+            if( spaceId != null)
+            try {
+                UniversalID id = new UniversalID(spaceId);
+                if( id.getRepositoryName().equals(NUXEO_REPOSITORY_NAME)){
+                    NuxeoRepository repository =  (NuxeoRepository) (Locator.getService(CMSService.class).getUserRepository(getCMSContext(), id.getRepositoryName()));
+                    this.basePath = repository.getPath(id.getInternalID());
+                    this.spacePath = repository.getPath(id.getInternalID());
+                }
+           } catch (Exception e) {
+               throw this.wrapNuxeoException(e);
+           }  
+            
+
             CMSItem publishSpaceConfig = null;
             if (this.spacePath != null) {
                 publishSpaceConfig = getCMSService().getSpaceConfig(this.getCMSCtx(), this.spacePath);
@@ -362,15 +384,6 @@ public class NuxeoController {
 
             /* computes root path */
 
-            Window jbpWindow = (Window) request.getAttribute("osivia.window");
-            Page page = (Page) jbpWindow.getParent();
-            Portal portal = page.getPortal();
-            if (InternalConstants.PORTAL_TYPE_SPACE.equals(portal.getDeclaredProperty("osivia.portal.portalType"))) {
-                this.menuRootPath = portal.getDefaultPage().getDeclaredProperty("osivia.cms.basePath");
-            }
-
-
-            this.basePath = window.getPageProperty("osivia.cms.basePath");
 
             if (this.basePath != null) {
                 String[] parts = this.basePath.split("/");
@@ -379,14 +392,31 @@ public class NuxeoController {
                 }
             }
 
+            String navigationId = window.getPageProperty("osivia.navigationId");
+            if( navigationId != null)
+            try {
+                UniversalID id = new UniversalID(navigationId);
+                if( id.getRepositoryName().equals(NUXEO_REPOSITORY_NAME)){
+                    NuxeoRepository repository =  (NuxeoRepository) (Locator.getService(CMSService.class).getUserRepository(getCMSContext(), id.getRepositoryName()));
+                    this.navigationPath = repository.getPath(id.getInternalID());
+                    this.itemNavigationPath = this.navigationPath;
+                }
+           } catch (Exception e) {
+               throw this.wrapNuxeoException(e);
+           }  
 
-            this.navigationPath = request.getParameter("osivia.cms.path");
 
-            if ((this.spacePath != null) && (request.getParameter("osivia.cms.itemRelPath") != null)) {
-                this.itemNavigationPath = this.spacePath + request.getParameter("osivia.cms.itemRelPath");
-            }
-
-            this.contentPath = request.getParameter("osivia.cms.contentPath");
+            String contentId = window.getPageProperty("osivia.contentId");
+            if( contentId != null)
+            try {
+                UniversalID id = new UniversalID(contentId);
+                if( id.getRepositoryName().equals(NUXEO_REPOSITORY_NAME)){
+                    NuxeoRepository repository =  (NuxeoRepository) (Locator.getService(CMSService.class).getUserRepository(getCMSContext(), id.getRepositoryName()));
+                    this.contentPath = repository.getPath(id.getInternalID());
+                }
+           } catch (Exception e) {
+               throw this.wrapNuxeoException(e);
+           }  
 
 
             if (request instanceof ResourceRequest) {
@@ -462,17 +492,6 @@ public class NuxeoController {
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
     }
 
-    /**
-     * Computes the parent path for a specifed path
-     *
-     * @param path the path
-     * @return the parent path
-     */
-    public static String getParentPath(String path) {
-        // One level up
-        CMSObjectPath parentPath = CMSObjectPath.parse(path).getParent();
-        return parentPath.toString();
-    }
 
     /**
      * Computes live path for current document
@@ -541,6 +560,20 @@ public class NuxeoController {
         path.append(SLASH);
         path.append(webId);
         return path.toString();
+    }
+    
+    /**
+     * Gets the universal ID from path.
+     *
+     * @param path the path
+     * @return the universal ID from path
+     */
+    public UniversalID getUniversalIDFromPath(String path) {
+        try {
+            return getCMSService().getUniversalIDFromPath(getCMSCtx(), path);
+        } catch (Exception e) {
+            throw this.wrapNuxeoException(e);
+        }
     }
 
     /**
@@ -966,7 +999,11 @@ public class NuxeoController {
     public PortalControllerContext getPortalCtx() {
 
         if (this.portalCtx == null) {
-            this.portalCtx = new PortalControllerContext(this.getPortletCtx(), this.request, this.response);
+            if( this.request != null)
+                this.portalCtx = new PortalControllerContext(this.getPortletCtx(), this.request, this.response);
+            else if( getServletRequest() != null) {
+                this.portalCtx = new PortalControllerContext(getServletRequest());
+            }
         }
 
         return this.portalCtx;
@@ -1047,7 +1084,7 @@ public class NuxeoController {
                 if (this.getNavigationPath() != null) {
                     // Navigation context
                     CMSServiceCtx cmsReadNavContext = new CMSServiceCtx();
-                    cmsReadNavContext.setControllerContext(ControllerContextAdapter.getControllerContext(this.getPortalCtx()));
+                    cmsReadNavContext.setPortalControllerContext(this.getPortalCtx());
                     cmsReadNavContext.setScope(this.getNavigationScope());
 
                     // TODO : factoriser dans NuxeoController
@@ -1079,7 +1116,7 @@ public class NuxeoController {
      */
     public IPortalUrlFactory getPortalUrlFactory() {
         if (this.urlFactory == null) {
-            this.urlFactory = (IPortalUrlFactory) this.portletCtx.getAttribute("UrlService");
+            this.urlFactory = (IPortalUrlFactory) Locator.getService(IPortalUrlFactory.class);
         }
 
         return this.urlFactory;
@@ -1117,6 +1154,7 @@ public class NuxeoController {
         return this.profilManager;
     }
 
+    
     /**
      * Gets the formatter.
      *
@@ -1147,12 +1185,14 @@ public class NuxeoController {
         return this.nuxeoCMSService;
     }
 
+   
     /**
      * Gets the page id.
      *
      * @return the page id
      */
     public String getPageId() {
+        /*
         if (this.pageId == null) {
             Window window = (Window) this.request.getAttribute("osivia.window");
             Page page = (Page) window.getParent();
@@ -1164,8 +1204,11 @@ public class NuxeoController {
 
         }
         return this.pageId;
+        */
+        //TODO FIXME
+        return null;
     }
-
+    
     /**
      * Gets the computed path.
      *
@@ -1179,6 +1222,16 @@ public class NuxeoController {
             computedPath = "";
         } else {
             computedPath = portletPath;
+            
+            if( computedPath.contains(":")) {
+                try {
+                    UniversalID id = new UniversalID(portletPath);
+                    NuxeoRepository repository =  (NuxeoRepository) (Locator.getService(CMSService.class).getUserRepository(getCMSContext(), id.getRepositoryName()));
+                    computedPath = repository.getPath(id.getInternalID());
+               } catch (Exception e) {
+                   throw this.wrapNuxeoException(e);
+               }  
+            }
 
             if (computedPath.contains("${basePath}")) {
                 String path = this.getBasePath();
@@ -1379,6 +1432,7 @@ public class NuxeoController {
         }
 
     }
+    
 
     /**
      * Format request filtering policy list.
@@ -1399,7 +1453,7 @@ public class NuxeoController {
         }
 
     }
-
+    
     /**
      * Format display live version list.
      *
@@ -1418,6 +1472,7 @@ public class NuxeoController {
         }
 
     }
+   
 
     /**
      * Creates the resource url.
@@ -1713,13 +1768,20 @@ public class NuxeoController {
      * @throws Exception the exception
      */
     public Object executeNuxeoCommand(final INuxeoCommand command) {
+
         // Nuxeo command context
         NuxeoCommandContext commandContext;
+        PortalControllerContext portalCtx;
         if (this.request != null) {
-            commandContext = new NuxeoCommandContext(this.portletCtx, this.request);
+            portalCtx = new PortalControllerContext(this.portletCtx, this.request, this.response);
         } else if (this.servletRequest != null) {
-            commandContext = new NuxeoCommandContext(this.portletCtx, this.servletRequest);
-        } else {
+            portalCtx = new PortalControllerContext(servletRequest);
+        } else
+            portalCtx = null;
+        
+        if( portalCtx != null)
+            commandContext = new NuxeoCommandContext(this.portletCtx, portalCtx);
+        else {
             commandContext = new NuxeoCommandContext(this.portletCtx);
         }
 
@@ -1732,23 +1794,27 @@ public class NuxeoController {
         commandContext.setSatellite(this.satellite);
 
 
+        
         try {
-            return this.getNuxeoCommandService().executeCommand(commandContext, new INuxeoServiceCommand() {
-
-                @Override
-                public String getId() {
-                    return command.getId();
-                }
-
-                @Override
-                public Object execute(Session nuxeoSession) throws Exception {
-                    return command.execute(nuxeoSession);
-                }
-            });
+             CMSSession cmsSession =  Locator.getService(CMSService.class).getCMSSession(getCMSContext());
+             return ((NuxeoResult) cmsSession.executeRequest(new NuxeoRequest(NUXEO_REPOSITORY_NAME,commandContext, command))).getResult();
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
-        }
+        }     
+        
     }
+    
+    public CMSContext getCMSContext() {
+
+        PortalControllerContext ctx = new PortalControllerContext(portletCtx, request, response);
+        CMSController ctrl = new CMSController(ctx);
+        
+        return ctrl.getCMSContext();
+    }
+    
+
+    
+    
 
     /**
      * Start nuxeo service.
@@ -1849,6 +1915,7 @@ public class NuxeoController {
 
         return null;
     }
+   
 
     /**
      * Generates a link to the target document.
@@ -1867,10 +1934,9 @@ public class NuxeoController {
             INuxeoService nuxeoService = this.getNuxeoCMSService();
 
             CMSServiceCtx handlerCtx = new CMSServiceCtx();
-            handlerCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
-                    this.getResponse())));
-            handlerCtx.setPortletCtx(this.getPortletCtx());
-            handlerCtx.setRequest(this.getRequest());
+            handlerCtx.setPortalControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(),
+                    this.getResponse()));
+
             if (this.response instanceof MimeResponse) {
                 handlerCtx.setResponse((MimeResponse) this.response);
             }
@@ -1889,9 +1955,20 @@ public class NuxeoController {
                 return portletLink;
             }
 
+            
+            
+            
+            String url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), new UniversalID(NUXEO_REPOSITORY_NAME,doc.getProperties().getString("ttc:webid")));
+
+
+            if (url != null) {
+
+                Link link = new Link(url, false);
+                return link;
+            }
 
             // Sinon on passe par le gestionnaire de cms pour recontextualiser
-
+            /*
             Window window = (Window) this.getPortalCtx().getRequest().getAttribute("osivia.window");
             Page page = window.getPage();
 
@@ -1931,11 +2008,14 @@ public class NuxeoController {
             }
 
             return null;
+            */
 
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);
         }
 
+        
+        return null;
     }
 
     /**
@@ -2359,26 +2439,9 @@ public class NuxeoController {
         try {
 
             this.cmsCtx = new CMSServiceCtx();
+            
+            this.cmsCtx.setPortalControllerContext(getPortalCtx());
 
-            if (this.getRequest() != null) {
-                this.cmsCtx.setRequest(this.getRequest());
-                this.cmsCtx.setControllerContext(ControllerContextAdapter.getControllerContext(new PortalControllerContext(this.getPortletCtx(), this.getRequest(), this.getResponse())));
-            } else if (this.getServletRequest() != null) {
-                ControllerContext controllerContext = (ControllerContext) this.getServletRequest().getAttribute(InternalConstants.ATTR_CONTROLLER_CONTEXT);
-                if (controllerContext != null) {
-                    this.cmsCtx.setControllerContext(controllerContext);
-                }
-            }
-
-            if (this.getServletRequest() != null) {
-                this.cmsCtx.setServletRequest(this.servletRequest);
-            } else {
-                if (this.getRequest() != null) {
-                    this.cmsCtx.setServletRequest((HttpServletRequest) this.getRequest().getAttribute(Constants.PORTLET_ATTR_HTTP_REQUEST));
-                }
-            }
-
-            this.cmsCtx.setPortletCtx(this.getPortletCtx());
 
             if (this.response instanceof MimeResponse) {
                 this.cmsCtx.setResponse((MimeResponse) this.response);
@@ -2596,11 +2659,8 @@ public class NuxeoController {
      */
     public static String getCMSNuxeoWebContextName() {
         if (cmsContextName == null) {
-            String customName = System.getProperty("cms.nuxeo.context");
-            if (customName != null)
-                cmsContextName = customName;
-            else
-                cmsContextName = CMS_NUXEO_DEFAULT_CONTEXT_NAME;
+            INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
+            return nuxeoService.getCMSCustomizer().getResourceContextPath();
         }
         return cmsContextName;
     }

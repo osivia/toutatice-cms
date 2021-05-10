@@ -13,6 +13,7 @@
         
         <header-content>
             <link rel="stylesheet" href="/css/document.min.css" />
+			<script type="text/javascript" src="/components/PDFViewer/preview.js"></script>            
         </header-content>
         
         <portlet-info>
@@ -98,10 +99,10 @@
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-name>
 
-        <ajax>
+<!--         <ajax>
             <partial-refresh>false</partial-refresh>
         </ajax>
-
+-->
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>

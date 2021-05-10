@@ -20,7 +20,7 @@ import javax.portlet.PortletContext;
 
 import org.nuxeo.ecm.automation.client.Session;
 import org.osivia.portal.core.cms.Satellite;
-import org.osivia.portal.core.cms.spi.ICMSIntegration;
+import org.osivia.portal.spi.cms.ICMSIntegration;
 
 import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.tag.INuxeoTagService;

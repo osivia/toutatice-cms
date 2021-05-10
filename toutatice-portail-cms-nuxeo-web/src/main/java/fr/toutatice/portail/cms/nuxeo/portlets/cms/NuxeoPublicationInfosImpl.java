@@ -7,6 +7,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.SubscriptionStatus;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -489,7 +490,7 @@ public class NuxeoPublicationInfosImpl implements NuxeoPublicationInfos {
             // Remote published indicator
             this.remotePublished = cmsPublicationInfos.isRemotePublished();
             // Subtypes
-            this.subtypes = cmsPublicationInfos.getSubTypes().keySet();
+            this.subtypes = new LinkedHashSet<>(cmsPublicationInfos.getSubTypes());
             // Space identifier
             this.spaceId = cmsPublicationInfos.getSpaceID();
             // Parent space identifier

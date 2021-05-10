@@ -32,7 +32,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
     </portlet>
 
-
+<!-- 
     <portlet>
         <description>Portlet Nuxeo Fragment PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
@@ -62,7 +62,7 @@
                      
     </portlet>
 
-
+-->
     <portlet>
         <description>Portlet Nuxeo list</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>
@@ -90,7 +90,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         <supported-public-render-parameter>lastSelectors</supported-public-render-parameter>           
     </portlet>
-    
+ <!--    
     <portlet>
         <description>Portlet Nuxeo drafts list</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewDraftsListPortlet</portlet-name>
@@ -165,7 +165,7 @@
         </portlet-info>
     </portlet>
 
-
+-->
     <portlet>
         <description>Portlet Nuxeo menu publication PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-publishMenuPortlet</portlet-name>
@@ -193,7 +193,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
         <supported-public-render-parameter>dnd-update</supported-public-render-parameter>
     </portlet>
-
+<!-- 
 
     <portlet>
         <description>Portlet Nuxeo Files</description>
@@ -341,7 +341,7 @@
     </portlet>
     
     
-    <!-- Vocabulary Select2 -->
+
     <portlet>
         <portlet-name>toutatice-portail-cms-nuxeo-vocabulary-select2</portlet-name>
         <portlet-class>fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabularySelect2Portlet</portlet-class>
@@ -364,7 +364,7 @@
     </portlet>
     
     
-    <!-- Move document -->
+
     <portlet>
         <description>Move document portlet</description>
         <portlet-name>toutatice-portail-cms-nuxeo-move</portlet-name>
@@ -385,7 +385,7 @@
     </portlet>
     
     
-    <!-- Rename document -->
+
     <portlet>
         <description>Rename document portlet</description>
         <portlet-name>toutatice-portail-cms-nuxeo-rename</portlet-name>
@@ -406,7 +406,7 @@
     </portlet>
     
     
-    <!-- Reorder documents -->
+
     <portlet>
         <description>Reorder documents portlet</description>
         <portlet-name>toutatice-portail-cms-nuxeo-reorder</portlet-name>
@@ -427,7 +427,7 @@
     </portlet>
     
     
-    <!-- Internationalization customizer -->
+
     <portlet>
         <portlet-name>cms-nuxeo-web-internationalization-customizer</portlet-name>
         <portlet-class>fr.toutatice.portail.cms.nuxeo.customizer.internationalization.InternationalizationCustomizer</portlet-class>
@@ -440,7 +440,7 @@
             <title>Internationalization customizer</title>
         </portlet-info>
     </portlet>
-
+-->
 
     <public-render-parameter>
         <identifier>selectors</identifier>

@@ -93,4 +93,11 @@ public interface INuxeoTagService {
      */
     Element getMimeTypeIcon(NuxeoController nuxeoController, String mimeType, String style) throws IOException;
 
+    /**
+     * Gets the cms resource context .
+     *
+     * @return the resource context 
+     */
+    String getResourceContext();
+
 }

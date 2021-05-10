@@ -28,7 +28,6 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
-import org.osivia.portal.api.ecm.EcmCommand;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.urls.Link;
@@ -324,12 +323,7 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
 
-    /**
-     * Define ECM commands.
-     *
-     * @return the ecm commands
-     */
-    Map<String, EcmCommand> getEcmCommands();
+
 
 
     /**
@@ -381,5 +375,21 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return document modules
      */
     List<IPortletModule> getDocumentModules(String type);
+    
+    
+    /**
+     * Gets the resource context path (cms-nuxeo-web)
+     *
+     * @return the resource context path
+     */
+    public String getResourceContextPath() ;
+
+    /**
+     * Gets the CMS portlet context.
+     *
+     * @return the portlet context
+     */
+    PortletContext getPortletContext();
+    
 
 }

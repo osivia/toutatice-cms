@@ -24,7 +24,6 @@ import fr.toutatice.portail.cms.nuxeo.portlets.binaries.FetchByShareLinkCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
@@ -48,12 +47,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.portal.common.invocation.Scope;
-import org.jboss.portal.core.aspects.server.UserInterceptor;
-import org.jboss.portal.core.controller.ControllerContext;
+
 import org.jboss.portal.core.model.portal.Portal;
 import org.jboss.portal.core.model.portal.PortalObjectPath;
-import org.jboss.portal.identity.User;
-import org.jboss.portal.server.ServerInvocation;
+
 import org.jboss.portal.theme.ThemeConstants;
 import org.jboss.portal.theme.impl.render.dynamic.DynaRenderOptions;
 import org.nuxeo.ecm.automation.client.Session;
@@ -66,13 +63,13 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.*;
+import org.osivia.portal.api.cms.service.CMSSession;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
 import org.osivia.portal.api.directory.v2.service.GroupService;
 import org.osivia.portal.api.directory.v2.service.PersonService;
-import org.osivia.portal.api.ecm.EcmCommand;
-import org.osivia.portal.api.ecm.EcmViews;
+
 import org.osivia.portal.api.editor.EditorModule;
 import org.osivia.portal.api.editor.EditorService;
 import org.osivia.portal.api.locator.Locator;
@@ -80,6 +77,7 @@ import org.osivia.portal.api.menubar.MenubarModule;
 import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.statistics.SpaceStatistics;
 import org.osivia.portal.api.taskbar.*;
 import org.osivia.portal.api.tasks.TaskModule;
@@ -89,10 +87,12 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.core.cms.*;
+import org.osivia.portal.core.cms.spi.NuxeoRepository;
+import org.osivia.portal.core.cms.spi.NuxeoRequest;
+import org.osivia.portal.core.cms.spi.NuxeoResult;
 import org.osivia.portal.core.constants.InternalConstants;
-import org.osivia.portal.core.context.ControllerContextAdapter;
+
 import org.osivia.portal.core.page.PageProperties;
-import org.osivia.portal.core.portalobjects.PortalObjectUtils;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
@@ -120,7 +120,9 @@ public class CMSService implements ICMSService {
      */
     private static final String EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX = "osivia.cms.extendedDocumentInfos.";
 
-
+    /** The Nuxeo Repository name */
+    public static final String NUXEO_REPOSITORY_NAME = "nx";
+    
     /**
      * Logger.
      */
@@ -143,15 +145,15 @@ public class CMSService implements ICMSService {
     /**
      * Forms service.
      */
-    private final IFormsService formsService;
+    private  IFormsService formsService;
     /**
      * Person service.
      */
-    private final PersonService personService;
+    private  PersonService personService;
     /**
      * Directory group service.
      */
-    private final GroupService groupService;
+    private  GroupService groupService;
     /**
      * Documents discovery service.
      */
@@ -181,9 +183,11 @@ public class CMSService implements ICMSService {
         this.portletCtx = portletCtx;
 
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
-        this.formsService = NuxeoServiceFactory.getFormsService();
-        this.personService = DirServiceFactory.getService(PersonService.class);
-        this.groupService = DirServiceFactory.getService(GroupService.class);
+
+//TODO refonte
+//        this.formsService = NuxeoServiceFactory.getFormsService();
+//        this.personService = DirServiceFactory.getService(PersonService.class);
+//        this.groupService = DirServiceFactory.getService(GroupService.class);
         this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
     }
@@ -227,7 +231,7 @@ public class CMSService implements ICMSService {
                 PageParametersEncoder.decodeProperties(doc.getString("ttc:selectors"));
                 properties.put("selectors", doc.getString("ttc:selectors"));
             } catch (Throwable t) {
-                final Locale locale = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getLocale();
+                final Locale locale = cmsCtx.getServletRequest().getLocale();
                 final String warnMsgselectors = getCustomizer().getBundleFactory().getBundle(locale).getString("WARN_MSG_TTC_SELECTORS");
                 LOG.warn(warnMsgselectors, t);
             }
@@ -300,7 +304,7 @@ public class CMSService implements ICMSService {
 
         List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
         if (CollectionUtils.isNotEmpty(navigationAdapters)) {
-            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
+            PortalControllerContext portalControllerContext = cmsCtx.getPortalControllerContext();
 
             for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
                 navigationAdapter.adaptNavigationItem(portalControllerContext, cmsItem);
@@ -352,15 +356,18 @@ public class CMSService implements ICMSService {
     }
 
 
+    
+    
+    
+    
+    
     public Object executeNuxeoCommand(CMSServiceCtx cmsCtx, final INuxeoCommand command) throws Exception {
 
         NuxeoCommandContext commandCtx = null;
 
-        if (cmsCtx.getServerInvocation() != null) {
-            commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServerInvocation());
-        } else if (cmsCtx.getServletRequest() != null) {
-            commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getServletRequest());
-        }
+        if (cmsCtx.getPortalControllerContext() != null) {
+            commandCtx = new NuxeoCommandContext(this.portletCtx, cmsCtx.getPortalControllerContext());
+        } 
 
         if (commandCtx == null) {
             commandCtx = new NuxeoCommandContext(this.portletCtx);
@@ -421,9 +428,9 @@ public class CMSService implements ICMSService {
 
         commandCtx.setSatellite(cmsCtx.getSatellite());
 
-
+     
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
-
+            
             @Override
             public String getId() {
                 return command.getId();
@@ -434,7 +441,16 @@ public class CMSService implements ICMSService {
                 return command.execute(nuxeoSession);
             }
         });
+        
+        
+
+        
+   
+        
+        
+   
     }
+   
 
 
     /**
@@ -487,23 +503,29 @@ public class CMSService implements ICMSService {
                     haveToGetLive = true;
                 }
 
-                cmsContext.setScope("superuser_context");
-
-                // Nuxeo command
-                INuxeoCommand nuxeoCommand;
-                if (haveToGetLive) {
-                    nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
+                
+                Document document;
+                
+                if (haveToGetLive && Satellite.MAIN.equals(satellite)) {
+                    document = fetchContentByConnect(cmsContext, path);
                 } else {
-                    nuxeoCommand = new DocumentFetchPublishedCommand(path);
-                }
 
-                // Document
-                Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+                    cmsContext.setScope("superuser_context");
+
+
+                    // Nuxeo command
+                    INuxeoCommand nuxeoCommand;
+                    if (haveToGetLive) {
+                        nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
+                    } else {
+                        nuxeoCommand = new DocumentFetchPublishedCommand(path);
+                    }
+
+                    // Document
+                    document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+                }
                 // CMS item
                 cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
-                
- 
-           
                 
                 
             } finally {
@@ -515,6 +537,34 @@ public class CMSService implements ICMSService {
 
         return cmsItem;
     }
+    
+    
+    /**
+     * Fetch document by osivia connect connect.
+     *
+     * @param cmsContext the cms context
+     * @param path the path
+     * @return the document
+     * @throws Exception the exception
+     */
+    private Document fetchContentByConnect(CMSServiceCtx cmsContext, String path)  throws Exception  {
+        
+        CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());
+        
+        // Get Id
+        NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), "nx"));
+         String internalId = nuxeoRepository.getInternalId(path);
+         
+         CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+         
+         if( cmsContext.isForceReload())
+             session.updateDocument(new UniversalID("nx", internalId));
+         
+         org.osivia.portal.api.cms.model.Document document = session.getDocument(new UniversalID("nx", internalId));
+        return (Document) document.getNativeItem();
+     }
+    
+    
 
 
     /**
@@ -543,7 +593,7 @@ public class CMSService implements ICMSService {
             if (BooleanUtils.toBoolean(System.getProperty("osivia.services.userWorkSpace.adaptDocumentFolder"))) {
 
                 // Not supported yet for web-service
-                if (cmsContext.getControllerContext() != null) {
+                if (cmsContext.getPortalControllerContext() != null) {
                     
                     if (content != null && content.getNativeItem() instanceof Document) {
                         Document doc = (Document) content.getNativeItem();
@@ -559,7 +609,7 @@ public class CMSService implements ICMSService {
                                     // Navigation adapters
                                     List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
 
-                                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+                                    PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
                                     // Navigation adapters
                                     for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
@@ -952,121 +1002,7 @@ public class CMSService implements ICMSService {
     }
 
 
-    @SuppressWarnings("unchecked")
-    public Map<String, NavigationItem> loadPartialNavigationTree(CMSServiceCtx cmsCtx, CMSItem publishSpaceConfig, String path, boolean fetchSubItems)
-            throws CMSException {
-
-        String savedScope = cmsCtx.getScope();
-
-        try {
-
-
-            Map<String, NavigationItem> navItems = null;
-
-            List<String> idsToFetch = new ArrayList<String>();
-            boolean fetchRoot = false;
-
-            /* On récupère le dernier arbre de publication partiel */
-
-
-            String cacheId = "partial_navigation_tree/" + publishSpaceConfig.getNavigationPath();
-            Object request = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
-            boolean refreshing = PageProperties.getProperties().isRefreshingPage();
-            PartialNavigationInvoker partialNavInvoker = null;
-            if (refreshing) {
-                partialNavInvoker = (PartialNavigationInvoker) ((HttpServletRequest) request).getAttribute("partialNavInvoker");
-            }
-            CacheInfo cacheInfos = new CacheInfo(cacheId, CacheInfo.CACHE_SCOPE_PORTLET_SESSION, null, request, this.portletCtx, false);
-            // délai d'une session
-            cacheInfos.setExpirationDelay(200000);
-
-
-            navItems = (Map<String, NavigationItem>) this.getCacheService().getCache(cacheInfos);
-
-
-            if (navItems == null) {
-
-                navItems = new HashMap<String, NavigationItem>();
-                fetchRoot = true;
-            }
-
-            /*
-             * Boucle sur l'arbo pour recuperer les ids à fetcher
-             * (doc absents de l'arbre)
-             */
-
-            String pathToCheck = path;
-
-            CMSServiceCtx superUserCtx = new CMSServiceCtx();
-            superUserCtx.setControllerContext(cmsCtx.getControllerContext());
-            cmsCtx.setScope("superuser_context");
-
-
-            boolean isParent = false;
-
-            while (pathToCheck.contains(publishSpaceConfig.getNavigationPath())) {
-                NavigationItem navItem = navItems.get(pathToCheck);
-
-
-                if ((navItem != null) && ((fetchSubItems || isParent) && navItem.isUnfetchedChildren())) {
-                    Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
-
-                    if (!idsToFetch.contains(doc.getId())) {
-                        idsToFetch.add(doc.getId());
-                    }
-                }
-
-
-                if (navItem == null) {
-                    Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
-                    if (!idsToFetch.contains(doc.getId())) {
-                        idsToFetch.add(doc.getId());
-                    }
-
-                }
-
-                CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-                pathToCheck = parentPath.toString();
-
-                isParent = true;
-
-            }
-
-
-            if ((idsToFetch.size() > 0) || fetchRoot) {
-                cmsCtx.setScope("__nocache");
-
-                /* appel de la commande */
-
-                navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, (new PartialNavigationCommand(publishSpaceConfig, navItems,
-                        idsToFetch, fetchRoot, path)));
-
-                /* Stockage de l'arbre partiel */
-
-                cacheInfos.setForceReload(true);
-                cacheInfos.setForceNOTReload(false);
-                partialNavInvoker = new PartialNavigationInvoker(navItems);
-                if (refreshing) {
-                    ((HttpServletRequest) request).setAttribute("partialNavInvoker", partialNavInvoker);
-                }
-                cacheInfos.setInvoker(partialNavInvoker);
-                this.getCacheService().getCache(cacheInfos);
-
-            }
-
-            return navItems;
-        } catch (Exception e) {
-            if (!(e instanceof CMSException)) {
-                throw new CMSException(e);
-            } else {
-                throw (CMSException) e;
-            }
-        } finally {
-            cmsCtx.setScope(savedScope);
-        }
-    }
-
-
+    
     /**
      * {@inheritDoc}
      */
@@ -1097,9 +1033,7 @@ public class CMSService implements ICMSService {
             }
 
 
-            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
-                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
-            } else {
+
                 // Plugin manager
                 CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
                 // Navigation adapters
@@ -1109,7 +1043,7 @@ public class CMSService implements ICMSService {
                 INuxeoCommand command = new DocumentPublishSpaceNavigationCommand(cmsCtx, publishSpaceConfig, forceLiveVersion, navigationAdapters);
 
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, command);
-            }
+            
 
             if (navItems != null) {
                 NavigationItem navItem = navItems.get(livePath);
@@ -1174,9 +1108,7 @@ public class CMSService implements ICMSService {
                 forceLiveVersion = true;
             }
 
-            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
-                navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, true);
-            } else {
+
                 // Plugin manager
                 CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
                 // Navigation adapters
@@ -1186,7 +1118,7 @@ public class CMSService implements ICMSService {
                 INuxeoCommand command = new DocumentPublishSpaceNavigationCommand(cmsCtx, publishSpaceConfig, forceLiveVersion, navigationAdapters);
 
                 navItems = (Map<String, NavigationItem>) this.executeNuxeoCommand(cmsCtx, command);
-            }
+            
 
             if (navItems != null) {
                 NavigationItem navItem = navItems.get(path);
@@ -1301,18 +1233,18 @@ public class CMSService implements ICMSService {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
                     // In anonymous mode, publicationsInfos are shared
-                    if (ctx.getServerInvocation() != null) {
-                        ServerInvocation invocation = ctx.getServerInvocation();
-                        User user = (User) invocation.getAttribute(Scope.PRINCIPAL_SCOPE, UserInterceptor.USER_KEY);
-                        if (user == null) {
+                    if (ctx.getServletRequest().getRemoteUser() == null) {
                             ctx.setScope("anonymous");
                         } else {
                             ctx.setScope("user_session");
                         }
-                    }
                 }
 
-                pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));
+                if( Satellite.MAIN.equals(ctx.getSatellite()))   {
+                    pubInfos = getPublicationInfosByConnect(ctx, path);
+                }   else    {
+                     pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));
+                }
 
                 if (pubInfos != null) {
                     List<Integer> errors = pubInfos.getErrorCodes();
@@ -1328,6 +1260,7 @@ public class CMSService implements ICMSService {
                     }
 
                 }
+                
             } finally {
                 ctx.setScope(savedScope);
                 ctx.setSatellite(savedSatellite);
@@ -1342,6 +1275,29 @@ public class CMSService implements ICMSService {
 
         return pubInfos;
     }
+    
+    
+    /**
+     * Fetch document by osivia connect connect.
+     *
+     * @param cmsContext the cms context
+     * @param path the path
+     * @return the document
+     * @throws Exception the exception
+     */
+    private CMSPublicationInfos getPublicationInfosByConnect(CMSServiceCtx cmsContext, String path)  throws Exception  {
+
+        CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());
+        
+        // Get content ID
+        NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), "nx"));
+        String internalId = nuxeoRepository.getInternalId(path);
+         
+         // Fetch user datas
+        CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+        CMSPublicationInfos pubInfos = (CMSPublicationInfos) session.getPersonnalization(new UniversalID("nx", internalId));
+        return pubInfos;
+     }
 
 
     /**
@@ -1532,7 +1488,7 @@ public class CMSService implements ICMSService {
     public CMSItem getSpaceConfig(CMSServiceCtx cmsCtx, String publishSpacePath) throws CMSException {
         CMSItem configItem = null;
 
-        HttpServletRequest portalRequest = cmsCtx.getServerInvocation().getServerContext().getClientRequest();
+        HttpServletRequest portalRequest = cmsCtx.getServletRequest();
 
         boolean forceLiveVersion = false;
         if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
@@ -1579,7 +1535,7 @@ public class CMSService implements ICMSService {
 
                 List<INavigationAdapterModule> navigationAdapters = pluginManager.customizeNavigationAdapters();
                 if (CollectionUtils.isNotEmpty(navigationAdapters)) {
-                    PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
+                    PortalControllerContext portalControllerContext = cmsCtx.getPortalControllerContext();
 
                     for (INavigationAdapterModule navigationAdapter : navigationAdapters) {
                         navigationAdapter.adaptNavigationItem(portalControllerContext, configItem);
@@ -1731,7 +1687,7 @@ public class CMSService implements ICMSService {
                     PropertyList fragments = document.getProperties().getList(EditableWindowHelper.SCHEMA_FRAGMENTS);
                     if ((fragments != null) && !fragments.isEmpty()) {
                         Map<String, EditableWindow> editableWindows = this.customizer
-                                .getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
+                                .getEditableWindows((Locale)cmsContext.getServletRequest().getLocales().nextElement());
 
                         // Region windows count
                         int regionWindowsCount = 0;
@@ -1792,11 +1748,8 @@ public class CMSService implements ICMSService {
 
         // CMS context
         CMSServiceCtx navCMSContext = new CMSServiceCtx();
-        if (cmsContext.getControllerContext() != null) {
-            navCMSContext.setControllerContext(cmsContext.getControllerContext());
-        } else if (cmsContext.getServerInvocation() != null) {
-            navCMSContext.setServerInvocation(cmsContext.getServerInvocation());
-        }
+        navCMSContext.setPortalControllerContext(cmsContext.getPortalControllerContext());
+
         navCMSContext.setScope(navigationScope);
 
         // Overrided regions
@@ -1894,7 +1847,7 @@ public class CMSService implements ICMSService {
                 boolean fetched = false;
 
                 // Current portal
-                Portal portal = PortalObjectUtils.getPortal(cmsContext.getControllerContext());
+                Portal portal = PortalObjectUtils.getPortal(cmsContext.getPortalControllerContext());
                 if (PortalObjectUtils.isSpaceSite(portal)) {
                     Map<String, RegionInheritance> inheritance = this.getCMSRegionsInheritance(navItem);
 
@@ -1962,7 +1915,7 @@ public class CMSService implements ICMSService {
                             if (propagatedRegions.contains(regionId)) {
                                 String category = fragment.getString(EditableWindowHelper.FGT_TYPE);
 
-                                Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsContext.getServerInvocation().getRequest().getLocales()[0]);
+                                Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows((Locale)cmsContext.getServletRequest().getLocales().nextElement());
 
                                 EditableWindow editableWindow = editableWindows.get(category);
 
@@ -2302,7 +2255,7 @@ public class CMSService implements ICMSService {
 
                     String fragmentCategory = (String) fragments.getMap(fragmentIndex).get(EditableWindowHelper.FGT_TYPE);
 
-                    Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows(cmsCtx.getServerInvocation().getRequest().getLocales()[0]);
+                    Map<String, EditableWindow> editableWindows = this.customizer.getEditableWindows((Locale)cmsCtx.getServletRequest().getLocales().nextElement());
                     EditableWindow ew = editableWindows.get(fragmentCategory);
 
                     if (ew != null) {
@@ -2361,108 +2314,6 @@ public class CMSService implements ICMSService {
         }
     }
 
-
-    @Override
-    public String getEcmUrl(CMSServiceCtx cmsCtx, EcmViews command, String path, Map<String, String> requestParameters) throws CMSException {
-        // Satellite
-        Satellite satellite = cmsCtx.getSatellite();
-        if (satellite == null) {
-            satellite = Satellite.MAIN;
-        }
-
-        NuxeoSatelliteConnectionProperties connectionProperties = NuxeoSatelliteConnectionProperties.getConnectionProperties(satellite);
-
-        // get the default domain and app name
-        String uri = connectionProperties.getPublicBaseUri().toString();
-
-        if (requestParameters == null) {
-            requestParameters = new HashMap<String, String>();
-        }
-
-        String url = "";
-
-        if (command == EcmViews.createPage) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_document?";
-            requestParameters.put("type", "PortalPage");
-        } else if (command == EcmViews.createDocument) {
-            url = uri.toString() + "/nxpath/default" + path + "@toutatice_create?";
-        } else if (command == EcmViews.editDocument) {
-            url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
-        } else if (command == EcmViews.editPage) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
-        } else if (command == EcmViews.editAttachments) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_attachments?";
-        } else if (command == EcmViews.createFgtInRegion) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
-        } else if (command == EcmViews.createFgtBelowWindow) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_create_fragment?";
-        } else if (command == EcmViews.editFgt) {
-            url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_fragment?";
-        } else if (command == EcmViews.viewSummary) {
-            url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
-        } else if (command == EcmViews.shareDocument) {
-            url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
-        } else if (command == EcmViews.startValidationWf) {
-            url = uri.toString() + "/nxpath/default" + path + "@choose_wf?";
-        } else if (command == EcmViews.followWfValidation) {
-            url = uri.toString() + "/nxpath/default" + path + "@current_task?";
-        } else if (command == EcmViews.remotePublishing) {
-            url = uri.toString() + "/nxpath/default" + path + "@remote_publishing?";
-        } else if (command == EcmViews.validateRemotePublishing) {
-            url = uri.toString() + "/nxpath/default" + path + "@validate_remote_publishing?";
-        } else if (command == EcmViews.globalAdministration) {
-            url = uri.toString() + "/nxadmin/default@view_admin?";
-        } else if (command == EcmViews.gotoMediaLibrary) {
-            Document mediaLibrary;
-            try {
-                String baseDomainPath = "/".concat(path.split("/")[1]);
-                mediaLibrary = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentGetMediaLibraryCommand(baseDomainPath)));
-            } catch (Exception e) {
-                throw new CMSException(e);
-            }
-            if (mediaLibrary != null) {
-                url = uri.toString() + "/nxpath/default" + mediaLibrary.getPath() + "@view_documents?";
-            } else {
-                url = "";
-            }
-        } else if (EcmViews.RELOAD.equals(command)) {
-            url = uri.toString() + "/nxpath/default@refresh_principal";
-        }
-
-        // params are used with fancyboxes
-        if (!EcmViews.gotoMediaLibrary.equals(command) && !EcmViews.RELOAD.equals(command)) {
-            PortalControllerContext portalControllerContext = new PortalControllerContext(cmsCtx.getControllerContext());
-            String portalUrl = this.getPortalUrlFactory().getBasePortalUrl(portalControllerContext);
-            requestParameters.put("fromUrl", portalUrl);
-
-            if ((command == EcmViews.editPage) || (command == EcmViews.editDocument)) {
-                // If in web mode, we pass portal web URL to to editPage
-                Portal portal = PortalObjectUtils.getPortal(ControllerContextAdapter.getControllerContext(portalControllerContext));
-                if (PortalObjectUtils.isSpaceSite(portal)) {
-
-                    Document currentDoc = (Document) cmsCtx.getDoc();
-                    if (currentDoc != null) {
-                        String webId = (String) currentDoc.getProperties().get(DocumentsMetadataImpl.WEB_ID_PROPERTY);
-
-                        String webPath = this.getPortalUrlFactory().getCMSUrl(portalControllerContext, null,
-                                IWebIdService.CMS_PATH_PREFIX.concat("/").concat(webId), null, null, cmsCtx.getDisplayContext(), cmsCtx.getHideMetaDatas(),
-                                null, cmsCtx.getDisplayLiveVersion(), null);
-                        if (StringUtils.isNotBlank(webPath)) {
-                            webPath = StringUtils.substringBeforeLast(webPath, "/").concat("/");
-                        }
-
-                        requestParameters.put("portalWebPath", webPath);
-                    }
-                }
-            }
-
-            for (Map.Entry<String, String> param : requestParameters.entrySet()) {
-                url = url.concat(param.getKey()).concat("=").concat(param.getValue()).concat("&");
-            }
-        }
-
-        return url;
-    }
 
     @Override
     public void moveFragment(CMSServiceCtx cmsCtx, String pagePath, String fromRegion, Integer fromPos, String toRegion, Integer toPos, String refUri)
@@ -2755,34 +2606,6 @@ public class CMSService implements ICMSService {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void executeEcmCommand(CMSServiceCtx cmsCtx, EcmCommand command, String cmsPath) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsCtx.getControllerContext();
-
-        cmsCtx.setDisplayLiveVersion("1");
-
-        CMSItem cmsItem = this.getContent(cmsCtx, cmsPath);
-        Document doc = (Document) cmsItem.getNativeItem();
-
-        try {
-
-            this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
-
-            // On force le rechargement du cache de la page
-            String refreshCmsPath = (String) controllerContext.getAttribute(Scope.SESSION_SCOPE, EcmCommand.REDIRECTION_PATH_ATTRIBUTE);
-            cmsCtx.setDisplayLiveVersion("0");
-            cmsCtx.setForceReload(true);
-            this.getContent(cmsCtx, refreshCmsPath);
-            cmsCtx.setForceReload(false);
-
-        } catch (Exception e) {
-            throw new CMSException(e);
-        }
-    }
 
     /**
      * {@inheritDoc}
@@ -2970,7 +2793,7 @@ public class CMSService implements ICMSService {
         String url = null;
 
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
         // Document
         Document document = (Document) cmsContext.getDoc();
@@ -3007,7 +2830,7 @@ public class CMSService implements ICMSService {
         String url = null;
 
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
         // Document
         Document document = (Document) cmsContext.getDoc();
@@ -3038,7 +2861,7 @@ public class CMSService implements ICMSService {
     @Override
     public String getAdaptedNavigationPath(CMSServiceCtx cmsContext) throws CMSException {
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
         // Document
@@ -3096,7 +2919,7 @@ public class CMSService implements ICMSService {
     @Override
     public DomainContextualization getDomainContextualization(CMSServiceCtx cmsContext, String domainPath) {
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
@@ -3159,7 +2982,7 @@ public class CMSService implements ICMSService {
     @Override
     public DocumentsMetadata getDocumentsMetadata(CMSServiceCtx cmsContext, String basePath, Long timestamp) throws CMSException {
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(cmsContext.getControllerContext());
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
         // Navigation adapters
@@ -3344,10 +3167,9 @@ public class CMSService implements ICMSService {
      */
     @Override
     public Map<String, String> updateTask(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
 
         // Updated variables
@@ -3377,16 +3199,15 @@ public class CMSService implements ICMSService {
      */
     @Override
     public CMSItem getTask(CMSServiceCtx cmsContext, UUID uuid) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+
         // Portal controller context
-        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+        PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
 
         // Plugin manager
         CustomizationPluginMgr pluginManager = this.customizer.getPluginManager();
 
         // User
-        String user = controllerContext.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+        String user = portalControllerContext.getHttpServletRequest().getRemoteUser();
 
         // #1964 - tasks url may be done with anonymous user id
         Set<String> actors = null;
@@ -3477,10 +3298,9 @@ public class CMSService implements ICMSService {
      */
     @Override
     public void reloadSession(CMSServiceCtx cmsContext) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+
         // HTTP servlet request
-        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        HttpServletRequest servletRequest = cmsContext.getPortalControllerContext().getHttpServletRequest();
         // HTTP session
         HttpSession session = servletRequest.getSession();
 
@@ -3567,7 +3387,7 @@ public class CMSService implements ICMSService {
         List<CMSEditableWindow> procedureDashboards = new ArrayList<CMSEditableWindow>();
         try {
 
-            String user = cmsContext.getControllerContext().getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+            String user = cmsContext.getRequest().getRemoteUser();
 
             List<Name> userProfiles = personService.getPerson(user).getProfiles();
 
@@ -3732,10 +3552,9 @@ public class CMSService implements ICMSService {
      */
     @Override
     public CMSItem getSharingRoot(CMSServiceCtx cmsContext) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+
         // HTTP servlet request
-        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        HttpServletRequest servletRequest = cmsContext.getPortalControllerContext().getHttpServletRequest();
         // Current user
         String user = servletRequest.getRemoteUser();
 
@@ -3817,10 +3636,9 @@ public class CMSService implements ICMSService {
      */
     @Override
     public String resolveLinkSharing(CMSServiceCtx cmsContext, String linkId) throws CMSException {
-        // Controller context
-        ControllerContext controllerContext = cmsContext.getControllerContext();
+ 
         // HTTP servlet request
-        HttpServletRequest servletRequest = controllerContext.getServerInvocation().getServerContext().getClientRequest();
+        HttpServletRequest servletRequest = cmsContext.getPortalControllerContext().getHttpServletRequest();
         // Current user
         String user = servletRequest.getRemoteUser();
 
@@ -3892,5 +3710,35 @@ public class CMSService implements ICMSService {
 
         return properties;
     }
+
+
+    @Override
+    public UniversalID getUniversalIDFromPath(CMSServiceCtx cmsContext, String path) throws CMSException {
+        try {
+            CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());            
+            
+            // Get Id
+            NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), NUXEO_REPOSITORY_NAME));            
+            return new UniversalID(NUXEO_REPOSITORY_NAME, nuxeoRepository.getInternalId(path));
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+    
+    
+
+    @Override
+    public String getPathFromUniversalID(CMSServiceCtx cmsContext, UniversalID id) throws CMSException {
+        try {
+            CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());            
+            
+            // Get Id
+            NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), id.getRepositoryName()));            
+            return nuxeoRepository.getPath(id.getInternalID());
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+    
 
 }

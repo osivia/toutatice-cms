@@ -30,8 +30,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class WysiwygParser {
 
-    public static java.net.URL xslfilepath = WysiwygParser.class.getClassLoader().getResource("xsl/html.xsl");
-	private static Log log = LogFactory.getLog(WysiwygParser.class);
+ 	private static Log log = LogFactory.getLog(WysiwygParser.class);
 
 
 	private Templates template;
@@ -64,7 +63,7 @@ public class WysiwygParser {
 		try {
 			TransformerFactory fabriqueT = TransformerFactory.newInstance();
 			
-            InputStream is = WysiwygParser.class.getResourceAsStream("/WEB-INF/xsl/html.xsl");
+            InputStream is = WysiwygParser.class.getResourceAsStream("/html.xsl");
 
 			// Use the factory to create a template containing the xsl file
 			StreamSource stylesource = new StreamSource(is);

@@ -88,10 +88,10 @@
         
             <c:forEach var="page" begin="${min}" end="${max}">
                 <c:set var="url" value="#" />
-                <c:remove var="class" />
+                <c:remove var="cssClass" />
                 <c:choose>
                     <c:when test="${page == currentPage}">
-                        <c:set var="class" value="active" />
+                        <c:set var="cssClass" value="active" />
                     </c:when>
                     
                     <c:otherwise>
@@ -103,7 +103,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <li class="${class}">
+                <li class="${cssClass}">
                     <a href="${url}">
                         <span>${page + 1}</span>
                         
