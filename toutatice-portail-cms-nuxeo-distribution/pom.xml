@@ -113,6 +113,9 @@
 
         <profile>
             <id>unpack</id>
+		    <activation>
+		      <activeByDefault>true</activeByDefault>
+		    </activation>     			
             <build>
                 <defaultGoal>package</defaultGoal>
                 <plugins>
@@ -171,6 +174,9 @@
 
         <profile>
             <id>pack</id>
+		    <activation>
+		      <activeByDefault>true</activeByDefault>
+		    </activation>     			
             <build>
                 <plugins>
                     <plugin>

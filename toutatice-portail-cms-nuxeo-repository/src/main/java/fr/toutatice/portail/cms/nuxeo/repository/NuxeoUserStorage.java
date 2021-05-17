@@ -211,5 +211,23 @@ public class NuxeoUserStorage extends BaseUserStorage {
 
     }
 
+    @Override
+    public void addDocument(String internalID, RepositoryDocument document, boolean batchMode) {
+         
+    }
+
+    @Override
+    public void updateDocument(String internalID, RepositoryDocument document, boolean batchMode) {
+        
+    }
+
+    @Override
+    public void endBatch() {
+    }
+
+    @Override
+    public void beginBatch() {
+    }
+
 
 }
