@@ -111,7 +111,9 @@
             <link rel="stylesheet" href="/css/publish-menu.min.css" />
         
             <!-- Drag & drop + Fancytree functions -->
+            <!-- 
             <script type="text/javascript" src="/js/publish-menu.min.js"></script>
+            -->
         </header-content>
         
         <portlet-info>

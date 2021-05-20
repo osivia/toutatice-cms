@@ -1806,7 +1806,7 @@ public class NuxeoController {
     
     public CMSContext getCMSContext() {
 
-        PortalControllerContext ctx = new PortalControllerContext(portletCtx, request, response);
+        PortalControllerContext ctx = getPortalCtx();
         CMSController ctrl = new CMSController(ctx);
         
         return ctrl.getCMSContext();
