@@ -1003,7 +1003,8 @@ public class NuxeoController {
                 this.portalCtx = new PortalControllerContext(this.getPortletCtx(), this.request, this.response);
             else if( getServletRequest() != null) {
                 this.portalCtx = new PortalControllerContext(getServletRequest());
-            }
+            } else
+                this.portalCtx = new PortalControllerContext(this.getPortletCtx());
         }
 
         return this.portalCtx;
