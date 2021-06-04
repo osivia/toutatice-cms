@@ -257,9 +257,23 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
             
         } while (true);
 
-        NavigationItem navItem;
-        if( parent != null)
+        NuxeoNavigationItem navItem;
+        if( parent != null) {
             navItem = new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("dc:title"), doc.getSpaceId(), spacePath, parent.getPath());
+            String pageTemplate = parent.getProperties().get("pageTemplate");
+            if( pageTemplate!= null && pageTemplate.startsWith("/"))   {
+                // Old pattern /page1/page2/page3
+                String items[]  = pageTemplate.substring(1).split( "/");
+                
+                String internalID = "";
+                for(int i=0; i<items.length;i++) {
+                    if( internalID.length() > 0)
+                        internalID+= "_";
+                    internalID += items[i].toUpperCase();
+                }
+                navItem.setCustomizedTemplateId(new UniversalID(System.getProperty("osivia.cms.template.repository"), internalID));
+            }
+        }
         else 
             navItem = null;
 

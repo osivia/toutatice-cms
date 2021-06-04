@@ -15,6 +15,8 @@ public class NuxeoNavigationItem implements NavigationItem {
     private UniversalID spaceId;
     private String spacePath;
     private String docPath;
+    private UniversalID customizedTemplateId;
+
 
 
     public NuxeoNavigationItem(NuxeoRepositoryImpl repository, UniversalID documentId, String title, UniversalID spaceId, String spacePath, String docPath) {
@@ -57,6 +59,16 @@ public class NuxeoNavigationItem implements NavigationItem {
     @Override
     public UniversalID getSpaceId() {
         return spaceId;
+    }
+
+    
+    public UniversalID getCustomizedTemplateId() {
+        return customizedTemplateId;
+    }
+
+    
+    public void setCustomizedTemplateId(UniversalID customizedTemplateId) {
+        this.customizedTemplateId = customizedTemplateId;
     }
 
 
