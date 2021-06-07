@@ -63,7 +63,7 @@ $JQry(function() {
 			},
 			
 			dragOver: function(targetNode, data) {
-				$JQry(targetNode.span).addClass("bg-info border-info");
+				$JQry(targetNode.span).addClass("bg-info text-white").removeClass("text-muted");
 			},
 			
 			dragDrop: function(targetNode, data) {
@@ -95,7 +95,7 @@ $JQry(function() {
 			},
 			
 			dragLeave: function(targetNode, data) {
-				$JQry(targetNode.span).removeClass("bg-info border-info");
+				$JQry(targetNode.span).removeClass("bg-info text-white").addClass("text-muted");
 			}
 		},
 		
@@ -122,7 +122,13 @@ $JQry(function() {
 				if (node.data.target) {
 					window.open(node.data.href, node.data.target);
 				} else {
-					window.location.href = node.data.href;
+					// (ajax call) eq. footer
+				    var options = new Object();
+						// We have a get
+				    options.method = "get"
+				    // We don't block
+				    options.asynchronous = false;
+					directAjaxCall(null,options, node.data.href, null);
 				}
 			}
 		},

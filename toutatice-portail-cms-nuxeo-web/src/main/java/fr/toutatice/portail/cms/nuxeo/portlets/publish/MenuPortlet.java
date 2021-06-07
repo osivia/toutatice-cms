@@ -162,18 +162,13 @@ public class MenuPortlet extends CMSPortlet {
                 // Target identifier
                 String targetId = request.getParameter("targetId");
 
-                String targetPath = this.getAuxiliaryPath(nuxeoController, targetId);
+
 
                 // Move document command
                 INuxeoCommand command = new MoveDocumentCommand(sourceIds, targetId);
                 try {
                     nuxeoController.executeNuxeoCommand(command);
 
-                    // Refresh navigation
-                    request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
-
-                    // Update public render parameter for associated portlets refresh
-                    response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
 
                     // Notification
                     String message;
@@ -196,10 +191,7 @@ public class MenuPortlet extends CMSPortlet {
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
 
-
-                if (targetPath != null) {
-                    response.setRenderParameter("auxiliaryPath", targetPath);
-                }
+                response.sendRedirect(getPortalUrlFactory().getRefreshPageUrl(portalControllerContext));
             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {
