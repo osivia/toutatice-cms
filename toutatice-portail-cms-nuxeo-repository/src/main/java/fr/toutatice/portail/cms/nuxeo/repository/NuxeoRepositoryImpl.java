@@ -26,6 +26,7 @@ import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.cms.spi.NuxeoRepository;
 import org.osivia.portal.core.cms.spi.NuxeoRequest;
 import org.osivia.portal.core.cms.spi.NuxeoResult;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
@@ -121,9 +122,6 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     @Override
     public String getInternalId(String path) throws CMSException {
 
-        // Get result by cache pattern
-        // TODO : update if the document is modified
-
 
         CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(),
                 new PublishInfosCommand(path))).getResult();
@@ -158,12 +156,17 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     @Override
     public String getPath(String internalId) throws CMSException {
 
-        // Get result by cache pattern
-        // TODO : update if the document is modified
 
 
+//        if( internalId.contains("kFG8vy"))
+//            System.out.println("*** GETPATH " );
+
+        
         CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(),
                 new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalId))).getResult();
+        
+//        if( internalId.contains("kFG8vy"))
+//            System.out.println("*** GETPATH " + internalId +"->" + res.getDocumentPath());
 
         List<Integer> errors = res.getErrorCodes();
         if (errors != null) {
@@ -228,11 +231,22 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         // Get result by cache pattern
         // TODO : update if the document is modified
 
+//        if( internalId.equals("kFG8vy"))    {
+//            if( PageProperties.getProperties().isCheckingSpaceContents())
+//                System.out.println("**************************************************************");
+//        }
+
+        
         Document doc = getDocument(internalId);
 
         String spacePath = getPath(doc.getSpaceId().getInternalID());
         String docPath = getPath(internalId);
 
+//        if( internalId.equals("kFG8vy"))    {
+//
+//            System.out.println("**** GETNAV CHK="+ PageProperties.getProperties().isCheckingSpaceContents() + " DOCPATH="+ docPath);
+//        }
+        
         CMSServiceCtx cmsContext = getNavigationCMSContext();
 
 
@@ -257,6 +271,11 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
             
         } while (true);
 
+//        if( internalId.equals("kFG8vy"))
+//            System.out.println("**** GETNAV "+ docPath+ " " + parent.getWebId());
+//        
+//        
+        
         NuxeoNavigationItem navItem;
         if( parent != null) {
             navItem = new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("dc:title"), doc.getSpaceId(), spacePath, parent.getPath());

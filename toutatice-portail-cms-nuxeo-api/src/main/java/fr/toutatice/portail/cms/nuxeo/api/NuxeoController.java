@@ -35,6 +35,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.service.CMSService;
 import org.osivia.portal.api.cms.service.CMSSession;
+import org.osivia.portal.api.cms.service.UpdateInformations;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.directory.IDirectoryService;
@@ -560,6 +561,51 @@ public class NuxeoController {
         path.append(SLASH);
         path.append(webId);
         return path.toString();
+    }
+    
+    /**
+     * Update notification.
+     *
+     * @param cmsContext the cms context
+     * @param path the path (or webId)
+     * @return the document
+     * @throws Exception the exception
+     */
+    public void notifyUpdate(String path, boolean async) throws PortletException {
+
+        CMSController ctrl = new CMSController(getPortalCtx());
+
+        try {
+           if (path == null) {
+                path = getSpacePath();
+            }
+            if (path != null) {
+                UniversalID internalID;
+
+                if (path.startsWith("/")) {
+                    // Get content ID
+                    NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
+                            .getUserRepository(ctrl.getCMSContext(), "nx"));
+                    internalID = new UniversalID("nx", nuxeoRepository.getInternalId(path));
+                } else
+                    internalID = new UniversalID("nx", path);
+
+                // Notify update
+                CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+                UpdateInformations infos = new UpdateInformations(internalID);
+                infos.setAsync(async);
+                session.notifyUpdate(infos);
+            }
+        } catch (Exception e) {
+            throw new PortletException(e);
+        }
+
+    }
+    
+ 
+    
+    public void notifyUpdate( )  throws PortletException {
+        notifyUpdate( (String) null, false);
     }
     
     /**

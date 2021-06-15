@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.HttpHostConnectException;
@@ -39,6 +40,10 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cache.services.IServiceInvoker;
+import org.osivia.portal.api.cms.CMSController;
+import org.osivia.portal.api.cms.UniversalID;
+import org.osivia.portal.api.cms.service.CMSSession;
+import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.status.IStatusService;
 import org.osivia.portal.api.status.UnavailableServer;
@@ -46,8 +51,10 @@ import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.NavigationItem;
+import org.osivia.portal.core.cms.spi.NuxeoRepository;
 import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
+
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
@@ -225,12 +232,25 @@ public class NuxeoCommandService implements INuxeoCommandService {
 				Object value = portalRequest.getAttribute(requestKey);
 				if (value != null)  {
 				    // Has been reloaded since PageResfresh
-		            if(  PageProperties.getProperties().isRefreshingPage())  {
+
+				    if(  PageProperties.getProperties().isRefreshingPage() )  {
 		                if( portalRequest.getAttribute(requestKey + ".resfreshed") == null) {
 		                    portalRequest.setAttribute(requestKey + ".resfreshed", "1");
                             value = null;
                         }
 		            }
+				    
+				 // Has been reloaded since Space refreshed
+                    if(  PageProperties.getProperties().isCheckingSpaceContents())  {
+                        Long tsRefresh = (Long) portalRequest.getAttribute(requestKey + ".spaceRefreshed") ;
+                        if( tsRefresh == null || tsRefresh < PageProperties.getProperties().getCheckingSpaceBeginning())    {
+                            portalRequest.setAttribute(requestKey + ".spaceRefreshed", System.currentTimeMillis());
+                            value = null;
+                        }
+
+                    }
+
+		            
 		            if( value != null) {
                         return value;
                     }
@@ -248,6 +268,9 @@ public class NuxeoCommandService implements INuxeoCommandService {
             }
 
 		}
+		
+	
+		
 
 		String cacheId = this.getCacheId(ctx, command);
 
@@ -259,6 +282,22 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 		// LOIC BILLON : cas de la modification/ suppression de fragment
 		if (!ctx.isForceReload())	{
+		    
+		    // CMS Cache relative to the space
+	            
+            if (PageProperties.getProperties().isCheckingSpaceContents()) {
+
+                    // Get Id
+                    PortalControllerContext portalCtx = new PortalControllerContext(ctx.getPortletContext());
+                    CMSController ctrl = new CMSController(portalCtx);
+
+                    CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+
+                    Long modifiedTs = PageProperties.getProperties().getCheckingSpaceTs();
+                    if (modifiedTs != null) {
+                        cacheInfos.setExpirationTs(modifiedTs);
+               }
+            }
 
 			if (ctx.getCacheType() == CacheInfo.CACHE_SCOPE_PORTLET_SESSION) {
 				// 2 minutes de cache de session

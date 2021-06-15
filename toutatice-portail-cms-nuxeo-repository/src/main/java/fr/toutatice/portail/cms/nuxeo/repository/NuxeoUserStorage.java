@@ -25,12 +25,13 @@ import org.osivia.portal.core.cms.spi.NuxeoResult;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.services.NuxeoCommandCacheInvoker;
+
 
 public class NuxeoUserStorage extends BaseUserStorage {
 
@@ -75,8 +76,8 @@ public class NuxeoUserStorage extends BaseUserStorage {
             commandCtx = new NuxeoCommandContext(cmsPortletContext);
         }
 
-
-        commandCtx.setForceReload(true);
+        if (!cache)
+            commandCtx.setForceReload(true);
 
         // Par défaut
         if (superUser) {
@@ -104,9 +105,15 @@ public class NuxeoUserStorage extends BaseUserStorage {
     @Override
     public RepositoryDocument reloadDocument(String internalID) throws CMSException {
        try {
+
+           
              // Fetch doc (nocache)
            CMSPublicationInfos docPubInfos = (CMSPublicationInfos) ((NuxeoResult)executeCommand(createCommandContext( true), new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalID))).getResult();
 
+//           if( internalID.equals("kFG8vy"))
+//               System.out.println("**** RELOAD "+ internalID+ " " + docPubInfos.getDocumentPath());
+           
+           
            Document nxDocument = fetchDocument(docPubInfos.getDocumentPath(), docPubInfos.isPublished(), false);
             
             Map<String, Object> properties = new HashMap<String, Object>();
@@ -115,7 +122,7 @@ public class NuxeoUserStorage extends BaseUserStorage {
             }
 
             // Fetch space  (cache)
-            CMSPublicationInfos spacePubInfos = (CMSPublicationInfos) ((NuxeoResult)executeCommand(createCommandContext( true), new PublishInfosCommand(docPubInfos.getPublishSpacePath() ))).getResult();
+            CMSPublicationInfos spacePubInfos = (CMSPublicationInfos) ((NuxeoResult)executeCommand(createCommandContext( true, true), new PublishInfosCommand(docPubInfos.getPublishSpacePath() ))).getResult();
             
             Document space = fetchDocument(docPubInfos.getPublishSpacePath(), spacePubInfos.isPublished(), true);
                 
@@ -150,7 +157,7 @@ public class NuxeoUserStorage extends BaseUserStorage {
 
         CMSPublicationInfos res = null;
 
-        res = (CMSPublicationInfos) ((NuxeoResult) executeCommand(createCommandContext(false),
+        res = (CMSPublicationInfos) ((NuxeoResult) executeCommand(createCommandContext(false, true),
                 new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalID))).getResult();
         res.setSatellite(Satellite.MAIN);
 
@@ -183,6 +190,8 @@ public class NuxeoUserStorage extends BaseUserStorage {
                 public Object execute(Session nuxeoSession) throws Exception {
                     return command.execute(nuxeoSession);
                 }
+                
+
             });
 
 

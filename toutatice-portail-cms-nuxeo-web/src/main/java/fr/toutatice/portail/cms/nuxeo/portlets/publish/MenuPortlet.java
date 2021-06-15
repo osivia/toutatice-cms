@@ -191,7 +191,7 @@ public class MenuPortlet extends CMSPortlet {
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
 
-                response.sendRedirect(getPortalUrlFactory().getRefreshPageUrl(portalControllerContext));
+                nuxeoController.notifyUpdate( null, true);
             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {

@@ -201,6 +201,16 @@ public class PublishInfosCommand implements INuxeoCommand {
 			}
 
 		}
+		
+		
+	       //http://localhost:8080/portal/auth/content/nx/ctuTUE/fr/false
+        if (path.contains("ctuTUE"))    {
+            System.out.println("*** PUBINFOS OLD " + path + "->" + publiInfos.getDocumentPath());
+            if( publiInfos.getDocumentPath().split("/").length == 10)
+                System.out.println("*** PUBINFOS NIVEAU 2");
+        }
+
+		
 		return publiInfos;
 	}
 

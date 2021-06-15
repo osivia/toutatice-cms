@@ -64,6 +64,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.*;
 import org.osivia.portal.api.cms.service.CMSSession;
+import org.osivia.portal.api.cms.service.UpdateInformations;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -428,6 +429,8 @@ public class CMSService implements ICMSService {
 
         commandCtx.setSatellite(cmsCtx.getSatellite());
 
+
+        
      
         return this.getNuxeoCommandService().executeCommand(commandCtx, new INuxeoServiceCommand() {
             
@@ -440,6 +443,8 @@ public class CMSService implements ICMSService {
             public Object execute(Session nuxeoSession) throws Exception {
                 return command.execute(nuxeoSession);
             }
+
+
         });
         
         
@@ -558,7 +563,7 @@ public class CMSService implements ICMSService {
          CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
          
          if( cmsContext.isForceReload())
-             session.updateDocument(new UniversalID("nx", internalId));
+             session.notifyUpdate(new UpdateInformations( new UniversalID("nx", internalId), false));
          
          org.osivia.portal.api.cms.model.Document document = session.getDocument(new UniversalID("nx", internalId));
         return (Document) document.getNativeItem();

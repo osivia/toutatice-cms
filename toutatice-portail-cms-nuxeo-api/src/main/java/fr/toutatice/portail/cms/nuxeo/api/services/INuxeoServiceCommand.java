@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.api.services;
 
 import org.nuxeo.ecm.automation.client.Session;
+import org.osivia.portal.api.cms.UniversalID;
 
 /**
  * The Interface INuxeoServiceCommand.
@@ -39,4 +40,7 @@ public interface INuxeoServiceCommand {
 	 * @return the id
 	 */
 	public String getId();
+	
+	
+
 }

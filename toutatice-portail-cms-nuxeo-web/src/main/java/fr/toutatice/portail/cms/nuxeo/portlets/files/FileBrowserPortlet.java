@@ -252,7 +252,7 @@ public class FileBrowserPortlet extends CMSPortlet {
 
 
                 // Refresh navigation
-                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+                request.setAttribute(Constants.PORTLET_ATTR_PAGE_REFRESH, Constants.PORTLET_VALUE_ACTIVATE);
 
                 // Update public render parameter for associated portlets refresh
                 response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
@@ -273,7 +273,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                         this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.SUCCESS);
 
                         // Refresh navigation
-                        request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+                        request.setAttribute(Constants.PORTLET_ATTR_PAGE_REFRESH, Constants.PORTLET_VALUE_ACTIVATE);
 
                     } catch (CMSException e) {
                         // Notification
@@ -296,7 +296,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     nuxeoController.executeNuxeoCommand(command);
 
                     // Refresh navigation
-                    request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+                    request.setAttribute(Constants.PORTLET_ATTR_PAGE_REFRESH, Constants.PORTLET_VALUE_ACTIVATE);
 
                     // Update public render parameter for associated portlets refresh
                     response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
@@ -331,7 +331,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                 nuxeoController.executeNuxeoCommand(command);
 
                 // Refresh navigation
-                request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+                request.setAttribute(Constants.PORTLET_ATTR_PAGE_REFRESH, Constants.PORTLET_VALUE_ACTIVATE);
 
                 // Update public render parameter for associated portlets refresh
                 response.setRenderParameter("dnd-update", String.valueOf(System.currentTimeMillis()));
@@ -365,7 +365,7 @@ public class FileBrowserPortlet extends CMSPortlet {
                     nuxeoController.executeNuxeoCommand(command);
 
                     // Refresh navigation
-                    request.setAttribute(Constants.PORTLET_ATTR_UPDATE_CONTENTS, Constants.PORTLET_VALUE_ACTIVATE);
+                    request.setAttribute(Constants.PORTLET_ATTR_PAGE_REFRESH, Constants.PORTLET_VALUE_ACTIVATE);
 
 
                     // Notification

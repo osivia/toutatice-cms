@@ -33,7 +33,9 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.api.cms.Symlinks;
+import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.VirtualNavigationUtils;
+
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSItem;
@@ -297,6 +299,8 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
         builder.append("|");
         builder.append(this.live);
         return builder.toString();
-    };
+    }
+
+
 
 }
