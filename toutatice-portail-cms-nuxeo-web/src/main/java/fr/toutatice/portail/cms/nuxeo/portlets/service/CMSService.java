@@ -555,17 +555,18 @@ public class CMSService implements ICMSService {
     private Document fetchContentByConnect(CMSServiceCtx cmsContext, String path)  throws Exception  {
         
         CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());
-        
+
         // Get Id
-        NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), "nx"));
-         String internalId = nuxeoRepository.getInternalId(path);
-         
-         CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
-         
-         if( cmsContext.isForceReload())
-             session.notifyUpdate(new UpdateInformations( new UniversalID("nx", internalId), false));
-         
-         org.osivia.portal.api.cms.model.Document document = session.getDocument(new UniversalID("nx", internalId));
+        NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
+                .getUserRepository(ctrl.getCMSContext(), "nx"));
+        String internalId = nuxeoRepository.getInternalId(path);
+
+        CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+
+        if (cmsContext.isForceReload())
+            session.reload(new UniversalID("nx", internalId));
+
+        org.osivia.portal.api.cms.model.Document document = session.getDocument(new UniversalID("nx", internalId));
         return (Document) document.getNativeItem();
      }
     
