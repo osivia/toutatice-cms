@@ -31,6 +31,7 @@ import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.api.workspace.WorkspaceType;
 
 
 public class NuxeoUserStorage extends BaseUserStorage {
@@ -128,9 +129,12 @@ public class NuxeoUserStorage extends BaseUserStorage {
                 
             
             RepositoryDocument document;
-            if( "Workspace".equals(nxDocument.getType()) || "PortalSite".equals(nxDocument.getType()))
+            if( "Workspace".equals(nxDocument.getType()) || "PortalSite".equals(nxDocument.getType()))  {
+                if( "Workspace".equals(nxDocument.getType()) )
+                    properties.put("osivia.connect.templated", "false");
                 document= new RepositorySpace(getUserRepository(), nxDocument, internalID,
-                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, space.getString("ttc:webid"), null, properties, new UniversalID("templates", "ID_TEMPLATE_NX_WORKSPACE"));               
+                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, space.getString("ttc:webid"), null, properties, new UniversalID("templates", "ID_TEMPLATE_NX_WORKSPACE"));      
+            }
             else
                 document= new RepositoryDocument(getUserRepository(), nxDocument, internalID,
                     nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, space.getString("ttc:webid"), null, properties);

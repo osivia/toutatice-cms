@@ -571,28 +571,35 @@ public class NuxeoController {
      * @return the document
      * @throws Exception the exception
      */
-    public void notifyUpdate(String path, boolean async) throws PortletException {
+    public void notifyUpdate(String documentPath, String spacePath, boolean async) throws PortletException {
 
         CMSController ctrl = new CMSController(getPortalCtx());
 
         try {
-           if (path == null) {
-                path = getSpacePath();
+            if (spacePath == null) {
+                spacePath = getSpacePath();
             }
-            if (path != null) {
-                UniversalID internalID;
+            if (spacePath != null) {
+                UniversalID internalID, spaceID;
 
-                if (path.startsWith("/")) {
-                    // Get content ID
-                    NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
-                            .getUserRepository(ctrl.getCMSContext(), "nx"));
-                    internalID = new UniversalID("nx", nuxeoRepository.getInternalId(path));
+                if (documentPath != null) {
+                        // Get content ID
+                        NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
+                                .getUserRepository(ctrl.getCMSContext(), "nx"));
+                        internalID = new UniversalID("nx", nuxeoRepository.getInternalId(documentPath));
                 } else
-                    internalID = new UniversalID("nx", path);
+                    internalID = null;
+
+
+               // Get content ID
+                NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
+                        .getUserRepository(ctrl.getCMSContext(), "nx"));
+                spaceID = new UniversalID("nx", nuxeoRepository.getInternalId(spacePath));
+                
 
                 // Notify update
                 CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
-                UpdateInformations infos = new UpdateInformations(internalID);
+                UpdateInformations infos = new UpdateInformations(internalID, spaceID);
                 infos.setAsync(async);
                 session.notifyUpdate(infos);
             }
@@ -602,11 +609,34 @@ public class NuxeoController {
 
     }
     
- 
-    
-    public void notifyUpdate( )  throws PortletException {
-        notifyUpdate( (String) null, false);
+    public String getSpacePath(String documentPath) throws PortletException {
+        
+        CMSController ctrl = new CMSController(getPortalCtx());
+
+        String spacePath;
+        try {
+            CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
+            
+            
+            // Get content ID
+            NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
+                    .getUserRepository(ctrl.getCMSContext(), "nx"));
+            UniversalID internalID = new UniversalID(NuxeoController.NUXEO_REPOSITORY_NAME, nuxeoRepository.getInternalId(documentPath));
+            
+            org.osivia.portal.api.cms.model.Document doc = session.getDocument(internalID);
+            
+            org.osivia.portal.api.cms.model.Document space = session.getDocument(doc.getSpaceId());
+            
+            spacePath = ((Document)space.getNativeItem()).getPath();
+            
+            
+            
+            return spacePath;
+        } catch (Exception e) {
+           throw new PortletException(e);
+        }
     }
+
     
     /**
      * Gets the universal ID from path.

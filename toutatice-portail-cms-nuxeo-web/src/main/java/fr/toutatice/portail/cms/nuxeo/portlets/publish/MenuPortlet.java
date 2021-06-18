@@ -169,6 +169,8 @@ public class MenuPortlet extends CMSPortlet {
                 try {
                     nuxeoController.executeNuxeoCommand(command);
 
+                    String spacePath = nuxeoController.getSpacePath();
+                    nuxeoController.notifyUpdate(null, spacePath, false);
 
                     // Notification
                     String message;
@@ -191,7 +193,7 @@ public class MenuPortlet extends CMSPortlet {
                     this.notificationsService.addSimpleNotification(portalControllerContext, message, NotificationsType.WARNING);
                 }
 
-                nuxeoController.notifyUpdate( null, true);
+
             }
 
         } else if ("admin".equals(request.getPortletMode().toString())) {

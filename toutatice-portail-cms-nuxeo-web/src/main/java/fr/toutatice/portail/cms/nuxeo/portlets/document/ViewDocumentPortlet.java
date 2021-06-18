@@ -422,8 +422,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 INuxeoCommand command = new InlineEditionCommand(path, property, values);
                 nuxeoController.executeNuxeoCommand(command);
 
-                
-                nuxeoController.notifyUpdate(path, false);
+                String spacePath = nuxeoController.getSpacePath();
+                nuxeoController.notifyUpdate(path, spacePath, false);
 
                 // Prevent Ajax refresh
                 request.setAttribute("osivia.ajax.preventRefresh", true);
@@ -511,8 +511,9 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 INuxeoCommand command = new InlineEditionCommand(path, property, values);
                 nuxeoController.executeNuxeoCommand(command);
 
-                
-                nuxeoController.notifyUpdate(path, false);
+                String spacePath = nuxeoController.getSpacePath();
+                nuxeoController.notifyUpdate(path, spacePath, false);
+
 
                 // Notification
                 String message = bundle.getString("DOCUMENT_INLINE_EDITION_CANCEL_SUCCESS");
