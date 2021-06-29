@@ -250,7 +250,7 @@
         <supported-public-render-parameter>osivia.keywords</supported-public-render-parameter>
     </portlet>
 
-
+-->
     <portlet>
         <description>Portlet selecteur mots cles PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-keywordsSelectorPortlet</portlet-name>
@@ -363,7 +363,7 @@
         <supported-public-render-parameter>search-filter</supported-public-render-parameter>
     </portlet>
     
-    
+   <!--  
 
     <portlet>
         <description>Move document portlet</description>

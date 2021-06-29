@@ -1246,7 +1246,7 @@ public class CMSService implements ICMSService {
                         }
                 }
 
-                if( Satellite.MAIN.equals(ctx.getSatellite()))   {
+                if( Satellite.MAIN.equals(ctx.getSatellite()) && !"0".equals(ctx.getDisplayLiveVersion()))   {
                     pubInfos = getPublicationInfosByConnect(ctx, path);
                 }   else    {
                      pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));

@@ -695,6 +695,11 @@ public class MenuBarFormater {
      */
     protected void getChangeModeLink(PortalControllerContext portalControllerContext, CMSServiceCtx cmsContext, CMSPublicationInfos pubInfos,
             List<MenubarItem> menubar, Bundle bundle, ExtendedDocumentInfos extendedInfos) throws CMSException, PortalException {
+        
+        // TODO refonte à implémenter
+        if(true) 
+            return;
+        
         // CMS service
         ICMSService cmsService = this.cmsServiceLocator.getCMSService();
 

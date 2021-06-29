@@ -132,9 +132,27 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
 
             nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
                     .executeCommand(createCommandContext(), new DocumentFetchLiveCommand(res.getDocumentPath(), "Read")).getResult();
-        else
+        else    {
             nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
                     .executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+            
+            if( path.startsWith("/default-domain/communaute"))  {
+                if( ! nxDocument.getFacets().list().contains("isRemoteProxy"))  {
+                    
+                    // TODO : dans le cas d'une publication 'isRemoteProxy' n'est pas mise à jour
+                    // Apparemment, il est uniquement mis à jour sur ToutaticeCoreProxyWithWorkflowFactory (publication par workflow)
+                    
+                    // Add facet
+                    ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new AddRemoteProxyFacetCommand(path))
+                            .getResult();       
+                    // reload
+                    nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
+                            .executeCommand(createCommandContext( false), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+                }
+            }
+        }
+        
+        
 
 
         String internalId = (String) nxDocument.getString("ttc:webid");

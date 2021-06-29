@@ -132,18 +132,7 @@ public class NuxeoTagService implements INuxeoTagService {
 
                 try {
                     String path = document.getPath();
-                    if (PortalObjectUtils.isSpaceSite(page)) {
-                        CMSService cmsService = (CMSService) NuxeoController.getCMSService();
-                        CMSServiceCtx cmsContext = nuxeoController.getCMSCtx();
-                        CMSItem cmsItem = cmsService.createItem(cmsContext, document.getPath(), null, nuxeoDocument);
-
-                        if (StringUtils.isNotEmpty(cmsItem.getWebId())) {
-                            path = this.webIdService.webIdToCmsPath(cmsItem.getWebId());
-                        }
-                    }
-
-                    String url = nuxeoController.getPortalUrlFactory().getPermaLink(nuxeoController.getPortalCtx(), null, null, path,
-                            IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                    String url = nuxeoController.getPortalUrlFactory().getViewContentUrl(nuxeoController.getPortalCtx(), nuxeoController.getUniversalIDFromPath(path));
                     link = new Link(url, false);
                 } catch (Exception e) {
                     link = new Link("#", false);
