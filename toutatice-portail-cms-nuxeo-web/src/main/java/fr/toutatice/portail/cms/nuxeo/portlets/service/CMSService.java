@@ -3044,6 +3044,47 @@ public class CMSService implements ICMSService {
         return updated;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateTaskNoActor(CMSServiceCtx cmsContext, UUID uuid, String actionId, Map<String, String> variables) throws CMSException {
+        // Controller context
+        ControllerContext controllerContext = cmsContext.getControllerContext();
+        // Portal controller context
+        PortalControllerContext portalControllerContext = new PortalControllerContext(controllerContext);
+
+        // Updated task indicator
+        boolean updated;
+
+
+	    // Nuxeo command
+	    INuxeoCommand command = new GetTasksCommand(null, null, uuid);
+	
+	    try {
+	        // Documents
+	    	cmsContext.setScope("superuser_no_cache");
+	        Documents documents = (Documents) this.executeNuxeoCommand(cmsContext, command);
+	        if (documents.size() == 1) {
+	            Document task = documents.get(0);
+	
+	            // Proceed
+	            this.formsService.proceed(portalControllerContext, task, actionId, variables);
+	
+	            updated = true;
+	        } else {
+	            // 404 not found
+	            updated = false;
+	        }
+	    } catch (CMSException e) {
+	        throw e;
+	    } catch (Exception e) {
+	        throw new CMSException(e);
+	    }
+
+
+        return updated;
+    }
 
     /**
      * Get task actors.

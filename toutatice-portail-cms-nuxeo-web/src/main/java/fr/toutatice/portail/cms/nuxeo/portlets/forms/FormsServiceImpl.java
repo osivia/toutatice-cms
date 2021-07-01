@@ -803,7 +803,7 @@ public class FormsServiceImpl implements IFormsService {
                                 // Accept
                                 String acceptActionId = variables.getString("actionIdYes");
                                 if (StringUtils.isNotBlank(acceptActionId)) {
-                                    String url = this.tasksService.getCommandUrl(portalControllerContext, uuid, acceptActionId, null);
+                                    String url = this.tasksService.getCommandUrl(portalControllerContext, uuid, acceptActionId, null, false);
                                     String title = bundle.getString("ACCEPT");
                                     Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
                                     
@@ -938,6 +938,9 @@ public class FormsServiceImpl implements IFormsService {
                 context.setVariable(entry.getKey(), factory.createValueExpression(entry.getValue(), String.class));
             }
         }
+        
+
+    	procLogger.debug("Transform "+expression+" with vars "+variables);
 
         // Functions
         try {
@@ -946,6 +949,8 @@ public class FormsServiceImpl implements IFormsService {
             context.setFunction("group", "emails", TransformationFunctions.getGroupEmailsMethod());
             context.setFunction("document", "title", TransformationFunctions.getDocumentTitleMethod());
             context.setFunction("command", "link", TransformationFunctions.getCommandLinkMethod());
+            context.setFunction("command", "linknoactor", TransformationFunctions.getCommandLinkNoActorMethod());
+            
             if (disabledLinks) {
                 context.setFunction("user", "link", TransformationFunctions.getUserDisplayNameMethod());
                 context.setFunction("document", "link", TransformationFunctions.getDocumentTitleMethod());

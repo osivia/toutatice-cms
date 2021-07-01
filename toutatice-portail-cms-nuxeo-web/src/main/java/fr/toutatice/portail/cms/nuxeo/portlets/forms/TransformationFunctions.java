@@ -31,7 +31,6 @@ import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.tasks.ITasksService;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.cms.ICMSService;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
@@ -40,7 +39,6 @@ import org.osivia.portal.core.constants.InternalConstants;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
 
@@ -503,7 +501,7 @@ public class TransformationFunctions {
             // URL
             String url;
             try {
-                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl);
+                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl, false);
             } catch (PortalException e) {
                 url = "#";
             }
@@ -527,6 +525,89 @@ public class TransformationFunctions {
      */
     public static Method getCommandLinkMethod() throws NoSuchMethodException, SecurityException {
         return TransformationFunctions.class.getMethod("getCommandLink", String.class, String.class, String.class);
+    }
+
+
+
+
+    /**
+     * Get update task command link (no actor).
+     * 
+     * @param title link title
+     * @param actionId action identifier
+     * @param redirectionPath redirection path
+     * @return link
+     */
+    public static String getCommandLinkNoActor(String title, String actionId, String redirectionPath) {
+        // Portal URL factory
+        IPortalUrlFactory portalUrlFactory = getPortalUrlFactory();
+        // Tasks service
+        ITasksService tasksService = getTasksService();
+
+        // Portal controller context
+        PortalControllerContext portalControllerContext = FormsServiceImpl.getPortalControllerContext();
+        // Disabled links indicator
+        boolean disabledLinks = FormsServiceImpl.areLinksDisabled();
+
+        // Result
+        String result;
+
+        if (disabledLinks) {
+            result = StringUtils.EMPTY;
+        } else {
+            // UUID
+            UUID uuid = FormsServiceImpl.getUuid();
+
+            // Redirection URL
+            String redirectionUrl;
+            if (StringUtils.isEmpty(redirectionPath)) {
+                redirectionUrl = null;
+            } else {
+                try {
+                	
+                	// Customized host property
+                	// #1960 - the link is generated relative, the host is setted by a custom property.
+                    String host = System.getProperty(ITasksService.HOST_PROPERTY);
+                    
+                    if (StringUtils.isEmpty(host)) {
+                    	redirectionUrl = portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_CMS);
+                    } else {
+                        //redirectionUrl = host + portalUrlFactory.getPermaLink(portalControllerContext, null, null, redirectionPath, IPortalUrlFactory.PERM_LINK_TYPE_TASK);
+                    	redirectionUrl = host + "/portal/auth/cms/" + redirectionPath; 
+                    	
+                    }
+                } catch (PortalException e) {
+                    redirectionUrl = null;
+                }
+            }
+
+            // URL
+            String url;
+            try {
+                url = tasksService.getCommandUrl(portalControllerContext, uuid, actionId, redirectionUrl, true);
+            } catch (PortalException e) {
+                url = "#";
+            }
+
+            // Link
+            Element link = DOM4JUtils.generateLinkElement(url, null, null, null, title);
+
+            result = DOM4JUtils.write(link);
+        }
+
+        return result;
+    }
+
+    
+    /**
+     * Get command:link method.
+     * 
+     * @return method
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     */
+    public static Method getCommandLinkNoActorMethod() throws NoSuchMethodException, SecurityException {
+        return TransformationFunctions.class.getMethod("getCommandLinkNoActor", String.class, String.class, String.class);
     }
 
 }
