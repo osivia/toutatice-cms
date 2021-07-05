@@ -12,6 +12,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.exception.CMSException;
+import org.osivia.portal.api.cms.exception.DocumentForbiddenException;
 import org.osivia.portal.api.cms.repository.BaseUserStorage;
 import org.osivia.portal.api.cms.repository.UserData;
 import org.osivia.portal.api.cms.repository.model.shared.RepositoryDocument;
@@ -164,6 +165,9 @@ public class NuxeoUserStorage extends BaseUserStorage {
         res = (CMSPublicationInfos) ((NuxeoResult) executeCommand(createCommandContext(false, true),
                 new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalID))).getResult();
         res.setSatellite(Satellite.MAIN);
+        
+        if(res.getErrorCodes().contains(CMSPublicationInfos.ERROR_CONTENT_FORBIDDEN))
+            throw new DocumentForbiddenException();
 
         return res;
     }
