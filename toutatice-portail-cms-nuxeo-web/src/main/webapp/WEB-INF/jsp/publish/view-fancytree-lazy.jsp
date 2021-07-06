@@ -12,13 +12,13 @@
 <portlet:resourceURL var="lazyLoadingURL" />
 
 
-<div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}">
+<div class="menu" data-dropurl="${dropActionURL}" data-lazyloadingurl="${lazyLoadingURL}" data-state-method="publishMenuState" data-state-id="publishMenu">
     <div class="overflow-auto mr-0">
         <c:if test="${startLevel eq 1 and empty displayItem.children}">
             <p class="text-muted text-center"><op:translate key="NO_ITEMS" /></p>
         </c:if>
     
-        <div class="fancytree fancytree-lazy">
+        <div class="fancytree fancytree-lazy" >
             <c:set var="parent" value="${displayItem}" scope="request" />
             <c:set var="lazy" value="true" scope="request" />
         

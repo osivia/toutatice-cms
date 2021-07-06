@@ -161,3 +161,32 @@ $JQry(function() {
 		}
 	})	
 });
+
+
+function publishMenuState( element, action, state)	{
+
+	var $element = $JQry(element);
+	
+
+	if( action == 'restore')	{
+		// restore expanded
+		$element.find(".fancytree.fancytree-lazy").fancytree("getTree").visit(function(node) {
+            expanded = state.get(node.data.id);	
+            if( expanded != null)    {	
+           		node.setExpanded(expanded);	
+            }
+		});
+	}
+
+	if( action == 'save')	{
+		// save expanded
+		const map = new Map();
+		$element.find(".fancytree.fancytree-lazy").fancytree("getTree").visit(function(node) {
+			map.set(node.data.id, node.isExpanded());
+
+		});
+		return map;
+	}
+	
+}
+

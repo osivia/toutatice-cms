@@ -112,7 +112,7 @@
         
             <!-- Drag & drop + Fancytree functions -->
 
-            <script type="text/javascript" src="/js/publish-menu.min.js"></script>
+            <script type="text/javascript" src="/js/publish-menu.js"></script>
 
         </header-content>
         
