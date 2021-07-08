@@ -52,6 +52,7 @@ import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.DocumentType;
+import org.osivia.portal.api.cms.service.UpdateScope;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Person;
@@ -423,7 +424,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 nuxeoController.executeNuxeoCommand(command);
 
                 String spacePath = nuxeoController.getSpacePath();
-                nuxeoController.notifyUpdate(path, spacePath, false);
+                nuxeoController.notifyUpdate(path, spacePath, UpdateScope.SCOPE_CONTENT,false);
 
                 // Prevent Ajax refresh
                 request.setAttribute("osivia.ajax.preventRefresh", true);
@@ -512,7 +513,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
                 nuxeoController.executeNuxeoCommand(command);
 
                 String spacePath = nuxeoController.getSpacePath();
-                nuxeoController.notifyUpdate(path, spacePath, false);
+                nuxeoController.notifyUpdate(path, spacePath, UpdateScope.SCOPE_CONTENT, false);
 
 
                 // Notification

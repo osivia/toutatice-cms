@@ -36,6 +36,7 @@ import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.service.CMSService;
 import org.osivia.portal.api.cms.service.CMSSession;
 import org.osivia.portal.api.cms.service.UpdateInformations;
+import org.osivia.portal.api.cms.service.UpdateScope;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.contribution.IContributionService.EditionState;
 import org.osivia.portal.api.directory.IDirectoryService;
@@ -571,7 +572,7 @@ public class NuxeoController {
      * @return the document
      * @throws Exception the exception
      */
-    public void notifyUpdate(String documentPath, String spacePath, boolean async) throws PortletException {
+    public void notifyUpdate(String documentPath, String spacePath, UpdateScope scope, boolean async) throws PortletException {
 
         CMSController ctrl = new CMSController(getPortalCtx());
 
@@ -599,8 +600,8 @@ public class NuxeoController {
 
                 // Notify update
                 CMSSession session = Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getCMSSession(ctrl.getCMSContext());
-                UpdateInformations infos = new UpdateInformations(internalID, spaceID);
-                infos.setAsync(async);
+                UpdateInformations infos = new UpdateInformations(internalID, spaceID, scope, async);
+
                 session.notifyUpdate(infos);
             }
         } catch (Exception e) {
