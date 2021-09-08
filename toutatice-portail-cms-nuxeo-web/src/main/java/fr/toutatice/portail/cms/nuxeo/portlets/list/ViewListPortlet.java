@@ -111,10 +111,10 @@ public class ViewListPortlet extends ViewList {
     protected static final String INFINITE_VIEW = "/WEB-INF/jsp/list/view-infinite-scroll.jsp";
 
     
-	private static final String SETS_PROPERTY = "sets:sets";
-	private static final String LIST_WEBID_PROPERTY= "webids";
-	private static final String NAME_PROPERTY = "name";
-	private static final String WEBID_PROPERTY = "ttc:webid";
+    private static final String SETS_PROPERTY = "sets:sets";
+    private static final String LIST_WEBID_PROPERTY= "webids";
+    private static final String NAME_PROPERTY = "name";
+    private static final String WEBID_PROPERTY = "ttc:webid";
 
     /** Bundle factory. */
     private IBundleFactory bundleFactory;
@@ -157,8 +157,6 @@ public class ViewListPortlet extends ViewList {
         // Document DAO
         this.documentDAO = DocumentDAO.getInstance();
 
-        // Portlet sequencing service
-        this.portletSequencingService = Locator.getService(IPortletSequencingService.class);
     }
 
 
@@ -648,44 +646,44 @@ public class ViewListPortlet extends ViewList {
             Document workspace = null;
             List<Object> setsWebidList = null;
             if (sets)
-    		{
-            	if (nuxeoRequest == null) nuxeoRequest = "";
+            {
+                if (nuxeoRequest == null) nuxeoRequest = "";
                 // CMS base path
                 String basePath = nuxeoController.getBasePath();
                 if (basePath == null) {
                     workspace =  null;
                 } else
                 {
-    	            // Nuxeo document context
-    	            NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(basePath);
-    	
-    	            // get workspace document
-    	            workspace = documentContext.getDocument();
+                    // Nuxeo document context
+                    NuxeoDocumentContext documentContext = nuxeoController.getDocumentContext(basePath);
+        
+                    // get workspace document
+                    workspace = documentContext.getDocument();
                 }
 
                 if (workspace != null)
                 {
-                	PropertyList list = (PropertyList) workspace.getProperties().get(SETS_PROPERTY);
-                	if (list != null && list.list().size() >0)
-                	{
-                		for (Object map : list.list())
-                		{
-                			if (StringUtils.equals(configuration.getSetType(), ((PropertyMap) map).getString(NAME_PROPERTY)))
-                			{
-                				PropertyList propertyListWebId = ((PropertyMap) map).getList(LIST_WEBID_PROPERTY);
-                				setsWebidList = propertyListWebId.list();
-                				break;
-                			}
-                		}
-                	}
-                	String workspacePath = workspace.getPath();
-                	nuxeoRequest = this.addSetClause(nuxeoRequest, setsWebidList, workspacePath);
+                    PropertyList list = (PropertyList) workspace.getProperties().get(SETS_PROPERTY);
+                    if (list != null && list.list().size() >0)
+                    {
+                        for (Object map : list.list())
+                        {
+                            if (StringUtils.equals(configuration.getSetType(), ((PropertyMap) map).getString(NAME_PROPERTY)))
+                            {
+                                PropertyList propertyListWebId = ((PropertyMap) map).getList(LIST_WEBID_PROPERTY);
+                                setsWebidList = propertyListWebId.list();
+                                break;
+                            }
+                        }
+                    }
+                    String workspacePath = workspace.getPath();
+                    nuxeoRequest = this.addSetClause(nuxeoRequest, setsWebidList, workspacePath);
                 } else
                 {
-                	//Add a clause to get no document
-                	nuxeoRequest += "ecm:currentLifeCycleState <> 'deleted' and ecm:currentLifeCycleState = 'deleted' ";
+                    //Add a clause to get no document
+                    nuxeoRequest += "ecm:currentLifeCycleState <> 'deleted' and ecm:currentLifeCycleState = 'deleted' ";
                 }
-    		}
+            }
 
             // Apply request filter
             nuxeoRequest = this.applyFilter(nuxeoRequest, filter);
@@ -803,26 +801,26 @@ public class ViewListPortlet extends ViewList {
                 //If sets : order the documentsDTO list
                 if (sets)
                 {
-                	Map<Object, DocumentDTO> mapSets = new HashMap<Object, DocumentDTO>();
+                    Map<Object, DocumentDTO> mapSets = new HashMap<Object, DocumentDTO>();
 
-                	//The result list is not sorted because of the 'in' clause
-                	//First put dto in a hashmap
-                	if (documentsDTO != null)
-                	{
-                		for (DocumentDTO dto: documentsDTO)
-                		{
-                			mapSets.put(dto.getProperties().get(WEBID_PROPERTY), dto);
-                		}
-                	}
-                	//Then add dto in a list in the order of the listwebid
-                	if (workspace != null && setsWebidList != null)
-                	{
-                		documentsDTO = new ArrayList<DocumentDTO>(documentsDTO == null? 0 : documentsDTO.size());
-                		for (Object webid: setsWebidList)
-                		{
-                			if (mapSets.get(webid)!=null) documentsDTO.add(mapSets.get(webid));
-                		}
-                	}
+                    //The result list is not sorted because of the 'in' clause
+                    //First put dto in a hashmap
+                    if (documentsDTO != null)
+                    {
+                        for (DocumentDTO dto: documentsDTO)
+                        {
+                            mapSets.put(dto.getProperties().get(WEBID_PROPERTY), dto);
+                        }
+                    }
+                    //Then add dto in a list in the order of the listwebid
+                    if (workspace != null && setsWebidList != null)
+                    {
+                        documentsDTO = new ArrayList<DocumentDTO>(documentsDTO == null? 0 : documentsDTO.size());
+                        for (Object webid: setsWebidList)
+                        {
+                            if (mapSets.get(webid)!=null) documentsDTO.add(mapSets.get(webid));
+                        }
+                    }
                 }
                 
                 request.setAttribute("documents", documentsDTO);
@@ -1030,10 +1028,7 @@ public class ViewListPortlet extends ViewList {
         interpreter.set("NXQLFormater", new NXQLFormater(nuxeoController));
         interpreter.set("navItem", nuxeoController.getNavigationItem());
 
-        // Storage attributes
-        interpreter.set("storage", this.portletSequencingService.getAttributes(nuxeoController.getPortalCtx()));
-
-        // Task path
+         // Task path
         String taskPath;
         String taskId = window.getProperty(ITaskbarService.LINKED_TASK_ID_WINDOW_PROPERTY);
         if (StringUtils.isEmpty(taskId)) {
@@ -1074,24 +1069,24 @@ public class ViewListPortlet extends ViewList {
      */
     private String addSetClause(String request, List<Object> listWebid, String workspacePath)
     {
-    	StringBuilder clause = new StringBuilder();
-    	clause.append(request);
-    	clause.append("ecm:path startswith '").append(workspacePath).append("' ");
-    	clause.append("and ecm:currentLifeCycleState <> 'deleted' ");
-    	clause.append(" and ttc:webid in (");
+        StringBuilder clause = new StringBuilder();
+        clause.append(request);
+        clause.append("ecm:path startswith '").append(workspacePath).append("' ");
+        clause.append("and ecm:currentLifeCycleState <> 'deleted' ");
+        clause.append(" and ttc:webid in (");
         if (listWebid != null && listWebid.size() > 0)
         {
-        	Iterator<Object> it = listWebid.iterator();
-        	boolean first = true;
-        	while (it.hasNext())
-        	{
-        		if (!first) clause.append(",");
-        		clause.append("'").append(it.next()).append("'");
-        		first = false;
-        	}
+            Iterator<Object> it = listWebid.iterator();
+            boolean first = true;
+            while (it.hasNext())
+            {
+                if (!first) clause.append(",");
+                clause.append("'").append(it.next()).append("'");
+                first = false;
+            }
         } else
         {
-        	clause.append("''");
+            clause.append("''");
         }
         clause.append(") ");
         return clause.toString();
