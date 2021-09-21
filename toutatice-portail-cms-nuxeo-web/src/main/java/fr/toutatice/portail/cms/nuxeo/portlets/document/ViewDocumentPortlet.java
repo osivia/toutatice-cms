@@ -221,8 +221,7 @@ public class ViewDocumentPortlet extends CMSPortlet {
             // v1.0.16
             ThumbnailServlet.setPortletContext(portletContext);
             SitePictureServlet.setPortletContext(portletContext);
-// TODO integration Idirectory
-//            AvatarServlet.setPortletContext(portletContext);
+            AvatarServlet.setPortletContext(portletContext);
             BinaryServlet.setPortletContext(portletContext);
         }
          catch (Exception e) {

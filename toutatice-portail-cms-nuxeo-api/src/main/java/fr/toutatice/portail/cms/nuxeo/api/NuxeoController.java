@@ -2615,8 +2615,26 @@ public class NuxeoController {
      * @throws CMSException
      */
     public String refreshUserAvatar(String username) {
+        //Toolbar updated at layout phase
+        getCMSCtx().getServletRequest().setAttribute("osivia.refreshPageLayout", Boolean.TRUE);
+        
         return getCMSService().refreshUserAvatar(this.getCMSCtx(), username);
+        
+        
     }
+    
+    /**
+     * Refresh the user infos
+     *
+     * @param username
+     * @return a timestamp
+     * @throws CMSException
+     */
+    public void refreshUserInfo(String username) {
+        //Toolbar updated at layout phase
+        getCMSCtx().getServletRequest().setAttribute("osivia.refreshPageLayout", Boolean.TRUE);
+    }
+    
 
     /**
      * Get a person
