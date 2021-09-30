@@ -187,8 +187,8 @@ public class CMSService implements ICMSService {
 
 //TODO refonte
 //        this.formsService = NuxeoServiceFactory.getFormsService();
-//        this.personService = DirServiceFactory.getService(PersonService.class);
-//        this.groupService = DirServiceFactory.getService(GroupService.class);
+        this.personService = DirServiceFactory.getService(PersonService.class);
+        this.groupService = DirServiceFactory.getService(GroupService.class);
         this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
     }

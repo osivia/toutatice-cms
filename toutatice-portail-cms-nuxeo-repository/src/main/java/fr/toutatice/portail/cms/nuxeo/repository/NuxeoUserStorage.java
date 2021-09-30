@@ -123,10 +123,15 @@ public class NuxeoUserStorage extends BaseUserStorage {
                 properties.put(key, nxDocument.getProperties().get(key));
             }
 
-            // Fetch space  (cache)
-            CMSPublicationInfos spacePubInfos = (CMSPublicationInfos) ((NuxeoResult)executeCommand(createCommandContext( true, true), new PublishInfosCommand(docPubInfos.getPublishSpacePath() ))).getResult();
-            
-            Document space = fetchDocument(docPubInfos.getPublishSpacePath(), spacePubInfos.isPublished(), true);
+              
+            String spaceId = null;
+            if( docPubInfos.getPublishSpacePath() != null)  {
+                // Fetch space  (cache)
+                CMSPublicationInfos spacePubInfos = (CMSPublicationInfos) ((NuxeoResult)executeCommand(createCommandContext( true, true), new PublishInfosCommand(docPubInfos.getPublishSpacePath() ))).getResult();
+
+                Document space = fetchDocument(docPubInfos.getPublishSpacePath(), spacePubInfos.isPublished(), true);
+                spaceId = space.getString("ttc:webid");
+            }
                 
             
             RepositoryDocument document;
@@ -134,11 +139,11 @@ public class NuxeoUserStorage extends BaseUserStorage {
                 if( "Workspace".equals(nxDocument.getType()) )
                     properties.put("osivia.connect.templated", "false");
                 document= new RepositorySpace(getUserRepository(), nxDocument, internalID,
-                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, space.getString("ttc:webid"), null, properties, new UniversalID("templates", "ID_TEMPLATE_NX_WORKSPACE"));      
+                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, spaceId, null, properties, new UniversalID("templates", "ID_TEMPLATE_NX_WORKSPACE"));      
             }
             else
                 document= new RepositoryDocument(getUserRepository(), nxDocument, internalID,
-                    nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, space.getString("ttc:webid"), null, properties);
+                    nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, spaceId, null, properties);
              
             return document;
 
