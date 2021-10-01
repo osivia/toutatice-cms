@@ -1,5 +1,6 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.cms;
 
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPermissions;
@@ -151,23 +152,29 @@ public class NuxeoPermissionsImpl implements NuxeoPermissions {
      */
     private synchronized void initCmsPublicationInfos() {
         if (!this.initializedCmsPublicationInfos) {
-            // CMS publication infos
-            CMSPublicationInfos cmsPublicationInfos = this.documentContext.getCmsPublicationInfos();
+            try {
+                // CMS publication infos
+                CMSPublicationInfos cmsPublicationInfos = this.documentContext.getCmsPublicationInfos();
 
-            // Editable indicator
-            this.editable = cmsPublicationInfos.isEditableByUser();
-            // Manageable indicator
-            this.manageable = cmsPublicationInfos.isManageableByUser();
-            // Deletable indicator
-            this.deletable = cmsPublicationInfos.isDeletableByUser();
-            // Commentable indicator
-            this.commentable = cmsPublicationInfos.isCommentableByUser();
-            // Anonymously readable indicator
-            this.anonymouslyReadable = cmsPublicationInfos.isAnonymouslyReadable();
-            // Can be validated indicator
-            this.canBeValidated = cmsPublicationInfos.isUserCanValidate();
-            // Can be copied indicator
-            this.canBeCopied = cmsPublicationInfos.isCopiable();
+                // Editable indicator
+                this.editable = cmsPublicationInfos.isEditableByUser();
+                // Manageable indicator
+                this.manageable = cmsPublicationInfos.isManageableByUser();
+                // Deletable indicator
+                this.deletable = cmsPublicationInfos.isDeletableByUser();
+                // Commentable indicator
+                this.commentable = cmsPublicationInfos.isCommentableByUser();
+                // Anonymously readable indicator
+                this.anonymouslyReadable = cmsPublicationInfos.isAnonymouslyReadable();
+                // Can be validated indicator
+                this.canBeValidated = cmsPublicationInfos.isUserCanValidate();
+                // Can be copied indicator
+                this.canBeCopied = cmsPublicationInfos.isCopiable();
+            } catch (NuxeoException e) {
+                if (e.getErrorCode() != NuxeoException.ERROR_FORBIDDEN) {
+                    throw e;
+                }
+            }
 
             this.initializedCmsPublicationInfos = true;
         }
