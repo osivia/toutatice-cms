@@ -152,7 +152,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     response.removePublicRenderParameter("search-filter");
 
                     // Refresh other portlet model attributes
-                    PageProperties.getProperties().setRefreshingPage(true);
+                    //PageProperties.getProperties().setRefreshingPage(true);
 
                     // Réinitialisation des fenetres en mode NORMAL
                     request.setAttribute(Constants.PORTLET_ATTR_UNSET_MAX_MODE, Constants.PORTLET_VALUE_ACTIVATE);
@@ -181,7 +181,7 @@ public class KeywordsSelectorPortlet extends CMSPortlet {
                     response.removePublicRenderParameter("search-filter");
 
                     // Refresh other portlet model attributes
-                    PageProperties.getProperties().setRefreshingPage(true);
+                    //PageProperties.getProperties().setRefreshingPage(true);
 
                     // Réinitialisation des fenetres en mode NORMAL
                     request.setAttribute("osivia.unsetMaxMode", "true");

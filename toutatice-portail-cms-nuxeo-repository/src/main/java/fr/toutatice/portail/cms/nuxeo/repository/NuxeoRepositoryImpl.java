@@ -136,7 +136,8 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
             nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
                     .executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
             
-            if( path.startsWith("/default-domain/communaute"))  {
+            // Cannot publish /default-domain/communaute
+            if( path.startsWith("/default-domain/communaute/"))  {
                 if( ! nxDocument.getFacets().list().contains("isRemoteProxy"))  {
                     
                     // TODO : dans le cas d'une publication 'isRemoteProxy' n'est pas mise à jour
@@ -296,7 +297,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         
         NuxeoNavigationItem navItem;
         if( parent != null) {
-            navItem = new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("dc:title"), doc.getSpaceId(), spacePath, parent.getPath());
+            navItem = new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("title"), doc.getSpaceId(), spacePath, parent.getPath());
             String pageTemplate = parent.getProperties().get("pageTemplate");
             if( pageTemplate!= null && pageTemplate.startsWith("/"))   {
                 // Old pattern /page1/page2/page3
@@ -350,7 +351,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
                 break;
         } while (true);
 
-        return new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("dc:title"),
+        return new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), parent.getWebId()), parent.getProperties().get("title"),
                  new UniversalID(getRepositoryName(), spaceId), spacePath, parent.getPath());
     }
 
@@ -373,7 +374,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         try {
             List<CMSItem> cmsChildren = cmsServiceLocator.getCMSService().getPortalNavigationSubitems(cmsContext, spacePath, docPath);
             for (CMSItem child : cmsChildren) {
-                navChildren.add(new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), child.getWebId()), child.getProperties().get("dc:title"),
+                navChildren.add(new NuxeoNavigationItem(this, new UniversalID(getRepositoryName(), child.getWebId()), child.getProperties().get("title"),
                          new UniversalID(getRepositoryName(), spaceId), spacePath,child.getPath()));
             }
         } catch (org.osivia.portal.core.cms.CMSException e) {
