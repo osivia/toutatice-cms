@@ -296,6 +296,7 @@ public class BinaryServlet extends HttpServlet {
 
                 response.setContentType(content.getMimeType());
                 response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content, forceDownload));
+                addCrossOrigin( response);
                 response.setHeader("Cache-Control", "max-age=" + expirationTimeout);
                 response.setHeader("Content-Length", String.valueOf(content.getFileSize()));
 
@@ -340,6 +341,18 @@ public class BinaryServlet extends HttpServlet {
         BinaryServlet.portletContext = portletContext;
     }
 
+    
+    /**
+     * Adds the cross origin header.
+     *
+     * @param response the response
+     */
+    private void addCrossOrigin(HttpServletResponse response) {
+        String crossOrigin = System.getProperty("portal.cms.binaries.Access-Control-Allow-Origin");
+        if( StringUtils.isNotEmpty(crossOrigin)) {
+            response.setHeader("Access-Control-Allow-Origin", crossOrigin);
+        }
+    }
 
     /**
      * Get header content disposition value.
@@ -390,6 +403,7 @@ public class BinaryServlet extends HttpServlet {
         }
         // Content disposition
         String disposition = this.getHeaderContentDisposition(request, content, forceDownload);
+        addCrossOrigin( response);
 
 
         // Validate request headers for resume : If-Unmodified-Since header should be greater than LastModified.
