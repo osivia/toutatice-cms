@@ -258,6 +258,26 @@ public class XSLFunctions {
         return BASE_PATH;
     }
 
+    public boolean testAlternateUrl(String url) {
+
+    	
+    	String publicHost = System.getProperty("nuxeo.publicHost");
+    	String[] splitAltHosts = System.getProperty("nuxeo.alternativeServerNames").split("\\|");
+    	
+    	if(url.contains(publicHost)) {
+    		return true;
+    	}
+    	else {
+    		
+    		for(int i = 0; i < splitAltHosts.length; i++) {
+    	    	if(splitAltHosts[i].length() > 0 && url.contains(splitAltHosts[i])) {
+    	    		return true;
+    	    	}
+    		}
+    	}
+    	
+    	return false;
+    }
 
     /**
      * Rewrite link URL.
