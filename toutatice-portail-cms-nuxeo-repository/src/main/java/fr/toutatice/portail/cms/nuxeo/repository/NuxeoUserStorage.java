@@ -13,6 +13,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentForbiddenException;
+import org.osivia.portal.api.cms.repository.BaseUserRepository;
 import org.osivia.portal.api.cms.repository.BaseUserStorage;
 import org.osivia.portal.api.cms.repository.UserData;
 import org.osivia.portal.api.cms.repository.model.shared.RepositoryDocument;
@@ -80,6 +81,10 @@ public class NuxeoUserStorage extends BaseUserStorage {
 
         if (!cache)
             commandCtx.setForceReload(true);
+        
+        
+        if( BaseUserRepository.SUPERUSER_NAME.equals(getUserRepository().getUserName()))
+                superUser = true;
 
         // Par défaut
         if (superUser) {

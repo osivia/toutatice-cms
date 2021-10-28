@@ -58,6 +58,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
+import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.context.PortalControllerContext;
 
 import org.osivia.portal.api.internationalization.Bundle;
@@ -2019,7 +2020,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Search
         TaskbarItem search = factory.createStapledTaskbarItem(ITaskbarService.SEARCH_TASK_ID, "SEARCH_TASK", "glyphicons glyphicons-search",
-                "/default/templates/workspace/search");
+                new UniversalID( "idx", "DEFAULT_TEMPLATES_WORKSPACE_SEARCH"));
         factory.hide(search, true);
         taskbarItems.add(search);
 

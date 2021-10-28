@@ -1874,7 +1874,13 @@ public class NuxeoController {
 
         
         try {
-             CMSSession cmsSession =  Locator.getService(CMSService.class).getCMSSession(getCMSContext());
+            CMSContext cmsContext = getCMSContext();
+            if(   commandContext.getAuthType()==NuxeoCommandContext.AUTH_TYPE_SUPERUSER)
+                cmsContext.setSuperUserMode(true);
+                
+                
+            
+             CMSSession cmsSession =  Locator.getService(CMSService.class).getCMSSession(cmsContext);
              return ((NuxeoResult) cmsSession.executeRequest(new NuxeoRequest(NUXEO_REPOSITORY_NAME,commandContext, command))).getResult();
         } catch (Exception e) {
             throw this.wrapNuxeoException(e);

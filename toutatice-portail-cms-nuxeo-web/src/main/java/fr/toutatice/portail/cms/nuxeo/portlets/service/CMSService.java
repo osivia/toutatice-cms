@@ -554,7 +554,7 @@ public class CMSService implements ICMSService {
      */
     private Document fetchContentByConnect(CMSServiceCtx cmsContext, String path)  throws Exception  {
         
-        CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());
+        CMSController ctrl = getConnectController(cmsContext);
 
         // Get Id
         NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class)
@@ -599,7 +599,8 @@ public class CMSService implements ICMSService {
             if (BooleanUtils.toBoolean(System.getProperty("osivia.services.userWorkSpace.adaptDocumentFolder"))) {
 
                 // Not supported yet for web-service
-                if (cmsContext.getPortalControllerContext() != null) {
+                // And during validation phase (spring)
+                if (cmsContext.getPortalControllerContext().getHttpServletRequest() != null) {
                     
                     if (content != null && content.getNativeItem() instanceof Document) {
                         Document doc = (Document) content.getNativeItem();
@@ -1292,8 +1293,8 @@ public class CMSService implements ICMSService {
      * @throws Exception the exception
      */
     private CMSPublicationInfos getPublicationInfosByConnect(CMSServiceCtx cmsContext, String path)  throws Exception  {
-
-        CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext());
+        
+        CMSController ctrl = getConnectController(cmsContext);
         
         // Get content ID
         NuxeoRepository nuxeoRepository = (NuxeoRepository) (Locator.getService(org.osivia.portal.api.cms.service.CMSService.class).getUserRepository(ctrl.getCMSContext(), "nx"));
@@ -1304,6 +1305,24 @@ public class CMSService implements ICMSService {
         CMSPublicationInfos pubInfos = (CMSPublicationInfos) session.getPersonnalization(new UniversalID("nx", internalId));
         return pubInfos;
      }
+
+
+    /**
+     * Gets the connect context.
+     *
+     * @param cmsContext the cms context
+     * @return the connect context
+     */
+    private CMSController getConnectController(CMSServiceCtx cmsContext) {
+        boolean superUser = false;
+        if( "superuser_no_cache".equals(cmsContext.getScope()))
+            superUser = true;
+        if( "superuser_context".equals(cmsContext.getScope()))
+            superUser = true;
+
+        CMSController ctrl = new CMSController(cmsContext.getPortalControllerContext(), superUser);
+        return ctrl;
+    }
 
 
     /**
@@ -2914,7 +2933,6 @@ public class CMSService implements ICMSService {
                 }
             }
         }
-
         return navigationPath;
     }
 
