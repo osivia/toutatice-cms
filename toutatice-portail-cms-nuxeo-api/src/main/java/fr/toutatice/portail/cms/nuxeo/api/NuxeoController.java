@@ -2039,10 +2039,8 @@ public class NuxeoController {
                 return portletLink;
             }
 
-            UniversalID id = getUniversalIDFromPath( doc.getPath());
             
-            
-            String url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), id);
+            String url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), new UniversalID("nx", doc.getProperties().getString("ttc:webid")));
 
 
             if (url != null) {
