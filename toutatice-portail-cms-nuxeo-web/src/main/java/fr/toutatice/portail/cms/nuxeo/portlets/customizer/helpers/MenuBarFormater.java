@@ -1819,7 +1819,7 @@ public class MenuBarFormater {
                         menubar.add(item);
 
                         order++;
-                        divider = true;
+                        //divider = true;
                     }
 
                     for (Entry<DocumentType, String> entry : notFolderishTypes.entrySet()) {

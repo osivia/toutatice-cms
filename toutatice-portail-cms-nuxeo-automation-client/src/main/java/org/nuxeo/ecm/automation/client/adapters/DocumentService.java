@@ -20,6 +20,7 @@ import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Blobs;
 import org.nuxeo.ecm.automation.client.model.DocRef;
+import org.nuxeo.ecm.automation.client.model.DocRefs;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.nuxeo.ecm.automation.client.model.FileBlob;
@@ -185,6 +186,12 @@ public class DocumentService {
             req.set("name", name);
         }
         return (Document) req.execute();
+    }
+    
+    public Documents copy(DocRefs src, DocRef targetParent) throws Exception {
+        OperationRequest req = this.session.newRequest(CopyDocument).setInput(src).set("target", targetParent).setHeader(ES_SYNC_FLAG, "true");
+
+        return (Documents) req.execute();
     }
 
     public Document move(DocRef src, DocRef targetParent) throws Exception {
