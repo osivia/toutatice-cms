@@ -4,7 +4,7 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>4.9-SNAPSHOT</version>
+    <version>4.9.3-RC18</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
@@ -427,7 +427,7 @@
         <url>https://github.com/osivia/toutatice-cms.git</url>
         <connection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/osivia/toutatice-cms.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>4.9.3-RC18</tag>
   </scm>
 
 
