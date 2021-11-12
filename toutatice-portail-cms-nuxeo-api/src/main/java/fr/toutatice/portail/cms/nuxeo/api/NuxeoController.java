@@ -17,6 +17,7 @@ import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoPublicationInfos;
 import fr.toutatice.portail.cms.nuxeo.api.services.*;
 
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -2039,9 +2040,19 @@ public class NuxeoController {
                 return portletLink;
             }
 
+            String url;
             
-            String url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), new UniversalID("nx", doc.getProperties().getString("ttc:webid")));
+            if (doc.getFacets().list().contains("isRemoteProxy")) {
+                 // TODO : increase performance
+                 UniversalID id = getUniversalIDFromPath( doc.getPath());
+                 url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), id);               
+            }   else    {
+                // Best for performance at this time
+                url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), new UniversalID("nx", doc.getProperties().getString("ttc:webid")));
+            }
 
+
+            
 
             if (url != null) {
 
