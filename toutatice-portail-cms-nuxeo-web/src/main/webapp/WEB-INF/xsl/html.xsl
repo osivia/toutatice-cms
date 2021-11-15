@@ -138,9 +138,14 @@
        		<xsl:variable name="url" select="bridge:link($bridge,  @href)" />
       		<xsl:attribute name="href"><xsl:value-of select="$url" /></xsl:attribute>
      		
-			<xsl:if test="not(@target) and not(bridge:testAlternateUrl($bridge,$url)) ">     	     		
-	     		<xsl:attribute name="target">_blank</xsl:attribute>
-	     	 </xsl:if>
+     		<xsl:choose>
+				<xsl:when test="not(@target) and not(bridge:testAlternateUrl($bridge,$url)) ">     	     		
+		     		<xsl:attribute name="target">_blank</xsl:attribute>
+		     	 </xsl:when>
+		     	 <xsl:otherwise>
+		     	 	<xsl:attribute name="target"><xsl:value-of select="@target" /></xsl:attribute>
+		     	 </xsl:otherwise>
+	     	 </xsl:choose>
 	     	 
  			<xsl:apply-templates select="@*[name(.)!='href']|node()" />
         </xsl:element>        
