@@ -32,7 +32,7 @@
         <supported-public-render-parameter>selectors</supported-public-render-parameter>
     </portlet>
 
-<!-- 
+
     <portlet>
         <description>Portlet Nuxeo Fragment PIA</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewFragmentPortlet</portlet-name>
@@ -62,7 +62,7 @@
                      
     </portlet>
 
--->
+
     <portlet>
         <description>Portlet Nuxeo list</description>
         <portlet-name>toutatice-portail-cms-nuxeo-viewListPortlet</portlet-name>

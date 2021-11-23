@@ -2539,7 +2539,39 @@ public class NuxeoController {
             if (this.response instanceof MimeResponse) {
                 this.cmsCtx.setResponse((MimeResponse) this.response);
             }
-            this.cmsCtx.setScope(this.getScope());
+            
+            if(StringUtils.isNotEmpty(this.getScope()))
+                    this.cmsCtx.setScope(this.getScope());
+            else    {
+/*                
+                // Compatiblity with OSIVIA Connect
+                String scope = null;
+                if( getAuthType() == NuxeoCommandContext.AUTH_TYPE_SUPERUSER)   {
+                    if( getCacheType() == CacheInfo.CACHE_SCOPE_NONE)  {
+                        scope = "superuser_no_cache";
+                    }   else
+                        scope = "superuser_context";
+                }
+                this.cmsCtx.setScope(scope);
+                this.cmsCtx.setForcePublicationInfosScope(scope);  
+                String scope;
+                */
+                if ((NuxeoCommandContext.AUTH_TYPE_SUPERUSER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT == this.getCacheType())) {
+                    scope = "superuser_context";
+                } else if ((NuxeoCommandContext.AUTH_TYPE_SUPERUSER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_NONE == this.getCacheType())) {
+                    scope = "superuser_no_cache";
+                } else if ((NuxeoCommandContext.AUTH_TYPE_USER == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_SESSION == this.getCacheType())) {
+                    scope = "user_session";
+                } else if ((NuxeoCommandContext.AUTH_TYPE_ANONYMOUS == this.getAuthType()) && (CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT == this.getCacheType())) {
+                    scope = "anonymous";
+                } else {
+                    scope = null;
+                }
+                this.cmsCtx.setScope(scope);
+                this.cmsCtx.setForcePublicationInfosScope(scope);
+            }
+            
+            
             this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
             this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
 
@@ -2709,7 +2741,7 @@ public class NuxeoController {
         ICMSService cmsService = getCMSService();
         // CMS context
         CMSServiceCtx cmsContext = this.getCMSCtx();
-
+/*
         // Scope
         if (StringUtils.isEmpty(cmsContext.getScope())) {
             String scope;
@@ -2727,6 +2759,7 @@ public class NuxeoController {
             cmsContext.setScope(scope);
             cmsContext.setForcePublicationInfosScope(scope);
         }
+        */
 
         // Document context
         NuxeoDocumentContext documentContext;

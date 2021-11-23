@@ -213,9 +213,8 @@ public class ViewDocumentPortlet extends CMSPortlet {
             this.registerService(this.nuxeoService.getTagService(), tagService);
 
             // Forms service
-          //TODO refonte
-//            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
-//            this.registerService(this.nuxeoService.getFormsService(), formsService);
+            FormsServiceImpl formsService = new FormsServiceImpl(customizer);
+            this.registerService(this.nuxeoService.getFormsService(), formsService);
 
 
             // v1.0.16

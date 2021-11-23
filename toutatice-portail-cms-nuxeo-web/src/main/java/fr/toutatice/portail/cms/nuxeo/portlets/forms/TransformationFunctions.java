@@ -449,6 +449,7 @@ public class TransformationFunctions {
         // CMS context
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
+        cmsContext.setScope("superuser_context");
         cmsContext.setForcePublicationInfosScope("superuser_context");
 
         INuxeoCommand command = new GetDocumentCommand(path);

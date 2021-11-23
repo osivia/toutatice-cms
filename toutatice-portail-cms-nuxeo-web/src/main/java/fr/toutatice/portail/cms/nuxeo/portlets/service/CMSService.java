@@ -511,7 +511,7 @@ public class CMSService implements ICMSService {
                 
                 Document document;
                 
-                if (haveToGetLive && Satellite.MAIN.equals(satellite)) {
+                if (haveToGetLive && Satellite.MAIN.equals(satellite) && !(path.startsWith("/task-root/"))) {
                     document = fetchContentByConnect(cmsContext, path);
                 } else {
 
@@ -1247,7 +1247,7 @@ public class CMSService implements ICMSService {
                         }
                 }
 
-                if( Satellite.MAIN.equals(ctx.getSatellite()) && !"0".equals(ctx.getDisplayLiveVersion()))   {
+                if( Satellite.MAIN.equals(ctx.getSatellite()) && !"0".equals(ctx.getDisplayLiveVersion()) && ! (path.startsWith("/task-root/")))   {
                     pubInfos = getPublicationInfosByConnect(ctx, path);
                 }   else    {
                      pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));

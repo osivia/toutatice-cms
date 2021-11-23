@@ -796,6 +796,7 @@ public class FormsServiceImpl implements IFormsService {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(portalControllerContext);
         cmsContext.setScope("superuser_context");
+        cmsContext.setForcePublicationInfosScope("superuser_context");
 
         // Path
         String path = NuxeoController.webIdToFetchPath(webId);

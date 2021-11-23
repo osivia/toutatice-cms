@@ -71,5 +71,8 @@ public class NuxeoNavigationItem implements NavigationItem {
         this.customizedTemplateId = customizedTemplateId;
     }
 
-
+    @Override
+    public boolean isVisible() {
+        return true;
+    }
 }
