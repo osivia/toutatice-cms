@@ -2042,7 +2042,7 @@ public class NuxeoController {
 
             String url;
             
-            if (doc.getFacets().list().contains("isRemoteProxy")) {
+            if (doc.getPath().startsWith("/default-domain/communaute/") || doc.getFacets().list().contains("isRemoteProxy" )) {
                  // TODO : increase performance
                  UniversalID id = getUniversalIDFromPath( doc.getPath());
                  url = this.getPortalUrlFactory().getViewContentUrl(getPortalCtx(), getCMSContext(), id);               
