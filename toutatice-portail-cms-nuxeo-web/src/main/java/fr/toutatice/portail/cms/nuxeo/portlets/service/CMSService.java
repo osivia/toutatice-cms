@@ -600,7 +600,12 @@ public class CMSService implements ICMSService {
 
                 // Not supported yet for web-service
                 // And during validation phase (spring)
-                if (cmsContext.getPortalControllerContext().getHttpServletRequest() != null) {
+                if ((cmsContext.getPortalControllerContext().getHttpServletRequest() != null)
+                    &&
+                    // Exclude web-services
+                    (cmsContext.getPortalControllerContext().getHttpServletRequest().getAttribute("osivia.controllerContext") != null)
+                        
+                        ) {
                     
                     if (content != null && content.getNativeItem() instanceof Document) {
                         Document doc = (Document) content.getNativeItem();
@@ -1239,16 +1244,24 @@ public class CMSService implements ICMSService {
                 if (StringUtils.isNotEmpty(ctx.getForcePublicationInfosScope())) {
                     ctx.setScope(ctx.getForcePublicationInfosScope());
                 } else {
-                    // In anonymous mode, publicationsInfos are shared
-                    if (ctx.getServletRequest().getRemoteUser() == null) {
-                            ctx.setScope("anonymous");
-                        } else {
-                            ctx.setScope("user_session");
+                    if( ctx.getServletRequest() != null)    {
+                        // In anonymous mode, publicationsInfos are shared
+                        if (ctx.getServletRequest().getRemoteUser() == null) {
+                                ctx.setScope("anonymous");
+                            } else {
+                                ctx.setScope("user_session");
+                            }
                         }
                 }
 
                 if( Satellite.MAIN.equals(ctx.getSatellite()) && !"0".equals(ctx.getDisplayLiveVersion()) && ! (path.startsWith("/task-root/")))   {
+                    try {
                     pubInfos = getPublicationInfosByConnect(ctx, path);
+                    } catch (org.osivia.portal.api.cms.exception.CMSException exc) {
+                        if(exc.getCause() instanceof CMSException)
+                            throw ((CMSException) exc.getCause());
+                        else throw exc;
+                    }
                 }   else    {
                      pubInfos = (CMSPublicationInfos) this.executeNuxeoCommand(ctx, (new PublishInfosCommand(ctx.getSatellite(), path)));
                 }

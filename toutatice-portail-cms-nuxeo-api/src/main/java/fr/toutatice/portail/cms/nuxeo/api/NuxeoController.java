@@ -36,6 +36,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.service.CMSService;
 import org.osivia.portal.api.cms.service.CMSSession;
+import org.osivia.portal.api.cms.service.SpaceCacheBean;
 import org.osivia.portal.api.cms.service.UpdateInformations;
 import org.osivia.portal.api.cms.service.UpdateScope;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -56,6 +57,7 @@ import org.osivia.portal.core.cms.spi.NuxeoRequest;
 import org.osivia.portal.core.cms.spi.NuxeoResult;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.formatters.IFormatter;
+import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.profils.ProfilBean;
 import org.osivia.portal.core.web.IWebIdService;
@@ -575,7 +577,16 @@ public class NuxeoController {
      */
     public void notifyUpdate(String documentPath, String spacePath, UpdateScope scope, boolean async) throws PortletException {
 
-        CMSController ctrl = new CMSController(getPortalCtx());
+        boolean superUser;
+        
+        if( "superuser_no_cache".equals(getScope()))
+            superUser = true;
+        else if( "superuser_context".equals(getScope()))
+            superUser = true;
+        else
+            superUser= false;
+        
+        CMSController ctrl = new CMSController(getPortalCtx(), superUser);
 
         try {
             if (spacePath == null) {
@@ -604,6 +615,13 @@ public class NuxeoController {
                 UpdateInformations infos = new UpdateInformations(internalID, spaceID, scope, async);
 
                 session.notifyUpdate(infos);
+                
+                // Further calls
+                PageProperties.getProperties().setCheckingSpaceTS(System.currentTimeMillis());
+
+
+                
+                
             }
         } catch (Exception e) {
             throw new PortletException(e);
