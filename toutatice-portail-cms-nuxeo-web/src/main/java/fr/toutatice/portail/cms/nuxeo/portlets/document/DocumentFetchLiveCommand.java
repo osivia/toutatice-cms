@@ -26,7 +26,12 @@ public class DocumentFetchLiveCommand implements INuxeoCommand {
 	
 	String path;
 	String permission;
+    String timestamp;
 	
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+    
 	public DocumentFetchLiveCommand(String path, String permission) {
 		super();
 		this.path = path;
@@ -44,7 +49,10 @@ public class DocumentFetchLiveCommand implements INuxeoCommand {
 	}
 
 	public String getId() {
-		return "FetchLiveDocument/" + path;
+		String id =  "FetchLiveDocument/" + path;
+        if(timestamp != null)
+        	id = id.concat("/").concat(timestamp);
+        return id;
 	};		
 
 }

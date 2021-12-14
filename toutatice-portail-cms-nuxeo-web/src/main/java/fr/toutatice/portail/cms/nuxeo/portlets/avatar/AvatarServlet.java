@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -121,10 +122,14 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-                Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(userId));
+            	GetUserProfileCommand userProfileCommand = new GetUserProfileCommand(userId);
+            	userProfileCommand.setTimestamp(theRequest.getParameter("t"));
+                Document userProfile = (Document) ctx.executeNuxeoCommand(userProfileCommand);
 
                 if (userProfile != null) {
-                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
+                	DocumentFetchLiveCommand fetchLiveCommand = new DocumentFetchLiveCommand(userProfile.getPath(), "Read");
+                	fetchLiveCommand.setTimestamp(theRequest.getParameter("t"));
+                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(fetchLiveCommand);
 
                     if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
                         FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
@@ -143,14 +148,23 @@ public class AvatarServlet extends HttpServlet {
             }
 
 
+
             if (genericAvatar) {
-                // no avatar found, use the guest avatar
-                File file = new File(portletCtx.getRealPath("/img/guest.png"));
+            	
+            	File file;
+            	
+            	String genericPath = System.getProperty("osivia.avatar.generic.path");
+            	if( StringUtils.isNotEmpty(genericPath))	{
+            		file = new File(genericPath);
+	                theResponse.setContentType(System.getProperty("osivia.avatar.generic.mimeType"));
+             	}	else	{
+	                // no avatar found, use the guest avatar
+	                 file = new File(portletCtx.getRealPath("/img/guest.png"));
+	                 theResponse.setContentType("image/png");
+            	}
 
                 byte[] data = FileUtils.readFileToByteArray(file);
 
-                // Mime type
-                theResponse.setContentType("image/png");
 
                 // Length
                 int length = Long.valueOf(file.length()).intValue();
