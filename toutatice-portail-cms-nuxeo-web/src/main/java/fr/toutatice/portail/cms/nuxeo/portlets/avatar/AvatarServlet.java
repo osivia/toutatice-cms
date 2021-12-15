@@ -43,6 +43,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.AvatarUtils;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
@@ -122,46 +123,31 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-            	GetUserProfileCommand userProfileCommand = new GetUserProfileCommand(userId);
-            	userProfileCommand.setTimestamp(theRequest.getParameter("t"));
-                Document userProfile = (Document) ctx.executeNuxeoCommand(userProfileCommand);
+                Document fetchedUserProfile = AvatarUtils.getUserProfile(portletCtx, userId, theRequest.getParameter("t"));
 
-                if (userProfile != null) {
-                	DocumentFetchLiveCommand fetchLiveCommand = new DocumentFetchLiveCommand(userProfile.getPath(), "Read");
-                	fetchLiveCommand.setTimestamp(theRequest.getParameter("t"));
-                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(fetchLiveCommand);
+                if (fetchedUserProfile != null && fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
+                    FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
+                    command.setTimestamp(theRequest.getParameter("t"));
 
-                    if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
-                        FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
-                        command.setTimestamp(theRequest.getParameter("t"));
+                    CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
 
-                        CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
+                    // Les headers doivent être positionnées avant la réponse
+                    theResponse.setContentType(content.getMimeType());
 
-                        // Les headers doivent être positionnées avant la réponse
-                        theResponse.setContentType(content.getMimeType());
+                    ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
 
-                        ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
-
-                        genericAvatar = false;
-                    }
+                    genericAvatar = false;
                 }
             }
+            
 
 
 
             if (genericAvatar) {
             	
-            	File file;
-            	
-            	String genericPath = System.getProperty("osivia.avatar.generic.path");
-            	if( StringUtils.isNotEmpty(genericPath))	{
-            		file = new File(genericPath);
-	                theResponse.setContentType(System.getProperty("osivia.avatar.generic.mimeType"));
-             	}	else	{
-	                // no avatar found, use the guest avatar
-	                 file = new File(portletCtx.getRealPath("/img/guest.png"));
-	                 theResponse.setContentType("image/png");
-            	}
+            	File file = new File(portletCtx.getRealPath("/img/guest.png"));
+                theResponse.setContentType("image/png");
+
 
                 byte[] data = FileUtils.readFileToByteArray(file);
 

@@ -168,7 +168,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Avatar map.
      */
-    private final Map<String, String> avatarMap;
+    private final Map<String, AvatarInfo> avatarMap;
     /**
      * Binary timestamps.
      */
@@ -270,6 +270,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
         // Avatar map
         this.avatarMap = new ConcurrentHashMap<>();
+        
+
+        
         // Binary timestamps
         this.binaryTimestamps = new ConcurrentHashMap<>();
 
@@ -1637,23 +1640,44 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (url.length() == 0) {
-            url.append(AVATAR_SERVLET);
-            try {
-                url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
-            } catch (UnsupportedEncodingException e) {
-                this.log.error(e);
-            }
+            
 
             // Get timestamp defined previously
-            String avatarTime = this.avatarMap.get(username);
-            if (avatarTime == null) {
+
+            AvatarInfo avatar = this.avatarMap.get(username);
+
+            if (avatar == null) {
                 // if not defined, set ie
-                avatarTime = this.refreshUserAvatar(username);
+            	this.refreshUserAvatar(username);
+            	avatar = this.avatarMap.get(username);
+            }	
+            
+            // Is avatar generic ?
+            String genericResource = System.getProperty("osivia.avatar.generic.resource");
+            if( StringUtils.isNotEmpty(genericResource))	{
+            	if( avatar.getGenericResource() == null) {
+            	    Document fetchedUserProfile = AvatarUtils.getUserProfile(portletContext, username, avatar.getTimeStamp());
+            	    if (fetchedUserProfile == null || fetchedUserProfile.getProperties().get("userprofile:avatar") == null) {
+            	        avatar.setGenericResource(true);
+            	    }  else    {
+            	        avatar.setGenericResource(false);
+            	    }
+            	}
             }
 
-            // timestamp is concated in the url to control the client cache
-            url.append("&t=");
-            url.append(avatarTime);
+            if( avatar.getGenericResource()) {
+                url.append(genericResource);
+            }   else    {
+                // timestamp is concated in the url to control the client cache
+                url.append(AVATAR_SERVLET);
+                try {
+                    url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
+                } catch (UnsupportedEncodingException e) {
+                    this.log.error(e);
+                }
+                url.append("&t=");
+                url.append(avatar.getTimeStamp());
+            }
         }
 
         return new Link(url.toString(), false);
@@ -1676,12 +1700,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     @Override
     public String refreshUserAvatar(String username) {
 
-        // renew the timestamp and map it to the user
-        String avatarTime = Long.toString(new Date().getTime());
+    	AvatarInfo avatarInfo = new AvatarInfo();
 
-        this.avatarMap.put(username, avatarTime);
+        this.avatarMap.put(username, avatarInfo);
 
-        return avatarTime;
+        return avatarInfo.getTimeStamp();
     }
 
 
@@ -2157,7 +2180,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      *
      * @return the avatarMap
      */
-    public Map<String, String> getAvatarMap() {
+    public Map<String, AvatarInfo> getAvatarMap() {
         return avatarMap;
     }
 
