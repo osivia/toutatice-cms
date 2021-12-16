@@ -42,6 +42,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -316,6 +317,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.bundleFactory = this.internationalizationService.getBundleFactory(this.getClass().getClassLoader());
         // Notifications service
         this.notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
+        
+        AvatarUtils.portletContext = portletContext;
     }
 
     /**
@@ -1640,32 +1643,35 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (url.length() == 0) {
+           // Get timestamp defined previously
+           AvatarInfo avatar = this.avatarMap.get(username);
             
-
-            // Get timestamp defined previously
-
-            AvatarInfo avatar = this.avatarMap.get(username);
-
+            
+            // External modification (cluster, ...)
+            if (avatar != null && avatar.isFetched()) {
+                Document fetchedUserProfile = AvatarUtils.getUserProfile( username, true);  
+                if( ! StringUtils.equals(AvatarUtils.getAvatarDigest(fetchedUserProfile), avatar.getDigest())) {
+                    avatar = null;
+                }
+            }
+                
+            // Init avatar
             if (avatar == null) {
                 // if not defined, set ie
             	this.refreshUserAvatar(username);
             	avatar = this.avatarMap.get(username);
             }	
             
-            // Is avatar generic ?
-            String genericResource = System.getProperty("osivia.avatar.generic.resource");
-            if( StringUtils.isNotEmpty(genericResource))	{
-            	if( avatar.getGenericResource() == null) {
-            	    Document fetchedUserProfile = AvatarUtils.getUserProfile(portletContext, username, avatar.getTimeStamp());
-            	    if (fetchedUserProfile == null || fetchedUserProfile.getProperties().get("userprofile:avatar") == null) {
-            	        avatar.setGenericResource(true);
-            	    }  else    {
-            	        avatar.setGenericResource(false);
-            	    }
-            	}
+            // fetch avatar
+            if (avatar.isFetched() == false) {
+                AvatarUtils.fillAvatar(username, avatar);
+                 avatar.setFetched(true);
             }
 
-            if( avatar.getGenericResource()) {
+
+            String genericResource = System.getProperty("osivia.avatar.generic.resource");
+            
+            if(StringUtils.isNotEmpty(genericResource) && BooleanUtils.isTrue(avatar.getGenericResource())) {
                 url.append(genericResource);
             }   else    {
                 // timestamp is concated in the url to control the client cache

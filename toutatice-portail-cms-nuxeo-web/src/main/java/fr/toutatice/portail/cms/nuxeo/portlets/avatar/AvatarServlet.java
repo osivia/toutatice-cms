@@ -123,13 +123,11 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-                Document fetchedUserProfile = AvatarUtils.getUserProfile(portletCtx, userId, theRequest.getParameter("t"));
+                Document fetchedUserProfile = AvatarUtils.getUserProfile( userId, true);
 
-                if (fetchedUserProfile != null && fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
-                    FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
-                    command.setTimestamp(theRequest.getParameter("t"));
-
-                    CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
+                if ( AvatarUtils.getAvatarDigest(fetchedUserProfile) != null) {
+ 
+                    CMSBinaryContent content = AvatarUtils.getAvatarContent( fetchedUserProfile, true);
 
                     // Les headers doivent être positionnées avant la réponse
                     theResponse.setContentType(content.getMimeType());

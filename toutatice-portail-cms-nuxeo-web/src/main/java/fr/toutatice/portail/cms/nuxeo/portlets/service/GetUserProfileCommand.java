@@ -27,16 +27,12 @@ import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 public class GetUserProfileCommand  implements INuxeoCommand{
 	
     private String username;
-    private String timestamp;
+
     
     public GetUserProfileCommand(String username) {
         this.username = username;
     }
-    
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-    
+
 	/**
 	 * execution d'une requete nuxéo 
 	 * @return 
@@ -53,10 +49,7 @@ public class GetUserProfileCommand  implements INuxeoCommand{
 
 	public String getId() {
 		
-        String id = "GetUserProfileCommand/".concat(username);
-        if(timestamp != null)
-        	id = id.concat("/").concat(timestamp);
-        return id;
+        return "GetUserProfileCommand/".concat(username);
 	}
 
 }

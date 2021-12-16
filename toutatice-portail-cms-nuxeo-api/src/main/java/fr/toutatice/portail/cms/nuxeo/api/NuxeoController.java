@@ -228,6 +228,16 @@ public class NuxeoController {
      * The cache type.
      */
     int cacheType = CacheInfo.CACHE_SCOPE_NONE;
+    
+    /**
+     * Force the reload of content
+     */
+    boolean forceReload = false;
+            
+    
+
+
+
     /**
      * The nuxeo command service.
      */
@@ -886,6 +896,26 @@ public class NuxeoController {
         this.cacheType = cacheType;
     }
 
+    
+    /**
+     * Checks if is force reload.
+     *
+     * @return true, if is force reload
+     */
+    public boolean isForceReload() {
+        return forceReload;
+    }
+
+    
+    /**
+     * Sets the force reload.
+     *
+     * @param forceReload the new force reload
+     */
+    public void setForceReload(boolean forceReload) {
+        this.forceReload = forceReload;
+    }
+    
     /**
      * Gets the scope profil.
      *
@@ -1730,6 +1760,8 @@ public class NuxeoController {
         commandContext.setAsynchronousUpdates(this.asynchronousUpdates);
         commandContext.setAsynchronousCommand(this.asynchronousCommand);
         commandContext.setSatellite(this.satellite);
+        commandContext.setForceReload(this.forceReload);
+        
 
 
         try {
@@ -2044,6 +2076,9 @@ public class NuxeoController {
             throw this.wrapNuxeoException(e);
         }
     }
+    
+    
+    
 
     /**
      * Fetch a document by its sharedID.
