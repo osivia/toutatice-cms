@@ -33,7 +33,8 @@ public class AvatarUtils {
     /** The portlet context. */
     protected static PortletContext portletContext;
 
-    private static Long timeout = TimeUnit.MINUTES.toMillis(5);
+    /* External modification timeout (cluster) */
+    private static Long timeout = TimeUnit.MINUTES.toMillis(10);
 
     /**
      * Gets the user profile. O
