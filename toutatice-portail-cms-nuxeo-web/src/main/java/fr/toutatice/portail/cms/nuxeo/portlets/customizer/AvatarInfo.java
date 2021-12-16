@@ -2,6 +2,8 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
 import java.util.Date;
 
+import org.osivia.portal.core.cms.CMSBinaryContent;
+
 /**
  * Keep informations on user avatar
  */
@@ -10,7 +12,11 @@ public class AvatarInfo {
 	private final String   timeStamp;
 	private Boolean  genericResource =null;
 	private String   digest=null;
+	private CMSBinaryContent binaryContent = null;
 	
+
+
+    
 
 
     private Boolean  fetched = false;
@@ -28,17 +34,17 @@ public class AvatarInfo {
 	public Boolean getGenericResource() {
 		return genericResource;
 	}
-	public void setGenericResource(Boolean genericResource) {
+	protected void setGenericResource(Boolean genericResource) {
 		this.genericResource = genericResource;
 	}
 	
 
 
-    public Boolean isFetched() {
+	protected Boolean isFetched() {
         return fetched;
     }
     
-    public void setFetched(Boolean fetched) {
+    protected void setFetched(Boolean fetched) {
         this.fetched = fetched;
     }
     
@@ -51,4 +57,12 @@ public class AvatarInfo {
         this.digest = digest;
     }
 
+    public CMSBinaryContent getBinaryContent() {
+        return binaryContent;
+    }
+    
+    protected void setBinaryContent(CMSBinaryContent binaryContent) {
+        this.binaryContent = binaryContent;
+    }
+    
 }

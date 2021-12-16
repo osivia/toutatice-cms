@@ -166,10 +166,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Navigation panel players.
      */
     private final Map<String, PanelPlayer> navigationPanelPlayers;
-    /**
-     * Avatar map.
-     */
-    private final Map<String, AvatarInfo> avatarMap;
+
     /**
      * Binary timestamps.
      */
@@ -269,8 +266,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Navigation panel players
         this.navigationPanelPlayers = new ConcurrentHashMap<>();
         this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
-        // Avatar map
-        this.avatarMap = new ConcurrentHashMap<>();
+
         
 
         
@@ -1621,8 +1617,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
+    
     @Override
     public Link getUserAvatar(String username) {
+        return this.getUserAvatar(username, true);
+    }
+    
+
+    public Link getUserAvatar(String username, boolean checkCache) {
         // URL
         StringBuilder url = new StringBuilder();
 
@@ -1643,35 +1645,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         if (url.length() == 0) {
-           // Get timestamp defined previously
-           AvatarInfo avatar = this.avatarMap.get(username);
+            AvatarInfo avatar = AvatarUtils.getAvatar(username, checkCache);
             
-            
-            // External modification (cluster, ...)
-            if (avatar != null && avatar.isFetched()) {
-                Document fetchedUserProfile = AvatarUtils.getUserProfile( username, true);  
-                if( ! StringUtils.equals(AvatarUtils.getAvatarDigest(fetchedUserProfile), avatar.getDigest())) {
-                    avatar = null;
-                }
-            }
-                
-            // Init avatar
-            if (avatar == null) {
-                // if not defined, set ie
-            	this.refreshUserAvatar(username);
-            	avatar = this.avatarMap.get(username);
-            }	
-            
-            // fetch avatar
-            if (avatar.isFetched() == false) {
-                AvatarUtils.fillAvatar(username, avatar);
-                 avatar.setFetched(true);
-            }
-
-
             String genericResource = System.getProperty("osivia.avatar.generic.resource");
             
-            if(StringUtils.isNotEmpty(genericResource) && BooleanUtils.isTrue(avatar.getGenericResource())) {
+            if(StringUtils.isNotEmpty(genericResource) && (avatar == null || BooleanUtils.isTrue(avatar.getGenericResource()))) {
                 url.append(genericResource);
             }   else    {
                 // timestamp is concated in the url to control the client cache
@@ -1681,8 +1659,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 } catch (UnsupportedEncodingException e) {
                     this.log.error(e);
                 }
-                url.append("&t=");
-                url.append(avatar.getTimeStamp());
+                if( avatar != null) {
+                    url.append("&t=");
+                    url.append(avatar.getTimeStamp());
+                }
             }
         }
 
@@ -1695,7 +1675,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
-        return this.getUserAvatar(username);
+        // PersonService user list : don't check avatar
+        // Can take more then one minute for a list
+        return this.getUserAvatar(username, false);
 
     }
 
@@ -1705,12 +1687,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      */
     @Override
     public String refreshUserAvatar(String username) {
-
-    	AvatarInfo avatarInfo = new AvatarInfo();
-
-        this.avatarMap.put(username, avatarInfo);
-
-        return avatarInfo.getTimeStamp();
+        return AvatarUtils.refreshUserAvatar(username);
     }
 
 
@@ -2181,14 +2158,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return navigationPanelPlayers;
     }
 
-    /**
-     * Getter for avatarMap.
-     *
-     * @return the avatarMap
-     */
-    public Map<String, AvatarInfo> getAvatarMap() {
-        return avatarMap;
-    }
+
 
     /**
      * Getter for pluginManager.

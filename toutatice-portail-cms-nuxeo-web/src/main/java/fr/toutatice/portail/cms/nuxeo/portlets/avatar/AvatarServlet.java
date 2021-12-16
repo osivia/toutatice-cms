@@ -43,6 +43,7 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.AvatarInfo;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.AvatarUtils;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
@@ -123,11 +124,12 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-                Document fetchedUserProfile = AvatarUtils.getUserProfile( userId, true);
+                
+                AvatarInfo avatar = AvatarUtils.getAvatar( userId);
 
-                if ( AvatarUtils.getAvatarDigest(fetchedUserProfile) != null) {
+                if ( avatar != null && avatar.getBinaryContent() != null) {
  
-                    CMSBinaryContent content = AvatarUtils.getAvatarContent( fetchedUserProfile, true);
+                    CMSBinaryContent content = avatar.getBinaryContent();
 
                     // Les headers doivent être positionnées avant la réponse
                     theResponse.setContentType(content.getMimeType());

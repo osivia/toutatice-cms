@@ -1,9 +1,12 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.portlet.PortletContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -36,6 +39,12 @@ public class AvatarUtils {
     /* External modification timeout (cluster) */
     private static Long timeout = TimeUnit.MINUTES.toMillis(10);
 
+
+    /**
+     * Avatar map.
+     */
+    private static Map<String, AvatarInfo> avatarMap = new ConcurrentHashMap<>();
+
     /**
      * Gets the user profile. O
      *
@@ -44,21 +53,22 @@ public class AvatarUtils {
      * @param timestamp the timestamp
      * @return the user profile
      */
-    public static Document getUserProfile(String userId, boolean cache) {
+    private static Document getUserProfile(String userId, boolean reload) {
 
         NuxeoController ctx = new NuxeoController(portletContext);
         ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
         ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
+        
+
         ctx.setCacheTimeOut(timeout);
-        if (cache == false) {
+        if (reload) {
             ctx.setForceReload(true);
-        } 
+        }
 
         Document fetchedUserProfile;
 
         try {
             GetUserProfileCommand userProfileCommand = new GetUserProfileCommand(userId);
-
             Document userProfile = (Document) ctx.executeNuxeoCommand(userProfileCommand);
 
             if (userProfile != null) {
@@ -82,15 +92,13 @@ public class AvatarUtils {
      * @param cache the cache
      * @return the avatar content
      */
-    public static CMSBinaryContent getAvatarContent(Document userProfile, boolean cache) {
+    private static CMSBinaryContent getAvatarContent(Document userProfile) {
 
         NuxeoController ctx = new NuxeoController(portletContext);
         ctx.setAuthType(NuxeoCommandContext.AUTH_TYPE_SUPERUSER);
         ctx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
-        ctx.setCacheTimeOut(timeout);
-        if (cache == false) {
-            ctx.setForceReload(true);
-        } 
+        ctx.setForceReload(true);
+
 
         CMSBinaryContent content;
         try {
@@ -112,8 +120,9 @@ public class AvatarUtils {
      * @param avatar the avatar
      */
 
-    public static void fillAvatar(String username, AvatarInfo avatar) {
-        Document fetchedUserProfile = AvatarUtils.getUserProfile(username, false);
+    private static void fillAvatar(String username, AvatarInfo avatar) {
+        
+        Document fetchedUserProfile = AvatarUtils.getUserProfile(username, true);
 
         if (fetchedUserProfile != null) {
             avatar.setDigest(getAvatarDigest(fetchedUserProfile));
@@ -122,8 +131,10 @@ public class AvatarUtils {
         if (fetchedUserProfile == null || avatar.getDigest() == null) {
             avatar.setGenericResource(true);
         } else {
-            if (AvatarUtils.getAvatarContent(fetchedUserProfile, false) != null) {
+            CMSBinaryContent binaryContent = AvatarUtils.getAvatarContent(fetchedUserProfile);
+            if (binaryContent != null) {
                 avatar.setGenericResource(false);
+                avatar.setBinaryContent(binaryContent);
             } else {
                 avatar.setGenericResource(true);
             }
@@ -137,7 +148,8 @@ public class AvatarUtils {
      * @param fetchedUserProfile the fetched user profile
      * @return the avatar digest
      */
-    public static String getAvatarDigest(Document fetchedUserProfile) {
+    private static String getAvatarDigest(Document fetchedUserProfile) {
+        
         String digest;
         if (fetchedUserProfile != null) {
             PropertyMap avatarMap = FileContentCommand.getFileMap(fetchedUserProfile, "userprofile:avatar");
@@ -150,6 +162,65 @@ public class AvatarUtils {
             digest = null;
         }
         return digest;
+    }
+
+    /**
+     * Gets the avatar.
+     *
+     * @param username the username
+     * @param checkCache the check cache
+     * @return the avatar
+     */
+    protected static AvatarInfo getAvatar(String username, boolean checkCache) {
+        
+        // Get timestamp defined previously
+        AvatarInfo avatar = avatarMap.get(username);
+        
+        // External modification (cluster, ...)
+        if (avatar != null && avatar.isFetched() && checkCache) {
+            Document fetchedUserProfile = AvatarUtils.getUserProfile(username, false);
+            if (!StringUtils.equals(AvatarUtils.getAvatarDigest(fetchedUserProfile), avatar.getDigest())) {
+                avatar = null;
+            }
+        }
+
+        // Init avatar
+        if (avatar == null) {
+            refreshUserAvatar(username);
+            avatar = avatarMap.get(username);
+        }
+
+        // fetch avatar
+        if (avatar.isFetched() == false) {
+            AvatarUtils.fillAvatar(username, avatar);
+            avatar.setFetched(true);
+        }
+        
+        return avatar;
+    }
+    
+    
+    /**
+     * Gets the avatar.
+     *
+     * @param username the username
+     * @return the avatar
+     */
+    public static AvatarInfo getAvatar(String username) {
+        return getAvatar(username, false);
+    }
+
+
+    /**
+     * Refresh user avatar.
+     *
+     * @param username the username
+     * @return the string
+     */
+    public static String refreshUserAvatar(String username) {
+      AvatarInfo avatarInfo = new AvatarInfo();
+      avatarMap.put(username, avatarInfo);
+       return avatarInfo.getTimeStamp();
     }
 
 
