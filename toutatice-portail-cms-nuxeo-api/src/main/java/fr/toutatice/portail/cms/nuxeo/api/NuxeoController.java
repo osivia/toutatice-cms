@@ -423,6 +423,12 @@ public class NuxeoController {
                throw this.wrapNuxeoException(e);
            }  
 
+            if(contentPath == null) {
+                String notSupportedPath = window.getProperty(Constants.WINDOW_PROP_NOT_SUPPORTED_PATH);
+                if( notSupportedPath != null)   {
+                    contentPath = notSupportedPath;
+                }
+            }
 
             if (request instanceof ResourceRequest) {
                 if (request.getParameter("refresh") != null) {
@@ -2558,8 +2564,12 @@ public class NuxeoController {
                 this.cmsCtx.setResponse((MimeResponse) this.response);
             }
             
-            if(StringUtils.isNotEmpty(this.getScope()))
+            boolean initPubInfosScope;
+            
+            if(StringUtils.isNotEmpty(this.getScope())) {
                     this.cmsCtx.setScope(this.getScope());
+                    initPubInfosScope = true;
+            }
             else    {
 /*                
                 // Compatiblity with OSIVIA Connect
@@ -2587,10 +2597,12 @@ public class NuxeoController {
                 }
                 this.cmsCtx.setScope(scope);
                 this.cmsCtx.setForcePublicationInfosScope(scope);
+                initPubInfosScope = false;
             }
             
-            
-            this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
+            if( initPubInfosScope)
+                this.cmsCtx.setForcePublicationInfosScope(this.getForcePublicationInfosScope());
+
             this.cmsCtx.setDisplayLiveVersion(this.getDisplayLiveVersion());
 
 
