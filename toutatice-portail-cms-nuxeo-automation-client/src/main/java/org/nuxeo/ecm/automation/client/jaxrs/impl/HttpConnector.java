@@ -157,16 +157,23 @@ public class HttpConnector implements Connector {
             throw new RemoteException(status, "ServerError", "Server Error",
                     "");
         }
-        Header ctypeHeader = entity.getContentType();
-        if (ctypeHeader == null) { // handle broken responses with no ctype
-            if (status != 200) {
-                // this may happen when login failed
-                throw new RemoteException(status, "ServerError",
-                        "Server Error", "");
-            }
-            return null; // cannot handle responses with no ctype
+
+        String ctype;
+        String contentType = request.get("force-content-type");
+        if (contentType != null)
+            ctype = contentType;
+        else {
+            Header ctypeHeader = entity.getContentType();
+            if (ctypeHeader == null) { // handle broken responses with no ctype
+                if (status != 200) {
+                    // this may happen when login failed
+                    throw new RemoteException(status, "ServerError", "Server Error", "");
+                }
+                return null; // cannot handle responses with no ctype
+            } else
+                ctype = ctypeHeader.getValue().toLowerCase();
         }
-        String ctype = ctypeHeader.getValue().toLowerCase();
+
         String disp = null;
         Header[] hdisp = resp.getHeaders("Content-Disposition");
         if (hdisp != null && hdisp.length > 0) {
