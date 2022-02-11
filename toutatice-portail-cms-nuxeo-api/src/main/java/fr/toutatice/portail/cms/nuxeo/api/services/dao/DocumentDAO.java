@@ -364,6 +364,14 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 PropertyMap file = map.getMap("file");
 
                 // Attachment name
+                
+                // bugfix null file in nuxeo
+                if(file == null) {
+                	continue;
+                	
+                }
+                
+                
                 String name = file.getString("name");
                 if (StringUtils.isEmpty(name)) {
                     name = map.getString("filename");
