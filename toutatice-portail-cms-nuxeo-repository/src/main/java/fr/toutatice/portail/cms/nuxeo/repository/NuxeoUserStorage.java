@@ -13,6 +13,7 @@ import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentForbiddenException;
+import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
 import org.osivia.portal.api.cms.repository.BaseUserStorage;
 import org.osivia.portal.api.cms.repository.UserData;
@@ -153,7 +154,10 @@ public class NuxeoUserStorage extends BaseUserStorage {
             return document;
 
         } catch (Exception e) {
-            throw new CMSException(e);
+            if (!(e instanceof CMSException))
+                throw new CMSException(e);
+            else
+                throw (CMSException) e;
         } 
     }
 
@@ -217,6 +221,13 @@ public class NuxeoUserStorage extends BaseUserStorage {
 
 
         } catch (Exception e) {
+            if( e instanceof org.osivia.portal.core.cms.CMSException)   {
+                org.osivia.portal.core.cms.CMSException cmsExc = (org.osivia.portal.core.cms.CMSException) e;
+                if( cmsExc.getErrorCode() == cmsExc.ERROR_NOTFOUND)
+                    throw new DocumentNotFoundException();
+                if( cmsExc.getErrorCode() == cmsExc.ERROR_FORBIDDEN)
+                    throw new DocumentForbiddenException();
+             }
             if (!(e instanceof CMSException))
                 throw new CMSException(e);
             else
