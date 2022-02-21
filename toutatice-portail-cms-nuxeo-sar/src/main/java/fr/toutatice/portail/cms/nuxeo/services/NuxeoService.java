@@ -129,7 +129,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
      * {@inheritDoc}
      */
     @Override
-    public Session createUserSession(Satellite satellite, String userId) throws Exception {
+    public Session createUserSession(Satellite satellite, String userId, String repositoryName) throws Exception {
         long begin = System.currentTimeMillis();
         boolean error = false;
 
@@ -149,7 +149,7 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
             HttpAutomationClient client = new HttpAutomationClient(url, satellite);
 
             if (userId != null) {
-                client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));
+                client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId, repositoryName));
             }
             session = client.getSession();
         } catch (Exception e) {

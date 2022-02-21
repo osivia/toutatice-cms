@@ -164,6 +164,10 @@ public class NuxeoController {
 
     HttpServletRequest servletRequest;
     
+
+    /** Alternative repository name */
+    private String repositoryName;
+    
     
 
     public HttpServletRequest getServletRequest() {
@@ -1592,6 +1596,7 @@ public class NuxeoController {
         commandContext.setAsynchronousUpdates(this.asynchronousUpdates);
         commandContext.setAsynchronousCommand(this.asynchronousCommand);
         commandContext.setSatellite(this.satellite);
+        commandContext.setRepositoryName(this.repositoryName);
         
 
         try {
@@ -2553,5 +2558,21 @@ public class NuxeoController {
     public void setAsynchronousCommand(boolean asynchronousCommand) {
         this.asynchronousCommand = asynchronousCommand;
     }
+    
+    /**
+     * 
+     * @return
+     */
+	public String getRepositoryName() {
+		return repositoryName;
+	}
+
+	/**
+	 * 
+	 * @param repositoryName
+	 */
+	public void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
+	}
 
 }

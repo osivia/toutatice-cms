@@ -94,7 +94,13 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
     }
     
     private String getSessionKey() {
-        return ctx.getSatellite().getId();
+    	String sessionKey = ctx.getSatellite().getId();
+    	
+    	if(ctx.getRepositoryName() != null) {
+    		sessionKey = sessionKey.concat("/"+ctx.getRepositoryName());
+    	}
+    	
+        return sessionKey;
     }
     
     private  String getSessionPrefix()	{
@@ -183,8 +189,6 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                         userSession = userRequest.getSession();
 
-
-
                         profilerUser = userName;
                         if (profilerUser == null)
                             profilerUser = "unlogged-user";
@@ -244,7 +248,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
 
                                     INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
 
-                                    nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), userName);
+                                    nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), userName, ctx.getRepositoryName());
                                     
                                     long start = System.currentTimeMillis();
                                     sessionsIdle.put(nuxeoSession.hashCode(), start);
@@ -327,7 +331,7 @@ public class NuxeoCommandCacheInvoker implements IServiceInvoker {
                         // logger.info("Creating nuxeo session for virtual user" + virtualUser);
 
                         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
-                        nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), virtualUser);
+                        nuxeoSession = nuxeoService.createUserSession(ctx.getSatellite(), virtualUser, ctx.getRepositoryName());
                         
                         long start = System.currentTimeMillis();
                         sessionsIdle.put(nuxeoSession.hashCode(), start);                        
