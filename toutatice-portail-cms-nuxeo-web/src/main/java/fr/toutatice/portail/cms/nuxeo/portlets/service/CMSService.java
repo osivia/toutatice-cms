@@ -63,6 +63,8 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.*;
+import org.osivia.portal.api.cms.exception.DocumentForbiddenException;
+import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.service.CMSSession;
 import org.osivia.portal.api.cms.service.UpdateInformations;
 import org.osivia.portal.api.context.PortalControllerContext;
@@ -1258,6 +1260,10 @@ public class CMSService implements ICMSService {
                     try {
                     pubInfos = getPublicationInfosByConnect(ctx, path);
                     } catch (org.osivia.portal.api.cms.exception.CMSException exc) {
+                        if( exc instanceof DocumentNotFoundException)
+                            throw new CMSException(CMSException.ERROR_NOTFOUND);
+                        if( exc instanceof DocumentForbiddenException)
+                            throw new CMSException(CMSException.ERROR_FORBIDDEN);                        
                         if(exc.getCause() instanceof CMSException)
                             throw ((CMSException) exc.getCause());
                         else throw exc;
